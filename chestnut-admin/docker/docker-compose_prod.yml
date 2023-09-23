@@ -1,0 +1,24 @@
+version: '3'
+networks:
+  default:
+    external:
+      name: cc_bridge
+services:
+  chestnut-cms:
+    image: {{DOCKER_IMAGE}}
+    container_name: chestnut-cms
+    restart: unless-stopped
+    networks:
+      - default
+    environment:
+      SERVER_PORT: 8090
+      SPRING_PROFILES_ACTIVE: prod
+      JVM_OPTS: "-Xms2048M -Xmx2048m -Xmn512m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=512m"
+    ports:
+      - "8090:8090"
+      - "8899:8899"
+    volumes:
+      - ./logs:/home/app/logs
+      - ./uploadPath:/home/app/uploadPath
+      - ./_xy_member:/home/app/_xy_member
+      - ./wwwroot_release:/home/app/wwwroot_release

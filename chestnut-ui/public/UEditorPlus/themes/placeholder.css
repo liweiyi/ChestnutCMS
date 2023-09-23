@@ -1,0 +1,8 @@
+.img_group_placeholder {
+  width: 98%;
+  height: 80px;
+  display: block;
+  margin: 0 auto;
+  border: 1px dashed #ccc;
+  background: url(default/images/img-group.png) no-repeat center center;
+}

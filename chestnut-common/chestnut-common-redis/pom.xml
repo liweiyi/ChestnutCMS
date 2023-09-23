@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>chestnut-common</artifactId>
+		<groupId>com.chestnut</groupId>
+		<version>1.3.19</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>chestnut-common-redis</artifactId>
+
+	<description>redis</description>
+
+	<dependencies>
+		<!-- redis 缓存操作 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.chestnut</groupId>
+			<artifactId>chestnut-common-core</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>

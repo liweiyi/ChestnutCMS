@@ -1,0 +1,21 @@
+ALTER TABLE cms_cfd_default CHANGE COLUMN date1 datetime1 datetime;
+ALTER TABLE cms_cfd_default CHANGE COLUMN date2 datetime2 datetime;
+ALTER TABLE cms_cfd_default CHANGE COLUMN date3 datetime3 datetime;
+ALTER TABLE cms_cfd_default CHANGE COLUMN date4 datetime4 datetime;
+ALTER TABLE cms_cfd_default CHANGE COLUMN date5 datetime5 datetime;
+ALTER TABLE cms_cfd_default CHANGE COLUMN date6 datetime6 datetime;
+ALTER TABLE cms_cfd_default CHANGE COLUMN date7 datetime7 datetime;
+ALTER TABLE cms_cfd_default CHANGE COLUMN date8 datetime8 datetime;
+ALTER TABLE cms_cfd_default CHANGE COLUMN date9 datetime9 datetime;
+ALTER TABLE cms_cfd_default CHANGE COLUMN date10 datetime10 datetime;
+
+ALTER TABLE cms_exd_default CHANGE COLUMN date1 datetime1 datetime;
+ALTER TABLE cms_exd_default CHANGE COLUMN date2 datetime2 datetime;
+ALTER TABLE cms_exd_default CHANGE COLUMN date3 datetime3 datetime;
+ALTER TABLE cms_exd_default CHANGE COLUMN date4 datetime4 datetime;
+ALTER TABLE cms_exd_default CHANGE COLUMN date5 datetime5 datetime;
+ALTER TABLE cms_exd_default CHANGE COLUMN date6 datetime6 datetime;
+ALTER TABLE cms_exd_default CHANGE COLUMN date7 datetime7 datetime;
+ALTER TABLE cms_exd_default CHANGE COLUMN date8 datetime8 datetime;
+ALTER TABLE cms_exd_default CHANGE COLUMN date9 datetime9 datetime;
+ALTER TABLE cms_exd_default CHANGE COLUMN date10 datetime10 datetime;

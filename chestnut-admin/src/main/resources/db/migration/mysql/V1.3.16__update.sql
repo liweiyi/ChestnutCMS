@@ -1,0 +1,1 @@
+ALTER TABLE cms_video ADD COLUMN cover varchar(255);

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<project
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.chestnut</groupId>
+        <artifactId>chestnut-cms</artifactId>
+        <version>1.3.19</version>
+    </parent>
+
+    <artifactId>chestnut-cms-customform</artifactId>
+    <description>自定义表单模块</description>
+
+    <dependencies>
+        <!-- 扩展模型 -->
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-cms-exmodel</artifactId>
+        </dependency>
+        <!-- 会员 -->
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-member</artifactId>
+        </dependency>
+    </dependencies>
+</project>

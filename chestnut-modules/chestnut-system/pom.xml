@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>chestnut-modules</artifactId>
+        <groupId>com.chestnut</groupId>
+        <version>1.3.19</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>chestnut-system</artifactId>
+
+    <description>
+        system系统模块
+    </description>
+
+    <dependencies>
+		<dependency>
+		    <groupId>org.redisson</groupId>
+		    <artifactId>redisson-spring-boot-starter</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.flywaydb</groupId>
+		    <artifactId>flyway-mysql</artifactId>
+		</dependency>
+
+		<!-- 获取系统信息 -->
+		<dependency>
+			<groupId>com.github.oshi</groupId>
+			<artifactId>oshi-core</artifactId>
+		</dependency>
+		
+		<!-- xxl-job-core -->
+		<dependency>
+			<groupId>com.xuxueli</groupId>
+			<artifactId>xxl-job-core</artifactId>
+		</dependency>
+
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-common-log</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-common-extend</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-common-storage</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>de.codecentric</groupId>
+            <artifactId>spring-boot-admin-starter-client</artifactId>
+        </dependency>
+
+    </dependencies>
+</project>

@@ -1,0 +1,2 @@
+Application Version: ${chestnut.version}
+Spring Boot Version: ${spring-boot.version}

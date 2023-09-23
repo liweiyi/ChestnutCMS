@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.chestnut</groupId>
+		<artifactId>chestnut-cms</artifactId>
+		<version>1.3.19</version>
+	</parent>
+
+	<artifactId>chestnut-cms-contentcore</artifactId>
+	<description>内容核心</description>
+
+	<dependencies>
+		<!-- 图片处理工具库 -->
+		<dependency>
+			<groupId>net.coobird</groupId>
+			<artifactId>thumbnailator</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.chestnut</groupId>
+			<artifactId>chestnut-search</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.chestnut</groupId>
+			<artifactId>chestnut-system</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.chestnut</groupId>
+			<artifactId>chestnut-common-storage</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.chestnut</groupId>
+			<artifactId>chestnut-common-staticize</artifactId>
+		</dependency>
+	</dependencies>
+</project>

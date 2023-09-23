@@ -1,0 +1,6 @@
+cluster.name: "docker-cluster-01"
+network.host: 0.0.0.0
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+# 关闭xpack
+xpack.security.enabled: false

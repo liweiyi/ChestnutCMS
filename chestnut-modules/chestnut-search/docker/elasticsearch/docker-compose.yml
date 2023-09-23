@@ -1,0 +1,31 @@
+version: '3
+networks:
+  default:
+services:
+  cc-elasticsearch:
+    image: {{DOCKER_IMAGE}}
+    restart: unless-stopped
+    container_name: cc-elasticsearch
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    ports:                                                
+      - 9200:9200                                          
+      - 9300:9300                                         
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms1024m -Xmx1024m
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+      - ./elasticsearch/logs:/usr/share/elasticsearch/logs
+      - ./elasticsearch/ik-config:/usr/share/elasticsearch/plugins/ik/config
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - default
