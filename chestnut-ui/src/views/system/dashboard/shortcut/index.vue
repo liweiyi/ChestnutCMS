@@ -1,6 +1,6 @@
 <template>
   <div class="home-shortcut-container">
-    <el-card shadow="hover">
+    <el-card shadow="hover" class="mb10">
       <div slot="header" class="clearfix">
         <span>{{ $t('System.Menu.Shortcut') }}</span>
       </div>

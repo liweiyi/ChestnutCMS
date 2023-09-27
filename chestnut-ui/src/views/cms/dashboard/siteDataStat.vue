@@ -1,5 +1,5 @@
 <template>
-  <div class="site-container mt10">
+  <div class="site-container mb10">
     <el-card shadow="hover">
       <div slot="header" class="clearfix">
         <span>{{ $t('CMS.Site.Dashboard.DataCountCard') }}</span>

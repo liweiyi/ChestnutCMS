@@ -12,12 +12,12 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 
 企业站演示地址：<http://swikoon.1000mz.com>
 
-资讯站演示地址：<http://www.1000mz.com>
+资讯站演示地址：<http://www.1000mz.com>（会员演示账号：xxx333@126.com / a123456）
 
 图片演示地址：<http://tpz.1000mz.com>
 
 ##### 演示站静态资源
-- 企业演示站的静态资源已提交到仓库[chestnut-cms-wwwroot](https://gitee.com/liweiyi/ruoyi-vue-cms-wwwroot)。
+- 企业演示站的静态资源已提交到仓库[chestnut-cms-wwwroot](https://gitee.com/liweiyi/chestnut-cms-wwwroot)。
 - CMS资源路径配置application.yml中chestnut.cms.resourceRoot，默认与项目同级的wwwroot_release。
 
 ### 开发环境
@@ -102,3 +102,9 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 #### 如果本项目对您有一丢丢小帮助 :kissing_heart: 点个小星星吧 :star2: 
 
 #### QQ交流群： 568506424  口令：举个栗子
+
+> 开源协议补充说明：
+> 
+> - ChestnutCMS 遵循《Apache-2.0开源协议》，使用本系统不得用于违反国家有关政策的相关软件和应用。
+> - 系统可免费商用，但是必须包含原始版权声明和许可声明 ，不可移除后台登录页面底部的版权申明”Copyright © 2022-2023 1000mz.com All Rights Reserved“.
+> - 本项目所包含的第三方源码版权信息需另行标注。
