@@ -610,12 +610,14 @@ export default {
     handleResourceDialogOk (results) {
       if (results && results.length > 0) {
         const r = results[0];
-        var html;
-        if (r.resourceType == 'image') {
-          html = "<img src='" + r.src + "' iurl='" + r.path + "' class='art-body-img' />" 
-        } else {
-          html = '<a href="' + r.src + '" iurl="' + r.path + '" target="_blank">' + r.name + '</a>'
-        }
+        var html = '';
+        results.forEach(r => {
+          if (r.resourceType == 'image') {
+            html += '<p><img src="' + r.src + '" iurl="' + r.path + '" class="art-body-img" /></p>'
+          } else {
+            html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank">' + r.name + '</a></p>'
+          }
+        });
         if (html && html.length > 0) {
           var editor = window.UE.getEditor(this.editorId)
           editor.execCommand("insertHTML",html);

@@ -309,12 +309,6 @@
 				<version>${chestnut.version}</version>
 			</dependency>
 
-			<dependency>
-				<groupId>de.codecentric</groupId>
-				<artifactId>spring-boot-admin-starter-client</artifactId>
-				<version>${spring-boot-admin.version}</version>
-			</dependency>
-
 			<!-- Redis -->
 			<dependency>
 				<groupId>com.chestnut</groupId>
@@ -354,6 +348,18 @@
 			<dependency>
 				<groupId>com.chestnut</groupId>
 				<artifactId>chestnut-common-storage</artifactId>
+				<version>${chestnut.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.chestnut</groupId>
+				<artifactId>chestnut-common-license</artifactId>
+				<version>${chestnut.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.chestnut</groupId>
+				<artifactId>chestnut-license</artifactId>
 				<version>${chestnut.version}</version>
 			</dependency>
 
@@ -424,6 +430,13 @@
 			<dependency>
 				<groupId>com.chestnut</groupId>
 				<artifactId>chestnut-comment</artifactId>
+				<version>${chestnut.version}</version>
+			</dependency>
+
+			<!-- XYX模块 -->
+			<dependency>
+				<groupId>com.chestnut</groupId>
+				<artifactId>chestnut-xyz</artifactId>
 				<version>${chestnut.version}</version>
 			</dependency>
 

@@ -12,6 +12,7 @@
       <el-col :span="12">
         <shortcut></shortcut>
         <cms-site-data-stat></cms-site-data-stat>
+        <qi-gua></qi-gua>
         <server-info></server-info>
       </el-col>
     </el-row>
@@ -24,6 +25,7 @@ import SysShortcut from '@/views/system/dashboard/shortcut'
 import ServerInfo from '@/views/system/dashboard/serverInfo'
 import CmsSiteVisitStat from '@/views/cms/dashboard/siteVisitStat'
 import CmsSiteDataStat from '@/views/cms/dashboard/siteDataStat'
+import QiGua from '@/views/xyz/dashboard/qiGua'
 
 
 export default {
@@ -34,6 +36,7 @@ export default {
     'server-info': ServerInfo,
     'cms-site-visit-stat': CmsSiteVisitStat,
     'cms-site-data-stat': CmsSiteDataStat,
+    'qi-gua': QiGua
   },
   data() {
     return {
@@ -55,47 +58,6 @@ export default {
     background: #fff;
     padding: 16px 16px 0;
     margin-bottom: 32px;
-  }
-
-  .yao_yang {
-    display: block;
-    height: 16px;
-    width: 120px;
-    margin-bottom: 5px;
-  }
-
-  .yao_yang_b {
-    background: #000;
-    display: inline-block;
-    height: 16px;
-    width: 100px;
-  }
-
-  .yao_yin {
-    display: block;
-    height: 16px;
-    width: 120px;
-    margin-bottom: 5px;
-  }
-
-  .yao_yin_b {
-    background: #000;
-    display: inline-block;
-    height: 16px;
-    width: 40px;
-  }
-
-  .yao_yin_w {
-    background: #fff;
-    display: inline-block;
-    height: 16px;
-    width: 20px;
-  }
-
-  .yao_lao {
-    display: inline-block;
-    height: 16px;
-    width: 20px;
   }
 }
 

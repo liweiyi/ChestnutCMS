@@ -11,7 +11,10 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.staticize.core.TemplateContext;
-import com.chestnut.common.utils.*;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.SortUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IProperty;
@@ -28,12 +31,9 @@ import com.chestnut.contentcore.listener.event.BeforeCatalogDeleteEvent;
 import com.chestnut.contentcore.mapper.CmsCatalogMapper;
 import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.perms.CatalogPermissionType;
-import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
-import com.chestnut.contentcore.perms.SitePermissionType;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.*;
-import com.chestnut.system.domain.SysPermission;
 import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.service.ISysPermissionService;
@@ -365,7 +365,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		// 1、原父级栏目子节点数-1
 		if (fromCatalog.getParentId() > 0) {
 			AsyncTaskManager.setTaskMessage("更新转移栏目原父级栏目数据");
-			CmsCatalog parent = this.getById(fromCatalog.getCatalogId());
+			CmsCatalog parent = this.getById(fromCatalog.getParentId());
 			parent.setChildCount(parent.getChildCount() - 1);
 			invokedCatalogs.put(parent.getCatalogId(), parent);
 		}
@@ -403,11 +403,11 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		});
 		AsyncTaskManager.setTaskPercent(30);
 		// 6、更新缓存
-		invokedCatalogs.values().forEach(c -> clearCache(c));
+		invokedCatalogs.values().forEach(this::clearCache);
 		// 7、更新除目标栏目外的所有栏目内容数据
 		AsyncTaskManager.setTaskProgressInfo(40, "更新转移栏目及其子栏目内容");
 		invokedCatalogs.values().forEach(catalog -> {
-			if (toCatalog == null || catalog.getCatalogId() != toCatalog.getCatalogId()) {
+			if (toCatalog == null || !Objects.equals(catalog.getCatalogId(), toCatalog.getCatalogId())) {
 				new LambdaUpdateChainWrapper<>(contentMapper)
 						.set(CmsContent::getCatalogAncestors, catalog.getAncestors())
 						.eq(CmsContent::getCatalogId, catalog.getCatalogId()).update();
