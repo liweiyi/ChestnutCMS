@@ -25,7 +25,6 @@ import SysShortcut from '@/views/system/dashboard/shortcut'
 import ServerInfo from '@/views/system/dashboard/serverInfo'
 import CmsSiteVisitStat from '@/views/cms/dashboard/siteVisitStat'
 import CmsSiteDataStat from '@/views/cms/dashboard/siteDataStat'
-import QiGua from '@/views/xyz/dashboard/qiGua'
 
 
 export default {
@@ -35,8 +34,7 @@ export default {
     'shortcut': SysShortcut,
     'server-info': ServerInfo,
     'cms-site-visit-stat': CmsSiteVisitStat,
-    'cms-site-data-stat': CmsSiteDataStat,
-    'qi-gua': QiGua
+    'cms-site-data-stat': CmsSiteDataStat
   },
   data() {
     return {

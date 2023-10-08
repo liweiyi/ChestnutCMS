@@ -37,7 +37,7 @@ public class MemberFollowApiController extends BaseRestController {
 		String[] memberIds = StringUtils.split(targetIds, ",");
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		List<MemberFollow> list = this.memberFollowService.lambdaQuery().eq(MemberFollow::getMemberId, memberId)
-				.in(MemberFollow::getFollowMemberId, memberIds).list();
+				.in(MemberFollow::getFollowMemberId, List.of(memberIds)).list();
 		Map<String, Boolean> map = new HashMap<>(list.size());
 		list.forEach(mf -> {
 			map.put(mf.getFollowMemberId().toString(), true);

@@ -351,18 +351,6 @@
 				<version>${chestnut.version}</version>
 			</dependency>
 
-			<dependency>
-				<groupId>com.chestnut</groupId>
-				<artifactId>chestnut-common-license</artifactId>
-				<version>${chestnut.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.chestnut</groupId>
-				<artifactId>chestnut-license</artifactId>
-				<version>${chestnut.version}</version>
-			</dependency>
-
 			<!-- 瞎扩展 -->
 			<dependency>
 				<groupId>com.chestnut</groupId>
@@ -430,13 +418,6 @@
 			<dependency>
 				<groupId>com.chestnut</groupId>
 				<artifactId>chestnut-comment</artifactId>
-				<version>${chestnut.version}</version>
-			</dependency>
-
-			<!-- XYX模块 -->
-			<dependency>
-				<groupId>com.chestnut</groupId>
-				<artifactId>chestnut-xyz</artifactId>
 				<version>${chestnut.version}</version>
 			</dependency>
 
