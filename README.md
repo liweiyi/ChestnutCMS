@@ -21,9 +21,10 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 - CMS资源路径配置application.yml中chestnut.cms.resourceRoot，默认与项目同级的wwwroot_release。
 
 ### 开发环境
-- JDK17
-- MAVEN3.8
-- MYSQL8.0
+- JDK 17
+- Maven 3.8
+- MySQL 8.0
+- Redis 6.x
 
 ### 主要技术框架
 
