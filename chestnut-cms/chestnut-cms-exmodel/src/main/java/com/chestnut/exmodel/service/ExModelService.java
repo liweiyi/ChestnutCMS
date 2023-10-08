@@ -1,6 +1,7 @@
 package com.chestnut.exmodel.service;
 
 import com.chestnut.common.utils.NumberUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.service.ICatalogService;
@@ -71,7 +72,7 @@ public class ExModelService {
             dto.setLabel(f.getName());
             dto.setFieldName(CmsExtendMetaModelType.DATA_FIELD_PREFIX + f.getCode());
             dto.setControlType(f.getControlType());
-            dto.setValue(fv);
+            dto.setValue(Objects.requireNonNullElse(fv, StringUtils.EMPTY));
             dto.setOptions(XModelUtils.getOptions(f.getOptions()));
 
             IMetaControlType controlType = controlTypeMap.get(IMetaControlType.BEAN_PREFIX + f.getControlType());

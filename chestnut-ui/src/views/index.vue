@@ -34,7 +34,7 @@ export default {
     'shortcut': SysShortcut,
     'server-info': ServerInfo,
     'cms-site-visit-stat': CmsSiteVisitStat,
-    'cms-site-data-stat': CmsSiteDataStat
+    'cms-site-data-stat': CmsSiteDataStat,
   },
   data() {
     return {

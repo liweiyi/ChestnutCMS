@@ -185,6 +185,11 @@ public class ContentVO {
      * 发布通道
      */
     private String[] publishPipe;
+
+    /**
+     * 独立路径
+     */
+    private String staticPath;
     
     /**
      * 发布通道配置

@@ -169,8 +169,13 @@ public class ContentDTO {
      * 独立模板
      */
     private Map<String, Object> template;
-    
-    /**
+
+	/**
+	 * 独立路径
+	 */
+	private String staticPath;
+
+	/**
      * 备注
      */
 	private String remark;

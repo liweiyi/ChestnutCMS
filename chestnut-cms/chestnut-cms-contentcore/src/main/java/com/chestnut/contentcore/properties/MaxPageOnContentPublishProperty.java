@@ -37,12 +37,12 @@ public class MaxPageOnContentPublishProperty implements IProperty {
 	
 	@Override
 	public boolean validate(String value) {
-		return StringUtils.isEmpty(value) || NumberUtils.isCreatable(value.toString());
+		return StringUtils.isEmpty(value) || NumberUtils.isCreatable(value);
 	}
 	
 	@Override
 	public Integer defaultValue() {
-		return 5;
+		return 0;
 	}
 	
 	@Override

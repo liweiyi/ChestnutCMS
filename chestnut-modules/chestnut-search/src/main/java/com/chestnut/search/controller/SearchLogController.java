@@ -6,7 +6,6 @@ import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.domain.SearchLog;
 import com.chestnut.search.service.ISearchLogService;
