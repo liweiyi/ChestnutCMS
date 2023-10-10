@@ -141,6 +141,7 @@
 			<groupId>com.chestnut</groupId>
 			<artifactId>chestnut-cms-member</artifactId>
 		</dependency>
+
 	</dependencies>
 
 	<build>

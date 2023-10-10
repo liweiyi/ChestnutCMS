@@ -45,13 +45,15 @@ public class CommentController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.View)
 	@GetMapping
 	public R<?> getCommentList(@RequestParam(required = false) String sourceType,
-			@RequestParam(required = false) Long sourceId, @RequestParam(required = false) Long uid,
-			@RequestParam(required = false) Integer auditStatus) {
+							   @RequestParam(required = false) String sourceId,
+							   @RequestParam(required = false) Long uid,
+							   @RequestParam(required = false) Integer auditStatus) {
 		PageRequest pr = this.getPageRequest();
 
 		Page<Comment> page = this.commentService.lambdaQuery()
 				.eq(StringUtils.isNotEmpty(sourceType), Comment::getSourceType, sourceType)
-				.eq(IdUtils.validate(sourceId), Comment::getSourceId, sourceId).eq(Comment::getParentId, 0)
+				.eq(StringUtils.isNotEmpty(sourceId), Comment::getSourceId, sourceId)
+				.eq(Comment::getParentId, 0)
 				.eq(IdUtils.validate(uid), Comment::getUid, uid)
 				.eq(Objects.nonNull(auditStatus), Comment::getAuditStatus, auditStatus)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));

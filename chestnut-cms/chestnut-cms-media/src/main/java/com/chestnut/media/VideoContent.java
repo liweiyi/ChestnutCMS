@@ -87,6 +87,7 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 			if (IdUtils.validate(video.getVideoId())) {
 				CmsVideo dbVideo = oldVideoMap.get(video.getVideoId());
 				dbVideo.setTitle(video.getTitle());
+				dbVideo.setDescription(video.getDescription());
 				dbVideo.setRemark(video.getRemark());
 				dbVideo.setSortFlag(i);
 				if (!dbVideo.getPath().equals(video.getPath())) {

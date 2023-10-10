@@ -421,7 +421,6 @@
 				<version>${chestnut.version}</version>
 			</dependency>
 
-			<!-- XYX模块 -->
 			<!-- CMS Modules Start -->
 			<!-- 内容核心 -->
 			<dependency>
