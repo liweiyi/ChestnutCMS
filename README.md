@@ -1,4 +1,4 @@
-# ChestnutCMS v1.3.19
+# ChestnutCMS v1.3.20
 
 ### 系统简介
 
@@ -12,13 +12,12 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 
 企业站演示地址：<http://swikoon.1000mz.com>
 
+> 企业演示站的静态资源已提交到仓库[chestnut-cms-wwwroot](https://gitee.com/liweiyi/chestnut-cms-wwwroot)。
+
 资讯站演示地址：<http://www.1000mz.com>（会员演示账号：xxx333@126.com / a123456）
 
-图片演示地址：<http://tpz.1000mz.com>
+图片站演示地址：<http://tpz.1000mz.com>
 
-##### 演示站静态资源
-- 企业演示站的静态资源已提交到仓库[chestnut-cms-wwwroot](https://gitee.com/liweiyi/chestnut-cms-wwwroot)。
-- CMS资源路径配置application.yml中chestnut.cms.resourceRoot，默认与项目同级的wwwroot_release。
 
 ### 开发环境
 - JDK 17
@@ -48,13 +47,15 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 - [WiKi-常用配置](https://gitee.com/liweiyi/ChestnutCMS/wikis/%E5%B8%B8%E7%94%A8%E9%85%8D%E7%BD%AE%E8%AF%B4%E6%98%8E)
 - [WiKi-Docker部署说明](https://gitee.com/liweiyi/ChestnutCMS/wikis/Docker%E9%83%A8%E7%BD%B2%E8%AF%B4%E6%98%8E)
 - [WiKi-站点访问配置](https://gitee.com/liweiyi/ChestnutCMS/wikis/%E7%AB%99%E7%82%B9%E8%AE%BF%E9%97%AE%E9%85%8D%E7%BD%AE)
+- [WiKi-使用手册](https://gitee.com/liweiyi/ChestnutCMS/wikis/%E7%B3%BB%E7%BB%9F%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/%E5%BB%BA%E7%AB%99%E6%B5%81%E7%A8%8B)
+- [WiKi-模板手册](https://gitee.com/liweiyi/ChestnutCMS/wikis/%E6%A8%A1%E6%9D%BF%E6%89%8B%E5%86%8C/%E6%A8%A1%E6%9D%BF%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F%E8%AF%B4%E6%98%8E)
+- [WiKi-二次开发手册](https://gitee.com/liweiyi/ChestnutCMS/wikis/%E4%BA%8C%E6%AC%A1%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C/%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1)
 - [WiKi-常见问题](https://gitee.com/liweiyi/ChestnutCMS/wikis/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
 - [WiKi-版权声明](https://gitee.com/liweiyi/ChestnutCMS/wikis/%E7%89%88%E6%9D%83%E5%A3%B0%E6%98%8E)
 - [WiKi-免责声明](https://gitee.com/liweiyi/ChestnutCMS/wikis/%E5%85%8D%E8%B4%A3%E5%A3%B0%E6%98%8E)
 - [WiKi-版本变更日志](https://gitee.com/liweiyi/ChestnutCMS/wikis/%E7%89%88%E6%9C%AC%E5%8F%98%E6%9B%B4%E6%97%A5%E5%BF%97)
 
 ### 功能模块
-
 
 | 模块           | 简介                                           |
 |--------------|----------------------------------------------|
@@ -100,12 +101,13 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 | 缓存监控         | 对系统的缓存信息查询，命令统计等                             |
 | GroovyScript | 支持Groovy脚本在线执行                               |
 
-#### 如果本项目对您有一丢丢小帮助 :kissing_heart: 点个小星星吧 :star2: 
+### 开源协议补充说明
 
-#### QQ交流群： 568506424  口令：举个栗子
+1. ChestnutCMS 遵循《Apache-2.0开源协议》，使用本系统不得用于违反国家有关政策的相关软件和应用。
+2. 系统可免费商用，但是必须包含原始版权声明和许可声明 ，不可移除后台登录页面底部的版权申明“Copyright © 2022-2023 ChestnutCMS (1000mz.com) All Rights Reserved.”。
+3. 本项目所包含的第三方源码版权信息需另行标注。
 
-> 开源协议补充说明：
-> 
-> - ChestnutCMS 遵循《Apache-2.0开源协议》，使用本系统不得用于违反国家有关政策的相关软件和应用。
-> - 系统可免费商用，但是必须包含原始版权声明和许可声明 ，不可移除后台登录页面底部的版权申明”Copyright © 2022-2023 1000mz.com All Rights Reserved“.
-> - 本项目所包含的第三方源码版权信息需另行标注。
+### QQ交流群
+群号：568506424  口令：举个栗子
+
+如果本项目对您有一丢丢小帮助 :kissing_heart: 点个小星星吧 :star2:
