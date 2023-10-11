@@ -21,22 +21,22 @@ public interface IPageWidgetType {
 	/**
 	 * 唯一标识：类型Id
 	 */
-	public String getId();
+	String getId();
 	
 	/**
 	 * 类型名
 	 */
-	public String getName();
+	String getName();
 	
 	/**
 	 * 类型图标
 	 */
-	public String getIcon();
+	String getIcon();
 	
 	/**
 	 * 获取路由地址
 	 */
-	public String getRoute();
+	String getRoute();
 
 	/**
 	 * 加载部件数据详情
@@ -44,14 +44,14 @@ public interface IPageWidgetType {
 	 * @param pageWidget
 	 * @return
 	 */
-	public IPageWidget loadPageWidget(CmsPageWidget pageWidget);
+	IPageWidget loadPageWidget(CmsPageWidget pageWidget);
 
 	
-	default public Class<?> getAddDTOClass() {
+	default Class<?> getAddDTOClass() {
 		return PageWidgetAddDTO.class;
 	}
 
-	default public Class<?> getEditDTOClass() {
+	default Class<?> getEditDTOClass() {
 		return PageWidgetEditDTO.class;
 	}
 
@@ -61,21 +61,21 @@ public interface IPageWidgetType {
 	 * @param pageWidget
 	 * @return
 	 */
-	public PageWidgetVO getPageWidgetVO(CmsPageWidget pageWidget);
+	PageWidgetVO getPageWidgetVO(CmsPageWidget pageWidget);
 
 	/**
 	 * 创建页面部件实例
 	 * 
 	 * @return
 	 */
-	public IPageWidget newInstance();
+	IPageWidget newInstance();
 
 	/**
 	 * 获取模板页面部件内容
 	 * 
-	 * @param content
+	 * @param pageWidget
 	 * @param isPreview
 	 * @return
 	 */
-	public Object parseContent(CmsPageWidget pageWidget, String publishPipeCode, boolean isPreview);
+	Object parseContent(CmsPageWidget pageWidget, String publishPipeCode, boolean isPreview);
 }

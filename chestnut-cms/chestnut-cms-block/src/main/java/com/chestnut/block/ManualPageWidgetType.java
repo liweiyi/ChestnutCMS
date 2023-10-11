@@ -76,13 +76,14 @@ public class ManualPageWidgetType implements IPageWidgetType {
 	
 	@Override
 	public List<RowData> parseContent(CmsPageWidget pageWidget, String publishPipeCode, boolean isPreview) {
-		List<RowData> list = List.of();
+		List<RowData> list = null;
 		if (StringUtils.isNotEmpty(pageWidget.getContent())) {
 			list = JacksonUtils.fromList(pageWidget.getContent(), RowData.class);
-			if (list == null) {
-				list = List.of();
-			}
 		}
+		if (list == null) {
+			list = List.of();
+		}
+		list.forEach(rd -> rd.getItems().forEach(item -> item.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(item.logo))));
 		return list;
 	}
 	

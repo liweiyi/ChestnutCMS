@@ -45,6 +45,7 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('CMS.PageWidget.Code')" align="left" prop="code" />
+      <el-table-column :label="$t('CMS.PageWidget.Type')" align="center" prop="type" width="100" />
       <el-table-column :label="$t('CMS.Content.Status')" align="center" width="100">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.CMSPageWidgetStatus" :value="scope.row.state"/>

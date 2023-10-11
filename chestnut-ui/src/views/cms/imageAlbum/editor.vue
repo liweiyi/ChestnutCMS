@@ -24,7 +24,7 @@
               </el-row>
               <el-row>
                 <el-form-item :label="$t('CMS.Image.Summary')">
-                  <el-input type="textarea" :rows="2" v-model="item.desc"></el-input>
+                  <el-input type="textarea" :rows="2" v-model="item.description"></el-input>
                 </el-form-item>
               </el-row>
               <el-row>

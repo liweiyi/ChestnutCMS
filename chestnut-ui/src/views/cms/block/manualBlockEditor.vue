@@ -179,9 +179,9 @@
           <el-form-item :label="$t('CMS.Block.Summary')" prop="summary">
             <el-input type="textarea" v-model="form_item.summary" />
           </el-form-item>
-          <el-form-item :label="$t('CMS.Block.Date')" prop="date">
+          <el-form-item :label="$t('CMS.Block.Date')" prop="publishDate">
             <el-date-picker
-              v-model="form_item.date"
+              v-model="form_item.publishDate"
               type="datetime"
               value-format="yyyy-MM-dd HH:mm:ss">
             </el-date-picker>
@@ -390,28 +390,35 @@ export default {
     },
     handleContentSelectorOk(contents) {
       if (contents && contents.length > 0) {
-        this.form_item.title = contents[0].title;
-        this.form_item.logo = contents[0].logo;
-        this.form_item.logoSrc = contents[0].logoSrc;
-        this.form_item.publishDate = contents[0].publishDate;
-        this.form_item.url = contents[0].internalUrl;
-        this.form_item.summary = contents[0].summary;
+        this.form_item = {
+          title: contents[0].title,
+          logo: contents[0].logo || '',
+          logoSrc: contents[0].logoSrc || '',
+          publishDate: contents[0].publishDate || '',
+          url: contents[0].internalUrl || '',
+          summary: contents[0].summary || ''
+        }
         this.openContentSelector = false;
       } else {
         this.$modal.msgWarning(this.$t('Common.SelectFirst'));
       }
+      console.log(this.form_item)
     },
     handleContentSelectorClose() {
       this.openContentSelector = false;
     },
     handleCatalogSelectorOk(catalogs) {
       if (catalogs && catalogs.length > 0) {
-        this.form_item.title = catalogs[0].name;
-        this.form_item.logo = catalogs[0].props.logo;
-        this.form_item.logoSrc = catalogs[0].props.logoSrc;
-        this.form_item.url = catalogs[0].props.internalUrl;
-        this.form_item.summary = catalogs[0].props.description;
+        this.form_item = {
+          title: catalogs[0].name,
+          logo: catalogs[0].props.logo || '',
+          logoSrc: catalogs[0].props.logoSrc || '',
+          publishDate: '',
+          url: catalogs[0].props.internalUrl || '',
+          summary: catalogs[0].props.description || ''
+        }
       }
+      console.log(this.form_item)
       this.openCatalogSelector = false;
     },
     handleCatalogSelectorClose() {
