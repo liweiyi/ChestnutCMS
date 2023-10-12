@@ -3,6 +3,9 @@ package com.chestnut.advertisement.template.tag;
 import java.util.List;
 import java.util.Map;
 
+import com.chestnut.common.staticize.tag.TagAttrOption;
+import com.chestnut.contentcore.fixed.config.SiteApiUrl;
+import com.chestnut.contentcore.properties.SiteApiUrlProperty;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
@@ -32,23 +35,28 @@ public class CmsAdvertisementTag extends AbstractListTag {
 	public final static String TAG_NAME = "cms_advertisement";
 	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
 	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
-	
+
 	final static String TagAttr_Code = "code";
+	final static String TagAttr_RedirectType = "type";
 
 	private final IAdvertisementService advertisementService;
-	
+
 	private final IPageWidgetService pageWidgetService;
-	
+
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
 		tagAttrs.add(new TagAttr(TagAttr_Code, true, TagAttrDataType.STRING, "广告位编码"));
+		tagAttrs.add(new TagAttr(TagAttr_RedirectType, false, TagAttrDataType.STRING, "广告跳转方式",
+				RedirectType.toTagAttrOptions(), RedirectType.None.name()));
 		return tagAttrs;
 	}
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
 		String code = MapUtils.getString(attrs, TagAttr_Code);
+		String redirectType = MapUtils.getString(attrs, TagAttr_RedirectType, RedirectType.None.name());
+
 		Long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
 		CmsPageWidget adSpace = this.pageWidgetService.getOne(new LambdaQueryWrapper<CmsPageWidget>()
 				.eq(CmsPageWidget::getSiteId, siteId)
@@ -66,7 +74,16 @@ public class CmsAdvertisementTag extends AbstractListTag {
 		if (pageIndex > 1 & pageResult.getRecords().size() == 0) {
 			throw new TemplateException(StringUtils.messageFormat("Page data empty: pageIndex = {0}", pageIndex), env) ;
 		}
-		List<AdvertisementVO> list = pageResult.getRecords().stream().map(AdvertisementVO::new).toList();
+		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
+		List<AdvertisementVO> list = pageResult.getRecords().stream().map(ad ->{
+			AdvertisementVO vo = new AdvertisementVO(ad);
+			if (RedirectType.isStat(redirectType)) {
+				vo.setLink(this.advertisementService.getAdvertisementStatLink(ad, context.getPublishPipeCode()));
+			} else {
+				vo.setLink(vo.getRedirectUrl());
+			}
+			return vo;
+		}).toList();
 		return TagPageData.of(list, pageResult.getTotal());
 	}
 
@@ -79,9 +96,31 @@ public class CmsAdvertisementTag extends AbstractListTag {
 	public String getName() {
 		return NAME;
 	}
-	
+
 	@Override
 	public String getDescription() {
 		return DESC;
+	}
+
+	private enum RedirectType {
+		None("原始链接"),
+		Stat("统计链接");
+
+		private final String desc;
+
+		RedirectType(String desc) {
+			this.desc = desc;
+		}
+
+		static boolean isStat(String level) {
+			return Stat.name().equalsIgnoreCase(level);
+		}
+
+		static List<TagAttrOption> toTagAttrOptions() {
+			return List.of(
+					new TagAttrOption(None.name(), None.desc),
+					new TagAttrOption(Stat.name(), Stat.desc)
+			);
+		}
 	}
 }

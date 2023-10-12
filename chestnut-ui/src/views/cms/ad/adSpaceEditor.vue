@@ -27,6 +27,14 @@
           size="mini"
           @click="handlePreview">{{ $t('CMS.ContentCore.Preview') }}</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button 
+          plain
+          type="info"
+          icon="el-icon-back"
+          size="mini"
+          @click="handleGoBack">{{ $t('Common.GoBack') }}</el-button>
+      </el-col>
     </el-row>
     <el-form 
       ref="form"
@@ -370,7 +378,16 @@ export default {
         this.$modal.msgSuccess(response.msg);
         this.loadAdvertisementList();
       });
-    }
+    },
+    handleGoBack() {
+      if (this.$route.query.from == 'pagewidget') {
+        const obj = { name: "Content", params: { tab: "pageWdiget" } };
+        this.$tab.closeOpenPage(obj);
+      } else {
+        const obj = { name: "Advertisement" };
+        this.$tab.closeOpenPage(obj);
+      }
+    },
   }
 };
 </script>

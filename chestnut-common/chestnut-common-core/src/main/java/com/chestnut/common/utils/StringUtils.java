@@ -5,6 +5,8 @@ import org.springframework.util.AntPathMatcher;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -165,6 +167,29 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	 */
 	public static String trim(String str) {
 		return (str == null ? "" : str.trim());
+	}
+
+	public static String firstNotBlankStr(String... strArr) {
+		return filterFirst(StringUtils::isNotBlank, strArr);
+	}
+
+	/**
+	 * 获取符合条件的第一个字符串
+	 *
+	 * @param predicate
+	 * @param strArr
+	 * @return
+	 */
+	public static String filterFirst(Predicate<String> predicate, String... strArr) {
+		if (isEmpty(strArr)) {
+			return null;
+		}
+		for (int i = 0; i < strArr.length; i++) {
+			if (predicate.test(strArr[i])) {
+				return strArr[i];
+			}
+		}
+		return null;
 	}
 
 	/**

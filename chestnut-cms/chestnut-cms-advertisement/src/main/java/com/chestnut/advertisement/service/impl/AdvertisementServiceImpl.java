@@ -1,9 +1,14 @@
 package com.chestnut.advertisement.service.impl;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.properties.SiteApiUrlProperty;
+import com.chestnut.contentcore.service.ISiteService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +49,8 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 	private final Map<String, IAdvertisementType> advertisementTypes;
 
 	private final IPageWidgetService pageWidgetService;
+
+	private final ISiteService siteService;
 
 	@Override
 	public IAdvertisementType getAdvertisementType(String typeId) {
@@ -122,5 +129,13 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 		}
 		this.updateBatchById(list);
 		// todo 重新发布
+	}
+
+	@Override
+	public String getAdvertisementStatLink(CmsAdvertisement adv, String publishPipeCode) {
+		CmsSite site = this.siteService.getSite(adv.getSiteId());
+		String apiUrl = SiteApiUrlProperty.getValue(site, publishPipeCode);
+		return apiUrl + "api/adv/redirect?sid=" + adv.getSiteId() + "&aid=" + adv.getAdvertisementId()
+				+ "&url=" + URLEncoder.encode(adv.getRedirectUrl(), StandardCharsets.UTF_8);
 	}
 }

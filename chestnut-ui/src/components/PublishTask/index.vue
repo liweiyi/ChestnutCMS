@@ -18,17 +18,37 @@ export default {
   name: "CMSPublishTask",
   data() {
     return {
-      taskCount: 0
+      taskCount: 0,
+      interval: undefined,
+      taskZeroTimes: 0
     }
   },
   created() {
-    // 每5秒更新一次数据
-    setInterval(this.loadPublishTaskCount, 5000); 
+    setInterval(this.checkPublishFlag, 2000); 
   },
   methods: {
+    checkPublishFlag() {
+      if (this.$cache.local.get('publish_flag') === 'true') {
+        if (!this.interval) {
+          this.interval = setInterval(this.loadPublishTaskCount, 5000); 
+          this.taskZeroTimes = 0;
+        }
+      } else {
+        if (this.interval) {
+          clearInterval(this.interval)
+          this.interval = undefined;
+        }
+      }
+    },
     loadPublishTaskCount() {
       getPublishTaskCount().then(res => {
         this.taskCount = res.data;
+        if (this.taskCount == 0) {
+          this.taskZeroTimes++;
+          if (this.taskZeroTimes == 3) {
+            this.$cache.local.set('publish_flag', '')
+          }
+        }
       })
     },
     handleCommand(command) {

@@ -215,7 +215,7 @@ export default {
       this.dialogVisible = true;
     },
     handleEdit(row) {
-      this.$router.push({ path: "/cms/adspace/editor", query: { id: row.pageWidgetId } });
+      this.$router.push({ path: "/cms/adspace/editor", query: { id: row.pageWidgetId, from: "adspace" } });
     },
     handleDialogClose(reload) {
       this.dialogVisible = false;

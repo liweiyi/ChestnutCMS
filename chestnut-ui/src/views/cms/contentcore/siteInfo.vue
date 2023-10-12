@@ -367,6 +367,7 @@ export default {
             this.taskId = response.data;
             this.progressTitle = this.$t('CMS.ContentCore.PublishProgressTitle');
             this.openProgress = true;
+            this.$cache.local.set('publish_flag', "true")
           }
         } else {
           this.$modal.msgError(response.msg);

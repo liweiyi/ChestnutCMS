@@ -241,7 +241,7 @@ export default {
                     return callback(new Error(this.$t('MetaModel.RuleTips.FieldMappingName')));
                   }
                   for(let i = 0; i < this.fieldList.length; i++) {
-                    if (this.fieldList[i].fieldName == value) {
+                    if (this.fieldList[i].fieldName == value && this.fieldList[i].fieldId != this.form.fieldId) {
                       return callback(new Error(this.$t('MetaModel.RuleTips.FieldMappingUsed')));
                     }
                   }

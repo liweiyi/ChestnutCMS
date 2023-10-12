@@ -41,7 +41,7 @@ export default {
   data () {
     return {
       loading: false,
-      activeName: 'contentList',
+      activeName: this.$route.params.tab || 'contentList',
       selectedCatalogId: '',
     };
   },

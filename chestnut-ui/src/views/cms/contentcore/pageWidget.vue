@@ -258,12 +258,12 @@ export default {
     },
     handleRowClick (currentRow) {
       this.toggleAllCheckedRows();
-      this.$refs.tableContentList.toggleRowSelection(currentRow);
+      this.$refs.pageWidgetList.toggleRowSelection(currentRow);
       this.selectedRows.push(currentRow);
     },
     toggleAllCheckedRows() {
       this.selectedRows.forEach(row => {
-          this.$refs.tableContentList.toggleRowSelection(row, false);
+          this.$refs.pageWidgetList.toggleRowSelection(row, false);
       });
       this.selectedRows = [];
     },
@@ -296,7 +296,7 @@ export default {
       }).catch(() => {});
     },
     handleEdit(row) {
-      this.$router.push({ path: row.route, query: { id: row.pageWidgetId } });
+      this.$router.push({ path: row.route, query: { id: row.pageWidgetId, from: "pagewidget" } });
     },
     handlePublish(row) {
       const pageWidgetIds = [ row.pageWidgetId ];

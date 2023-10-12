@@ -10,6 +10,7 @@ import com.chestnut.common.db.domain.DBTable;
 import com.chestnut.common.db.domain.DBTableColumn;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.ConvertUtils;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
@@ -116,7 +117,7 @@ public class ModelServiceImpl extends ServiceImpl<XModelMapper, XModel>
 						XModelField field = new XModelField();
 						field.setFieldId(IdUtils.getSnowflakeId());
 						field.setModelId(model.getModelId());
-						field.setName(column.getLabel());
+						field.setName(StringUtils.firstNotBlankStr(column.getLabel(), column.getComment(), column.getName()));
 						field.setCode(column.getName());
 						field.setFieldName(column.getName());
 						field.setMandatoryFlag(column.isNullable() ? YesOrNo.NO : YesOrNo.YES);

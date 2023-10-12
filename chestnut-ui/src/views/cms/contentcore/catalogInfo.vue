@@ -466,6 +466,7 @@ export default {
         this.progressTitle = this.$t('CMS.Catalog.PublishProgressTitle');
         this.progressType = "Publish";
         this.openProgress = true;
+        this.$cache.local.set('publish_flag', "true")
       }); 
     },
     handleDelete () {

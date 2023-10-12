@@ -489,6 +489,7 @@ export default {
         this.$modal.closeLoading();
         this.$modal.msgSuccess(this.$t('CMS.ContentCore.PublishSuccess'))
         this.loadContentList();
+        this.$cache.local.set('publish_flag', "true")
       }).catch(() => {
         this.$modal.closeLoading();
       });

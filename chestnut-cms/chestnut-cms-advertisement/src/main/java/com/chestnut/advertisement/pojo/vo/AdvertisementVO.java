@@ -70,6 +70,11 @@ public class AdvertisementVO {
      * 跳转链接
      */
     private String redirectUrl;
+
+    /**
+     * 跳转链接（可设置为中转地址）
+     */
+    private String link;
     
     /**
      * 素材链接

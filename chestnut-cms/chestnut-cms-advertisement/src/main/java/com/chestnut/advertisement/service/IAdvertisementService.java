@@ -17,65 +17,68 @@ public interface IAdvertisementService extends IService<CmsAdvertisement> {
 	/**
 	 * 广告<ID, NAME>缓存集合
 	 * 
-	 * @return
+	 * @return Map
 	 */
 	Map<String, String> getAdvertisementMap();
 	
 	/**
 	 * 添加广告数据
 	 * 
-	 * @param pw
-	 * @return
-	 * @throws IOException
+	 * @param dto 广告数据DTO
+	 * @return CmsAdvertisement
 	 */
-	public CmsAdvertisement addAdvertisement(AdvertisementDTO dto);
+	CmsAdvertisement addAdvertisement(AdvertisementDTO dto);
 	
 	/**
 	 * 修改广告数据
 	 * 
-	 * @param dto
-	 * @return
-	 * @throws IOException
+	 * @param dto 广告数据DTO
+	 * @return CmsAdvertisement
 	 */
-	public CmsAdvertisement saveAdvertisement(AdvertisementDTO dto);
+	CmsAdvertisement saveAdvertisement(AdvertisementDTO dto);
 	
 	/**
 	 * 删除广告数据
 	 * 
-	 * @param advertisementIds
-	 * @return
-	 * @throws IOException
+	 * @param advertisementIds 广告ID列表
 	 */
-	public void deleteAdvertisement(List<Long> advertisementIds);
+	void deleteAdvertisement(List<Long> advertisementIds);
 
 	/**
 	 * 获取广告类型
 	 * 
-	 * @param typeId
-	 * @return
+	 * @param typeId 广告类型唯一标识
+	 * @return 广告类型实例
 	 */
-	public IAdvertisementType getAdvertisementType(String typeId);
+	IAdvertisementType getAdvertisementType(String typeId);
 
 	/**
 	 * 广告类型列表
 	 * 
-	 * @return
+	 * @return 广告类型实例列表
 	 */
-	public List<IAdvertisementType> getAdvertisementTypeList();
+	List<IAdvertisementType> getAdvertisementTypeList();
 
 	/**
 	 * 启用广告
 	 * 
-	 * @param advertisementIds
-	 * @return
+	 * @param advertisementIds 广告ID列表
 	 */
-	public void enableAdvertisement(List<Long> advertisementIds, String operator);
+	void enableAdvertisement(List<Long> advertisementIds, String operator);
 
 	/**
 	 * 停用广告
 	 * 
-	 * @param advertisementIds
-	 * @return
+	 * @param advertisementIds 广告ID列表
 	 */
-	public void disableAdvertisement(List<Long> advertisementIds, String operator);
+	void disableAdvertisement(List<Long> advertisementIds, String operator);
+
+	/**
+	 * 获取广告点击统计地址
+	 *
+	 * @param adv 广告数据
+	 * @param publishPipeCode 发布通道编码
+	 * @return 广告点击统计地址
+	 */
+    String getAdvertisementStatLink(CmsAdvertisement adv, String publishPipeCode);
 }

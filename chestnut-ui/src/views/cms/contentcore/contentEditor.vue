@@ -486,6 +486,7 @@ export default {
     doPublishContent() {
       publishContent([ this.form.contentId ]).then(response => {
           this.$modal.msgSuccess(this.$t('CMS.ContentCore.PublishSuccess'));
+          this.$cache.local.set('publish_flag', "true")
       });
     },
     handleProgressClose (result) {
