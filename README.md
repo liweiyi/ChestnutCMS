@@ -14,7 +14,7 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 
 > 企业演示站的静态资源已提交到仓库[chestnut-cms-wwwroot](https://gitee.com/liweiyi/chestnut-cms-wwwroot)。
 
-资讯站演示地址：<http://www.1000mz.com>（会员演示账号：xxx333@126.com / a123456）
+资讯站演示地址：<http://news.1000mz.com>（会员演示账号：xxx333@126.com / a123456）
 
 图片站演示地址：<http://tpz.1000mz.com>
 
