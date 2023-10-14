@@ -43,6 +43,8 @@ public class PageBarTag extends AbstractTag {
 
 	final static String TagAttr_Type = "type";
 	final static String TagAttr_Target = "target";
+	final static String TagAttr_First = "first";
+	final static String TagAttr_Last = "last";
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
@@ -51,6 +53,8 @@ public class PageBarTag extends AbstractTag {
 				PageBarType.toTagAttrOptions(), PageBarType.Simple.name()));
 		tagAttrs.add(new TagAttr(TagAttr_Target, false, TagAttrDataType.STRING, "链接打开方式",
 				LinkTarget.toTagAttrOptions(), LinkTarget._self.name()));
+		tagAttrs.add(new TagAttr(TagAttr_First, false, TagAttrDataType.STRING, "首页链接名称", "首页"));
+		tagAttrs.add(new TagAttr(TagAttr_Last, false, TagAttrDataType.STRING, "末页链接名称", "末页"));
 		return tagAttrs;
 	}
 
@@ -59,22 +63,24 @@ public class PageBarTag extends AbstractTag {
 			throws TemplateException, IOException {
 		String type = MapUtils.getString(attrs, TagAttr_Type, PageBarType.Simple.name());
 		String target = MapUtils.getString(attrs, TagAttr_Target, LinkTarget._self.name());
+		String firstPage = MapUtils.getString(attrs, TagAttr_First, "首页");
+		String lastPage = MapUtils.getString(attrs, TagAttr_Last, "末页");
 
 		env.getOut().write(switch (PageBarType.valueOf(type)) {
-			case Mini -> generateMinPageBar(target, env);
-			case Simple -> generateSimplePageBar(target, env);
+			case Mini -> generateMinPageBar(target, firstPage, lastPage, env);
+			case Simple -> generateSimplePageBar(target, firstPage, lastPage, env);
 		});
 		return null;
 	}
 
-	private String generateMinPageBar(String target, Environment env)
+	private String generateMinPageBar(String target, String firstPage, String lastPage, Environment env)
 			throws TemplateException {
-		return generatePageBar(target, false, env);
+		return generatePageBar(target, firstPage, lastPage, false, env);
 	}
 
-	private String generateSimplePageBar(String target, Environment env)
+	private String generateSimplePageBar(String target, String firstPage, String lastPage, Environment env)
 			throws TemplateException {
-		return generatePageBar(target, true, env);
+		return generatePageBar(target, firstPage, lastPage, true, env);
 	}
 
 	/**
@@ -82,7 +88,7 @@ public class PageBarTag extends AbstractTag {
 	 * [首页]...[2][3][4] 5 [6][7][8]...[末页]
 	 * 最多显示7个页码，当前页前后各三个
 	 */
-	private String generatePageBar(String target, boolean withFirstAndLast, Environment env)
+	private String generatePageBar(String target, String firstPage, String lastPage, boolean withFirstAndLast, Environment env)
 			throws TemplateException {
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		int pageCount = Long.valueOf((context.getPageTotal() + context.getPageSize() - 1 ) / context.getPageSize()).intValue();
@@ -100,7 +106,7 @@ public class PageBarTag extends AbstractTag {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<div class=\"pagination\">");
 		if (withFirstAndLast && startPage > 1) {
-			sb.append(StringUtils.messageFormat(temp, firstPageLink, "", target, "首页"));
+			sb.append(StringUtils.messageFormat(temp, firstPageLink, "", target, firstPage));
 			sb.append("<a href=\"javascript:;\" class=\"page_white\">...</a>");
 		}
 		for (int i = startPage; i <= endPage; i++) {
@@ -114,7 +120,7 @@ public class PageBarTag extends AbstractTag {
 		}
 		if (withFirstAndLast && endPage < pageCount) {
 			sb.append("<a href=\"javascript:;\" class=\"page_white\">...</a>");
-			sb.append(StringUtils.messageFormat(temp, StringUtils.messageFormat(otherPageLink, pageCount), "", target, "末页"));
+			sb.append(StringUtils.messageFormat(temp, StringUtils.messageFormat(otherPageLink, pageCount), "", target, lastPage));
 		}
 		sb.append("</div>");
 		return sb.toString();
