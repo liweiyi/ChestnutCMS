@@ -1,6 +1,5 @@
 package com.chestnut.system.controller;
 
-import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
@@ -47,11 +46,7 @@ public class SysLoginController extends BaseRestController {
 
 	private final ISysRoleService roleService;
 
-	private final ISysPermissionService permissionService;
-
 	private final ISysLogininforService logininfoService;
-
-	private final AsyncTaskManager asyncTaskManager;
 
 	/**
 	 * 登录方法
@@ -73,9 +68,9 @@ public class SysLoginController extends BaseRestController {
 			if (StpAdminUtil.isLogin()) {
 				LoginUser loginUser = StpAdminUtil.getLoginUser();
 				StpAdminUtil.logout();
-				asyncTaskManager.execute(this.logininfoService.recordLogininfor(loginUser.getUserType(),
+				this.logininfoService.recordLogininfor(loginUser.getUserType(),
 						loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.SUCCESS,
-						StringUtils.EMPTY));
+						StringUtils.EMPTY);
 			}
 		} catch (Exception e) {
 

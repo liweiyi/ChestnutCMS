@@ -99,7 +99,6 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 
 	@Override
 	public AsyncTask publishAll(CmsSite site, final String contentStatus, final LoginUser operator) {
-		String taskId = "Publish-Site-" + site.getSiteId();
 		AsyncTask asyncTask = new AsyncTask() {
 
 			@Override
@@ -164,7 +163,8 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			}
 		};
 		asyncTask.setType("Publish");
-		asyncTask.setTaskId(taskId);
+		asyncTask.setTaskId("Publish-Site-" + site.getSiteId());
+		asyncTask.setInterruptible(true);
 		this.asyncTaskManager.execute(asyncTask);
 		return asyncTask;
 	}
@@ -335,6 +335,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		};
 		asyncTask.setType("Publish");
 		asyncTask.setTaskId("Publish-Catalog-" + catalog.getCatalogId());
+		asyncTask.setInterruptible(true);
 		this.asyncTaskManager.execute(asyncTask);
 		return asyncTask;
 	}
@@ -459,16 +460,6 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		return detailTemplate;
 	}
 
-	private String getContentExTemplate(CmsSite site, CmsCatalog catalog, CmsContent content, String publishPipeCode) {
-		String exTemplate = PublishPipeProp_ContentExTemplate.getValue(publishPipeCode,
-				content.getPublishPipeProps());
-		if (StringUtils.isEmpty(exTemplate)) {
-			// 无内容独立扩展模板取栏目配置
-			exTemplate = PublishPipeProp_ContentExTemplate.getValue(publishPipeCode, catalog.getPublishPipeProps());
-		}
-		return exTemplate;
-	}
-
 	@Override
 	public String getContentPageData(CmsContent content, int pageIndex, String publishPipeCode, boolean isPreview)
 			throws IOException, TemplateException {
@@ -517,46 +508,39 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		if (list.isEmpty()) {
 			return;
 		}
-		AsyncTask asyncTask = new AsyncTask() {
+		asyncTaskManager.execute(() -> {
+			// 发布内容
+			Set<Long> catalogIds = new HashSet<>();
+			for (CmsContent cmsContent : list) {
+				IContentType contentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
+				IContent<?> content = contentType.loadContent(cmsContent);
+				content.setOperator(operator);
 
-			@Override
-			public void run0() {
-				// 发布内容
-				Set<Long> catalogIds = new HashSet<>();
-				for (CmsContent cmsContent : list) {
-					IContentType contentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
-					IContent<?> content = contentType.loadContent(cmsContent);
-					content.setOperator(operator);
-
-					catalogIds.add(cmsContent.getCatalogId());
-					if (content.publish()) {
-						applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
-					}
+				catalogIds.add(cmsContent.getCatalogId());
+				if (content.publish()) {
+					applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
 				}
-				// 发布关联栏目：内容所属栏目及其所有父级栏目
-				Map<Long, CmsCatalog> catalogMap = new HashMap<>();
-				catalogIds.forEach(catalogId -> {
-					CmsCatalog catalog = catalogService.getCatalog(catalogId);
-					catalogMap.put(catalog.getCatalogId(), catalog);
-					long parentId = catalog.getParentId();
-					while (parentId > 0) {
-						CmsCatalog parent = catalogService.getCatalog(parentId);
-						if (parent == null) {
-							break;
-						}
-						catalogMap.put(parent.getCatalogId(), parent);
-						parentId = parent.getParentId();
-					}
-				});
-				CmsSite site = siteService.getSite(list.get(0).getSiteId());
-				catalogMap.values().forEach(c -> asyncPublishCatalog(c));
-				// 发布站点首页
-				asyncPublishSite(site);
 			}
-		};
-		asyncTask.setType("Publish");
-		asyncTask.setTaskId("Publish-Content");
-		this.asyncTaskManager.execute(asyncTask);
+			// 发布关联栏目：内容所属栏目及其所有父级栏目
+			Map<Long, CmsCatalog> catalogMap = new HashMap<>();
+			catalogIds.forEach(catalogId -> {
+				CmsCatalog catalog = catalogService.getCatalog(catalogId);
+				catalogMap.put(catalog.getCatalogId(), catalog);
+				long parentId = catalog.getParentId();
+				while (parentId > 0) {
+					CmsCatalog parent = catalogService.getCatalog(parentId);
+					if (parent == null) {
+						break;
+					}
+					catalogMap.put(parent.getCatalogId(), parent);
+					parentId = parent.getParentId();
+				}
+			});
+			CmsSite site = siteService.getSite(list.get(0).getSiteId());
+			catalogMap.values().forEach(this::asyncPublishCatalog);
+			// 发布站点首页
+			asyncPublishSite(site);
+		});
 	}
 
 	@Override
@@ -792,7 +776,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			templateType.initTemplateData(site.getSiteId(), templateContext);
 			// staticize
 			this.staticizeService.process(templateContext);
-			logger.debug("[{0}]页面部件模板解析：{1}，耗时：{2}ms", pw.getPublishPipeCode(), pw.getCode(), System.currentTimeMillis() - s);
+			logger.debug("[{}]页面部件模板解析：{}，耗时：{}ms", pw.getPublishPipeCode(), pw.getCode(), System.currentTimeMillis() - s);
 		} catch (TemplateException | IOException e) {
 			logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]页面部件模板解析失败：{1}#{2}",
 					pw.getPublishPipeCode(), pw.getName(), pw.getCode())), e);

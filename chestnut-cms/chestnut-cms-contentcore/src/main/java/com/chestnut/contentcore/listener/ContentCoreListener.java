@@ -181,38 +181,33 @@ public class ContentCoreListener {
 	public void afterContentOffline(AfterContentOfflineEvent event) {
 		final Long contentId = event.getContent().getContentEntity().getContentId();
 		final String operator = event.getContent().getOperator().getUsername();
-		AsyncTask task = new AsyncTask() {
-
-			@Override
-			public void run0() throws Exception {
-				// 映射关联内容同步下线
-				List<CmsContent> mappingList = contentService.lambdaQuery()
-						.gt(CmsContent::getCopyType, ContentCopyType.Mapping)
-						.eq(CmsContent::getCopyId, contentId).list();
-				for (CmsContent c : mappingList) {
-					if (ContentStatus.PUBLISHED == c.getStatus()) {
-						try {
-							contentService.deleteStaticFiles(c);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+		asyncTaskManager.execute(() -> {
+			// 映射关联内容同步下线
+			List<CmsContent> mappingList = contentService.lambdaQuery()
+					.gt(CmsContent::getCopyType, ContentCopyType.Mapping)
+					.eq(CmsContent::getCopyId, contentId).list();
+			for (CmsContent c : mappingList) {
+				if (ContentStatus.PUBLISHED == c.getStatus()) {
+					try {
+						contentService.deleteStaticFiles(c);
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
-					c.setStatus(ContentStatus.OFFLINE);
-					c.updateBy(operator);
 				}
-				contentService.updateBatchById(mappingList);
-				// 标题内容同步下线
-				String internalUrl = InternalUrlUtils.getInternalUrl(InternalDataType_Content.ID, contentId);
-				List<CmsContent> linkList = contentService.lambdaQuery().eq(CmsContent::getLinkFlag, YesOrNo.YES)
-						.eq(CmsContent::getRedirectUrl, internalUrl).list();
-				for (CmsContent c : linkList) {
-					c.setStatus(ContentStatus.OFFLINE);
-					c.updateBy(operator);
-				}
-				mappingList.addAll(linkList);
-				contentService.updateBatchById(mappingList);
+				c.setStatus(ContentStatus.OFFLINE);
+				c.updateBy(operator);
 			}
-		};
-		this.asyncTaskManager.execute(task);
+			contentService.updateBatchById(mappingList);
+			// 标题内容同步下线
+			String internalUrl = InternalUrlUtils.getInternalUrl(InternalDataType_Content.ID, contentId);
+			List<CmsContent> linkList = contentService.lambdaQuery().eq(CmsContent::getLinkFlag, YesOrNo.YES)
+					.eq(CmsContent::getRedirectUrl, internalUrl).list();
+			for (CmsContent c : linkList) {
+				c.setStatus(ContentStatus.OFFLINE);
+				c.updateBy(operator);
+			}
+			mappingList.addAll(linkList);
+			contentService.updateBatchById(mappingList);
+		});
 	}
 }

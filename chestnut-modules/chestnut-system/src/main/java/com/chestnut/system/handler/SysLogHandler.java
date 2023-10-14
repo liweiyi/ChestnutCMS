@@ -72,7 +72,7 @@ public class SysLogHandler implements ILogHandler {
 			operLog.setOperTime(logDetail.getLogTime());
 			operLog.setCost(logDetail.getCost());
 			// 保存数据库
-			asyncTaskManager.execute(operLogService.recordOper(operLog));
+			operLogService.recordOper(operLog);
 		} catch (Exception exp) {
 			// 记录本地异常日志
 			logger.error("异常信息:{}", exp.getMessage());

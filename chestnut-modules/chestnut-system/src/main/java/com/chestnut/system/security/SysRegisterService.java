@@ -53,8 +53,8 @@ public class SysRegisterService {
 		user.setPassword(registerBody.getPassword());
 		user.setNickName(registerBody.getUsername());
 		userService.registerUser(user);
-		asyncTaskManager.execute(this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
-				user.getUserName(), LoginLogType.REGIST, SuccessOrFail.SUCCESS, StringUtils.EMPTY));
+		this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
+				user.getUserName(), LoginLogType.REGIST, SuccessOrFail.SUCCESS, StringUtils.EMPTY);
 	}
 
 	/**

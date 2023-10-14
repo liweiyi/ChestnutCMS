@@ -157,7 +157,7 @@ public class CatalogController extends BaseRestController {
 		AsyncTask task = new AsyncTask() {
 
 			@Override
-			public void run0() throws Exception {
+			public void run0() {
 				catalogService.deleteCatalog(catalogId, operator);
 			}
 		};

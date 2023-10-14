@@ -223,6 +223,7 @@ public class ContentIndexService implements CommandLineRunner {
 		};
 		asyncTask.setTaskId("RebuildAllContentIndex");
 		asyncTask.setType("ContentCore");
+		asyncTask.setInterruptible(true);
 		this.asyncTaskManager.execute(asyncTask);
 		return asyncTask;
 	}

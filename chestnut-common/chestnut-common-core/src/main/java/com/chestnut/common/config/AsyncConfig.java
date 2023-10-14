@@ -1,11 +1,9 @@
 package com.chestnut.common.config;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
-
+import com.chestnut.common.config.properties.AsyncProperties;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,10 +11,8 @@ import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import com.chestnut.common.async.AsyncTaskExceptionHandler;
-import com.chestnut.common.config.properties.AsyncProperties;
-
-import lombok.RequiredArgsConstructor;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 异步任务线程池配置
@@ -65,10 +61,5 @@ public class AsyncConfig implements AsyncConfigurer {
 		logger.info("Chestnut async task executor initialize: {}", executor.getThreadNamePrefix());
 		executor.initialize();
 		return executor;
-	}
-
-	@Override
-	public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-		return new AsyncTaskExceptionHandler();
 	}
 }

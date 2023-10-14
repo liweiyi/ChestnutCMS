@@ -81,6 +81,11 @@ public abstract class AsyncTask implements Runnable {
 	 */
 	private boolean interrupt = false;
 
+	/**
+	 * 是否可被中断
+	 */
+	private boolean interruptible = false;
+
 	@Override
 	public void run() {
 		try {
@@ -103,6 +108,7 @@ public abstract class AsyncTask implements Runnable {
 			this.setPercent(100);
 			e.printStackTrace();
 		} finally {
+			this.setEndTime(LocalDateTime.now());
 			AsyncTaskManager.removeCurrent();
 		}
 	}
@@ -131,28 +137,24 @@ public abstract class AsyncTask implements Runnable {
 	 * 任务完成
 	 */
 	void completed() {
-		if (this.getStatus() == TaskStatus.INTERRUPTED) {
-			return;
-		}
-		log.debug("[{}]Task completed: {}", Thread.currentThread().getName(), this.getTaskId());
 		this.setStatus(TaskStatus.SUCCESS);
-		this.setEndTime(LocalDateTime.now());
 		this.setPercent(100);
 		if (this.getCallback() != null) {
 			this.getCallback().complete(this);
 		}
+		log.debug("[{}]Task completed: {}", Thread.currentThread().getName(), this.getTaskId());
 	}
 
 	/**
 	 * 执行中断，设置中断标识
 	 */
 	public void interrupt() {
-		log.debug("[{}]Task interrupted: {}", Thread.currentThread().getName(), this.getTaskId());
 		if (this.interrupt) {
 			return;
 		}
 		this.interrupt = true;
 		this.setInterruptTime(LocalDateTime.now());
+		log.debug("[{}]Task interrupted: {}", Thread.currentThread().getName(), this.getTaskId());
 	}
 
 	/**
@@ -162,6 +164,10 @@ public abstract class AsyncTask implements Runnable {
 	 */
 	public void checkInterrupt() throws InterruptedException {
 		Assert.isFalse(this.interrupt, () -> new InterruptedException("The task is interrupted: " + this.taskId));
+	}
+
+	public boolean isExpired(long expireSeconds) {
+		return this.isEnd() && this.endTime.plusSeconds(expireSeconds).isBefore(LocalDateTime.now());
 	}
 
 	public String getTaskId() {
@@ -273,5 +279,13 @@ public abstract class AsyncTask implements Runnable {
 
 	public void setInterruptTime(LocalDateTime interruptTime) {
 		this.interruptTime = interruptTime;
+	}
+
+	public boolean isInterruptible() {
+		return interruptible;
+	}
+
+	public void setInterruptible(boolean interruptible) {
+		this.interruptible = interruptible;
 	}
 }

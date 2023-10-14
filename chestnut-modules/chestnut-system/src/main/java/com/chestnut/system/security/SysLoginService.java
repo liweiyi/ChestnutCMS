@@ -1,7 +1,6 @@
 package com.chestnut.system.security;
 
 import cn.dev33.satoken.session.SaSession;
-import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.domain.LoginUser;
@@ -49,8 +48,6 @@ public class SysLoginService {
 	
 	private final ISysPermissionService permissionService;
 
-	private final AsyncTaskManager asyncTaskManager;
-
 	/**
 	 * 登录验证
 	 * 
@@ -84,8 +81,8 @@ public class SysLoginService {
 				this.userService.updateById(user);
 			}
 			// 记录日志
-			asyncTaskManager.execute(this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
-					user.getUserName(), LoginLogType.LOGIN, SuccessOrFail.FAIL, "Invalid password."));
+			this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
+					user.getUserName(), LoginLogType.LOGIN, SuccessOrFail.FAIL, "Invalid password.");
 			throw SysErrorCode.PASSWORD_ERROR.exception();
 		}
 		this.securityConfigService.onLoginSuccess(user);
@@ -100,8 +97,8 @@ public class SysLoginService {
 		loginUser.setToken(StpAdminUtil.getTokenValueByLoginId(user.getUserId()));
 		StpAdminUtil.getTokenSession().set(SaSession.USER, loginUser);
 		// 日志
-		asyncTaskManager.execute(this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
-				loginUser.getUsername(), LoginLogType.LOGIN, SuccessOrFail.SUCCESS, StringUtils.EMPTY));
+		this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
+				loginUser.getUsername(), LoginLogType.LOGIN, SuccessOrFail.SUCCESS, StringUtils.EMPTY);
 		return StpAdminUtil.getTokenValue();
 	}
 
@@ -130,25 +127,24 @@ public class SysLoginService {
 	 * @param username 用户名
 	 * @param code     验证码
 	 * @param uuid     唯一标识
-	 * @return 结果
 	 */
 	public void validateCaptcha(String username, String code, String uuid) {
-		Assert.notEmpty(uuid, () -> SysErrorCode.CAPTCHA_ERR.exception());
+		Assert.notEmpty(uuid, SysErrorCode.CAPTCHA_ERR::exception);
 
 		String verifyKey = SysConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, StringUtils.EMPTY);
 		String captcha = redisCache.getCacheObject(verifyKey);
 		// 过期判断
 		Assert.notNull(captcha, () -> {
-			asyncTaskManager.execute(this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,
-					LoginLogType.LOGIN, SuccessOrFail.FAIL, SysErrorCode.CAPTCHA_EXPIRED.name()));
+			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,
+					LoginLogType.LOGIN, SuccessOrFail.FAIL, SysErrorCode.CAPTCHA_EXPIRED.name());
 			return SysErrorCode.CAPTCHA_EXPIRED.exception();
 		});
 		// 未过期移除缓存
 		redisCache.deleteObject(verifyKey);
 		// 判断是否与输入验证码一致
 		Assert.isTrue(StringUtils.equals(code, captcha), () -> {
-			asyncTaskManager.execute(this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,
-					LoginLogType.LOGIN, SuccessOrFail.FAIL, SysErrorCode.CAPTCHA_ERR.name()));
+			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,
+					LoginLogType.LOGIN, SuccessOrFail.FAIL, SysErrorCode.CAPTCHA_ERR.name());
 			return SysErrorCode.CAPTCHA_ERR.exception();
 		});
 	}

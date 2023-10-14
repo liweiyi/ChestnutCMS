@@ -122,9 +122,9 @@ public class MemberLoginApiController extends BaseRestController {
 			if (StpMemberUtil.isLogin()) {
 				LoginUser loginUser = StpMemberUtil.getLoginUser();
 				StpMemberUtil.logout();
-				asyncTaskManager.execute(this.logininforService.recordLogininfor(loginUser.getUserType(),
+				this.logininforService.recordLogininfor(loginUser.getUserType(),
 						loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.SUCCESS,
-						StringUtils.EMPTY));
+						StringUtils.EMPTY);
 			}
 		} catch (Exception e) {
 		}

@@ -67,16 +67,6 @@ public class SiteThemeService implements ApplicationContextAware {
     private final IPageWidgetService pageWidgetService;
 
     public AsyncTask importSiteTheme(CmsSite site, final File zipFile, LoginUser operator) throws IOException {
-        String taskId = "SiteThemeImport-" + site.getPath();
-        AsyncTask task = asyncTaskManager.getTask(taskId);
-        if (task != null) {
-            if (!task.isAlive()) {
-                asyncTaskManager.removeById(task.getTaskId());
-            } else {
-                throw ContentCoreErrorCode.SITE_EXPORT_TASK_EXISTS.exception();
-            }
-        }
-
         AsyncTask asyncTask = new AsyncTask() {
 
             @Override
@@ -178,8 +168,8 @@ public class SiteThemeService implements ApplicationContextAware {
                 }
             }
         };
-        asyncTask.setTaskId(taskId);
-        asyncTask.setType("SiteThemeImport");
+        asyncTask.setType("SiteTheme");
+        asyncTask.setTaskId("SiteThemeImport-" + site.getSiteId());
         this.asyncTaskManager.execute(asyncTask);
         return asyncTask;
     }
@@ -187,16 +177,6 @@ public class SiteThemeService implements ApplicationContextAware {
     public static final String ThemeFileName = "SiteTheme.zip";
 
     public AsyncTask exportSiteTheme(CmsSite site, final List<String> directories) {
-        String taskId = "SiteExportTheme-" + site.getPath();
-        AsyncTask task = asyncTaskManager.getTask(taskId);
-        if (task != null) {
-            if (!task.isAlive()) {
-                asyncTaskManager.removeById(task.getTaskId());
-            } else {
-                throw ContentCoreErrorCode.SITE_EXPORT_TASK_EXISTS.exception();
-            }
-        }
-
         AsyncTask asyncTask = new AsyncTask() {
 
             @Override
@@ -256,8 +236,8 @@ public class SiteThemeService implements ApplicationContextAware {
                 AsyncTaskManager.setTaskProgressInfo(100, "导出成功");
             }
         };
-        asyncTask.setTaskId(taskId);
-        asyncTask.setType("SiteExportTheme");
+        asyncTask.setType("SiteTheme");
+        asyncTask.setTaskId("SiteThemeExport-" + site.getSiteId());
         this.asyncTaskManager.execute(asyncTask);
         return asyncTask;
     }

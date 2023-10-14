@@ -1,7 +1,6 @@
 package com.chestnut.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.chestnut.common.async.AsyncTask;
 import com.chestnut.system.domain.SysOperLog;
 
 /**
@@ -15,14 +14,12 @@ public interface ISysOperLogService extends IService<SysOperLog> {
 	/**
 	 * 清空操作日志
 	 */
-	public void cleanOperLog();
+	void cleanOperLog();
 
 	/**
 	 * 操作日志记录
-	 * 
-	 * @param operLog
-	 *            操作日志信息
-	 * @return 任务task
+	 *
+	 * @param operLog 操作日志信息
 	 */
-	public AsyncTask recordOper(SysOperLog operLog);
+	void recordOper(SysOperLog operLog);
 }

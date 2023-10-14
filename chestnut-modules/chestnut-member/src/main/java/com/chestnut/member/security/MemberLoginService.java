@@ -1,26 +1,19 @@
 package com.chestnut.member.security;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Objects;
-
+import cn.dev33.satoken.session.SaSession;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.common.exception.GlobalException;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.member.domain.dto.MemberLoginDTO;
-import com.chestnut.member.domain.dto.MemberRegisterDTO;
-import com.chestnut.member.fixed.dict.MemberStatus;
-import org.springframework.stereotype.Component;
-
-import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.enums.DeviceType;
 import com.chestnut.common.utils.IP2RegionUtils;
-import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.Member;
+import com.chestnut.member.domain.dto.MemberLoginDTO;
+import com.chestnut.member.domain.dto.MemberRegisterDTO;
 import com.chestnut.member.exception.MemberErrorCode;
+import com.chestnut.member.fixed.dict.MemberStatus;
 import com.chestnut.member.service.IMemberService;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.LoginLogType;
@@ -28,10 +21,13 @@ import com.chestnut.system.fixed.dict.SuccessOrFail;
 import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.service.ISecurityConfigService;
 import com.chestnut.system.service.ISysLogininforService;
-
-import cn.dev33.satoken.session.SaSession;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * 会员登录校验方法
@@ -48,8 +44,6 @@ public class MemberLoginService {
 	private final IMemberService memberService;
 
 	private final ISecurityConfigService securityConfigService;
-
-	private final AsyncTaskManager asyncTaskManager;
 
 	/**
 	 * 登录验证
@@ -74,8 +68,8 @@ public class MemberLoginService {
 			// 密码错误处理策略
 			this.securityConfigService.processLoginPasswordError(member);
 			// 记录日志
-			asyncTaskManager.execute(this.logininfoService.recordLogininfor(MemberUserType.TYPE, member.getMemberId(),
-					member.getUserName(), LoginLogType.LOGIN, SuccessOrFail.FAIL, "Invalid password."));
+			this.logininfoService.recordLogininfor(MemberUserType.TYPE, member.getMemberId(),
+					member.getUserName(), LoginLogType.LOGIN, SuccessOrFail.FAIL, "Invalid password.");
 			throw SysErrorCode.PASSWORD_ERROR.exception();
 		}
 		this.securityConfigService.onLoginSuccess(member);
@@ -89,8 +83,8 @@ public class MemberLoginService {
 		loginUser.setToken(StpMemberUtil.getTokenValueByLoginId(member.getUserId()));
 		StpMemberUtil.getTokenSession().set(SaSession.USER, loginUser);
 		// 日志
-		asyncTaskManager.execute(this.logininfoService.recordLogininfor(MemberUserType.TYPE, member.getUserId(),
-				loginUser.getUsername(), LoginLogType.LOGIN, SuccessOrFail.SUCCESS, StringUtils.EMPTY));
+		this.logininfoService.recordLogininfor(MemberUserType.TYPE, member.getUserId(),
+				loginUser.getUsername(), LoginLogType.LOGIN, SuccessOrFail.SUCCESS, StringUtils.EMPTY);
 		return StpMemberUtil.getTokenValue();
 	}
 

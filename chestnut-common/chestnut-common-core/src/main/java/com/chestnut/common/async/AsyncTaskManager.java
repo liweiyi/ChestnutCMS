@@ -1,95 +1,83 @@
 package com.chestnut.common.async;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.async.enums.TaskStatus;
 import com.chestnut.common.config.AsyncConfig;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
-
 import jakarta.annotation.Resource;
-import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 异步任务管理器
  */
-@RequiredArgsConstructor
 @Component
 public class AsyncTaskManager {
-	
+
+	private final long ExpireSeconds = 60;
+
 	private static final ThreadLocal<AsyncTask> CURRENT = new ThreadLocal<>();
 
-	private ConcurrentHashMap<String, AsyncTask> asyncTaskMap = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<String, AsyncTask> asyncTaskMap = new ConcurrentHashMap<>();
 
 	@Resource(name = AsyncConfig.COMMON_EXECUTOR_BEAN)
     private ThreadPoolTaskExecutor taskExecutor;
 
-
-	public void execute(AsyncTask asyncTask) {
-		execute(asyncTask, false);
-	}
-
-	public void executeIgnoreIfExists(AsyncTask asyncTask) {
-		this.execute(asyncTask, true);
+	AsyncTaskManager() {
+		Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> {
+			asyncTaskMap.entrySet().removeIf(next -> next.getValue().isExpired(ExpireSeconds));
+		}, ExpireSeconds, ExpireSeconds, TimeUnit.SECONDS);
 	}
 
     /**
-     * 提交异步任务
-     * 
-     * @param asyncTask 异步任务构造器
-     * @return taskInfo
-     */
-    public synchronized void execute(AsyncTask asyncTask, boolean ignoreExists) {
-    	if (StringUtils.isEmpty(asyncTask.getTaskId())) {
-    		asyncTask.setTaskId(this.generateTaskId());
-    	}
-    	AsyncTask task = this.asyncTaskMap.get(asyncTask.getTaskId());
-    	if (task != null && task.isAlive()) {
-			if (ignoreExists) {
-				return;
-			}
-    		throw CommonErrorCode.ASYNC_TASK_RUNNING.exception(asyncTask.getTaskId());
-    	}
-        this.asyncTaskMap.put(asyncTask.getTaskId(), asyncTask);
+     * 提交异步任务，提供任务进度监控，中断操作
+	 */
+    public synchronized void execute(AsyncTask asyncTask) {
+		if (StringUtils.isEmpty(asyncTask.getTaskId())) {
+			asyncTask.setTaskId(this.generateTaskId());
+		}
+		AsyncTask task = asyncTaskMap.get(asyncTask.getTaskId());
+		if (task != null && task.isAlive()) {
+			throw CommonErrorCode.ASYNC_TASK_RUNNING.exception(asyncTask.getTaskId());
+		}
+		asyncTaskMap.put(asyncTask.getTaskId(), asyncTask);
         asyncTask.ready();
-
         this.taskExecutor.execute(asyncTask);
     }
-    
-    public void execute(Runnable runnable) {
-		this.execute(new AsyncTask() {
-			
-			@Override
-			public void run0() throws Exception {
-				runnable.run();
-			}
-		});
+
+	/**
+	 * 提交异步任务
+	 */
+	public void execute(Runnable runnable) {
+		this.taskExecutor.execute(runnable);
     }
 
     /**
      * 获取任务信息
      *
      * @param taskId 任务ID
-     * @return
+     * @return AsyncTask
      */
     public AsyncTask getTask(String taskId) {
-    	return this.asyncTaskMap.get(taskId);
+		return asyncTaskMap.get(taskId);
     }
 
     /**
      * 获取任务列表
-     * @return
+	 *
+     * @return taskList
      */
 	public List<AsyncTask> getTaskList() {
-		return new ArrayList<>(this.asyncTaskMap.values());
+		return new ArrayList<>(asyncTaskMap.values());
 	}
 
     /**
@@ -109,11 +97,11 @@ public class AsyncTaskManager {
 		boolean isRunning = task.getStatus() == TaskStatus.RUNNING || task.getStatus() == TaskStatus.READY;
 		Assert.isFalse(isRunning, () -> CommonErrorCode.ASYNC_TASK_RUNNING.exception(taskId));
 
-		this.asyncTaskMap.remove(taskId);
+		asyncTaskMap.remove(taskId);
 	}
-	
+
 	public synchronized void cancel(String taskId) {
-		AsyncTask task = this.asyncTaskMap.get(taskId);
+		AsyncTask task = asyncTaskMap.get(taskId);
 		if (Objects.nonNull(task)) {
 			task.interrupt();
 		}
@@ -123,51 +111,51 @@ public class AsyncTaskManager {
      * 获取线程池信息
      */
     public ThreadPoolTaskExecutor getThreadPool() {
-    	return this.taskExecutor;
+		return this.taskExecutor;
     }
 
     protected static void setCurrent(AsyncTask task) {
-    	CURRENT.set(task);
+		CURRENT.set(task);
     }
     
     protected static void removeCurrent() {
-    	CURRENT.remove();
+		CURRENT.remove();
     }
     
     public static void checkInterrupt() throws InterruptedException {
-    	AsyncTask task = CURRENT.get();
-    	if (Objects.nonNull(task)) {
-    		task.checkInterrupt();
-    	}
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			task.checkInterrupt();
+		}
     }
 
     public static String addErrMessage(String message) {
-    	AsyncTask task = CURRENT.get();
-    	if (Objects.nonNull(task)) {
-    		task.addErrorMessage(message);
-    	}
-    	return message;
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			task.addErrorMessage(message);
+		}
+		return message;
     }
     
     public static void setTaskPercent(int percent) {
-    	AsyncTask task = CURRENT.get();
-    	if (Objects.nonNull(task)) {
-    		task.setPercent(percent);
-    	}
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			task.setPercent(percent);
+		}
     }
     
     public static void setTaskMessage(String msg) {
-    	AsyncTask task = CURRENT.get();
-    	if (Objects.nonNull(task)) {
-    		task.setProgressMessage(msg);
-    	}
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			task.setProgressMessage(msg);
+		}
     }
 
     public static void setTaskProgressInfo(int percent, String msg) {
-    	AsyncTask task = CURRENT.get();
-    	if (Objects.nonNull(task)) {
-    		task.setProgressInfo(percent, msg);
-    	}
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			task.setProgressInfo(percent, msg);
+		}
     }
 
 	public static int getTaskProgressPercent() {

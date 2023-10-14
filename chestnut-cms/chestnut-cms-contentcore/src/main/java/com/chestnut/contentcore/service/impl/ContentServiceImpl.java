@@ -202,7 +202,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 				aopProxy.addContent0(content);
 			}
 		};
-		task.setType("SaveContent");
+		task.setType("SaveContent-" + content.getContentEntity().getContentId());
 		asyncTaskManager.execute(task);
 		return task;
 	}
@@ -224,7 +224,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 				saveContent0(content);
 			}
 		};
-		task.setType("SaveContent");
+		task.setType("SaveContent-" + content.getContentEntity().getContentId());
 		asyncTaskManager.execute(task);
 		return task;
 	}
