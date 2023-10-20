@@ -1,25 +1,20 @@
 package com.chestnut.system.security;
 
-import java.util.List;
-
 import cn.dev33.satoken.session.SaSession;
-import com.chestnut.common.security.domain.LoginUser;
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.IUserType;
-import com.chestnut.system.service.ISysPermissionService;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.system.service.ISysRoleService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Component(IUserType.BEAN_PRFIX + AdminUserType.TYPE)
 public class AdminUserType implements IUserType {
 
 	public static final String TYPE = "sys_user";
-
-	private final ISysPermissionService permissionService;
 
 	private final ISysRoleService roleService;
 

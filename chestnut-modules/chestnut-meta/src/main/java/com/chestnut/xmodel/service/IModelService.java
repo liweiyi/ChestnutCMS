@@ -43,7 +43,13 @@ public interface IModelService extends IService<XModel> {
 	 */
 	List<String> listModelTableFields(XModel model);
 
+	/**
+	 * 元数据模型定义缓存
+	 */
 	MetaModel getMetaModel(Long modelId);
 
+	/**
+	 * 清理元数据模型定义缓存
+	 */
 	void clearMetaModelCache(Long modelId);
 }

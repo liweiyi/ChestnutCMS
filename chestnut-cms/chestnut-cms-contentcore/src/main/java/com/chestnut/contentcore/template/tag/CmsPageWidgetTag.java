@@ -106,16 +106,18 @@ public class CmsPageWidgetTag extends AbstractTag {
 			String siteRoot = SiteUtils.getSiteRoot(site, context.getPublishPipeCode());
 			String staticFileName = PageWidgetUtils.getStaticFileName(pw, site.getStaticSuffix(pw.getPublishPipeCode()));
 			String staticFilePath = pw.getPath() + staticFileName;
-			// 读取页面部件静态化内容
-			String staticContent = templateService.getTemplateStaticContentCache(templateKey);
-			if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
-				staticContent = this.processTemplate(env, context, templateKey);
-				FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
-				this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
-			}
 			if (ssi) {
+				// 读取页面部件静态化内容
+				String staticContent = templateService.getTemplateStaticContentCache(templateKey);
+				if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
+					staticContent = this.processTemplate(env, context, templateKey);
+					FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
+					this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
+				}
 				env.getOut().write(StringUtils.messageFormat(CmsIncludeTag.SSI_INCLUDE_TAG, "/" + staticFilePath));
 			} else {
+				// 非ssi模式无法使用缓存
+				String staticContent = this.processTemplate(env, context, templateKey);
 				env.getOut().write(staticContent);
 			}
 		}

@@ -804,6 +804,11 @@ export default {
         EditManualBlock: "Manual Block",
         EditAdvSpace: "AD Space",
         EditAdv: "Advertising",
+      },
+      ClientType: {
+        PC: "Desktop",
+        Phone: "Phone",
+        Pad: "Pad"
       }
     },
     UEditor: {
@@ -1605,11 +1610,24 @@ export default {
     FieldOptions: "Field Options",
     FieldOptionsInput: "Input",
     FieldOptionsDict: "Dictionary",
+    FieldValidation: "Validation",
+    Validation: {
+      NotEmpty: "Not Empty",
+      Number: "Number",
+      Int: "Integer",
+      Date: "Date",
+      Time: "Time",
+      DateTime: "DateTime",
+      Email: "Email",
+      PhoneNumber: "PhoneNumber",
+      Regex: "Regex"
+    },
     AddFieldTitle: "Add model field",
     EditFieldTitle: "Edit model field",
     Placeholder: {
       FieldQuery: "Input field name/code",
-      FieldOptionsInput: "Each line has one option, separated by '=', eg: xx=option 1"
+      FieldOptionsInput: "Each line has one option, separated by '=', eg: xx=option 1",
+      Regex: "Regex expression..."
     },
     RuleTips: {
       FieldName: "Name cannot be empty.",
@@ -1642,6 +1660,19 @@ export default {
       LogTime: "Time",
       AddExtWord: "Add Ext Word",
       AddStopWord: "Add Stop Word",
+    }
+  },
+  MessagePusher: {
+    Config: {
+      Name: "Name",
+      Type: "Type",
+      Status: "Status",
+      ConfigJson: "Config",
+      AddTitle: "Add Message Pusher Config",
+      EditTitle: "Edit Message Pusher Config",
+      Placehoder: {
+        Query: "Input name..."
+      }
     }
   }
 };

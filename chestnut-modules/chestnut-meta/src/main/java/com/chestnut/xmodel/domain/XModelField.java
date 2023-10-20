@@ -7,9 +7,11 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.xmodel.dto.FieldOptions;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -61,11 +63,6 @@ public class XModelField extends BaseEntity {
     private String controlType;
     
     /**
-     * 是否必填
-     */
-    private String mandatoryFlag;
-    
-    /**
      * 可选项
      * 格式：
      * 	{ 'type':'dict','value': "dict_type"}<br/>
@@ -82,6 +79,12 @@ public class XModelField extends BaseEntity {
      * 默认值
      */
     private String defaultValue;
+
+    /**
+     * 校验规则
+     */
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<Map<String, Object>> validations;
 
     /**
      * 排序字段

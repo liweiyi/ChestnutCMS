@@ -44,16 +44,16 @@ public class CmsCustomFormMetaModelType implements IMetaModelType {
      * 数据表必须包含的字段
      */
     public static final MetaModelField FIELD_MODEL_ID = new MetaModelField("模型ID", "modelId",
-            MODEL_ID_FIELD_NAME, false, true, MetaControlType_Input.TYPE);
+            MODEL_ID_FIELD_NAME, false, MetaControlType_Input.TYPE);
 
     public static final MetaModelField FIELD_DATA_ID = new MetaModelField("数据ID", "dataId",
-            "data_id", true, true, MetaControlType_Input.TYPE);
+            "data_id", true, MetaControlType_Input.TYPE);
     public static final MetaModelField FIELD_SITE_ID = new MetaModelField("站点ID", "siteId",
-            "site_id", false, true, MetaControlType_Input.TYPE);
+            "site_id", false, MetaControlType_Input.TYPE);
     public static final MetaModelField FIELD_CLIENT_IP = new MetaModelField("IP", "clientIp",
-            "client_ip", false, true, MetaControlType_Input.TYPE);
+            "client_ip", false, MetaControlType_Input.TYPE);
     public static final MetaModelField FIELD_UUID = new MetaModelField("UUID", "uuid",
-            "uuid", false, false, MetaControlType_Input.TYPE);
+            "uuid", false, MetaControlType_Input.TYPE);
     public static final MetaModelField FIELD_CREATE_TIME = new MetaModelField("创建时间", "createTime",
-            "create_time", false, true, MetaControlType_Input.TYPE);
+            "create_time", false, MetaControlType_Input.TYPE);
 }

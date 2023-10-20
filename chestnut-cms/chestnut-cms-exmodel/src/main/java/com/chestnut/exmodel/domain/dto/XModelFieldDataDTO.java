@@ -1,14 +1,12 @@
 package com.chestnut.exmodel.domain.dto;
 
-import java.util.List;
-import java.util.Map;
-
 import com.chestnut.exmodel.CmsExtendMetaModelType;
-import com.chestnut.xmodel.util.XModelUtils;
 import com.chestnut.xmodel.domain.XModelField;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -19,6 +17,8 @@ public class XModelFieldDataDTO {
     private String fieldName;
     	
     private String controlType;
+
+	private List<Map<String, Object>> validations;
     
     private List<Map<String, String>> options;
     
@@ -31,6 +31,7 @@ public class XModelFieldDataDTO {
 		dto.setLabel(field.getName());
 		dto.setFieldName(CmsExtendMetaModelType.DATA_FIELD_PREFIX + field.getCode());
 		dto.setControlType(field.getControlType());
+		dto.setValidations(field.getValidations());
 		dto.setValue(value);
 		return dto;
 	}

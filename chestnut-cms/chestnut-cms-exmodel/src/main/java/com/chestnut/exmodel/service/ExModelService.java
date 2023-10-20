@@ -66,14 +66,17 @@ public class ExModelService {
 
         List<XModelFieldDataDTO> list = new ArrayList<>();
         metaModel.getFields().forEach(f -> {
-            String fv = MapUtils.getString(data, f.getCode(), f.getDefaultValue());
-
+            Object fv = data.get(f.getCode());
+            if(Objects.isNull(fv) || fv.toString().isEmpty()) {
+                fv = f.getDefaultValue();
+            }
             XModelFieldDataDTO dto = new XModelFieldDataDTO();
             dto.setLabel(f.getName());
             dto.setFieldName(CmsExtendMetaModelType.DATA_FIELD_PREFIX + f.getCode());
             dto.setControlType(f.getControlType());
             dto.setValue(Objects.requireNonNullElse(fv, StringUtils.EMPTY));
             dto.setOptions(XModelUtils.getOptions(f.getOptions()));
+            dto.setValidations(f.getValidations());
 
             IMetaControlType controlType = controlTypeMap.get(IMetaControlType.BEAN_PREFIX + f.getControlType());
             IMetaControlType.ParseResult parseResult = controlType.parseFieldValue(dto.getValue());

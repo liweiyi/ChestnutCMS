@@ -19,6 +19,11 @@
             </el-select>
           </el-col>
           <el-col :span="1.5">
+            <el-radio-group size="small" v-model="clientType" @input="handleClientTypeChange">
+              <el-radio-button v-for="ct in clientTypes" :key="ct.id" :label="ct.id">{{ ct.name }}</el-radio-button>
+            </el-radio-group>
+          </el-col>
+          <el-col :span="1.5">
             <el-button 
               plain
               type="primary"
@@ -28,12 +33,8 @@
           </el-col>
         </el-row>
       </el-header>
-      <el-main style="padding:0;">
-        <el-scrollbar style="width:100%;height:100%;">
-          <iframe id="iframePreview" :src="previewUrl" 
-              frameborder="0" 
-              style="width:100%;height:calc(100vh - 59px);"></iframe>
-        </el-scrollbar>
+      <el-main style="padding:0;text-align:center;">
+        <iframe id="iframePreview" :src="previewUrl" :class="clientClass" style="margin: auto; height: calc(100vh - 59px)" frameborder="0"></iframe>
       </el-main>
     </el-container>
   </div>
@@ -50,7 +51,14 @@ export default {
       dataId: this.$route.query.dataId,
       publishPipes: [],
       selectedPublishPipe: undefined,
-      previewUrl: undefined
+      previewUrl: undefined,
+      clientTypes: [ 
+        { id: "pc", name: this.$t("CMS.ContentCore.ClientType.PC"), className: "client_pc" },
+        { id: "phone", name: this.$t("CMS.ContentCore.ClientType.Phone"), className: "client_phone" },
+        { id: "pad", name: this.$t("CMS.ContentCore.ClientType.Pad"), className: "client_pad" }
+      ],
+      clientType: "pc",
+      clientClass: "client_pc"
     };
   },
   created() {
@@ -67,6 +75,9 @@ export default {
     handlePublishPipeChange () {
       this.previewUrl = process.env.VUE_APP_BASE_API + "/cms/preview/" + this.type + "/" + this.dataId 
         + "?pp=" + this.selectedPublishPipe+ "&Authorization=Bearer " + getToken();
+    },
+    handleClientTypeChange () {
+      this.clientClass = this.clientTypes.find(item => item.id === this.clientType).className
     },
     handleRefresh () {
       document.querySelector('iframe').contentWindow.location.reload();
@@ -94,5 +105,14 @@ body {
 }
 .el-button {
   margin-left: 10px;
+}
+.client_pc {
+  width:100%;
+}
+.client_phone {
+  width: 475px;
+}
+.client_pad {
+  width: 768px;
 }
 </style>

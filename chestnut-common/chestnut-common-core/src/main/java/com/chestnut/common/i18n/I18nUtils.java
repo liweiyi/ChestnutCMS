@@ -93,6 +93,11 @@ public class I18nUtils {
 		return get(str, LocaleContextHolder.getLocale());
 	}
 
+
+	public static String get(String str, Object... args) {
+		return get(str, LocaleContextHolder.getLocale(), args);
+	}
+
 	/**
 	 * 获取国际化键名指定的语言值
 	 *

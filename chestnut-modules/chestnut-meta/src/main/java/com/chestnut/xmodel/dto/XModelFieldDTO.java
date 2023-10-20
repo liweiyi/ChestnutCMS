@@ -1,14 +1,14 @@
 package com.chestnut.xmodel.dto;
 
-import jakarta.validation.constraints.NotNull;
-
-import org.springframework.beans.BeanUtils;
-
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.xmodel.domain.XModelField;
-
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
+
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -31,8 +31,7 @@ public class XModelFieldDTO extends BaseDTO {
     @NotNull
     private String controlType;
 
-    @NotNull
-    private String mandatoryFlag;
+    private List<Map<String, Object>> validations;
 
     private FieldOptions options;
     

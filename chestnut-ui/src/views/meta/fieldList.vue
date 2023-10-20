@@ -56,11 +56,6 @@
           </template>
         </el-table-column>
         <el-table-column :label="$t('MetaModel.FieldMappingName')" align="center" prop="fieldName" />
-        <el-table-column :label="$t('MetaModel.FieldMandatory')" align="center" prop="mandatoryFlag">
-          <template slot-scope="scope">
-            <dict-tag :options="dict.type.YesOrNo" :value="scope.row.mandatoryFlag"/>
-          </template>
-        </el-table-column>
         <el-table-column :label="$t('Common.Sort')" align="center" prop="sortFlag" />
         <el-table-column :label="$t('Common.Operation')" align="center" width="300" class-name="small-padding fixed-width">
           <template slot-scope="scope">
@@ -128,15 +123,19 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item :label="$t('MetaModel.FieldMandatory')" prop="mandatoryFlag">
-          <el-select v-model="form.mandatoryFlag">
-            <el-option
-              v-for="dict in dict.type.YesOrNo"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.value"
-            />
-          </el-select>
+        <el-form-item :label="$t('MetaModel.FieldValidation')">
+          <el-checkbox-group v-model="validation.types">
+            <el-checkbox label="NotEmpty">{{ $t('MetaModel.Validation.NotEmpty') }}</el-checkbox>
+            <el-checkbox label="Number">{{ $t('MetaModel.Validation.Number') }}</el-checkbox>
+            <el-checkbox label="Int">{{ $t('MetaModel.Validation.Int') }}</el-checkbox>
+            <el-checkbox label="Date">{{ $t('MetaModel.Validation.Date') }}</el-checkbox>
+            <el-checkbox label="Time">{{ $t('MetaModel.Validation.Time') }}</el-checkbox>
+            <el-checkbox label="DateTime">{{ $t('MetaModel.Validation.DateTime') }}</el-checkbox>
+            <el-checkbox label="Email">{{ $t('MetaModel.Validation.Email') }}</el-checkbox>
+            <el-checkbox label="PhoneNumber">{{ $t('MetaModel.Validation.PhoneNumber') }}</el-checkbox>
+          </el-checkbox-group>
+            <el-checkbox v-model="validation.regex">{{ $t('MetaModel.Validation.Regex') }}</el-checkbox>
+          <el-input v-model="validation.regexValue" :placeholder="$t('MetaModel.Placeholder.Regex')" />
         </el-form-item>
         <el-form-item :label="$t('MetaModel.FieldDefaultValue')" prop="defaultValue">
           <el-input v-model="form.defaultValue" />
@@ -181,7 +180,7 @@ import { getControlOptions, getModel, addModelField, editModelField, deleteModel
 
 export default {
   name: "MetaModelField",
-  dicts: [ 'MetaFieldType', 'YesOrNo' ],
+  dicts: [ 'MetaFieldType' ],
   data () {
     return {
       // 遮罩层
@@ -212,6 +211,11 @@ export default {
       form: {
         options:{ type: "text" }
       },
+      validation: {
+        types: [],
+        regex: false,
+        regexValue: ""
+      },
       // 表单校验
       rules: {
         name: [
@@ -222,9 +226,6 @@ export default {
         ],
         controlType: [
           { required: true, message: this.$t('MetaModel.RuleTips.FieldControlType'), trigger: "blur" }
-        ],
-        mandatoryFlag: [
-          { required: true, message: this.$t('MetaModel.RuleTips.FieldMandatory'), trigger: "blur" }
         ],
         fieldType: [
           { required: true, validator: (rule, value, callback) => {
@@ -336,17 +337,24 @@ export default {
     },
     handleAdd () {
       this.form = { options:{ type: "text" } };
+      this.validation = {
+        types: [],
+        regex: false,
+        regexValue: ""
+      }
       this.title = this.$t('MetaModel.AddFieldTitle');
       this.open = true;
     },
     handleEdit (row) {
       this.form = row;
+      this.parseValidations()
       this.title = this.$t('MetaModel.EditFieldTitle');
       this.open = true;
     },
     handleAddSave () {
       this.$refs["form"].validate(valid => {
         if (valid) {
+          this.dealFormValidations();
           if (this.form.fieldId) {
             editModelField(this.form).then(response => {
               this.$modal.msgSuccess(response.msg);
@@ -361,6 +369,34 @@ export default {
           }
         }
       });
+    },
+    parseValidations() {
+      this.validation = {
+        types: [],
+        regex: false,
+        regexValue: ""
+      }
+      if (this.form.validations && this.form.validations.length > 0) {
+        this.form.validations.forEach(valid => {
+          if (valid.type == "Regex") {
+            this.validation.regex = true;
+            this.validation.regexValue = valid.regex;
+          } else {
+            if (this.validation.types.indexOf(valid.type) < 0) {
+              this.validation.types.push(valid.type)
+            }
+          }
+        })
+      }
+    },
+    dealFormValidations() {
+      this.form.validations = []
+      this.validation.types.forEach(t => {
+        this.form.validations.push({ type: t })
+      })
+      if (this.validation.regex && this.validation.regexValue.length > 0) {
+        this.form.validations.push({ type: "Regex", regex: this.validation.regexValue })
+      }
     },
     handleDelete (row) {
       this.doDelete([ row ]);

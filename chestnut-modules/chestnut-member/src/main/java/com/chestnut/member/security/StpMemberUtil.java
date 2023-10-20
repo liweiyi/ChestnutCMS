@@ -1,15 +1,10 @@
 package com.chestnut.member.security;
 
-import java.util.List;
-
+import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.context.model.SaRequest;
 import cn.dev33.satoken.context.model.SaStorage;
-import cn.dev33.satoken.util.SaTokenConsts;
-import com.chestnut.common.security.domain.LoginUser;
-
-import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.error.SaErrorCode;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.fun.SaFunction;
@@ -18,7 +13,12 @@ import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
+import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.util.SaTokenConsts;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.StringUtils;
+
+import java.util.List;
 
 /**
  * Sa-Token后台管理用户认证工具类
@@ -504,8 +504,8 @@ public class StpMemberUtil {
 	/**
  	 * 检查当前token 是否已经[临时过期]，如果已经过期则抛出异常  
  	 */
- 	public static void checkActivityTimeout() {
- 		stpLogic.checkActivityTimeout();
+ 	public static void checkActiveTimeout() {
+ 		stpLogic.checkActiveTimeout();
  	}
 
  	/**
@@ -513,8 +513,8 @@ public class StpMemberUtil {
  	 * <h1>请注意: 即使token已经 [临时过期] 也可续签成功，
  	 * 如果此场景下需要提示续签失败，可在此之前调用 checkActivityTimeout() 强制检查是否过期即可 </h1>
  	 */
- 	public static void updateLastActivityToNow() {
- 		stpLogic.updateLastActivityToNow();
+ 	public static void updateLastActiveToNow() {
+ 		stpLogic.updateLastActiveToNow();
  	}
  	
 
@@ -548,8 +548,8 @@ public class StpMemberUtil {
  	 * 获取当前 token [临时过期] 剩余有效时间 (单位: 秒)
  	 * @return token [临时过期] 剩余有效时间
  	 */
- 	public static long getTokenActivityTimeout() {
- 		return stpLogic.getTokenActivityTimeout();
+ 	public static long getTokenActiveTimeout() {
+ 		return stpLogic.getTokenActiveTimeout();
  	}
 
  	/**
@@ -1149,15 +1149,8 @@ public class StpMemberUtil {
 	 * 获取TokenSession.USER
 	 **/
 	public static LoginUser getLoginUser() {
-		try {
-			checkLogin();
-			return getTokenSession().getModel(SaSession.USER, LoginUser.class);
-		} catch (NotLoginException e) {
-			throw e;
-		} catch (Exception e) {
-			throw NotLoginException.newInstance(getLoginType(), NotLoginException.DEFAULT_MESSAGE)
-					.setCode(SaErrorCode.CODE_UNDEFINED);
-		}
+		checkLogin();
+		return getTokenSession().getModel(SaSession.USER, LoginUser.class);
 	}
 
 	/**

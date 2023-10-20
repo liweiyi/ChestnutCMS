@@ -1,11 +1,13 @@
 package com.chestnut.xmodel.core;
 
-import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.xmodel.domain.XModelField;
 import com.chestnut.xmodel.dto.FieldOptions;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
+import java.util.Map;
 
 @NoArgsConstructor
 @Getter
@@ -26,19 +28,18 @@ public class MetaModelField {
 
     private boolean primaryKey;
 
-    private boolean mandatory;
-
     private String controlType;
 
     private FieldOptions options;
 
+    private List<Map<String, Object>> validations;
+
     public MetaModelField(String name, String code, String fieldName,
-                          boolean primaryKey, boolean mandatory, String controlType) {
+                          boolean primaryKey, String controlType) {
         this.name = name;
         this.code = code;
         this.fieldName = fieldName;
         this.primaryKey = primaryKey;
-        this.mandatory = mandatory;
         this.controlType = controlType;
     }
 
@@ -46,10 +47,10 @@ public class MetaModelField {
         this.name = field.getName();
         this.code = field.getCode();
         this.fieldName = field.getFieldName();
-        this.mandatory = YesOrNo.isYes(field.getMandatoryFlag());
         this.controlType = field.getControlType();
         this.defaultValue = field.getDefaultValue();
         this.options = field.getOptions();
+        this.validations = field.getValidations();
         this.editable = true;
     }
 }

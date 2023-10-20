@@ -804,6 +804,11 @@ export default {
         EditManualBlock: "编辑区块",
         EditAdvSpace: "编辑广告位",
         EditAdv: "编辑广告",
+      },
+      ClientType: {
+        PC: "桌面",
+        Phone: "手机",
+        Pad: "平板"
       }
     },
     UEditor: {
@@ -1605,11 +1610,24 @@ export default {
     FieldOptions: "可选配置",
     FieldOptionsInput: "手动输入",
     FieldOptionsDict: "字典数据",
+    FieldValidation: "校验规则",
+    Validation: {
+      NotEmpty: "不能为空",
+      Number: "数字",
+      Int: "整数",
+      Date: "日期",
+      Time: "时间",
+      DateTime: "日期时间",
+      Email: "Email",
+      PhoneNumber: "手机号",
+      Regex: "正在表达式"
+    },
     AddFieldTitle: "添加模型字段",
     EditFieldTitle: "编辑模型字段",
     Placeholder: {
       FieldQuery: "字段名称/编码查询",
-      FieldOptionsInput: "每行一个选项，选名称和值用等号分隔，例如：xx=选项1"
+      FieldOptionsInput: "每行一个选项，选名称和值用等号分隔，例如：xx=选项1",
+      Regex: "输入正则表达式"
     },
     RuleTips: {
       FieldName: "名称不能为空",
@@ -1642,6 +1660,19 @@ export default {
       LogTime: "搜索时间",
       AddExtWord: "添加到扩展词",
       AddStopWord: "添加到停用词",
+    }
+  },
+  MessagePusher: {
+    Config: {
+      Name: "名称",
+      Type: "类型",
+      Status: "状态",
+      ConfigJson: "配置详情",
+      AddTitle: "添加消息推送配置",
+      EditTitle: "编辑消息推送配置",
+      Placehoder: {
+        Query: "输入名称"
+      }
     }
   }
 };

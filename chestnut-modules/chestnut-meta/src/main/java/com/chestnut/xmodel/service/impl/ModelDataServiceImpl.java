@@ -2,12 +2,15 @@ package com.chestnut.xmodel.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.chestnut.common.db.util.SqlBuilder;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.xmodel.core.IMetaFieldValidation;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModel;
 import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.domain.XModel;
+import com.chestnut.xmodel.exception.MetaXValidationException;
 import com.chestnut.xmodel.service.IModelDataService;
 import com.chestnut.xmodel.service.IModelService;
 import com.chestnut.xmodel.util.XModelUtils;
@@ -26,7 +29,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelDataServiceImpl implements IModelDataService {
 
+	private final Map<String, IMetaFieldValidation> fieldValidationMap;
+
 	private final IModelService modelService;
+
+	private IMetaFieldValidation getFieldValidation(String type) {
+		return fieldValidationMap.get(IMetaFieldValidation.BEAN_PREFIX + type);
+	}
 
 	@Override
 	public void saveModelData(Long modelId, Map<String, Object> params) {
@@ -104,30 +113,38 @@ public class ModelDataServiceImpl implements IModelDataService {
 		// 固定字段
 		mmt.getFixedFields().forEach(f -> {
 			Object value = data.get(f.getCode());
-			if (f.isMandatory() && Objects.isNull(value)) {
-				throw new RuntimeException("Validate field: " + f.getCode() + " cannot be empty.");
-			}
+			this.validateFieldValue(f.getName(), value, f.getValidations());
 			fieldValues.put(f.getFieldName(), value.toString());
 		});
 		// 自定义字段
 		model.getFields().forEach(field -> {
 			Object fieldValue = data.get(field.getCode());
-			if (fieldValue == null) {
-				fieldValue = field.getDefaultValue();
-			} else if (fieldValue.getClass().isArray()) {
-				Object[] arr = (Object[]) fieldValue;
-				fieldValue = StringUtils.join(arr, StringUtils.COMMA);
-			} else if (fieldValue instanceof List<?> list) {
-				fieldValue = StringUtils.join(list, StringUtils.COMMA);
+			if (Objects.nonNull(fieldValue)) {
+				if (fieldValue.getClass().isArray()) {
+					Object[] arr = (Object[]) fieldValue;
+					fieldValue = StringUtils.join(arr, StringUtils.COMMA);
+				} else if (fieldValue instanceof List<?> list) {
+					fieldValue = StringUtils.join(list, StringUtils.COMMA);
+				}
 			}
-			// 必填校验
-			if (field.isMandatory() && (Objects.isNull(fieldValue) || StringUtils.isEmpty(fieldValue.toString()))) {
-				throw new RuntimeException("Validate field: " + field.getCode() + " cannot be empty.");
+			if (Objects.isNull(fieldValue) || fieldValue.toString().isBlank()) {
+				fieldValue = StringUtils.isBlank(field.getDefaultValue()) ? null : field.getDefaultValue();
 			}
-			// TODO 其它自定义规则校验
-			fieldValues.put(field.getFieldName(), Objects.isNull(fieldValue) ? "" : fieldValue.toString());
+			// 校验
+			this.validateFieldValue(field.getName(), fieldValue, field.getValidations());
+			fieldValues.put(field.getFieldName(), Objects.isNull(fieldValue) ? null : fieldValue.toString());
 		});
 		return fieldValues;
+	}
+
+	private void validateFieldValue(String fieldName, Object fieldValue, List<Map<String, Object>> validations) {
+		if (StringUtils.isNotEmpty(validations)) {
+			for (Map<String, Object> validation : validations) {
+				IMetaFieldValidation fieldValidation = this.getFieldValidation(MapUtils.getString(validation, "type"));
+				boolean validate = fieldValidation.validate(fieldValue, validation);
+				Assert.isTrue(validate, () -> new MetaXValidationException(fieldValidation.getErrorMessage(fieldName)));
+			}
+		}
 	}
 
 	@Override
@@ -183,11 +200,11 @@ public class ModelDataServiceImpl implements IModelDataService {
 		Map<String, Object> dataMap = new HashMap<>();
 		// 固定字段
 		mmt.getFixedFields().forEach(f -> {
-			dataMap.put(f.getCode(), MapUtils.getString(map, f.getFieldName(), StringUtils.EMPTY));
+			dataMap.put(f.getCode(), map.get(f.getFieldName()));
 		});
 		// 自定义字段
 		model.getFields().forEach(f -> {
-			dataMap.put(f.getCode(), MapUtils.getString(map, f.getFieldName(), StringUtils.EMPTY));
+			dataMap.put(f.getCode(), map.get(f.getFieldName()));
 		});
 		return dataMap;
 	}

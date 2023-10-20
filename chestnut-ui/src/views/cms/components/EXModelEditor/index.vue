@@ -35,12 +35,17 @@
       <el-date-picker v-if="field.controlType==='date'" 
         v-model="field.value"
         type="date"
-        value-format="yyyy-MM-ddTHH:mm:ss">
+        value-format="yyyy-MM-dd">
+      </el-date-picker>
+      <el-date-picker v-if="field.controlType==='time'" 
+        v-model="field.value"
+        type="time"
+        value-format="HH:mm:ss">
       </el-date-picker>
       <el-date-picker v-if="field.controlType==='datetime'" 
         v-model="field.value"
         type="datetime"
-        value-format="yyyy-MM-ddTHH:mm:ss">
+        value-format="yyyy-MM-dd HH:mm:ss">
       </el-date-picker>
       <cms-logo-view v-if="field.controlType==='CMSImage'" 
         v-model="field.value" 
