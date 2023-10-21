@@ -59,7 +59,7 @@ public class DynamicPageLinkFunction extends AbstractFunc  {
 			path += "?preview=true&sid=" + FreeMarkerUtils.evalLongVariable(Environment.getCurrentEnvironment(), "Site.siteId")
 					+ "&pp=" + context.getPublishPipeCode();
 			if (StpAdminUtil.isLogin()) {
-				SaTokenConfig config = StpAdminUtil.getStpLogic().getConfig();
+				SaTokenConfig config = StpAdminUtil.getStpLogic().getConfigOrGlobal();
 				path += "&" + config.getTokenName() + "="
 						+ (StringUtils.isNotEmpty(config.getTokenPrefix()) ? config.getTokenPrefix() + " " : "")
 						+ StpAdminUtil.getTokenValue();;

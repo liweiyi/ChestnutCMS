@@ -48,7 +48,7 @@ public class StpMemberUtil {
 			// 0. 获取相应对象
 			SaStorage storage = SaHolder.getStorage();
 			SaRequest request = SaHolder.getRequest();
-			SaTokenConfig config = getConfig();
+			SaTokenConfig config = getConfigOrGlobal();
 			String keyTokenName = getTokenName();
 			String tokenValue = null;
 

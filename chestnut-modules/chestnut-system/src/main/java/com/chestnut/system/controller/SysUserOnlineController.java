@@ -45,7 +45,7 @@ public class SysUserOnlineController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorOnlineList)
 	@GetMapping("/list")
 	public R<?> list(String ipaddr, String userName) {
-		String keyPrefix = StpAdminUtil.getStpLogic().getConfig().getTokenName() + ":" + AdminUserType.TYPE + ":token:";
+		String keyPrefix = StpAdminUtil.getStpLogic().getConfigOrGlobal().getTokenName() + ":" + AdminUserType.TYPE + ":token:";
 		Set<String> keys = redisCache.scanKeys(keyPrefix + "*", 100);
 		List<SysUserOnline> userOnlineList = keys.stream().map(key -> {
 			SaSession tokenSession = StpAdminUtil.getTokenSessionByToken(key.substring(key.lastIndexOf(":") + 1));

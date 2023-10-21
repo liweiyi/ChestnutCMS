@@ -43,7 +43,7 @@ public interface IInternalDataType {
 			path += "&pi=" + pageIndex;
 		}
 		if (StpAdminUtil.isLogin()) {
-			SaTokenConfig config = StpAdminUtil.getStpLogic().getConfig();
+			SaTokenConfig config = StpAdminUtil.getStpLogic().getConfigOrGlobal();
 			path = path + "&" + config.getTokenName() + "="
 					+ (StringUtils.isNotEmpty(config.getTokenPrefix()) ? config.getTokenPrefix() + " " : "")
 					+ StpAdminUtil.getTokenValue();

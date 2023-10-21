@@ -29,14 +29,14 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 
 | 技术框架              | 版本      | 应用说明    |
 |-------------------|---------|---------|
-| Spring Boot       | 3.1.3   | 基础开发框架  |
-| Spring Boot Admin | 3.1.5   | 监控框架    |
+| Spring Boot       | 3.1.5   | 基础开发框架  |
+| Spring Boot Admin | 3.1.7   | 监控框架    |
 | Mybatis Plus      | 3.5.3.2 | ORM框架   |
-| Flyway            | 9.21.2  | 数据库版本管理 |
+| Flyway            | 9.22.3  | 数据库版本管理 |
 | Yitter            | 1.0.6   | 雪花ID    |
-| Redisson          | 3.23.3  | 分布式锁    |
+| Redisson          | 3.24.1  | 分布式锁    |
 | FreeMarker        | 2.3.32  | 模板引擎    |
-| Sa-Token          | 1.34.0  | 权限认证    |
+| Sa-Token          | 1.37.0  | 权限认证    |
 | Xxl-Job           | 2.4.0   | 任务调度    |
 | Lombok            | 1.18.20 | 你懂的     |
 
