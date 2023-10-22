@@ -69,7 +69,7 @@ public class StpMemberUtil {
 				tokenValue = request.getCookieValue(keyTokenName);
 				// 临时处理一下
 				if (StringUtils.isNotEmpty(tokenValue)) {
-					String tokenPrefix = getConfig().getTokenPrefix();
+					String tokenPrefix = getConfigOrGlobal().getTokenPrefix();
 					if (StringUtils.isNotEmpty(tokenPrefix) && !tokenValue.startsWith(tokenPrefix + SaTokenConsts.TOKEN_CONNECTOR_CHAT)) {
 						tokenValue = tokenPrefix + SaTokenConsts.TOKEN_CONNECTOR_CHAT + tokenValue;
 					}
