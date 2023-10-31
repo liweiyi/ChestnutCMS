@@ -66,6 +66,10 @@ public class ESSearchListener {
 			return;
 		}
 		log.debug("Rebuild escontent after catalog move: " + event.getFromCatalog().getName());
-		this.searchService.rebuildCatalog(event.getFromCatalog(), true);
+		try {
+			this.searchService.rebuildCatalog(event.getFromCatalog(), true);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

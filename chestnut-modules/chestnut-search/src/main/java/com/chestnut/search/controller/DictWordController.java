@@ -10,10 +10,10 @@ import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.domain.DictWord;
 import com.chestnut.search.domain.dto.DictWordDTO;
+import com.chestnut.search.domain.dto.WordAnalyzeDTO;
 import com.chestnut.search.service.IDictWordService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -93,13 +92,10 @@ public class DictWordController extends BaseRestController {
 
 	/**
 	 * 分词测试
-	 *
-	 * @param text
-	 * @return
 	 */
 	@PostMapping("/analyze")
-	public R<?> wordAnalyze(@RequestBody String text) throws IOException {
-		AnalyzeRequest analyzeRequest = new AnalyzeRequest.Builder().analyzer("ik_smart").text(text).build();
+	public R<?> wordAnalyze(@RequestBody WordAnalyzeDTO dto) throws IOException {
+		AnalyzeRequest analyzeRequest = new AnalyzeRequest.Builder().analyzer(dto.getType()).text(dto.getText()).build();
 		AnalyzeResponse analyzeResponse = this.esClient.indices().analyze(analyzeRequest);
 		String result = analyzeResponse.tokens().stream().map(
 				token -> token.token() + "/" + token.type()

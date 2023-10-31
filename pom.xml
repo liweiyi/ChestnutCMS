@@ -518,6 +518,13 @@
 				<artifactId>chestnut-cms-member</artifactId>
 				<version>${chestnut.version}</version>
 			</dependency>
+
+			<!-- SEO模块 -->
+			<dependency>
+				<groupId>com.chestnut</groupId>
+				<artifactId>chestnut-cms-seo</artifactId>
+				<version>${chestnut.version}</version>
+			</dependency>
 			<!-- CMS Modules End -->
 		</dependencies>
 	</dependencyManagement>

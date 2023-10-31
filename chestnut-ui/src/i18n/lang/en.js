@@ -885,6 +885,11 @@ export default {
       ImportTheme: "Import Theme",
       ExportTheme: "Export Theme",
       ThemeFileTypeErrMsg: "Theme file only supported .zip!",
+      EnableSitemap: "Enable Sitemap",
+      SitemapPageType: "Sitemap Url Type",
+      SitemapUrlLimit: "Sitemap Url Limit",
+      GenSitemap: "Generate Sitemap",
+      SitemapProgressTitle: "Generate sitemap task",
       Tab: {
         Basic: "Basic Information",
         Extend: "Extend Config",
@@ -901,6 +906,7 @@ export default {
       Extend: {
         BasicCardTitle: "Basic",
         EnableIndex: "Enable Content Index",
+        WordAnalyzeType: "Word Anaylze Type",
         TitleRepeatCheck: "Title Repeat Check",
         TitlteRepeatCheckNone: "None",
         TitlteRepeatCheckSite: "Check in site",
@@ -1069,6 +1075,7 @@ export default {
       CancelRecommend: "Cancel Recommend",
       Hot: "Hot",
       CancelHot: "Cancel Hot",
+      SEOConfig: "SEO",
       SortOption: {
         Default: "Default Sorting",
         CreateTimeAsc: 'Create Time ASC',
@@ -1650,6 +1657,8 @@ export default {
       WordAnalyzeTitle: "Word Analyze Test",
       WordAnalyzePlaceholder: "Enter the text to be tested...",
       WordAnalyzeTest: "Test",
+      WordAnalyzeType: "Analyze Type",
+      WordAnalyzeText: "Text",
       WordAnalyzeResult: "Result"
     },
     Log: {

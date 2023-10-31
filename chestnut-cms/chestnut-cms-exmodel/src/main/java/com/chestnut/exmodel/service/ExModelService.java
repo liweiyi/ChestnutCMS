@@ -80,7 +80,7 @@ public class ExModelService {
 
             IMetaControlType controlType = controlTypeMap.get(IMetaControlType.BEAN_PREFIX + f.getControlType());
             IMetaControlType.ParseResult parseResult = controlType.parseFieldValue(dto.getValue());
-            if (Objects.nonNull(parseResult)) {
+            if (Objects.nonNull(parseResult) && parseResult.values().length > 1) {
                 dto.setValue(parseResult.values()[0]);
                 dto.setValueSrc(parseResult.values()[1].toString());
             }

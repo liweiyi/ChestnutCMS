@@ -188,6 +188,16 @@
                   </el-form-item>
                 </el-tab-pane>
                 <el-tab-pane :label="$t('CMS.Content.ExtendConfig')" name="extend">
+                  <el-divider content-position="left">{{ $t('CMS.Content.SEOConfig') }}</el-divider>
+                  <el-form-item :label="$t('CMS.ContentCore.SEOTitle')" prop="seoTitle">
+                    <el-input v-model="form.seoTitle" />
+                  </el-form-item>
+                  <el-form-item :label="$t('CMS.ContentCore.SEOKeyword')" prop="seoKeywords">
+                    <el-input v-model="form.seoKeywords" />
+                  </el-form-item>
+                  <el-form-item :label="$t('CMS.ContentCore.SEODescription')" prop="seoDescription">
+                    <el-input v-model="form.seoDescription" />
+                  </el-form-item>
                   <el-divider content-position="left">{{ $t('CMS.Content.ExtendTemplate') }}</el-divider>
                   <el-form-item v-for="pp in publishPipeProps" 
                                 :label="pp.pipeName" 

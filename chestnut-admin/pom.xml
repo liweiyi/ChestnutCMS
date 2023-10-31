@@ -142,6 +142,12 @@
 			<artifactId>chestnut-cms-member</artifactId>
 		</dependency>
 
+		<!-- SEO模块 -->
+		<dependency>
+			<groupId>com.chestnut</groupId>
+			<artifactId>chestnut-cms-seo</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>

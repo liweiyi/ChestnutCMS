@@ -242,6 +242,21 @@ public class CmsContent extends BaseEntityWithLogicDelete {
     private String lockUser;
 
     /**
+     * SEO标题
+     */
+    private String seoTitle;
+
+    /**
+     * SEO关键词
+     */
+    private String seoKeywords;
+
+    /**
+     * SEO描述
+     */
+    private String seoDescription;
+
+    /**
      * 发布通道
      */
     @TableField(typeHandler = JacksonTypeHandler.class)

@@ -885,6 +885,11 @@ export default {
       ImportTheme: "导入主题",
       ExportTheme: "导出主题",
       ThemeFileTypeErrMsg: "主题文件仅支持zip类型",
+      EnableSitemap: "是否生成Sitemap",
+      SitemapPageType: "Sitemap页面类型",
+      SitemapUrlLimit: "Sitemap链接数量",
+      GenSitemap: "生成Sitemap",
+      SitemapProgressTitle: "生成Sitemap任务",
       Tab: {
         Basic: "基础信息",
         Extend: "扩展配置",
@@ -901,6 +906,7 @@ export default {
       Extend: {
         BasicCardTitle: "基础配置",
         EnableIndex: "是否开启索引",
+        WordAnalyzeType: "索引分词方式",
         TitleRepeatCheck: "标题查重",
         TitlteRepeatCheckNone: "不校验",
         TitlteRepeatCheckSite: "全站校验",
@@ -1069,6 +1075,7 @@ export default {
       CancelRecommend: "取消推荐",
       Hot: "热点",
       CancelHot: "取消热点",
+      SEOConfig: "SEO配置",
       SortOption: {
         Default: "默认排序",
         CreateTimeAsc: '添加时间升序',
@@ -1650,6 +1657,8 @@ export default {
       WordAnalyzeTitle: "分词测试",
       WordAnalyzePlaceholder: "输入需要测试的文字",
       WordAnalyzeTest: "测试",
+      WordAnalyzeType: "分词方式",
+      WordAnalyzeText: "分词文本",
       WordAnalyzeResult: "测试结果"
     },
     Log: {

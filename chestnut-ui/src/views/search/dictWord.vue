@@ -137,10 +137,21 @@
       append-to-body>
       <el-form 
         ref="formAnalyze"
+        label-position="top"
         v-loading="loadingAnalyze"
         :model="formAnalyze"
         :rules="rulesAnalyze">
-        <el-form-item prop="text">
+        <el-form-item :label="$t('Search.DictWord.WordAnalyzeType')" prop="type">
+          <el-select v-model="formAnalyze.type" clearable>
+            <el-option
+              v-for="dict in dict.type.WordAnalyzeType"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="$t('Search.DictWord.WordAnalyzeText')" prop="text">
           <el-input type="textarea" :rows="3" v-model="formAnalyze.text" :placeholder="$t('Search.DictWord.WordAnalyzePlaceholder')" />
         </el-form-item>
         <el-form-item :label="$t('Search.DictWord.WordAnalyzeResult')" prop="result">
@@ -162,7 +173,7 @@ import { getDictWords, addDictWord, deleteDictWords, wordAnalyze } from "@/api/s
 
 export default {
   name: "SearchDictWord",
-  dicts: ['SearchDictWordType'],
+  dicts: ['SearchDictWordType','WordAnalyzeType'],
   data () {
     return {
       loading: false,
@@ -185,6 +196,9 @@ export default {
       openAnalyze: false,
       formAnalyze: {},
       rulesAnalyze: {
+        type: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
         text: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ]
@@ -203,7 +217,7 @@ export default {
       this.$refs["formAnalyze"].validate(valid => {
         if (valid) {
           this.loadingAnalyze = true
-          wordAnalyze(this.formAnalyze.text).then(response => {
+          wordAnalyze(this.formAnalyze).then(response => {
             this.loadingAnalyze = false
             this.analyzeResult = response.data;
           });

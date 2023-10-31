@@ -1,27 +1,19 @@
 package com.chestnut.cms.search.service;
 
-import java.io.IOException;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.mapping.Property;
-import co.elastic.clients.elasticsearch.core.*;
+import co.elastic.clients.elasticsearch.core.GetResponse;
+import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.exmodel.service.ExModelService;
-import com.chestnut.search.SearchConsts;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.search.es.doc.ESContent;
+import com.chestnut.cms.search.fixed.config.SearchAnalyzeType;
+import com.chestnut.cms.search.properties.EnableIndexProperty;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
@@ -30,19 +22,24 @@ import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
-import com.chestnut.contentcore.properties.EnableIndexProperty;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.exmodel.service.ExModelService;
 import com.chestnut.system.fixed.dict.YesOrNo;
-
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.ElasticsearchException;
-import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -62,6 +59,7 @@ public class ContentIndexService implements CommandLineRunner {
 	private final ExModelService extendModelService;
 
 	private void createIndex() throws IOException {
+		String analyzeType = SearchAnalyzeType.getValue();
 		// 创建索引
 		Map<String, Property> properties = new HashMap<>();
 //		properties.put("catalogAncestors", Property.of(fn -> fn.keyword(b -> b
@@ -77,10 +75,10 @@ public class ContentIndexService implements CommandLineRunner {
 		properties.put("keywords", Property.of(fn ->fn.keyword(b -> b.store(true))));
 		properties.put("title", Property.of(fn -> fn.text(b -> b
 				.store(true) // 是否存储在索引中
-				.analyzer(SearchConsts.IKAnalyzeType_Smart)
+				.analyzer(analyzeType)
 		)));
 		properties.put("fullText", Property.of(fn -> fn.text(b -> b
-				.analyzer(SearchConsts.IKAnalyzeType_Smart)
+				.analyzer(analyzeType)
 		)));
 		CreateIndexResponse response = esClient.indices().create(fn -> fn
 				.index(ESContent.INDEX_NAME)
@@ -90,9 +88,7 @@ public class ContentIndexService implements CommandLineRunner {
 
 	public void recreateIndex(CmsSite site) throws IOException {
 		boolean exists = esClient.indices().exists(fn -> fn.index(ESContent.INDEX_NAME)).value();
-		if (!exists) {
-			this.createIndex();
-		} else {
+		if (exists) {
 			// 删除站点索引文档数据
 			long total = this.contentService.lambdaQuery().eq(CmsContent::getSiteId, site.getSiteId()).count();
 			long pageSize = 1000;
@@ -104,7 +100,9 @@ public class ContentIndexService implements CommandLineRunner {
 						.getRecords().stream().map(CmsContent::getContentId).toList();
 				deleteContentDoc(contentIds);
 			}
+			esClient.indices().delete(fn -> fn.index(ESContent.INDEX_NAME));
 		}
+		this.createIndex();
 	}
 
 	/**
@@ -171,7 +169,7 @@ public class ContentIndexService implements CommandLineRunner {
 		this.esClient.bulk(bulk -> bulk.operations(bulkOperationList));
 	}
 
-	public void rebuildCatalog(CmsCatalog catalog, boolean includeChild) {
+	public void rebuildCatalog(CmsCatalog catalog, boolean includeChild) throws InterruptedException {
 		CmsSite site = this.siteService.getSite(catalog.getSiteId());
 		String enableIndex = EnableIndexProperty.getValue(catalog.getConfigProps(), site.getConfigProps());
 		if (YesOrNo.isYes(enableIndex)) {
@@ -182,9 +180,13 @@ public class ContentIndexService implements CommandLineRunner {
 					.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors());
 			long total = this.contentService.count(q);
 			long pageSize = 200;
+			int count = 1;
 			for (int i = 0; i * pageSize < total; i++) {
+				AsyncTaskManager.setTaskProgressInfo((int) (count++ * 100 / total),
+						"正在重建栏目【" + catalog.getName() + "】内容索引");
 				Page<CmsContent> page = contentService.page(new Page<>(i, pageSize, false), q);
 				batchContentDoc(site, catalog, page.getRecords());
+				AsyncTaskManager.checkInterrupt(); // 允许中断
 			}
 		}
 	}
@@ -202,21 +204,7 @@ public class ContentIndexService implements CommandLineRunner {
 
 				List<CmsCatalog> catalogs = catalogService.list();
 				for (CmsCatalog catalog : catalogs) {
-					LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
-							.eq(CmsContent::getSiteId, site.getSiteId())
-							.ne(CmsContent::getCopyType, ContentCopyType.Mapping)
-							.eq(CmsContent::getStatus, ContentStatus.PUBLISHED)
-							.eq(CmsContent::getCatalogId, catalog.getCatalogId());
-					long total = contentService.count(q);
-					int pageSize = 200;
-					int count = 1;
-					for (int i = 0; (long) i * pageSize < total; i++) {
-						this.setProgressInfo((int) (count++ * 100 / total),
-								"正在重建栏目【" + catalog.getName() + "】内容索引");
-						Page<CmsContent> page = contentService.page(new Page<>(i, pageSize, false), q);
-						batchContentDoc(site, catalog, page.getRecords());
-						AsyncTaskManager.checkInterrupt(); // 允许中断
-					}
+					rebuildCatalog(catalog, false);
 				}
 				this.setProgressInfo(100, "重建全站索引完成");
 			}

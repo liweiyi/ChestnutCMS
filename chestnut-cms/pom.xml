@@ -28,6 +28,7 @@
 		<module>chestnut-cms-stat</module>
         <module>chestnut-cms-customform</module>
         <module>chestnut-cms-member</module>
+        <module>chestnut-module-seo</module>
     </modules>
 	
 	<properties>

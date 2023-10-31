@@ -27,10 +27,10 @@ export function deleteDictWords(dictWordIds) {
 }
 
 // 分词测试
-export function wordAnalyze(text) {
+export function wordAnalyze(data) {
   return request({
     url: '/search/dict/analyze',
     method: 'post',
-    data: text
+    data: data
   })
 }

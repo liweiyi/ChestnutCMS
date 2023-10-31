@@ -6,6 +6,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.domain.SysScheduledTask;
 import com.chestnut.system.domain.SysScheduledTaskLog;
 import com.chestnut.system.domain.dto.ScheduledTaskDTO;
@@ -48,6 +49,8 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
         implements ISysScheduledTaskService, CommandLineRunner {
 
     private static final ConcurrentHashMap<Long, ScheduledTask> taskMap = new ConcurrentHashMap<>();
+
+    private final SysProperties sysProperties;
 
     private final SysScheduledTaskLogMapper taskLogMapper;
 
@@ -107,6 +110,9 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
 
     @Override
     public void addTaskLog(ScheduledTask task) {
+        if (!sysProperties.isScheduleLog()) {
+            return;
+        }
         SysScheduledTaskLog taskLog = new SysScheduledTaskLog();
         taskLog.setTaskId(task.getTaskId());
         taskLog.setTaskType(task.getType());

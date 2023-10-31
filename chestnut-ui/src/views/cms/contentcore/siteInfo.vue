@@ -56,6 +56,16 @@
         <el-button 
           plain
           type="primary"
+          icon="el-icon-map-location"
+          size="mini"
+          :disabled="!this.siteId"
+          v-hasPermi="[ $p('Site:Edit:{0}', [ siteId ]) ]"
+          @click="handleGenSitemap">{{ $t("CMS.Site.GenSitemap") }}</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button 
+          plain
+          type="primary"
           icon="el-icon-upload"
           size="mini"
           :disabled="!this.siteId"
@@ -136,6 +146,28 @@
                   @click="handleSelectTemplate()"
                 >{{ $t("Common.Select") }}</el-button>
               </el-input>
+            </el-form-item>
+            <el-form-item :label="$t('CMS.Site.EnableSitemap')">
+              <el-switch
+                v-model="pp.props.enableSitemap"
+                :active-text="$t('Common.Yes')"
+                :inactive-text="$t('Common.No')"
+                active-value="Y"
+                inactive-value="N">
+              </el-switch>
+            </el-form-item>
+            <el-form-item v-if="pp.props.enableSitemap=='Y'" :label="$t('CMS.Site.SitemapPageType')">
+              <el-select v-model="pp.props.sitemapPageType" style="width:325px">
+                <el-option
+                  v-for="dict in dict.type.CMSSitemapPageType"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.value"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item v-if="pp.props.enableSitemap=='Y'" :label="$t('CMS.Site.SitemapUrlLimit')">
+              <el-input-number v-model="pp.props.sitemapUrlLimit" :min="1" :max="50000"></el-input-number>
             </el-form-item>
           </el-tab-pane>
         </el-tabs>
@@ -218,6 +250,7 @@
 <script>
 import { getToken } from "@/utils/auth";
 import { getSite, publishSite, updateSite, exportSiteTheme  } from "@/api/contentcore/site";
+import { genSitemap  } from "@/api/seo/sitemap";
 import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
 import CMSProgress from '@/views/components/Progress';
 import CMSLogoView from '@/views/cms/components/LogoView';
@@ -231,7 +264,7 @@ export default {
     "cms-logo-view": CMSLogoView,
     "cms-exmodel-editor": CMSEXModelEditor
   },
-  dicts: ['CMSStaticSuffix'],
+  dicts: ['CMSStaticSuffix','CMSSitemapPageType'],
   computed: {
     showEXModel() {
       return this.form_info.configProps && this.form_info.configProps.SiteExtendModel != null && this.form_info.configProps.SiteExtendModel.length > 0;
@@ -371,6 +404,16 @@ export default {
           }
         } else {
           this.$modal.msgError(response.msg);
+        }
+      });
+    },
+    handleGenSitemap() {
+      const params = { siteId: this.siteId }
+      genSitemap(params).then(response => {
+        if (response.data && response.data != "") {
+          this.taskId = response.data;
+          this.progressTitle = this.$t('CMS.Site.SitemapProgressTitle');
+          this.openProgress = true;
         }
       });
     },

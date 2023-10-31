@@ -615,7 +615,7 @@ export default {
           if (r.resourceType == 'image') {
             html += '<p><img src="' + r.src + '" iurl="' + r.path + '" class="art-body-img" /></p>'
           } else {
-            html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank">' + r.name + '</a></p>'
+            html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank" class="arg-body-' + r.resourceType + '">' + r.name + '</a></p>'
           }
         });
         if (html && html.length > 0) {

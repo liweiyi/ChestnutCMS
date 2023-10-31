@@ -22,4 +22,9 @@ public class SysProperties {
 	
 	/** 演示模式开关 */
 	private boolean demoMode;
+
+	/**
+	 * 是否记录定时任务日志到数据库
+	 */
+	private boolean scheduleLog;
 }
