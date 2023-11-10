@@ -73,28 +73,34 @@
       </el-table-column>
       <el-table-column :label="$t('Common.Operation')" width="300" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:dept:edit']"
-          >{{ $t('Common.Edit') }}</el-button>
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-plus"
-            @click="handleAdd(scope.row)"
-            v-hasPermi="['system:dept:add']"
-          >{{ $t('Common.Add') }}</el-button>
-          <el-button
-            v-if="scope.row.parentId != 0"
-            size="small"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:dept:remove']"
-          >{{ $t('Common.Delete') }}</el-button>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-edit"
+              @click="handleUpdate(scope.row)"
+              v-hasPermi="['system:dept:edit']"
+            >{{ $t('Common.Edit') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-plus"
+              @click="handleAdd(scope.row)"
+              v-hasPermi="['system:dept:add']"
+            >{{ $t('Common.Add') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              v-if="scope.row.parentId != 0"
+              size="small"
+              type="text"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.row)"
+              v-hasPermi="['system:dept:remove']"
+            >{{ $t('Common.Delete') }}</el-button>
+          </span>
         </template>
       </el-table-column>
     </el-table>

@@ -20,7 +20,7 @@ public class InternalUrlUtils {
     /**
      * 带iurl属性值的任意标签匹配
      */
-	private static final Pattern InternalUrlTagPattern = Pattern.compile("<[^>]+=\\s*['\"](iurl://[^'\"]+)['\"][^>]*>",
+	public static final Pattern InternalUrlTagPattern = Pattern.compile("<[^>]+=\\s*['\"](iurl://[^'\"]+)['\"][^>]*>",
 			Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
 
 

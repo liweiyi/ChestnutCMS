@@ -2,6 +2,7 @@ package com.chestnut.contentcore.properties;
 
 import java.util.Map;
 
+import com.chestnut.common.utils.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.chestnut.contentcore.core.IProperty;
@@ -36,6 +37,10 @@ public class PublishedContentEditProperty implements IProperty {
 	}
 	
 	public static boolean getValue(Map<String, String> props) {
-		return YesOrNo.isYes(ConfigPropertyUtils.getStringValue(ID, props));
+		String value = ConfigPropertyUtils.getStringValue(ID, props);
+		if (StringUtils.isEmpty(value)) {
+			return true;
+		}
+		return YesOrNo.isYes(value);
 	}
 }

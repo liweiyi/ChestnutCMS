@@ -20,18 +20,17 @@
           @click="handlePreview"><svg-icon icon-class="eye-open" class="mr5"></svg-icon>{{ $t('CMS.ContentCore.Preview') }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-dropdown>
+        <el-dropdown class="btn-permi" v-hasPermi="[ $p('Catalog:Publish:{0}', [ catalogId ]) ]">
           <el-button 
             plain
             size="mini" 
             type="primary"
             icon="el-icon-s-promotion"
             :disabled="!this.catalogId"
-            v-hasPermi="[ $p('Catalog:Publish:{0}', [ catalogId ]) ]"
             @click="handlePublish(-1)">
             {{ $t('CMS.ContentCore.Publish') }}<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
-          <el-dropdown-menu slot="dropdown" :key="'btn-publish2-' + catalogId" v-hasPermi="[ $p('Catalog:Publish:{0}', [ catalogId ]) ]">
+          <el-dropdown-menu slot="dropdown" :key="'btn-publish2-' + catalogId">
             <el-dropdown-item 
               v-for="dict in dict.type.CMSContentStatus" 
               :key="dict.value" 
@@ -65,6 +64,7 @@
         <el-popover
           width="226"
           :disabled="!this.catalogId"
+          class="btn-permi"
           v-hasPermi="[ $p('Catalog:Sort:{0}', [ catalogId ]) ]"
           v-model="showSortPop">
           <el-input-number v-model="sortValue" size="small" style="width:200px;" />
@@ -85,16 +85,15 @@
         </el-popover>
       </el-col>
       <el-col :span="1.5">
-        <el-popconfirm :title="$t('CMS.Catalog.DeleteTip')" @confirm="handleDelete">
-            <el-button 
-              type="danger" 
-              icon="el-icon-delete"
-              size="mini"
-              plain
-              :disabled="!this.catalogId"
-              v-hasPermi="[ $p('Catalog:Delete:{0}', [ catalogId ]) ]"
-              slot="reference">{{ $t("Common.Delete") }}</el-button>
-          </el-popconfirm>
+        <el-popconfirm :title="$t('CMS.Catalog.DeleteTip')" @confirm="handleDelete" class="btn-permi" v-hasPermi="[ $p('Catalog:Delete:{0}', [ catalogId ]) ]">
+          <el-button 
+            type="danger" 
+            icon="el-icon-delete"
+            size="mini"
+            plain
+            :disabled="!this.catalogId"
+            slot="reference">{{ $t("Common.Delete") }}</el-button>
+        </el-popconfirm>
       </el-col>
     </el-row>
     <el-form 

@@ -112,20 +112,24 @@
       </el-table-column>
       <el-table-column :label="$t('Common.Operation')" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:dict:edit']"
-          >{{ $t('Common.Edit') }}</el-button>
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:dict:remove']"
-          >{{ $t('Common.Delete') }}</el-button>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-edit"
+              @click="handleUpdate(scope.row)"
+              v-hasPermi="['system:dict:edit']"
+            >{{ $t('Common.Edit') }}</el-button>
+          <span class="btn-cell-wrap">
+          </span>
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.row)"
+              v-hasPermi="['system:dict:remove']"
+            >{{ $t('Common.Delete') }}</el-button>
+          </span>
         </template>
       </el-table-column>
     </el-table>

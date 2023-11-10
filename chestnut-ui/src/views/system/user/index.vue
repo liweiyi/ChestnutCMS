@@ -147,31 +147,37 @@
             class-name="small-padding fixed-width"
           >
             <template slot-scope="scope" v-if="scope.row.userId !== 1">
-              <el-button
-                size="small"
-                type="text"
-                icon="el-icon-edit"
-                @click="handleUpdate(scope.row)"
-                v-hasPermi="['system:user:edit']"
-              >{{ $t('Common.Edit') }}</el-button>
-              <el-button
-                size="small"
-                type="text"
-                icon="el-icon-delete"
-                @click="handleDelete(scope.row)"
-                v-hasPermi="['system:user:remove']"
-              >{{ $t('Common.Delete') }}</el-button>
-              <el-dropdown size="small" @command="(command) => handleCommand(command, scope.row)">
-                <el-button size="small" type="text" icon="el-icon-d-arrow-right" v-hasPermi="['system:user:resetPwd', 'system:user:edit']">{{ $t('Common.More') }}</el-button>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="handleResetPwd" icon="el-icon-key"
-                    v-hasPermi="['system:user:resetPwd']">{{ $t('System.User.ResetPwd') }}</el-dropdown-item>
-                  <el-dropdown-item command="handleAuthRole" icon="el-icon-circle-check"
-                    v-hasPermi="['system:user:edit']">{{ $t('System.User.RoleSetting') }}</el-dropdown-item>
-                  <el-dropdown-item command="handleGrantPerms" icon="el-icon-circle-check"
-                    v-hasPermi="['system:user:edit']">{{ $t('System.Role.PermissionSetting') }}</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
+              <span class="btn-cell-wrap">
+                <el-button
+                  size="small"
+                  type="text"
+                  icon="el-icon-edit"
+                  @click="handleUpdate(scope.row)"
+                  v-hasPermi="['system:user:edit']"
+                >{{ $t('Common.Edit') }}</el-button>
+              </span>
+              <span class="btn-cell-wrap">
+                <el-button
+                  size="small"
+                  type="text"
+                  icon="el-icon-delete"
+                  @click="handleDelete(scope.row)"
+                  v-hasPermi="['system:user:remove']"
+                >{{ $t('Common.Delete') }}</el-button>
+              </span>
+              <span class="btn-cell-wrap">
+                <el-dropdown size="small" @command="(command) => handleCommand(command, scope.row)">
+                  <el-button size="small" type="text" icon="el-icon-more"></el-button>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="handleResetPwd" icon="el-icon-key"
+                      v-hasPermi="['system:user:resetPwd']">{{ $t('System.User.ResetPwd') }}</el-dropdown-item>
+                    <el-dropdown-item command="handleAuthRole" icon="el-icon-circle-check"
+                      v-hasPermi="['system:user:edit']">{{ $t('System.User.RoleSetting') }}</el-dropdown-item>
+                    <el-dropdown-item command="handleGrantPerms" icon="el-icon-circle-check"
+                      v-hasPermi="['system:user:edit']">{{ $t('System.Role.PermissionSetting') }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </span>
             </template>
           </el-table-column>
         </el-table>

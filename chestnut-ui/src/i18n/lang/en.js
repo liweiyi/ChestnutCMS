@@ -1128,7 +1128,8 @@ export default {
       ViewCount: "Views",
       FavoriteCount: "Favorities",
       LikeCount: "Likes",
-      CommentCount: "Comments"
+      CommentCount: "Comments",
+      RelaContent: "Related contents"
     },
     Image: {
       Title: "Title",

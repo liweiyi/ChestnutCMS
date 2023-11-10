@@ -2,7 +2,7 @@
   <div class="cms-content-list">
     <el-row :gutter="10" class="mb12">
       <el-col :span="1.5">
-        <el-popover placement="bottom-start" :width="350" trigger="click">
+        <el-popover class="btn-permi" placement="bottom-start" :width="350" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
           <el-row style="margin-bottom:20px;text-align:right;">
             <el-radio-group v-model="addContentType">
               <el-radio-button 
@@ -35,6 +35,7 @@
           icon="el-icon-delete"
           size="mini"
           :disabled="multiple"
+          v-hasPermi="[ $p('Catalog:DeleteContent:{0}', [ catalogId ]) ]"
           @click="handleDelete">{{ $t("Common.Delete") }}
         </el-button>
       </el-col>
@@ -45,6 +46,7 @@
           icon="el-icon-timer"
           size="mini"
           :disabled="multiple"
+          v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]"
           @click="handleToPublish">{{ $t("CMS.ContentCore.ToPublish") }}
         </el-button>
       </el-col>
@@ -55,6 +57,7 @@
           icon="el-icon-s-promotion"
           size="mini"
           :disabled="multiple"
+          v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]"
           @click="handlePublish">{{ $t("CMS.ContentCore.Publish") }}
         </el-button>
       </el-col>
@@ -65,6 +68,7 @@
           icon="el-icon-download"
           size="mini"
           :disabled="multiple"
+          v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]"
           @click="handleOffline">{{ $t("CMS.Content.Offline") }}
         </el-button>
       </el-col>
@@ -89,7 +93,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-dropdown>
+        <el-dropdown class="btn-permi" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]">
           <el-button 
             plain
             size="mini" 
@@ -104,7 +108,7 @@
         </el-dropdown>
       </el-col>
       <el-col :span="1.5">
-        <el-dropdown>
+        <el-dropdown class="btn-permi" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]">
           <el-button 
             plain
             size="mini" 
@@ -231,32 +235,40 @@
         width="220"
         class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button 
-            size="small"
-            type="text"
-            icon="el-icon-s-promotion"
-            @click="handlePublish(scope.row)">{{ $t('CMS.ContentCore.Publish') }}</el-button>
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-view"
-            @click="handlePreview(scope.row)">{{ $t('CMS.ContentCore.Preview') }}</el-button>
-          <el-button 
-            size="small"
-            type="text"
-            icon="el-icon-timer"
-            @click="handleToPublish(scope.row)">{{ $t('CMS.ContentCore.ToPublish') }}</el-button>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-view"
+              @click="handlePreview(scope.row)">{{ $t('CMS.ContentCore.Preview') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button 
+              size="small"
+              type="text"
+              icon="el-icon-s-promotion"
+              v-hasPermi="[ $p('Catalog:EditContent:{0}', [ scope.row.catalogId ]) ]"
+              @click="handlePublish(scope.row)">{{ $t('CMS.ContentCore.Publish') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button 
+              size="small"
+              type="text"
+              icon="el-icon-timer"
+              v-hasPermi="[ $p('Catalog:EditContent:{0}', [ scope.row.catalogId ]) ]"
+              @click="handleToPublish(scope.row)">{{ $t('CMS.ContentCore.ToPublish') }}</el-button>
+          </span>
           <el-dropdown size="small">
             <el-link :underline="false" class="row-more-btn" icon="el-icon-more"></el-link>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item icon="el-icon-edit" @click.native="handleEdit(scope.row)">{{ $t('Common.Edit') }}</el-dropdown-item>
-              <el-dropdown-item icon="el-icon-delete" @click.native="handleDelete(scope.row)">{{ $t('Common.Delete') }}</el-dropdown-item>
-              <el-dropdown-item icon="el-icon-sort" @click.native="handleSort(scope.row)">{{ $t('Common.Sort') }}</el-dropdown-item>
-              <el-dropdown-item v-show="scope.row.topFlag<=0" icon="el-icon-top" @click.native="handleSetTop(scope.row)">{{ $t('CMS.Content.SetTop') }}</el-dropdown-item>
-              <el-dropdown-item v-show="scope.row.topFlag>0" icon="el-icon-bottom" @click.native="handleCancelTop(scope.row)">{{ $t('CMS.Content.CancelTop') }}</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-edit" @click.native="handleEdit(scope.row)" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ scope.row.catalogId ]) ]">{{ $t('Common.Edit') }}</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-delete" @click.native="handleDelete(scope.row)" v-hasPermi="[ $p('Catalog:DeleteContent:{0}', [ scope.row.catalogId ]) ]">{{ $t('Common.Delete') }}</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-sort" @click.native="handleSort(scope.row)" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ scope.row.catalogId ]) ]">{{ $t('Common.Sort') }}</el-dropdown-item>
+              <el-dropdown-item v-show="scope.row.topFlag<=0" icon="el-icon-top" @click.native="handleSetTop(scope.row)" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ scope.row.catalogId ]) ]">{{ $t('CMS.Content.SetTop') }}</el-dropdown-item>
+              <el-dropdown-item v-show="scope.row.topFlag>0" icon="el-icon-bottom" @click.native="handleCancelTop(scope.row)" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ scope.row.catalogId ]) ]">{{ $t('CMS.Content.CancelTop') }}</el-dropdown-item>
               <el-dropdown-item icon="el-icon-document-copy" @click.native="handleCopy(scope.row)">{{ $t('Common.Copy') }}</el-dropdown-item>
               <el-dropdown-item icon="el-icon-right" @click.native="handleMove(scope.row)">{{ $t('Common.Move') }}</el-dropdown-item>
-              <el-dropdown-item icon="el-icon-download" @click.native="handleOffline(scope.row)">{{ $t('CMS.Content.Offline') }}</el-dropdown-item>
+              <el-dropdown-item icon="el-icon-download" @click.native="handleOffline(scope.row)" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ scope.row.catalogId ]) ]">{{ $t('CMS.Content.Offline') }}</el-dropdown-item>
               <!-- <el-dropdown-item icon="el-icon-document" @click.native="handleArchive(scope.row)">{{ $t('CMS.Content.Archive') }}</el-dropdown-item> -->
               <el-dropdown-item icon="el-icon-search" @click.native="handleCreateIndex(scope.row)">{{ $t('CMS.Content.GenIndex') }}</el-dropdown-item>
             </el-dropdown-menu>

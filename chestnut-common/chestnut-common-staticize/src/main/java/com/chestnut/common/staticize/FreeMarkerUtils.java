@@ -1,25 +1,17 @@
 package com.chestnut.common.staticize;
 
+import com.chestnut.common.staticize.core.TemplateContext;
+import com.chestnut.common.utils.DateUtils;
+import com.chestnut.common.utils.NumberUtils;
+import com.chestnut.common.utils.StringUtils;
+import freemarker.core.Environment;
+import freemarker.template.*;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.chestnut.common.staticize.core.TemplateContext;
-import com.chestnut.common.utils.DateUtils;
-import com.chestnut.common.utils.NumberUtils;
-import com.chestnut.common.utils.StringUtils;
-
-import freemarker.core.Environment;
-import freemarker.template.AdapterTemplateModel;
-import freemarker.template.TemplateBooleanModel;
-import freemarker.template.TemplateDateModel;
-import freemarker.template.TemplateHashModel;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
-import freemarker.template.TemplateNumberModel;
-import freemarker.template.TemplateScalarModel;
 
 public class FreeMarkerUtils {
 	
@@ -40,6 +32,8 @@ public class FreeMarkerUtils {
 				env.getObjectWrapper().wrap(context.getFirstFileName()));
 		env.setGlobalVariable(StaticizeConstants.TemplateVariable_OtherPage,
 				env.getObjectWrapper().wrap(context.getOtherFileName()));
+		env.setGlobalVariable(StaticizeConstants.TemplateVariable_TimeMillis,
+				env.getObjectWrapper().wrap(context.getTimeMillis()));
 	}
 	
 	public static TemplateContext getTemplateContext(Environment env) throws TemplateModelException {

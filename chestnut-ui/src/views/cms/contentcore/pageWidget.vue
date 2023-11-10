@@ -2,17 +2,13 @@
   <div class="pagewidget-container">
     <el-row :gutter="24" class="mb12">
       <el-col :span="8">
-          <el-row :gutter="10">
-            <el-col :span="1.5">
-              <el-button 
-                plain
-                type="primary"
-                icon="el-icon-plus"
-                size="mini"
-                v-hasPermi="[ $p('Site:AddPageWidget:{0}', [ siteId ]) ]"
-                @click="handleAdd">{{ $t("Common.Add") }}</el-button>
-            </el-col>
-        </el-row>
+        <el-button 
+          plain
+          type="primary"
+          icon="el-icon-plus"
+          size="mini"
+          v-hasPermi="[ $p('Site:AddPageWidget:{0}', [ siteId ]) ]"
+          @click="handleAdd">{{ $t("Common.Add") }}</el-button>
       </el-col>
       <el-col :span="16" style="text-align: right;">
         <el-select 
@@ -59,38 +55,36 @@
       <el-table-column :label="$t('CMS.PageWidget.Path')" align="left" width="180" prop="path" :show-overflow-tooltip="true" />
       <el-table-column :label="$t('Common.Operation')" align="left" width="200" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-row :gutter="10">
-            <el-col :span="1.5">
+            <span class="btn-cell-wrap">
               <el-button 
                 size="mini"
                 type="text"
                 icon="el-icon-s-promotion"
                 v-hasPermi="[ $p('PageWidget:Publish:{0}', [ scope.row.pageWidgetId ]) ]"
                 @click="handlePublish(scope.row)">{{ $t('CMS.ContentCore.Publish') }}</el-button>
-            </el-col>
-            <el-col :span="1.5">
+            </span>
+            <span class="btn-cell-wrap">
               <el-button 
                 size="mini"
                 type="text"
                 icon="el-icon-view"
                 @click="handlePreview(scope.row)">{{ $t('CMS.ContentCore.Preview') }}</el-button>
-            </el-col>
-            <el-col :span="1.5">
+            </span>
+            <span class="btn-cell-wrap">
               <el-button 
                 size="mini"
                 type="text"
                 icon="el-icon-edit"
                 @click="handleEdit(scope.row)">{{ $t('Common.Edit') }}</el-button>
-            </el-col>
-            <el-col :span="1.5">
+            </span>
+            <span class="btn-cell-wrap">
               <el-button 
                 size="mini"
                 type="text"
                 icon="el-icon-delete"
                 v-hasPermi="[ $p('PageWidget:Delete:{0}', [ scope.row.pageWidgetId ]) ]"
                 @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
-            </el-col>
-          </el-row>
+            </span>
         </template>
       </el-table-column>
     </el-table>

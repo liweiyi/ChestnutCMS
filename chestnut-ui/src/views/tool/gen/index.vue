@@ -115,41 +115,51 @@
       <el-table-column label="更新时间" align="center" prop="updateTime" width="160" />
       <el-table-column :label="$t('Common.Operation')" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            type="text"
-            size="small"
-            icon="el-icon-view"
-            @click="handlePreview(scope.row)"
-            v-hasPermi="['tool:gen:preview']"
-          >预览</el-button>
-          <el-button
-            type="text"
-            size="small"
-            icon="el-icon-edit"
-            @click="handleEditTable(scope.row)"
-            v-hasPermi="['tool:gen:edit']"
-          >{{ $t('Common.Edit') }}</el-button>
-          <el-button
-            type="text"
-            size="small"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['tool:gen:remove']"
-          >{{ $t("Common.Delete") }}</el-button>
-          <el-button
-            type="text"
-            size="small"
-            icon="el-icon-refresh"
-            @click="handleSynchDb(scope.row)"
-            v-hasPermi="['tool:gen:edit']"
-          >同步</el-button>
-          <el-button
-            type="text"
-            size="small"
-            icon="el-icon-download"
-            @click="handleGenTable(scope.row)"
-            v-hasPermi="['tool:gen:code']"
-          >生成代码</el-button>
+          <span class="btn-cell-wrap">
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-view"
+              @click="handlePreview(scope.row)"
+              v-hasPermi="['tool:gen:preview']"
+            >预览</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-edit"
+              @click="handleEditTable(scope.row)"
+              v-hasPermi="['tool:gen:edit']"
+            >{{ $t('Common.Edit') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.row)"
+              v-hasPermi="['tool:gen:remove']"
+            >{{ $t("Common.Delete") }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-refresh"
+              @click="handleSynchDb(scope.row)"
+              v-hasPermi="['tool:gen:edit']"
+            >同步</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              type="text"
+              size="small"
+              icon="el-icon-download"
+              @click="handleGenTable(scope.row)"
+              v-hasPermi="['tool:gen:code']"
+            >生成代码</el-button>
+          </span>
         </template>
       </el-table-column>
     </el-table>

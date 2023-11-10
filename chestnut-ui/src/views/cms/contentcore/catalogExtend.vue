@@ -1,24 +1,29 @@
 <template>
   <div class="catalog-extend-container">
     <el-row class="mb12">
-      <el-button 
-        plain
-        type="success"
-        icon="el-icon-edit"
-        size="mini"
-        :disabled="!this.catalogId"
-        v-hasPermi="[ $p('Catalog:Edit:{0}', [ catalogId ]) ]"
-        @click="handleSaveExtends">{{ $t("Common.Save") }}</el-button>
-      <el-button 
-        plain 
-        type="primary" 
-        icon="el-icon-bottom-right" 
-        size="mini"
-        :disabled="!this.catalogId"
-        v-hasPermi="[ $p('Catalog:Edit:{0}', [ catalogId ]) ]"
-        @click="handleApplyAllToCatalog()">{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
+      <el-col :span="1.5">
+        <el-button 
+          plain
+          type="success"
+          icon="el-icon-edit"
+          size="mini"
+          :disabled="!this.catalogId"
+          v-hasPermi="[ $p('Catalog:Edit:{0}', [ catalogId ]) ]"
+          @click="handleSaveExtends">{{ $t("Common.Save") }}</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button 
+          plain 
+          type="primary" 
+          icon="el-icon-bottom-right" 
+          size="mini"
+          :disabled="!this.catalogId"
+          v-hasPermi="[ $p('Catalog:Edit:{0}', [ catalogId ]) ]"
+          @click="handleApplyAllToCatalog()">{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
+      </el-col>
     </el-row>
     <el-form 
+      class="catalog-extend-form"
       ref="form_extend"
       :model="form_extend"
       v-loading="loading"
@@ -242,22 +247,22 @@ export default {
   }
 };
 </script>
-<style>
-.catalog-extend-container .el-form-item {
+<style scoped>
+.catalog-extend-form .el-form-item {
   margin-bottom: 12px;
   width: 700px;
 }
-.catalog-extend-container .el-card {
+.catalog-extend-form .el-card {
   margin-bottom: 10px;
 }
-.catalog-extend-container .el-input, .el-select, 
-.catalog-extend-container .el-input-number  {
+.catalog-extend-form .el-input, .el-select, 
+.catalog-extend-form .el-input-number  {
   width: 301.5px;
 }
-.catalog-extend-container .el-upload-list {
+.catalog-extend-form .el-upload-list {
   width: 300px;
 }
-.catalog-extend-container .btn-apply-child {
+.catalog-extend-form .btn-apply-child {
   padding: 10px;
 }
 </style>

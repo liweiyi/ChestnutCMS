@@ -46,13 +46,15 @@
       </el-table-column>
       <el-table-column :label="$t('Common.Operation')" align="center" class-name="small-padding fixed-width" width="80">
         <template slot-scope="scope">
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleForceLogout(scope.row)"
-            v-hasPermi="['monitor:online:forceLogout']"
-          >{{ $t('Monitor.Online.ForceExit') }}</el-button>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-delete"
+              @click="handleForceLogout(scope.row)"
+              v-hasPermi="['monitor:online:forceLogout']"
+            >{{ $t('Monitor.Online.ForceExit') }}</el-button>
+          </span>
         </template>
       </el-table-column>
     </el-table>

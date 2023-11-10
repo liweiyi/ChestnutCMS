@@ -78,13 +78,15 @@
       </el-table-column>
       <el-table-column :label="$t('Common.Operation')" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-circle-close"
-            @click="cancelAuthUser(scope.row)"
-            v-hasPermi="['system:role:remove']"
-          >{{ $t('Common.Remove') }}</el-button>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-circle-close"
+              @click="cancelAuthUser(scope.row)"
+              v-hasPermi="['system:role:remove']"
+            >{{ $t('Common.Remove') }}</el-button>
+          </span>
         </template>
       </el-table-column>
     </el-table>

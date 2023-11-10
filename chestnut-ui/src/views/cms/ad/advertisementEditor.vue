@@ -2,19 +2,25 @@
   <div class="app-container adv-editor-container" v-loading="loading">
     <el-container>
       <el-header height="40px">
-        <el-button 
-          plain
-          type="info"
-          icon="el-icon-back"
-          size="mini"
-          @click="handleGoBack">{{ $t('CMS.Adv.GoBack') }}</el-button>
-        <el-button 
-          plain
-          type="success"
-          icon="el-icon-edit"
-          size="mini"
-          v-hasPermi="[ $p('PageWidget:Edit:{0}', [ adSpaceId ]) ]"
-          @click="handleSave">{{ $t("Common.Save") }}</el-button>
+        <el-row :gutter="10" class="btn-row">
+          <el-col :span="1.5">
+            <el-button 
+              plain
+              type="info"
+              icon="el-icon-back"
+              size="mini"
+              @click="handleGoBack">{{ $t('CMS.Adv.GoBack') }}</el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button 
+              plain
+              type="success"
+              icon="el-icon-edit"
+              size="mini"
+              v-hasPermi="[ $p('PageWidget:Edit:{0}', [ adSpaceId ]) ]"
+              @click="handleSave">{{ $t("Common.Save") }}</el-button>
+          </el-col>
+        </el-row>
       </el-header>
       <el-form 
         ref="form"

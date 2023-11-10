@@ -32,14 +32,13 @@
           @click="handlePublish">{{ $t("CMS.Site.PublishHome") }}</el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-dropdown>
+        <el-dropdown class="btn-permi" v-hasPermi="[ $p('Site:Publish:{0}', [ siteId ]) ]">
           <el-button 
             split-button
             plain
             size="mini" 
             type="primary"
             icon="el-icon-s-promotion"
-            v-hasPermi="[ $p('Site:Publish:{0}', [ siteId ]) ]"
             :disabled="!this.siteId">
             {{ $t("CMS.Site.PublishAll") }}<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>

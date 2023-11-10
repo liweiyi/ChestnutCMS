@@ -91,7 +91,8 @@ public class PageBarTag extends AbstractTag {
 	private String generatePageBar(String target, String firstPage, String lastPage, boolean withFirstAndLast, Environment env)
 			throws TemplateException {
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
-		int pageCount = Long.valueOf((context.getPageTotal() + context.getPageSize() - 1 ) / context.getPageSize()).intValue();
+		int pageSize = context.getPageSize() == 0 ? 20 : context.getPageSize();
+		int pageCount = Long.valueOf((context.getPageTotal() + pageSize - 1 ) / pageSize).intValue();
 		int startPage = 1;
 		int endPage = 7;
 		if (context.getPageIndex() > 4) {
@@ -106,7 +107,7 @@ public class PageBarTag extends AbstractTag {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<div class=\"pagination\">");
 		if (withFirstAndLast && startPage > 1) {
-			sb.append(StringUtils.messageFormat(temp, firstPageLink, "", target, firstPage));
+			sb.append(StringUtils.messageFormat(temp, firstPageLink, " page_first", target, firstPage));
 			sb.append("<a href=\"javascript:;\" class=\"page_white\">...</a>");
 		}
 		for (int i = startPage; i <= endPage; i++) {
@@ -120,7 +121,7 @@ public class PageBarTag extends AbstractTag {
 		}
 		if (withFirstAndLast && endPage < pageCount) {
 			sb.append("<a href=\"javascript:;\" class=\"page_white\">...</a>");
-			sb.append(StringUtils.messageFormat(temp, StringUtils.messageFormat(otherPageLink, pageCount), "", target, lastPage));
+			sb.append(StringUtils.messageFormat(temp, StringUtils.messageFormat(otherPageLink, pageCount), " page_last", target, lastPage));
 		}
 		sb.append("</div>");
 		return sb.toString();

@@ -111,7 +111,7 @@
                   </el-form-item>
                 </el-form>
               </el-header>
-              <el-main v-loading="loadingList">
+              <el-main v-loading="loadingList" style="overflow-y: scroll;">
                 <el-card shadow="never" v-for="(r, index) in resourceList" :key="r.resourceId">
                   <el-image v-if="isImageResource(r.src)" class="item-img" fit="scale-down" :src="r.src" @click="handleResourceChecked(index)"></el-image>
                   <svg-icon v-else :icon-class="getResourceFileIconClass(r.path)" class="item-svg" />
@@ -436,7 +436,7 @@ export default {
   padding: 0 4px;
 }
 .resource-dialog .el-card {
-  width: 150px;
+  width: 148px;
   text-align: center;
   float: left;
   border: none;

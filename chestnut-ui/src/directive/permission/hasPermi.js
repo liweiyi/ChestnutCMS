@@ -1,6 +1,9 @@
  /**
  * v-hasPermi 操作权限处理
  * Copyright (c) 2023 兮玥（190785909@qq.com）
+ * 
+ * 1、非el-button标签的按钮权限需要给对应控件添加class="btn-permi"
+ * 2、表格操作列的多个按钮需要给按钮添加一个<span class="btn-cell-wrap"></span>包裹住用来占位，否则会影响按钮位置
  */
  
 import store from '@/store'
@@ -18,27 +21,15 @@ function fn (el, binding) {
     })
 
     if (!hasPermissions) {
-      if (el.cacheParentElement && el.cacheParentElement.className.split(' ').indexOf('el-dropdown') > -1) {
-          el.cacheParentElement.parentNode.removeChild(el.cacheParentElement)
-          el.cacheParentElement.parentNode.style.display = 'none'; 
-      } else if (el.className.indexOf('el-button') > -1) {
-        el.parentNode && el.parentNode.removeChild(el)
-        if (el.cacheParentElement != null) {
-          el.cacheParentElement.style.display = 'none'; 
-        }
-      } else if (el.className.indexOf('el-dropdown-menu__item') > -1) {
+      if (el.classList.contains('el-button') || el.classList.contains("btn-permi")) {
+        el.cacheParentElement && el.cacheParentElement.removeChild(el)
+      } else if (el.classList.contains('el-dropdown-menu__item')) {
         el.cacheElement.style.display = 'none';
       }
     } else {
-      if (el.cacheParentElement && el.cacheParentElement.className.split(' ').indexOf('el-dropdown') > -1) {
-          el.cacheParentElement.parentNode.appendChild(el.cacheElement.parentNode)
-          el.cacheParentElement.parentNode.style.display = ''; 
-      } else if (el.className.indexOf('el-button') > -1) {
-        if (el.cacheParentElement) {
-          el.cacheParentElement.appendChild(el.cacheElement)
-          el.cacheParentElement.style.display = ''; 
-        }
-      } else if (el.className.indexOf('el-dropdown-menu__item') > -1) {
+      if (el.classList.contains('el-button') || el.classList.contains("btn-permi")) {
+        el.cacheParentElement && el.cacheParentElement.appendChild(el.cacheElement)
+      } else if (el.classList.contains('el-dropdown-menu__item')) {
         if (el.cacheElement) {
           el.cacheElement.style.display = '';
         }

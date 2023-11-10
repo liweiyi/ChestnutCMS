@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.toolkit.SqlRunner;
 import com.chestnut.common.db.DBErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
+import com.google.common.collect.ImmutableSortedMap;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -313,18 +314,18 @@ public class SqlBuilder {
     }
 
     public SqlBuilder orderBy(String field, boolean isAsc) {
-        return this.orderBy(Map.of(field, isAsc));
+        return this.orderBy(ImmutableSortedMap.of(field, isAsc));
     }
 
     public SqlBuilder orderBy(String field1, boolean isAsc1,
                               String field2, boolean isAsc2) {
-        return this.orderBy(Map.of(field1, isAsc1, field2, isAsc2));
+        return this.orderBy(ImmutableSortedMap.of(field1, isAsc1, field2, isAsc2));
     }
 
     public SqlBuilder orderBy(String field1, boolean isAsc1,
                               String field2, boolean isAsc2,
                               String field3, boolean isAsc3) {
-        return this.orderBy(Map.of(field1, isAsc1, field2, isAsc2, field3, isAsc3));
+        return this.orderBy(ImmutableSortedMap.of(field1, isAsc1, field2, isAsc2, field3, isAsc3));
     }
 
     /**

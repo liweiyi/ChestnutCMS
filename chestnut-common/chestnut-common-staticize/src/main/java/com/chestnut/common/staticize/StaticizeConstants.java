@@ -41,4 +41,9 @@ public class StaticizeConstants {
 	 * 模板变量：自定义上下文
 	 */
 	public static final String TemplateVariable_TemplateContext = "TemplateContext";
+
+	/**
+	 * 模板解析时间
+	 */
+	public static final String TemplateVariable_TimeMillis = "TimeMillis";
 }

@@ -81,18 +81,22 @@
           </el-table-column>
           <el-table-column :label="$t('Common.Operation')" align="center" width="180" class-name="small-padding fixed-width">
             <template slot-scope="scope">
-              <el-button 
-                type="text"
-                icon="el-icon-edit"
-                size="small"
-                v-hasPermi="[ 'cms:friendlink:add', 'cms:friendlink:edit' ]"
-                @click="handleEdit(scope.row)">{{ $t('Common.Edit') }}</el-button>
-              <el-button 
-                type="text"
-                icon="el-icon-delete"
-                size="small"
-                v-hasPermi="[ 'cms:friendlink:delete' ]"
-                @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
+              <span class="btn-cell-wrap">
+                <el-button 
+                  type="text"
+                  icon="el-icon-edit"
+                  size="small"
+                  v-hasPermi="[ 'cms:friendlink:add', 'cms:friendlink:edit' ]"
+                  @click="handleEdit(scope.row)">{{ $t('Common.Edit') }}</el-button>
+              </span>
+              <span class="btn-cell-wrap">
+                <el-button 
+                  type="text"
+                  icon="el-icon-delete"
+                  size="small"
+                  v-hasPermi="[ 'cms:friendlink:delete' ]"
+                  @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
+              </span>
             </template>
           </el-table-column>
         </el-table>

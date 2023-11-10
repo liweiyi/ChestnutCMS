@@ -18,6 +18,7 @@ import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.seo.fixed.dict.SitemapPageType;
+import com.chestnut.seo.publishpipe.PublishPipeProp_EnableSitemap;
 import com.chestnut.seo.publishpipe.PublishPipeProp_SitemapPageType;
 import com.chestnut.seo.publishpipe.PublishPipeProp_SitemapUrlLimit;
 import com.chestnut.system.fixed.dict.YesOrNo;
@@ -88,7 +89,10 @@ public class BaiduSitemapService {
     }
 
     public void generateSitemapXml(CmsSite site) {
-        List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(site.getSiteId());
+        List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(site.getSiteId())
+                .stream().filter(pp ->
+                    PublishPipeProp_EnableSitemap.getValue(pp.getCode(), site.getPublishPipeProps())
+                ).toList();
         generateSitemapXml(site, publishPipes);
     }
 

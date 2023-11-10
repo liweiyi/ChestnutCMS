@@ -112,34 +112,42 @@
       </el-table-column>
       <el-table-column :label="$t('Common.Operation')" align="center" class-name="small-padding fixed-width" width="280">
         <template slot-scope="scope" v-if="scope.row.roleId !== 1">
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:role:edit']"
-          >{{ $t('Common.Edit') }}</el-button>
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:role:remove']"
-          >{{ $t('Common.Delete') }}</el-button>
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-circle-check"
-            @click="handleGrantPerms(scope.row)"
-            v-hasPermi="['system:role:edit']"
-          >{{ $t('System.Role.PermissionSetting') }}</el-button>
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-user"
-            @click="handleAuthUser(scope.row)"
-            v-hasPermi="['system:role:edit']"
-          >{{ $t('System.Role.UserSetting') }}</el-button>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-edit"
+              @click="handleUpdate(scope.row)"
+              v-hasPermi="['system:role:edit']"
+            >{{ $t('Common.Edit') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.row)"
+              v-hasPermi="['system:role:remove']"
+            >{{ $t('Common.Delete') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-circle-check"
+              @click="handleGrantPerms(scope.row)"
+              v-hasPermi="['system:role:edit']"
+            >{{ $t('System.Role.PermissionSetting') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-user"
+              @click="handleAuthUser(scope.row)"
+              v-hasPermi="['system:role:edit']"
+            >{{ $t('System.Role.UserSetting') }}</el-button>
+          </span>
         </template>
       </el-table-column>
     </el-table>

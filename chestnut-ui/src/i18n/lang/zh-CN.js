@@ -1128,7 +1128,8 @@ export default {
       ViewCount: "浏览量",
       FavoriteCount: "收藏数",
       LikeCount: "点赞数",
-      CommentCount: "评论数"
+      CommentCount: "评论数",
+      RelaContent: "相关内容"
     },
     Image: {
       Title: "标题",

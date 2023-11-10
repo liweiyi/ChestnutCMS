@@ -1,4 +1,4 @@
-# ChestnutCMS v1.3.21
+# ChestnutCMS v1.3.23
 
 ### 系统简介
 
@@ -16,8 +16,9 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 
 资讯站演示地址：<http://news.1000mz.com>（会员演示账号：xxx333@126.com / a123456）
 
-图片站演示地址：<http://tpz.1000mz.com>
+图片站演示地址：PC端：<http://tpz.1000mz.com> 移动端：<http://mtpz.1000mz.com>
 
+游戏站演示地址：PC端：<http://game.1000mz.com> 移动端：<http://mgame.1000mz.com>
 
 ### 开发环境
 - JDK 17

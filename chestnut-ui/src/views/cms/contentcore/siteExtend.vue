@@ -276,13 +276,14 @@
           :label="$t('CMS.Site.Extend.BaiduAccessToken')"
           prop="BaiduTjAccessToken">
           <el-input v-model="form_extend.BaiduTjAccessToken"></el-input>
-          <el-button  
-            class="ml5"
-            type="primary"
-            icon="el-icon-refresh"
-            :disabled="!this.siteId"
-            v-hasPermi="[ $p('Site:Edit:{0}', [ siteId ]) ]"
-            @click="handleRefreshBdTongjiToken">{{ $t("Common.Refresh") }}</el-button>
+          <span class="btn-cell-wrap ml5">
+            <el-button  
+              type="primary"
+              icon="el-icon-refresh"
+              :disabled="!this.siteId"
+              v-hasPermi="[ $p('Site:Edit:{0}', [ siteId ]) ]"
+              @click="handleRefreshBdTongjiToken">{{ $t("Common.Refresh") }}</el-button>
+          </span>
         </el-form-item>
         <el-form-item 
           :label="$t('CMS.Site.Extend.BaiduDomain')"

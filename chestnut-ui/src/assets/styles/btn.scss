@@ -97,3 +97,10 @@
   font-size: 14px;
   border-radius: 4px;
 }
+
+.btn-cell-wrap + .btn-cell-wrap {
+  margin-left: 10px;
+}
+.btn-cell-wrap:empty {
+  margin-left: 0;
+}

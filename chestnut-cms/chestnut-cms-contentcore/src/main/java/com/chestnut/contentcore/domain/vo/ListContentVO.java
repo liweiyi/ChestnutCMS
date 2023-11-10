@@ -3,6 +3,8 @@ package com.chestnut.contentcore.domain.vo;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -74,6 +76,21 @@ public class ListContentVO {
 	 * 内容属性值数组
 	 */
     private String[] attributes;
+
+	/*
+	 * 关键词
+	 */
+	private String[] keywords;
+
+	/*
+	 * TAGs
+	 */
+	private String[] tags;
+
+	/*
+	 * 摘要
+	 */
+	private String summary;
 
 	/*
 	 * 置顶标识

@@ -2,22 +2,26 @@
   <div class="">
     <el-row :gutter="24" class="mb12">
       <el-col :span="12">
-        <el-row>
-          <el-button 
-            plain
-            type="primary"
-            icon="el-icon-plus"
-            size="mini"
-            v-hasPermi="[ $p('Site:Edit:{0}', [ site ]) ]"
-            @click="handleAdd">{{ $t("Common.Add") }}</el-button>
-          <el-button 
-            plain
-            type="danger"
-            icon="el-icon-delete"
-            size="mini"
-            :disabled="multiple"
-            v-hasPermi="[ $p('Site:Edit:{0}', [ site ]) ]"
-            @click="handleDelete">{{ $t("Common.Delete") }}</el-button>
+        <el-row :gutter="10">
+          <el-col :span="1.5">
+            <el-button 
+              plain
+              type="primary"
+              icon="el-icon-plus"
+              size="mini"
+              v-hasPermi="[ $p('Site:Edit:{0}', [ site ]) ]"
+              @click="handleAdd">{{ $t("Common.Add") }}</el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button 
+              plain
+              type="danger"
+              icon="el-icon-delete"
+              size="mini"
+              :disabled="multiple"
+              v-hasPermi="[ $p('Site:Edit:{0}', [ site ]) ]"
+              @click="handleDelete">{{ $t("Common.Delete") }}</el-button>
+          </el-col>
         </el-row>
       </el-col>
       <el-col :span="12" style="text-align:right">

@@ -1,24 +1,22 @@
 package com.chestnut.common.staticize;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.IFunction;
 import com.chestnut.common.staticize.tag.ITag;
 import com.chestnut.common.utils.Assert;
-
 import freemarker.core.Environment;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModelException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -29,8 +27,8 @@ public class StaticizeService {
 	public StaticizeService(@Qualifier("staticizeConfiguration") Configuration cfg, List<ITag> tags,
 			List<IFunction> functions) {
 		this.cfg = cfg;
-		tags.forEach(this::registTag);
-		functions.forEach(this::registFunction);
+		tags.forEach(this::registerTag);
+		functions.forEach(this::registerFunction);
 	}
 
 	/**
@@ -40,7 +38,7 @@ public class StaticizeService {
 	 * 此方法只返回TemplateContext中制定页码的静态化结果
 	 * </p>
 	 * 
-	 * @param templateContext
+	 * @param context
 	 * @param writer
 	 * @throws TemplateException
 	 * @throws IOException
@@ -50,6 +48,7 @@ public class StaticizeService {
 		Template template = cfg.getTemplate(context.getTemplateId());
 		// 处理模板
 		long s = System.currentTimeMillis();
+		context.setTimeMillis(s);
 		Environment env = template.createProcessingEnvironment(context.getVariables(), writer);
 		FreeMarkerUtils.addGlobalVariables(env, context);
 		env.process();
@@ -60,7 +59,7 @@ public class StaticizeService {
 	/**
 	 * 生成静态化文件，自动处理分页
 	 * 
-	 * @param templateContext
+	 * @param context
 	 * @throws TemplateException
 	 * @throws IOException
 	 */
@@ -69,6 +68,7 @@ public class StaticizeService {
 		Template template = cfg.getTemplate(context.getTemplateId());
 		// 处理模板
 		long s = System.currentTimeMillis();
+		context.setTimeMillis(s);
 		Environment env = null;
 		String filePath = context.getStaticizeFilePath(context.getPageIndex());
 		try (FileWriter writer = new FileWriter(filePath)) {
@@ -102,27 +102,27 @@ public class StaticizeService {
 		cfg.clearTemplateCache();
 	}
 
-	public void registTag(ITag tag) {
+	public void registerTag(ITag tag) {
 		// 注册模板标签
 		try {
 			Assert.isNull(cfg.getSharedVariable(tag.getTagName()),
 					() -> new IllegalArgumentException("Freemarker directive conflict: " + tag.getTagName()));
 			cfg.setSharedVariable(tag.getTagName(), tag);
 		} catch (TemplateModelException e) {
-			log.error("Freemarker directive '<@{}>' regist failed.", tag.getTagName());
+			log.error("Freemarker directive '<@{}>' register failed.", tag.getTagName());
 			throw new IllegalArgumentException(e);
 		}
 		log.info("Freemarker directive: <@{}>", tag.getTagName());
 	}
 
-	public void registFunction(IFunction func) {
+	public void registerFunction(IFunction func) {
 		// 注册模板函数
 		try {
 			Assert.isNull(cfg.getSharedVariable(func.getFuncName()),
 					() -> new IllegalArgumentException("Freemarker function conflict: " + func.getFuncName()));
 			cfg.setSharedVariable(func.getFuncName(), func);
 		} catch (TemplateModelException e) {
-			log.error("Freemarker function '{}' regist failed.", func.getFuncName());
+			log.error("Freemarker function '{}' register failed.", func.getFuncName());
 			throw new IllegalArgumentException(e);
 		}
 		log.info("Freemarker function: {}", func.getFuncName());

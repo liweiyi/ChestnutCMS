@@ -101,11 +101,6 @@ export default {
       this.queryParams.catalogId = this.cid;
     }
   },
-  computed: {
-    okBtnDisabled() {
-      return this.selectedTemplate == undefined;
-    }
-  },
   data () {
     return {
       loading: false,

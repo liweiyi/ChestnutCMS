@@ -119,25 +119,31 @@
         width="300"
         align="right">
         <template slot-scope="scope">
-          <el-button
-            plain
-            size="mini"
-            icon="el-icon-plus"
-            v-hasPermi="['vote:add', 'vote:edit']"
-            @click="handleAddVoteSubject(scope.row)">{{ $t('Vote.InsertSubject') }}</el-button>
-          <el-button
-            plain
-            size="mini"
-            icon="el-icon-edit"
-            v-hasPermi="['vote:add', 'vote:edit']"
-            @click="handleEditVoteSubject(scope.row)">{{ $t('Common.Edit') }}</el-button>
-          <el-button
-            plain
-            size="mini"
-            icon="el-icon-delete"
-            type="danger"
-            v-hasPermi="['vote:add', 'vote:edit']"
-            @click="handleDeleteVoteSubject(scope.row)">{{ $t("Common.Delete") }}</el-button>
+          <span class="btn-cell-wrap">
+            <el-button
+              plain
+              size="mini"
+              icon="el-icon-plus"
+              v-hasPermi="['vote:add', 'vote:edit']"
+              @click="handleAddVoteSubject(scope.row)">{{ $t('Vote.InsertSubject') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              plain
+              size="mini"
+              icon="el-icon-edit"
+              v-hasPermi="['vote:add', 'vote:edit']"
+              @click="handleEditVoteSubject(scope.row)">{{ $t('Common.Edit') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              plain
+              size="mini"
+              icon="el-icon-delete"
+              type="danger"
+              v-hasPermi="['vote:add', 'vote:edit']"
+              @click="handleDeleteVoteSubject(scope.row)">{{ $t("Common.Delete") }}</el-button>
+          </span>
         </template>
       </el-table-column>
     </el-table>

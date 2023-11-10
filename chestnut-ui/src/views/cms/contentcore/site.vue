@@ -48,25 +48,36 @@
         <el-table-column :label="$t('CMS.Site.Path')" prop="path" />
         <el-table-column :label="$t('Common.Operation')" align="center" width="310" class-name="small-padding fixed-width">
           <template slot-scope="scope">
-            <el-button 
-              type="text"
-              icon="el-icon-s-promotion"
-              size="small"
-              @click="handlePublish(scope.row)">{{ $t('CMS.Site.PublishHome') }}</el-button>
-            <el-button 
-              type="text"
-              size="small"
-              @click="handlePreview(scope.row)"><svg-icon icon-class="eye-open" class="mr2"></svg-icon>{{ $t('CMS.ContentCore.Preview') }}</el-button>
-            <el-button 
-              type="text"
-              icon="el-icon-edit"
-              size="small"
-              @click="handleEdit(scope.row)">{{ $t("Common.Edit") }}</el-button>
-            <el-button 
-              type="text"
-              icon="el-icon-delete"
-              size="small"
-              @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
+            <span class="btn-cell-wrap">
+              <el-button 
+                type="text"
+                size="small"
+                @click="handlePreview(scope.row)"><svg-icon icon-class="eye-open" class="mr2"></svg-icon>{{ $t('CMS.ContentCore.Preview') }}</el-button>
+            </span>
+            <span class="btn-cell-wrap">
+              <el-button 
+                type="text"
+                icon="el-icon-s-promotion"
+                size="small"
+                v-hasPermi="[ $p('Site:Publish:{0}', [ scope.row.siteId ]) ]"
+                @click="handlePublish(scope.row)">{{ $t('CMS.Site.PublishHome') }}</el-button>
+            </span>
+            <span class="btn-cell-wrap">
+              <el-button 
+                type="text"
+                icon="el-icon-edit"
+                size="small"
+                v-hasPermi="[ $p('Site:Edit:{0}', [ scope.row.siteId ]) ]"
+                @click="handleEdit(scope.row)">{{ $t("Common.Edit") }}</el-button>
+            </span>
+            <span class="btn-cell-wrap">
+              <el-button 
+                type="text"
+                icon="el-icon-delete"
+                size="small"
+                v-hasPermi="[ $p('Site:Delete:{0}', [ scope.row.siteId ]) ]"
+                @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
+            </span>
           </template>
         </el-table-column>
       </el-table>

@@ -1,13 +1,12 @@
 package com.chestnut.common.staticize.core;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 模板上下文
@@ -80,6 +79,11 @@ public class TemplateContext {
 	 * 注意：需要生成多页面的模板中只能有一个page=true的列表标签，存在多个会覆盖掉分页属性
 	 */
 	private boolean paged;
+
+	/**
+	 * 模板处理时间
+	 */
+	private Long timeMillis;
 	
 	public TemplateContext(String templateId, boolean preview, String publishPipeCode) {
 		this.templateId = templateId;

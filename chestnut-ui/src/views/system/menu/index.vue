@@ -85,27 +85,33 @@
       </el-table-column>
       <el-table-column :label="$t('Common.Operation')" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button 
-            size="small"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:menu:edit']"
-          >{{ $t('Common.Edit') }}</el-button>
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-plus"
-            @click="handleAdd(scope.row)"
-            v-hasPermi="['system:menu:add']"
-          >{{ $t('Common.Add') }}</el-button>
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-delete"
-            @click="handleDelete(scope.row)"
-            v-hasPermi="['system:menu:remove']"
-          >{{ $t('Common.Delete') }}</el-button>
+          <span class="btn-cell-wrap">
+            <el-button 
+              size="small"
+              type="text"
+              icon="el-icon-edit"
+              @click="handleUpdate(scope.row)"
+              v-hasPermi="['system:menu:edit']"
+            >{{ $t('Common.Edit') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-plus"
+              @click="handleAdd(scope.row)"
+              v-hasPermi="['system:menu:add']"
+            >{{ $t('Common.Add') }}</el-button>
+          </span>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-delete"
+              @click="handleDelete(scope.row)"
+              v-hasPermi="['system:menu:remove']"
+            >{{ $t('Common.Delete') }}</el-button>
+          </span>
         </template>
       </el-table-column>
     </el-table>

@@ -9,6 +9,7 @@
           <el-button plain type="primary" size="mini" @click="handlePreview"><svg-icon icon-class="eye-open" class="mr5"></svg-icon>{{ $t('CMS.ContentCore.Preview') }}</el-button>
           <el-button plain type="warning" v-if="isLock" size="mini" icon="el-icon-unlock" @click="handleChangeLockState">{{ $t('CMS.Content.Unlock') }}</el-button>
           <el-button plain type="primary" v-else size="mini" icon="el-icon-lock" @click="handleChangeLockState">{{ $t('CMS.Content.Lock') }}</el-button>
+          <el-button plain type="primary" size="mini" icon="el-icon-share" @click="handleRelaContent">{{ $t('CMS.Content.RelaContent') }}</el-button>
           <el-button v-if="openEditorW" plain type="warning" size="mini" icon="el-icon-close" @click="handleClose">{{ $t('Common.Close') }}</el-button>
           <el-button v-else plain type="warning" size="mini" icon="el-icon-back" @click="handleGoBack">{{ $t('CMS.Content.BackToList') }}</el-button>
         </div>
@@ -229,6 +230,7 @@
       :open="openContentSelector"
       @ok="handleContentSelectorOk"
       @close="handleContentSelectorClose"></cms-content-selector>
+    <cms-content-rela-dialog :cid="contentId" :open="openRelaContentDialog" @close="handleRelaContentClose"></cms-content-rela-dialog>
     <!-- 进度条 -->
     <cms-progress :title="progressTitle" :open.sync="openProgress" :taskId="taskId" @close="handleProgressClose"></cms-progress>
   </div>
@@ -246,6 +248,7 @@ import CMSLogoView from '@/views/cms/components/LogoView';
 import CMSResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
 import CMSContentSelector from "@/views/cms/contentcore/contentSelector";
+import CMSContrentRelaDialog from '@/views/cms/contentcore/contentRelaDialog';
 import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
 import CMSEXModelEditor from '@/views/cms/components/EXModelEditor';
 import CMSTagEditor from '@/views/cms/components/TagEditor';
@@ -269,6 +272,7 @@ export default {
     "cms-logo-view": CMSLogoView,
     'cms-catalog-selector': CMSCatalogSelector,
     'cms-content-selector': CMSContentSelector,
+    'cms-content-rela-dialog': CMSContrentRelaDialog,
     "cms-exmodel-editor": CMSEXModelEditor,
     "cms-tag-editor": CMSTagEditor,
     // "ckeditor": CKEditor5
@@ -324,6 +328,7 @@ export default {
       selectExTemplate: false,
       publishAfterSave: false,
       toPublishAfterSave: false,
+      openRelaContentDialog: false,
     };
   },
   created() {
@@ -594,6 +599,28 @@ export default {
     handleContentSelectorOk(contents) {
       if (contents && contents.length > 0) {
         this.form.redirectUrl = contents[0].internalUrl;
+        if (!this.form.logo || this.form.logo.length == 0) {
+          this.form.logo = contents[0].logo;
+          this.form.logoSrc = contents[0].logoSrc;
+        }
+        if (!this.form.title || this.form.title.length == 0) {
+          this.form.title = contents[0].title;
+        }
+        if (!this.form.author || this.form.author.length == 0) {
+          this.form.author = contents[0].author;
+        }
+        if (!this.form.editor || this.form.editor.length == 0) {
+          this.form.editor = contents[0].editor;
+        }
+        if (!this.form.tags || this.form.tags.length == 0) {
+          this.form.tags = contents[0].tags;
+        }
+        if (!this.form.keywords || this.form.keywords.length == 0) {
+          this.form.keywords = contents[0].keywords;
+        }
+        if (!this.form.summary || this.form.summary.length == 0) {
+          this.form.summary = contents[0].summary;
+        }
         this.openContentSelector = false;
       } else {
         this.$modal.msgWarning(this.$t('Common.SelectFirst'));
@@ -601,6 +628,12 @@ export default {
     },
     handleContentSelectorClose() {
       this.openContentSelector = false;
+    },
+    handleRelaContent() {
+      this.openRelaContentDialog = true;
+    },
+    handleRelaContentClose() {
+      this.openRelaContentDialog = false;
     }
   }
 };

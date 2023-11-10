@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.chestnut</groupId>
         <artifactId>chestnut-cms</artifactId>
-        <version>1.3.21</version>
+        <version>1.3.23</version>
     </parent>
 
     <artifactId>chestnut-cms-seo</artifactId>

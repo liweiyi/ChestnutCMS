@@ -1,29 +1,27 @@
 package com.chestnut.media.template.tag;
 
-import java.util.List;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.chestnut.common.utils.StringUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.media.domain.CmsAudio;
 import com.chestnut.media.service.IAudioService;
-
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -58,6 +56,7 @@ public class CmsAudioTag extends AbstractListTag {
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 		LambdaQueryWrapper<CmsAudio> q = new LambdaQueryWrapper<CmsAudio>().eq(CmsAudio::getContentId, contentId);
 		q.apply(StringUtils.isNotEmpty(condition), condition);
+		q.orderByAsc(CmsAudio::getSortFlag);
 		Page<CmsAudio> pageResult = this.audioService.page(new Page<>(pageIndex, size, page), q);
 		if (pageIndex > 1 & pageResult.getRecords().size() == 0) {
 			throw new TemplateException("内容列表页码超出上限：" + pageIndex, env);

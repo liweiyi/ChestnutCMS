@@ -121,13 +121,15 @@
       </el-table-column>
       <el-table-column :label="$t('Common.Operation')" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            size="small"
-            type="text"
-            icon="el-icon-view"
-            @click="handleView(scope.row)"
-            v-hasPermi="['monitor:job:query']"
-          >{{ $t('Monitor.Job.LogDetails') }}</el-button>
+          <span class="btn-cell-wrap">
+            <el-button
+              size="small"
+              type="text"
+              icon="el-icon-view"
+              @click="handleView(scope.row)"
+              v-hasPermi="['monitor:job:query']"
+            >{{ $t('Monitor.Job.LogDetails') }}</el-button>
+          </span>
         </template>
       </el-table-column>
     </el-table>
