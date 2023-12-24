@@ -147,16 +147,7 @@ public class SiteThemeService {
                                 }
                                 data.createBy(context.getOperator());
                                 // 处理logo
-                                InternalURL internalURL = InternalUrlUtils.parseInternalUrl(data.getLogo());
-                                if (Objects.nonNull(internalURL)) {
-                                    Long resourceId = context.getResourceIdMap().get(internalURL.getId());
-                                    if (IdUtils.validate(resourceId)) {
-                                        internalURL.setId(resourceId);
-                                        data.setLogo(internalURL.toIUrl());
-                                    } else {
-                                        data.setLogo(StringUtils.EMPTY);
-                                    }
-                                }
+                                data.setLogo(context.dealInternalUrl(data.getLogo()));
                                 catalogService.save(data);
                                 context.getCatalogIdMap().put(sourceCatalogId, data.getCatalogId());
                                 if (CatalogType_Link.ID.equals(data.getCatalogType())) {
@@ -199,6 +190,8 @@ public class SiteThemeService {
                                     if (Objects.nonNull(catalog)) {
                                         data.setCatalogId(catalog.getCatalogId());
                                         data.setCatalogAncestors(catalog.getAncestors());
+                                    } else {
+                                        this.addErrorMessage("页面部件栏目关联失败：" + data.getName());
                                     }
                                 }
                                 data.createBy(context.getOperator());
@@ -231,16 +224,7 @@ public class SiteThemeService {
                                 content.setDeptCode(StringUtils.EMPTY);
                                 content.createBy(operator.getUsername());
                                 // 处理logo
-                                InternalURL internalURL = InternalUrlUtils.parseInternalUrl(catalog.getLogo());
-                                if (Objects.nonNull(internalURL)) {
-                                    Long resourceId = context.getResourceIdMap().get(internalURL.getId());
-                                    if (IdUtils.validate(resourceId)) {
-                                        internalURL.setId(resourceId);
-                                        catalog.setLogo(internalURL.toIUrl());
-                                    } else {
-                                        catalog.setLogo(StringUtils.EMPTY);
-                                    }
-                                }
+                                content.setLogo(context.dealInternalUrl(content.getLogo()));
                                 contentService.save(content);
                                 context.getContentIdMap().put(sourceContentId, content.getContentId());
                                 if (content.isLinkContent()) {

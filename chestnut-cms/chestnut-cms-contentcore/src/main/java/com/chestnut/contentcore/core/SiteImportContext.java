@@ -4,6 +4,7 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.impl.InternalDataType_Catalog;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
+import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
@@ -83,10 +84,14 @@ public class SiteImportContext implements ISiteThemeContext {
             Long id = switch (internalURL.getType()) {
                 case InternalDataType_Catalog.ID -> catalogIdMap.get(internalURL.getId());
                 case InternalDataType_Content.ID -> contentIdMap.get(internalURL.getId());
+                case InternalDataType_Resource.ID -> resourceIdMap.get(internalURL.getId());
                 default -> null;
             };
             if (IdUtils.validate(id)) {
                 internalURL.setId(id);
+                if (InternalDataType_Resource.ID.equals(internalURL.getType())) {
+                    internalURL.setParams(Map.of("sid", site.getSiteId().toString()));
+                }
                 return internalURL.toIUrl();
             }
         }

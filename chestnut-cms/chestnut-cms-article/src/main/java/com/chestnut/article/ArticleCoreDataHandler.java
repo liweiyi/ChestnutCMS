@@ -8,7 +8,6 @@ import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.ICoreDataHandler;
-import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.core.SiteExportContext;
 import com.chestnut.contentcore.core.SiteImportContext;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 
 /**
@@ -83,18 +81,8 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
                     while (matcher.find()) {
                         String tagStr = matcher.group();
                         String iurl = matcher.group(1);
-                        // begin
-                        try {
-                            InternalURL internalUrl = InternalUrlUtils.parseInternalUrl(iurl);
-                            if (Objects.nonNull(internalUrl)) {
-                                Long resourceId = context.getResourceIdMap().get(internalUrl.getId());
-                                internalUrl.setId(resourceId);
-                                tagStr = StringUtils.replaceEx(tagStr, iurl, internalUrl.toIUrl());
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        // end
+                        String newIurl = context.dealInternalUrl(iurl);
+                        tagStr = StringUtils.replaceEx(tagStr, iurl, newIurl);
                         html.append(contentHtml, index, matcher.start()).append(tagStr);
                         index = matcher.end();
                     }
