@@ -1,4 +1,4 @@
-# ChestnutCMS v1.3.23
+# ChestnutCMS v1.3.24
 
 ### 系统简介
 

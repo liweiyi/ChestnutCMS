@@ -1,6 +1,5 @@
 package com.chestnut.contentcore.template.func;
 
-import cn.dev33.satoken.config.SaTokenConfig;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
@@ -8,7 +7,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IDynamicPageType;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
-import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateBooleanModel;
 import freemarker.template.TemplateModelException;
@@ -58,12 +57,7 @@ public class DynamicPageLinkFunction extends AbstractFunc  {
 		if (context.isPreview()) {
 			path += "?preview=true&sid=" + FreeMarkerUtils.evalLongVariable(Environment.getCurrentEnvironment(), "Site.siteId")
 					+ "&pp=" + context.getPublishPipeCode();
-			if (StpAdminUtil.isLogin()) {
-				SaTokenConfig config = StpAdminUtil.getStpLogic().getConfigOrGlobal();
-				path += "&" + config.getTokenName() + "="
-						+ (StringUtils.isNotEmpty(config.getTokenPrefix()) ? config.getTokenPrefix() + " " : "")
-						+ StpAdminUtil.getTokenValue();;
-			}
+			path = TemplateUtils.appendTokenParameter(path, Environment.getCurrentEnvironment());
 		} else {
 			if (!ignoreBaseArg) {
 				path += "?sid=" + FreeMarkerUtils.evalLongVariable(Environment.getCurrentEnvironment(), "Site.siteId")

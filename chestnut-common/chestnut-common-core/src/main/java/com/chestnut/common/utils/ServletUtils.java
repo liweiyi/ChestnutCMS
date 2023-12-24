@@ -1,10 +1,18 @@
 package com.chestnut.common.utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import eu.bitwalker.useragentutils.UserAgent;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.io.*;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -13,20 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.collections4.map.CaseInsensitiveMap;
-import org.springframework.util.LinkedCaseInsensitiveMap;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import eu.bitwalker.useragentutils.UserAgent;
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 /**
  * 客户端工具类
@@ -282,7 +276,7 @@ public class ServletUtils {
 	 * 获取Integer参数
 	 */
 	public static int getParameterToInt(ServletRequest request, String name, int defaultValue) {
-		return ConvertUtils.toInt(request.getParameter(name), defaultValue);
+		return ConvertUtils.toInteger(request.getParameter(name), defaultValue);
 	}
 
 	/**

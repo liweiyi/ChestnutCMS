@@ -1,6 +1,6 @@
 <template>
   <div class="catalog-extend-container">
-    <el-row class="mb12">
+    <el-row :gutter="10" class="mb12">
       <el-col :span="1.5">
         <el-button 
           plain

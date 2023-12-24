@@ -360,6 +360,7 @@ public class SqlBuilder {
                 this.checkSqlInjection(field);
                 if (first) {
                     first = false;
+                } else {
                     append(", ");
                 }
                 append(field);

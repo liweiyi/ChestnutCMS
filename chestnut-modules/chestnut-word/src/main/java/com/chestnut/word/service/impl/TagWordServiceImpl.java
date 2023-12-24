@@ -1,10 +1,5 @@
 package com.chestnut.word.service.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
@@ -13,6 +8,10 @@ import com.chestnut.common.utils.SortUtils;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.mapper.TagWordMapper;
 import com.chestnut.word.service.ITagWordService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> implements ITagWordService {
@@ -38,6 +37,7 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 		dbTagWord.setGroupId(tagWord.getGroupId());
 		dbTagWord.setWord(tagWord.getWord());
 		dbTagWord.setLogo(tagWord.getLogo());
+		dbTagWord.setSortFlag(tagWord.getSortFlag());
 		dbTagWord.setRemark(tagWord.getRemark());
 		dbTagWord.updateBy(tagWord.getUpdateBy());
 		this.updateById(tagWord);

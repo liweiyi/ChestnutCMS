@@ -50,6 +50,7 @@ public class TagWordController extends BaseRestController {
 		PageRequest pr = this.getPageRequest();
 		Page<TagWord> page = this.tagWordService.lambdaQuery().eq(TagWord::getGroupId, groupId)
 				.like(StringUtils.isNotEmpty(query), TagWord::getWord, query)
+				.orderByAsc(TagWord::getSortFlag)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
 		return this.bindDataTable(page);
 	}

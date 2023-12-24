@@ -1,5 +1,7 @@
 package com.chestnut.contentcore.util;
 
+import cn.dev33.satoken.config.SaTokenConfig;
+import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.ReflectASMUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -9,6 +11,9 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.fixed.config.TemplateSuffix;
 import com.chestnut.contentcore.properties.SiteApiUrlProperty;
+import com.chestnut.system.security.StpAdminUtil;
+import freemarker.core.Environment;
+import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +22,17 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class TemplateUtils {
-	
+
+	/**
+	 * 模板变量：预览模式登录用户token键名
+	 */
+	public final static String TemplateVariable_TokenName = "TokenName";
+
+	/**
+	 * 模板变量：预览模式登录用户token
+	 */
+	public final static String TemplateVariable_Token = "Token";
+
 	/**
 	 * 模板变量：是否预览模式
 	 */
@@ -93,7 +108,7 @@ public class TemplateUtils {
 
 	/**
 	 * 添加栏目数据到模板上下文变量中
-	 * 
+	 *
 	 * @param site 站点
 	 * @param catalog 栏目
 	 * @param context 模板上下文
@@ -133,7 +148,44 @@ public class TemplateUtils {
 		context.getVariables().put(TemplateVariable_ApiPrefix, SiteApiUrlProperty.getValue(site, context.getPublishPipeCode()));
 		// 添加站点数据
 		addSiteVariables(site, context);
+		if (context.isPreview()) {
+			SaTokenConfig config = StpAdminUtil.getStpLogic().getConfigOrGlobal();
+			context.getVariables().put(TemplateVariable_TokenName, config.getTokenName());
+			String token = StpAdminUtil.getTokenValue();
+			if (StringUtils.isNotEmpty(config.getTokenPrefix())) {
+				token = config.getTokenPrefix() + " " + token;
+			}
+			context.getVariables().put(TemplateVariable_Token, token);
+		}
 	}
+
+	public static String appendTokenParameter(String url, Environment env) throws TemplateModelException {
+		if (StringUtils.isEmpty(url)) {
+			return url;
+		}
+		String tokenName = FreeMarkerUtils.getStringVariable(Environment.getCurrentEnvironment(), TemplateUtils.TemplateVariable_TokenName);
+		String token = FreeMarkerUtils.getStringVariable(Environment.getCurrentEnvironment(), TemplateUtils.TemplateVariable_Token);
+		if (url.contains("?")) {
+			return url + "&" + tokenName + "=" + token;
+		}
+		return url + "?" + token + "=" + token;
+	}
+
+	public static String appendTokenParameter(String url) {
+		if (StringUtils.isEmpty(url)) {
+			return url;
+		}
+		SaTokenConfig config = StpAdminUtil.getStpLogic().getConfigOrGlobal();
+		String token = StpAdminUtil.getTokenValue();
+		if (StringUtils.isNotEmpty(config.getTokenPrefix())) {
+			token = config.getTokenPrefix() + " " + token;
+		}
+		if (url.contains("?")) {
+			return url + "&" + config.getTokenName() + "=" + token;
+		}
+		return url + "?" + config.getTokenName() + "=" + token;
+	}
+
 
 	/**
 	 * 页面区块静态文件相对路径

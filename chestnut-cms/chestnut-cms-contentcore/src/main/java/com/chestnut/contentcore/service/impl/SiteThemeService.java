@@ -1,49 +1,33 @@
 package com.chestnut.contentcore.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.config.CMSConfig;
-import com.chestnut.contentcore.core.IPageWidget;
-import com.chestnut.contentcore.core.IPageWidgetType;
+import com.chestnut.contentcore.core.*;
 import com.chestnut.contentcore.core.impl.CatalogType_Link;
-import com.chestnut.contentcore.core.impl.InternalDataType_Site;
-import com.chestnut.contentcore.domain.CmsCatalog;
-import com.chestnut.contentcore.domain.CmsPageWidget;
-import com.chestnut.contentcore.domain.CmsPublishPipe;
-import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.dto.CatalogAddDTO;
-import com.chestnut.contentcore.exception.ContentCoreErrorCode;
-import com.chestnut.contentcore.listener.event.SiteThemeExportEvent;
-import com.chestnut.contentcore.listener.event.SiteThemeImportEvent;
-import com.chestnut.contentcore.service.ICatalogService;
-import com.chestnut.contentcore.service.IPageWidgetService;
-import com.chestnut.contentcore.service.IPublishPipeService;
-import com.chestnut.contentcore.util.ContentCoreUtils;
+import com.chestnut.contentcore.domain.*;
+import com.chestnut.contentcore.service.*;
+import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
-import jodd.io.ZipBuilder;
 import jodd.io.ZipUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.checkerframework.checker.units.qual.C;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 /**
  * 站点导入导出
@@ -54,114 +38,235 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SiteThemeService implements ApplicationContextAware {
-
-    private ApplicationContext applicationContext;
+public class SiteThemeService {
 
     private final AsyncTaskManager asyncTaskManager;
 
     private final IPublishPipeService publishPipeService;
 
+    private final ISiteService siteService;
+
+    private final ISitePropertyService sitePropertyService;
+
     private final ICatalogService catalogService;
 
     private final IPageWidgetService pageWidgetService;
 
+    private final IResourceService resourceService;
+
+    private final IContentService contentService;
+
+    private final List<ICoreDataHandler> contentCoreHandlers;
+
     public AsyncTask importSiteTheme(CmsSite site, final File zipFile, LoginUser operator) throws IOException {
+        // TODO 校验数据，必须无栏目、内容、页面部件等数据的站点才能导入
         AsyncTask asyncTask = new AsyncTask() {
 
             @Override
             public void run0() throws Exception {
+                SiteImportContext context = new SiteImportContext(site);
+                context.setOperator(operator.getUsername());
                 // 解压导入zip包
                 AsyncTaskManager.setTaskProgressInfo(10, "正在解压");
-                String destDir = SiteUtils.getSiteResourceRoot(site) + "siteTheme/";
+                String destDir = SiteUtils.getSiteResourceRoot(site) + SiteImportContext.ImportDir;
                 ZipUtil.unzip(zipFile, new File(destDir));
                 try {
-                    // 校验可能冲突的数据
-                    Map<Long, CmsCatalog> catalogIdMap = new HashMap<>(); // <原ID, 新ID>
-                    // 导入数据
-                    AsyncTaskManager.setTaskProgressInfo(20, "正在导入栏目数据");
-                    File file = new File(destDir + "db/" + CmsCatalog.TABLE_NAME + ".json");
-                    if (file.exists()) {
+                    List<File> files = context.readDataFiles(CmsSite.TABLE_NAME);
+                    CmsSite sourceSite = JacksonUtils.from(files.get(0), CmsSite.class);
+                    context.setSourceSite(sourceSite);
+                    // 导入站点扩展属性
+                    AsyncTaskManager.setTaskProgressInfo(5, "正在导入站点扩展属性数据");
+                    files = context.readDataFiles(CmsSiteProperty.TABLE_NAME);
+                    files.forEach(file -> {
+                        List<CmsSiteProperty> list = JacksonUtils.fromList(file, CmsSiteProperty.class);
+                        list.forEach(data -> {
+                            Long propertyId = data.getPropertyId();
+                            try {
+                                data.setPropertyId(IdUtils.getSnowflakeId());
+                                data.setSiteId(site.getSiteId());
+                                data.createBy(context.getOperator());
+                                sitePropertyService.save(data);
+                            } catch (Exception e) {
+                                this.addErrorMessage("导入站点扩展属性数据失败：" + propertyId);
+                                e.printStackTrace();
+                            }
+                        });
+                    });
+                    // 导入素材数据
+                    AsyncTaskManager.setTaskProgressInfo(20, "正在导入资源数据");
+                    files = context.readDataFiles(CmsResource.TABLE_NAME);
+                    files.forEach(file -> {
+                        List<CmsResource> list = JacksonUtils.fromList(file, CmsResource.class);
+                        list.forEach(data -> {
+                            Long oldResource = data.getResourceId();
+                            try {
+                                data.setResourceId(IdUtils.getSnowflakeId());
+                                data.setSiteId(site.getSiteId());
+                                data.createBy(context.getOperator());
+                                resourceService.save(data);
+                                context.getResourceIdMap().put(oldResource, data.getResourceId());
+                            } catch (Exception e) {
+                                this.addErrorMessage("导入素材资源数据失败：" + oldResource);
+                                e.printStackTrace();
+                            }
+                        });
+                    });
+                    // 处理站点数据
+                    site.setConfigProps(sourceSite.getConfigProps());
+                    site.setPublishPipeProps(sourceSite.getPublishPipeProps());
+                    site.setResourceUrl(sourceSite.getResourceUrl());
+                    site.setDescription(sourceSite.getDescription());
+                    site.setSeoTitle(sourceSite.getSeoTitle());
+                    site.setSeoKeywords(sourceSite.getSeoKeywords());
+                    site.setSeoDescription(sourceSite.getSeoDescription());
+                    site.setLogo(context.dealInternalUrl(sourceSite.getLogo()));
+                    siteService.updateById(site);
+                    siteService.clearCache(site.getSiteId());
+                    // 导入栏目数据
+                    List<CmsCatalog> linkCatalogs = new ArrayList<>();
+                    files = context.readDataFiles(CmsCatalog.TABLE_NAME);
+                    files.forEach(file -> {
                         List<CmsCatalog> list = JacksonUtils.fromList(file, CmsCatalog.class);
+                        // 必须保证顺序
                         list.sort(Comparator.comparing(CmsCatalog::getAncestors));
                         list.forEach(data -> {
                             try {
-                                CatalogAddDTO dto = new CatalogAddDTO();
-                                dto.setSiteId(site.getSiteId());
-                                dto.setName(data.getName());
-                                dto.setPath(data.getPath());
-                                dto.setAlias(data.getAlias());
-                                dto.setCatalogType(data.getCatalogType());
-                                if (data.getParentId() > 0) {
-                                    dto.setParentId(catalogIdMap.get(data.getParentId()).getCatalogId());
+                                Long sourceCatalogId = data.getCatalogId();
+                                data.setCatalogId(IdUtils.getSnowflakeId());
+                                data.setSiteId(site.getSiteId());
+                                data.setAncestors(data.getCatalogId().toString());
+                                if (IdUtils.validate(data.getParentId())) {
+                                    Long pCatalogId = context.getCatalogIdMap().get(data.getParentId());
+                                    CmsCatalog parent = catalogService.getCatalog(pCatalogId);
+                                    if (Objects.nonNull(parent)) {
+                                        data.setParentId(parent.getCatalogId());
+                                        data.setAncestors(CatalogUtils.getCatalogAncestors(parent, data.getCatalogId()));
+                                    } else {
+                                        data.setParentId(0L);
+                                    }
                                 }
-                                dto.setOperator(operator);
-                                CmsCatalog catalog = catalogService.addCatalog(dto);
-                                catalog.setConfigProps(data.getConfigProps());
-                                catalog.setPublishPipeProps(data.getPublishPipeProps());
-                                catalog.setDescription(data.getDescription());
-                                catalog.setSeoTitle(data.getSeoTitle());
-                                catalog.setSeoKeywords(data.getSeoKeywords());
-                                catalog.setSeoDescription(data.getSeoDescription());
-                                if (CatalogType_Link.ID.equals(catalog.getCatalogType())) {
-                                    // 链接栏目统一设置成站点链接
-                                    catalog.setRedirectUrl(InternalUrlUtils.getInternalUrl(InternalDataType_Site.ID, site.getSiteId()));
+                                data.createBy(context.getOperator());
+                                // 处理logo
+                                InternalURL internalURL = InternalUrlUtils.parseInternalUrl(data.getLogo());
+                                if (Objects.nonNull(internalURL)) {
+                                    Long resourceId = context.getResourceIdMap().get(internalURL.getId());
+                                    if (IdUtils.validate(resourceId)) {
+                                        internalURL.setId(resourceId);
+                                        data.setLogo(internalURL.toIUrl());
+                                    } else {
+                                        data.setLogo(StringUtils.EMPTY);
+                                    }
                                 }
-                                catalogService.updateById(catalog);
-                                catalogIdMap.put(data.getCatalogId(), catalog);
+                                catalogService.save(data);
+                                context.getCatalogIdMap().put(sourceCatalogId, data.getCatalogId());
+                                if (CatalogType_Link.ID.equals(data.getCatalogType())) {
+                                    linkCatalogs.add(data);
+                                }
                             } catch (Exception e) {
-                                this.addErrorMessage("栏目添加失败：" + data.getName() + " > " + e.getMessage());
+                                this.addErrorMessage("导入栏目数据失败：" + data.getName());
+                                e.printStackTrace();
                             }
                         });
-                    }
+                    });
                     AsyncTaskManager.setTaskProgressInfo(30, "正在导入发布通道数据");
-                    file = new File(destDir + "db/" + CmsPublishPipe.TABLE_NAME + ".json");
-                    if (file.exists()) {
+                    files = context.readDataFiles(CmsPublishPipe.TABLE_NAME);
+                    files.forEach(file -> {
                         List<CmsPublishPipe> list = JacksonUtils.fromList(file, CmsPublishPipe.class);
                         for (CmsPublishPipe data : list) {
                             try {
+                                data.setPublishpipeId(IdUtils.getSnowflakeId());
                                 data.setSiteId(site.getSiteId());
                                 data.setCreateBy(operator.getUsername());
                                 publishPipeService.addPublishPipe(data);
                             } catch (Exception e) {
-                                this.addErrorMessage("发布通道添加失败：" + data.getName() + " > " + e.getMessage());
+                                this.addErrorMessage("导入发布通道数据失败：" + data.getName());
+                                e.printStackTrace();
                             }
                         }
-                    }
+                    });
                     AsyncTaskManager.setTaskProgressInfo(50, "正在导入页面部件数据");
-                    file = new File(destDir + "db/" + CmsPageWidget.TABLE_NAME + ".json");
-                    if (file.exists()) {
+                    files = context.readDataFiles(CmsPageWidget.TABLE_NAME);
+                    files.forEach(file -> {
                         List<CmsPageWidget> list = JacksonUtils.fromList(file, CmsPageWidget.class);
                         list.forEach(data -> {
                             try {
-                                IPageWidgetType pwt = ContentCoreUtils.getPageWidgetType(data.getType());
-                                IPageWidget pw = pwt.newInstance();
-                                pw.setPageWidgetEntity(data);
-                                pw.setOperator(operator);
+                                Long oldPageWidgetId = data.getPageWidgetId();
+                                data.setPageWidgetId(IdUtils.getSnowflakeId());
+                                data.setSiteId(site.getSiteId());
                                 if (IdUtils.validate(data.getCatalogId())) {
-                                    CmsCatalog catalog = catalogIdMap.get(data.getCatalogId());
-                                    pw.getPageWidgetEntity().setCatalogId(catalog.getCatalogId());
-                                    pw.getPageWidgetEntity().setCatalogAncestors(catalog.getAncestors());
+                                    Long catalogId = context.getCatalogIdMap().get(data.getCatalogId());
+                                    CmsCatalog catalog = catalogService.getCatalog(catalogId);
+                                    if (Objects.nonNull(catalog)) {
+                                        data.setCatalogId(catalog.getCatalogId());
+                                        data.setCatalogAncestors(catalog.getAncestors());
+                                    }
                                 }
-                                pw.getPageWidgetEntity().setSiteId(site.getSiteId());
-                                pw.add();
+                                data.createBy(context.getOperator());
+                                pageWidgetService.save(data);
+                                context.getPageWidgetIdMap().put(oldPageWidgetId, data.getPageWidgetId());
                             } catch (Exception e) {
-                                this.addErrorMessage("页面部件添加失败：" + data.getName() + " > " + e.getMessage());
+                                this.addErrorMessage("导入页面部件数据失败：" + data.getName());
+                                e.printStackTrace();
                             }
                         });
-                    }
+                    });
+                    // 导入内容数据
+                    List<CmsContent> linkContents = new ArrayList<>();
+                    AsyncTaskManager.setTaskProgressInfo(50, "正在导入内容数据");
+                    files = context.readDataFiles(CmsContent.TABLE_NAME);
+                    files.forEach(file -> {
+                        List<CmsContent> list = JacksonUtils.fromList(file, CmsContent.class);
+                        list.forEach(content -> {
+                            Long sourceContentId = content.getContentId();
+                            try {
+                                CmsCatalog catalog = catalogService.getCatalog(context.getCatalogIdMap().get(content.getCatalogId()));
+
+                                content.setContentId(IdUtils.getSnowflakeId());
+                                content.setSiteId(site.getSiteId());
+                                content.setCatalogId(catalog.getCatalogId());
+                                content.setCatalogAncestors(catalog.getAncestors());
+                                String topCatalogIdStr = catalog.getAncestors().split(CatalogUtils.ANCESTORS_SPLITER)[0];
+                                content.setTopCatalog(Long.valueOf(topCatalogIdStr));
+                                content.setDeptId(0L);
+                                content.setDeptCode(StringUtils.EMPTY);
+                                content.createBy(operator.getUsername());
+                                // 处理logo
+                                InternalURL internalURL = InternalUrlUtils.parseInternalUrl(catalog.getLogo());
+                                if (Objects.nonNull(internalURL)) {
+                                    Long resourceId = context.getResourceIdMap().get(internalURL.getId());
+                                    if (IdUtils.validate(resourceId)) {
+                                        internalURL.setId(resourceId);
+                                        catalog.setLogo(internalURL.toIUrl());
+                                    } else {
+                                        catalog.setLogo(StringUtils.EMPTY);
+                                    }
+                                }
+                                contentService.save(content);
+                                context.getContentIdMap().put(sourceContentId, content.getContentId());
+                                if (content.isLinkContent()) {
+                                    linkContents.add(content);
+                                }
+                            } catch (Exception e) {
+                                this.addErrorMessage("导入内容数据失败：" + sourceContentId);
+                                e.printStackTrace();
+                            }
+                        });
+                    });
+                    // 处理链接栏目的内部链接地址
+                    linkCatalogs.forEach(catalog -> {
+                        String iurl = context.dealInternalUrl(catalog.getRedirectUrl());
+                        catalogService.lambdaUpdate().set(CmsCatalog::getRedirectUrl, iurl)
+                                .eq(CmsCatalog::getCatalogId, catalog.getCatalogId()).update();
+                    });
+                    linkContents.forEach(content -> {
+                        String iurl = context.dealInternalUrl(content.getRedirectUrl());
+                        contentService.lambdaUpdate().set(CmsContent::getRedirectUrl, iurl)
+                                .eq(CmsContent::getContentId, content.getContentId()).update();
+                    });
+                    // 其他模块数据处理
+                    contentCoreHandlers.forEach(h -> h.onSiteImport(context));
                     // 复制文件
-                    AsyncTaskManager.setTaskProgressInfo(50, "正在导入发布通道相关文件");
-                    String sitePath = FileUtils.readFileToString(new File(destDir + "site.txt"), Charset.defaultCharset());
-                    File wwwroot = new File(destDir + "wwwroot");
-                    File[] wwwrootFiles = wwwroot.listFiles();
-                    if (wwwrootFiles != null) {
-                        for (File f : wwwrootFiles) {
-                            String dest = CMSConfig.getResourceRoot() + f.getName().replaceFirst(sitePath, site.getPath());
-                            FileUtils.copyDirectory(f, new File(dest));
-                        }
-                    }
-                    applicationContext.publishEvent(new SiteThemeImportEvent(this, site, destDir, operator));
+                    context.copySiteFiles();
                 } finally {
                     FileUtils.deleteDirectory(new File(destDir));
                     this.setProgressInfo(100, "导入完成");
@@ -174,51 +279,52 @@ public class SiteThemeService implements ApplicationContextAware {
         return asyncTask;
     }
 
-    public static final String ThemeFileName = "SiteTheme.zip";
+    public static final String ThemeZipPath = "_export/SiteTheme.zip";
 
-    public AsyncTask exportSiteTheme(CmsSite site, final List<String> directories) {
+    public AsyncTask exportSiteTheme(CmsSite site) {
         AsyncTask asyncTask = new AsyncTask() {
 
             @Override
             public void run0() throws Exception {
                 String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
-                String zipFile = siteResourceRoot + ThemeFileName;
-                ZipBuilder zipBuilder = ZipBuilder.createZipFile(new File(zipFile));
-                // 记录下原站点目录
-                zipBuilder.add(site.getPath()).path("site.txt").save();
-                // 发布通道文件
-                AsyncTaskManager.setTaskProgressInfo(10, "正在导出站点相关文件");
-                final String prefix = "wwwroot/";
-                for (int i = 0; i < directories.size(); i++) {
-                    String directory = directories.get(i);
-                    File files = new File(CMSConfig.getResourceRoot() + directory);
-                    if (files.exists()) {
-                        zipBuilder.add(files).path(prefix + directory).recursive().save();
+                SiteExportContext context = new SiteExportContext(site);
+                // cms_site
+                {
+                    AsyncTaskManager.setTaskProgressInfo(0, "正在导出站点数据");
+                    String json = JacksonUtils.to(site);
+                    context.saveData(CmsSite.TABLE_NAME, json);
+                    // 记录资源引用
+                    InternalURL internalURL = InternalUrlUtils.parseInternalUrl(site.getLogo());
+                    if (Objects.nonNull(internalURL)) {
+                        context.getResourceIds().add(internalURL.getId());
                     }
                 }
-                // 仅导出发布通道、栏目和页面部件基础数据
-                // cms_publishpipe
+                // cms_site_property
                 {
-                    AsyncTaskManager.setTaskProgressInfo(20, "正在导出发布通道数据");
-                    List<CmsPublishPipe> list = publishPipeService.lambdaQuery()
-                            .eq(CmsPublishPipe::getSiteId, site.getSiteId())
+                    AsyncTaskManager.setTaskProgressInfo(5, "正在导出站点扩展属性数据");
+                    List<CmsSiteProperty> list = sitePropertyService.lambdaQuery()
+                            .eq(CmsSiteProperty::getSiteId, site.getSiteId())
                             .list();
                     String json = JacksonUtils.to(list);
-                    zipBuilder.add(json.getBytes(StandardCharsets.UTF_8))
-                            .path("db/" + CmsPublishPipe.TABLE_NAME + ".json")
-                            .save();
+                    context.saveData(CmsSiteProperty.TABLE_NAME, json);
                 }
+                List<String> catalogPaths = new ArrayList<>();
                 // cms_catalog
                 {
                     AsyncTaskManager.setTaskProgressInfo(30, "正在导出栏目数据");
                     List<CmsCatalog> list = catalogService.lambdaQuery()
                             .eq(CmsCatalog::getSiteId, site.getSiteId())
-                            .orderByAsc(CmsCatalog::getAncestors)
+                            .orderByAsc(CmsCatalog::getAncestors) // 必须保证顺序
                             .list();
                     String json = JacksonUtils.to(list);
-                    zipBuilder.add(json.getBytes(StandardCharsets.UTF_8))
-                            .path("db/" + CmsCatalog.TABLE_NAME + ".json")
-                            .save();
+                    context.saveData(CmsCatalog.TABLE_NAME, json);
+                    list.forEach(catalog -> {
+                        InternalURL internalURL = InternalUrlUtils.parseInternalUrl(catalog.getLogo());
+                        if (Objects.nonNull(internalURL)) {
+                            context.getResourceIds().add(internalURL.getId());
+                        }
+                        catalogPaths.add(catalog.getPath());
+                    });
                 }
                 // cms_page_widget
                 {
@@ -227,12 +333,95 @@ public class SiteThemeService implements ApplicationContextAware {
                             .eq(CmsPageWidget::getSiteId, site.getSiteId())
                             .list();
                     String json = JacksonUtils.to(list);
-                    zipBuilder.add(json.getBytes(StandardCharsets.UTF_8))
-                            .path("db/" + CmsPageWidget.TABLE_NAME + ".json")
-                            .save();
+                    context.saveData(CmsPageWidget.TABLE_NAME, json);
                 }
-                applicationContext.publishEvent(new SiteThemeExportEvent(this, site, zipBuilder));
-                zipBuilder.toZipFile();
+                // cms_content
+                {
+                    AsyncTaskManager.setTaskProgressInfo(40, "正在导出内容数据");
+                    long offset = 0;
+                    int pageSize = 200;
+                    int fileIndex = 1;
+                    while (true) {
+                        LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
+                                .eq(CmsContent::getSiteId, site.getSiteId())
+                                .gt(CmsContent::getContentId, offset)
+                                .orderByAsc(CmsContent::getContentId);
+                        Page<CmsContent> page = contentService.page(new Page<>(1, pageSize, false), q);
+                        if (page.getRecords().size() > 0) {
+                            context.saveData(CmsContent.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
+                            offset = page.getRecords().get(page.getRecords().size() - 1).getContentId();
+                            fileIndex++;
+                            page.getRecords().forEach(content -> {
+                                InternalURL internalURL = InternalUrlUtils.parseInternalUrl(content.getLogo());
+                                if (Objects.nonNull(internalURL)) {
+                                    context.getResourceIds().add(internalURL.getId());
+                                }
+                            });
+                            if (page.getRecords().size() < pageSize) {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                // 导出关联资源cms_resource
+                {
+                    AsyncTaskManager.setTaskProgressInfo(40, "正在导出素材数据");
+                    long offset = 0;
+                    int pageSize = 200;
+                    int fileIndex = 1;
+                    while (true) {
+                        LambdaQueryWrapper<CmsResource> q = new LambdaQueryWrapper<CmsResource>()
+                                .eq(CmsResource::getSiteId, site.getSiteId())
+                                .gt(CmsResource::getResourceId, offset)
+                                .orderByAsc(CmsResource::getResourceId);
+                        Page<CmsResource> page = resourceService.page(new Page<>(1, pageSize, false), q);
+                        if (page.getRecords().size() > 0) {
+                            context.saveData(CmsResource.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
+                            offset = page.getRecords().get(page.getRecords().size() - 1).getResourceId();
+                            fileIndex++;
+                            if (page.getRecords().size() < pageSize) {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                // cms_publishpipe
+                AsyncTaskManager.setTaskProgressInfo(20, "正在导出发布通道数据");
+                List<CmsPublishPipe> publishPipes = publishPipeService.lambdaQuery()
+                        .eq(CmsPublishPipe::getSiteId, site.getSiteId())
+                        .list();
+                context.saveData(CmsPublishPipe.TABLE_NAME, JacksonUtils.to(publishPipes));
+                // 发布通道模板资源保存到导出临时目录
+                final String resourceRoot = CMSConfig.getResourceRoot();
+                publishPipes.forEach(pp -> {
+                    String ppPath = SiteUtils.getSitePublishPipePath(site.getPath(), pp.getCode());
+                    File[] files = new File(resourceRoot + ppPath).listFiles((dir, name) -> {
+                        // 过滤掉栏目目录和include目录
+                        for (String catalogPath : catalogPaths) {
+                            if (catalogPath.startsWith(name + "/") || "include".equals(name)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                    if (files != null) {
+                        for (File file : files) {
+                            context.saveFile(file, file.getAbsolutePath().substring(resourceRoot.length()));
+                        }
+                    }
+                });
+                // 素材资源目录复制到导出临时目录
+                context.saveFile(new File(siteResourceRoot + IResourceType.UploadResourceDirectory),
+                        SiteUtils.getSiteResourcePath(site.getPath()) + IResourceType.UploadResourceDirectory);
+                // 其他模块数据处理
+                contentCoreHandlers.forEach(h -> h.onSiteExport(context));
+                // ############ 导出压缩文件 #################
+                context.createZipFile(ThemeZipPath);
+//                context.clearTempFiles();
                 AsyncTaskManager.setTaskProgressInfo(100, "导出成功");
             }
         };
@@ -240,10 +429,5 @@ public class SiteThemeService implements ApplicationContextAware {
         asyncTask.setTaskId("SiteThemeExport-" + site.getSiteId());
         this.asyncTaskManager.execute(asyncTask);
         return asyncTask;
-    }
-
-    @Override
-    public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
     }
 }

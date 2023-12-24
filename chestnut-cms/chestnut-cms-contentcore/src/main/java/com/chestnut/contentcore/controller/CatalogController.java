@@ -32,7 +32,6 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
-import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
@@ -46,6 +45,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -77,8 +77,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 查询栏目数据列表
-	 * 
-	 * @return
 	 */
 	@GetMapping
 	public R<?> list() {
@@ -90,9 +88,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 查询栏目详情数据
-	 * 
-	 * @param catalogId 栏目ID
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:View:${#catalogId}")
 	@GetMapping("/{catalogId}")
@@ -114,10 +109,12 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 新增栏目数据
-	 * 
-	 * @param dto
-	 * @return
 	 */
+	@Priv(
+		type = AdminUserType.TYPE,
+		value = { ContentCorePriv.ResourceView, "Site:AddCatalog:${#_header['CurrentSite']}"},
+		mode = SaMode.AND
+	)
 	@Log(title = "新增栏目", businessType = BusinessType.INSERT)
 	@PostMapping
 	public R<?> addCatalog(@RequestBody @Validated CatalogAddDTO dto) {
@@ -129,10 +126,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 修改栏目数据
-	 * 
-	 * @param dto
-	 * @return
-	 * @throws IOException
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#dto.catalogId}")
 	@Log(title = "编辑栏目", businessType = BusinessType.UPDATE)
@@ -145,9 +138,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 删除栏目数据
-	 * 
-	 * @param catalogId 栏目ID
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Delete:${#catalogId}")
 	@Log(title = "删除", businessType = BusinessType.DELETE)
@@ -168,9 +158,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 显示/隐藏栏目
-	 * 
-	 * @param dto
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:ShowHide:${#dto.catalogId}")
 	@Log(title = "显隐栏目", businessType = BusinessType.UPDATE)
@@ -182,8 +169,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 栏目树结构数据
-	 * 
-	 * @return
 	 */
 	@GetMapping("/treeData")
 	public R<?> treeData() {
@@ -199,20 +184,16 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 内容类型数据
-	 * 
-	 * @return
 	 */
 	@GetMapping("/getContentTypes")
 	public R<?> getContentTypes() {
-		List<Map<String, String>> list = this.contentTypes.stream().sorted((c1, c2) -> c1.getOrder() - c2.getOrder())
+		List<Map<String, String>> list = this.contentTypes.stream().sorted(Comparator.comparingInt(IContentType::getOrder))
 				.map(ct -> Map.of("id", ct.getId(), "name", I18nUtils.get(ct.getName()))).toList();
 		return R.ok(list);
 	}
 
 	/**
 	 * 栏目类型数据
-	 * 
-	 * @return
 	 */
 	@GetMapping("/getCatalogTypes")
 	public R<?> getCatalogTypes() {
@@ -223,9 +204,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 发布栏目
-	 * 
-	 * @param dto
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Publish:${#dto.catalogId}")
 	@Log(title = "发布栏目", businessType = BusinessType.OTHER)
@@ -245,9 +223,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 获取栏目扩展配置
-	 * 
-	 * @param catalogId 栏目ID
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:View:${#catalogId}")
 	@GetMapping("/extends")
@@ -264,10 +239,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 保存栏目扩展配置
-	 * 
-	 * @param catalogId 栏目ID
-	 * @param configs   扩展配置数据
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#catalogId}")
 	@Log(title = "栏目扩展", businessType = BusinessType.UPDATE, isSaveRequestData = false)
@@ -283,9 +254,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 扩展配置应用到子栏目
-	 * 
-	 * @param dto
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#dto.catalogId}")
 	@Log(title = "扩展配置2子栏目", businessType = BusinessType.UPDATE)
@@ -301,9 +269,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 发布通道配置应用到子栏目
-	 * 
-	 * @param dto
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#dto.catalogId}")
 	@Log(title = "发布通道配置2子栏目", businessType = BusinessType.UPDATE)
@@ -319,10 +284,6 @@ public class CatalogController extends BaseRestController {
 
 	/**
 	 * 移动栏目
-	 * 
-	 * @param fromCatalogId 移动的栏目ID
-	 * @param toCatalogId   目标栏目ID
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = { "Catalog:Move:${#fromCatalogId}", "Catalog:Move:${#toCatalogId}" }, mode = SaMode.AND)
 	@Log(title = "移动栏目", businessType = BusinessType.UPDATE)

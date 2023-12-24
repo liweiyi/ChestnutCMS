@@ -1,9 +1,9 @@
 package com.chestnut.customform.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.utils.ConvertUtils;
 import com.chestnut.xmodel.core.BaseModelData;
 import lombok.Getter;
 import lombok.Setter;
@@ -52,4 +52,17 @@ public class CmsCustomFormData extends BaseModelData {
      * 创建时间
      */
     private LocalDateTime createTime;
+
+    @Override
+    public void setFieldValue(String fieldName, Object fieldValue) {
+        switch(fieldName) {
+            case "data_id" -> this.setDataId(ConvertUtils.toLong(fieldValue));
+            case "model_id" -> this.setModelId(ConvertUtils.toLong(fieldValue));
+            case "site_id" -> this.setSiteId(ConvertUtils.toLong(fieldValue));
+            case "client_ip" -> this.setClientIp(ConvertUtils.toStr(fieldValue));
+            case "uuid" -> this.setUuid(ConvertUtils.toStr(fieldValue));
+            case "create_time" -> this.setCreateTime(ConvertUtils.toLocalDateTime(fieldValue));
+            default -> super.setFieldValue(fieldName, fieldValue);
+        }
+    }
 }

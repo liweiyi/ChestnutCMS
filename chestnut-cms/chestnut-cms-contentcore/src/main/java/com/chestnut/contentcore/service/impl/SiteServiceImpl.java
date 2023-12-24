@@ -25,7 +25,6 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.SiteUtils;
-import com.chestnut.system.domain.SysPermission;
 import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysPermissionService;
@@ -37,7 +36,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -72,17 +70,15 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 
 	@Override
 	public CmsSite getCurrentSite(HttpServletRequest request) {
-		CmsSite site = null;
-		String siteId = ServletUtils.getHeader(request, ContentCoreConsts.Header_CurrentSite);
-		if (NumberUtils.isDigits(siteId)) {
-			try {
-				site = this.getSite(Long.valueOf(siteId));
-			} catch (Exception e) {
-			}
-		}
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		CmsSite site = null;
+		Long siteId = ConvertUtils.toLong(ServletUtils.getHeader(request, ContentCoreConsts.Header_CurrentSite));
+		if (IdUtils.validate(siteId)
+				&& loginUser.hasPermission(SitePrivItem.View.getPermissionKey(siteId))) {
+			site = this.getSite(siteId);
+		}
 		// 无当前站点或当前站点无权限则取数据库查找一条有权限的站点数据作为当前站点
-		if (Objects.isNull(site) || !loginUser.hasPermission(SitePrivItem.View.getPermissionKey(site.getSiteId()))) {
+		if (Objects.isNull(site)) {
 			Optional<CmsSite> opt = this.lambdaQuery().list().stream().filter(s ->
 					loginUser.hasPermission(SitePrivItem.View.getPermissionKey(s.getSiteId()))).findFirst();
 			if (opt.isPresent()) {
@@ -151,7 +147,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteSite(Long siteId) throws IOException {
+	public void deleteSite(Long siteId) {
 		CmsSite site = this.getById(siteId);
 		Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 

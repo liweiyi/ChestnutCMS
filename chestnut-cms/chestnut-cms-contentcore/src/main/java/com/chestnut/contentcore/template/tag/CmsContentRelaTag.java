@@ -1,11 +1,17 @@
 package com.chestnut.contentcore.template.tag;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.staticize.FreeMarkerUtils;
+import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.CmsContentRela;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.mapper.CmsContentRelaMapper;
+import com.chestnut.contentcore.service.IContentService;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +33,8 @@ public class CmsContentRelaTag extends AbstractListTag {
 
 	private final CmsContentRelaMapper contentRelaMapper;
 
+	private final IContentService contentService;
+
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
@@ -41,9 +49,22 @@ public class CmsContentRelaTag extends AbstractListTag {
 		if (contentId <= 0) {
 			throw new TemplateException("内容ID错误：" + contentId, env);
 		}
-		Page<CmsContent> pageResult = contentRelaMapper
-				.selectRelaContents(new Page<>(pageIndex, size, page), contentId, null);
-		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
+		Page<CmsContentRela> pageResult = contentRelaMapper.selectPage(new Page<>(pageIndex, size, page),
+				new LambdaQueryWrapper<CmsContentRela>().eq(CmsContentRela::getContentId, contentId));
+		if (pageResult.getRecords().size() > 0) {
+			List<Long> contentIds = pageResult.getRecords().stream().map(CmsContentRela::getRelaContentId).toList();
+			List<CmsContent> contents = this.contentService.lambdaQuery().in(CmsContent::getContentId, contentIds).list();
+			List<ContentDTO> result = contents.stream().map(c -> {
+				ContentDTO dto = ContentDTO.newInstance(c);
+				dto.setLink(this.contentService.getContentLink(c, 1,
+						context.getPublishPipeCode(), context.isPreview()));
+				return dto;
+			}).toList();
+			return TagPageData.of(result, page ? pageResult.getTotal() : result.size());
+		} else {
+			return TagPageData.of(List.of(), 0);
+		}
 	}
 
 	@Override

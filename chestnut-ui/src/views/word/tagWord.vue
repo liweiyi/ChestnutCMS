@@ -55,6 +55,7 @@
             <el-table-column type="selection" width="50" align="center" />
             <el-table-column type="index" :label="$t('Common.RowNo')" align="center" width="50" />
             <el-table-column :label="$t('WordMgr.TAG.TAGWord')" align="left" prop="word" />
+            <el-table-column :label="$t('Common.Sort')" align="center" prop="sortFlag" width="120"/>
             <el-table-column :label="$t('WordMgr.TAG.TAGWordUseCount')" align="center" prop="useCount" width="120"/>
             <el-table-column :label="$t('WordMgr.TAG.TAGWordHitCount')" align="center" prop="hitCount" width="120"/>
             <el-table-column :label="$t('Common.CreateTime')" align="center" width="160">
@@ -100,6 +101,9 @@
                label-width="80px">
         <el-form-item :label="$t('WordMgr.TAG.TAGWord')" prop="word">
           <el-input v-model="form.word" />
+        </el-form-item>
+        <el-form-item :label="$t('Common.Sort')" prop="sortFlag">
+          <el-input-number v-model="form.sortFlag" />
         </el-form-item>
         <el-form-item :label="$t('Common.Remark')" prop="remark">
           <el-input v-model="form.remark" />

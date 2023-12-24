@@ -1,26 +1,5 @@
 package com.chestnut.common.log.restful;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.ILogHandler;
 import com.chestnut.common.log.ILogType;
@@ -33,8 +12,21 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
-
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * Restful Controller 访问日志
@@ -72,6 +64,9 @@ public class RestfulLogType implements ILogType {
 		try {
 			if (joinPoint.getSignature() instanceof MethodSignature ms) {
 				Priv priv = ms.getMethod().getAnnotation(Priv.class);
+				if (Objects.isNull(priv)) {
+					priv = ms.getMethod().getDeclaringClass().getAnnotation(Priv.class);
+				}
 				if (Objects.nonNull(priv)) {
 					String userType = priv.type();
 					IUserType ut = this.securityService.getUserType(userType);
@@ -80,7 +75,6 @@ public class RestfulLogType implements ILogType {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("Log.Restful.beforeProceed: ", e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -134,7 +128,6 @@ public class RestfulLogType implements ILogType {
 				}
 			});
 		} catch (Exception ex) {
-			logger.error("Log.Restful.afterProceed: ", e.getMessage());
 			ex.printStackTrace();
 		}
 	}
@@ -181,9 +174,9 @@ public class RestfulLogType implements ILogType {
 			return clazz.getComponentType().isAssignableFrom(MultipartFile.class);
 		} else if (Collection.class.isAssignableFrom(clazz)) {
 			Collection<?> collection = (Collection<?>) o;
-			return collection.stream().anyMatch(v -> isIgnoreArgs(v));
+			return collection.stream().anyMatch(this::isIgnoreArgs);
 		} else if (Map.class.isAssignableFrom(clazz)) {
-			return ((Map<?, ?>) o).values().stream().anyMatch(v -> isIgnoreArgs(v));
+			return ((Map<?, ?>) o).values().stream().anyMatch(this::isIgnoreArgs);
 		}
 		return o instanceof MultipartFile || o instanceof HttpServletRequest || o instanceof HttpServletResponse
 				|| o instanceof BindingResult;

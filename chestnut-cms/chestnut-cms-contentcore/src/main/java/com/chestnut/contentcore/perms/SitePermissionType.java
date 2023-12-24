@@ -114,14 +114,16 @@ public class SitePermissionType implements IPermissionType {
 
 		Publish(3, "发布"),
 
-		AddPageWidget(4, "新增页面部件");
+		AddPageWidget(4, "新增页面部件"),
+
+		AddCatalog(5, "新增栏目");
 
 		/**
 		 * 权限项在bitset中的位置序号，从0开始，不可随意变更，变更后会导致原权限信息错误
 		 */
-		private int bitIndex;
+		private final int bitIndex;
 
-		private String label;
+		private final String label;
 
 		SitePrivItem(int bitIndex, String label) {
 			this.bitIndex = bitIndex;

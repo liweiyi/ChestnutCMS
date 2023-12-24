@@ -1,18 +1,13 @@
 package com.chestnut.contentcore.core;
 
-import java.io.IOException;
-import java.util.Map;
-
-import cn.dev33.satoken.config.SaTokenConfig;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
-
-import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.template.TemplateException;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * 内部数据类型
@@ -42,13 +37,7 @@ public interface IInternalDataType {
 		if (pageIndex > 1) {
 			path += "&pi=" + pageIndex;
 		}
-		if (StpAdminUtil.isLogin()) {
-			SaTokenConfig config = StpAdminUtil.getStpLogic().getConfigOrGlobal();
-			path = path + "&" + config.getTokenName() + "="
-					+ (StringUtils.isNotEmpty(config.getTokenPrefix()) ? config.getTokenPrefix() + " " : "")
-					+ StpAdminUtil.getTokenValue();
-		}
-		return path;
+		return TemplateUtils.appendTokenParameter(path);
 	}
 
 	static String getPreviewPath(String type, Long id, String publishPipeCode) {

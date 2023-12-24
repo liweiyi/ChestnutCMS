@@ -1,20 +1,19 @@
 package com.chestnut.contentcore.fixed.dict;
 
+import com.chestnut.common.utils.NumberUtils;
+import com.chestnut.common.utils.SpringUtils;
+import com.chestnut.system.domain.SysDictData;
+import com.chestnut.system.fixed.FixedDictType;
+import com.chestnut.system.service.ISysDictTypeService;
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.stereotype.Component;
-
-import com.chestnut.common.utils.NumberUtils;
-import com.chestnut.common.utils.SpringUtils;
-import com.chestnut.system.domain.SysDictData;
-import com.chestnut.system.fixed.FixedDictType;
-import com.chestnut.system.service.ISysDictTypeService;
 
 /**
  * 启用/禁用
@@ -118,7 +117,7 @@ public class ContentAttribute extends FixedDictType {
 		}
 		Map<Integer, String> map = dictTypeService.selectDictDatasByType(TYPE).stream()
 				.collect(Collectors.toMap(d -> Integer.parseInt(d.getRemark()), SysDictData::getDictValue));
-		ArrayList<Integer> binaryList = NumberUtils.getBinaryList(attributes.intValue());
+		ArrayList<Integer> binaryList = NumberUtils.getBinaryList(attributes);
 		return binaryList.stream().map(map::get).toArray(String[]::new);
 	}
 
@@ -135,7 +134,7 @@ public class ContentAttribute extends FixedDictType {
 	}
 
     public static boolean hasAttribute(int attributes, String attrStr) {
-		ArrayList<Integer> binaryList = NumberUtils.getBinaryList(attributes);
-		return binaryList.contains(bit(attrStr));
+		int bit = bit(attrStr);
+		return (attributes & bit) == bit;
     }
 }

@@ -1,21 +1,20 @@
 package com.chestnut.contentcore.controller;
 
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.write.metadata.WriteSheet;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.*;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.core.IProperty.UseType;
@@ -33,7 +32,6 @@ import com.chestnut.contentcore.service.impl.SiteThemeService;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
-import com.chestnut.system.domain.SysConfig;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
@@ -42,7 +40,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -370,19 +367,8 @@ public class SiteController extends BaseRestController {
     public R<?> exportSiteTheme(@Validated @RequestBody SiteExportDTO dto) {
         CmsSite site = this.siteService.getSite(dto.getSiteId());
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", dto.getSiteId()));
-        // TODO
-        List<String> directories = new ArrayList<>();
-//        directories.add(site.getPath() + "/resources/");
-        List<CmsPublishPipe> publishPipes = this.publishPipeService.getAllPublishPipes(site.getSiteId());
-        publishPipes.forEach(pp -> {
-            String path = SiteUtils.getSitePublishPipePath(site.getPath(), pp.getCode());
-            directories.add(path + "assets/");
-            directories.add(path + "fonts/");
-            directories.add(path + "css/");
-            directories.add(path + "js/");
-            directories.add(path + ContentCoreConsts.TemplateDirectory);
-        });
-        AsyncTask asyncTask = this.siteExportService.exportSiteTheme(site, directories);
+
+        AsyncTask asyncTask = this.siteExportService.exportSiteTheme(site);
         return R.ok(asyncTask.getTaskId());
     }
 
@@ -390,14 +376,15 @@ public class SiteController extends BaseRestController {
     @PostMapping("/theme_download")
     public void export(@RequestParam Long siteId, HttpServletResponse response) throws IOException {
         CmsSite site = this.siteService.getSite(siteId);
-        File file = new File(SiteUtils.getSiteResourceRoot(site) + SiteThemeService.ThemeFileName);
+        File file = new File(SiteUtils.getSiteResourceRoot(site) + SiteThemeService.ThemeZipPath);
         if (!file.exists()) {
             response.getWriter().write("站点主题文件不存在");
             return;
         }
         response.setContentType("application/octet-stream");
         response.setCharacterEncoding(StandardCharsets.UTF_8.displayName());
-        response.setHeader("Content-disposition", "attachment;filename=" + SiteThemeService.ThemeFileName);
+        response.setHeader("Content-disposition", "attachment;filename="
+                + StringUtils.substringAfterLast(SiteThemeService.ThemeZipPath, "/"));
         response.addHeader("Content-Length", "" + file.length());
         try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
             byte[] buff = new byte[1024];

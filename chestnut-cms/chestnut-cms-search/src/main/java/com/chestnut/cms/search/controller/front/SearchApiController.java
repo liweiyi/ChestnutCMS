@@ -4,11 +4,11 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.chestnut.cms.search.es.doc.ESContent;
 import com.chestnut.cms.search.vo.ESContentVO;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -19,6 +19,7 @@ import com.chestnut.contentcore.service.impl.ContentDynamicDataService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.search.SearchConsts;
 import com.chestnut.search.service.ISearchLogService;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,8 @@ public class SearchApiController extends BaseRestController {
 	private final ElasticsearchClient esClient;
 
 	private final ISearchLogService logService;
+
+	private final ContentDynamicDataService contentDynamicDataService;
 
 	@GetMapping("/query")
 	public R<?> selectDocumentList(
@@ -139,5 +142,72 @@ public class SearchApiController extends BaseRestController {
 		return this.bindDataTable(list, Objects.isNull(sr.hits().total()) ? 0 : sr.hits().total().value());
 	}
 
-	private final ContentDynamicDataService contentDynamicDataService;
+	@GetMapping("/tag")
+	public R<?> selectDocumentByTag(
+			@RequestParam(value = "sid") Long siteId,
+			@RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
+			@RequestParam(value = "pp") String publishPipeCode,
+			@RequestParam(value = "q", required = false) @Length(max = 200) String query,
+			@RequestParam(value = "ct", required = false) String contentType,
+			@RequestParam(value = "page", required = false, defaultValue = "1") @Min(1) Integer page,
+			@RequestParam(value = "size", required = false, defaultValue = "10") @Min(1) Integer size,
+			@RequestParam(value = "preview", required = false, defaultValue = "false") Boolean preview) throws ElasticsearchException, IOException {
+
+		SearchResponse<ObjectNode> sr = esClient.search(s -> {
+			s.index(ESContent.INDEX_NAME) // 索引
+				.query(q ->
+						q.bool(b -> {
+							b.must(must -> must.term(tq -> tq.field("siteId").value(siteId)));
+							if (IdUtils.validate(catalogId)) {
+								b.must(must -> must.term(tq -> tq.field("catalogId").value(catalogId)));
+							}
+							if (StringUtils.isNotEmpty(contentType)) {
+								b.must(must -> must.term(tq -> tq.field("contentType").value(contentType)));
+							}
+							if (StringUtils.isNotEmpty(query)) {
+								String[] tags = query.split("\\s+");
+								b.must(should -> {
+									for (String tag : tags) {
+										should.constantScore(cs ->
+												cs.boost(1F).filter(f ->
+														f.match(m ->
+																m.field("tags").query(tag))));
+									}
+									return should;
+								});
+							}
+							return b;
+						})
+				);
+			s.sort(sort -> sort.field(f -> f.field("_score").order(SortOrder.Desc)));
+			s.sort(sort -> sort.field(f -> f.field("publishDate").order(SortOrder.Desc))); // 排序: _score:desc + publishDate:desc
+			s.from((page - 1) * size).size(size);  // 分页，0开始
+			return s;
+		}, ObjectNode.class);
+		List<ESContentVO> list = sr.hits().hits().stream().map(hit -> {
+			ObjectNode source = hit.source();
+			ESContentVO vo = JacksonUtils.getObjectMapper().convertValue(source, ESContentVO.class);
+			vo.setHitScore(hit.score());
+			vo.setPublishDateInstance(LocalDateTime.ofEpochSecond(vo.getPublishDate(), 0, ZoneOffset.UTC));
+			vo.setCreateTimeInstance(LocalDateTime.ofEpochSecond(vo.getCreateTime(), 0, ZoneOffset.UTC));
+			CmsCatalog catalog = this.catalogService.getCatalog(vo.getCatalogId());
+			if (Objects.nonNull(catalog)) {
+				vo.setCatalogName(catalog.getName());
+			}
+			vo.setLink(InternalUrlUtils.getActualUrl(vo.getLink(), publishPipeCode, preview));
+			vo.setLogo(InternalUrlUtils.getActualUrl(vo.getLogo(), publishPipeCode, preview));
+			return vo;
+		}).toList();
+		List<String> contentIds = list.stream().map(c -> c.getContentId().toString()).toList();
+		Map<Long, ContentDynamicDataVO> map = this.contentDynamicDataService.getContentDynamicDataList(contentIds)
+				.stream().collect(Collectors.toMap(ContentDynamicDataVO::getContentId, i -> i));
+		list.forEach(c -> {
+			ContentDynamicDataVO cdd = map.get(c.getContentId());
+			c.setViewCount(cdd.getViews());
+			c.setFavoriteCount(cdd.getFavorites());
+			c.setLikeCount(cdd.getLikes());
+			c.setCommentCount(cdd.getComments());
+		});
+		return this.bindDataTable(list, Objects.isNull(sr.hits().total()) ? 0 : sr.hits().total().value());
+	}
 }

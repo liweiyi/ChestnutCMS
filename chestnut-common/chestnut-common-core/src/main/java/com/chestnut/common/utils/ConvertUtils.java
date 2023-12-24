@@ -1,205 +1,215 @@
 package com.chestnut.common.utils;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Objects;
+import java.util.function.Supplier;
 
-public class ConvertUtils {
-	
+public class  ConvertUtils {
+
 	/**
-	 * 字符串转整数基础类型
-	 * 
-	 * @param str
-	 * @return
+	 * 对象Object转指定格式
+	 *
+	 * @param obj 对象
+	 * @param nonNullSupplier 非空转换器
+	 * @param nullSupplier 空值转换器
 	 */
-	public static int toInt(String str) {
-		return toInt(str, 0);
-	}
-	
-	/**
-	 * 字符串转整数基础类型
-	 * 
-	 * @param str
-	 * @return
-	 */
-	public static int toInt(String str, int defaultV) {
-		return NumberUtils.toInt(str, defaultV);
-	}
-	
-	public static int toInt(Object obj) {
-		return toInt(obj, 0);
-	}
-	
-	public static int toInt(Object obj, int defaultV) {
+	public static <T> T nonNullOrElse(Object obj, Supplier<T> nonNullSupplier, Supplier<T> nullSupplier) {
 		if (Objects.isNull(obj)) {
-			return defaultV;
+			return nullSupplier.get();
 		}
-		return toInt(obj.toString(), defaultV);
+		return nonNullSupplier.get();
 	}
-	
-	public static Integer toInteger(String str) {
-		return toInteger(str, 0);
+
+	public static <T> T nonNull(Object obj, Supplier<T> nonNullSupplier) {
+		if (Objects.isNull(obj)) {
+			return null;
+		}
+		return nonNullSupplier.get();
 	}
 
 	/**
-	 * 字符串转整数类型，如果非数字则返回默认值或0
-	 * 
-	 * @param str
-	 * @param defaultV
-	 * @return
+	 * 转整数类型，默认返回null
 	 */
-	public static Integer toInteger(String str, Integer defaultV) {
-		return Integer.valueOf(toInt(str, defaultV));
+	public static Integer toInteger(Object obj) {
+		return toInteger(obj, null);
 	}
-	
+
 	/**
-	 * 字符串转布尔基础类型
-	 * 
-	 * @param str
-	 * @return
+	 * 转整数类型
 	 */
-	public static boolean toBoolean(String str) {
-		return toBoolean(str, false);
+	public static Integer toInteger(Object obj, Integer defaultV) {
+		return nonNullOrElse(obj, () -> {
+			try {
+				return Integer.valueOf(obj.toString());
+			} catch (NumberFormatException e) {
+				return defaultV;
+			}
+		}, () -> defaultV);
 	}
-	
+
 	/**
 	 * 字符串转布尔类型
 	 * "true" || "1" -> true
 	 * "false" || "0" -> false
-	 * 
-	 * @param str
-	 * @param defaultV
-	 * @return
 	 */
-	public static Boolean toBoolean(String str, boolean defaultV) {
+	private static Boolean paseBoolean(String str, boolean defaultV) {
 		return switch(str) {
-			case "true" -> Boolean.TRUE;
-			case "false" -> Boolean.FALSE;
-			case "1" -> Boolean.TRUE;
-			case "0" -> Boolean.FALSE;
+			case "true", "1" -> Boolean.TRUE;
+			case "false", "0" -> Boolean.FALSE;
 			default -> defaultV;
 		};
 	}
-	
-	public static Boolean toBoolean(Object obj, boolean defaultV) {
-		if (Objects.isNull(obj)) {
-			return defaultV;
-		}
-		return toBoolean(obj.toString(), defaultV);
+
+	/**
+	 * 转布尔类型，默认返回false
+	 */
+	public static Boolean toBoolean(Object obj) {
+		return toBoolean(obj, null);
 	}
 
-	public static long toLong(Object obj) {
-		return toLong(obj, 0);
+	public static Boolean toBoolean(Object obj, Boolean defaultV) {
+		return nonNullOrElse(obj, () -> paseBoolean(obj.toString(), defaultV), () -> defaultV);
 	}
 
 	/**
-	 * 字符串转长整数类型，如果非数字则返回默认值或0
-	 * 
-	 * @param obj
-	 * @param defaultV
-	 * @return
+	 * 转长整数类型，默认返回null
 	 */
-	public static long toLong(Object obj, long defaultV) {
-		if (Objects.isNull(obj)) {
-			return defaultV;
-		}
-		return NumberUtils.toLong(obj.toString(), defaultV);
-	}
-
-	public static float toFloat(Object obj) {
-		return toFloat(obj, 0);
+	public static Long toLong(Object obj) {
+		return toLong(obj, null);
 	}
 
 	/**
-	 * 字符串转浮点类型，如果非数字则返回默认值或0
-	 * 
-	 * @param obj
-	 * @param defaultV
-	 * @return
+	 * 转长整数类型
 	 */
-	public static float toFloat(Object obj, float defaultV) {
-		if (Objects.isNull(obj)) {
-			return defaultV;
-		}
-		return NumberUtils.toFloat(obj.toString(), defaultV);
-	}
-
-	public static double toDouble(Object obj) {
-		return toDouble(obj, 0);
+	public static Long toLong(Object obj, Long defaultV) {
+		return nonNullOrElse(obj, () -> {
+			try {
+				return Long.parseLong(obj.toString());
+			} catch (final NumberFormatException nfe) {
+				return defaultV;
+			}
+		}, () -> defaultV);
 	}
 
 	/**
-	 * 字符串转双精度浮点类型，如果非数字则返回默认值或0
-	 * 
-	 * @param obj
-	 * @param defaultV
-	 * @return
+	 * 转浮点类型，默认返回null
 	 */
-	public static double toDouble(Object obj, double defaultV) {
-		if (Objects.isNull(obj)) {
-			return defaultV;
-		}
-		return NumberUtils.toDouble(obj.toString(), defaultV);
-	}
-
-	public static byte toByte(Object obj) {
-		return toByte(obj, (byte) 0);
+	public static Float toFloat(Object obj) {
+		return toFloat(obj, null);
 	}
 
 	/**
-	 * 字符串转字节类型，如果非数字则返回默认值或0
-	 * 
-	 * @param obj
-	 * @param defaultV
-	 * @return
+	 * 转浮点类型
 	 */
-	public static byte toByte(Object obj, byte defaultV) {
-		if (Objects.isNull(obj)) {
-			return defaultV;
-		}
-		return NumberUtils.toByte(obj.toString(), defaultV);
-	}
-
-	public static short toShort(Object obj) {
-		return toShort(obj, (short) 0);
+	public static Float toFloat(Object obj, Float defaultV) {
+		return nonNullOrElse(obj, () -> {
+			try {
+				return Float.parseFloat(obj.toString());
+			} catch (final NumberFormatException nfe) {
+				return defaultV;
+			}
+		}, () -> defaultV);
 	}
 
 	/**
-	 * 字符串转短整数类型，如果非数字则返回默认值或0
-	 * 
-	 * @param obj
-	 * @param defaultV
-	 * @return
+	 * 转双精度浮点类型，默认返回null
 	 */
-	public static short toShort(Object obj, short defaultV) {
-		if (Objects.isNull(obj)) {
-			return defaultV;
-		}
-		return NumberUtils.toShort(obj.toString(), defaultV);
+	public static Double toDouble(Object obj) {
+		return toDouble(obj, null);
 	}
-	
+
+	/**
+	 * 转双精度浮点类型
+	 */
+	public static Double toDouble(Object obj, Double defaultV) {
+		return nonNullOrElse(obj, () -> {
+			try {
+				return Double.parseDouble(obj.toString());
+			} catch (final NumberFormatException nfe) {
+				return defaultV;
+			}
+		}, () -> defaultV);
+	}
+
+	/**
+	 * 转字节类型，默认返回null
+	 */
+	public static Byte toByte(Object obj) {
+		return toByte(obj, null);
+	}
+
+	/**
+	 * 转字节类型
+	 */
+	public static Byte toByte(Object obj, Byte defaultV) {
+		return nonNullOrElse(obj, () -> {
+			try {
+				return Byte.parseByte(obj.toString());
+			} catch (final NumberFormatException nfe) {
+				return defaultV;
+			}
+		}, () -> defaultV);
+	}
+
+	/**
+	 * 转短整数类型，默认值null
+	 */
+	public static Short toShort(Object obj) {
+		return toShort(obj, null);
+	}
+
+	/**
+	 * 转短整数类型
+	 */
+	public static Short toShort(Object obj, Short defaultV) {
+		return nonNullOrElse(obj, () -> {
+			try {
+				return Short.parseShort(obj.toString());
+			} catch (final NumberFormatException nfe) {
+				return defaultV;
+			}
+		}, () -> defaultV);
+	}
+
+	/**
+	 * 转BigDecimal，默认BigDecimal.ZERO
+	 */
 	public static BigDecimal toBigDecimal(Object obj) {
 		return toBigDecimal(obj, BigDecimal.ZERO);
 	}
-	
+
+	/**
+	 * 转BigDecimal
+	 */
 	public static BigDecimal toBigDecimal(Object obj, BigDecimal defaultV) {
-		if (Objects.isNull(obj)) {
-			return BigDecimal.ZERO;
-		}
-		return NumberUtils.toScaledBigDecimal(obj.toString());
+		return nonNullOrElse(obj, () -> NumberUtils.toScaledBigDecimal(obj.toString()), () -> defaultV);
 	}
 
 	/**
 	 * 字符串如果为null则返回默认值
-	 * 
-	 * @param str
-	 * @param defaultValue
-	 * @return
 	 */
-	public static String toStr(Object str, String defaultValue) {
-		return Objects.isNull(str) ? defaultValue : str.toString();
+	public static String toStr(Object obj, String defaultValue) {
+		return Objects.isNull(obj) ? defaultValue : obj.toString();
 	}
 
-	public static String toStr(Object str) {
-		return toStr(str, null);
+	public static String toStr(Object obj) {
+		return toStr(obj, null);
+	}
+
+
+	public static LocalDateTime toLocalDateTime(Object obj) {
+		return toLocalDateTime(obj, null);
+	}
+
+	public static LocalDateTime toLocalDateTime(Object obj, LocalDateTime defaultV) {
+		return nonNullOrElse(obj, () -> {
+			try {
+				return LocalDateTime.parse(obj.toString());
+			} catch (DateTimeParseException e) {
+				return defaultV;
+			}
+		}, () -> defaultV);
 	}
 }

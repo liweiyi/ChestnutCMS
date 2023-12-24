@@ -8,8 +8,8 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsContentRela;
-import com.chestnut.contentcore.mapper.CmsContentRelaMapper;
 import com.chestnut.contentcore.service.IContentRelaService;
+import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import jakarta.validation.constraints.NotEmpty;
@@ -33,19 +33,27 @@ public class ContentRelaController extends BaseRestController {
 
 	private final IContentRelaService contentRelaService;
 
-	private final CmsContentRelaMapper contentRelaMapper;
+	private final IContentService contentService;
 
 	@GetMapping
 	public R<?> getRelaContents(@RequestParam Long contentId, @RequestParam(required = false) String title) {
 		PageRequest pr = this.getPageRequest();
-		Page<CmsContent> page = contentRelaMapper.selectRelaContents(new Page<>(pr.getPageNumber(), pr.getPageSize(), true),
-				contentId, title);
-		return this.bindDataTable(page);
+		Page<CmsContentRela> pageResult = contentRelaService.page(
+				new Page<>(pr.getPageNumber(), pr.getPageSize(), true),
+				new LambdaQueryWrapper<CmsContentRela>().eq(CmsContentRela::getContentId, contentId)
+		);
+		if (pageResult.getRecords().size() > 0) {
+			List<Long> contentIds = pageResult.getRecords().stream().map(CmsContentRela::getRelaContentId).toList();
+			List<CmsContent> contents = this.contentService.lambdaQuery().in(CmsContent::getContentId, contentIds).list();
+			return this.bindDataTable(contents, pageResult.getTotal());
+		} else {
+			return this.bindDataTable(pageResult);
+		}
 	}
 
 	@PostMapping
 	public R<?> addRelaContents(@RequestParam Long contentId, @RequestBody List<Long> relaContentIds) {
-		List<Long> contentIds = contentRelaMapper.selectList(new LambdaQueryWrapper<CmsContentRela>()
+		List<Long> contentIds = contentRelaService.list(new LambdaQueryWrapper<CmsContentRela>()
 				.eq(CmsContentRela::getContentId, contentId))
 				.stream().map(CmsContentRela::getRelaContentId).toList();
 		String operator = StpAdminUtil.getLoginUser().getUsername();

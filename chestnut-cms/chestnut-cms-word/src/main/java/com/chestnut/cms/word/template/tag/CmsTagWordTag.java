@@ -35,7 +35,7 @@ public class CmsTagWordTag extends AbstractListTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr("group", false, TagAttrDataType.STRING, "TAG词分组编码") );
+		tagAttrs.add(new TagAttr("group", true, TagAttrDataType.STRING, "TAG词分组编码") );
 		return tagAttrs;
 	}
 

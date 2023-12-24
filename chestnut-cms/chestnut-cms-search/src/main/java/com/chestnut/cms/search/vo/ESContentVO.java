@@ -1,6 +1,8 @@
 package com.chestnut.cms.search.vo;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -58,4 +60,6 @@ public class ESContentVO {
 	private Long favoriteCount;
 
 	private Long viewCount;
+
+	private Map<String, Object> extendData = new HashMap<>();
 }

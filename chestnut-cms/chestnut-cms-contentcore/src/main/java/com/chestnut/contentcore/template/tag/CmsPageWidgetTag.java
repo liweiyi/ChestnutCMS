@@ -74,7 +74,7 @@ public class CmsPageWidgetTag extends AbstractTag {
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = new ArrayList<>();
 		tagAttrs.add(new TagAttr(TagAttr_Code, true, TagAttrDataType.STRING, "页面部件编码"));
-		tagAttrs.add(new TagAttr(TagAttr_SSI, false, TagAttrDataType.BOOLEAN, "是否启用SSI", "true"));
+		tagAttrs.add(new TagAttr(TagAttr_SSI, false, TagAttrDataType.BOOLEAN, "是否启用SSI"));
 		return tagAttrs;
 	}
 

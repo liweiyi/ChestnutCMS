@@ -606,6 +606,12 @@ export default {
         if (!this.form.title || this.form.title.length == 0) {
           this.form.title = contents[0].title;
         }
+        if (!this.form.shortTitle || this.form.shortTitle.length == 0) {
+          this.form.shortTitle = contents[0].shortTitle;
+        }
+        if (!this.form.subTitle || this.form.subTitle.length == 0) {
+          this.form.subTitle = contents[0].subTitle;
+        }
         if (!this.form.author || this.form.author.length == 0) {
           this.form.author = contents[0].author;
         }
@@ -621,6 +627,8 @@ export default {
         if (!this.form.summary || this.form.summary.length == 0) {
           this.form.summary = contents[0].summary;
         }
+        this.showOtherTitle = 'Y' === this.form.showSubTitle || (this.form.shortTitle && this.form.shortTitle.length > 0) 
+          || (this.form.subTitle && this.form.subTitle.length > 0);
         this.openContentSelector = false;
       } else {
         this.$modal.msgWarning(this.$t('Common.SelectFirst'));

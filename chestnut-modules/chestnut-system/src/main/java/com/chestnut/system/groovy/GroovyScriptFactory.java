@@ -1,5 +1,15 @@
 package com.chestnut.system.groovy;
 
+import com.chestnut.common.utils.SpringUtils;
+import com.chestnut.common.utils.StringUtils;
+import groovy.lang.GroovyClassLoader;
+import jakarta.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.annotation.AnnotationUtils;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
@@ -8,23 +18,11 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.annotation.AnnotationUtils;
-
-import com.chestnut.common.utils.SpringUtils;
-import com.chestnut.common.utils.StringUtils;
-
-import groovy.lang.GroovyClassLoader;
-import jakarta.annotation.Resource;
-
 public class GroovyScriptFactory {
 
-	private static Logger logger = LoggerFactory.getLogger(GroovyScriptFactory.class);
+	private static final Logger logger = LoggerFactory.getLogger(GroovyScriptFactory.class);
 
-	private static GroovyScriptFactory glueFactory = new GroovyScriptFactory();
+	private static final GroovyScriptFactory glueFactory = new GroovyScriptFactory();
 
 	public static GroovyScriptFactory getInstance() {
 		return glueFactory;
@@ -33,9 +31,9 @@ public class GroovyScriptFactory {
 	/**
 	 * groovy class loader
 	 */
-	private GroovyClassLoader groovyClassLoader = new GroovyClassLoader();
+	private final GroovyClassLoader groovyClassLoader = new GroovyClassLoader();
 	
-	private ConcurrentMap<String, Class<?>> CLASS_CACHE = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, Class<?>> CLASS_CACHE = new ConcurrentHashMap<>();
 
 	/**
 	 * load new instance, prototype
@@ -49,14 +47,12 @@ public class GroovyScriptFactory {
 			Class<?> clazz = getCodeSourceClass(scriptText);
 			if (clazz != null) {
 				Object instance = clazz.getDeclaredConstructor().newInstance();
-				if (instance != null) {
-					if (instance instanceof BaseGroovyScript groovyScript) {
-						this.injectService(instance);
-						return groovyScript;
-					} else {
-						throw new IllegalArgumentException(
-								"Cannot convert from instance[" + instance.getClass() + "] to BaseGroovyScript");
-					}
+				if (instance instanceof BaseGroovyScript groovyScript) {
+					this.injectService(instance);
+					return groovyScript;
+				} else {
+					throw new IllegalArgumentException(
+							"Cannot convert from instance[" + instance.getClass() + "] to BaseGroovyScript");
 				}
 			}
 		}
@@ -121,9 +117,7 @@ public class GroovyScriptFactory {
 				field.setAccessible(true);
 				try {
 					field.set(instance, fieldBean);
-				} catch (IllegalArgumentException e) {
-					logger.error(e.getMessage(), e);
-				} catch (IllegalAccessException e) {
+				} catch (IllegalArgumentException | IllegalAccessException e) {
 					logger.error(e.getMessage(), e);
 				}
 			}

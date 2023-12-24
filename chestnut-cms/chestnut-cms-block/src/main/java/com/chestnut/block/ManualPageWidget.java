@@ -19,17 +19,17 @@ public class ManualPageWidget extends AbstractPageWidget {
 	
 	@Override
 	public void add() {
-		this.dealContentIngoreFields();
+		this.dealContentIgnoreFields();
 		super.add();
 	}
 	
 	@Override
 	public void save() {
-		this.dealContentIngoreFields();
+		this.dealContentIgnoreFields();
 		super.save();
 	}
 	
-	private void dealContentIngoreFields() {
+	private void dealContentIgnoreFields() {
 		CmsPageWidget pageWidgetEntity = this.getPageWidgetEntity();
 		List<RowData> rows = JacksonUtils.fromList(pageWidgetEntity.getContent(), RowData.class);
 		if (Objects.nonNull(rows)) {

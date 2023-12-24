@@ -1,16 +1,15 @@
 package com.chestnut.common.utils;
 
+import com.chestnut.common.config.properties.ChestnutProperties;
+import com.github.yitter.contract.IdGeneratorOptions;
+import com.github.yitter.idgen.YitIdHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
-import com.chestnut.common.config.properties.ChestnutProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.yitter.contract.IdGeneratorOptions;
-import com.github.yitter.idgen.YitIdHelper;
 
 /**
  * ID生成器工具类
@@ -74,7 +73,7 @@ public class IdUtils {
 		}
 		for (Iterator<Long> iterator = ids.iterator(); iterator.hasNext();) {
 			Long id = iterator.next();
-			if (id == null || id.longValue() <= 0) {
+			if (id == null || id <= 0) {
 				if (removeInvalidId) {
 					iterator.remove();
 				} else {
@@ -90,6 +89,6 @@ public class IdUtils {
 	}
 
 	public static boolean validate(Long id) {
-		return id != null && id.longValue() > 0;
+		return id != null && id > 0;
 	}
 }

@@ -1,5 +1,27 @@
 package com.chestnut.contentcore.template.tag;
 
+import com.chestnut.common.staticize.FreeMarkerUtils;
+import com.chestnut.common.staticize.core.TemplateContext;
+import com.chestnut.common.staticize.enums.TagAttrDataType;
+import com.chestnut.common.staticize.tag.AbstractTag;
+import com.chestnut.common.staticize.tag.TagAttr;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.properties.EnableSSIProperty;
+import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.service.ITemplateService;
+import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
+import freemarker.core.Environment;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateModel;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Component;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -9,31 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import com.chestnut.common.utils.ServletUtils;
-import com.chestnut.contentcore.properties.EnableSSIProperty;
-import com.chestnut.contentcore.util.TemplateUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.io.FileUtils;
-import org.springframework.stereotype.Component;
-
-import com.chestnut.common.staticize.FreeMarkerUtils;
-import com.chestnut.common.staticize.core.TemplateContext;
-import com.chestnut.common.staticize.enums.TagAttrDataType;
-import com.chestnut.common.staticize.tag.AbstractTag;
-import com.chestnut.common.staticize.tag.TagAttr;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
-import com.chestnut.contentcore.service.ITemplateService;
-import com.chestnut.contentcore.util.SiteUtils;
-
-import freemarker.core.Environment;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateModel;
-import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Component
@@ -74,7 +71,7 @@ public class CmsIncludeTag extends AbstractTag {
 	/**
 	 * 使用virtual来访问动态区块内容，实际访问后台/ssi/virtual接口返回html内容后包含在前端页面中。
 	 * 与ajax异步获取内容不同，此方式可将动态内容与html同步返回有利于Spider获取页面更新， 包含模板中可用${Request.xxx}获取参数值
-	 * 
+	 *
 	 * <@cms_include virtual="footer.template.html?t=123&c=ddd"></@cms_include>
 	 */
 	public static final String SSI_INCLUDE_VIRTUAL_TAG = "<!--#include virtual=\"{0}\" -->\n";
@@ -87,7 +84,7 @@ public class CmsIncludeTag extends AbstractTag {
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = new ArrayList<>();
 		tagAttrs.add(new TagAttr(TagAttr_FILE, true, TagAttrDataType.STRING, "引用模板文件路径（相对模板目录template/）"));
-		tagAttrs.add(new TagAttr(TagAttr_SSI, false, TagAttrDataType.BOOLEAN, "是否启用SSI", "true"));
+		tagAttrs.add(new TagAttr(TagAttr_SSI, false, TagAttrDataType.BOOLEAN, "是否启用SSI"));
 		tagAttrs.add(new TagAttr(TagAttr_VIRTUAL, false, TagAttrDataType.BOOLEAN, "是否启用virtual，此模式下区块无法继承当前页面上限文变量，需要通过参数传入需要的变量", "false"));
 		tagAttrs.add(new TagAttr(TagAttr_CACHE, false, TagAttrDataType.BOOLEAN, "是否启用缓存", "true"));
 

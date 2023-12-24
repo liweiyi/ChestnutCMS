@@ -18,13 +18,13 @@
         ref="tagInput"
         :size="size"
         v-model="inputValue"
-        @keyup.enter.native="handleInputConfirm"
+        @keyup.enter.native="handleEnterInputConfirm"
         @blur="handleInputConfirm"
       >
       </el-input>
     </div>
     <el-button-group v-if="!inputVisible">
-      <el-button class="button-new-tag" icon="el-icon-plus" :size="size" @click="handleNewTag">{{ btnName }}</el-button>
+      <el-button ref="tagAddBtn" class="button-new-tag" icon="el-icon-plus" :size="size" @click="handleNewTag">{{ btnName }}</el-button>
       <el-button v-if="select" class="button-new-tag" icon="el-icon-search" :size="size" @click="handleSelectTag">{{ $t('Common.Select') }}</el-button>
     </el-button-group>
     
@@ -96,17 +96,21 @@ export default {
         this.$refs.tagInput.$refs.input.focus();
       });
     },
+    handleEnterInputConfirm() {
+      this.handleInputConfirm()
+      this.handleNewTag()
+    },
     handleInputConfirm() {
       if (this.tagList.indexOf(this.inputValue) > -1) {
         this.$modal.msgWarning("Repeated!");
         return;
       }
       let inputValue = this.inputValue;
-      if (inputValue) {
+      if (inputValue && inputValue.trim().length > 0) {
         this.tagList.push(inputValue.trim());
       }
-      this.inputVisible = false;
       this.inputValue = '';
+      this.inputVisible = false;
     },
     handleSelectTag() {
       this.showTagSelector = true;

@@ -137,6 +137,7 @@ export default {
   },
   methods: {
     loadModelFieldData() {
+      this.fieldList = []
       getXModelFieldData(this.modelId, this.dataType, this.dataId).then(response => {
         response.data.forEach(item => {
           let field = {};

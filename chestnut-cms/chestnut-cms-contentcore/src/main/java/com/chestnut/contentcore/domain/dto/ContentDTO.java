@@ -115,6 +115,11 @@ public class ContentDTO {
      */
     private String redirectUrl;
 
+	/**
+	 * 指定标识
+	 */
+	private Long topFlag;
+
     /**
      * 内容属性值数组
      */

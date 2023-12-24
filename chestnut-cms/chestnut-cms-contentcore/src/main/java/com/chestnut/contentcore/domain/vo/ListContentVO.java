@@ -33,6 +33,16 @@ public class ListContentVO {
 	private String title;
 
 	/*
+	 * 短标题
+	 */
+	private String shortTitle;
+
+	/*
+	 * 副标题
+	 */
+	private String subTitle;
+
+	/*
 	 * 标题样式
 	 */
     private String titleStyle;

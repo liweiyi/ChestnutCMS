@@ -14,6 +14,7 @@ import com.chestnut.cms.search.properties.EnableIndexProperty;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.DateUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
@@ -35,6 +36,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -176,6 +180,7 @@ public class ContentIndexService implements CommandLineRunner {
 			LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
 					.ne(CmsContent::getCopyType, ContentCopyType.Mapping)
 					.eq(CmsContent::getStatus, ContentStatus.PUBLISHED)
+					.ne(CmsContent::getLinkFlag, YesOrNo.YES)
 					.eq(!includeChild, CmsContent::getCatalogId, catalog.getCatalogId())
 					.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors());
 			long total = this.contentService.count(q);
@@ -202,7 +207,8 @@ public class ContentIndexService implements CommandLineRunner {
 				// 先重建索引
 				recreateIndex(site);
 
-				List<CmsCatalog> catalogs = catalogService.list();
+				List<CmsCatalog> catalogs = catalogService.lambdaQuery()
+						.eq(CmsCatalog::getSiteId, site.getSiteId()).list();
 				for (CmsCatalog catalog : catalogs) {
 					rebuildCatalog(catalog, false);
 				}
@@ -249,7 +255,15 @@ public class ContentIndexService implements CommandLineRunner {
 		data.put("fullText", content.getFullText());
 		// 扩展模型数据
 		this.extendModelService.getModelData(content.getContentEntity()).forEach(fd -> {
-			data.put(fd.getFieldName(), fd.getValue());
+			if (fd.getValue() instanceof LocalDateTime date) {
+				data.put(fd.getFieldName(), date.toInstant(ZoneOffset.UTC).toEpochMilli());
+			} else if (fd.getValue() instanceof LocalDate date) {
+				data.put(fd.getFieldName(), date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli());
+			} else if (fd.getValue() instanceof Instant date) {
+				data.put(fd.getFieldName(), date.toEpochMilli());
+			} else {
+				data.put(fd.getFieldName(), fd.getValue());
+			}
 		});
 		return data;
 	}
