@@ -385,9 +385,9 @@ export default {
       }).catch(() => {});
     },
     handleExport() {
-      this.download('system/role/export', {
+      this.download('system/role/list', {
         ...this.queryParams
-      }, `role_${new Date().getTime()}.xlsx`)
+      }, `role_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
     }
   }
 };

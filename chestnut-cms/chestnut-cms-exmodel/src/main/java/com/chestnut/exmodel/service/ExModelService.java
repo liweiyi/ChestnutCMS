@@ -6,16 +6,15 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.exmodel.CmsExtendMetaModelType;
-import com.chestnut.exmodel.domain.dto.XModelFieldDataDTO;
 import com.chestnut.exmodel.fixed.dict.ExtendModelDataType;
 import com.chestnut.exmodel.properties.ContentExtendModelProperty;
 import com.chestnut.xmodel.core.IMetaControlType;
 import com.chestnut.xmodel.core.MetaModel;
+import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 import com.chestnut.xmodel.service.IModelDataService;
 import com.chestnut.xmodel.service.IModelService;
 import com.chestnut.xmodel.util.XModelUtils;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -79,11 +78,7 @@ public class ExModelService {
             dto.setValidations(f.getValidations());
 
             IMetaControlType controlType = controlTypeMap.get(IMetaControlType.BEAN_PREFIX + f.getControlType());
-            IMetaControlType.ParseResult parseResult = controlType.parseFieldValue(dto.getValue());
-            if (Objects.nonNull(parseResult) && parseResult.values().length > 1) {
-                dto.setValue(parseResult.values()[0]);
-                dto.setValueSrc(parseResult.values()[1].toString());
-            }
+            controlType.parseFieldValue(dto);
             list.add(dto);
         });
         return list;

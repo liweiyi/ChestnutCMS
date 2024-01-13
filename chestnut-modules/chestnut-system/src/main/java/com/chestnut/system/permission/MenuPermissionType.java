@@ -5,6 +5,7 @@ import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -26,7 +27,7 @@ public class MenuPermissionType implements IPermissionType {
 	@Override
 	public Set<String> deserialize(String json) {
 		if (StringUtils.isEmpty(json)) {
-			return Set.of();
+			return new HashSet<>();
 		}
 		return JacksonUtils.fromSet(json, String.class);
 	}
@@ -34,14 +35,6 @@ public class MenuPermissionType implements IPermissionType {
 	@Override
 	public String serialize(Set<String> permissionKeys) {
 		return JacksonUtils.to(permissionKeys);
-	}
-
-	@Override
-	public Set<String> convert(String json) {
-		if (StringUtils.isEmpty(json)) {
-			return Set.of();
-		}
-		return JacksonUtils.fromSet(json, String.class);
 	}
 
 	@Override

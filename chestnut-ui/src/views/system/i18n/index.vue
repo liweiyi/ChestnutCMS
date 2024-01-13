@@ -278,9 +278,9 @@ export default {
         }).catch(() => {});
     },
     handleExport() {
-      this.download('system/i18n/dict/export', {
+      this.exportExcel('system/i18n/dict/list', {
         ...this.queryParams
-      }, `i18n_dict_${new Date().getTime()}.xlsx`)
+      }, `i18n_dict_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
     },
     handleRefreshCache() {
       refreshCache().then(() => {

@@ -2,6 +2,7 @@ package com.chestnut.xmodel.core.impl;
 
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.xmodel.core.IMetaControlType;
+import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -28,14 +29,13 @@ public class MetaControlType_Checkbox implements IMetaControlType {
     }
 
     @Override
-    public ParseResult parseFieldValue(Object value) {
-        if (Objects.isNull(value)) {
-            return null;
-        }
-        if (StringUtils.isBlank(value.toString())) {
-            return new ParseResult(new Object[] { new String[0] });
+    public void parseFieldValue(XModelFieldDataDTO fieldData) {
+        Object value = fieldData.getValue();
+        if (Objects.isNull(value) || StringUtils.isBlank(value.toString())) {
+            fieldData.setValue(new String[0]);
+            return;
         }
         String[] arr = StringUtils.split(value.toString(), StringUtils.COMMA);
-        return new ParseResult(new Object[] { arr });
+        fieldData.setValue(arr);
     }
 }

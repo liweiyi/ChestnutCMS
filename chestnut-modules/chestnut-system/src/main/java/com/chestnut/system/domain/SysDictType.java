@@ -5,9 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.chestnut.common.i18n.I18nField;
 import com.chestnut.common.db.domain.BaseEntity;
-
+import com.chestnut.common.i18n.I18nField;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -28,23 +27,18 @@ public class SysDictType extends BaseEntity {
 	
 	public static final String TABLE_NAME = "sys_dict_type";
 
-	/** 字典主键 */
 	@ExcelProperty("字典主键")
 	@TableId(value = "dict_id", type = IdType.INPUT)
 	private Long dictId;
 
-	/** 字典名称 */
 	@ExcelProperty("字典名称")
 	@I18nField("{DICT.#{dictType}}")
 	private String dictName;
 
-	/** 字典类型 */
 	@ExcelProperty("字典类型")
 	private String dictType;
 
-	/**
-	 * 是否系统固定字典数据
-	 */
+	@ExcelProperty("是否系统固定字典")
 	@TableField(exist = false)
 	private String fixed;
 

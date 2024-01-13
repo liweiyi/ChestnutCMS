@@ -652,9 +652,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('system/user/export', {
+      this.exportExcel('system/user/list', {
         ...this.queryParams
-      }, `user_${new Date().getTime()}.xlsx`)
+      }, `user_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
     },
     /** 导入按钮操作 */
     handleImport() {
@@ -664,7 +664,7 @@ export default {
     /** 下载模板操作 */
     importTemplate() {
       this.download('system/user/importTemplate', {
-      }, `user_template_${new Date().getTime()}.xlsx`)
+      }, `user_template_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
     },
     // 文件上传中处理
     handleFileUploadProgress(event, file, fileList) {

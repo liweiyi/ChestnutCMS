@@ -8,7 +8,6 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.StringUtils;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
@@ -46,28 +45,28 @@ public class BaseRestController {
 			}
 		});
 	}
-	
+
 	/**
 	 * 设置请求分页数据
 	 */
 	protected PageRequest getPageRequest() {
-		return PageRequestDTO.buildPageRequest();
+		return PageRequest.build();
 	}
 
 	protected <T> R<TableData<T>> bindDataTable(IPage<T> page) {
-		return R.ok(new TableData<>(page.getRecords(), page.getTotal()));
+		return R.ok(TableData.of(page.getRecords(), page.getTotal()));
 	}
-	
+
 	protected <T> R<TableData<T>> bindDataTable(List<T> list) {
-		return R.ok(new TableData<>(list, list.size()));
+		return R.ok(TableData.of(list, list.size()));
 	}
-	
+
 	protected <T> R<TableData<T>> bindDataTable(List<T> list, int total) {
-		return R.ok(new TableData<>(list, total));
+		return R.ok(TableData.of(list, total));
 	}
-	
+
 	protected <T> R<TableData<T>> bindDataTable(List<T> list, long total) {
-		return R.ok(new TableData<>(list, total));
+		return R.ok(TableData.of(list, total));
 	}
 
 	/**
@@ -81,20 +80,17 @@ public class BaseRestController {
 	 * 导出excel
 	 */
 	protected <T> void exportExcel(List<T> list, Class<T> clazz, HttpServletResponse response) {
-		try {
-			response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-	        response.setCharacterEncoding(StandardCharsets.UTF_8.displayName());
-			String fileName = "Export_" + clazz.getSimpleName() + "_" + DateUtils.dateTimeNow("yyyyMMddHHmmss");
-	        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-	        
-	        ExcelWriter writer = EasyExcel.write(response.getOutputStream(), clazz).build();
-	        WriteSheet sheet = EasyExcel.writerSheet(clazz.getSimpleName()).build();
-	        writer.write(list, sheet);
-	        writer.finish();
-        	response.setStatus(HttpStatus.OK.value());
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		response.setCharacterEncoding(StandardCharsets.UTF_8.displayName());
+		String fileName = "Export_" + clazz.getSimpleName() + "_" + DateUtils.dateTimeNow("yyyyMMddHHmmss");
+		response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+
+		try (ExcelWriter writer = EasyExcel.write(response.getOutputStream(), clazz).build()) {
+			WriteSheet sheet = EasyExcel.writerSheet(clazz.getSimpleName()).build();
+			writer.write(list, sheet);
 		} catch (IOException e) {
-        	response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        	e.printStackTrace();
+			throw new RuntimeException(e);
 		}
+		response.setStatus(HttpStatus.OK.value());
 	}
 }

@@ -1,47 +1,26 @@
 package com.chestnut.contentcore.listener;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.contentcore.core.impl.InternalDataType_Content;
+import com.chestnut.contentcore.domain.*;
+import com.chestnut.contentcore.enums.ContentCopyType;
+import com.chestnut.contentcore.fixed.dict.ContentStatus;
+import com.chestnut.contentcore.listener.event.*;
+import com.chestnut.contentcore.mapper.CmsContentMapper;
+import com.chestnut.contentcore.service.*;
+import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.system.fixed.dict.YesOrNo;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
-
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.chestnut.common.async.AsyncTask;
-import com.chestnut.common.async.AsyncTaskManager;
-import com.chestnut.contentcore.core.impl.InternalDataType_Content;
-import com.chestnut.contentcore.domain.CmsCatalog;
-import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.CmsPageWidget;
-import com.chestnut.contentcore.domain.CmsPublishPipe;
-import com.chestnut.contentcore.domain.CmsResource;
-import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.CmsSiteProperty;
-import com.chestnut.contentcore.domain.CmsTemplate;
-import com.chestnut.contentcore.enums.ContentCopyType;
-import com.chestnut.contentcore.fixed.dict.ContentStatus;
-import com.chestnut.contentcore.listener.event.AfterCatalogSaveEvent;
-import com.chestnut.contentcore.listener.event.AfterContentOfflineEvent;
-import com.chestnut.contentcore.listener.event.AfterSiteDeleteEvent;
-import com.chestnut.contentcore.listener.event.BeforeCatalogDeleteEvent;
-import com.chestnut.contentcore.listener.event.BeforeSiteDeleteEvent;
-import com.chestnut.contentcore.mapper.CmsContentMapper;
-import com.chestnut.contentcore.service.ICatalogService;
-import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.IPageWidgetService;
-import com.chestnut.contentcore.service.IPublishPipeService;
-import com.chestnut.contentcore.service.IResourceService;
-import com.chestnut.contentcore.service.ISitePropertyService;
-import com.chestnut.contentcore.service.ISiteService;
-import com.chestnut.contentcore.service.ITemplateService;
-import com.chestnut.contentcore.util.InternalUrlUtils;
-import com.chestnut.contentcore.util.SiteUtils;
-import com.chestnut.system.fixed.dict.YesOrNo;
-
-import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -65,6 +44,8 @@ public class ContentCoreListener {
 	
 	private final ITemplateService templateService;
 	
+	private final IContentRelaService contentRelaService;
+
 	private final AsyncTaskManager asyncTaskManager;
 
 	@EventListener
@@ -138,6 +119,19 @@ public class ContentCoreListener {
 		} catch (Exception e) {
 			e.printStackTrace();
 			AsyncTaskManager.addErrMessage("删除模板数据错误：" + e.getMessage());
+		}
+		// 删除内容关联表数据
+		try {
+			long total = this.contentRelaService
+					.count(new LambdaQueryWrapper<CmsContentRela>().eq(CmsContentRela::getSiteId, site.getSiteId()));
+			for (int i = 0; i * pageSize < total; i++) {
+				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在内容关联表数据：" + (i * pageSize) + "/" + total);
+				this.contentRelaService.remove(new LambdaQueryWrapper<CmsContentRela>()
+						.eq(CmsContentRela::getSiteId, site.getSiteId()).last("limit " + pageSize));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			AsyncTaskManager.addErrMessage("删除内容关联表数据错误：" + e.getMessage());
 		}
 	}
 

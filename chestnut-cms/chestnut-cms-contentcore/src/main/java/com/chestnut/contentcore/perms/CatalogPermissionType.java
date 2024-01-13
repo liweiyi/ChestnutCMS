@@ -47,34 +47,21 @@ public class CatalogPermissionType implements IPermissionType {
 	 */
 	@Override
 	public Set<String> deserialize(String json) {
-		Map<String, BitSet> map = CmsPrivUtils.deserializeBitSetPermission(json);
-		CatalogPrivItem[] privItems = CatalogPrivItem.values();
 		Set<String> privs = new HashSet<>();
-		map.forEach((k, v) -> {
-			if (!v.isEmpty()) {
-				Long siteId = Long.valueOf(k);
-				for (CatalogPrivItem privItem : privItems) {
-					if (v.get(privItem.bitIndex())) {
-						privs.add(privItem.getPermissionKey(siteId));
+		if (StringUtils.isNotEmpty(json)) {
+			Map<String, BitSet> map = CmsPrivUtils.deserializeBitSetPermission(json);
+			map.forEach((k, v) -> {
+				if (!v.isEmpty()) {
+					Long siteId = Long.valueOf(k);
+					for (CatalogPrivItem privItem : CatalogPrivItem.values()) {
+						if (v.get(privItem.bitIndex())) {
+							privs.add(privItem.getPermissionKey(siteId));
+						}
 					}
 				}
-			}
-		});
+			});
+		}
 		return privs;
-	}
-
-	@Override
-	public Set<String> convert(String json) {
-		Set<String> set = new HashSet<>();
-		CatalogPrivItem[] values = CatalogPrivItem.values();
-		CmsPrivUtils.deserializeBitSetPermission(json).forEach((catalogId, bitSet) -> {
-			for (CatalogPrivItem item : values) {
-				if (bitSet.get(item.bitIndex())) {
-					set.add(item.getPermissionKey(Long.valueOf(catalogId)));
-				}
-			}
-		});
-		return set;
 	}
 
 	@Override
@@ -129,9 +116,9 @@ public class CatalogPermissionType implements IPermissionType {
 		/**
 		 * 权限项在bitset中的位置序号，从0开始，不可随意变更，变更后会导致原权限信息错误
 		 */
-		private int bitIndex;
+		private final int bitIndex;
 
-		private String label;
+		private final String label;
 
 		CatalogPrivItem(int bitIndex, String label) {
 			this.bitIndex = bitIndex;

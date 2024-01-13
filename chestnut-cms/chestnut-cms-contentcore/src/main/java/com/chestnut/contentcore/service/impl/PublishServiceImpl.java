@@ -251,14 +251,11 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		ITemplateType templateType = templateService.getTemplateType(CatalogTemplateType.TypeId);
 		templateType.initTemplateData(catalog.getCatalogId(), templateContext);
 		// 分页链接
-		String catalogLink;
 		if (listFlag) {
-			catalogLink = this.catalogService.getCatalogListLink(catalog, 1, publishPipeCode, isPreview);
-		} else {
-			catalogLink = this.catalogService.getCatalogLink(catalog, 1, publishPipeCode, isPreview);
+			String catalogLink = this.catalogService.getCatalogListLink(catalog, 1, publishPipeCode, isPreview);
+			templateContext.setFirstFileName(catalogLink);
+			templateContext.setOtherFileName(catalogLink + "&pi=" + TemplateContext.PlaceHolder_PageNo);
 		}
-		templateContext.setFirstFileName(catalogLink);
-		templateContext.setOtherFileName(catalogLink + "&pi=" + TemplateContext.PlaceHolder_PageNo);
 		try (StringWriter writer = new StringWriter()) {
 			this.staticizeService.process(templateContext, writer);
 			return writer.toString();

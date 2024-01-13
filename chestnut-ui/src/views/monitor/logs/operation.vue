@@ -287,9 +287,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('monitor/operlog/export', {
+      this.exportExcel('monitor/operlog/list', {
         ...this.queryParams
-      }, `operlog_${new Date().getTime()}.xlsx`)
+      }, `operlog_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
     },
     /** 返回按钮操作 */
     handleClose() {

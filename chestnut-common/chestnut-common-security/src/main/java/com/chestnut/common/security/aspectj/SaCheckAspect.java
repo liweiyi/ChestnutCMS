@@ -69,23 +69,18 @@ public class SaCheckAspect {
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        if (!(Boolean) SaStrategy.me.isAnnotationPresent.apply(method, SaIgnore.class)) {
+        if (!(Boolean) SaStrategy.instance.isAnnotationPresent.apply(method, SaIgnore.class)) {
             // 先校验 Method 所属 Class 上的注解
             this.checkPermission(method.getDeclaringClass(), joinPoint, method);
             // 再校验 Method 上的注解
             this.checkPermission(method, joinPoint, method);
         }
-        try {
-            Object obj = joinPoint.proceed();
-            return obj;
-        } catch (Throwable e) {
-            throw e;
-        }
+        return joinPoint.proceed();
     }
 
     private void checkPermission(AnnotatedElement target, ProceedingJoinPoint joinPoint, Method method) {
         // 校验 @Priv 注解
-        Priv priv = (Priv) SaStrategy.me.getAnnotation.apply(target, Priv.class);
+        Priv priv = (Priv) SaStrategy.instance.getAnnotation.apply(target, Priv.class);
         if (priv != null) {
             IUserType ut = securityService.getUserType(priv.type());
             Assert.notNull(ut, () -> SecurityErrorCode.UNKNOWN_USER_TYPE.exception(priv.type()));
@@ -102,37 +97,37 @@ public class SaCheckAspect {
             }
         } else {
             // 校验 @SaCheckLogin 注解
-            SaCheckLogin checkLogin = (SaCheckLogin) SaStrategy.me.getAnnotation.apply(target, SaCheckLogin.class);
+            SaCheckLogin checkLogin = (SaCheckLogin) SaStrategy.instance.getAnnotation.apply(target, SaCheckLogin.class);
             if (checkLogin != null) {
                 SaManager.getStpLogic(checkLogin.type(), false).checkByAnnotation(checkLogin);
             }
 
             // 校验 @SaCheckRole 注解
-            SaCheckRole checkRole = (SaCheckRole) SaStrategy.me.getAnnotation.apply(target, SaCheckRole.class);
+            SaCheckRole checkRole = (SaCheckRole) SaStrategy.instance.getAnnotation.apply(target, SaCheckRole.class);
             if (checkRole != null) {
                 SaManager.getStpLogic(checkRole.type(), false).checkByAnnotation(checkRole);
             }
 
             // 校验 @SaCheckPermission 注解
-            SaCheckPermission checkPermission = (SaCheckPermission) SaStrategy.me.getAnnotation.apply(target, SaCheckPermission.class);
+            SaCheckPermission checkPermission = (SaCheckPermission) SaStrategy.instance.getAnnotation.apply(target, SaCheckPermission.class);
             if (checkPermission != null) {
                 SaManager.getStpLogic(checkPermission.type(), false).checkByAnnotation(checkPermission);
             }
         }
         // 校验 @SaCheckSafe 注解
-        SaCheckSafe checkSafe = (SaCheckSafe) SaStrategy.me.getAnnotation.apply(target, SaCheckSafe.class);
+        SaCheckSafe checkSafe = (SaCheckSafe) SaStrategy.instance.getAnnotation.apply(target, SaCheckSafe.class);
         if (checkSafe != null) {
             SaManager.getStpLogic(checkSafe.type(), false).checkByAnnotation(checkSafe);
         }
 
         // 校验 @SaCheckDisable 注解
-        SaCheckDisable checkDisable = (SaCheckDisable) SaStrategy.me.getAnnotation.apply(target, SaCheckDisable.class);
+        SaCheckDisable checkDisable = (SaCheckDisable) SaStrategy.instance.getAnnotation.apply(target, SaCheckDisable.class);
         if (checkDisable != null) {
             SaManager.getStpLogic(checkDisable.type(), false).checkByAnnotation(checkDisable);
         }
 
         // 校验 @SaCheckBasic 注解
-        SaCheckBasic checkBasic = (SaCheckBasic) SaStrategy.me.getAnnotation.apply(target, SaCheckBasic.class);
+        SaCheckBasic checkBasic = (SaCheckBasic) SaStrategy.instance.getAnnotation.apply(target, SaCheckBasic.class);
         if (checkBasic != null) {
             SaBasicUtil.check(checkBasic.realm(), checkBasic.account());
         }

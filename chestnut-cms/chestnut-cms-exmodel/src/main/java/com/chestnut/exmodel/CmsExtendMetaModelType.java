@@ -19,11 +19,6 @@ public class CmsExtendMetaModelType implements IMetaModelType {
 
     public final static String TYPE = "CmsExtend";
 
-    /**
-     * 扩展模型数据字段键值前缀
-     */
-    public static final String DATA_FIELD_PREFIX = "ModelData_";
-
     @Override
     public String getType() {
         return TYPE;

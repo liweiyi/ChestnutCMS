@@ -51,34 +51,21 @@ public class PageWidgetPermissionType implements IPermissionType {
 	 */
 	@Override
 	public Set<String> deserialize(String json) {
-		Map<String, BitSet> map = CmsPrivUtils.deserializeBitSetPermission(json);
-		PageWidgetPrivItem[] privItems = PageWidgetPrivItem.values();
 		Set<String> privs = new HashSet<>();
-		map.forEach((k, v) -> {
-			if (!v.isEmpty()) {
-				Long siteId = Long.valueOf(k);
-				for (PageWidgetPrivItem privItem : privItems) {
-					if (v.get(privItem.bitIndex())) {
-						privs.add(privItem.getPermissionKey(siteId));
+		if (StringUtils.isNotEmpty(json)) {
+			Map<String, BitSet> map = CmsPrivUtils.deserializeBitSetPermission(json);
+			map.forEach((k, v) -> {
+				if (!v.isEmpty()) {
+					Long siteId = Long.valueOf(k);
+					for (PageWidgetPrivItem privItem : PageWidgetPrivItem.values()) {
+						if (v.get(privItem.bitIndex())) {
+							privs.add(privItem.getPermissionKey(siteId));
+						}
 					}
 				}
-			}
-		});
+			});
+		}
 		return privs;
-	}
-
-	@Override
-	public Set<String> convert(String json) {
-		Set<String> set = new HashSet<>();
-		PageWidgetPrivItem[] values = PageWidgetPrivItem.values();
-		CmsPrivUtils.deserializeBitSetPermission(json).forEach((pageWidgetId, bitSet) -> {
-			for (PageWidgetPrivItem item : values) {
-				if (bitSet.get(item.bitIndex())) {
-					set.add(item.getPermissionKey(Long.valueOf(pageWidgetId)));
-				}
-			}
-		});
-		return set;
 	}
 
 	@Override
@@ -121,9 +108,9 @@ public class PageWidgetPermissionType implements IPermissionType {
 		/**
 		 * 权限项在bitset中的位置序号，从0开始，不可随意变更，变更后会导致原权限信息错误
 		 */
-		private int bitIndex;
+		private final int bitIndex;
 
-		private String label;
+		private final String label;
 
 		PageWidgetPrivItem(int bitIndex, String label) {
 			this.bitIndex = bitIndex;

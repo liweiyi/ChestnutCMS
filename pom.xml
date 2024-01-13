@@ -4,31 +4,31 @@
 
 	<groupId>com.chestnut</groupId>
 	<artifactId>chestnut</artifactId>
-	<version>1.3.24</version>
+	<version>1.3.25</version>
 	<packaging>pom</packaging>
 
 	<name>ChestnutCMS</name>
 	<description>栗子内容管理系统</description>
 
 	<properties>
-		<chestnut.version>1.3.24</chestnut.version>
+		<chestnut.version>1.3.25</chestnut.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
 		<maven-jar-plugin.version>3.1.1</maven-jar-plugin.version>
 		<lombok.version>1.18.26</lombok.version>
 		<mysql.version>8.0.33</mysql.version>
-		<spring-boot.version>3.1.5</spring-boot.version>
+		<spring-boot.version>3.1.7</spring-boot.version>
 		<spring-boot-admin.version>3.1.7</spring-boot-admin.version>
-		<mybatis-plus.version>3.5.3.2</mybatis-plus.version>
-		<dynamic-datasource.version>4.1.3</dynamic-datasource.version>
-		<redisson.version>3.24.1</redisson.version>
-		<commons.io.version>2.14.0</commons.io.version>
-		<commons.text.version>1.10.0</commons.text.version>
+		<mybatis-plus.version>3.5.5</mybatis-plus.version>
+		<dynamic-datasource.version>4.3.0</dynamic-datasource.version>
+		<redisson.version>3.25.2</redisson.version>
+		<commons.io.version>2.15.1</commons.io.version>
+		<commons.text.version>1.11.0</commons.text.version>
 		<commons.collections4.version>4.4</commons.collections4.version>
 		<kaptcha.version>2.3.2</kaptcha.version>
 		<bitwalker.version>1.21</bitwalker.version>
-		<oshi.version>6.4.6</oshi.version>
+		<oshi.version>6.4.10</oshi.version>
 		<velocity.version>2.3</velocity.version>
 		<yitter.version>1.0.6</yitter.version>
 		<reflectasm.version>1.11.9</reflectasm.version>
@@ -36,11 +36,11 @@
 		<qcloud.cos.version>5.6.166</qcloud.cos.version>
 		<minio.version>8.5.5</minio.version>
 		<ip2region.version>2.7.0</ip2region.version>
-		<easyexcel.version>3.3.2</easyexcel.version>
+		<easyexcel.version>3.3.3</easyexcel.version>
 		<sa-token.verison>1.37.0</sa-token.verison>
-		<jsoup.version>1.16.1</jsoup.version>
+		<jsoup.version>1.17.2</jsoup.version>
 		<thumbnailator.version>0.4.20</thumbnailator.version>
-		<jave.version>3.3.1</jave.version>
+		<jave.version>3.4.0</jave.version>
 		<cglib-nodep.version>3.3.0</cglib-nodep.version>
 		<jakarta-servlet.version>6.0.0</jakarta-servlet.version>
 		<jasypt.version>3.0.5</jasypt.version>
@@ -174,7 +174,7 @@
 
 			<dependency>
 				<groupId>com.baomidou</groupId>
-				<artifactId>mybatis-plus-boot-starter</artifactId>
+				<artifactId>mybatis-plus-spring-boot3-starter</artifactId>
 				<version>${mybatis-plus.version}</version>
 			</dependency>
 
@@ -559,7 +559,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
 				<configuration>
 					<source>${java.version}</source>
 					<target>${java.version}</target>

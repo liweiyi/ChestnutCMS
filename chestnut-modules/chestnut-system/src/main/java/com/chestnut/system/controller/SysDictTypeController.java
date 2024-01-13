@@ -5,8 +5,10 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
+import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDictType;
 import com.chestnut.system.fixed.FixedDictUtils;
@@ -19,7 +21,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +38,8 @@ import java.util.List;
 public class SysDictTypeController extends BaseRestController {
 	
 	private final ISysDictTypeService dictTypeService;
-	
+
+	@ExcelExportable(SysDictType.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
 	@GetMapping("/list")
 	public R<?> list(SysDictType dictType) {
@@ -52,18 +54,6 @@ public class SysDictTypeController extends BaseRestController {
 		});
 		I18nUtils.replaceI18nFields(page.getRecords(), LocaleContextHolder.getLocale());
 		return bindDataTable(page);
-	}
-
-	@Log(title = "字典类型", businessType = BusinessType.EXPORT)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictExport)
-	@PostMapping("/export")
-	public void export(HttpServletResponse response, SysDictType dictType) {
-		List<SysDictType> list = dictTypeService.lambdaQuery()
-				.like(StringUtils.isNotEmpty(dictType.getDictName()), SysDictType::getDictName, dictType.getDictName())
-				.like(StringUtils.isNotEmpty(dictType.getDictType()), SysDictType::getDictType, dictType.getDictType())
-				.orderByDesc(SysDictType::getDictType)
-				.list();
-		this.exportExcel(list, SysDictType.class, response);
 	}
 
 	/**

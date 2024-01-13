@@ -224,9 +224,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('monitor/logininfor/export', {
+      this.exportExcel('monitor/logininfor/list', {
         ...this.queryParams
-      }, `logininfor_${new Date().getTime()}.xlsx`)
+      }, `logininfor_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
     },
     /** 返回按钮操作 */
     handleClose() {

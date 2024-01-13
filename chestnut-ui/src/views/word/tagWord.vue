@@ -131,7 +131,7 @@ import CMSTagWordGroupTree from '@/views/word/tagWordGroupTree';
 import CMSLogoView from '@/views/cms/components/LogoView';
 
 export default {
-  name: "CMSTagWord",
+  name: "TagWord",
   components: {
     "cms-logo-view": CMSLogoView,
     'cms-tagword-group-tree': CMSTagWordGroupTree

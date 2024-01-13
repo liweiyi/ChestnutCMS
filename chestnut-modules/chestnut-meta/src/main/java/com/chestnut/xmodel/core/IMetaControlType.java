@@ -1,5 +1,7 @@
 package com.chestnut.xmodel.core;
 
+import com.chestnut.xmodel.dto.XModelFieldDataDTO;
+
 /**
  * 元数据模型字段类型
  *
@@ -23,11 +25,6 @@ public interface IMetaControlType {
     /**
      * 处理组件关联字段数据
      */
-    default ParseResult parseFieldValue(Object value) {
-        return null;
-    }
-
-    record ParseResult(Object... values) {
-
+    default void parseFieldValue(XModelFieldDataDTO fieldData) {
     }
 }

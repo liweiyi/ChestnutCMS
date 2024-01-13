@@ -1,22 +1,9 @@
 package com.chestnut.contentcore.core;
 
-import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import org.springframework.beans.BeanUtils;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.domain.LoginUser;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.SortUtils;
-import com.chestnut.common.utils.SpringUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.*;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -30,6 +17,14 @@ import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
+import org.springframework.beans.BeanUtils;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public abstract class AbstractContent<T> implements IContent<T> {
 
@@ -141,8 +136,8 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		content.createBy(this.getOperator().getUsername());
 
 		// 栏目内容数+1
-		catalog.setContentCount(catalog.getContentCount() + 1);
-		this.getCatalogService().updateById(catalog);
+		this.getCatalogService().lambdaUpdate().set(CmsCatalog::getContentCount, catalog.getContentCount() + 1)
+				.eq(CmsCatalog::getCatalogId, catalog.getCatalogId()).update();
 		return this.getContentEntity().getContentId();
 	}
 

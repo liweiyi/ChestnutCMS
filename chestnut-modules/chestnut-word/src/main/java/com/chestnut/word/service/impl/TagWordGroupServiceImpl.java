@@ -1,12 +1,5 @@
 package com.chestnut.word.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.domain.TreeNode;
@@ -19,8 +12,13 @@ import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.mapper.TagWordGroupMapper;
 import com.chestnut.word.mapper.TagWordMapper;
 import com.chestnut.word.service.ITagWordGroupService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +32,7 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 		checkUnique(group.getParentId(), null, group.getName(), group.getCode());
 
 		group.setGroupId(IdUtils.getSnowflakeId());
+		group.setWordTotal(0L);
 		group.setSortFlag(SortUtils.getDefaultSortValue());
 		this.save(group);
 		return group;

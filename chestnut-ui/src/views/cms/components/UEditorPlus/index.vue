@@ -245,7 +245,9 @@ export default {
       openCatalogSelector: false,
       openContentSelector: false,
       openBaiduMapDialog: false,
-      contentType: ''
+      xyContentBtnValue: 'catalog',
+      contentType: '',
+      checkWordType: 'sensitive'
     };
   },
   methods: {
@@ -255,7 +257,7 @@ export default {
       })
     },
     handleBeforeInit(editorId) {
-      // console.log('ueditor-plus.before-init', editorId)
+      console.log('ueditor-plus.before-init', editorId)
       this.addXyContentButton(editorId)
       this.addXyResourceButton(editorId)
       this.addThirdVideoButton(editorId)
@@ -265,6 +267,19 @@ export default {
     handleReady(editorInstance) {
       // console.log('ueditor-plus.ready: ' + editorInstance.key, editorInstance)
       this.addPopup(editorInstance)
+      // addXyContentButton
+      editorInstance.onXyContentButtonClick = this.handleXyContentButtonClick
+      // addXyResourceButton
+      editorInstance.onXyResourceButtonClick = this.handleXyResourceButtonClick
+      // addThirdVideoButton
+      editorInstance.onThirdVideoButtonClick = this.handleThirdVideoButtonClick
+      // addXyWordCheckButton
+      editorInstance.onXyWordCheck = this.handleXyWordCheck
+      editorInstance.onXyWordHighlight = this.handleXyWordHighlight
+      editorInstance.onXyWordReplace = this.handleXyWordReplace
+      editorInstance.onXyWordReplace2 = this.handleXyWordReplace2
+      // addBaiduMapButton
+      editorInstance.onBaiduMapButtonClick = this.handleBaiduMapButtonClick
     },
     addPopup(editor) {
       var domUtils = baidu.editor.dom.domUtils;
@@ -469,12 +484,12 @@ export default {
         }
       });
     },
-    addXyContentButton(eidtorId) {
+    addXyContentButton(editorId) {
       const that = this
       window.UE.registerUI('xy-content', function (editor, uiName) {
         editor.registerCommand(uiName,{
           execCommand:function(cmdName,value){
-            that.handleXyContentButtonClick(cmdName, value);
+            editor.onXyContentButtonClick(cmdName, value);
           }
         });
         const _onMenuClick = function() {
@@ -506,19 +521,20 @@ export default {
           title: that.$t('CMS.UEditor.InsertContentLink'),
           items: items,
           onbuttonclick: function() {
-            editor.execCommand(uiName, that.contentType);
+            editor.execCommand(uiName);
           }
         });
         return ui;
       });
     },
     handleXyContentButtonClick(cmd, value) {
-      if (value == 'catalog') {
+      if (value) {
+        this.xyContentBtnValue = value
+        this.contentType = value == 'img_group' ? "image" : ""
+      }
+      if (this.xyContentBtnValue == 'catalog') {
         this.openCatalogSelector = true
       } else {
-        if (value == 'img_group') {
-          this.contentType = "image"
-        }
         this.openContentSelector = true
       }
     },
@@ -559,7 +575,7 @@ export default {
       window.UE.registerUI('xy-resource', function (editor, uiName) {
         editor.registerCommand(uiName,{
           execCommand:function(cmdName,value){
-            that.handleXyResourceButtonClick(cmdName, value);
+            editor.onXyResourceButtonClick(cmdName, value);
           }
         });
         const _onMenuClick = function() {
@@ -597,15 +613,17 @@ export default {
           title: that.$t('CMS.UEditor.InsertResource'),
           items: items,
           onbuttonclick: function() {
-            editor.execCommand(uiName, that.resourceType);
+            editor.execCommand(uiName);
           }
         });
         return ui;
       });
     },
     handleXyResourceButtonClick(cmd, value) {
+      if (value) {
+        this.resourceType = value
+      }
       this.openResourceDialog = true
-      this.resourceType = value
     },
     handleResourceDialogOk (results) {
       if (results && results.length > 0) {
@@ -615,7 +633,7 @@ export default {
           if (r.resourceType == 'image') {
             html += '<p><img src="' + r.src + '" iurl="' + r.path + '" class="art-body-img" /></p>'
           } else {
-            html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank" class="arg-body-' + r.resourceType + '">' + r.name + '</a></p>'
+            html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank" class="art-body-' + r.resourceType + '">' + r.name + '</a></p>'
           }
         });
         if (html && html.length > 0) {
@@ -630,7 +648,7 @@ export default {
       window.UE.registerUI('xy-third-video', function (editor, uiName) {
         editor.registerCommand(uiName, {
           execCommand: function(cmdName){
-            that.handleThirdVideoButtonClick(cmdName);
+            editor.onThirdVideoButtonClick(cmdName);
           }
         });
         const ui = new UE.ui.Button({
@@ -644,7 +662,7 @@ export default {
         return ui;
       });
     },
-    handleThirdVideoButtonClick(cmd, value) {
+    handleThirdVideoButtonClick(cmd) {
       this.openThirdVideoDialog = true
     },
     handleThirdVideoDialogOk (result) {
@@ -658,86 +676,27 @@ export default {
       window.UE.registerUI('xy-check-word', function (editor, uiName) {
         editor.registerCommand(uiName,{
           execCommand:function(cmdName,value){
-            if (value == 'sensitive') {
-              const txt = editor.getContentTxt();
-              if (!txt || txt.length == 0) {
-                return;
-              }
-              checkSensitiveWords(editor.getContentTxt()).then(response => {
-                if (response.data.length == 0) {
-                  that.$modal.msgSuccess(that.$t('CMS.UEditor.NoSensitiveWord'));
-                } else {
-                  that.$prompt(response.data.join("<br/>"), that.$t('CMS.UEditor.FoundSensitiveWord'), {
-                    confirmButtonText: that.$t('CMS.UEditor.ReplaceWord'),
-                    cancelButtonText: that.$t('CMS.UEditor.HighlightWord'),
-                    inputPlaceholder: that.$t('CMS.UEditor.InputReplacement'),
-                    inputValue: "*",
-                    dangerouslyUseHTMLString: true,
-                    distinguishCancelAndClose: true
-                  }).then(({ value }) => {
-                    editor.execCommand('xy-replace-word2', response.data, value);
-                  }).catch(() => {
-                    editor.execCommand('xy-highlight-word', response.data);
-                  });
-                }
-              })
-            } else if (value == 'fallible') {
-              checkFallibleWords(editor.getContentTxt()).then(response => {
-                if (response.data.length == 0) {
-                  that.$modal.msgSuccess(that.$t('CMS.UEditor.NoFallibleWord'));
-                } else {
-                  const str = response.data.map(item => item.w + " > " + item.r).join("<br/>");
-                  that.$confirm(str, that.$t('CMS.UEditor.FoundFallibleWord'), {
-                    confirmButtonText: that.$t('CMS.UEditor.ReplaceWord'),
-                    cancelButtonText: that.$t('CMS.UEditor.HighlightWord'),
-                    dangerouslyUseHTMLString: true,
-                    distinguishCancelAndClose: true
-                  }).then(() => {
-                    editor.execCommand('xy-replace-word', response.data)
-                  }).catch(() => {  
-                    editor.execCommand('xy-highlight-word', response.data.map(item => item.w))
-                  });
-                }
-              })
-            }
+            editor.onXyWordCheck(cmdName, value)
           }
         });
         editor.registerCommand('xy-highlight-word',{
           execCommand:function(cmdName, words){
-            let html = editor.getContent();
-            // 先去掉可能存在的高亮标签
-            html = html.replace(new RegExp("<span class=\"warning_tip\">([^<]*)</span>", "ig"), '$1');
-            words.forEach(word => {
-              html = html.replace(new RegExp(word, "ig"), '<span class="warning_tip">' + word + '</span>')
-            })
-            editor.setContent(html)
+            editor.onXyWordHighlight(cmdName, words)
           }
         });
         editor.registerCommand('xy-replace-word',{
           execCommand:function(cmdName, list){
-            let html = editor.getContent();
-            // 先去掉可能存在的高亮标签
-            html = html.replace(new RegExp("<span class=\"warning_tip\">([^<]*)</span>", "ig"), '$1');
-            list.forEach(item => {
-              html = html.replace(new RegExp(item.w, "ig"), item.r)
-            })
-            editor.setContent(html)
+            editor.onXyWordReplace(cmdName, words)
           }
         });
         editor.registerCommand('xy-replace-word2',{
           execCommand:function(cmdName, words, replacement){
-            let html = editor.getContent();
-            // 先去掉可能存在的高亮标签
-            html = html.replace(new RegExp("<span class=\"warning_tip\">([^<]*)</span>", "ig"), '$1');
-            words.forEach(word => {
-              html = html.replace(new RegExp(word, "ig"), replacement)
-            })
-            editor.setContent(html)
+            editor.onXyWordReplace2(cmdName, words, replacement)
           }
         });
         const _onMenuClick = function() {
-            editor.execCommand(uiName, this.value);
-          }
+          editor.execCommand(uiName, this.value);
+        }
         const items = [
           {
             label: that.$t('CMS.UEditor.SensitiveWordCheck'),
@@ -758,11 +717,87 @@ export default {
           title: "Check Word",
           items: items,
           onbuttonclick: function() {
-            editor.execCommand(uiName, that.contentType);
+            editor.execCommand(uiName);
           }
         });
         return ui;
       });
+    },
+    handleXyWordCheck(cmd, value) {
+      this.sensitiveType = value || this.sensitiveType
+      const editor = window.UE.getEditor(this.editorId)
+      if (value == 'sensitive') {
+        const txt = editor.getContentTxt();
+        if (!txt || txt.length == 0) {
+          return;
+        }
+        checkSensitiveWords(editor.getContentTxt()).then(response => {
+          if (response.data.length == 0) {
+            this.$modal.msgSuccess(this.$t('CMS.UEditor.NoSensitiveWord'));
+          } else {
+            this.$prompt(response.data.join("<br/>"), this.$t('CMS.UEditor.FoundSensitiveWord'), {
+              confirmButtonText: this.$t('CMS.UEditor.ReplaceWord'),
+              cancelButtonText: this.$t('CMS.UEditor.HighlightWord'),
+              inputPlaceholder: this.$t('CMS.UEditor.InputReplacement'),
+              inputValue: "*",
+              dangerouslyUseHTMLString: true,
+              distinguishCancelAndClose: true
+            }).then(({ value }) => {
+              editor.execCommand('xy-replace-word2', response.data, value);
+            }).catch(() => {
+              editor.execCommand('xy-highlight-word', response.data);
+            });
+          }
+        })
+      } else if (value == 'fallible') {
+        checkFallibleWords(editor.getContentTxt()).then(response => {
+          if (response.data.length == 0) {
+            this.$modal.msgSuccess(this.$t('CMS.UEditor.NoFallibleWord'));
+          } else {
+            const str = response.data.map(item => item.w + " > " + item.r).join("<br/>");
+            this.$confirm(str, this.$t('CMS.UEditor.FoundFallibleWord'), {
+              confirmButtonText: this.$t('CMS.UEditor.ReplaceWord'),
+              cancelButtonText: this.$t('CMS.UEditor.HighlightWord'),
+              dangerouslyUseHTMLString: true,
+              distinguishCancelAndClose: true
+            }).then(() => {
+              editor.execCommand('xy-replace-word', response.data)
+            }).catch(() => {  
+              editor.execCommand('xy-highlight-word', response.data.map(item => item.w))
+            });
+          }
+        })
+      }
+    },
+    handleXyWordHighlight(cmd, words) {
+      const editor = window.UE.getEditor(this.editorId)
+      let html = editor.getContent();
+      // 先去掉可能存在的高亮标签
+      html = html.replace(new RegExp("<span class=\"warning_tip\">([^<]*)</span>", "ig"), '$1');
+      words.forEach(word => {
+        html = html.replace(new RegExp(word, "ig"), '<span class="warning_tip">' + word + '</span>')
+      })
+      editor.setContent(html)
+    },
+    handleXyWordReplace(cmd, list) {
+      const editor = window.UE.getEditor(this.editorId)
+      let html = editor.getContent();
+      // 先去掉可能存在的高亮标签
+      html = html.replace(new RegExp("<span class=\"warning_tip\">([^<]*)</span>", "ig"), '$1');
+      list.forEach(item => {
+        html = html.replace(new RegExp(item.w, "ig"), item.r)
+      })
+      editor.setContent(html)
+    },
+    handleXyWordReplace2(cmd, words, replacement) {
+      const editor = window.UE.getEditor(this.editorId)
+      let html = editor.getContent();
+      // 先去掉可能存在的高亮标签
+      html = html.replace(new RegExp("<span class=\"warning_tip\">([^<]*)</span>", "ig"), '$1');
+      words.forEach(word => {
+        html = html.replace(new RegExp(word, "ig"), replacement)
+      })
+      editor.setContent(html)
     },
     // 插入地图
     addBaiduMapButton(editorId) {
@@ -770,7 +805,7 @@ export default {
       window.UE.registerUI('xy-baidu-map', function (editor, uiName) {
         editor.registerCommand(uiName, {
           execCommand: function(cmdName){
-            that.handleBaiduMapButtonClick(cmdName);
+            editor.onBaiduMapButtonClick(cmdName);
           }
         });
         const ui = new UE.ui.Button({

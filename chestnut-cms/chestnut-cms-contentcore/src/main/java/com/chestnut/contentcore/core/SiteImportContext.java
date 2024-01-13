@@ -53,6 +53,11 @@ public class SiteImportContext implements ISiteThemeContext {
      */
     private Map<Long, Long> pageWidgetIdMap = new HashMap<>();
 
+    /**
+     * 自定义数据映射<类型, <原值, 新值>
+     */
+    private Map<String, Map<String, String>> customMappings = new HashMap<>();
+
     private final CmsSite site;
 
     private CmsSite sourceSite;
@@ -118,5 +123,13 @@ public class SiteImportContext implements ISiteThemeContext {
     public void clearTempFiles() throws IOException {
         String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
         FileUtils.deleteDirectory(new File(siteResourceRoot + ImportDir));
+    }
+
+    public void putCustomMapping(String type, String key, String value) {
+        customMappings.computeIfAbsent(type, k -> new HashMap<>()).put(key, value);
+    }
+
+    public String getCustomMappingValue(String type, String key) {
+        return customMappings.computeIfAbsent(type, k -> new HashMap<>()).get(key);
     }
 }

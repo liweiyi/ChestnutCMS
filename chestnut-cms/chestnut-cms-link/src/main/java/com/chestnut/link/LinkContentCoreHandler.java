@@ -35,9 +35,7 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         // cms_link_group
-        int percent = AsyncTaskManager.getTaskProgressPercent();
-        AsyncTaskManager.setTaskProgressInfo( percent + (100 - percent) / 10,
-                "正在导出友情链接数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出友情链接数据");
         List<CmsLinkGroup> list = linkGroupService.lambdaQuery()
                 .eq(CmsLinkGroup::getSiteId, context.getSite().getSiteId())
                 .list();
@@ -51,9 +49,7 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteImport(SiteImportContext context) {
-        int percent = AsyncTaskManager.getTaskProgressPercent();
-        AsyncTaskManager.setTaskProgressInfo( percent + (100 - percent) / 10,
-                "正在导入友情链接分组数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入友情链接分组数据");
         // cms_link_group
         Map<Long, Long> linkGroupIdMap = new HashMap<>();
         List<File> files = context.readDataFiles(CmsLinkGroup.TABLE_NAME);

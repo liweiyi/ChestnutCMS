@@ -7,9 +7,11 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
+import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -37,13 +39,15 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.StringWriter;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -70,6 +74,7 @@ public class SysUserController extends BaseRestController {
 	/**
 	 * 获取用户列表
 	 */
+	@ExcelExportable(SysUser.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping("/list")
 	public R<?> list(SysUser user) {
@@ -84,22 +89,6 @@ public class SysUserController extends BaseRestController {
 			this.deptService.getDept(u.getDeptId()).ifPresent(d -> u.setDeptName(d.getDeptName()));
 		});
 		return bindDataTable(page);
-	}
-
-	@Log(title = "用户管理", businessType = BusinessType.EXPORT)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserExport)
-	@PostMapping("/export")
-	public void export(HttpServletResponse response, SysUser user) {
-		LambdaQueryWrapper<SysUser> q = new LambdaQueryWrapper<SysUser>()
-				.like(StringUtils.isNotEmpty(user.getUserName()), SysUser::getUserName, user.getUserName())
-				.like(StringUtils.isNotEmpty(user.getPhoneNumber()), SysUser::getPhoneNumber, user.getPhoneNumber())
-				.eq(Objects.nonNull(user.getStatus()), SysUser::getStatus, user.getStatus())
-				.orderByDesc(SysUser::getUserId);
-		List<SysUser> list = userService.list(q);
-		list.forEach(u -> {
-			this.deptService.getDept(u.getDeptId()).ifPresent(d -> u.setDeptName(d.getDeptName()));
-		});
-		this.exportExcel(list, SysUser.class, response);
 	}
 
 	@Log(title = "用户管理", businessType = BusinessType.IMPORT)
@@ -124,7 +113,7 @@ public class SysUserController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserAdd)
 	@PostMapping("/importTemplate")
 	public void importTemplate(HttpServletResponse response) {
-		exportExcel(Collections.emptyList(), UserImportData.class, response);
+		exportExcel(List.of(), UserImportData.class, response);
 	}
 
 	/**

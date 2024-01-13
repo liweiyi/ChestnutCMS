@@ -24,13 +24,13 @@ import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.random.RandomGenerator;
 
 @Component
 @RequiredArgsConstructor
@@ -105,7 +105,7 @@ public class CmsRelaContentTag extends AbstractListTag {
 			return List.of();
 		}
 		Long maxContentId = pageMax.getRecords().get(0).getContentId();
-		long random = RandomUtils.nextLong(minContentId, maxContentId);
+		long random = RandomGenerator.getDefault().nextLong(minContentId, maxContentId);
 		Page<CmsContent> page = this.contentService.lambdaQuery().eq(CmsContent::getSiteId, siteId)
 				.likeRight(isCatalogNonNull, CmsContent::getCatalogAncestors, catalog.getAncestors())
 				.ge(CmsContent::getContentId, random).orderByAsc(CmsContent::getContentId)

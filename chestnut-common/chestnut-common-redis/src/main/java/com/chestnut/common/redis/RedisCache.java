@@ -1,30 +1,17 @@
 package com.chestnut.common.redis;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
+import com.chestnut.common.utils.StringUtils;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.connection.DataType;
-import org.springframework.data.redis.core.BoundHashOperations;
-import org.springframework.data.redis.core.BoundSetOperations;
-import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.KeyScanOptions;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.support.atomic.RedisAtomicLong;
 import org.springframework.stereotype.Component;
 
-import com.chestnut.common.utils.StringUtils;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * spring redis 工具类
@@ -38,15 +25,16 @@ public class RedisCache {
 	/**
 	 * 是否允许缓存null
 	 */
-	private boolean allowNullValue = true;
+	private final boolean allowNullValue;
 
 	/**
 	 * null值缓存默认过期时间30秒
 	 */
-	private long nullValueExpire = 30;
+	private final long nullValueExpire = 30;
 
-	public RedisCache(RedisTemplate redisTemplate) {
+	public RedisCache(RedisTemplate<String, Object> redisTemplate, RedisCacheConfiguration config) {
 		this.redisTemplate = redisTemplate;
+		this.allowNullValue = config.getAllowCacheNullValues();
 	}
 
 	/**
@@ -105,7 +93,7 @@ public class RedisCache {
 	 * @return true=设置成功；false=设置失败
 	 */
 	public boolean expire(final String key, final long timeout, final TimeUnit unit) {
-		return redisTemplate.expire(key, timeout, unit);
+		return Boolean.TRUE.equals(redisTemplate.expire(key, timeout, unit));
 	}
 
 	/**
@@ -115,11 +103,11 @@ public class RedisCache {
 	 * @return 有效时间
 	 */
 	public long getExpire(final String key) {
-		return redisTemplate.getExpire(key);
+		return Objects.requireNonNullElse(redisTemplate.getExpire(key), 0L);
 	}
 
 	public long getExpire(final String key, final TimeUnit unit) {
-		return redisTemplate.getExpire(key, unit);
+		return Objects.requireNonNullElse(redisTemplate.getExpire(key, unit), 0L);
 	}
 
 	/**
@@ -128,8 +116,8 @@ public class RedisCache {
 	 * @param key 键
 	 * @return true 存在 false不存在
 	 */
-	public Boolean hasKey(String key) {
-		return redisTemplate.hasKey(key);
+	public boolean hasKey(String key) {
+		return Boolean.TRUE.equals(redisTemplate.hasKey(key));
 	}
 
 	/**
@@ -145,11 +133,9 @@ public class RedisCache {
 
 	/**
 	 * 获得缓存的基本对象，如果不存在调用supplier获取数据。
-	 * 
-	 * @param <T>
-	 * @param cacheKey
-	 * @param supplier
-	 * @return
+	 *
+	 * @param cacheKey 缓存Key
+	 * @param supplier 未获取到缓存结果提供默认数据
 	 */
 	public <T> T getCacheObject(String cacheKey, Supplier<T> supplier) {
 		T cacheObject = this.getCacheObject(cacheKey);
@@ -162,23 +148,35 @@ public class RedisCache {
 		return cacheObject;
 	}
 
+	public <T> T getCacheObjectWithExpiresIn(String cacheKey, Supplier<CacheObject<T>> supplier) {
+		T cacheObject = this.getCacheObject(cacheKey);
+		if (Objects.isNull(cacheObject)) {
+			CacheObject<T> co = supplier.get();
+			if (Objects.nonNull(co.getData())) {
+				this.setCacheObject(cacheKey, co.getData(), co.getExpiresIn(), co.getTimeUnit());
+			}
+			cacheObject = co.getData();
+		}
+		return cacheObject;
+	}
+
 	/**
 	 * 删除单个对象
 	 *
-	 * @param key
+	 * @param key 缓存Key
 	 */
 	public boolean deleteObject(final String key) {
-		return redisTemplate.delete(key);
+		return Boolean.TRUE.equals(redisTemplate.delete(key));
 	}
 
 	/**
 	 * 删除集合对象
 	 *
 	 * @param collection 多个对象
-	 * @return
 	 */
 	public boolean deleteObject(final Collection collection) {
-		return redisTemplate.delete(collection) > 0;
+		Long delete = redisTemplate.delete(collection);
+		return Objects.nonNull(delete) && delete > 0;
 	}
 
 	/**
@@ -188,18 +186,11 @@ public class RedisCache {
 	 * @param dataList 待缓存的List数据
 	 * @return 缓存的对象
 	 */
-	public <T> long setCacheList(final String key, final List<T> dataList) {
-		boolean empty = StringUtils.isEmpty(dataList);
-		if (empty && !this.allowNullValue) {
-			return 0;
+	public <T> void setCacheList(final String key, @NotNull final List<T> dataList) {
+		if (Objects.isNull(dataList)) {
+			return;
 		}
-		if (empty) {
-			redisTemplate.opsForValue().set(key, Collections.emptyList(), this.nullValueExpire, TimeUnit.SECONDS);
-			return 0;
-		} else {
-			Long count = redisTemplate.opsForList().rightPushAll(key, dataList);
-			return count == null ? 0 : count;
-		}
+		redisTemplate.opsForList().rightPushAll(key, dataList);
 	}
 
 	/**
@@ -216,52 +207,46 @@ public class RedisCache {
 	 * 缓存Set
 	 *
 	 * @param key     缓存键值
-	 * @param dataSet 缓存的数据
-	 * @return 缓存数据的对象
+	 * @param dataSet 缓存的数据，为null时替换成EmptySet
 	 */
-	public <T> BoundSetOperations<String, T> setCacheSet(final String key, final Set<T> dataSet) {
+	public <T> void setCacheSet(final String key, Set<T> dataSet) {
 		BoundSetOperations<String, T> setOperation = redisTemplate.boundSetOps(key);
-		boolean empty = StringUtils.isEmpty(dataSet);
-		if (empty && this.allowNullValue) {
-			setOperation.expire(nullValueExpire, TimeUnit.SECONDS);
+		if (Objects.isNull(dataSet)) {
+			dataSet = Set.of();
 		}
-		if (!empty) {
-			Iterator<T> it = dataSet.iterator();
-			while (it.hasNext()) {
-				setOperation.add(it.next());
-			}
+		for (T t : dataSet) {
+			setOperation.add(t);
 		}
-		return setOperation;
 	}
 
 	/**
 	 * 获得缓存的set
 	 *
-	 * @param key
-	 * @return
+	 * @param key 缓存Key
+	 * @return 缓存数据
 	 */
 	public <T> Set<T> getCacheSet(final String key) {
 		return redisTemplate.opsForSet().members(key);
 	}
-	
+
 	/**
-	 * set缓存添加值
-	 * 
-	 * @param key
-	 * @param value
+	 * Add element to set cache
+	 *
+	 * @param key Cache key
+	 * @param values Set Element
 	 */
-	public void addSetValue(final String key, final Object... value) {
-		if (Objects.isNull(value) || value.length == 0) {
+	public void addSetValue(final String key, final Object... values) {
+		if (StringUtils.isEmpty(values)) {
 			return;
 		}
-		this.redisTemplate.opsForSet().add(key, value);
+		this.redisTemplate.opsForSet().add(key, values);
 	}
-	
+
 	/**
-	 * 移除set中的指定值
-	 * 
-	 * @param key
-	 * @param value 
+	 * Remove element from set cache
+	 *
+	 * @param key Cache key
+	 * @param values Set Elements
 	 */
 	public void removeSetValue(final String key, final Object... values) {
 		if (StringUtils.isEmpty(values)) {
@@ -271,44 +256,28 @@ public class RedisCache {
 	}
 
 	/**
-	 * 缓存Map
+	 * Set map cache
 	 *
-	 * @param key
-	 * @param dataMap
+	 * @param key Cache key
+	 * @param dataMap Cache Value, replace to EmptyMap if null.
 	 */
 	public <T> void setCacheMap(final String key, final Map<String, T> dataMap) {
-		if (dataMap != null) {
-			redisTemplate.opsForHash().putAll(key, dataMap);
-		}
-
-		boolean empty = StringUtils.isEmpty(dataMap);
-		if (empty && !this.allowNullValue) {
-			return;
-		}
-		if (empty) {
-			BoundHashOperations ops = redisTemplate.boundHashOps(key);
-			ops.expire(nullValueExpire, TimeUnit.SECONDS);
-		} else {
-			redisTemplate.opsForHash().putAll(key, dataMap);
-		}
+		redisTemplate.opsForHash().putAll(key, Objects.requireNonNullElse(dataMap, Map.of()));
 	}
 
 	/**
-	 * 获得缓存的Map
+	 * Get map cache
 	 *
-	 * @param key
-	 * @return
+	 * @param key Cache key
+	 * @return Cached map
 	 */
 	public <T> Map<String, T> getCacheMap(final String key) {
 		return redisTemplate.opsForHash().entries(key);
 	}
 
 	public <T> Map<String, T> getCacheMap(final String key, Supplier<Map<String, T>> supplier) {
-		if (!redisTemplate.hasKey(key)) {
-			Map<String, T> map = supplier.get();
-			if (map != null) {
-				this.setCacheMap(key, map);
-			}
+		if (!Objects.requireNonNullElse(redisTemplate.hasKey(key), false)) {
+			this.setCacheMap(key, Objects.requireNonNullElse(supplier.get(), Map.of()));
 		}
 		return redisTemplate.opsForHash().entries(key);
 	}
@@ -374,8 +343,8 @@ public class RedisCache {
 	/**
 	 * 获得匹配的n条缓存键名列表
 	 *
-	 * @param pattern
-	 * @return
+	 * @param pattern 匹配正则
+	 * @return cache key set
 	 */
 	public Set<String> scanKeys(final String pattern, final int count) {
 		return scanKeys(DataType.STRING, pattern, count);
@@ -384,10 +353,10 @@ public class RedisCache {
 	/**
 	 * 获得匹配的n条缓存键名列表
 	 *
-	 * @param dataType
-	 * @param pattern
-	 * @param count
-	 * @return
+	 * @param dataType 缓存数据类型
+	 * @param pattern 匹配正则
+	 * @param count 数量
+	 * @return cache key set
 	 */
 	public Set<String> scanKeys(DataType dataType, final String pattern, int count) {
 		if (Objects.isNull(dataType) || DataType.NONE.equals(dataType)) {
@@ -408,8 +377,8 @@ public class RedisCache {
 	/**
 	 * 获得自增ID
 	 *
-	 * @param key
-	 * @return
+	 * @param key Cache key
+	 * @return longValue
 	 */
 	public long atomicLongIncr(String key) {
 		RedisAtomicLong redisAtomicLong = new RedisAtomicLong(key, this.redisTemplate);
@@ -418,11 +387,11 @@ public class RedisCache {
 
 	/**
 	 * 添加zset
-	 * 
-	 * @param key
-	 * @param value
-	 * @param seqNo
-	 * @return
+	 *
+	 * @param key Cache key
+	 * @param value Cache value
+	 * @param score Cache score
+	 * @return boolean
 	 */
 	public Boolean addZset(String key, Object value, double score) {
 		return redisTemplate.opsForZSet().add(key, value, score);
@@ -430,34 +399,33 @@ public class RedisCache {
 
 	/**
 	 * ZSet.score + delta
-	 * 
-	 * @param key
-	 * @param value
-	 * @param delta
-	 * @return
+	 *
+	 * @param key Cache key
+	 * @param value Cache value
+	 * @param delta score delta
+	 * @return score
 	 */
 	public long zsetIncr(String key, String value, int delta) {
-		return this.redisTemplate.opsForZSet().incrementScore(key, value, delta).longValue();
+		return Objects.requireNonNull(this.redisTemplate.opsForZSet().incrementScore(key, value, delta)).longValue();
 	}
 
 	/**
 	 * 获取zset.score，不存在返回-1
-	 * 
-	 * @param key
-	 * @param value
-	 * @return
+	 *
+	 * @param key Cache key
+	 * @param value Cache value
+	 * @return score
 	 */
 	public Double getZsetScore(String key, String value) {
 		Double score = this.redisTemplate.opsForZSet().score(key, value);
-		return Objects.isNull(score) ? -1 :score;
+		return Objects.requireNonNullElse(score, -1d);
 	}
 
 	/**
 	 * 删除zset
-	 * 
-	 * @param key
-	 * @param value
-	 * @return
+	 *
+	 * @param key Cache key
+	 * @param values Cache values
 	 */
 	public void removeZsetValue(String key, Object... values) {
 		if (StringUtils.isEmpty(values)) {
@@ -468,19 +436,21 @@ public class RedisCache {
 
 	/**
 	 * zset.size
-	 * 
-	 * @param key
-	 * @return
+	 *
+	 * @param key Cache key
+	 * @return zset.size
 	 */
 	public long getZsetSize(String key) {
-		return this.redisTemplate.opsForZSet().size(key).longValue();
+		return Objects.requireNonNullElse(this.redisTemplate.opsForZSet().size(key), 0L);
 	}
 
 	/**
 	 * 获取指定范围zset数据，end=-1表示取所有
-	 * 
-	 * @param key
-	 * @return
+	 *
+	 * @param key Cache key
+	 * @param start start index
+	 * @param end end index
+	 * @return cache set
 	 */
 	public <T> Set<T> getZset(String key, int start, int end) {
 		return this.redisTemplate.opsForZSet().range(key, start, end);
@@ -488,20 +458,19 @@ public class RedisCache {
 
 	/**
 	 * 获取指定值排名，不存在返回-1，0表示第一位
-	 * 
-	 * @param key
-	 * @param value
-	 * @return
+	 *
+	 * @param key Cache key
+	 * @param value Cache value
+	 * @return rank
 	 */
 	public long getZsetRank(String key, Object value) {
-		Long rank = redisTemplate.opsForZSet().rank(key, value);
-		return Objects.isNull(rank) ? -1 : rank.longValue();
+		return Objects.requireNonNullElse(redisTemplate.opsForZSet().rank(key, value), -1L);
 	}
-	
+
 	/**
      * 设置cacheKey字段第offset位bit数值
      *
-     * @param cacheKey    
+     * @param cacheKey Cache key
      * @param offset 位置
      * @param value  值
      */
@@ -512,11 +481,11 @@ public class RedisCache {
     /**
      * 判断该key字段offset位否为1
      *
-     * @param cacheKey
+     * @param cacheKey Cache key
      * @param offset 位置
-     * @return
+     * @return boolean
      */
     public boolean getBit(String cacheKey, long offset) {
-        return this.redisTemplate.opsForValue().getBit(cacheKey, offset);
+        return Boolean.TRUE.equals(this.redisTemplate.opsForValue().getBit(cacheKey, offset));
     }
 }

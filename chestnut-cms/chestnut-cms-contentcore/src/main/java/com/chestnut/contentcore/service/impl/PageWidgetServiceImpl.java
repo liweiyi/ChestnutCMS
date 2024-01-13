@@ -16,10 +16,8 @@ import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.mapper.CmsPageWidgetMapper;
 import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.perms.PageWidgetPermissionType;
-import com.chestnut.contentcore.perms.SitePermissionType;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
-import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysPermissionService;
@@ -83,10 +81,11 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
 
         pw.add();
         // 授权给添加人
-        this.permissionService.grantPermission(PermissionOwnerType.User.name(),
-                pw.getOperator().getUserId().toString(), CatalogPermissionType.ID,
-                CmsPrivUtils.getAllPageWidgetPermissions(pw.getPageWidgetEntity().getPageWidgetId()));
-        this.permissionService.resetLoginUserPermissions(pw.getOperator());
+        this.permissionService.grantUserPermission(
+                pw.getOperator(),
+                CatalogPermissionType.ID,
+                CmsPrivUtils.getAllPageWidgetPermissions(pw.getPageWidgetEntity().getPageWidgetId())
+        );
     }
 
     @Override

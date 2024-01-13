@@ -15,6 +15,7 @@ import com.chestnut.cms.stat.mapper.CmsUserContentStatMapper;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
@@ -25,7 +26,6 @@ import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -79,9 +79,9 @@ public class CmsStatController extends BaseRestController {
 		LambdaQueryChainWrapper<CmsContent> q = this.contentService.lambdaQuery()
 				.eq(CmsContent::getSiteId, site.getSiteId())
 				.like(StringUtils.isNotEmpty(title), CmsContent::getTitle, title);
-		if (pr.getSort().isSorted()) {
-			pr.getSort().forEach(order -> {
-				SFunction<CmsContent, ?> sfunc = CmsContent.getSFunction(order.getProperty());
+		if (!pr.getSorts().isEmpty()) {
+			pr.getSorts().forEach(order -> {
+				SFunction<CmsContent, ?> sfunc = CmsContent.getSFunction(order.getColumn());
 				if (Objects.nonNull(sfunc)) {
 					q.orderBy(true, order.getDirection() == Sort.Direction.ASC, sfunc);
 				}

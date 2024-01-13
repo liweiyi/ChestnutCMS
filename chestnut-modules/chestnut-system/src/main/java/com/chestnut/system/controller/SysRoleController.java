@@ -1,27 +1,15 @@
 package com.chestnut.system.controller;
 
-import java.util.List;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
+import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -33,10 +21,12 @@ import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysRoleService;
 import com.chestnut.system.validator.LongId;
-
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 角色信息
@@ -53,6 +43,7 @@ public class SysRoleController extends BaseRestController {
 
 	private final SysUserMapper userMapper;
 
+	@ExcelExportable(SysRole.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
 	@GetMapping("/list")
 	public R<?> list(SysRole role) {
@@ -64,19 +55,6 @@ public class SysRoleController extends BaseRestController {
 				.orderByAsc(SysRole::getRoleSort);
 		Page<SysRole> page = roleService.page(new Page<>(pr.getPageNumber(), pr.getPageSize()), q);
 		return bindDataTable(page);
-	}
-
-	@Log(title = "角色管理", businessType = BusinessType.EXPORT)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleExport)
-	@PostMapping("/export")
-	public void export(HttpServletResponse response, SysRole role) {
-		LambdaQueryWrapper<SysRole> q = new LambdaQueryWrapper<SysRole>()
-				.like(StringUtils.isNotEmpty(role.getRoleName()), SysRole::getRoleName, role.getRoleName())
-				.like(StringUtils.isNotEmpty(role.getRoleKey()), SysRole::getRoleKey, role.getRoleKey())
-				.eq(StringUtils.isNotEmpty(role.getStatus()), SysRole::getStatus, role.getStatus())
-				.orderByAsc(SysRole::getRoleSort);
-		List<SysRole> list = roleService.list(q);
-		this.exportExcel(list, SysRole.class, response);
 	}
 
 	/**

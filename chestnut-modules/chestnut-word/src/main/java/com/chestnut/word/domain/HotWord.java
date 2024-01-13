@@ -27,6 +27,11 @@ public class HotWord extends BaseEntity {
     private Long wordId;
 
     /**
+     * 所有者ID（冗余字段，与TagWordGroup.ownerId同步）
+     */
+    private String owner;
+
+    /**
      * 所属分组ID
      */
     private Long groupId;

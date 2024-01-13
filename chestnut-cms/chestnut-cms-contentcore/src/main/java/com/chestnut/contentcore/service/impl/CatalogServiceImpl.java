@@ -34,7 +34,6 @@ import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.*;
-import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.service.ISysPermissionService;
 import lombok.RequiredArgsConstructor;
@@ -172,10 +171,11 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		catalog.createBy(dto.getOperator().getUsername());
 		this.save(catalog);
 		// 授权给添加人
-		this.permissionService.grantPermission(PermissionOwnerType.User.name(),
-				dto.getOperator().getUserId().toString(), CatalogPermissionType.ID,
-				CmsPrivUtils.getAllCatalogPermissions(catalog.getCatalogId()));
-		this.permissionService.resetLoginUserPermissions(dto.getOperator());
+		this.permissionService.grantUserPermission(
+				dto.getOperator(),
+				CatalogPermissionType.ID,
+				CmsPrivUtils.getAllCatalogPermissions(catalog.getCatalogId())
+		);
 		return catalog;
 	}
 

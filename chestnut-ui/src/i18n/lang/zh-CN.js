@@ -608,6 +608,11 @@ export default {
       PasswordRetryLockSecondsTip: "最长不超过365天",
       AddTitle: "添加安全配置",
       EditTitle: "编辑安全配置",
+    },
+    WeChat: {
+      Backend: "后台登录",
+      AddTitle: "添加微信配置",
+      EditTitle: "编辑微信配置",
     }
   },
   Monitor: {
@@ -1296,6 +1301,7 @@ export default {
       Directory: "目录",
       UploadTitle: "上传文件",
       UploadTip: "将文件拖到此处，或点击上传",
+      ResourceRoot: "站点资源目录",
       RuleTips: {
         FileName: "不能为空且只能使用字母、数字和下划线"
       }

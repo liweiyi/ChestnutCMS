@@ -329,7 +329,7 @@
 </template>
 <script>
 import { saveSiteExtends, getSiteExtends  } from "@/api/contentcore/site";
-import { getHotWordGroupOptions } from "@/api/word/hotWord";
+import { getHotWordGroupOptions } from "@/api/contentcore/word";
 import { listXModelOptions } from "@/api/contentcore/exmodel";
 import { refreshBdTongjiToken } from "@/api/stat/baidu";
 import CMSSimpleImageViewer from '@/views/cms/components/SimpleImageViewer';

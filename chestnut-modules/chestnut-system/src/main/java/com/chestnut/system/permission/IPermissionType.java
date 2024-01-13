@@ -34,7 +34,10 @@ public interface IPermissionType {
 	
 	/**
 	 * 将存储在sys_permission中的权限字符串解析成权限项集合
-	 * 
+	 *
+	 * 实现此方法的权限项集合会加入SA-TOKEN的权限列表中。
+	 * @see com.chestnut.system.security.AdminUserType#getPermissionList
+	 *
 	 * @param json
 	 * @return
 	 */
@@ -48,19 +51,6 @@ public interface IPermissionType {
 	 */
 	String serialize(Set<String> permissionKeys);
 
-	/**
-	 * 将数据库存储的权限数据转换成权限唯一标识的集合。
-	 *
-	 * 实现此方法的权限项集合会加入SA-TOKEN的权限列表中。
-	 * @see com.chestnut.system.security.AdminUserType#getPermissionList
-	 *
-	 * @param json
-	 * @return
-	 */
-	default Set<String> convert(String json) {
-		return Set.of();
-	}
-	
 	/**
 	 * 是否有权限
 	 * 

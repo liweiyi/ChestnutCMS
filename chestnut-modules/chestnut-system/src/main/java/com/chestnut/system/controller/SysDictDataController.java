@@ -5,8 +5,10 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
+import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.fixed.FixedDictUtils;
@@ -16,11 +18,9 @@ import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysDictDataService;
 import com.chestnut.system.service.ISysDictTypeService;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,6 +41,7 @@ public class SysDictDataController extends BaseRestController {
 
 	private final ISysDictTypeService dictTypeService;
 
+	@ExcelExportable(SysDictData.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
 	@GetMapping("/list")
 	public R<?> list(SysDictData dictData) {
@@ -56,18 +57,6 @@ public class SysDictDataController extends BaseRestController {
 		});
 		I18nUtils.replaceI18nFields(page.getRecords(), LocaleContextHolder.getLocale());
 		return bindDataTable(page);
-	}
-
-	@Log(title = "字典数据", businessType = BusinessType.EXPORT)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictExport)
-	@PostMapping("/export")
-	public void export(HttpServletResponse response, SysDictData dictData) {
-		List<SysDictData> list = dictDataService.lambdaQuery()
-				.like(StringUtils.isNotEmpty(dictData.getDictLabel()), SysDictData::getDictLabel,
-						dictData.getDictLabel())
-				.like(StringUtils.isNotEmpty(dictData.getDictType()), SysDictData::getDictType, dictData.getDictType())
-				.orderByDesc(SysDictData::getDictSort).list();
-		this.exportExcel(list, SysDictData.class, response);
 	}
 
 	/**

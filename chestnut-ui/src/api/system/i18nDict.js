@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function listI18nDict(query) {
   return request({
-    url: '/system/i18n/dict',
+    url: '/system/i18n/dict/list',
     method: 'get',
     params: query
   })

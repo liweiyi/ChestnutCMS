@@ -1,9 +1,5 @@
 package com.chestnut.article;
 
-import java.util.regex.Matcher;
-
-import org.springframework.beans.BeanUtils;
-
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.properties.AutoArticleLogo;
 import com.chestnut.article.service.IArticleService;
@@ -15,6 +11,9 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.system.fixed.dict.YesOrNo;
+import org.springframework.beans.BeanUtils;
+
+import java.util.regex.Matcher;
 
 public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 
@@ -55,6 +54,7 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 		// 非映射内容或标题内容修改文章详情
 		if (!this.hasExtendEntity()) {
 			this.getContentService().updateById(this.getContentEntity());
+			this.getArticleService().removeById(this.getContentEntity().getContentId());
 			return this.getContentEntity().getContentId();
 		}
 		CmsArticleDetail articleDetail = this.getExtendEntity();
@@ -73,7 +73,7 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 			this.getContentEntity().setLogo(this.getFirstImage(articleDetail.getContentHtml()));
 		}
 		this.getContentService().updateById(this.getContentEntity());
-		this.getArticleService().updateById(articleDetail);
+		this.getArticleService().saveOrUpdate(articleDetail);
 		return this.getContentEntity().getContentId();
 	}
 

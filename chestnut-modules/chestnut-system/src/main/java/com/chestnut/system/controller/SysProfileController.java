@@ -138,7 +138,6 @@ public class SysProfileController extends BaseRestController {
 	public R<?> getHomeInfo() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		SysUser user = (SysUser) loginUser.getUser();
-		StpAdminUtil.setLoginUser(loginUser);
 		DashboardUserVO vo = new DashboardUserVO();
 		vo.setUserName(user.getUserName());
 		vo.setNickName(user.getNickName());

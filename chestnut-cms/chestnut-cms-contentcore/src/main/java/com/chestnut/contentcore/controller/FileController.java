@@ -2,8 +2,10 @@ package com.chestnut.contentcore.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import cn.dev33.satoken.annotation.SaMode;
+import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,9 +43,9 @@ import lombok.RequiredArgsConstructor;
  * @email 190785909@qq.com
  */
 @Priv(
-	type = AdminUserType.TYPE,
-	value = { ContentCorePriv.FileView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
-	mode = SaMode.AND
+		type = AdminUserType.TYPE,
+		value = { ContentCorePriv.FileView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
+		mode = SaMode.AND
 )
 @RequiredArgsConstructor
 @RestController
@@ -56,33 +58,33 @@ public class FileController extends BaseRestController {
 
 	/**
 	 * 查询文件列表
-	 * 
+	 *
 	 * @param filePath
 	 * @param filename
 	 * @return
 	 */
 	@GetMapping("/list")
 	public R<?> getFileList(@RequestParam("filePath") @NotEmpty String filePath,
-			@RequestParam("fileName") String filename) {
+							@RequestParam("fileName") String filename) {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 		return this.fileService.getSiteFileList(site, filePath, filename);
 	}
 
 	/**
 	 * 获取目录树数据
-	 * 
+	 *
 	 * @return
 	 */
 	@GetMapping("/directoryTreeData")
 	public R<?> getDirectoryTree() {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 		List<TreeNode<String>> list = this.fileService.getSiteDirectoryTreeData(site);
-		return R.ok(list);
+		return R.ok(Map.of("tree", list, "resourceRoot", CMSConfig.getResourceRoot()));
 	}
 
 	/**
 	 * 重命名文件
-	 * 
+	 *
 	 * @param dto
 	 * @return
 	 * @throws IOException
@@ -97,7 +99,7 @@ public class FileController extends BaseRestController {
 
 	/**
 	 * 新建文件
-	 * 
+	 *
 	 * @param dto
 	 * @return
 	 * @throws IOException
@@ -112,7 +114,7 @@ public class FileController extends BaseRestController {
 
 	/**
 	 * 上传文件
-	 * 
+	 *
 	 * @return
 	 * @throws IOException
 	 */
@@ -129,7 +131,7 @@ public class FileController extends BaseRestController {
 
 	/**
 	 * 读取文件内容
-	 * 
+	 *
 	 * @param dto
 	 * @return
 	 * @throws IOException
@@ -143,7 +145,7 @@ public class FileController extends BaseRestController {
 
 	/**
 	 * 修改文件内容
-	 * 
+	 *
 	 * @param dto
 	 * @return
 	 * @throws IOException
@@ -158,7 +160,7 @@ public class FileController extends BaseRestController {
 
 	/**
 	 * 删除文件
-	 * 
+	 *
 	 * @param dtoList
 	 * @return
 	 * @throws IOException

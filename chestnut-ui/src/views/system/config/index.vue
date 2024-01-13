@@ -307,9 +307,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('system/config/export', {
+      this.exportExcel('system/config/list', {
         ...this.queryParams
-      }, `config_${new Date().getTime()}.xlsx`)
+      }, `config_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
     },
     /** 刷新缓存按钮操作 */
     handleRefreshCache() {

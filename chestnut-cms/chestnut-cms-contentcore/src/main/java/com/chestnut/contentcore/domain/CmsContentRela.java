@@ -26,6 +26,11 @@ public class CmsContentRela extends BaseEntity {
 
 	@TableId(value = "rela_id", type = IdType.INPUT)
 	private Long relaId;
+
+	/**
+	 * 站点ID
+	 */
+	private Long siteId;
 	
 	/**
 	 * 内容ID

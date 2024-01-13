@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.db.domain.BaseEntity;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,6 +26,11 @@ public class TagWordGroup extends BaseEntity {
     private Long groupId;
 
     /**
+     * 所有者ID（扩展用）
+     */
+    private String owner;
+
+    /**
      * 父级ID
      */
     private Long parentId;
@@ -45,4 +49,9 @@ public class TagWordGroup extends BaseEntity {
      * 排序标识
      */
     private Long sortFlag;
+
+    /**
+     * TAG词数量
+     */
+    private Long wordTotal;
 }

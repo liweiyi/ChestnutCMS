@@ -310,9 +310,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('system/dict/type/export', {
+      this.exportExcel('system/dict/type/list', {
         ...this.queryParams
-      }, `type_${new Date().getTime()}.xlsx`)
+      }, `dict_type_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
     },
     /** 刷新缓存按钮操作 */
     handleRefreshCache() {

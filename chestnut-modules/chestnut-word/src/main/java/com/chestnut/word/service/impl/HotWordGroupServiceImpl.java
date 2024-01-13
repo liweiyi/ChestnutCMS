@@ -1,9 +1,5 @@
 package com.chestnut.word.service.impl;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -17,8 +13,10 @@ import com.chestnut.word.exception.WordErrorCode;
 import com.chestnut.word.mapper.HotWordGroupMapper;
 import com.chestnut.word.mapper.HotWordMapper;
 import com.chestnut.word.service.IHotWordGroupService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +30,7 @@ public class HotWordGroupServiceImpl extends ServiceImpl<HotWordGroupMapper, Hot
 		this.checkUnique(group.getGroupId(), group.getName(), group.getCode());
 
 		group.setGroupId(IdUtils.getSnowflakeId());
+		group.setWordTotal(0L);
 		group.setSortFlag(SortUtils.getDefaultSortValue());
 		group.createBy(StpAdminUtil.getLoginUser().getUsername());
 		this.save(group);

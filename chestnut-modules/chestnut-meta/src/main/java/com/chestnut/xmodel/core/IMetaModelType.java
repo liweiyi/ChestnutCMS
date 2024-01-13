@@ -13,6 +13,11 @@ public interface IMetaModelType {
     String BEAN_PREFIX = "MetaModelType_";
 
     /**
+     * 扩展模型字段名前缀（避免与源数据字段冲突）
+     */
+    String DATA_FIELD_PREFIX = "ModelData_";
+
+    /**
      * 数据表必须包含的字段
      */
     String MODEL_ID_FIELD_NAME = "model_id";

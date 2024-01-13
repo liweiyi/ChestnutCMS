@@ -307,9 +307,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('system/post/export', {
+      this.exportExcel('system/post/list', {
         ...this.queryParams
-      }, `post_${new Date().getTime()}.xlsx`)
+      }, `post_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.getTime()}.xlsx`)
     }
   }
 };

@@ -73,7 +73,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 					if (StringUtils.isEmpty(permissionType) || pt.getId().equals(permissionType)) {
 						String json = userPermission.getPermissions().get(pt.getId());
 						if (StringUtils.isNotEmpty(json)) {
-							permissions.addAll(pt.convert(json));
+							permissions.addAll(pt.deserialize(json));
 						}
 					}
 				});
@@ -88,7 +88,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 						if (StringUtils.isEmpty(permissionType) || pt.getId().equals(permissionType)) {
 							String json = permission.getPermissions().get(pt.getId());
 							if (StringUtils.isNotEmpty(json)) {
-								permissions.addAll(pt.convert(json));
+								permissions.addAll(pt.deserialize(json));
 							}
 						}
 					});
@@ -132,7 +132,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	}
 
 	@Override
-	public SysPermission grantPermission(String ownerType, String owner, String permissionType, String permissionJson) {
+	public SysPermission setPermissionByType(String ownerType, String owner, String permissionType, String permissionJson) {
 		SysPermission permission = this.getPermission(ownerType, owner);
 		if (Objects.isNull(permission)) {
 			permission = new SysPermission();
@@ -143,6 +143,37 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 			this.save(permission);
 		}
 		permission.getPermissions().put(permissionType, permissionJson);
+		this.updateById(permission);
+		return permission;
+	}
+
+	@Override
+	public SysPermission grantUserPermission(LoginUser user, String permissionType, String permissionJson) {
+		SysPermission permission = grantPermission(
+				PermissionOwnerType.User.name(),
+				user.getUserId().toString(),
+				permissionType,
+				permissionJson
+		);
+		this.resetLoginUserPermissions(user);
+		return permission;
+	}
+
+	@Override
+	public SysPermission grantPermission(String ownerType, String owner, String permissionType, String permissionJson) {
+		SysPermission permission = this.getPermission(ownerType, owner);
+		if (Objects.isNull(permission)) {
+			permission = new SysPermission();
+			permission.setPermId(IdUtils.getSnowflakeId());
+			permission.setOwnerType(ownerType);
+			permission.setOwner(owner);
+			permission.createBy(SysConstants.SYS_OPERATOR);
+			this.save(permission);
+		}
+		IPermissionType pt = getPermissionType(permissionType);
+		Set<String> privs = pt.deserialize(permission.getPermissions().get(pt.getId()));
+		privs.addAll(pt.deserialize(permissionJson));
+		permission.getPermissions().put(permissionType, pt.serialize(privs));
 		this.updateById(permission);
 		return permission;
 	}

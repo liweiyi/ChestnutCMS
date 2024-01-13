@@ -29,6 +29,11 @@ public class HotWordGroup extends BaseEntity {
     private Long groupId;
 
     /**
+     * 所有者ID（扩展用）
+     */
+    private String owner;
+
+    /**
      * 名称
      */
     @NotEmpty
@@ -45,4 +50,9 @@ public class HotWordGroup extends BaseEntity {
      * 排序标识
      */
     private Long sortFlag;
+
+    /**
+     * 热词数量
+     */
+    private Long wordTotal;
 }

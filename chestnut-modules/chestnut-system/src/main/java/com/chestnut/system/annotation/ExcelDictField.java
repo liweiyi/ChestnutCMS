@@ -14,5 +14,5 @@ public @interface ExcelDictField {
 	/**
 	 * 字典类型
 	 */
-	public String value();
+	String value();
 }

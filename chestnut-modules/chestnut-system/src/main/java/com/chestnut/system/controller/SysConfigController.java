@@ -1,14 +1,15 @@
 package com.chestnut.system.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
+import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -19,10 +20,8 @@ import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysConfigService;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,6 +43,7 @@ public class SysConfigController extends BaseRestController {
 	/**
 	 * 获取参数配置列表
 	 */
+	@ExcelExportable(SysConfig.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigList)
 	@GetMapping("/list")
 	public R<?> list(SysConfig config) {
@@ -58,19 +58,6 @@ public class SysConfigController extends BaseRestController {
 		});
 		I18nUtils.replaceI18nFields(page.getRecords());
 		return bindDataTable(page);
-	}
-
-	@Log(title = "参数管理", businessType = BusinessType.EXPORT)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigExport)
-	@PostMapping("/export")
-	public void export(HttpServletResponse response, SysConfig config) {
-		LambdaQueryWrapper<SysConfig> q = new LambdaQueryWrapper<SysConfig>()
-				.like(StringUtils.isNotEmpty(config.getConfigKey()), SysConfig::getConfigKey, config.getConfigKey())
-				.like(StringUtils.isNotEmpty(config.getConfigName()), SysConfig::getConfigName, config.getConfigName())
-				.orderByDesc(SysConfig::getConfigKey);
-		List<SysConfig> list = configService.list(q);
-		I18nUtils.replaceI18nFields(list);
-		this.exportExcel(list, SysConfig.class, response);
 	}
 
 	/**

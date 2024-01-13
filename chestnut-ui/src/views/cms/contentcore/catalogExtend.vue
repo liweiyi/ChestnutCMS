@@ -127,7 +127,7 @@
 </template>
 <script>
 import { getCatalogExtends, saveCatalogExtends, applyConfigPropsToChildren } from "@/api/contentcore/catalog";
-import { getHotWordGroupOptions } from "@/api/word/hotWord";
+import { getHotWordGroupOptions } from "@/api/contentcore/word";
 import { listXModelOptions } from "@/api/contentcore/exmodel";
 import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
 

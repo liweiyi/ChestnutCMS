@@ -141,7 +141,7 @@ public class InternalUrlUtils {
 				log.warn("InternalUrl parse failed: " + iurl, e);
 			}
 			// end
-			html.append(contentHtml.substring(index, matcher.start())).append(tagStr);
+			html.append(contentHtml, index, matcher.start()).append(tagStr);
 			index = matcher.end();
 		}
 		html.append(contentHtml.substring(index));

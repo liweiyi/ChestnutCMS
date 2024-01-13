@@ -1,20 +1,19 @@
 package com.chestnut.common.db.domain;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ColumnWidth;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.chestnut.common.utils.poi.converter.LocalDateTimeConverter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.chestnut.common.utils.poi.converter.LocalDateTimeConverter;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Entity基类
@@ -23,33 +22,31 @@ import lombok.Setter;
 @Setter
 public abstract class BaseEntity implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-
 	public static final String Field_createTime = "create_time";
 
 	public static final String Field_updateTime = "update_time";
 
-	/** 创建者 */
+	@ExcelProperty("创建者")
 	@TableField("create_by")
 	private String createBy;
 
 	@ColumnWidth(16)
-	@ExcelProperty(converter = LocalDateTimeConverter.class)
+	@ExcelProperty(value = "创建时间", converter = LocalDateTimeConverter.class)
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@TableField(Field_createTime)
 	private LocalDateTime createTime;
 
-	/** 更新者 */
+	@ExcelProperty("更新者")
 	@TableField("update_by")
 	private String updateBy;
 
 	@ColumnWidth(16)
-	@ExcelProperty(converter = LocalDateTimeConverter.class)
+	@ExcelProperty(value = "更新时间", converter = LocalDateTimeConverter.class)
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@TableField(Field_updateTime)
 	private LocalDateTime updateTime;
 
-	/** 备注 */
+	@ExcelProperty("备注")
 	private String remark;
 
 	@TableField(exist = false)

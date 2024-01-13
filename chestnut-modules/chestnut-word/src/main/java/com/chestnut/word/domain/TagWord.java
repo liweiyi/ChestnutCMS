@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.db.domain.BaseEntity;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,6 +25,11 @@ public class TagWord extends BaseEntity {
 
     @TableId(value = "word_id", type = IdType.INPUT)
     private Long wordId;
+
+    /**
+     * 所有者ID（冗余字段，与TagWordGroup.ownerId同步）
+     */
+    private String owner;
 
     /**
      * 所属分组ID

@@ -12,6 +12,7 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -47,7 +48,6 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -112,9 +112,9 @@ public class ContentController extends BaseRestController {
 		} else {
 			q.eq(CmsContent::getCatalogId, catalogId);
 		}
-		if (pr.getSort().isSorted()) {
-			pr.getSort().forEach(order -> {
-				SFunction<CmsContent, ?> sfunc = CmsContent.getSFunction(order.getProperty());
+		if (!pr.getSorts().isEmpty()) {
+			pr.getSorts().forEach(order -> {
+				SFunction<CmsContent, ?> sfunc = CmsContent.getSFunction(order.getColumn());
 				if (Objects.nonNull(sfunc)) {
 					q.orderBy(true, order.getDirection() == Direction.ASC, sfunc);
 				}

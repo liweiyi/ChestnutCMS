@@ -102,7 +102,7 @@ public class SysLoginService {
 		return StpAdminUtil.getTokenValue();
 	}
 
-	private LoginUser createLoginUser(SysUser user) {
+	public LoginUser createLoginUser(SysUser user) {
 		LoginUser loginUser = new LoginUser();
 		loginUser.setUserId(user.getUserId());
 		loginUser.setDeptId(user.getDeptId());

@@ -391,9 +391,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('system/dict/data/export', {
+      this.exportExcel('system/dict/data/list', {
         ...this.queryParams
-      }, `data_${new Date().getTime()}.xlsx`)
+      }, `dict_data_${this.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
     }
   }
 };

@@ -56,6 +56,8 @@ public class SiteThemeService {
 
     private final IContentService contentService;
 
+    private final IContentRelaService contentRelaService;
+
     private final List<ICoreDataHandler> contentCoreHandlers;
 
     public AsyncTask importSiteTheme(CmsSite site, final File zipFile, LoginUser operator) throws IOException {
@@ -67,7 +69,7 @@ public class SiteThemeService {
                 SiteImportContext context = new SiteImportContext(site);
                 context.setOperator(operator.getUsername());
                 // 解压导入zip包
-                AsyncTaskManager.setTaskProgressInfo(10, "正在解压");
+                AsyncTaskManager.setTaskTenPercentProgressInfo("正在解压");
                 String destDir = SiteUtils.getSiteResourceRoot(site) + SiteImportContext.ImportDir;
                 ZipUtil.unzip(zipFile, new File(destDir));
                 try {
@@ -75,7 +77,7 @@ public class SiteThemeService {
                     CmsSite sourceSite = JacksonUtils.from(files.get(0), CmsSite.class);
                     context.setSourceSite(sourceSite);
                     // 导入站点扩展属性
-                    AsyncTaskManager.setTaskProgressInfo(5, "正在导入站点扩展属性数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入站点扩展属性数据");
                     files = context.readDataFiles(CmsSiteProperty.TABLE_NAME);
                     files.forEach(file -> {
                         List<CmsSiteProperty> list = JacksonUtils.fromList(file, CmsSiteProperty.class);
@@ -93,7 +95,7 @@ public class SiteThemeService {
                         });
                     });
                     // 导入素材数据
-                    AsyncTaskManager.setTaskProgressInfo(20, "正在导入资源数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入资源数据");
                     files = context.readDataFiles(CmsResource.TABLE_NAME);
                     files.forEach(file -> {
                         List<CmsResource> list = JacksonUtils.fromList(file, CmsResource.class);
@@ -159,7 +161,7 @@ public class SiteThemeService {
                             }
                         });
                     });
-                    AsyncTaskManager.setTaskProgressInfo(30, "正在导入发布通道数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入发布通道数据");
                     files = context.readDataFiles(CmsPublishPipe.TABLE_NAME);
                     files.forEach(file -> {
                         List<CmsPublishPipe> list = JacksonUtils.fromList(file, CmsPublishPipe.class);
@@ -175,7 +177,7 @@ public class SiteThemeService {
                             }
                         }
                     });
-                    AsyncTaskManager.setTaskProgressInfo(50, "正在导入页面部件数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入页面部件数据");
                     files = context.readDataFiles(CmsPageWidget.TABLE_NAME);
                     files.forEach(file -> {
                         List<CmsPageWidget> list = JacksonUtils.fromList(file, CmsPageWidget.class);
@@ -205,7 +207,7 @@ public class SiteThemeService {
                     });
                     // 导入内容数据
                     List<CmsContent> linkContents = new ArrayList<>();
-                    AsyncTaskManager.setTaskProgressInfo(50, "正在导入内容数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入内容数据");
                     files = context.readDataFiles(CmsContent.TABLE_NAME);
                     files.forEach(file -> {
                         List<CmsContent> list = JacksonUtils.fromList(file, CmsContent.class);
@@ -236,6 +238,27 @@ public class SiteThemeService {
                             }
                         });
                     });
+                    // 导入关联内容数据
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入关联内容数据");
+                    files = context.readDataFiles(CmsContentRela.TABLE_NAME);
+                    files.forEach(file -> {
+                        List<CmsContentRela> list = JacksonUtils.fromList(file, CmsContentRela.class);
+                        list.forEach(content -> {
+                            Long sourceContentId = content.getContentId();
+                            Long sourceRelaContentId = content.getRelaContentId();
+                            try {
+                                content.setRelaId(IdUtils.getSnowflakeId());
+                                content.setSiteId(site.getSiteId());
+                                content.setContentId(context.getContentIdMap().get(sourceContentId));
+                                content.setRelaContentId(context.getContentIdMap().get(sourceRelaContentId));
+                                content.createBy(operator.getUsername());
+                                contentRelaService.save(content);
+                            } catch (Exception e) {
+                                this.addErrorMessage("导入关联内容数据失败：" + sourceContentId);
+                                e.printStackTrace();
+                            }
+                        });
+                    });
                     // 处理链接栏目的内部链接地址
                     linkCatalogs.forEach(catalog -> {
                         String iurl = context.dealInternalUrl(catalog.getRedirectUrl());
@@ -251,6 +274,9 @@ public class SiteThemeService {
                     contentCoreHandlers.forEach(h -> h.onSiteImport(context));
                     // 复制文件
                     context.copySiteFiles();
+                } catch (Exception e) {
+                    AsyncTaskManager.addErrMessage(e.getMessage());
+                    e.printStackTrace();
                 } finally {
                     FileUtils.deleteDirectory(new File(destDir));
                     this.setProgressInfo(100, "导入完成");
@@ -274,7 +300,7 @@ public class SiteThemeService {
                 SiteExportContext context = new SiteExportContext(site);
                 // cms_site
                 {
-                    AsyncTaskManager.setTaskProgressInfo(0, "正在导出站点数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出站点数据");
                     String json = JacksonUtils.to(site);
                     context.saveData(CmsSite.TABLE_NAME, json);
                     // 记录资源引用
@@ -285,7 +311,7 @@ public class SiteThemeService {
                 }
                 // cms_site_property
                 {
-                    AsyncTaskManager.setTaskProgressInfo(5, "正在导出站点扩展属性数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出站点扩展属性数据");
                     List<CmsSiteProperty> list = sitePropertyService.lambdaQuery()
                             .eq(CmsSiteProperty::getSiteId, site.getSiteId())
                             .list();
@@ -295,7 +321,7 @@ public class SiteThemeService {
                 List<String> catalogPaths = new ArrayList<>();
                 // cms_catalog
                 {
-                    AsyncTaskManager.setTaskProgressInfo(30, "正在导出栏目数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出栏目数据");
                     List<CmsCatalog> list = catalogService.lambdaQuery()
                             .eq(CmsCatalog::getSiteId, site.getSiteId())
                             .orderByAsc(CmsCatalog::getAncestors) // 必须保证顺序
@@ -312,7 +338,7 @@ public class SiteThemeService {
                 }
                 // cms_page_widget
                 {
-                    AsyncTaskManager.setTaskProgressInfo(40, "正在导出页面部件数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出页面部件数据");
                     List<CmsPageWidget> list = pageWidgetService.lambdaQuery()
                             .eq(CmsPageWidget::getSiteId, site.getSiteId())
                             .list();
@@ -321,7 +347,7 @@ public class SiteThemeService {
                 }
                 // cms_content
                 {
-                    AsyncTaskManager.setTaskProgressInfo(40, "正在导出内容数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出内容数据");
                     long offset = 0;
                     int pageSize = 200;
                     int fileIndex = 1;
@@ -349,9 +375,33 @@ public class SiteThemeService {
                         }
                     }
                 }
+                // cms_content_rela
+                {
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出关联内容数据");
+                    long offset = 0;
+                    int pageSize = 200;
+                    int fileIndex = 1;
+                    while (true) {
+                        LambdaQueryWrapper<CmsContentRela> q = new LambdaQueryWrapper<CmsContentRela>()
+                                .eq(CmsContentRela::getSiteId, site.getSiteId())
+                                .gt(CmsContentRela::getRelaId, offset)
+                                .orderByAsc(CmsContentRela::getRelaId);
+                        Page<CmsContentRela> page = contentRelaService.page(new Page<>(1, pageSize, false), q);
+                        if (page.getRecords().size() > 0) {
+                            context.saveData(CmsContentRela.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
+                            offset = page.getRecords().get(page.getRecords().size() - 1).getRelaId();
+                            fileIndex++;
+                            if (page.getRecords().size() < pageSize) {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
                 // 导出关联资源cms_resource
                 {
-                    AsyncTaskManager.setTaskProgressInfo(40, "正在导出素材数据");
+                    AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出素材数据");
                     long offset = 0;
                     int pageSize = 200;
                     int fileIndex = 1;
@@ -374,7 +424,7 @@ public class SiteThemeService {
                     }
                 }
                 // cms_publishpipe
-                AsyncTaskManager.setTaskProgressInfo(20, "正在导出发布通道数据");
+                AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出发布通道数据");
                 List<CmsPublishPipe> publishPipes = publishPipeService.lambdaQuery()
                         .eq(CmsPublishPipe::getSiteId, site.getSiteId())
                         .list();

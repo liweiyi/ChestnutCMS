@@ -608,6 +608,11 @@ export default {
       PasswordRetryLockSecondsTip: "Maximum of 100 days.",
       AddTitle: "Add Security Configuration",
       EditTitle: "Edit Security Configuration",
+    },
+    WeChat: {
+      Backend: "Backend",
+      AddTitle: "Add WeChat Configuration",
+      EditTitle: "Edit WeChat Configuration",
     }
   },
   Monitor: {
@@ -1296,6 +1301,7 @@ export default {
       Directory: "Directory",
       UploadTitle: "Upload file",
       UploadTip: "Drag the file here or click to upload.",
+      ResourceRoot: "Site Resource Root",
       RuleTips: {
         FileName: "Cannot be empty and only [A-Za-z0-9_]+"
       }

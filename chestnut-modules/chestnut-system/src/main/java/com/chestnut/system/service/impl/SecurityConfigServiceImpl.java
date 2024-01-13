@@ -1,19 +1,10 @@
 package com.chestnut.system.service.impl;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-
-import com.chestnut.common.utils.IdUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.exception.SysErrorCode;
@@ -24,10 +15,17 @@ import com.chestnut.system.fixed.dict.PasswordSensitive;
 import com.chestnut.system.mapper.SysSecurityConfigMapper;
 import com.chestnut.system.security.ISecurityUser;
 import com.chestnut.system.service.ISecurityConfigService;
-
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -42,15 +40,9 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 	
 	@Override
 	public SysSecurityConfig getSecurityConfig() {
-		SysSecurityConfig config = this.redisCache.getCacheObject(CACHE_KEY_CONFIG);
-		if (Objects.isNull(config)) {
-			config = this.getOne(new LambdaQueryWrapper<SysSecurityConfig>().eq(SysSecurityConfig::getStatus,
-					EnableOrDisable.ENABLE));
-			if (Objects.nonNull(config)) {
-				this.redisCache.setCacheObject(CACHE_KEY_CONFIG, config);
-			}
-		}
-		return config;
+		return this.redisCache.getCacheObject(CACHE_KEY_CONFIG, () ->
+			lambdaQuery().eq(SysSecurityConfig::getStatus, EnableOrDisable.ENABLE).one()
+		);
 	}
 
 	@Override
@@ -85,10 +77,9 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 		Assert.notNull(config, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(configId));
 
 		if (!config.isEnable()) {
-			// 未启用的安全规则，先禁用其他规则再设置规则开启
-			List<SysSecurityConfig> list = this.list(new LambdaQueryWrapper<SysSecurityConfig>().ne(SysSecurityConfig::getConfigId, configId));
-			list.forEach(c -> c.setStatus(EnableOrDisable.DISABLE));
-			this.updateBatchById(list);
+			this.lambdaUpdate().set(SysSecurityConfig::getStatus, EnableOrDisable.DISABLE)
+					.eq(SysSecurityConfig::getStatus, EnableOrDisable.ENABLE)
+					.update();
 		}
 		config.setStatus(config.isEnable() ? EnableOrDisable.DISABLE : EnableOrDisable.ENABLE);
 		this.updateById(config);
@@ -176,13 +167,11 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 
 	@Getter
 	@Setter
+	@NoArgsConstructor
 	static class LoginPwdRetry {
 		private String uid;
 		private Integer num = 0;
 		private LocalDate date = LocalDate.now();
-
-		public LoginPwdRetry() {
-		}
 
 		public LoginPwdRetry(String uid) {
 			this.uid = uid;

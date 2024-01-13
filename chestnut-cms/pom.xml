@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.chestnut</groupId>
 		<artifactId>chestnut</artifactId>
-		<version>1.3.24</version>
+		<version>1.3.25</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -28,7 +28,7 @@
 		<module>chestnut-cms-stat</module>
         <module>chestnut-cms-customform</module>
         <module>chestnut-cms-member</module>
-        <module>chestnut-module-seo</module>
+        <module>chestnut-cms-seo</module>
     </modules>
 	
 	<properties>

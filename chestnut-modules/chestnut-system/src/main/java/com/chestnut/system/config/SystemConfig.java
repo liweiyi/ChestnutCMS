@@ -1,21 +1,19 @@
 package com.chestnut.system.config;
 
-import java.io.FileNotFoundException;
-
+import com.chestnut.common.utils.SpringUtils;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.file.FileExUtils;
+import com.chestnut.system.SysConstants;
+import com.chestnut.system.config.properties.SysProperties;
+import com.chestnut.system.intercepter.DemoModeInterceptor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.chestnut.common.utils.SpringUtils;
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.common.utils.file.FileExUtils;
-import com.chestnut.system.SysConstants;
-import com.chestnut.system.config.properties.SysProperties;
-import com.chestnut.system.intercepter.DemoModeIntercepter;
-
-import lombok.extern.slf4j.Slf4j;
+import java.io.FileNotFoundException;
 
 @Slf4j
 @Configuration
@@ -69,7 +67,7 @@ public class SystemConfig implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		// 演示模式
 		if (properties.isDemoMode()) {
-			registry.addInterceptor(new DemoModeIntercepter()).addPathPatterns("/**").excludePathPatterns("/login",
+			registry.addInterceptor(new DemoModeInterceptor()).addPathPatterns("/**").excludePathPatterns("/login",
 					"/logout", "/captchaImage");
 		}
 	}

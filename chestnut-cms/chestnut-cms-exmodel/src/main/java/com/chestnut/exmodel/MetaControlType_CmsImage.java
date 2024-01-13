@@ -2,6 +2,7 @@ package com.chestnut.exmodel;
 
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.xmodel.core.IMetaControlType;
+import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -28,15 +29,17 @@ public class MetaControlType_CmsImage implements IMetaControlType {
     }
 
     @Override
-    public ParseResult parseFieldValue(Object value) {
+    public void parseFieldValue(XModelFieldDataDTO fieldData) {
+        Object value = fieldData.getValue();
         if (Objects.isNull(value)) {
-            return null;
+            return;
         }
         String imagePath = value.toString();
         if (InternalUrlUtils.isInternalUrl(imagePath)) {
             String previewUrl = InternalUrlUtils.getActualPreviewUrl(imagePath);
-            return new ParseResult(imagePath, previewUrl);
+            fieldData.setValueSrc(previewUrl);
+        } else {
+            fieldData.setValueSrc(imagePath);
         }
-        return new ParseResult(imagePath, imagePath);
     }
 }

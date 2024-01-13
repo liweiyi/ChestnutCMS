@@ -7,16 +7,16 @@ public interface ErrorCode {
 	/**
 	 * 错误信息编码，对应国际化文件key
 	 */
-	public String value();
+	String value();
 	
 	/**
 	 * 错误码
 	 */
-	default public int code() {
+	default int code() {
 		return R.FAIL;
 	}
 
-	default public GlobalException exception(Object... args) {
+	default GlobalException exception(Object... args) {
 		return new GlobalException(this, args);
 	}
 }

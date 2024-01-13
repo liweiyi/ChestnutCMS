@@ -141,7 +141,7 @@ import CMSHotWordGroupTree from '@/views/word/hotWordGroupTree';
 import CMSLogoView from '@/views/cms/components/LogoView';
 
 export default {
-  name: "CMSHotWord",
+  name: "HotWord",
   components: {
     "cms-logo-view": CMSLogoView,
     'cms-hotword-group-tree': CMSHotWordGroupTree

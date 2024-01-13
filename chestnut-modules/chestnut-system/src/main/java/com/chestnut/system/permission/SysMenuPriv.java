@@ -8,105 +8,107 @@ package com.chestnut.system.permission;
  */
 public interface SysMenuPriv {
 	
-	public String MonitorCacheList = "monitor:cache:view";
+	String MonitorCacheList = "monitor:cache:view";
 	
-	public String MonitorServerList = "monitor:server:view";
+	String MonitorServerList = "monitor:server:view";
 	
-	public String MonitorOnlineList = "monitor:online:view";
+	String MonitorOnlineList = "monitor:online:view";
 	
-	public String MonitorOnlineForceLogout = "monitor:online:forceLogout";
+	String MonitorOnlineForceLogout = "monitor:online:forceLogout";
 	
-	public String MonitorLogsView = "monitor:logs:view";
+	String MonitorLogsView = "monitor:logs:view";
 	
-	public String AsyncTaskList = "monitor:async:view";
+	String AsyncTaskList = "monitor:async:view";
 	
-	public String GroovyExec = "tool:groovy:exec";
+	String GroovyExec = "tool:groovy:exec";
 	
-	public String SysConfigList = "system:config:view";
+	String SysConfigList = "system:config:view";
 
-	public String SysConfigExport = "system:config:export";
+	String SysConfigExport = "system:config:export";
 
-	public String SysConfigAdd = "system:config:add";
+	String SysConfigAdd = "system:config:add";
 
-	public String SysConfigEdit = "system:config:edit";
+	String SysConfigEdit = "system:config:edit";
 
-	public String SysConfigRemove = "system:config:remove";
+	String SysConfigRemove = "system:config:remove";
 
-	public String SysDeptList = "system:dept:view";
+	String SysDeptList = "system:dept:view";
 
-	public String SysDeptAdd = "system:dept:add";
+	String SysDeptAdd = "system:dept:add";
 
-	public String SysDeptEdit = "system:dept:edit";
+	String SysDeptEdit = "system:dept:edit";
 
-	public String SysDeptRemove = "system:dept:remove";
+	String SysDeptRemove = "system:dept:remove";
 
-	public String SysDictList = "system:dict:view";
+	String SysDictList = "system:dict:view";
 
-	public String SysDictExport = "system:dict:export";
+	String SysDictExport = "system:dict:export";
 
-	public String SysDictAdd = "system:dict:add";
+	String SysDictAdd = "system:dict:add";
 
-	public String SysDictEdit = "system:dict:edit";
+	String SysDictEdit = "system:dict:edit";
 
-	public String SysDictRemove = "system:dict:remove";
+	String SysDictRemove = "system:dict:remove";
 
-	public String SysI18NDictList = "system:i18ndict:view";
+	String SysI18NDictList = "system:i18ndict:view";
 
-	public String SysI18NDictExport = "system:i18ndict:export";
+	String SysI18NDictExport = "system:i18ndict:export";
 
-	public String SysI18NDictAdd = "system:i18ndict:add";
+	String SysI18NDictAdd = "system:i18ndict:add";
 
-	public String SysI18NDictEdit = "system:i18ndict:edit";
+	String SysI18NDictEdit = "system:i18ndict:edit";
 
-	public String SysI18NDictRemove = "system:i18ndict:remove";
+	String SysI18NDictRemove = "system:i18ndict:remove";
 	
-	public String SysMenuList = "system:menu:view";
+	String SysMenuList = "system:menu:view";
 	
-	public String SysMenuAdd = "system:menu:add";
+	String SysMenuAdd = "system:menu:add";
 	
-	public String SysMenuEdit = "system:menu:edit";
+	String SysMenuEdit = "system:menu:edit";
 	
-	public String SysMenuRemove = "system:menu:remove";
+	String SysMenuRemove = "system:menu:remove";
 	
-	public String SysNoticeList = "system:notice:view";
+	String SysNoticeList = "system:notice:view";
 	
-	public String SysNoticeAdd = "system:notice:add";
+	String SysNoticeAdd = "system:notice:add";
 	
-	public String SysNoticeEdit = "system:notice:edit";
+	String SysNoticeEdit = "system:notice:edit";
 	
-	public String SysNoticeRemove = "system:notice:remove";
+	String SysNoticeRemove = "system:notice:remove";
 	
-	public String SysPostList = "system:post:view";
+	String SysPostList = "system:post:view";
 	
-	public String SysPostExport = "system:post:export";
+	String SysPostExport = "system:post:export";
 	
-	public String SysPostAdd = "system:post:add";
+	String SysPostAdd = "system:post:add";
 	
-	public String SysPostEdit = "system:post:edit";
+	String SysPostEdit = "system:post:edit";
 	
-	public String SysPostRemove = "system:post:remove";
+	String SysPostRemove = "system:post:remove";
 	
-	public String SysRoleList = "system:role:view";
+	String SysRoleList = "system:role:view";
 	
-	public String SysRoleExport = "system:role:export";
+	String SysRoleExport = "system:role:export";
 	
-	public String SysRoleAdd = "system:role:add";
+	String SysRoleAdd = "system:role:add";
 	
-	public String SysRoleEdit = "system:role:edit";
+	String SysRoleEdit = "system:role:edit";
 	
-	public String SysRoleRemove = "system:role:remove";
+	String SysRoleRemove = "system:role:remove";
 	
-	public String SysSecurityList = "system:security:view";
+	String SysSecurityList = "system:security:view";
 	
-	public String SysUserList = "system:user:view";
+	String SysUserList = "system:user:view";
 	
-	public String SysUserExport = "system:user:export";
+	String SysUserExport = "system:user:export";
 	
-	public String SysUserAdd = "system:user:add";
+	String SysUserAdd = "system:user:add";
 	
-	public String SysUserEdit = "system:user:edit";
+	String SysUserEdit = "system:user:edit";
 	
-	public String SysUserRemove = "system:user:remove";
+	String SysUserRemove = "system:user:remove";
 	
-	public String SysUserResetPwd = "system:user:resetPwd";
+	String SysUserResetPwd = "system:user:resetPwd";
+
+	String SysWeChatConfigView = "system:wechat:view";
 }

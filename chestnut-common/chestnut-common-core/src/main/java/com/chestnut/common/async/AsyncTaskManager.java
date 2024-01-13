@@ -158,6 +158,16 @@ public class AsyncTaskManager {
 		}
     }
 
+	/**
+	 * 设置进度条数据，进度增加剩余进度的十分之一
+	 */
+	public static void setTaskTenPercentProgressInfo(String msg) {
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			task.setProgressInfo(task.getPercent() + (100 - task.getPercent()) / 10, msg);
+		}
+	}
+
 	public static int getTaskProgressPercent() {
 		AsyncTask task = CURRENT.get();
 		if (Objects.nonNull(task)) {

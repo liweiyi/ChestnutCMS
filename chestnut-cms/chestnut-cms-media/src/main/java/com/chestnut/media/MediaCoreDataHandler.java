@@ -35,9 +35,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         // cms_audio
-        int percent = AsyncTaskManager.getTaskProgressPercent();
-        AsyncTaskManager.setTaskProgressInfo( percent + (100 - percent) / 10,
-                "正在导出音频内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出音频内容数据");
         int pageSize = 200;
         long offset = 0;
         int fileIndex = 1;
@@ -59,9 +57,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
             }
         }
         // cms_video
-        percent = AsyncTaskManager.getTaskProgressPercent();
-        AsyncTaskManager.setTaskProgressInfo( percent + (100 - percent) / 10,
-                "正在导出视频频内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出视频频内容数据");
         offset = 0;
         fileIndex = 1;
         while (true) {
@@ -86,9 +82,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteImport(SiteImportContext context) {
         // cms_audio
-        int percent = AsyncTaskManager.getTaskProgressPercent();
-        AsyncTaskManager.setTaskProgressInfo( percent + (100 - percent) / 10,
-                "正在导入音频内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入音频内容数据");
         List<File> files = context.readDataFiles(CmsAudio.TABLE_NAME);
         files.forEach(f -> {
             List<CmsAudio> list = JacksonUtils.fromList(f, CmsAudio.class);
@@ -108,9 +102,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
             }
         });
         // cms_video
-        percent = AsyncTaskManager.getTaskProgressPercent();
-        AsyncTaskManager.setTaskProgressInfo( percent + (100 - percent) / 10,
-                "正在导入视频内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入视频内容数据");
         files = context.readDataFiles(CmsVideo.TABLE_NAME);
         files.forEach(f -> {
             List<CmsVideo> list = JacksonUtils.fromList(f, CmsVideo.class);

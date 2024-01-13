@@ -73,13 +73,31 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	Set<String> getInheritedPermissionKeys(String ownerType, String owner, String permissionType);
 
 	/**
+	 * 变更指定类型权限数据
+	 *
+	 * @param ownerType 权限所有者类型
+	 * @param owner 权限所有者唯一标识
+	 * @param permissionType 权限类型
+	 * @param permissionJson 权限序列化值
+	 */
+    SysPermission setPermissionByType(String ownerType, String owner, String permissionType, String permissionJson);
+
+	/**
+	 * 用户授权变更，更新Token权限
+	 *
+	 * @param user 登录用户Token
+	 * @param permissionType 权限类型
+	 * @param permissionJson 权限序列化值
+	 */
+	SysPermission grantUserPermission(LoginUser user, String permissionType, String permissionJson);
+
+	/**
 	 * 授权
 	 *
 	 * @param ownerType 权限所有者类型
 	 * @param owner 权限所有者唯一标识
 	 * @param permissionType 权限类型
 	 * @param permissionJson 权限序列化值
-	 * @return
 	 */
 	SysPermission grantPermission(String ownerType, String owner, String permissionType, String permissionJson);
 }

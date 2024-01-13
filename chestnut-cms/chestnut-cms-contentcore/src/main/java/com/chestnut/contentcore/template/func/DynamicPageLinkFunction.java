@@ -55,14 +55,12 @@ public class DynamicPageLinkFunction extends AbstractFunc  {
 
 		String path = dynamicPageType.getRequestPath();
 		if (context.isPreview()) {
-			path += "?preview=true&sid=" + FreeMarkerUtils.evalLongVariable(Environment.getCurrentEnvironment(), "Site.siteId")
-					+ "&pp=" + context.getPublishPipeCode();
+			path += "?preview=true";
 			path = TemplateUtils.appendTokenParameter(path, Environment.getCurrentEnvironment());
-		} else {
-			if (!ignoreBaseArg) {
-				path += "?sid=" + FreeMarkerUtils.evalLongVariable(Environment.getCurrentEnvironment(), "Site.siteId")
-						+ "&pp=" + context.getPublishPipeCode();
-			}
+		}
+		if (!ignoreBaseArg) {
+			path += "?sid=" + FreeMarkerUtils.evalLongVariable(Environment.getCurrentEnvironment(), "Site.siteId")
+					+ "&pp=" + context.getPublishPipeCode();
 		}
 		return path;
 	}
@@ -71,7 +69,7 @@ public class DynamicPageLinkFunction extends AbstractFunc  {
 	public List<FuncArg> getFuncArgs() {
 		return List.of(
 				new FuncArg("动态页面类型", FuncArgType.String, true, null),
-				new FuncArg("非预览模式忽略sid/pp参数", FuncArgType.String, false, "默认：true")
+				new FuncArg("忽略sid/pp参数", FuncArgType.String, false, "默认：true")
 		);
 	}
 }

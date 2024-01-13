@@ -8,6 +8,8 @@ import lombok.Setter;
 
 /**
  * 扩展模型数据默认表 [ExtendModelData]
+ *
+ * TODO 2.x版本给扩展模型数据表添加唯一主键ID
  */
 @Getter
 @Setter

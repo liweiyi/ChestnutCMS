@@ -14,7 +14,6 @@ import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.dto.*;
 import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.domain.vo.MemberMenuVO;
-import com.chestnut.member.fixed.config.MemberResourcePrefix;
 import com.chestnut.member.security.MemberLoginService;
 import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.security.StpMemberUtil;
@@ -29,10 +28,8 @@ import com.chestnut.system.service.ISecurityConfigService;
 import com.chestnut.system.service.ISysLogininforService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -40,9 +37,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.random.RandomGenerator;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -164,7 +160,8 @@ public class MemberLoginApiController extends BaseRestController {
 			message.setFrom(mailSendUser);
 			message.setTo(email);
 			message.setSubject("会员注册验证");
-			String code = String.valueOf(RandomUtils.nextInt(100000, 999999));
+
+			String code = String.valueOf(RandomGenerator.getDefault().nextInt(100000, 999999));
 			message.setText("验证码：" + code);
 			javaMailSender.send(message);
 
@@ -190,7 +187,7 @@ public class MemberLoginApiController extends BaseRestController {
 			message.setFrom(mailSendUser);
 			message.setTo(member.getEmail());
 			message.setSubject("邮箱绑定验证");
-			String code = String.valueOf(RandomUtils.nextInt(100000, 999999));
+			String code = String.valueOf(RandomGenerator.getDefault().nextInt(100000, 999999));
 			message.setText("验证码：" + code);
 			javaMailSender.send(message);
 

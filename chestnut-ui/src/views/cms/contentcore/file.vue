@@ -3,6 +3,13 @@
     <el-container>
       <el-aside width="220">
         <el-scrollbar :style="treeSideStyle">
+          <div class="treeRoot">
+            {{ $t("CMS.File.ResourceRoot") }}
+            <el-tooltip class="item" effect="dark" :content="resourceRoot" placement="top-start">
+              <svg-icon icon-class="question" />
+            </el-tooltip>
+          </div>
+          <div class="divider"></div>
           <el-tree :data="directoryTreeData" 
                   :props="defaultProps" 
                   :expand-on-click-node="false"
@@ -186,6 +193,7 @@ export default {
         label: "label"
       },
       // 目录树
+      resourceRoot: "",
       directoryTreeData: [],
       selectedDirectory: "/",
       pathArr: [],
@@ -269,7 +277,8 @@ export default {
     loadDirectory() {
       this.treeLoading = true;
       getDirectoryTreeData().then(response => {
-        this.directoryTreeData = response.data;
+        this.directoryTreeData = response.data.tree;
+        this.resourceRoot = response.data.resourceRoot
         this.treeLoading = false;
       });
     },
@@ -408,5 +417,18 @@ export default {
 .cms-file .path-spliter {
   display: inline-block;
   padding: 0 5px;
+}
+.cms-file .divider {
+  background-color: #DCDFE6;
+  position: relative;
+  display: block;
+  height: 1px;
+  width: 100%;
+  margin: 5px 0;
+}
+.cms-file .treeRoot {
+  padding: 0 10px;
+  color: #515a6e;
+  font-size: 14px;
 }
 </style>

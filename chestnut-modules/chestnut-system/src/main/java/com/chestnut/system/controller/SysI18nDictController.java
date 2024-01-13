@@ -7,8 +7,10 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
+import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.config.I18nMessageSource;
@@ -19,10 +21,8 @@ import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.service.ISysDictTypeService;
 import com.chestnut.system.service.ISysI18nDictService;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,8 +48,9 @@ public class SysI18nDictController extends BaseRestController {
 	
 	private final I18nMessageSource messageSource;
 
+	@ExcelExportable(SysI18nDict.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictList)
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> list(SysI18nDict dict) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysI18nDict> q = new LambdaQueryWrapper<SysI18nDict>()
@@ -59,19 +60,6 @@ public class SysI18nDictController extends BaseRestController {
 				.orderByDesc(SysI18nDict::getLangTag);
 		Page<SysI18nDict> page = i18nDictService.page(new Page<>(pr.getPageNumber(), pr.getPageSize()), q);
 		return bindDataTable(page);
-	}
-
-	@Log(title = "国际化管理", businessType = BusinessType.EXPORT)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictExport)
-	@PostMapping("/export")
-	public void export(HttpServletResponse response, SysI18nDict dict) {
-		LambdaQueryWrapper<SysI18nDict> q = new LambdaQueryWrapper<SysI18nDict>()
-				.like(StringUtils.isNotEmpty(dict.getLangTag()), SysI18nDict::getLangTag, dict.getLangTag())
-				.like(StringUtils.isNotEmpty(dict.getLangKey()), SysI18nDict::getLangKey, dict.getLangKey())
-				.like(StringUtils.isNotEmpty(dict.getLangValue()), SysI18nDict::getLangValue, dict.getLangValue())
-				.orderByDesc(SysI18nDict::getLangTag);
-		List<SysI18nDict> list = i18nDictService.list(q);
-		this.exportExcel(list, SysI18nDict.class, response);
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictList)

@@ -1,31 +1,27 @@
 package com.chestnut.common.utils.file;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Map.Entry;
-
+import com.chestnut.common.utils.HttpUtils;
+import com.chestnut.common.utils.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.util.HtmlUtils;
 
-import com.chestnut.common.utils.HttpUtils;
-import com.chestnut.common.utils.StringUtils;
+import java.io.File;
+import java.io.FileFilter;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * 文件处理工具类
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
-
+@Slf4j
 public class FileExUtils {
 
-	private static Map<String, String> EXT_MAP = new HashMap<>();
+	private static final Map<String, String> EXT_MAP = new HashMap<>();
 
 	static {
 		EXT_MAP.put("FFD8FF", "jpg");
@@ -67,7 +63,6 @@ public class FileExUtils {
 		EXT_MAP.put("2E7261FD  ", "ram");
 		EXT_MAP.put("000001B3  ", "mpg");
 		EXT_MAP.put("6D6F6F76  ", "mov");
-		EXT_MAP.put("6D6F6F76  ", "mov");
 		EXT_MAP.put("3026B2758E66CF11  ", "asf");
 		EXT_MAP.put("4d546864000000060001  ", "mid");
 		EXT_MAP.put("4d5a9000030000000400  ", "exe");
@@ -76,7 +71,6 @@ public class FileExUtils {
 		EXT_MAP.put("494e5345525420494e54", "sql");
 		EXT_MAP.put("7061636b616765207765  ", "java");
 		EXT_MAP.put("406563686f206f66660d  ", "bat");
-		EXT_MAP.put("7061636b616765207765  ", "java");
 		EXT_MAP.put("cafebabe0000002e0041  ", "class");
 		EXT_MAP.put("6c6f67346a2e726f6f74  ", "properties");
 		EXT_MAP.put("49545346030000006000  ", "chm");
@@ -88,16 +82,15 @@ public class FileExUtils {
 
 	/**
 	 * 从字节流获取文件类型后缀名
-	 * 
-	 * @param bytes
-	 * @return
+	 *
+	 * @param bytes 文件字节流数组
+	 * @return 文件后缀名
 	 */
 	public static String getExtension(byte[] bytes) {
 		if (bytes.length > 20) {
 			byte[] first20 = Arrays.copyOf(bytes, 20);
 			String hexStr = Hex.encodeHexString(first20, false);
-			for (Iterator<Entry<String, String>> iterator = EXT_MAP.entrySet().iterator(); iterator.hasNext();) {
-				Entry<String, String> e = iterator.next();
+			for (Entry<String, String> e : EXT_MAP.entrySet()) {
 				if (hexStr.startsWith(e.getKey())) {
 					return e.getValue();
 				}
@@ -108,18 +101,18 @@ public class FileExUtils {
 
 	/**
 	 * 读取指定字符串的后缀名
-	 * 
-	 * @param path
-	 * @return
+	 *
+	 * @param path 文路径
+	 * @return 后缀名
 	 */
 	public static String getExtension(String path) {
-		if (path.indexOf("://") > -1) {
+		if (path.contains("://")) {
 			path = HtmlUtils.htmlUnescape(path);
 			String queryString = StringUtils.substringAfter(path, "?");
-			if (queryString.indexOf("wx_fmt=") > -1) {
+			if (queryString.contains("wx_fmt=")) {
 				// 微信图片路径处理
 				String ext = StringUtils.substringAfter(queryString, "wx_fmt=");
-				if (ext.indexOf("&") > -1) {
+				if (ext.contains("&")) {
 					ext = StringUtils.substringBefore(ext, "&");
 				}
 				if (StringUtils.isNotEmpty(ext)) {
@@ -127,17 +120,17 @@ public class FileExUtils {
 				}
 			}
 		}
-		if (path.indexOf("?") > -1) {
+		if (path.contains("?")) {
 			path = StringUtils.substringBefore(path, "?");
 		}
 		return FilenameUtils.getExtension(path);
 	}
-	
+
 	/**
 	 * 从url获取图片后缀名
-	 * 
-	 * @param url
-	 * @return
+	 *
+	 * @param url 图片地址
+	 * @return 图片后缀
 	 */
 	public static String getImageSuffix(String url) {
 		String extension = getExtension(url);
@@ -147,13 +140,13 @@ public class FileExUtils {
 			extension = getImageSuffixByContentType(contentType);
 		}
 		return extension;
-	}	
-	
+	}
+
 	private static String getImageSuffixByContentType(String headerContentType) {
 		if (StringUtils.isEmpty(headerContentType) || !headerContentType.startsWith("image/")) {
 			return null;
 		}
-		if (headerContentType.indexOf(";") > -1) {
+		if (headerContentType.contains(";")) {
 			headerContentType = StringUtils.substringBefore(headerContentType, ";");
 		}
 		if (headerContentType.equalsIgnoreCase("image/png")) {
@@ -171,13 +164,13 @@ public class FileExUtils {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * 获取符合条件的所有文件，包含子目录
-	 * 
-	 * @param templateDirectory
-	 * @param fileFilter
-	 * @return
+	 *
+	 * @param templateDirectory 目标目录
+	 * @param fileFilter 条件过滤器
+	 * @return 文件列表
 	 */
 	public static List<File> loopFiles(String templateDirectory, FileFilter fileFilter) {
 		File file;
@@ -205,10 +198,10 @@ public class FileExUtils {
 	}
 
 	/**
-	 * 格式化路径，去掉../、./等类似路径避免文件泄露
-	 * 
-	 * @param path
-	 * @return
+	 * 格式化路径，去掉`../`、`./`等类似路径避免文件泄露
+	 *
+	 * @param path 路径
+	 * @return 格式化路径
 	 */
 	public static String normalizePath(String path) {
 		path = path.replace('\\', '/');
@@ -225,15 +218,16 @@ public class FileExUtils {
 
 	/**
 	 * 创建指定路径的目录，包括所有上级目录
-	 * 
-	 * @param path
 	 */
 	public static void mkdirs(String... paths) {
 		if (StringUtils.isEmpty(paths)) {
 			return;
 		}
 		for (String path : paths) {
-			new File(path).mkdirs();
+			File file = new File(path);
+			if (!file.exists() && !file.mkdirs()) {
+				log.error("Mkdirs failed: " + path);
+			}
 		}
 	}
 }

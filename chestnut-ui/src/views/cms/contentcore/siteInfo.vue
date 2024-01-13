@@ -472,6 +472,13 @@ export default {
         this.download('cms/site/theme_download', {
           ...{ siteId: this.siteId }
         }, `SiteTheme.zip`)
+      } else if (this.progressTitle == this.$t('CMS.Site.ImportTheme')) {
+        const { fullPath } = this.$route
+        this.$nextTick(() => {
+          this.$router.replace({
+            path: '/redirect' + fullPath
+          })
+        })
       }
     }
   }

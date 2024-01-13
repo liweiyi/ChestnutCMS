@@ -55,7 +55,7 @@ public class XModelUtils {
 			} else if(XModelUtils.OPTIONS_TYPE_TEXT.equals(options.getType())) {
 				String[] split = options.getValue().split("\n");
 				for (String string : split) {
-					if (string.indexOf("=") > -1) {
+					if (string.contains("=")) {
 						String value = StringUtils.substringBefore(string, "=");
 						String name = StringUtils.substringAfter(string, "=");
 						list.add(Map.of("value", value, "name", name));

@@ -25,7 +25,6 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.SiteUtils;
-import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysPermissionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -111,10 +110,11 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		this.save(site);
 		this.clearCache(site.getSiteId());
 		// 授权给添加人
-		this.permissionService.grantPermission(PermissionOwnerType.User.name(),
-				dto.getOperator().getUserId().toString(), SitePermissionType.ID,
-				CmsPrivUtils.getAllSitePermissions(site.getSiteId()));
-		this.permissionService.resetLoginUserPermissions(dto.getOperator());
+		this.permissionService.grantUserPermission(
+				dto.getOperator(),
+				SitePermissionType.ID,
+				CmsPrivUtils.getAllSitePermissions(site.getSiteId())
+		);
 		return site;
 	}
 

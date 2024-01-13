@@ -47,34 +47,21 @@ public class SitePermissionType implements IPermissionType {
 	 */
 	@Override
 	public Set<String> deserialize(String json) {
-		Map<String, BitSet> map = CmsPrivUtils.deserializeBitSetPermission(json);
-		SitePrivItem[] privItems = SitePrivItem.values();
 		Set<String> privs = new HashSet<>();
-		map.forEach((k, v) -> {
-			if (!v.isEmpty()) {
-				Long siteId = Long.valueOf(k);
-				for (SitePrivItem privItem : privItems) {
-					if (v.get(privItem.bitIndex())) {
-						privs.add(privItem.getPermissionKey(siteId));
+		if (StringUtils.isNotEmpty(json)) {
+			Map<String, BitSet> map = CmsPrivUtils.deserializeBitSetPermission(json);
+			map.forEach((k, v) -> {
+				if (!v.isEmpty()) {
+					Long siteId = Long.valueOf(k);
+					for (SitePrivItem privItem : SitePrivItem.values()) {
+						if (v.get(privItem.bitIndex())) {
+							privs.add(privItem.getPermissionKey(siteId));
+						}
 					}
 				}
-			}
-		});
+			});
+		}
 		return privs;
-	}
-
-	@Override
-	public Set<String> convert(String json) {
-		Set<String> set = new HashSet<>();
-		SitePrivItem[] values = SitePrivItem.values();
-		CmsPrivUtils.deserializeBitSetPermission(json).forEach((siteId, bitSet) -> {
-			for (SitePrivItem item : values) {
-				if (bitSet.get(item.bitIndex())) {
-					set.add(item.getPermissionKey(Long.valueOf(siteId)));
-				}
-			}
-		});
-		return set;
 	}
 
 	@Override

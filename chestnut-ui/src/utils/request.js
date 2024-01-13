@@ -123,12 +123,24 @@ service.interceptors.response.use(res => {
   }
 )
 
+export function exportExcel(url, params, filename, config) {
+  // url += "/export"
+  const headers = { 'Content-Type': 'application/x-www-form-urlencoded', 'cc-export': 1 }
+  return download0(url, params, filename, headers, config)
+}
+
 // 通用下载方法
 export function download(url, params, filename, config) {
+  const headers = { 'Content-Type': 'application/x-www-form-urlencoded' }
+  return download0(url, params, filename, headers, config)
+}
+
+// 通用下载方法
+function download0(url, params, filename, headers, config) {
   downloadLoadingInstance = Loading.service({ text: i18n.t('Common.Downloading'), spinner: "el-icon-loading", background: "rgba(0, 0, 0, 0.7)", })
   return service.post(url, params, {
     transformRequest: [(params) => { return tansParams(params) }],
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: headers,
     responseType: 'blob',
     ...config
   }).then(async (data) => {

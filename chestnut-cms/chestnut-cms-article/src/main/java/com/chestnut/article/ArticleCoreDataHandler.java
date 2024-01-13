@@ -33,9 +33,7 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         // cms_article_detail
-        int percent = AsyncTaskManager.getTaskProgressPercent();
-        AsyncTaskManager.setTaskProgressInfo( percent + (100 - percent) / 10,
-                "正在导出文章详情数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出文章详情数据");
         long offset = 0;
         int pageSize = 200;
         int fileIndex = 1;
@@ -60,9 +58,7 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteImport(SiteImportContext context) {
-        int percent = AsyncTaskManager.getTaskProgressPercent();
-        AsyncTaskManager.setTaskProgressInfo( percent + (100 - percent) / 10,
-                "正在导入文章详情数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入文章详情数据");
         // cms_article_detail
         List<File> files = context.readDataFiles(CmsArticleDetail.TABLE_NAME);
         files.forEach(file -> {
