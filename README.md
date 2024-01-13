@@ -105,7 +105,7 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 ### 开源协议补充说明
 
 1. ChestnutCMS 遵循《Apache-2.0开源协议》，使用本系统不得用于违反国家有关政策的相关软件和应用。
-2. 系统可免费商用，但是必须包含原始版权声明和许可声明（项目根目录下的LICENSE文件不可修改或删除），不可移除或修改后台登录页面底部的版权申明“Copyright © 2022-2023 ChestnutCMS (1000mz.com) All Rights Reserved.”。
+2. 系统可免费商用，但是必须包含原始版权声明和许可声明（项目根目录下的LICENSE文件不可修改或删除），不可移除或修改后台登录页面底部的版权申明“Copyright © 2022-2024 ChestnutCMS (1000mz.com) All Rights Reserved.”。
 3. 本项目所包含的第三方源码版权信息需另行标注。
 
 ### QQ交流群
