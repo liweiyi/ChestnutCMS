@@ -59,7 +59,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-login-footer">
-      <span>Copyright © 2022-2023 ChestnutCMS (1000mz.com) All Rights Reserved.</span>
+      <span>Copyright © 2022-2024 ChestnutCMS (1000mz.com) All Rights Reserved.</span>
     </div>
   </div>
 </template>
