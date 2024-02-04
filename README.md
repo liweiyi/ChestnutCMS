@@ -44,17 +44,17 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 ### 相关文档
 
 
-- [快速上手](http://www.1000mz.com/docs/prepare/local)
-- [常用配置](http://www.1000mz.com/docs/prepare/config)
-- [Docker部署说明](http://www.1000mz.com/docs/deploy/docker)
-- [站点访问配置](http://www.1000mz.com/docs/prepare/config)
-- [使用手册](http://www.1000mz.com/docs/guide)
-- [模板手册](http://www.1000mz.com/docs/template)
-- [二次开发手册](http://www.1000mz.com/docs/dev/cron)
-- [常见问题](http://www.1000mz.com/docs/faq)
-- [版权声明](http://www.1000mz.com/docs/copyright)
-- [免责声明](http://www.1000mz.com/docs/disclaimer)
-- [版本变更日志](http://www.1000mz.com/docs/release)
+- [快速上手](http://www.1000mz.com/docs/prepare/local.html)
+- [常用配置](http://www.1000mz.com/docs/prepare/config.html)
+- [Docker部署说明](http://www.1000mz.com/docs/deploy/docker.html)
+- [站点访问配置](http://www.1000mz.com/docs/prepare/config.html)
+- [使用手册](http://www.1000mz.com/docs/guide.html)
+- [模板手册](http://www.1000mz.com/docs/template.html)
+- [二次开发手册](http://www.1000mz.com/docs/dev/cron.html)
+- [常见问题](http://www.1000mz.com/docs/faq.html)
+- [版权声明](http://www.1000mz.com/docs/copyright.html)
+- [免责声明](http://www.1000mz.com/docs/disclaimer.html)
+- [版本变更日志](http://www.1000mz.com/docs/release.html)
 
 ### 功能模块
 
