@@ -1,12 +1,29 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.common.utils;
+
+import com.esotericsoftware.reflectasm.FieldAccess;
+import com.esotericsoftware.reflectasm.MethodAccess;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.esotericsoftware.reflectasm.FieldAccess;
-import com.esotericsoftware.reflectasm.MethodAccess;
-
+@Slf4j
 public class ReflectASMUtils {
 
 	private final static HashMap<String, FieldAccess> FieldAccessMap = new HashMap<>();
@@ -37,7 +54,7 @@ public class ReflectASMUtils {
 			FieldAccess fieldAccess = getFieldAccess(obj.getClass());
 			return returnType.cast(fieldAccess.get(obj, fieldName));
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Get field `{}.{}` value failed.", obj.getClass().getName(), fieldName, e);
 			return null;
 		}
 	}
@@ -57,7 +74,7 @@ public class ReflectASMUtils {
 			FieldAccess fieldAccess = getFieldAccess(obj.getClass());
 			fieldAccess.set(obj, fieldName, fieldValue);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Set value to field `{}.{}` failed.", obj.getClass().getName(), fieldName, e);
 		}
 	}
 
@@ -84,14 +101,14 @@ public class ReflectASMUtils {
 						map.put(fieldName, v);
 					}
 				} catch (Exception e) {
-					// Warn: method not public or not exists
+					log.warn("The method `{}.{}` not public or not exists.", object.getClass().getName(), methodName, e);
 				}
 			}
 		}
 		return map;
 	}
 	
-	public static <T> T inovkeMethod(Object obj, String method, Class<T> returnType, Object... params) {
+	public static <T> T invokeMethod(Object obj, String method, Class<T> returnType, Object... params) {
 		try {
 			if (ObjectUtils.isAnyNull(obj, method, returnType) || method.isBlank()) {
 				throw new IllegalArgumentException("The parameters obj/method/returnType cannot be null and method not blank.");
@@ -99,7 +116,7 @@ public class ReflectASMUtils {
 			MethodAccess ma = getMethodAccess(obj.getClass());
 			return returnType.cast(ma.invoke(obj, method, params));
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Invoke method `{}.{}` failed.", obj.getClass().getName(), method, e);
 			return null;
 		}
 	}
@@ -113,7 +130,7 @@ public class ReflectASMUtils {
 			String methodName = "set" + StringUtils.upperFirst(fieldName);
 			ma.invoke(obj, methodName, value);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Invoke setter method `{}.{}` failed.", obj.getClass().getName(), fieldName, e);
 		}
 	}
 
@@ -127,6 +144,7 @@ public class ReflectASMUtils {
 			Object v = ma.invoke(obj, methodName);
 			return returnType.cast(v);
 		} catch (Exception e) {
+			log.error("Invoke getter method `{}.{}` failed.", obj.getClass().getName(), fieldName, e);
 			return null;
 		}
 	}
@@ -140,6 +158,7 @@ public class ReflectASMUtils {
 			String methodName = "get" + StringUtils.upperFirst(fieldName);
 			return ma.invoke(obj, methodName);
 		} catch (Exception e) {
+			log.error("Invoke getter method `{}.{}` failed.", obj.getClass().getName(), fieldName, e);
 			return null;
 		}
 	}

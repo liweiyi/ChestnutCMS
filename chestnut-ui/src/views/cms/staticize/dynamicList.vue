@@ -25,16 +25,16 @@
               </el-descriptions>
               <el-descriptions :title="$t('CMS.Staticize.RequestArgs')" :colon="false">
                 <el-descriptions-item :contentStyle="{width:'100%'}">
-                  <el-table :data="scope.row.requestArgs" border>
-                    <el-table-column :label="$t('CMS.Staticize.FuncAttr')" align="center" width="150" prop="name" />
-                    <el-table-column :label="$t('CMS.Staticize.FuncAttrType')" align="center" width="100" prop="type" />
-                    <el-table-column :label="$t('CMS.Staticize.FuncAttrRequired')" align="center" width="80">
+                  <el-table :data="scope.row.requestArgs">
+                    <el-table-column :label="$t('CMS.Staticize.FuncAttr')" algin="center" width="150" prop="name" />
+                    <el-table-column :label="$t('CMS.Staticize.FuncAttrType')" algin="center" width="100" prop="type" />
+                    <el-table-column :label="$t('CMS.Staticize.FuncAttrRequired')" algin="center" width="80">
                       <template slot-scope="scope">
                         <dict-tag :options="dict.type.YesOrNo" :value="scope.row.mandatory?'Y':'N'"/>
                       </template>
                     </el-table-column>
-                    <el-table-column :label="$t('CMS.Staticize.DefaultValue')" align="center" width="150" prop="defaultValue" />
-                    <el-table-column :label="$t('CMS.Staticize.FuncAttrDesc')" align="left" prop="desc">
+                    <el-table-column :label="$t('CMS.Staticize.DefaultValue')" algin="center" width="150" prop="defaultValue" />
+                    <el-table-column :label="$t('CMS.Staticize.FuncAttrDesc')" algin="left" prop="desc">
                     </el-table-column>
                   </el-table>
                 </el-descriptions-item>
@@ -42,9 +42,9 @@
             </el-row>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('CMS.Staticize.DynamicTempType')" align="left" width="255" prop="type" />
-        <el-table-column :label="$t('CMS.Staticize.DynamicTempName')" align="left" width="255" prop="name" />
-        <el-table-column :label="$t('CMS.Staticize.DynamicTempRequestPath')" align="left" prop="requestPath">
+        <el-table-column :label="$t('CMS.Staticize.DynamicTempType')" algin="left" width="255" prop="type" />
+        <el-table-column :label="$t('CMS.Staticize.DynamicTempName')" algin="left" width="255" prop="name" />
+        <el-table-column :label="$t('CMS.Staticize.DynamicTempRequestPath')" algin="left" prop="requestPath">
           <template slot-scope="scope">
             {{ '/' + scope.row.requestPath }}
           </template>

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.template.tag;
 
 import java.io.File;
@@ -101,7 +116,7 @@ public class CmsPageWidgetTag extends AbstractTag {
 		boolean ssi = MapUtils.getBoolean(attrs, TagAttr_SSI, EnableSSIProperty.getValue(site.getConfigProps()));
 		String templateKey = SiteUtils.getTemplateKey(site, pw.getPublishPipeCode(), pw.getTemplate());
 		if (context.isPreview()) {
-			env.getOut().write(this.processTemplate(env, context, templateKey));
+			env.getOut().write(this.processTemplate(env, pw, templateKey));
 		} else {
 			String siteRoot = SiteUtils.getSiteRoot(site, context.getPublishPipeCode());
 			String staticFileName = PageWidgetUtils.getStaticFileName(pw, site.getStaticSuffix(pw.getPublishPipeCode()));
@@ -110,27 +125,28 @@ public class CmsPageWidgetTag extends AbstractTag {
 				// 读取页面部件静态化内容
 				String staticContent = templateService.getTemplateStaticContentCache(templateKey);
 				if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
-					staticContent = this.processTemplate(env, context, templateKey);
+					staticContent = this.processTemplate(env, pw, templateKey);
 					FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
 					this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
 				}
 				env.getOut().write(StringUtils.messageFormat(CmsIncludeTag.SSI_INCLUDE_TAG, "/" + staticFilePath));
 			} else {
 				// 非ssi模式无法使用缓存
-				String staticContent = this.processTemplate(env, context, templateKey);
+				String staticContent = this.processTemplate(env, pw, templateKey);
 				env.getOut().write(staticContent);
 			}
 		}
 		return null;
 	}
 	
-	private String processTemplate(Environment env, TemplateContext context, String templateName)
+	private String processTemplate(Environment env, CmsPageWidget pageWidget, String templateName)
 			throws TemplateException, IOException {
 		Writer out = env.getOut();
 		try (StringWriter writer = new StringWriter()) {
 			env.setOut(writer);
 			Template includeTemplate = env.getTemplateForInclusion(templateName,
 					StandardCharsets.UTF_8.displayName(), true);
+			env.setVariable("PageWidget", wrap(env, pageWidget));
 			env.include(includeTemplate);
 			return writer.getBuffer().toString();
 		} finally {

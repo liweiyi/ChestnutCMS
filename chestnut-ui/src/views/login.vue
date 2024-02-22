@@ -175,6 +175,8 @@ export default {
   margin: 0px auto 30px auto;
   text-align: center;
   color: #707070;
+  line-height: 24px;
+  font-weight: bold;
 }
 
 .login-form {

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.advertisement.service.impl;
 
 import com.chestnut.advertisement.domain.CmsAdClickLog;
@@ -23,7 +38,7 @@ public class AdvertisementStatServiceImpl implements IAdvertisementStatService {
 
 	public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHH");
 
-	public static final String CLIC_CACHE_PREFIX = "adv:stat-click:";
+	public static final String CLICK_CACHE_PREFIX = "adv:stat-click:";
 
 	public static final String VIEW_CACHE_PREFIX = "adv:stat-view:";
 
@@ -42,12 +57,14 @@ public class AdvertisementStatServiceImpl implements IAdvertisementStatService {
 		Map<String, String> advMap = advService.getAdvertisementMap();
 		if (Objects.isNull(advMap) || Objects.isNull(clickLog.getAdId())
 				|| !advMap.containsKey(clickLog.getAdId().toString())) {
-			log.warn("Cms adv click log err, invalid id: " + clickLog.getAdId());
+			if (log.isDebugEnabled()) {
+				log.debug("Cms adv click log err, invalid id: " + clickLog.getAdId());
+			}
 			return;
 		}
 		this.asyncTaskManager.execute(() -> {
 			// redis 广告小时点击数+1
-			String cacheKey = CLIC_CACHE_PREFIX + clickLog.getEvtTime().format(DATE_TIME_FORMAT);
+			String cacheKey = CLICK_CACHE_PREFIX + clickLog.getEvtTime().format(DATE_TIME_FORMAT);
 			redisCache.zsetIncr(cacheKey, clickLog.getAdId().toString(), 1);
 			// 记录点击日志
 			this.clickLogMapper.insert(clickLog);
@@ -59,7 +76,9 @@ public class AdvertisementStatServiceImpl implements IAdvertisementStatService {
 		Map<String, String> advMap = advService.getAdvertisementMap();
 		if (Objects.isNull(advMap) || Objects.isNull(viewLog.getAdId())
 				|| !advMap.containsKey(viewLog.getAdId().toString())) {
-			log.warn("Cms adv view log err, invalid id: " + viewLog.getAdId());
+			if (log.isDebugEnabled()) {
+				log.debug("Cms adv view log err, invalid id: " + viewLog.getAdId());
+			}
 			return;
 		}
 		this.asyncTaskManager.execute(() -> {

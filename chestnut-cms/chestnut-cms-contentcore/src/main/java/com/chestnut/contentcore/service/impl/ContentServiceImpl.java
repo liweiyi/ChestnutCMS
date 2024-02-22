@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -26,7 +41,6 @@ import com.chestnut.contentcore.domain.dto.SortContentDTO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.*;
-import com.chestnut.system.fixed.config.BackendContext;
 import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.properties.RepeatTitleCheckProperty;
@@ -37,6 +51,7 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.system.fixed.config.BackendContext;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.PermissionUtils;
 import lombok.RequiredArgsConstructor;
@@ -378,7 +393,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 	}
 
 	@Override
-	public void deleteStaticFiles(CmsContent content) throws IOException {
+	public void deleteStaticFiles(CmsContent content) {
 		if (content.isLinkContent()) {
 			return;
 		}
@@ -395,9 +410,12 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 			String filePath = siteRoot + path + site.getStaticSuffix(publishPipe.getCode());
 			File file = new File(filePath);
 			if (file.exists()) {
-				FileUtils.delete(file);
-			}
-			logger.debug("删除内容静态文件：" + filePath);
+                try {
+                    FileUtils.delete(file);
+                } catch (IOException e) {
+                    logger.error("Delete file failed: {}", filePath, e);
+                }
+            }
 		}
 	}
 }

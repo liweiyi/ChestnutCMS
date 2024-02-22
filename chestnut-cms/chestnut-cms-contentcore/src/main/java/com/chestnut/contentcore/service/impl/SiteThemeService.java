@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -90,7 +105,7 @@ public class SiteThemeService {
                                 sitePropertyService.save(data);
                             } catch (Exception e) {
                                 this.addErrorMessage("导入站点扩展属性数据失败：" + propertyId);
-                                e.printStackTrace();
+                                log.error("Import site property failed: {}", propertyId, e);
                             }
                         });
                     });
@@ -109,7 +124,7 @@ public class SiteThemeService {
                                 context.getResourceIdMap().put(oldResource, data.getResourceId());
                             } catch (Exception e) {
                                 this.addErrorMessage("导入素材资源数据失败：" + oldResource);
-                                e.printStackTrace();
+                                log.error("Import site resource failed: {}", oldResource, e);
                             }
                         });
                     });
@@ -132,8 +147,8 @@ public class SiteThemeService {
                         // 必须保证顺序
                         list.sort(Comparator.comparing(CmsCatalog::getAncestors));
                         list.forEach(data -> {
+                            Long sourceCatalogId = data.getCatalogId();
                             try {
-                                Long sourceCatalogId = data.getCatalogId();
                                 data.setCatalogId(IdUtils.getSnowflakeId());
                                 data.setSiteId(site.getSiteId());
                                 data.setAncestors(data.getCatalogId().toString());
@@ -157,7 +172,7 @@ public class SiteThemeService {
                                 }
                             } catch (Exception e) {
                                 this.addErrorMessage("导入栏目数据失败：" + data.getName());
-                                e.printStackTrace();
+                                log.error("Import catalog failed: {}", sourceCatalogId, e);
                             }
                         });
                     });
@@ -166,6 +181,7 @@ public class SiteThemeService {
                     files.forEach(file -> {
                         List<CmsPublishPipe> list = JacksonUtils.fromList(file, CmsPublishPipe.class);
                         for (CmsPublishPipe data : list) {
+                            Long oldPublishPipeId = data.getPublishpipeId();
                             try {
                                 data.setPublishpipeId(IdUtils.getSnowflakeId());
                                 data.setSiteId(site.getSiteId());
@@ -173,7 +189,7 @@ public class SiteThemeService {
                                 publishPipeService.addPublishPipe(data);
                             } catch (Exception e) {
                                 this.addErrorMessage("导入发布通道数据失败：" + data.getName());
-                                e.printStackTrace();
+                                log.error("Import publish pipe failed: {}", oldPublishPipeId, e);
                             }
                         }
                     });
@@ -182,8 +198,8 @@ public class SiteThemeService {
                     files.forEach(file -> {
                         List<CmsPageWidget> list = JacksonUtils.fromList(file, CmsPageWidget.class);
                         list.forEach(data -> {
+                            Long oldPageWidgetId = data.getPageWidgetId();
                             try {
-                                Long oldPageWidgetId = data.getPageWidgetId();
                                 data.setPageWidgetId(IdUtils.getSnowflakeId());
                                 data.setSiteId(site.getSiteId());
                                 if (IdUtils.validate(data.getCatalogId())) {
@@ -201,7 +217,7 @@ public class SiteThemeService {
                                 context.getPageWidgetIdMap().put(oldPageWidgetId, data.getPageWidgetId());
                             } catch (Exception e) {
                                 this.addErrorMessage("导入页面部件数据失败：" + data.getName());
-                                e.printStackTrace();
+                                log.error("Import page widget failed: {}", oldPageWidgetId, e);
                             }
                         });
                     });
@@ -234,7 +250,7 @@ public class SiteThemeService {
                                 }
                             } catch (Exception e) {
                                 this.addErrorMessage("导入内容数据失败：" + sourceContentId);
-                                e.printStackTrace();
+                                log.error("Import content failed: {}", sourceContentId, e);
                             }
                         });
                     });
@@ -255,7 +271,7 @@ public class SiteThemeService {
                                 contentRelaService.save(content);
                             } catch (Exception e) {
                                 this.addErrorMessage("导入关联内容数据失败：" + sourceContentId);
-                                e.printStackTrace();
+                                log.error("Import content rela data failed: {}", sourceContentId, e);
                             }
                         });
                     });
@@ -276,7 +292,7 @@ public class SiteThemeService {
                     context.copySiteFiles();
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage(e.getMessage());
-                    e.printStackTrace();
+                    log.error("Import site theme failed: {}", site.getSiteId(), e);
                 } finally {
                     FileUtils.deleteDirectory(new File(destDir));
                     this.setProgressInfo(100, "导入完成");
@@ -357,7 +373,7 @@ public class SiteThemeService {
                                 .gt(CmsContent::getContentId, offset)
                                 .orderByAsc(CmsContent::getContentId);
                         Page<CmsContent> page = contentService.page(new Page<>(1, pageSize, false), q);
-                        if (page.getRecords().size() > 0) {
+                        if (!page.getRecords().isEmpty()) {
                             context.saveData(CmsContent.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                             offset = page.getRecords().get(page.getRecords().size() - 1).getContentId();
                             fileIndex++;
@@ -387,7 +403,7 @@ public class SiteThemeService {
                                 .gt(CmsContentRela::getRelaId, offset)
                                 .orderByAsc(CmsContentRela::getRelaId);
                         Page<CmsContentRela> page = contentRelaService.page(new Page<>(1, pageSize, false), q);
-                        if (page.getRecords().size() > 0) {
+                        if (!page.getRecords().isEmpty()) {
                             context.saveData(CmsContentRela.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                             offset = page.getRecords().get(page.getRecords().size() - 1).getRelaId();
                             fileIndex++;
@@ -411,7 +427,7 @@ public class SiteThemeService {
                                 .gt(CmsResource::getResourceId, offset)
                                 .orderByAsc(CmsResource::getResourceId);
                         Page<CmsResource> page = resourceService.page(new Page<>(1, pageSize, false), q);
-                        if (page.getRecords().size() > 0) {
+                        if (!page.getRecords().isEmpty()) {
                             context.saveData(CmsResource.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                             offset = page.getRecords().get(page.getRecords().size() - 1).getResourceId();
                             fileIndex++;

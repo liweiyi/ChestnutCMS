@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.exmodel;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -26,6 +41,7 @@ import com.chestnut.xmodel.domain.XModelField;
 import com.chestnut.xmodel.service.IModelFieldService;
 import com.chestnut.xmodel.service.IModelService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -38,6 +54,7 @@ import java.util.regex.Matcher;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EXModelCoreDataHandler implements ICoreDataHandler {
@@ -85,7 +102,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                 LambdaQueryWrapper<CmsExtendModelData> q = new LambdaQueryWrapper<CmsExtendModelData>()
                         .eq(CmsExtendModelData::getModelId, model.getModelId());
                 Page<CmsExtendModelData> page = modelDataMapper.selectPage(new Page<>(pageIndex, pageSize, false), q);
-                if (page.getRecords().size() == 0) {
+                if (page.getRecords().isEmpty()) {
                     break;
                 }
                 pageIndex++;
@@ -118,7 +135,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入扩展模型失败：" + data.getName()
                             + "[" + data.getModelId() + "]");
-                    e.printStackTrace();
+                    log.error("Import xmodel failed: {}", data.getCode(), e);
                 }
             }
         });
@@ -136,7 +153,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入扩展模型字段失败：" + data.getName()
                             + "[" + data.getFieldId() + "]");
-                    e.printStackTrace();
+                    log.error("Import xmodel field failed: {}", data.getCode(), e);
                 }
             }
         });
@@ -183,7 +200,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入扩展模型字段失败：" + data.getModelId()
                             + data.getDataType() + "-" + data.getDataId());
-                    e.printStackTrace();
+                    log.error("Import xmodel data failed: {} - {}", data.getModelId(), data.getDataId(), e);
                 }
             }
         });
@@ -218,7 +235,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
             });
         } catch (Exception e) {
             AsyncTaskManager.addErrMessage("更新站点及栏目扩展模型配置失败");
-            e.printStackTrace();
+            log.error("Import site/catalog exmodel config failed: {}", context.getSite().getSiteId(), e);
         }
     }
 }

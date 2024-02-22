@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -23,10 +38,10 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param content
 	 * @return
 	 */
-	public AsyncTask addContent(IContent<?> content);
+	AsyncTask addContent(IContent<?> content);
 
 
-	public void addContent0(IContent<?> content);
+	void addContent0(IContent<?> content);
 	
 	/**
 	 * 更新内容
@@ -34,7 +49,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param content
 	 * @return
 	 */
-	public AsyncTask saveContent(IContent<?> content);
+	AsyncTask saveContent(IContent<?> content);
 
 	/**
 	 * 删除内容
@@ -42,7 +57,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param contentIds
 	 * @return
 	 */
-	public void deleteContents(List<Long> contentIds, LoginUser operator);
+	void deleteContents(List<Long> contentIds, LoginUser operator);
 
 
 	/**
@@ -59,7 +74,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param catalog
 	 * @return
 	 */
-	public boolean deleteContentsByCatalog(CmsCatalog catalog, LoginUser operator);
+	boolean deleteContentsByCatalog(CmsCatalog catalog, LoginUser operator);
 
 	/**
 	 * 获取内容链接
@@ -69,7 +84,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param isPreview
 	 * @return
 	 */
-	public String getContentLink(CmsContent content, int pageIndex, String publishPipeCode, boolean isPreview);
+	String getContentLink(CmsContent content, int pageIndex, String publishPipeCode, boolean isPreview);
 
 	/**
 	 * 锁定内容
@@ -78,7 +93,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param operator
 	 * @return
 	 */
-	public void lock(Long contentId, String operator);
+	void lock(Long contentId, String operator);
 
 	/**
 	 * 解锁内容
@@ -87,7 +102,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param operator
 	 * @return
 	 */
-	public void unLock(Long contentId, String operator);
+	void unLock(Long contentId, String operator);
 
 	/**
 	 * 复制内容
@@ -95,7 +110,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param dto
 	 * @return
 	 */
-	public void copy(CopyContentDTO dto);
+	void copy(CopyContentDTO dto);
 
 	/**
 	 * 转移内容
@@ -103,7 +118,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param dto
 	 * @return
 	 */
-	public void move(MoveContentDTO dto);
+	void move(MoveContentDTO dto);
 
 	/**
 	 * 校验重复标题，存在重复标题返回true
@@ -114,7 +129,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param title
 	 * @return
 	 */
-	public boolean checkSameTitle(Long siteId, Long catalogId, Long contentId, String title);
+	boolean checkSameTitle(Long siteId, Long catalogId, Long contentId, String title);
 
 	/**
 	 * 置顶
@@ -154,7 +169,7 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param contentIds
 	 * @return
 	 */
-	public void archive(List<Long> contentIds, LoginUser operator);
+	void archive(List<Long> contentIds, LoginUser operator);
 
 	/**
 	 * 删除指定内容静态文件
@@ -162,14 +177,14 @@ public interface IContentService extends IService<CmsContent> {
 	 * @param contentEntity
 	 * @throws IOException 
 	 */
-	public void deleteStaticFiles(CmsContent contentEntity) throws IOException;
+	void deleteStaticFiles(CmsContent contentEntity);
 
 	/**
 	 * 删除备份表数据
 	 * 
 	 * @param backupIds
 	 */
-	public void deleteRecycleContents(List<Long> backupIds);
+	void deleteRecycleContents(List<Long> backupIds);
 
     CmsContentMapper getContentMapper();
 

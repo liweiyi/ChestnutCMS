@@ -217,7 +217,8 @@ export default {
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/cms/resource",
         // 上传的文件列表
-        fileList: []
+        fileList: [],
+        data: {}
       },
     };
   },
@@ -253,8 +254,8 @@ export default {
     // 表单重置
     reset () {
       this.form = {
-        name: undefined,
-        remark: undefined
+        name: "", 
+        remark: ""
       };
       this.resetForm("form");
     },

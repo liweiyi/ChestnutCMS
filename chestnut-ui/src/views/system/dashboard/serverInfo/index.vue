@@ -9,15 +9,15 @@
           <tbody>
             <tr>
               <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('Monitor.Server.AppName') }}</div></td>
-              <td class="el-table__cell is-leaf"><div class="cell" v-if="serverInfo.sys">{{ serverInfo.app.name }}</div></td>
+              <td class="el-table__cell is-leaf"><div class="cell">{{ serverInfo.app.name }} [ {{ serverInfo.app.alias }} ] </div></td>
               <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('Monitor.Server.AppVersion') }}</div></td>
-              <td class="el-table__cell is-leaf"><div class="cell" v-if="serverInfo.sys">{{ serverInfo.app.version }}</div></td>
+              <td class="el-table__cell is-leaf"><div class="cell">{{ serverInfo.app.version }}</div></td>
             </tr>
             <tr>
               <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('Monitor.Server.JVMStartTime') }}</div></td>
-              <td class="el-table__cell is-leaf"><div class="cell" v-if="serverInfo.jvm">{{ serverInfo.jvm.startTime }}</div></td>
+              <td class="el-table__cell is-leaf"><div class="cell">{{ serverInfo.startTime }}</div></td>
               <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('Monitor.Server.JVMRunTime') }}</div></td>
-              <td class="el-table__cell is-leaf"><div class="cell" v-if="serverInfo.jvm">{{ serverInfo.jvm.runTime }}</div></td>
+              <td class="el-table__cell is-leaf"><div class="cell">{{ serverInfo.runTime }}</div></td>
             </tr>
           </tbody>
         </table>
@@ -27,13 +27,15 @@
   </div>
 </template>
 <script>
-import { getServer } from "@/api/monitor/server";
+import { getDashboardServerInfo } from "@/api/monitor/server";
 
 export default {
   name: "ServerInfoDashboard",
   data () {
     return {
-      serverInfo: {}
+      serverInfo: {
+        app: {}
+      }
     };
   },
   created() {
@@ -41,7 +43,7 @@ export default {
   },
   methods: {
     loadServerInfo() {
-      getServer().then(response => {
+      getDashboardServerInfo().then(response => {
         this.serverInfo = response.data;
       })
     }

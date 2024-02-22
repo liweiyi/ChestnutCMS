@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -109,7 +124,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 						String siteRoot = SiteUtils.getSiteRoot(site, pp.getCode());
 						FileUtils.deleteDirectory(new File(siteRoot + "include/"));
 					} catch (IOException e) {
-						e.printStackTrace();
+						logger.error("Delete site publish pipe include directory failed: {}", pp.getCode(), e);
 					}
 				});
 
@@ -228,6 +243,8 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			String indexTemplate = catalog.getIndexTemplate(publishPipeCode);
 			if (StringUtils.isNotEmpty(indexTemplate)) {
 				templateFilename = indexTemplate;
+			} else {
+				listFlag = true;
 			}
 		}
 		CmsSite site = this.siteService.getById(catalog.getSiteId());
@@ -718,8 +735,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			logger.debug("[{}]内容扩展模板解析：[{}]{}，耗时：{}ms", publishPipeCode, catalog.getName(), content.getTitle(), (System.currentTimeMillis() - s));
 		} catch (TemplateException | IOException e) {
 			logger.warn(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]内容扩展模板解析失败：[{1}]{2}",
-					publishPipeCode, catalog.getName(), content.getTitle())));
-			e.printStackTrace();
+					publishPipeCode, catalog.getName(), content.getTitle())), e);
 		}
 	}
 

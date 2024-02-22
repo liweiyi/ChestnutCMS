@@ -7,3 +7,10 @@ export function getServer() {
     method: 'get'
   })
 }
+
+export function getDashboardServerInfo() {
+  return request({
+    url: '/monitor/server/dashboard',
+    method: 'get'
+  })
+}

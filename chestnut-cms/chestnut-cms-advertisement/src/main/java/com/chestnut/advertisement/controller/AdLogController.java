@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.advertisement.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -54,7 +69,7 @@ public class AdLogController extends BaseRestController {
 		String begin = Objects.isNull(beginTime) ? null : FORMAT.format(beginTime);
 		String end = Objects.isNull(endTime) ? null : FORMAT.format(endTime);
 		List<CmsAdHourStat> list = this.advHourStatMapper.selectGroupByAdvId(site.getSiteId(), begin, end);
-		if (list.size() > 0) {
+		if (!list.isEmpty()) {
 			Map<String, String> map = this.advService.getAdvertisementMap();
 			list.forEach(l -> l.setAdName(map.get(l.getAdvertisementId().toString())));
 		}
@@ -64,7 +79,7 @@ public class AdLogController extends BaseRestController {
 	@GetMapping("/chart")
 	public R<?> getLineChartStatDatas(@RequestParam @Min(1) Long advertisementId, @RequestParam Date beginTime, @RequestParam Date endTime) {
 		List<CmsAdHourStat> list = this.advHourStatMapper.selectHourStat(advertisementId, FORMAT.format(beginTime), FORMAT.format(endTime));
-		if (list.size() > 0) {
+		if (!list.isEmpty()) {
 			Map<String, String> map = this.advService.getAdvertisementMap();
 			list.forEach(l -> l.setAdName(map.get(l.getAdvertisementId().toString())));
 		}
@@ -99,7 +114,7 @@ public class AdLogController extends BaseRestController {
 				.eq(CmsAdClickLog::getSiteId, site.getSiteId()).orderByDesc(CmsAdClickLog::getLogId);
 		Page<CmsAdClickLog> page = adClickLogMapper.selectPage(new Page<>(pr.getPageNumber(), pr.getPageSize(), true),
 				q);
-		if (page.getRecords().size() > 0) {
+		if (!page.getRecords().isEmpty()) {
 			Map<String, String> map = this.advService.getAdvertisementMap();
 			page.getRecords().forEach(l -> l.setAdName(map.get(l.getAdId().toString())));
 		}
@@ -113,7 +128,7 @@ public class AdLogController extends BaseRestController {
 		LambdaQueryWrapper<CmsAdViewLog> q = new LambdaQueryWrapper<CmsAdViewLog>()
 				.eq(CmsAdViewLog::getSiteId, site.getSiteId()).orderByDesc(CmsAdViewLog::getLogId);
 		Page<CmsAdViewLog> page = adViewLogMapper.selectPage(new Page<>(pr.getPageNumber(), pr.getPageSize(), true), q);
-		if (page.getRecords().size() > 0) {
+		if (!page.getRecords().isEmpty()) {
 			Map<String, String> map = this.advService.getAdvertisementMap();
 			page.getRecords().forEach(l -> l.setAdName(map.get(l.getAdId().toString())));
 		}

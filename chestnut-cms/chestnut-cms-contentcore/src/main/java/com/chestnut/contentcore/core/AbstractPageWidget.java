@@ -1,10 +1,19 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.core;
-
-import java.io.File;
-import java.io.IOException;
-
-import org.apache.commons.io.FileUtils;
-import org.springframework.beans.BeanUtils;
 
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.IdUtils;
@@ -18,9 +27,19 @@ import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.SiteUtils;
-
 import freemarker.template.TemplateException;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.springframework.beans.BeanUtils;
 
+import java.io.File;
+import java.io.IOException;
+
+@Slf4j
+@Getter
+@Setter
 public abstract class AbstractPageWidget implements IPageWidget {
 
 	private CmsPageWidget entity;
@@ -81,7 +100,7 @@ public abstract class AbstractPageWidget implements IPageWidget {
 			// 删除静态文件
 			FileUtils.delete(new File(this.getStaticFilePath()));
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Delete file failed: {}", this.getStaticFilePath());
 		}
 	}
 
@@ -109,19 +128,11 @@ public abstract class AbstractPageWidget implements IPageWidget {
 		return siteService;
 	}
 
-	public void setSiteService(ISiteService siteService) {
-		this.siteService = siteService;
-	}
-
 	public ICatalogService getCatalogService() {
 		if (this.catalogService == null) {
 			this.catalogService = SpringUtils.getBean(ICatalogService.class);
 		}
 		return catalogService;
-	}
-
-	public void setCatalogService(ICatalogService catalogService) {
-		this.catalogService = catalogService;
 	}
 
 	public IPageWidgetService getPageWidgetService() {
@@ -131,18 +142,10 @@ public abstract class AbstractPageWidget implements IPageWidget {
 		return pageWidgetService;
 	}
 
-	public void setPageWidgetService(IPageWidgetService pageWidgetService) {
-		this.pageWidgetService = pageWidgetService;
-	}
-
 	public IPublishService getPublishService() {
 		if (this.publishService == null) {
 			this.publishService = SpringUtils.getBean(IPublishService.class);
 		}
 		return publishService;
-	}
-
-	public void setPublishService(IPublishService publishService) {
-		this.publishService = publishService;
 	}
 }

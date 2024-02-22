@@ -12,7 +12,7 @@
       <el-table-column :label="$t('Stat.Adv.AdName')" align="center" prop="adName" />
       <el-table-column label="IP" align="center" prop="ip" />
       <el-table-column :label="$t('Stat.Adv.Location')" align="center" prop="address" />
-      <el-table-column :label="$t('Stat.Adv.Source')" align="center" prop="referer" />
+      <el-table-column :label="$t('Stat.Adv.Source')" align="center" show-overflow-tooltip="true" prop="referer" />
       <el-table-column :label="$t('Stat.Adv.DeviceType')" align="center" prop="deviceType" />
       <el-table-column :label="$t('Stat.Adv.Browser')" align="center" prop="browser" />
       <el-table-column :label="$t('Stat.Adv.Time')" align="center" prop="evtTime" />

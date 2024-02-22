@@ -1,5 +1,12 @@
 import request from '@/utils/request'
 
+export function listLangOptions() {
+  return request({
+    url: '/system/i18n/dict/langOptions',
+    method: 'get'
+  })
+}
+
 export function listI18nDict(query) {
   return request({
     url: '/system/i18n/dict/list',

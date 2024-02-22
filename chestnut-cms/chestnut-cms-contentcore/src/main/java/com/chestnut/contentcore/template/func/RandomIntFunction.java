@@ -1,7 +1,24 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.template.func;
 
 import java.util.List;
 import java.util.Random;
+import java.util.random.RandomGenerator;
+import java.util.random.RandomGeneratorFactory;
 
 import org.springframework.stereotype.Component;
 
@@ -23,7 +40,7 @@ public class RandomIntFunction extends AbstractFunc {
 	
 	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
 
-	private static final Random random = new Random();
+	private static final RandomGenerator random = RandomGeneratorFactory.getDefault().create();
 
 	@Override
 	public String getFuncName() {

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.controller;
 
 import com.chestnut.common.domain.R;
@@ -56,8 +71,6 @@ public class CoreController extends BaseRestController {
 	 * @param dataId      内容核心数据ID
 	 * @param publishPipe 发布通道编码
 	 * @param pageIndex   页码
-	 * @throws IOException
-	 * @throws TemplateException
 	 */
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/cms/preview/{dataType}/{dataId}")
@@ -85,8 +98,6 @@ public class CoreController extends BaseRestController {
 	 * @param dataId      内容核心数据ID
 	 * @param publishPipe 发布通道编码
 	 * @param pageIndex   页码
-	 * @throws IOException
-	 * @throws TemplateException
 	 */
 	@GetMapping("/cms/view/{dataType}/{dataId}")
 	public void browse(@PathVariable("dataType") String dataType, @PathVariable("dataId") Long dataId,
@@ -136,7 +147,7 @@ public class CoreController extends BaseRestController {
 			this.staticizeService.process(templateContext, ServletUtils.getResponse().getWriter());
 			log.debug("[{}]动态区块模板解析：{}，耗时：{}", publishPipeCode, template, System.currentTimeMillis() - s);
 		} catch (TemplateException | IOException e) {
-			e.printStackTrace();
+			log.error("[{}]Process ssi virtual failed: {}", publishPipeCode, template);
 		}
 	}
 

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.cms.word.listener;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -17,11 +32,13 @@ import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.service.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class WordEventListener {
@@ -41,7 +58,7 @@ public class WordEventListener {
 	private final ISiteService siteService;
 
 	@EventListener
-	public void afterContentSave(BeforeContentSaveEvent event) {
+	public void beforeContentSave(BeforeContentSaveEvent event) {
 		IContent<?> content = event.getContent();
 		if (ArticleContentType.ID.equals(content.getContentType()) && !content.getContentEntity().isLinkContent()
 				&& !ContentCopyType.isMapping(content.getContentEntity().getCopyType())) {
@@ -77,8 +94,8 @@ public class WordEventListener {
 						.last("limit " + pageSize));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			AsyncTaskManager.addErrMessage("删除热词分组数据错误：" + e.getMessage());
+			log.error("Delete hot word group failed on site[{}] delete", site.getSiteId());
 		}
 		try {
 			// 删除热词数据
@@ -91,8 +108,8 @@ public class WordEventListener {
 						.last("limit " + pageSize));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			AsyncTaskManager.addErrMessage("删除热词数据错误：" + e.getMessage());
+			log.error("Delete hot word failed on site[{}] delete", site.getSiteId());
 		}
 		try {
 			// 删除TAG词分组数据
@@ -105,8 +122,8 @@ public class WordEventListener {
 						.eq(TagWordGroup::getOwner, site.getSiteId()).last("limit " + pageSize));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			AsyncTaskManager.addErrMessage("删除TAG词分组数据错误：" + e.getMessage());
+			log.error("Delete tag word group failed on site[{}] delete", site.getSiteId());
 		}
 		try {
 			// 删除TAG词数据
@@ -119,8 +136,8 @@ public class WordEventListener {
 						.eq(TagWord::getOwner, site.getSiteId()).last("limit " + pageSize));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			AsyncTaskManager.addErrMessage("删除TAG词数据错误：" + e.getMessage());
+			log.error("Delete tag word failed on site[{}] delete", site.getSiteId());
 		}
 	}
 }

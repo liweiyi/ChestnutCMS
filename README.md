@@ -1,4 +1,4 @@
-# ChestnutCMS v1.3.25
+# ChestnutCMS v1.4.0
 
 ### 系统简介
 
@@ -44,17 +44,17 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 ### 相关文档
 
 
-- [快速上手](http://www.1000mz.com/docs/prepare/local.html)
-- [常用配置](http://www.1000mz.com/docs/prepare/config.html)
-- [Docker部署说明](http://www.1000mz.com/docs/deploy/docker.html)
-- [站点访问配置](http://www.1000mz.com/docs/prepare/config.html)
-- [使用手册](http://www.1000mz.com/docs/guide.html)
-- [模板手册](http://www.1000mz.com/docs/template.html)
-- [二次开发手册](http://www.1000mz.com/docs/dev/cron.html)
-- [常见问题](http://www.1000mz.com/docs/faq.html)
-- [版权声明](http://www.1000mz.com/docs/copyright.html)
-- [免责声明](http://www.1000mz.com/docs/disclaimer.html)
-- [版本变更日志](http://www.1000mz.com/docs/release.html)
+- [快速上手](https://www.1000mz.com/docs/prepare/local)
+- [常用配置](https://www.1000mz.com/docs/prepare/config)
+- [Docker部署说明](https://www.1000mz.com/docs/deploy/docker)
+- [站点访问配置](https://www.1000mz.com/docs/prepare/config)
+- [使用手册](https://www.1000mz.com/docs/guide)
+- [模板手册](https://www.1000mz.com/docs/template)
+- [二次开发手册](https://www.1000mz.com/docs/dev/cron)
+- [常见问题](https://www.1000mz.com/docs/faq)
+- [版权声明](https://www.1000mz.com/docs/copyright)
+- [免责声明](https://www.1000mz.com/docs/disclaimer)
+- [版本变更日志](https://www.1000mz.com/docs/release)
 
 ### 功能模块
 
@@ -102,15 +102,11 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 | 缓存监控         | 对系统的缓存信息查询，命令统计等                       |
 | GroovyScript | 支持Groovy脚本在线执行                         |
 
-### 开源协议补充说明
-
-1. ChestnutCMS 遵循《Apache-2.0开源协议》，使用本系统不得用于违反国家有关政策的相关软件和应用。
-2. 系统可免费商用，但是必须包含原始版权声明和许可声明（项目根目录下的LICENSE文件不可修改或删除），不可移除或修改后台登录页面底部的版权申明“Copyright © 2022-2024 ChestnutCMS (1000mz.com) All Rights Reserved.”。
-3. 本项目所包含的第三方源码版权信息需另行标注。
-
 ### QQ交流群
 群①：568506424
+
 群②：643215654
+
 统一入群口令：举个栗子
 
 如果本项目对您有一丢丢小帮助 :kissing_heart: 点个小星星吧 :star2:

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.article.controller.front;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -11,14 +26,11 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.vo.ContentApiVO;
-import com.chestnut.contentcore.domain.vo.ContentDynamicDataVO;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.impl.ContentDynamicDataService;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 内容数据API接口
@@ -104,7 +115,7 @@ public class ArticleApiController extends BaseRestController {
         }
         List<Long> contentIds = pageResult.getRecords().stream().map(CmsContent::getContentId).toList();
         Map<Long, CmsArticleDetail> articleDetails = this.articleService.listByIds(contentIds)
-                .stream().collect(Collectors.toMap(c -> c.getContentId(), c -> c));
+                .stream().collect(Collectors.toMap(CmsArticleDetail::getContentId, c -> c));
 
         Map<Long, CmsCatalog> loadedCatalogs = new HashMap<>();
         List<ArticleApiVO> list = new ArrayList<>();
@@ -126,13 +137,5 @@ public class ArticleApiController extends BaseRestController {
             list.add(dto);
         });
         return R.ok(list);
-    }
-
-    /**
-     * 按浏览量排序获取数据
-     */
-    public R<ContentVO> getHotContentList() {
-
-        return R.ok();
     }
 }

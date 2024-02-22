@@ -1,44 +1,57 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.service.impl;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.contentcore.ContentCoreConsts;
-import com.chestnut.contentcore.core.impl.PublishPipeProp_IndexTemplate;
-import com.chestnut.contentcore.fixed.config.TemplateSuffix;
-import com.chestnut.contentcore.fixed.dict.StaticSuffix;
-import com.chestnut.contentcore.service.ITemplateService;
-import com.chestnut.contentcore.util.TemplateUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.io.FileUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
+import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IPublishPipeProp;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
+import com.chestnut.contentcore.core.impl.PublishPipeProp_IndexTemplate;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import com.chestnut.contentcore.fixed.config.TemplateSuffix;
 import com.chestnut.contentcore.mapper.CmsPublishPipeMapper;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.FileUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -225,7 +238,7 @@ public class PublishPipeServiceImpl extends ServiceImpl<CmsPublishPipeMapper, Cm
 			try {
 				FileUtils.moveDirectory(siteRootFile, new File(bakDir));
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error("Move directory {} to {} failed.", siteRootFile, bakDir);
 			}
 		}
 	}

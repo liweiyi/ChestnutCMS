@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.cms.word;
 
 import com.chestnut.common.async.AsyncTaskManager;
@@ -15,6 +30,7 @@ import com.chestnut.word.service.IHotWordService;
 import com.chestnut.word.service.ITagWordGroupService;
 import com.chestnut.word.service.ITagWordService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -28,6 +44,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class WordContentCoreHandler implements ICoreDataHandler {
@@ -90,7 +107,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     tagGroupIdMap.put(oldGroupId, data);
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入TAG词分组数据失败：" + data.getName() + "[" + data.getCode() + "]");
-                    e.printStackTrace();
+                    log.error("Import tag word group failed", e);
                 }
             }
         });
@@ -115,7 +132,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     tagWordService.save(data);
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入TAG词数据失败：" + data.getWord());
-                    e.printStackTrace();
+                    log.error("Import tag word failed", e);
                 }
             }
         });
@@ -135,7 +152,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     hotGroupIdMap.put(oldGroupId, data.getGroupId());
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入热词分组数据失败：" + data.getName() + "[" + data.getCode() + "]");
-                    e.printStackTrace();
+                    log.error("Import hot word group failed", e);
                 }
             }
         });
@@ -153,7 +170,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     hotWordService.save(data);
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入热词数据失败：" + data.getWord());
-                    e.printStackTrace();
+                    log.error("Import hot word failed", e);
                 }
             }
         });

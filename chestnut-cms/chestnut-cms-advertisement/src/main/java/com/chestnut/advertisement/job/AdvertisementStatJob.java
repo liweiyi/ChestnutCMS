@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.advertisement.job;
 
 import com.chestnut.advertisement.domain.CmsAdHourStat;
@@ -51,22 +66,17 @@ public class AdvertisementStatJob extends IJobHandler implements IScheduledHandl
 	public void exec() throws Exception {
 		logger.info("Job start: {}", JOB_NAME);
 		long s = System.currentTimeMillis();
-		try {
-			// 数据更新
-			String hour = LocalDateTime.now().format(AdvertisementStatServiceImpl.DATE_TIME_FORMAT);
-			this.saveToDb(hour, false);
-			// 尝试更新上一个小时数据并删除cache
-			String yestoday = LocalDateTime.now().minusHours(1).format(AdvertisementStatServiceImpl.DATE_TIME_FORMAT);
-			this.saveToDb(yestoday, true);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		}
-		logger.info("Job '{}' completed, cost: {}ms", JOB_NAME, System.currentTimeMillis() - s);
+        // 数据更新
+        String hour = LocalDateTime.now().format(AdvertisementStatServiceImpl.DATE_TIME_FORMAT);
+        this.saveToDb(hour, false);
+        // 尝试更新上一个小时数据并删除cache
+        String yesterday = LocalDateTime.now().minusHours(1).format(AdvertisementStatServiceImpl.DATE_TIME_FORMAT);
+        this.saveToDb(yesterday, true);
+        logger.info("Job '{}' completed, cost: {}ms", JOB_NAME, System.currentTimeMillis() - s);
 	}
 
 	private void saveToDb(String hour, boolean deleteCache) {
-		String clickCacheKey = AdvertisementStatServiceImpl.CLIC_CACHE_PREFIX + hour;
+		String clickCacheKey = AdvertisementStatServiceImpl.CLICK_CACHE_PREFIX + hour;
 		String viewCacheKey = AdvertisementStatServiceImpl.VIEW_CACHE_PREFIX + hour;
 
 		Map<Long, CmsAdHourStat> stats = this.adStatService.lambdaQuery().eq(CmsAdHourStat::getHour, hour).list()

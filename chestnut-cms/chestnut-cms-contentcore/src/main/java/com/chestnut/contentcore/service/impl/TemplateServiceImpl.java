@@ -1,24 +1,24 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.service.impl;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import com.chestnut.common.security.domain.LoginUser;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.contentcore.util.TemplateUtils;
-import org.apache.commons.io.FileUtils;
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
@@ -26,7 +26,6 @@ import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.CmsTemplate;
 import com.chestnut.contentcore.domain.dto.TemplateAddDTO;
-import com.chestnut.contentcore.domain.dto.TemplateRenameDTO;
 import com.chestnut.contentcore.domain.dto.TemplateUpdateDTO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.config.TemplateSuffix;
@@ -37,9 +36,22 @@ import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.template.ITemplateType;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.SysConstants;
-
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTemplate> implements ITemplateService {
@@ -77,8 +89,6 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 
 	/**
 	 * 扫描模板目录，创建模板数据库记录
-	 *
-	 * @param site
 	 */
 	@Override
 	public void scanTemplates(CmsSite site) {
@@ -107,7 +117,7 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 							// 清理include缓存
 							this.clearTemplateStaticContentCache(t);
 						} catch (IOException e) {
-							e.printStackTrace();
+							log.error("Read file content failed: {}", file.getAbsolutePath(), e);
 						}
 					}
 				}, () -> {
@@ -123,7 +133,7 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 						t.createBy(SysConstants.SYS_OPERATOR);
 						save(t);
 					} catch (IOException e) {
-						e.printStackTrace();
+						log.error("Read file content failed: {}", file.getAbsolutePath(), e);
 					}
 				});
 			}
@@ -146,8 +156,10 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 	/**
 	 * 模板文件重命名
 	 *
-	 * @param dto
-	 * @throws IOException
+	 * @param template
+	 * @param path
+	 * @param remark
+	 * @param operator
 	 */
 	@Override
 	public void renameTemplate(CmsTemplate template, String path, String remark, String operator) throws IOException {
@@ -168,8 +180,6 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 
 	/**
 	 * 保存模板内容
-	 *
-	 * @throws IOException
 	 */
 	@Override
 	public void saveTemplate(CmsTemplate template, TemplateUpdateDTO dto) throws IOException {
@@ -177,7 +187,8 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 		template.setRemark(dto.getRemark());
 		// 变更文件内容
 		File file = this.getTemplateFile(template);
-		file.getParentFile().mkdirs();
+		Files.createDirectory(file.getParentFile().toPath());
+
 		FileUtils.writeStringToFile(file, dto.getContent(), StandardCharsets.UTF_8);
 
 		template.setModifyTime(file.lastModified());
@@ -191,7 +202,6 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 	 * 新建模板文件
 	 *
 	 * @param dto
-	 * @throws IOException
 	 */
 	@Override
 	public void addTemplate(TemplateAddDTO dto) throws IOException {

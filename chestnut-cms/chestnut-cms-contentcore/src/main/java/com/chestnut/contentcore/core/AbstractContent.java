@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.core;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -328,7 +343,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		this.getContentService().updateById(this.getContentEntity());
 
 		if (ContentStatus.isPublished(status)) {
-			try {
 				// 已发布内容删除静态页面
 				this.getContentService().deleteStaticFiles(this.getContentEntity());
 				// 重新发布内容所在栏目和父级栏目
@@ -338,9 +352,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 					this.getPublishService().publishCatalog(this.getCatalogService().getCatalog(Long.valueOf(catalogId)),
 							false, false, null, this.getOperator());
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.xmodel.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -5,6 +20,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.db.DBService;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.db.domain.DBTable;
+import com.chestnut.common.utils.ArrayUtils;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -53,7 +69,7 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 					() -> MetaErrorCode.FIELD_LIMIT.exception(dto.getFieldType()));
 
 			for (int i = 1; i <= fieldTypeLimit; i++) {
-				if (!StringUtils.containsAny(dto.getFieldType() + i, usedFields)) {
+				if (!ArrayUtils.contains(dto.getFieldType() + i, usedFields)) {
 					dto.setFieldName(dto.getFieldType() + i);
 					break;
 				}
@@ -63,7 +79,7 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 			if (fixedFields.contains(dto.getFieldName())) {
 				throw MetaErrorCode.META_FIELD_CONFLICT.exception(dto.getFieldName());
 			}
-			if (StringUtils.containsAny(dto.getFieldName(), usedFields)) {
+			if (ArrayUtils.contains(dto.getFieldName(), usedFields)) {
 				throw MetaErrorCode.META_FIELD_CONFLICT.exception(dto.getFieldName());
 			}
 			if (!isTableContainsColumn(model.getTableName(), dto.getFieldName())) {
@@ -101,7 +117,7 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 					() -> MetaErrorCode.FIELD_LIMIT.exception(dto.getFieldType()));
 
 			for (int i = 1; i <= fieldTypeLimit; i++) {
-				if (!StringUtils.containsAny(dto.getFieldType() + i, usedFields)) {
+				if (!ArrayUtils.contains(dto.getFieldType() + i, usedFields)) {
 					dto.setFieldName(dto.getFieldType() + i);
 					break;
 				}
@@ -112,7 +128,7 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 				throw MetaErrorCode.META_FIELD_CONFLICT.exception(dto.getFieldName());
 			}
 			String[] usedFields = this.getUsedFields(model.getModelId(), dto.getFieldType(), false);
-			if (StringUtils.containsAny(dto.getFieldName(), usedFields)) {
+			if (ArrayUtils.contains(dto.getFieldName(), usedFields)) {
 				throw MetaErrorCode.META_FIELD_CONFLICT.exception(dto.getFieldName());
 			}
 			if (!isTableContainsColumn(model.getTableName(), dto.getFieldName())) {

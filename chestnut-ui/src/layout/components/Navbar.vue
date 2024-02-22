@@ -75,7 +75,7 @@ export default {
     ChestnutCMSDoc,
     LanguageSelect,
     CurrentSite,
-    PublishTask
+    PublishTask,
   },
   computed: {
     ...mapGetters([

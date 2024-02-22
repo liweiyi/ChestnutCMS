@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.core;
 
 import com.chestnut.contentcore.domain.CmsSite;
@@ -5,6 +20,7 @@ import com.chestnut.contentcore.util.SiteUtils;
 import jodd.io.ZipBuilder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -17,13 +33,16 @@ import java.util.Set;
 /**
  * 站点主题导出上下文
  *
- * 保存导出过程中的临时数据供各模块使用
- * 导出文件可保存至siteResourceRoot/_export/theme/目录下，数据库数据默认位于db目录下
- * theme目录下的导出临时文件会在导出逻辑最后按目录名打包
- * 目前已知目录：
- * 站点文件：wwwroot/
+ * <p>
+ * 保存导出过程中的临时数据供各模块使用<br/>
+ * 导出文件可保存至siteResourceRoot/_export/theme/目录下，数据库数据默认位于db目录下<br/>
+ * theme目录下的导出临时文件会在导出逻辑最后按目录名打包<br/>
+ * 目前已知目录：<br/>
+ * 站点文件：wwwroot/<br/>
  * 数据库文件：db/
+ * </p>
  */
+@Slf4j
 @Getter
 @Setter
 public class SiteExportContext implements ISiteThemeContext {
@@ -78,16 +97,16 @@ public class SiteExportContext implements ISiteThemeContext {
      * @param dest 目标路径，项目资源根目录（resourceRoot）
      */
     public void saveFile(File source, String dest) {
+        File destFile = new File(SiteUtils.getSiteResourceRoot(site) + dest);
         try {
             dest = ExportDir + SiteDirPath + dest;
-            File destFile = new File(SiteUtils.getSiteResourceRoot(site) + dest);
             if (source.isDirectory()) {
                 FileUtils.copyDirectory(source, destFile);
             } else {
                 FileUtils.copyFile(source, destFile);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Copy directory/file {} to {} failed!", source.getAbsolutePath(), destFile.getAbsolutePath(), e);
         }
     }
 
@@ -96,12 +115,12 @@ public class SiteExportContext implements ISiteThemeContext {
     }
 
     public void saveData(String tableName, String jsonData, int index) {
+        String path = ExportDir + DataDirPath + tableName + SPLITER + index + ".json";
+        File f = new File(SiteUtils.getSiteResourceRoot(site) + path);
         try {
-            String path = ExportDir + DataDirPath + tableName + SPLITER + index + ".json";
-            File f = new File(SiteUtils.getSiteResourceRoot(site) + path);
             FileUtils.writeStringToFile(f, jsonData, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Write content to file `{}` failed!", f.getAbsolutePath(), e);
         }
     }
 

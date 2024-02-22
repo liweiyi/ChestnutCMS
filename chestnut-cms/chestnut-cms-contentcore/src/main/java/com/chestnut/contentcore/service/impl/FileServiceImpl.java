@@ -1,15 +1,19 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.service.impl;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import org.apache.commons.io.FileUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
@@ -27,8 +31,17 @@ import com.chestnut.contentcore.fixed.config.AllowUploadFileType;
 import com.chestnut.contentcore.service.IFileService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.util.SiteUtils;
-
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -46,26 +59,26 @@ public class FileServiceImpl implements IFileService {
 		List<TreeNode<String>> list = new ArrayList<>();
 		// 资源目录
 		File siteResourceRoot = new File(SiteUtils.getSiteResourceRoot(site));
-		if (!siteResourceRoot.exists()) {
-			siteResourceRoot.mkdirs();
-		}
+		FileExUtils.mkdirs(siteResourceRoot.getAbsolutePath());
+
 		list.add(new TreeNode<>(siteResourceRoot.getName(), "", siteResourceRoot.getName(), true));
 		// 发布通道目录
 		this.publishPipeService.getAllPublishPipes(site.getSiteId()).forEach(publishPipe -> {
 			File siteRoot = new File(SiteUtils.getSiteRoot(site, publishPipe.getCode()));
-			if (!siteRoot.exists()) {
-				siteRoot.mkdirs();
-			}
+			FileExUtils.mkdirs(siteRoot.getAbsolutePath());
 			list.add(new TreeNode<>(siteRoot.getName(), "", siteRoot.getName(), true));
 		});
-		list.forEach(node -> loadChildrenDirectories(node));
+		list.forEach(this::loadChildrenDirectories);
 		return list;
 	}
 	
 	private void loadChildrenDirectories(TreeNode<String> node) {
 		File root = new File(CMSConfig.getResourceRoot() + node.getId());
 		File[] listFiles = root.listFiles();
-		for (File file : listFiles) {
+		if (Objects.isNull(listFiles)) {
+			return;
+		}
+        for (File file : listFiles) {
 			if (file.isDirectory()) {
 				String id = node.getId() + StringUtils.SLASH + file.getName();
 				if (Objects.isNull(node.getChildren())) {
@@ -178,9 +191,9 @@ public class FileServiceImpl implements IFileService {
     	Assert.isFalse(file.exists(), ContentCoreErrorCode.FILE_ALREADY_EXISTS::exception);
 
     	if (dto.getIsDirectory()) {
-    		file.mkdirs();
+			FileExUtils.mkdirs(file.getAbsolutePath());
     	} else {
-    		file.getParentFile().mkdirs();
+			FileExUtils.mkdirs(file.getParentFile().getAbsolutePath());
     		FileUtils.writeStringToFile(file, StringUtils.EMPTY, StandardCharsets.UTF_8);
     	}
 	}
@@ -273,7 +286,7 @@ public class FileServiceImpl implements IFileService {
 	 * @return
 	 */
 	private void checkSiteDirectory(CmsSite site, String path) {
-		if (path.indexOf("/") > -1) {
+		if (path.contains("/")) {
 			path = StringUtils.substringBefore(path, "/");
 		}
 		if (StringUtils.isNotEmpty(path)) {

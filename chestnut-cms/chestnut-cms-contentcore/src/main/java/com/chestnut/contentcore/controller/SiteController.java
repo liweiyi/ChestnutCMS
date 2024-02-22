@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -331,10 +346,7 @@ public class SiteController extends BaseRestController {
             String suffix = FileExUtils.getExtension(Objects.requireNonNull(multipartFile.getOriginalFilename()));
             String path = "watermaker" + StringUtils.DOT + suffix;
             File file = new File(dir + path);
-            boolean mkdirs = file.getParentFile().mkdirs();
-            if (!mkdirs) {
-                return R.fail("mkdirs failed.");
-            }
+            FileExUtils.mkdirs(file.getParentFile().getAbsolutePath());
             FileUtils.writeByteArrayToFile(file, multipartFile.getBytes());
             String src = SiteUtils.getResourcePrefix(site, true) + path;
             return R.ok(Map.of("path", path, "src", src));
@@ -363,7 +375,7 @@ public class SiteController extends BaseRestController {
         }
     }
 
-    @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
+    @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#dto.siteId}")
     @PostMapping("/exportTheme")
     public R<?> exportSiteTheme(@Validated @RequestBody SiteExportDTO dto) {
         CmsSite site = this.siteService.getSite(dto.getSiteId());
@@ -397,7 +409,7 @@ public class SiteController extends BaseRestController {
             }
         } catch (IOException e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            e.printStackTrace();
+            response.getWriter().write("Export site theme file failed: " + e.getMessage());
         }
     }
 }

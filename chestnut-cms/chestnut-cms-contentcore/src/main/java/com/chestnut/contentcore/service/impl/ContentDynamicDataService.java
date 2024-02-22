@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.service.impl;
 
 import com.chestnut.common.redis.RedisCache;
@@ -8,11 +23,13 @@ import com.chestnut.contentcore.service.IContentService;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -34,6 +51,8 @@ public class ContentDynamicDataService {
     private final IContentService contentService;
 
     private final RedisCache redisCache;
+
+    private final RedissonClient redissonClient;
 
     private static final ConcurrentHashMap<Long, ContentDynamicDataVO> dynamicUpdates = new ConcurrentHashMap<>();
 
@@ -91,21 +110,6 @@ public class ContentDynamicDataService {
         return values;
     }
 
-    public ContentDynamicDataVO getContentDynamicData(Long contentId) {
-        if (!IdUtils.validate(contentId)) {
-            return null;
-        }
-        ContentDynamicDataVO data = this.redisCache.getCacheMapValue(CONTENT_DYNAMIC_DATA_CACHE, contentId.toString());
-        if (data == null) {
-            CmsContent content = this.contentService.getById(contentId);
-            if (content != null) {
-                data = new ContentDynamicDataVO(content);
-                this.redisCache.setCacheMapValue(CONTENT_DYNAMIC_DATA_CACHE, contentId.toString(), data);
-            }
-        }
-        return data;
-    }
-
     /**
      * 更新内容动态数据缓存
      *
@@ -117,14 +121,28 @@ public class ContentDynamicDataService {
         if (!IdUtils.validate(contentId)) {
             return;
         }
-        ContentDynamicDataVO data = this.getContentDynamicData(contentId);
-        if (increase) {
-            data.increase(type);
-        } else {
-            data.decrease(type);
+        RLock lock = redissonClient.getLock("ContentView-" + contentId);
+        lock.lock();
+        try {
+            ContentDynamicDataVO data = this.redisCache.getCacheMapValue(CONTENT_DYNAMIC_DATA_CACHE, contentId.toString());
+            if (Objects.isNull(data)) {
+                CmsContent content = this.contentService.getById(contentId);
+                if (Objects.isNull(content)) {
+                    return;
+                }
+                data = new ContentDynamicDataVO(content);
+            }
+            if (increase) {
+                data.increase(type);
+            } else {
+                data.decrease(type);
+            }
+
+            this.redisCache.setCacheMapValue(CONTENT_DYNAMIC_DATA_CACHE, contentId.toString(), data);
+            dynamicUpdates.put(contentId, data);
+        } finally {
+            lock.unlock();
         }
-        this.redisCache.setCacheMapValue(CONTENT_DYNAMIC_DATA_CACHE, contentId.toString(), data);
-        dynamicUpdates.put(contentId, data);
     }
 
     /**

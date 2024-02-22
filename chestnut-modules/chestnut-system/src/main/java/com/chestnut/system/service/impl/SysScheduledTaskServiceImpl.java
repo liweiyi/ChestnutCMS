@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.system.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -101,7 +116,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
         };
         scheduledTask.setTaskId(task.getTaskId());
         scheduledTask.setType(task.getTaskType());
-        this.taskMap.put(task.getTaskId(), scheduledTask);
+        taskMap.put(task.getTaskId(), scheduledTask);
 
         scheduledTask.ready();
         ScheduledFuture<?> future = threadPoolTaskScheduler.schedule(scheduledTask, trigger);
@@ -139,7 +154,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
     @Override
     public void insertTask(ScheduledTaskDTO dto) {
         long count = this.lambdaQuery().eq(SysScheduledTask::getTaskType, dto.getTaskType()).count();
-        Assert.isTrue(count == 0, () -> SysErrorCode.SCHEDULED_TASK_EXISTS.exception());
+        Assert.isTrue(count == 0, SysErrorCode.SCHEDULED_TASK_EXISTS::exception);
 
         SysScheduledTask task = new SysScheduledTask();
         task.setTaskId(IdUtils.getSnowflakeId());
@@ -208,7 +223,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
         if (EnableOrDisable.isEnable(dbTask.getStatus())) {
             return;
         }
-        ScheduledTask scheduledTask = this.taskMap.get(taskId);
+        ScheduledTask scheduledTask = taskMap.get(taskId);
         Assert.isTrue(Objects.isNull(scheduledTask), SysErrorCode.SCHEDULED_TASK_RUNNING::exception);
         this.addScheduledTask(dbTask);
 
@@ -230,11 +245,11 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
     }
 
     private void removeScheduledTask(Long taskId) {
-        ScheduledTask scheduledTask = this.taskMap.get(taskId);
+        ScheduledTask scheduledTask = taskMap.get(taskId);
         if (scheduledTask != null) {
             scheduledTask.interrupt();
             scheduledTask.getFuture().cancel(false);
-            this.taskMap.remove(taskId);
+            taskMap.remove(taskId);
         }
     }
 
@@ -255,14 +270,14 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
         scheduledTask.setTaskId(task.getTaskId());
         scheduledTask.setType(task.getTaskType());
         scheduledTask.ready();
-        scheduledTask.setEndEvent(t -> this.taskMap.remove(task.getTaskId()));
+        scheduledTask.setEndEvent(t -> taskMap.remove(task.getTaskId()));
 
-        this.taskMap.put(task.getTaskId(), scheduledTask);
+        taskMap.put(task.getTaskId(), scheduledTask);
         threadPoolTaskScheduler.schedule(scheduledTask, Instant.now());
     }
 
     @Override
     public ScheduledTask getScheduledTask(Long taskId) {
-        return this.taskMap.get(taskId);
+        return taskMap.get(taskId);
     }
 }

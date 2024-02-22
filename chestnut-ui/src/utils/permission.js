@@ -52,11 +52,11 @@ export function checkRole(value) {
 
 /**
  * 权限字符串解析，处理占位符。
- * 
+ *
  * 支持：
  * parsePermi('Site:Edit:{siteId}', { 'siteId': 1234 })
  * parsePermi('Site:Edit:{0}', [ 1234 ])
- * 
+ *
  * @param {String} value 权限字符串
  * @param {Array|Object} replacements 占位符替换值
  * @returns {Boolean}
@@ -65,11 +65,19 @@ export function parsePermi(value, replacements) {
   if (replacements) {
     if (replacements instanceof Array && replacements.length > 0) {
       for(let i = 0; i < replacements.length; i++) {
-        value = value.replace(new RegExp("\\{" + i + "\\}", "g"), replacements[i])
-      } 
+        let replacement = replacements[i]
+        if (!replacement || replacement.length == 0) {
+          return ""
+        }
+        value = value.replace(new RegExp("\\{" + i + "\\}", "g"), replacement)
+      }
     } else if (replacements instanceof Object && Object.keys(replacements).length > 0) {
       Object.keys(replacements).forEach(key => {
-        value = value.replace(new RegExp("\\{" + key + "\\}", "g"), replacements[key])
+        let replacement = replacements[key]
+        if (!replacement || replacement.length == 0) {
+          return ""
+        }
+        value = value.replace(new RegExp("\\{" + key + "\\}", "g"), replacement)
       })
     }
   }

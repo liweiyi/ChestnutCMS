@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.cms.image;
 
 import java.util.List;
@@ -59,12 +74,12 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 		// 图片数处理
 		List<CmsImage> imageList = this.getExtendEntity();
 		// 先删除数据
-		List<Long> updateImageIds = imageList.stream().filter(img -> IdUtils.validate(img.getImageId()))
-				.map(CmsImage::getImageId).toList();
+		List<Long> updateImageIds = imageList.stream().map(CmsImage::getImageId)
+				.filter(IdUtils::validate).toList();
 		this.getImageService()
 				.remove(new LambdaQueryWrapper<CmsImage>()
 						.eq(CmsImage::getContentId, this.getContentEntity().getContentId())
-						.notIn(updateImageIds.size() > 0, CmsImage::getImageId, updateImageIds));
+						.notIn(!updateImageIds.isEmpty(), CmsImage::getImageId, updateImageIds));
 		for (int i = 0; i < images.size(); i++) {
 			CmsImage image = images.get(i);
 			if (IdUtils.validate(image.getImageId())) {

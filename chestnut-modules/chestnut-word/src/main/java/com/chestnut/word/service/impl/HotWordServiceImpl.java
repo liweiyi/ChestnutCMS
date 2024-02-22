@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.word.service.impl;
 
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
@@ -37,7 +52,7 @@ public class HotWordServiceImpl extends ServiceImpl<HotWordMapper, HotWord> impl
 
 	@Override
 	public Map<String, HotWordCache> getHotWords(String groupCode) {
-		return this.redisCache.getCacheObject(CACHE_PREFIX + groupCode, () -> {
+		return this.redisCache.getCacheMap(CACHE_PREFIX + groupCode, () -> {
 			Optional<HotWordGroup> groupOpt = new LambdaQueryChainWrapper<>(this.hotWordGroupMapper).eq(HotWordGroup::getCode, groupCode).oneOpt();
 			return groupOpt.map(hotWordGroup -> this.lambdaQuery()
 							.eq(HotWord::getGroupId, hotWordGroup.getGroupId())
@@ -59,15 +74,14 @@ public class HotWordServiceImpl extends ServiceImpl<HotWordMapper, HotWord> impl
 		}
 		for (String groupCode : groupCodes) {
 			Map<String, HotWordCache> hotWords = this.getHotWords(groupCode);
-			for (Iterator<Entry<String, HotWordCache>> iterator = hotWords.entrySet().iterator(); iterator.hasNext();) {
-				Entry<String, HotWordCache> e = iterator.next();
-				if (StringUtils.isEmpty(target)) {
-					target = e.getValue().target();
-				}
-				String replacement = StringUtils.messageFormat(replacementTemplate, e.getValue().url(),
-						e.getValue().word(), target);
-				text = StringUtils.replaceEx(text, e.getKey(), replacement);
-			}
+            for (Entry<String, HotWordCache> e : hotWords.entrySet()) {
+                if (StringUtils.isEmpty(target)) {
+                    target = e.getValue().getTarget();
+                }
+                String replacement = StringUtils.messageFormat(replacementTemplate, e.getValue().getUrl(),
+                        e.getValue().getWord(), target);
+                text = StringUtils.replaceEx(text, e.getKey(), replacement);
+            }
 		}
 		return text;
 	}

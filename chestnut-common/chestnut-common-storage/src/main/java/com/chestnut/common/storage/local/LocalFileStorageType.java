@@ -1,25 +1,30 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.common.storage.local;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.chestnut.common.i18n.I18nUtils;
+import com.chestnut.common.storage.*;
+import com.chestnut.common.storage.exception.FileStorageException;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.file.FileExUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
 
-import com.chestnut.common.i18n.I18nUtils;
-import com.chestnut.common.storage.IFileStorageType;
-import com.chestnut.common.storage.StorageCopyArgs;
-import com.chestnut.common.storage.StorageExistArgs;
-import com.chestnut.common.storage.StorageMoveArgs;
-import com.chestnut.common.storage.StorageReadArgs;
-import com.chestnut.common.storage.StorageRemoveArgs;
-import com.chestnut.common.storage.StorageWriteArgs;
-import com.chestnut.common.storage.exception.FileStorageException;
-import com.chestnut.common.utils.StringUtils;
+import java.io.*;
 
 @Component(IFileStorageType.BEAN_NAME_PREIFX + LocalFileStorageType.TYPE)
 public class LocalFileStorageType implements IFileStorageType {
@@ -100,7 +105,7 @@ public class LocalFileStorageType implements IFileStorageType {
 			}
 			String filePath = bucket + args.getPath();
 			File file = new File(filePath);
-			file.getParentFile().mkdirs();
+			FileExUtils.mkdirs(file.getParentFile().getAbsolutePath());
 			FileUtils.writeByteArrayToFile(file, IOUtils.toByteArray(args.getInputStream()));
 		} catch (Exception e) {
 			throw new FileStorageException(e);

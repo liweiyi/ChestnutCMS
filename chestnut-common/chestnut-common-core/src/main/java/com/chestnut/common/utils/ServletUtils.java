@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.common.utils;
 
 import eu.bitwalker.useragentutils.UserAgent;
@@ -7,6 +22,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -28,6 +44,7 @@ import java.util.stream.Stream;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Slf4j
 public class ServletUtils {
 
 	/**
@@ -135,7 +152,7 @@ public class ServletUtils {
 	}
 
 	/**
-	 * 保存
+	 * response写入cookie
 	 *
 	 * @param response
 	 * @param key
@@ -146,14 +163,14 @@ public class ServletUtils {
 	}
 
 	/**
-	 * 保存
+	 * response写入cookie
 	 *
 	 * @param response
 	 * @param key
 	 * @param value
 	 * @param maxAge
 	 */
-	private static void setCookie(HttpServletResponse response, String key, String value, String domain, String path,
+	public static void setCookie(HttpServletResponse response, String key, String value, String domain, String path,
 								  int maxAge, boolean isHttpOnly) {
 		Cookie cookie = new Cookie(key, value);
 		if (domain != null) {
@@ -364,7 +381,7 @@ public class ServletUtils {
 			response.setCharacterEncoding("utf-8");
 			response.getWriter().print(string);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Render string `{}` to response fail.", string, e);
 		}
 	}
 
@@ -379,7 +396,7 @@ public class ServletUtils {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Read request body fail.", e);
 		}
 		return sb.toString();
 	}
@@ -390,7 +407,7 @@ public class ServletUtils {
 		try (ServletInputStream in = request.getInputStream()) {
 			in.read(buffer, 0, len);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Read request body to bytes fail.", e);
 		}
 		return buffer;
 	}

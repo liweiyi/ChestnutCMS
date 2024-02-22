@@ -12,10 +12,10 @@
 </template>
 
 <script>
-import Cookies from 'js-cookie'
+import { listLangOptions } from '@/api/system/i18nDict'
 
 export default {
-  name: "HMIProgress",
+  name: "LanguageSelect",
   props: {
     arrow: {
       type: Boolean,
@@ -26,10 +26,7 @@ export default {
   data() {
     return {
       showArrowDown: this.arrow,
-      langOptions: [
-        { label: '中文简体', value: 'zh-CN' },
-        { label: 'English', value: 'en' }
-      ]
+      langOptions: []
     }
   },
   computed: {
@@ -45,7 +42,15 @@ export default {
       }
     }
   },
+  created() {
+    this.loadLangSelectData()
+  },
   methods: {
+    loadLangSelectData() {
+      listLangOptions().then(response => {
+        this.langOptions = response.data
+      })
+    },
     handleSetLanguage(lang) {
       this.$cache.local.set('lang', lang)
       this.$i18n.locale = lang;

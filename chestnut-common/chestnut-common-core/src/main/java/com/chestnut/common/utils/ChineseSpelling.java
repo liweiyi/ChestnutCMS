@@ -1,12 +1,30 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.common.utils;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 
+@Slf4j
 public class ChineseSpelling {
 
-	private static LinkedHashMap<String, String> specialFamilyNames = new LinkedHashMap<String, String>();
+	private static LinkedHashMap<String, String> specialFamilyNames = new LinkedHashMap<>();
 
 	/**
 	 * 获得单个汉字的GBK编码
@@ -19,7 +37,7 @@ public class ChineseSpelling {
 		try {
 			bytes = String.valueOf(cn).getBytes("GBK");
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 		}
 		if (bytes == null || bytes.length > 2 || bytes.length <= 0) { // 错误
 			return 0;
@@ -27,19 +45,16 @@ public class ChineseSpelling {
 		if (bytes.length == 1) { // 英文字符
 			return bytes[0];
 		}
-		if (bytes.length == 2) { // 中文字符
-			int hightByte = 256 + bytes[0];
-			int lowByte = 256 + bytes[1];
-			int ascii = 256 * hightByte + lowByte - 256 * 256;
-			return ascii;
-		}
-		return 0;
+		// 中文字符
+		int highByte = 256 + bytes[0];
+		int lowByte = 256 + bytes[1];
+        return 256 * highByte + lowByte - 256 * 256;
 	}
 
 	/**
 	 * 根据GBK码到SpellMap中查找对应的拼音
 	 * 
-	 * @param 字符对应的GBK码
+	 * @param code 字符对应的GBK码
 	 * @return 拼音,首先判断code是否>0&<160,如果是返回对应的字符, <BR>
 	 *         否则到spellMap中查找,如果没有找到拼音,则返回null,如果找到则返回拼音.
 	 */
@@ -133,8 +148,8 @@ public class ChineseSpelling {
 			} else {
 				String str = getSpelling(String.valueOf(c));
 				str = str.replaceAll("\\s", "");
-				if (str.length() > 0) {
-					sb.append(str.substring(0, 1));
+				if (!str.isEmpty()) {
+					sb.append(str.charAt(0));
 				}
 			}
 		}

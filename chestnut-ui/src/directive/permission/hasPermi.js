@@ -13,32 +13,33 @@ function fn (el, binding) {
   const all_permission = "*";
   const permissions = store.getters && store.getters.permissions
 
-  if (value && value instanceof Array && value.length > 0) {
-    const permissionFlag = value
+  if (!value || !value instanceof Array) {
+    return
+  }
+  const permissionFlag = value.filter(v => v.length > 0)
+  if (permissionFlag.length == 0) {
+    return
+  }
 
-    const hasPermissions = permissions.some(permission => {
-      return all_permission === permission || permissionFlag.includes(permission)
-    })
-
-    if (!hasPermissions) {
-      if (el.classList.contains('el-button') || el.classList.contains("btn-permi")) {
-        el.cacheParentElement && el.cacheParentElement.removeChild(el)
-      } else if (el.classList.contains('el-dropdown-menu__item')) {
-        el.cacheElement.style.display = 'none';
-      }
-    } else {
-      if (el.classList.contains('el-button') || el.classList.contains("btn-permi")) {
-        el.cacheParentElement && el.cacheParentElement.appendChild(el.cacheElement)
-      } else if (el.classList.contains('el-dropdown-menu__item')) {
-        if (el.cacheElement) {
-          el.cacheElement.style.display = '';
-        }
-      }
-      // 有权限则追加之前缓存的 dom 元素
-      // el.cacheParentElement && el.cacheParentElement.appendChild(el.cacheElement)
+  const hasPermissions = permissions.some(permission => {
+    return all_permission === permission || permissionFlag.includes(permission)
+  })
+  if (!hasPermissions) {
+    if (el.classList.contains('el-button') || el.classList.contains("btn-permi")) {
+      el.cacheParentElement && el.cacheElement.parentNode == el.cacheParentElement && el.cacheParentElement.removeChild(el.cacheElement)
+    } else if (el.classList.contains('el-dropdown-menu__item')) {
+      el.cacheElement.style.display = 'none';
     }
   } else {
-    throw new Error(`请设置操作权限标签值`)
+    if (el.classList.contains('el-button') || el.classList.contains("btn-permi")) {
+      el.cacheParentElement && el.cacheElement.parentNode != el.cacheParentElement && el.cacheParentElement.appendChild(el.cacheElement)
+    } else if (el.classList.contains('el-dropdown-menu__item')) {
+      if (el.cacheElement) {
+        el.cacheElement.style.display = '';
+      }
+    }
+    // 有权限则追加之前缓存的 dom 元素
+    // el.cacheParentElement && el.cacheParentElement.appendChild(el.cacheElement)
   }
 }
 
@@ -46,7 +47,7 @@ const hasPermi = {
   inserted: function (el, binding, vnode) {
     el.cacheElement = el // 缓存本节点
     el.cacheParentElement = el.parentNode // 缓存父节点
-    fn(el, binding)
+    // fn(el, binding)
   },
   update: function (el, binding) {
     fn(el, binding)

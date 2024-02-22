@@ -1,11 +1,21 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.media;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -14,6 +24,10 @@ import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.media.domain.CmsAudio;
 import com.chestnut.media.service.IAudioService;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AudioContent extends AbstractContent<List<CmsAudio>> {
 
@@ -63,12 +77,12 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 		// 音频数处理
 		List<CmsAudio> audioList = this.getExtendEntity();
 		// 先删除音频
-		List<Long> updateAudioIds = audioList.stream().filter(audio -> IdUtils.validate(audio.getAudioId()))
-				.map(CmsAudio::getAudioId).toList();
+		List<Long> updateAudioIds = audioList.stream().map(CmsAudio::getAudioId)
+				.filter(IdUtils::validate).toList();
 		this.getAudioService()
 				.remove(new LambdaQueryWrapper<CmsAudio>()
 						.eq(CmsAudio::getContentId, this.getContentEntity().getContentId())
-						.notIn(updateAudioIds.size() > 0, CmsAudio::getAudioId, updateAudioIds));
+						.notIn(!updateAudioIds.isEmpty(), CmsAudio::getAudioId, updateAudioIds));
 		// 查找需要修改的音频
 		Map<Long, CmsAudio> oldAudioMap = this.getAudioService().lambdaQuery()
 				.eq(CmsAudio::getContentId, this.getContentEntity().getContentId()).list().stream()

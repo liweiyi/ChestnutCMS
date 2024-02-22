@@ -1,15 +1,19 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.service.impl;
-
-import java.io.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-
-import com.chestnut.contentcore.core.IResourceStat;
-import com.chestnut.contentcore.util.ResourceUtils;
-import org.apache.commons.io.FileUtils;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -20,12 +24,9 @@ import com.chestnut.common.storage.StorageWriteArgs;
 import com.chestnut.common.storage.StorageWriteArgs.StorageWriteArgsBuilder;
 import com.chestnut.common.storage.exception.StorageErrorCode;
 import com.chestnut.common.storage.local.LocalFileStorageType;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.HttpUtils;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
+import com.chestnut.contentcore.core.IResourceStat;
 import com.chestnut.contentcore.core.IResourceType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
 import com.chestnut.contentcore.core.impl.ResourceType_Image;
@@ -40,11 +41,22 @@ import com.chestnut.contentcore.properties.FileStorageTypeProperty;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
+import com.chestnut.contentcore.util.ResourceUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
-
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -88,6 +100,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		resource.createBy(operator);
 		// 处理资源
 		this.processResource(resource, resourceType, site, imageBytes);
+		this.save(resource);
 		return resource;
 	}
 
@@ -118,6 +131,34 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		resource.setRemark(dto.getRemark());
 		// 处理资源
 		this.processResource(resource, resourceType, dto.getSite(), dto.getFile().getBytes());
+		this.save(resource);
+		return resource;
+	}
+
+	@Override
+	public CmsResource editResource(ResourceUploadDTO dto)
+			throws IOException {
+		String suffix = FileExUtils.getExtension(Objects.requireNonNull(dto.getFile().getOriginalFilename()));
+		IResourceType resourceType = ResourceUtils.getResourceTypeBySuffix(suffix);
+		Assert.notNull(resourceType, () -> ContentCoreErrorCode.UNSUPPORTED_RESOURCE_TYPE.exception(suffix));
+
+		CmsResource resource = this.getById(dto.getResourceId());
+		Assert.notNull(resource, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("resourceId", dto.getResourceId()));
+
+		resource.setResourceType(resourceType.getId());
+		resource.setFileName(dto.getFile().getOriginalFilename());
+		resource.setName(StringUtils.isEmpty(dto.getName()) ? dto.getFile().getOriginalFilename() : dto.getName());
+		resource.setSuffix(suffix);
+
+		String fileName = resource.getResourceId() + StringUtils.DOT + suffix;
+		String path = StringUtils.substringBeforeLast(resource.getPath(), "/") + fileName;
+
+		resource.setPath(path);
+		resource.updateBy(dto.getOperator().getUsername());
+		resource.setRemark(dto.getRemark());
+		// 处理资源
+		this.processResource(resource, resourceType, dto.getSite(), dto.getFile().getBytes());
+		this.updateById(resource);
 		return resource;
 	}
 
@@ -152,6 +193,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		String base64Str = StringUtils.substringAfter(base64Data, ",");
 		byte[] imageBytes = Base64.getDecoder().decode(base64Str);
 		this.processResource(resource, resourceType, site, imageBytes);
+		this.save(resource);
 		return resource;
 	}
 
@@ -184,6 +226,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 
 		byte[] bytes = FileUtils.readFileToByteArray(imageFile);
 		this.processResource(resource, resourceType, site, bytes);
+		this.save(resource);
 		return resource;
 	}
 
@@ -210,14 +253,12 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		resource.setStorageType(fst.getType());
 		// 内部链接
 		resource.setInternalUrl(InternalDataType_Resource.getInternalUrl(resource));
-		// 资源记录入库
-		this.save(resource);
 	}
 
 	@Override
 	public void deleteResource(List<Long> resourceIds) {
 		List<CmsResource> resources = this.listByIds(resourceIds);
-		if (resources.size() > 0) {
+		if (!resources.isEmpty()) {
 			CmsSite site = siteService.getSite(resources.get(0).getSiteId());
 			String siteRoot = SiteUtils.getSiteResourceRoot(site);
 			resources.forEach(r -> {
@@ -236,9 +277,8 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 						}
 					}
 				} catch (IOException e) {
-					e.printStackTrace();
+					log.error("Delete resource file failed: " + r.getPath());
 				}
-
 				// 删除数据库记录
 				this.removeById(r.getResourceId());
 			});

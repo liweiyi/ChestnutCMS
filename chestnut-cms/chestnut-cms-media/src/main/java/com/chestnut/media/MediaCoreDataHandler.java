@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.media;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -13,6 +28,7 @@ import com.chestnut.media.domain.CmsVideo;
 import com.chestnut.media.service.IAudioService;
 import com.chestnut.media.service.IVideoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -24,6 +40,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MediaCoreDataHandler implements ICoreDataHandler {
@@ -45,7 +62,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     .gt(CmsAudio::getAudioId, offset)
                     .orderByAsc(CmsAudio::getAudioId);
             Page<CmsAudio> page = audioService.page(new Page<>(1, pageSize, false), q);
-            if (page.getRecords().size() > 0) {
+            if (!page.getRecords().isEmpty()) {
                 context.saveData(CmsAudio.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                 if (page.getRecords().size() < pageSize) {
                     break;
@@ -66,7 +83,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     .gt(CmsVideo::getVideoId, offset)
                     .orderByAsc(CmsVideo::getVideoId);
             Page<CmsVideo> page = videoService.page(new Page<>(1, pageSize, false), q);
-            if (page.getRecords().size() > 0) {
+            if (!page.getRecords().isEmpty()) {
                 context.saveData(CmsVideo.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                 if (page.getRecords().size() < pageSize) {
                     break;
@@ -97,7 +114,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入音频内容数据失败：" + data.getTitle()
                             + "[" + data.getAudioId() + "]");
-                    e.printStackTrace();
+                    log.error("Import cms_audio failed: {}", data.getAudioId(), e);
                 }
             }
         });
@@ -117,7 +134,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入视频内容数据失败：" + data.getTitle()
                             + "[" + data.getVideoId() + "]");
-                    e.printStackTrace();
+                    log.error("Import cms_video failed: {}", data.getVideoId(), e);
                 }
             }
         });

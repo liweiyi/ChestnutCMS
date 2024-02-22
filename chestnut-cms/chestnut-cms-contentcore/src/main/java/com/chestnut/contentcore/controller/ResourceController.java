@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022-2024 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.chestnut.contentcore.controller;
 
 import cn.dev33.satoken.annotation.SaMode;
@@ -12,6 +27,7 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IResourceType;
@@ -90,7 +106,7 @@ public class ResourceController extends BaseRestController {
 				.ge(beginTime != null, CmsResource::getCreateTime, beginTime)
 				.le(endTime != null, CmsResource::getCreateTime, endTime).orderByDesc(CmsResource::getResourceId);
 		Page<CmsResource> page = resourceService.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true), q);
-		if (page.getRecords().size() > 0) {
+		if (!page.getRecords().isEmpty()) {
 			page.getRecords().forEach(r -> {
 				IResourceType rt = ContentCoreUtils.getResourceType(r.getResourceType());
 				r.setResourceTypeName(I18nUtils.get(rt.getName()));
@@ -116,16 +132,31 @@ public class ResourceController extends BaseRestController {
 		return R.ok(resource);
 	}
 
-	@Log(title = "新增素材", businessType = BusinessType.INSERT)
+	@Log(title = "新增/编辑素材", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<CmsResource> addResource(@RequestParam("file") MultipartFile resourceFile, String name, String remark) {
+	public R<CmsResource> addResource(
+			@RequestParam("file") MultipartFile resourceFile,
+			Long resourceId,
+			String name,
+			String remark
+	) {
 		Assert.isFalse(resourceFile.isEmpty(), () -> CommonErrorCode.NOT_EMPTY.exception("file"));
 		try {
 			CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
-			ResourceUploadDTO dto = ResourceUploadDTO.builder().site(site).file(resourceFile).name(name).remark(remark)
+			ResourceUploadDTO dto = ResourceUploadDTO.builder()
+					.resourceId(resourceId)
+					.site(site)
+					.file(resourceFile)
+					.name(name)
+					.remark(remark)
 					.build();
 			dto.setOperator(StpAdminUtil.getLoginUser());
-			CmsResource resource = this.resourceService.addResource(dto);
+			CmsResource resource;
+			if (IdUtils.validate(resourceId)) {
+				resource = this.resourceService.editResource(dto);
+			} else {
+				resource = this.resourceService.addResource(dto);
+			}
 			return R.ok(resource);
 		} catch (IOException e1) {
 			throw CommonErrorCode.SYSTEM_ERROR.exception(e1.getMessage());
