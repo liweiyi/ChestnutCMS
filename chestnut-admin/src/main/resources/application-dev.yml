@@ -5,7 +5,7 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.4.0
+  version: 1.4.1
   # 版权年份
   copyrightYear: 2022-2024
   system:
@@ -15,8 +15,6 @@ chestnut:
     uploadPath: 'E:/dev/workspace_chestnut/uploadPath'
     # 验证码类型 math 数组计算 char 字符验证
     captchaType: math
-  cms:
-    resourceRoot: 'E:/dev/workspace_chestnut/wwwroot_release/'
   member:
     uploadPath: 'E:/dev/workspace_chestnut/_xy_member/'
 
