@@ -187,7 +187,7 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 		template.setRemark(dto.getRemark());
 		// 变更文件内容
 		File file = this.getTemplateFile(template);
-		Files.createDirectory(file.getParentFile().toPath());
+		FileExUtils.mkdirs(file.getParentFile().getAbsolutePath());
 
 		FileUtils.writeStringToFile(file, dto.getContent(), StandardCharsets.UTF_8);
 

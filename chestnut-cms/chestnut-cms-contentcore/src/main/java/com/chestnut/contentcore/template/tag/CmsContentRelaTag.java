@@ -67,7 +67,7 @@ public class CmsContentRelaTag extends AbstractListTag {
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		Page<CmsContentRela> pageResult = contentRelaMapper.selectPage(new Page<>(pageIndex, size, page),
 				new LambdaQueryWrapper<CmsContentRela>().eq(CmsContentRela::getContentId, contentId));
-		if (pageResult.getRecords().size() > 0) {
+		if (!pageResult.getRecords().isEmpty()) {
 			List<Long> contentIds = pageResult.getRecords().stream().map(CmsContentRela::getRelaContentId).toList();
 			List<CmsContent> contents = this.contentService.lambdaQuery().in(CmsContent::getContentId, contentIds).list();
 			List<ContentDTO> result = contents.stream().map(c -> {

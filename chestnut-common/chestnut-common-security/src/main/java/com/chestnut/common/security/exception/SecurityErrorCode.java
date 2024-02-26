@@ -25,7 +25,7 @@ public enum SecurityErrorCode implements ErrorCode {
 	NOT_LOGIN,
 	
 	/**
-	 * 无访问权限
+	 * 无访问权限：{0}
 	 */
 	NOT_PERMISSION,
 	

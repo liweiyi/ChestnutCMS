@@ -225,4 +225,11 @@ public class SearchApiController extends BaseRestController {
 		});
 		return this.bindDataTable(list, Objects.isNull(sr.hits().total()) ? 0 : sr.hits().total().value());
 	}
+
+	@GetMapping("/suggest")
+	public R<?> getSuggestWords() {
+
+
+		return R.ok();
+	}
 }

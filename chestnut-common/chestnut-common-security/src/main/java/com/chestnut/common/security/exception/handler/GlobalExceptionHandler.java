@@ -73,7 +73,7 @@ public class GlobalExceptionHandler {
 	public R<?> handleSecurityPermissionException(NotPermissionException e, HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
 		log.error("请求地址'{}',权限校验失败'{}'", requestURI, e.getMessage());
-		return R.fail(HttpStatus.FORBIDDEN.value(), I18nUtils.get(SecurityErrorCode.NOT_PERMISSION.value()));
+		return R.fail(HttpStatus.FORBIDDEN.value(), I18nUtils.get(SecurityErrorCode.NOT_PERMISSION.value(), e.getPermission()));
 	}
 
 	/**

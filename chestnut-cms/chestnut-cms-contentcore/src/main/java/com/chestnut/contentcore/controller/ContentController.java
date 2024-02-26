@@ -15,7 +15,6 @@
  */
 package com.chestnut.contentcore.controller;
 
-import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -43,7 +42,6 @@ import com.chestnut.contentcore.domain.vo.ListContentVO;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.listener.event.AfterContentEditorInitEvent;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
-import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishService;
@@ -79,11 +77,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Priv(
-	type = AdminUserType.TYPE,
-	value = { ContentCorePriv.CatalogView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
-	mode = SaMode.AND
-)
+@Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/content")

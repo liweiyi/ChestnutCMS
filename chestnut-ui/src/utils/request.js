@@ -103,6 +103,7 @@ service.interceptors.response.use(res => {
       Message({ message: msg, type: 'warning' })
       return Promise.reject('error')
     } else if (code !== 200) {
+      console.log(res.data)
       Notification.error({ title: msg })
       return Promise.reject('error')
     } else {

@@ -47,6 +47,7 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
@@ -70,7 +71,6 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Priv(type = AdminUserType.TYPE, value = ContentCorePriv.CatalogView)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/catalog")
@@ -93,6 +93,7 @@ public class CatalogController extends BaseRestController {
 	/**
 	 * 查询栏目数据列表
 	 */
+	@Priv(type = AdminUserType.TYPE, value = ContentCorePriv.CatalogView)
 	@GetMapping
 	public R<?> list() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
@@ -185,6 +186,7 @@ public class CatalogController extends BaseRestController {
 	/**
 	 * 栏目树结构数据
 	 */
+	@Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@GetMapping("/treeData")
 	public R<?> treeData() {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
