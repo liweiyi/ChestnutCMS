@@ -7,9 +7,18 @@ export function getTagWordList(params) {
     params: params
   })
 }
+
 export function addTagWord(data) {
   return request({
     url: '/word/tagword',
+    method: 'post',
+    data: data
+  })
+}
+
+export function batchAddTagWords(data) {
+  return request({
+    url: '/word/tagword/batchAdd',
     method: 'post',
     data: data
   })

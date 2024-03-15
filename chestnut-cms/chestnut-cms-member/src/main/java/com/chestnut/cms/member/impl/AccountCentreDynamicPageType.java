@@ -59,7 +59,7 @@ public class AccountCentreDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "个人中心页";
+        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
     }
 
     @Override

@@ -93,15 +93,12 @@ public class ReflectASMUtils {
 		String[] methodNames = methodAccess.getMethodNames();
 		for (String methodName : methodNames) {
 			if (methodName.length() > 3 && methodName.startsWith("get")) {
-				try {
-					int index = methodAccess.getIndex(methodName, 0);
-					if (index > -1) {
-						String fieldName = StringUtils.lowerFirst(methodName.substring(3));
-						Object v = methodAccess.invoke(object, index);
-						map.put(fieldName, v);
-					}
-				} catch (Exception e) {
-					log.warn("The method `{}.{}` not public or not exists.", object.getClass().getName(), methodName, e);
+				int index = methodAccess.getIndex(methodName);
+				if (methodAccess.getParameterTypes()[index].length == 0) {
+					// 仅处理参数数量为0的get方法
+					String fieldName = StringUtils.lowerFirst(methodName.substring(3));
+					Object v = methodAccess.invoke(object, index);
+					map.put(fieldName, v);
 				}
 			}
 		}

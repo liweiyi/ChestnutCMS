@@ -58,12 +58,12 @@ public class AccountPasswordDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getType() {
-        return TYPE;
+        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
     }
 
     @Override
     public String getName() {
-        return "会员修改密码页";
+        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
     }
 
     @Override

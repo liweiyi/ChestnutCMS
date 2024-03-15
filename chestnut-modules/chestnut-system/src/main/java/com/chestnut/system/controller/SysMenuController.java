@@ -28,6 +28,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysMenu;
 import com.chestnut.system.enums.MenuType;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -102,7 +103,9 @@ public class SysMenuController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/userTreeselect")
 	public R<?> userTreeselect() {
-		List<SysMenu> menus = this.menuService.lambdaQuery().ne(SysMenu::getMenuType, MenuType.Button.value())
+		List<SysMenu> menus = this.menuService.lambdaQuery()
+				.ne(SysMenu::getMenuType, MenuType.Button.value())
+				.eq(SysMenu::getVisible, YesOrNo.YES)
 				.orderByAsc(SysMenu::getOrderNum).list();
 
 		List<String> menuPerms = StpAdminUtil.getLoginUser().getPermissions();

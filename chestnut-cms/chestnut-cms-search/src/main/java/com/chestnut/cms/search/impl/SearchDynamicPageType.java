@@ -58,7 +58,7 @@ public class SearchDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "搜索结果页";
+        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
     }
 
     @Override

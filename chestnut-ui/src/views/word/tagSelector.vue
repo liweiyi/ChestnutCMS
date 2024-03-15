@@ -131,14 +131,16 @@ export default {
   }
 };
 </script>
-<style>
+<style rel="stylesheet/scss" lang="scss">
 .tag-selector-dialog .el-dialog__body {
   padding-top: 10px;
   padding-bottom: 10px;
 }
-</style>
-<style scoped>
-.el-tag {
+.tag-selector-dialog .el-divider {
+  margin: 15px 0;
+}
+.tag-selector-dialog .el-tag {
+  margin-bottom: 5px;
   margin-right: 5px;
 }
 </style>

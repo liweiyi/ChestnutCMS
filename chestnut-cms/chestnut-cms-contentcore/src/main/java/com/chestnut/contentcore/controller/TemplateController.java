@@ -100,6 +100,7 @@ public class TemplateController extends BaseRestController {
 				.filesize(t.getFilesize())
 				.filesizeName(FileUtils.byteCountToDisplaySize(t.getFilesize()))
 				.modifyTime(DateUtils.epochMilliToLocalDateTime(t.getModifyTime()))
+				.remark(t.getRemark())
 				.build()).toList();
 		return this.bindDataTable(list, (int) page.getTotal());
 	}

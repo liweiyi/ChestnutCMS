@@ -31,7 +31,7 @@ public class CmsSiteVisitLog implements Serializable {
 	
 	public final static String TABLE_NAME = "cms_site_visit_log";
 
-	@TableId(value = "log_id", type = IdType.AUTO)
+	@TableId(value = "log_id", type = IdType.INPUT)
 	private Long logId;
 
 	/**

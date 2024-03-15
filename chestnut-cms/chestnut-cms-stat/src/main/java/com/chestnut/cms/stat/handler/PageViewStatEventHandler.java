@@ -38,6 +38,8 @@ public class PageViewStatEventHandler implements IStatEventHandler {
 
     public static final String TYPE = "pv";
 
+    static final String CACHE_PREFIX = "cms:stat:pv:";
+
     private final AsyncTaskManager asyncTaskManager;
 
     private final CmsSiteVisitLogMapper siteVisitLogMapper;
@@ -55,7 +57,7 @@ public class PageViewStatEventHandler implements IStatEventHandler {
     public void handle(StatEvent event) {
         CmsSiteVisitLog log = parseSiteVisitLog(event);
         // 更新Redis数据
-        this.redisCache.incrCounter("cms:pv:" + log.getUri());
+        this.redisCache.incrLongCounter(CACHE_PREFIX + log.getUri());
         // 更新内容浏览量
         if (IdUtils.validate(log.getContentId())) {
             contentDynamicDataService.increaseViewCount(log.getContentId());

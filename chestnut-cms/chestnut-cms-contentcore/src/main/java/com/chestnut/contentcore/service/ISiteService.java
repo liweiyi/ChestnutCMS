@@ -36,12 +36,12 @@ public interface ISiteService extends IService<CmsSite> {
 	 * @param siteId
 	 * @return
 	 */
-	public boolean checkSiteUnique(String siteName, String sitePath, Long siteId);
+	boolean checkSiteUnique(String siteName, String sitePath, Long siteId);
 
     /**
      * 获取当前站点，保存在token中
      */
-    public CmsSite getCurrentSite(HttpServletRequest request);
+    CmsSite getCurrentSite(HttpServletRequest request);
 
 	/**
 	 * 获取站点数据
@@ -49,7 +49,7 @@ public interface ISiteService extends IService<CmsSite> {
 	 * @param siteId
 	 * @return
 	 */
-	public CmsSite getSite(Long siteId);
+	CmsSite getSite(Long siteId);
 
 	/**
 	 * 新增站点数据
@@ -58,7 +58,7 @@ public interface ISiteService extends IService<CmsSite> {
 	 * @return
 	 * @throws IOException
 	 */
-	public CmsSite addSite(SiteDTO dto) throws IOException;
+	CmsSite addSite(SiteDTO dto) throws IOException;
 	
 	/**
 	 * 修改站点数据
@@ -67,7 +67,7 @@ public interface ISiteService extends IService<CmsSite> {
 	 * @return
 	 * @throws IOException
 	 */
-	public CmsSite saveSite(SiteDTO site) throws IOException;
+	CmsSite saveSite(SiteDTO site) throws IOException;
 	
 	/**
 	 * 删除站点数据
@@ -76,7 +76,7 @@ public interface ISiteService extends IService<CmsSite> {
 	 * @return
 	 * @throws IOException
 	 */
-	public void deleteSite(Long siteId) throws IOException;
+	void deleteSite(Long siteId) throws IOException;
 
 	/**
 	 * 保存站点默认模板配置
@@ -84,7 +84,7 @@ public interface ISiteService extends IService<CmsSite> {
 	 * @param dto
 	 * @return
 	 */
-	public void saveSiteDefaultTemplate(SiteDefaultTemplateDTO dto);
+	void saveSiteDefaultTemplate(SiteDefaultTemplateDTO dto);
 
 	/**
 	 * 清理站点缓存数据

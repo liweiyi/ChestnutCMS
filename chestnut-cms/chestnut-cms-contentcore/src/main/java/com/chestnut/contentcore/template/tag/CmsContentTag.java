@@ -129,7 +129,7 @@ public class CmsContentTag extends AbstractListTag {
 
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		Page<CmsContent> pageResult = this.contentService.page(new Page<>(pageIndex, size, page), q);
-		if (pageIndex > 1 & pageResult.getRecords().size() == 0) {
+		if (pageIndex > 1 & pageResult.getRecords().isEmpty()) {
 			throw new TemplateException("内容列表页码超出上限：" + pageIndex, env);
 		}
 		List<ContentDTO> list = new ArrayList<>();

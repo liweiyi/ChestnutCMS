@@ -52,9 +52,9 @@ public class MetaControlType_CmsImage implements IMetaControlType {
         String imagePath = value.toString();
         if (InternalUrlUtils.isInternalUrl(imagePath)) {
             String previewUrl = InternalUrlUtils.getActualPreviewUrl(imagePath);
-            fieldData.setValueSrc(previewUrl);
+            fieldData.setValueObj(previewUrl);
         } else {
-            fieldData.setValueSrc(imagePath);
+            fieldData.setValueObj(imagePath);
         }
     }
 }

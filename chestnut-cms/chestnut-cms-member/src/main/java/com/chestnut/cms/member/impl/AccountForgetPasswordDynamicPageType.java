@@ -47,7 +47,7 @@ public class AccountForgetPasswordDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "会员找回密码页";
+        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
     }
 
     @Override

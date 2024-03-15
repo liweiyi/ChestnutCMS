@@ -22,6 +22,7 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SortUtils;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
+import com.chestnut.word.domain.dto.BatchAddTagDTO;
 import com.chestnut.word.mapper.TagWordGroupMapper;
 import com.chestnut.word.mapper.TagWordMapper;
 import com.chestnut.word.service.ITagWordService;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -57,10 +59,45 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 
 			tagWord.setWordId(IdUtils.getSnowflakeId());
 			tagWord.setOwner(tagWordGroup.getOwner());
-			tagWord.setSortFlag(SortUtils.getDefaultSortValue());
+			if (Objects.isNull(tagWord.getSortFlag())) {
+				tagWord.setSortFlag(SortUtils.getDefaultSortValue());
+			}
 			this.save(tagWord);
 
 			tagWordGroup.setWordTotal(tagWordGroup.getWordTotal() + 1);
+			tagWordGroupMapper.updateById(tagWordGroup);
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	@Override
+	public void batchAddTagWord(BatchAddTagDTO dto) {
+		RLock lock = redissonClient.getLock("TagWord");
+		lock.lock();
+		try {
+			TagWordGroup tagWordGroup = tagWordGroupMapper.selectById(dto.getGroupId());
+			Assert.notNull(tagWordGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", dto.getGroupId()));
+
+			for (String word : dto.getWords()) {
+				boolean checkUnique = checkUnique(dto.getGroupId(), null, word);
+				Assert.isTrue(checkUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("word"));
+			}
+
+			List<TagWord> list = dto.getWords().stream().map(word -> {
+				TagWord tagWord = new TagWord();
+				tagWord.setWordId(IdUtils.getSnowflakeId());
+				tagWord.setGroupId(dto.getGroupId());
+				tagWord.setOwner(tagWordGroup.getOwner());
+				tagWord.setWord(word);
+				tagWord.setSortFlag(SortUtils.getDefaultSortValue());
+				tagWord.createBy(dto.getOperator().getUsername());
+				return tagWord;
+			}).toList();
+
+			this.saveBatch(list);
+
+			tagWordGroup.setWordTotal(tagWordGroup.getWordTotal() + list.size());
 			tagWordGroupMapper.updateById(tagWordGroup);
 		} finally {
 			lock.unlock();

@@ -17,6 +17,7 @@ package com.chestnut.cms.search.template.tag;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.chestnut.cms.search.es.doc.ESContent;
 import com.chestnut.cms.search.vo.ESContentVO;
@@ -36,6 +37,7 @@ import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.ehcache.shadow.org.terracotta.context.query.QueryBuilder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -64,7 +66,7 @@ public class CmsSearchContentTag extends AbstractListTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr(ATTR_QUERY, true, TagAttrDataType.STRING, "检索词"));
+		tagAttrs.add(new TagAttr(ATTR_QUERY, false, TagAttrDataType.STRING, "检索词"));
 		tagAttrs.add(new TagAttr(ATTR_CATALOG_ID, false, TagAttrDataType.STRING, "栏目ID"));
 		tagAttrs.add(new TagAttr(ATTR_CONTENT_TYPE, false, TagAttrDataType.STRING, "内容类型"));
 		tagAttrs.add(new TagAttr(ATTR_MODE, false, TagAttrDataType.STRING, "检索方式",
@@ -77,9 +79,9 @@ public class CmsSearchContentTag extends AbstractListTag {
 		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
 		String mode = MapUtils.getString(attrs, ATTR_MODE, SearchMode.FullText.name());
 		String query = MapUtils.getString(attrs, ATTR_QUERY);
-		if (StringUtils.isEmpty(query)) {
-			throw new TemplateException("Tag attr `query` cannot be empty.", env);
-		}
+//		if (StringUtils.isEmpty(query)) {
+//			throw new TemplateException("Tag attr `query` cannot be empty.", env);
+//		}
 		String contentType = MapUtils.getString(attrs, ATTR_CONTENT_TYPE);
 		Long catalogId = MapUtils.getLong(attrs, ATTR_CATALOG_ID);
 		try {
@@ -94,25 +96,38 @@ public class CmsSearchContentTag extends AbstractListTag {
 							if (IdUtils.validate(catalogId)) {
 								b.must(must -> must.term(tq -> tq.field("catalogId").value(catalogId)));
 							}
-							if (SearchMode.isFullText(mode)) {
-								b.must(must -> must
-									.multiMatch(match -> match
-										.analyzer(SearchConsts.IKAnalyzeType_Smart)
-										.fields("title^10", "fullText^1")
-										.query(query)
-									)
-								);
-							} else {
-								b.must(should -> {
+							if (StringUtils.isNotEmpty(query)) {
+								if (SearchMode.isFullText(mode)) {
+									b.must(must -> must
+										.multiMatch(match -> match
+											.analyzer(SearchConsts.IKAnalyzeType_Smart)
+											.fields("title^10", "fullText^1")
+											.query(query)
+										)
+									);
+								} else if (SearchMode.isTagAnd(mode)) {
 									String[] keywords = StringUtils.split(query, ",");
 									for (String keyword : keywords) {
-										should.constantScore(cs ->
-												cs.boost(1F).filter(f ->
-														f.match(m ->
-																m.field("tags").query(keyword))));
+										if (StringUtils.isNotEmpty(keyword)) {
+											b.must(must -> must.match(term -> term.field("tags").query(keyword)));
+										}
 									}
-									return should;
-								});
+								} else {
+									b.must(must -> {
+										String[] keywords = StringUtils.split(query, ",");
+										for (String keyword : keywords ) {
+											if (StringUtils.isNotEmpty(keyword)) {
+												must.match(m ->
+														m.field("tags").query(keyword));
+//												must.constantScore(cs ->
+//														cs.boost(1F).filter(f ->
+//																f.match(m ->
+//																		m.field("tags").query(keyword))));
+											}
+										}
+										return must;
+									});
+								}
 							}
 							return b;
 						})
@@ -184,7 +199,9 @@ public class CmsSearchContentTag extends AbstractListTag {
 		// 所有站点
 		FullText("全文检索"),
 		// 当前站点
-		Tag("标签检索，多个标签英文逗号隔开");
+		Tag("标签检索，多个标签英文逗号隔开"),
+		// 当前站点
+		TagAnd("标签检索，多个标签英文逗号隔开");
 
 		private final String desc;
 
@@ -200,10 +217,15 @@ public class CmsSearchContentTag extends AbstractListTag {
 			return Tag.name().equalsIgnoreCase(mode);
 		}
 
+		static boolean isTagAnd(String mode) {
+			return TagAnd.name().equalsIgnoreCase(mode);
+		}
+
 		static List<TagAttrOption> toTagAttrOptions() {
 			return List.of(
 					new TagAttrOption(FullText.name(), FullText.desc),
-					new TagAttrOption(Tag.name(), Tag.desc)
+					new TagAttrOption(Tag.name(), Tag.desc),
+					new TagAttrOption(TagAnd.name(), Tag.desc)
 			);
 		}
 	}

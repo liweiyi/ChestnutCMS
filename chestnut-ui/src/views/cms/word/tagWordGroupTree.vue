@@ -90,7 +90,7 @@ export default {
     showAdd: {
       type: Boolean,
       default: true,
-      required: true
+      required: false
     }
   },
   computed: {

@@ -22,27 +22,31 @@ import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.util.MemberUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 /**
  * MemberDynamicPageInitData
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Component
+@Component(IDynamicPageInitData.BEAN_PREFIX + MemberDynamicPageInitData.TYPE)
 public class MemberDynamicPageInitData implements IDynamicPageInitData {
+
+    public static final String TYPE = "Member";
 
     @Override
     public String getType() {
-        return "Member";
+        return TYPE;
     }
 
     @Override
     public String getName() {
-        return "登录会员";
+        return "{DYNAMIC_PAGE_INIT_DATA." + TYPE + "}";
     }
 
     @Override
-    public void initTemplateData(TemplateContext context) {
+    public void initTemplateData(TemplateContext context, Map<String, String> parameters) {
         if (StpMemberUtil.isLogin()) {
             LoginUser loginUser = StpMemberUtil.getLoginUser();
             context.getVariables().put("Member", loginUser.getUser());

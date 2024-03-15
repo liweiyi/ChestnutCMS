@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
+@Deprecated(since = "1.4.2", forRemoval = true)
 @Component
 @RequiredArgsConstructor
 public class CmsRelaContentTag extends AbstractListTag {

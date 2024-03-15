@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.controller;
 
 import com.chestnut.common.domain.R;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.staticize.StaticizeService;
@@ -24,6 +25,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.vo.DynamicPageTypeVO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
@@ -44,6 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -154,6 +157,11 @@ public class CoreController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/cms/dynamicPageTypes")
 	public R<?> getDynamicPageTypes() {
-		return R.ok(ContentCoreUtils.getDynamicPageTypes());
+		List<DynamicPageTypeVO> list = ContentCoreUtils.getDynamicPageTypes().stream()
+				.map(DynamicPageTypeVO::newInstance).toList();
+		list.forEach( vo ->
+			vo.setName(I18nUtils.get(vo.getName()))
+		);
+		return R.ok(list);
 	}
 }

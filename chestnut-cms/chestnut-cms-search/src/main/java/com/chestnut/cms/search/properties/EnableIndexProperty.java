@@ -15,6 +15,7 @@
  */
 package com.chestnut.cms.search.properties;
 
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IProperty;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
@@ -29,6 +30,8 @@ import java.util.Map;
 public class EnableIndexProperty implements IProperty {
 
 	public final static String ID = "EnableIndex";
+
+	private final static String DEFAULT_VALUE = YesOrNo.YES;
 	
 	static UseType[] UseTypes = new UseType[] { UseType.Site, UseType.Catalog };
 	
@@ -49,11 +52,14 @@ public class EnableIndexProperty implements IProperty {
 	
 	@Override
 	public String defaultValue() {
-		return YesOrNo.YES;
+		return DEFAULT_VALUE;
 	}
 	
 	public static String getValue(Map<String, String> firstConfigProps, Map<String, String> secondConfigProps) {
 		String value = ConfigPropertyUtils.getStringValue(ID, firstConfigProps, secondConfigProps);
+		if (StringUtils.isEmpty(value)) {
+			value = DEFAULT_VALUE;
+		}
 		return YesOrNo.isYes(value) ? value : YesOrNo.NO;
 	}
 }

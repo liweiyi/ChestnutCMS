@@ -51,7 +51,7 @@ public class CmsCustomForm extends BaseEntity {
     private Long siteId;
     
     /**
-     * 关联元数据模型ID
+     * 关联元数据模型ID（与主键form_id一致）
      */
     private Long modelId;
 

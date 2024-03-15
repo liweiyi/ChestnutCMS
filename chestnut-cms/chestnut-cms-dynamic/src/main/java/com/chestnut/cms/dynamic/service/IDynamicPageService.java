@@ -25,8 +25,6 @@ import java.util.Map;
 
 public interface IDynamicPageService extends IService<CmsDynamicPage> {
 
-	String getDynamicPagePath(Long siteId, String code);
-
 	void addDynamicPage(CmsDynamicPage dynamicPage);
 
 	void saveDynamicPage(CmsDynamicPage dynamicPage);

@@ -135,6 +135,10 @@ public class RedisCache {
 		return Boolean.TRUE.equals(redisTemplate.hasKey(key));
 	}
 
+	public boolean hasMapKey(String cacheKey, String hashKey) {
+		return Boolean.TRUE.equals(redisTemplate.opsForHash().hasKey(cacheKey, hashKey));
+	}
+
 	/**
 	 * 获得缓存的基本对象。
 	 *
@@ -297,6 +301,10 @@ public class RedisCache {
 		return redisTemplate.opsForHash().entries(key);
 	}
 
+	public void incrMapValue(String cacheKey, String hKey, long delta) {
+		redisTemplate.opsForHash().increment(cacheKey, hKey, delta);
+	}
+
 	/**
 	 * 往Hash中存入数据
 	 *
@@ -420,7 +428,7 @@ public class RedisCache {
 	 * @param delta score delta
 	 * @return score
 	 */
-	public long zsetIncr(String key, String value, int delta) {
+	public long zsetIncr(String key, String value, double delta) {
 		return Objects.requireNonNull(this.redisTemplate.opsForZSet().incrementScore(key, value, delta)).longValue();
 	}
 
@@ -434,6 +442,10 @@ public class RedisCache {
 	public Double getZsetScore(String key, String value) {
 		Double score = this.redisTemplate.opsForZSet().score(key, value);
 		return Objects.requireNonNullElse(score, -1d);
+	}
+
+	public boolean isValueInZset(String key, Object value) {
+		return Objects.nonNull(this.redisTemplate.opsForZSet().score(key, value));
 	}
 
 	/**
@@ -504,11 +516,28 @@ public class RedisCache {
         return Boolean.TRUE.equals(this.redisTemplate.opsForValue().getBit(cacheKey, offset));
     }
 
-	public void incrCounter(String cacheKey) {
+	public void incrLongCounter(String cacheKey) {
 		this.redisTemplate.opsForValue().increment(cacheKey);
 	}
 
-	public <T> T getCounterValue(String cacheKey) {
-		return (T) this.redisTemplate.opsForValue().get(cacheKey);
+	public void incrLongCounter(String cacheKey, long delta) {
+		this.redisTemplate.opsForValue().increment(cacheKey, delta);
+	}
+
+	public Long getLongCounterValue(String cacheKey) {
+		ValueOperations<String, Integer> valueOperations = this.redisTemplate.opsForValue();
+		Integer v = valueOperations.get(cacheKey);
+		return Objects.isNull(v) ? null : v.longValue();
+	}
+
+	public Long getLongCounterValue(String cacheKey, Supplier<Long> supplier) {
+		ValueOperations<String, Integer> valueOperations = this.redisTemplate.opsForValue();
+		Integer obj = valueOperations.get(cacheKey);
+		if (Objects.isNull(obj)) {
+			Long initV = supplier.get();
+			incrLongCounter(cacheKey, initV);
+			return initV;
+		}
+		return obj.longValue();
 	}
 }

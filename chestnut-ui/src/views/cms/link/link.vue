@@ -266,7 +266,7 @@ export default {
     },
     handleDelete (row) {
       const rows = row.linkId ? [{ linkId: row.linkId }] : this.selectedRows
-      this.$modal.confirm('是否确认删除选中的友链?').then(function() {
+      this.$modal.confirm(this.$t('Common.ConfirmDelete')).then(function() {
         return deleteLink(rows);
       }).then((response) => {
         this.$modal.msgSuccess(response.msg);

@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.word.domain.TagWord;
+import com.chestnut.word.domain.dto.BatchAddTagDTO;
 
 public interface ITagWordService extends IService<TagWord> {
 
@@ -31,6 +32,13 @@ public interface ITagWordService extends IService<TagWord> {
 	void addTagWord(TagWord tagWord);
 
 	/**
+	 * 批量添加TAG词
+	 *
+	 * @param dto
+	 */
+    void batchAddTagWord(BatchAddTagDTO dto);
+
+    /**
 	 * 编辑TAG词
 	 * 
 	 * @param tagWord

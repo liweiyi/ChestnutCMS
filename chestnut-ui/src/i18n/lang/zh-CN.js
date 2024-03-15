@@ -32,6 +32,7 @@ export default {
     BeginTime: '开始时间',
     EndTime: '结束时间',
     Add: '新增',
+    BatchAdd: '批量新增',
     Edit: '修改',
     Save: '保存',
     Delete: '删除',
@@ -959,7 +960,9 @@ export default {
         CustomFormCardTitle: "自定义表单配置",
         EnableCustomFormCaptcha: "是否开启验证码",
         CommentCardTitle: " 评论配置",
-        EnableCommentAudit: "是否需要审核"
+        EnableCommentAudit: "是否需要审核",
+        SEO: "搜索引擎优化配置",
+        BaiduPushAccessSecret: "百度收录API秘钥"
       },
       Property: {
         QueryPlaceholder: "输入名称/编码查询",
@@ -1134,7 +1137,8 @@ export default {
       FavoriteCount: "收藏数",
       LikeCount: "点赞数",
       CommentCount: "评论数",
-      RelaContent: "相关内容"
+      RelaContent: "相关内容",
+      PushToBaidu: "推送到百度"
     },
     Image: {
       Title: "标题",
@@ -1459,7 +1463,8 @@ export default {
       Placeholder: {
         InputGroupName: "输入分组名称",
         SelectParentGroup: "选择上级分组",
-        InputTAG: "输入TAG词查询"
+        InputTAG: "输入TAG词查询",
+        BatchAdd: "输入多个TAG词，每行一个"
       }
     },
     HotWord: {
@@ -1678,13 +1683,34 @@ export default {
       WordAnalyzeResult: "测试结果"
     },
     Log: {
+      TabName: "搜索日志",
       Word: "搜索词",
       Location: "地域",
       Source: "来源",
       ClientType: "客户端",
       LogTime: "搜索时间",
+      Placeholder: {
+        Word: "输入搜索词查询"
+      }
+    },
+    WordStat: {
+      TabName: "搜索词",
+      Word: "搜索词",
+      Total: "累计检索次数",
+      Topping: "置顶",
+      CancelTop: "取消置顶",
+      TopEndTime: "置顶结束时间",
+      Source: "来源",
+      Trend: "趋势",
       AddExtWord: "添加到扩展词",
       AddStopWord: "添加到停用词",
+      ConfirmAddToDict: "确认添加到词库吗？",
+      AddTitle: "添加搜索词",
+      EditTitle: "编辑搜索词",
+      TrendDialogTitle: "搜索趋势",
+      Placeholder: {
+        Word: "输入搜索词查询"
+      }
     }
   },
   MessagePusher: {

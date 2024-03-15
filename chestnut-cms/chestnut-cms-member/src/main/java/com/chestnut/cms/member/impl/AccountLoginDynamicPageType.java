@@ -47,7 +47,7 @@ public class AccountLoginDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "会员登录页";
+        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
     }
 
     @Override

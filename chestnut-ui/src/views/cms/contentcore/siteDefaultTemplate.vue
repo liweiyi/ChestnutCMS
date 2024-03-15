@@ -81,93 +81,15 @@
             </el-form-item>
             <el-divider content-position="left">{{ $t('CMS.Site.DefaultTemplate.DynamicPageConfig') }}</el-divider>
             <el-form-item 
-              :label="$t('CMS.Site.DefaultTemplate.SearchResult')"
-              prop="searchTemplate">
-              <el-input v-model="pp.props.searchTemplate">
+              v-for="dpt in dynamicPageTypes"
+              :key="dpt.type"
+              :label="dpt.name"
+              :prop="dpt.publishPipeKey">
+              <el-input v-model="pp.props[dpt.publishPipeKey]">
                 <el-button 
                   slot="append"
                   type="primary"
-                  @click="handleSelectTemplate('searchTemplate')">{{ $t("Common.Select") }}</el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item 
-              :label="$t('CMS.Site.DefaultTemplate.AccountCentre')"
-              prop="accountCentreTemplate">
-              <el-input v-model="pp.props.accountCentreTemplate">
-                <el-button 
-                  slot="append"
-                  type="primary"
-                  @click="handleSelectTemplate('accountCentreTemplate')">{{ $t("Common.Select") }}</el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item 
-              :label="$t('CMS.Site.DefaultTemplate.MemberLogin')"
-              prop="memberLoginTemplate">
-              <el-input v-model="pp.props.memberLoginTemplate">
-                <el-button 
-                  slot="append"
-                  type="primary"
-                  @click="handleSelectTemplate('memberLoginTemplate')">{{ $t("Common.Select") }}</el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item 
-              :label="$t('CMS.Site.DefaultTemplate.MemberRegister')"
-              prop="memberRegisterTemplate">
-              <el-input v-model="pp.props.memberRegisterTemplate">
-                <el-button 
-                  slot="append"
-                  type="primary"
-                  @click="handleSelectTemplate('memberRegisterTemplate')">{{ $t("Common.Select") }}</el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item 
-              :label="$t('CMS.Site.DefaultTemplate.MemberForgetPwd')"
-              prop="memberForgetPasswordTemplate">
-              <el-input v-model="pp.props.memberForgetPasswordTemplate">
-                <el-button 
-                  slot="append"
-                  type="primary"
-                  @click="handleSelectTemplate('memberForgetPasswordTemplate')">{{ $t("Common.Select") }}</el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item 
-              :label="$t('CMS.Site.DefaultTemplate.MemberSetting')"
-              prop="memberSettingTemplate">
-              <el-input v-model="pp.props.memberSettingTemplate">
-                <el-button 
-                  slot="append"
-                  type="primary"
-                  @click="handleSelectTemplate('memberSettingTemplate')">{{ $t("Common.Select") }}</el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item 
-              :label="$t('CMS.Site.DefaultTemplate.MemberBindEmail')"
-              prop="memberBindEmailTemplate">
-              <el-input v-model="pp.props.memberBindEmailTemplate">
-                <el-button 
-                  slot="append"
-                  type="primary"
-                  @click="handleSelectTemplate('memberBindEmailTemplate')">{{ $t("Common.Select") }}</el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item 
-              :label="$t('CMS.Site.DefaultTemplate.MemberResetPwd')"
-              prop="memberPasswordTemplate">
-              <el-input v-model="pp.props.memberPasswordTemplate">
-                <el-button 
-                  slot="append"
-                  type="primary"
-                  @click="handleSelectTemplate('memberPasswordTemplate')">{{ $t("Common.Select") }}</el-button>
-              </el-input>
-            </el-form-item>
-            <el-form-item 
-              :label="$t('CMS.Site.DefaultTemplate.MemberContribute')"
-              prop="memberContributeTemplate">
-              <el-input v-model="pp.props.memberContributeTemplate">
-                <el-button 
-                  slot="append"
-                  type="primary"
-                  @click="handleSelectTemplate('memberContributeTemplate')">{{ $t("Common.Select") }}</el-button>
+                  @click="handleSelectTemplate(dpt.publishPipeKey)">{{ $t("Common.Select") }}</el-button>
               </el-input>
             </el-form-item>
           </el-tab-pane>
@@ -189,7 +111,7 @@
   </div>
 </template>
 <script>
-import { getDefaultTemplates, saveDefaultTemplates, applyDefaultTemplate } from "@/api/contentcore/site";
+import { getDefaultTemplates, saveDefaultTemplates, applyDefaultTemplate, getDynamicPageTypes } from "@/api/contentcore/site";
 import { getContentTypes } from "@/api/contentcore/catalog";
 import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
 import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
@@ -222,6 +144,7 @@ export default {
       loading: false,
       siteId: this.site,
       contentTypes: [],
+      dynamicPageTypes: [],
       openCatalogSelector: false,
       publishPipeActiveName: "",
       openTemplateSelector: false,
@@ -232,12 +155,18 @@ export default {
   },
   created() {
     this.loadContentTypes();
+    this.loadDynamicPageTypes();
     this.loadDefaultTemplates();
   },
   methods: {
     loadContentTypes() {
       getContentTypes().then(response => {
         this.contentTypes = response.data;
+      });
+    },
+    loadDynamicPageTypes() {
+      getDynamicPageTypes().then(response => {
+        this.dynamicPageTypes = response.data;
       });
     },
     loadDefaultTemplates () {

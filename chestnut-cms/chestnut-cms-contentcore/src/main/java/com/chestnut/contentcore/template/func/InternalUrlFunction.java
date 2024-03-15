@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.template.func;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
@@ -58,6 +59,9 @@ public class InternalUrlFunction extends AbstractFunc  {
 		}
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(Environment.getCurrentEnvironment());
 		SimpleScalar simpleScalar = (SimpleScalar) args[0];
+		if (Objects.isNull(simpleScalar)) {
+			return StringUtils.EMPTY;
+		}
 		return InternalUrlUtils.getActualUrl(simpleScalar.getAsString(), context.getPublishPipeCode(), context.isPreview());
 	}
 

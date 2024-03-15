@@ -58,6 +58,10 @@ public class HtmlUtils {
 	 * @return 清除标签后的文本
 	 */
 	public static String clean(String content) {
-		return Jsoup.clean(content, Safelist.simpleText());
+		return Jsoup.clean(content, Safelist.none());
+	}
+
+	public static String clean(String content, Safelist safelist) {
+		return Jsoup.clean(content, safelist);
 	}
 }

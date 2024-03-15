@@ -35,7 +35,7 @@
   </div>
 </template>
 <script>
-import TagSelector from '@/views/word/tagSelector';
+import TagSelector from '@/views/cms/word/tagSelector';
 
 export default {
   name: "CMSTagEditor",

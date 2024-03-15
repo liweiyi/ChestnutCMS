@@ -44,7 +44,7 @@ public class SitemapPageType extends FixedDictType {
 		super(TYPE, "{DICT." + TYPE + "}");
 		super.addDictData("{DICT." + TYPE + "." + PC + "}", PC, 1);
 		super.addDictData("{DICT." + TYPE + "." + Mobile + "}", Mobile, 2);
-		super.addDictData("{DICT." + TYPE + ".pc_mobile}", PC_Mobile, 3);
+		super.addDictData("{DICT." + TYPE + "." + PC_Mobile + "}", PC_Mobile, 3);
 	}
 
 	public static <T> void decode(List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {

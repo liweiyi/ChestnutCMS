@@ -24,6 +24,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.word.domain.TagWord;
+import com.chestnut.word.domain.dto.BatchAddTagDTO;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.ITagWordService;
 import jakarta.validation.constraints.Min;
@@ -65,6 +66,13 @@ public class TagWordController extends BaseRestController {
 	public R<?> add(@RequestBody @Validated TagWord tagWord) {
 		tagWord.createBy(StpAdminUtil.getLoginUser().getUsername());
 		this.tagWordService.addTagWord(tagWord);
+		return R.ok();
+	}
+
+	@PostMapping("/batchAdd")
+	public R<?> batchAdd(@RequestBody @Validated BatchAddTagDTO dto) {
+		dto.setOperator(StpAdminUtil.getLoginUser());
+		this.tagWordService.batchAddTagWord(dto);
 		return R.ok();
 	}
 

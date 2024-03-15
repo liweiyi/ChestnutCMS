@@ -16,7 +16,6 @@
 package com.chestnut.article.template.func;
 
 import com.chestnut.article.ArticleUtils;
-import com.chestnut.article.service.IArticleService;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
@@ -40,8 +39,6 @@ public class dealArticleBodyFunction extends AbstractFunc  {
 	static final String FUNC_NAME = "dealArticleBody";
 	
 	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
-
-	private final IArticleService articleService;
 
 	@Override
 	public String getFuncName() {

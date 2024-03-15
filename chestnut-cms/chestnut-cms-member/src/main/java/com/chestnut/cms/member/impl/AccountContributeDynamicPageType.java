@@ -76,7 +76,7 @@ public class AccountContributeDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "会员投稿页";
+        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
     }
 
     @Override

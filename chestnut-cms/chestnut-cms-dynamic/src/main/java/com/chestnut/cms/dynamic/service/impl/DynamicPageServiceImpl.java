@@ -24,15 +24,12 @@ import com.chestnut.cms.dynamic.mapper.CmsDynamicPageMapper;
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.exception.GlobalException;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.contentcore.config.CMSConfig;
-import com.chestnut.contentcore.core.IDynamicPageType;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
@@ -67,33 +64,17 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
 
     private final StaticizeService staticizeService;
 
-    private final RedisCache redisCache;
-
-    private final Map<String, IDynamicPageInitData> dynamicPageInitDataMap;
-
     private final List<RequestMappingHandlerMapping> allRequestMapping;
 
     private final DynamicPageRequestMappingHandlerMapping dynamicPageRequestMapping;
 
-    private final Map<String, IDynamicPageType> dynamicPageTypeMap;
+    private final DynamicPageHelper dynamicPageHelper;
 
-    @Override
-    public String getDynamicPagePath(Long siteId, String code) {
-        IDynamicPageType dynamicPageType = this.dynamicPageTypeMap.get(IDynamicPageType.BEAN_PREFIX + code);
-        if (Objects.nonNull(dynamicPageType)) {
-            return dynamicPageType.getRequestPath();
-        }
-        CmsDynamicPage dynamicPage = getDynamicPage(siteId, code);
-        if (Objects.nonNull(dynamicPage)) {
-            return dynamicPage.getPath();
-        }
-        return null;
-    }
 
     @Override
     public void addDynamicPage(CmsDynamicPage dynamicPage) {
-        if (!dynamicPage.getPath().startsWith("/")) {
-            dynamicPage.setPath("/" + dynamicPage.getPath());
+        if (dynamicPage.getPath().startsWith("/")) {
+            dynamicPage.setPath(dynamicPage.getPath().substring(1));
         }
         this.checkDynamicPage(dynamicPage);
 
@@ -102,7 +83,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
 
         this.registerDynamicPageMapping(dynamicPage);
 
-        this.updateCache(dynamicPage);
+        dynamicPageHelper.updateCache(dynamicPage);
     }
 
     @Override
@@ -119,7 +100,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
         dbDynamicPage.setTemplates(dynamicPage.getTemplates());
         this.updateById(dbDynamicPage);
 
-        this.updateCache(dbDynamicPage);
+        dynamicPageHelper.updateCache(dbDynamicPage);
     }
 
     @Override
@@ -129,22 +110,8 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
 
         dynamicPages.forEach(dynamicPage -> {
             this.unregisterDynamicPageMapping(dynamicPage);
-            this.clearCache(dynamicPage);
+            dynamicPageHelper.clearCache(dynamicPage);
         });
-    }
-
-    private void clearCache(CmsDynamicPage dynamicPage) {
-        this.redisCache.deleteObject(CACHE_PREFIX + dynamicPage.getSiteId() + ":" + dynamicPage.getPath());
-        this.redisCache.deleteObject(CACHE_PREFIX + dynamicPage.getSiteId() + ":" + dynamicPage.getCode());
-    }
-
-    private void updateCache(CmsDynamicPage dynamicPage) {
-        this.redisCache.setCacheObject(CACHE_PREFIX + dynamicPage.getSiteId() + ":" + dynamicPage.getPath(), dynamicPage);
-        this.redisCache.setCacheObject(CACHE_PREFIX + dynamicPage.getSiteId() + ":" + dynamicPage.getCode(), dynamicPage);
-    }
-
-    private CmsDynamicPage getDynamicPage(Long siteId, String path) {
-        return redisCache.getCacheObject(CACHE_PREFIX + siteId + ":" + path);
     }
 
     private void checkDynamicPage(CmsDynamicPage dynamicPage) {
@@ -201,7 +168,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
     public void run(String... args) throws Exception {
         // 初始化DynamicPageRequestMapping
         this.list().forEach(dynamicPage -> {
-            this.updateCache(dynamicPage);
+            dynamicPageHelper.updateCache(dynamicPage);
 
             this.registerDynamicPageMapping(dynamicPage);
         });
@@ -218,7 +185,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
             this.catchException("/", response, new RuntimeException("Site not found: " + siteId));
             return;
         }
-        CmsDynamicPage dynamicPage = this.getDynamicPage(siteId, requestURI);
+        CmsDynamicPage dynamicPage = dynamicPageHelper.getDynamicPage(siteId, requestURI);
         String template = dynamicPage.getTemplates().get(publishPipeCode);
         File templateFile = this.templateService.findTemplateFile(site, template, publishPipeCode);
         if (Objects.isNull(templateFile) || !templateFile.exists()) {
@@ -236,13 +203,13 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
             // init template datamode
             TemplateUtils.initGlobalVariables(site, templateContext);
             // init templateType data to datamode
-            templateContext.getVariables().put("Request", ServletUtils.getParameters());
+            templateContext.getVariables().put("Request", parameters);
             // 动态页面自定义数据
             if (Objects.nonNull(dynamicPage.getInitDataTypes())) {
                 dynamicPage.getInitDataTypes().forEach(initDataType -> {
-                    IDynamicPageInitData initData = dynamicPageInitDataMap.get(IDynamicPageInitData.BEAN_PREFIX + initDataType);
+                    IDynamicPageInitData initData = dynamicPageHelper.getDynamicPageInitData(initDataType);
                     if (Objects.nonNull(initData)) {
-                        initData.initTemplateData(templateContext);
+                        initData.initTemplateData(templateContext, parameters);
                     }
                 });
             }

@@ -49,16 +49,26 @@
       </el-date-picker>
       <cms-logo-view v-if="field.controlType==='CMSImage'" 
         v-model="field.value" 
-        :src="field.valueSrc" 
+        :src="field.valueObj" 
         :width="210" 
         :height="150">
       </cms-logo-view>
-      <ueditor v-if="field.controlType==='UEditor'" :editorId="'ex-'+field.fieldName" :height="200" :configs="ueConfigs" v-model="field.value"></ueditor>
+      <ueditor v-if="field.controlType==='UEditor'" 
+        :editorId="'ex-'+field.fieldName" 
+        :height="200" 
+        :configs="ueConfigs" 
+        v-model="field.value">
+      </ueditor>
+      <cms-content-selector v-if="field.controlType==='CMSContentSelect'" 
+        v-model="field.value" 
+        :selected="field.valueObj">
+      </cms-content-selector>
     </el-form-item>
   </div>
 </template>
 <script>
 import CMSLogoView from '@/views/cms/components/LogoView';
+import CMSContentSelector from '@/views/cms/components/ContentSelector';
 import UEditor from '@/views/cms/components/UEditorPlus'
 import { getXModelFieldData } from "@/api/contentcore/exmodel";
 
@@ -66,6 +76,7 @@ export default {
   name: "CMSEXModelEditor",
   components: {
     "cms-logo-view": CMSLogoView,
+    "cms-content-selector": CMSContentSelector,
     'ueditor': UEditor,
   },
   props: {
@@ -141,13 +152,16 @@ export default {
       getXModelFieldData(this.modelId, this.dataType, this.dataId).then(response => {
         response.data.forEach(item => {
           let field = {};
-          Object.keys(item).forEach(key => field[key] = key === 'value' ? '' : item[key])
+          Object.keys(item).forEach(key => field[key] = (key === 'value' || key === 'valueObj') ? '' : item[key])
           this.fieldList.push(field);
         })
         this.$nextTick(() => {
           response.data.forEach(item => {
             let field = this.fieldList.find(f => item.fieldName == f.fieldName);
-            field && (field.value = item.value);
+            if (field) {
+              field.value = item.value
+              field.valueObj = item.valueObj
+            }
           })
         })
       });

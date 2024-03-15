@@ -174,7 +174,7 @@ export default {
       // 上传参数
       upload: {
         isUploading: false, // 上传按钮loading
-        accept: ".jpg,.png,.mp3,.mp4,.flv,.pdf", // 文件类型限制
+        // accept: ".jpg,.png,.mp3,.mp4,.flv,.pdf", // 文件类型限制
         acceptSize: 20 * 1024 * 1024,
         limit: this.uploadLimit, // 文件数限制
         headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get("CurrentSite") },

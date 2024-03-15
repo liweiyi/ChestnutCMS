@@ -19,6 +19,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.es.doc.ESContent;
 import com.chestnut.cms.search.vo.ESContentVO;
 import com.chestnut.common.domain.R;
@@ -153,7 +154,7 @@ public class SearchApiController extends BaseRestController {
 			c.setCommentCount(cdd.getComments());
 		});
 		// 记录搜索日志
-		this.logService.addSearchLog("site:" + siteId, query, ServletUtils.getRequest());
+		this.logService.addSearchLog(CmsSearchConstants.generateSearchSource(siteId), query, ServletUtils.getRequest());
 		return this.bindDataTable(list, Objects.isNull(sr.hits().total()) ? 0 : sr.hits().total().value());
 	}
 

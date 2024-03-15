@@ -32,6 +32,7 @@ export default {
     BeginTime: 'Begin Time',
     EndTime: 'End Time',
     Add: 'Add',
+    BatchAdd: 'Batch Add',
     Edit: 'Edit',
     Save: 'Save',
     Delete: 'Delete',
@@ -959,7 +960,9 @@ export default {
         CustomFormCardTitle: "Custom Form Configuration",
         EnableCustomFormCaptcha: "Enable Captcha On Submit",
         CommentCardTitle: " Comment Configuration",
-        EnableCommentAudit: "Enable Comment Audit"
+        EnableCommentAudit: "Enable Comment Audit",
+        SEO: "SEO Configuration",
+        BaiduPushAccessSecret: "Baidu Push API Secret"
       },
       Property: {
         QueryPlaceholder: "Input name/code",
@@ -1134,7 +1137,8 @@ export default {
       FavoriteCount: "Favorities",
       LikeCount: "Likes",
       CommentCount: "Comments",
-      RelaContent: "Related contents"
+      RelaContent: "Related contents",
+      PushToBaidu: "Push To Baidu"
     },
     Image: {
       Title: "Title",
@@ -1459,7 +1463,8 @@ export default {
       Placeholder: {
         InputGroupName: "Input group name...",
         SelectParentGroup: "Select parent group...",
-        InputTAG: "Input tag word..."
+        InputTAG: "Input tag word...",
+        BatchAdd: "Input tag words, one per line"
       }
     },
     HotWord: {
@@ -1678,13 +1683,31 @@ export default {
       WordAnalyzeResult: "Result"
     },
     Log: {
-      Word: "Word",
+      TabName: "Search Log",
+      Word: "Search Query",
       Location: "Location",
       Source: "Source",
       ClientType: "Client Type",
-      LogTime: "Time",
-      AddExtWord: "Add Ext Word",
-      AddStopWord: "Add Stop Word",
+      LogTime: "Time"
+    },
+    WordStat: {
+      TabName: "Query Statistics",
+      Word: "Search Query",
+      Total: "Total",
+      Topping: "Topping",
+      CancelTop: "Cancel Top",
+      TopEndTime: "Topping End Time",
+      Source: "Source",
+      Trend: "Trend",
+      AddExtWord: "Add Extend Dict",
+      AddStopWord: "Add Stop Dict",
+      ConfirmAddToDict: "Confirm add to dict?",
+      AddTitle: "Add Search Query",
+      EditTitle: "Edit Search Query",
+      TrendDialogTitle: "Trend Chart",
+      Placeholder: {
+        Word: "Input search query..."
+      }
     }
   },
   MessagePusher: {

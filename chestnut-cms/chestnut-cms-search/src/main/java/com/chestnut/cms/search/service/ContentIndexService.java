@@ -29,7 +29,6 @@ import com.chestnut.cms.search.properties.EnableIndexProperty;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.DateUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
@@ -105,7 +104,7 @@ public class ContentIndexService implements CommandLineRunner {
 		Assert.isTrue(response.acknowledged(), () -> new RuntimeException("Create Index[cms_content] failed."));
 	}
 
-	public void recreateIndex(CmsSite site) throws IOException {
+	public void deleteContentIndices(CmsSite site) throws IOException {
 		boolean exists = esClient.indices().exists(fn -> fn.index(ESContent.INDEX_NAME)).value();
 		if (exists) {
 			// 删除站点索引文档数据
@@ -119,9 +118,7 @@ public class ContentIndexService implements CommandLineRunner {
 						.getRecords().stream().map(CmsContent::getContentId).toList();
 				deleteContentDoc(contentIds);
 			}
-			esClient.indices().delete(fn -> fn.index(ESContent.INDEX_NAME));
 		}
-		this.createIndex();
 	}
 
 	/**
@@ -219,8 +216,8 @@ public class ContentIndexService implements CommandLineRunner {
 
 			@Override
 			public void run0() throws Exception {
-				// 先重建索引
-				recreateIndex(site);
+				// 先删除内容索引 TODO batchDelete
+				deleteContentIndices(site);
 
 				List<CmsCatalog> catalogs = catalogService.lambdaQuery()
 						.eq(CmsCatalog::getSiteId, site.getSiteId()).list();

@@ -54,4 +54,6 @@ public class TemplateListVO {
      * 模板文件最后变更时间
      */
     private LocalDateTime modifyTime;
+
+    private String remark;
 }

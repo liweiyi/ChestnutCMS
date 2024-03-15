@@ -52,7 +52,7 @@ public class DynamicPageFrontController extends BaseRestController {
 	public void handleDynamicPageRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		Map<String, String> parameters = ServletUtils.getParameters();
 		String requestURI = request.getRequestURI();
-		System.out.println("dynamicPage: " + requestURI);
+
 		Long siteId = MapUtils.getLong(parameters, "sid", 0L);
 		String publishPipeCode = parameters.get("pp");
 		boolean preview = MapUtils.getBoolean(parameters, "preview", false);

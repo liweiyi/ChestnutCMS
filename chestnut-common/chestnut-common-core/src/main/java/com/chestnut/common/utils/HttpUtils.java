@@ -15,6 +15,8 @@
  */
 package com.chestnut.common.utils;
 
+import org.apache.commons.lang3.RandomUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -26,10 +28,9 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import org.apache.commons.lang3.RandomUtils;
 
 public class HttpUtils {
 
@@ -68,18 +69,7 @@ public class HttpUtils {
 		}
 	}
 
-	/**
-	 * 发起一个简单的POST请求，同步返回字符串结果
-	 * <p>
-	 * Timeout: 30s
-	 * Content-Type: application/json
-	 * </p>
-	 *
-	 * @param uri
-	 * @param body
-	 * @return
-	 */
-	public static String postJSON(URI uri, String body) {
+	public static String post(URI uri, String body, Map<String, String> headers) {
 		try {
 			if (Objects.isNull(body)) {
 				body = StringUtils.EMPTY;
@@ -88,15 +78,32 @@ public class HttpUtils {
 					.connectTimeout(Duration.ofSeconds(30))
 					.followRedirects(Redirect.ALWAYS)
 					.build();
-			HttpRequest httpRequest = HttpRequest.newBuilder(uri)
-					.header("Content-Type", "application/json")
-					.header("User-Agent", USER_AGENTS[0])
-					.POST(BodyPublishers.ofString(body, StandardCharsets.UTF_8))
-					.build();
+			HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+					.POST(BodyPublishers.ofString(body, StandardCharsets.UTF_8));
+			headers.forEach(builder::header);
+			if (!headers.containsKey("Content-Type")) {
+				builder.header("Content-Type", "application/json");
+			}
+			HttpRequest httpRequest = builder.build();
 			return httpClient.send(httpRequest, BodyHandlers.ofString()).body();
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * 发起一个简单的POST请求，同步返回字符串结果
+	 * <p>
+	 * Timeout: 30s
+	 * Content-Type: application/json
+	 * </p>
+	 *
+	 * @param uri
+	 * @param jsonBody
+	 * @return
+	 */
+	public static String postJSON(URI uri, String jsonBody){
+		return post(uri, jsonBody, Map.of("User-Agent", USER_AGENTS[0]));
 	}
 
 	public static byte[] syncDownload(String uri) {

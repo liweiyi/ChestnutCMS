@@ -1,7 +1,7 @@
 <template>
-  <div class="app-container">
+  <div>
     <el-row :gutter="24" class="mb12">
-      <el-col :span="12">
+      <el-col :span="1.5">
         <el-button type="danger"
                     icon="el-icon-delete"
                     size="mini"
@@ -9,83 +9,68 @@
                     :disabled="selectedIds.length==0"
                     @click="handleDelete">{{ $t("Common.Delete") }}</el-button>
       </el-col>
-      <el-col :span="12" style="text-align:right">
-        <el-form 
-          :model="queryParams"
-          ref="queryForm"
-          :inline="true"
-          size="mini"
-          class="el-form-search">
-          <el-form-item prop="query">
-            <el-input v-model="queryParams.query">
-            </el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button-group>
-              <el-button 
-                type="primary"
-                icon="el-icon-search"
-                @click="handleQuery">{{ $t("Common.Search") }}</el-button>
-              <el-button 
-                icon="el-icon-refresh"
-                @click="resetQuery">{{ $t("Common.Reset") }}</el-button>
-            </el-button-group>
-          </el-form-item>
-        </el-form>
-      </el-col>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="loadLogList"></right-toolbar>
     </el-row>
-    <el-row>
-      <el-table v-loading="loading"
-                :data="logList"
-                @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="50" align="center" />
-        <el-table-column type="index" :label="$t('Common.RowNo')" align="center" width="100" />
-        <el-table-column :label="$t('Search.Log.Word')" align="left" prop="word" show-overflow-tooltip />
-        <el-table-column :label="$t('Search.Log.ClientType')" align="left" width="140" prop="clientType" />
-        <el-table-column :label="$t('Search.Log.Location')" align="left" width="140" prop="location" show-overflow-tooltip />
-        <el-table-column label="IP" align="left" width="100" prop="ip" />
-        <el-table-column label="Referer" align="left" prop="referer" show-overflow-tooltip />
-        <el-table-column :label="$t('Search.Log.Source')" align="left" prop="source" width="200" show-overflow-tooltip />
-        <el-table-column :label="$t('Search.Log.LogTime')" align="center" width="160">
-          <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.logTime) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column :label="$t('Common.Operation')" align="center" width="220" class-name="small-padding fixed-width">
-          <template slot-scope="scope">
-            <el-button 
-              size="small"
-              type="text"
-              icon="el-icon-plus"
-              @click="handleToDictWord('WORD', scope.row)">{{ $t('Search.Log.AddExtWord') }}</el-button>
-            <el-button 
-              size="small"
-              type="text"
-              icon="el-icon-plus"
-              @click="handleToDictWord('STOP', scope.row)">{{ $t('Search.Log.AddStopWord') }}</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <pagination
-        v-show="total>0"
-        :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
-        @pagination="loadLogList"
-      />
+    <el-row v-show="showSearch">
+      <el-form :model="queryParams" ref="queryForm" size="mini" class="el-form-search mb12" :inline="true">
+        <el-form-item prop="query">
+          <el-input
+            v-model="queryParams.query"
+            :placeholder="$t('Search.WordStat.Placeholder.Word')"
+            clearable
+            style="width: 240px"
+            @keyup.enter.native="handleQuery"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button-group>
+            <el-button type="primary" icon="el-icon-search" @click="handleQuery">{{ $t('Common.Search') }}</el-button>
+            <el-button icon="el-icon-refresh" @click="resetQuery">{{ $t('Common.Reset') }}</el-button>
+          </el-button-group>
+        </el-form-item>
+      </el-form>
     </el-row>
+
+    <el-table 
+      v-loading="loading"
+      :data="logList"
+      :height="tableHeight"
+      :max-height="tableMaxHeight"
+      @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="50" align="center" />
+      <el-table-column :label="$t('Search.Log.Word')" align="left" prop="word" show-overflow-tooltip />
+      <el-table-column :label="$t('Search.Log.ClientType')" align="left" width="140" prop="clientType" />
+      <el-table-column :label="$t('Search.Log.Location')" align="left" width="140" prop="location" show-overflow-tooltip />
+      <el-table-column label="IP" align="left" width="130" prop="ip" />
+      <el-table-column label="Referer" align="left" prop="referer" show-overflow-tooltip />
+      <el-table-column :label="$t('Search.Log.Source')" align="left" prop="source" width="200" show-overflow-tooltip />
+      <el-table-column :label="$t('Search.Log.LogTime')" align="center" width="160">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.logTime) }}</span>
+        </template>
+      </el-table-column>
+    </el-table>
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="queryParams.pageNum"
+      :limit.sync="queryParams.pageSize"
+      @pagination="loadLogList"
+    />
   </div>
 </template>
 <style scoped>
 </style>
 <script>
-import { getSearchLogs, deleteSearchLogs } from "@/api/search/searchlog";
-import { addDictWord } from "@/api/search/dictword";
+import { getSiteSearchLogs, deleteSearchLogs } from "@/api/search/searchlog";
 export default {
   name: "SearchWord",
   data () {
     return {
       loading: false,
+      showSearch: true,
+      tableHeight: 600,
+      tableMaxHeight: 600,
       selectedIds: [],
       logList: [],
       total: 0,
@@ -97,12 +82,18 @@ export default {
     };
   },
   created () {
+    this.changeTableHeight();
     this.loadLogList();
   },
   methods: {
+    changeTableHeight () {
+      let height = document.body.offsetHeight // 网页可视区域高度
+      this.tableHeight = height - 330;
+      this.tableMaxHeight = this.tableHeight;
+    },
     loadLogList () {
       this.loading = true;
-      getSearchLogs(this.queryParams).then(response => {
+      getSiteSearchLogs(this.queryParams).then(response => {
         this.logList = response.data.rows;
         this.total = parseInt(response.data.total);
         this.loading = false;
@@ -130,12 +121,6 @@ export default {
         this.$modal.msgSuccess(response.msg);
         this.resetQuery ();
       }).catch(() => {});
-    },
-    handleToDictWord (wordType, row) {
-      const form = { wordType: wordType, words: [ row.word ] }
-      addDictWord(form).then(response => {
-        this.$modal.msgSuccess(response.msg);
-      });
     }
   }
 };

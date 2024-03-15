@@ -1,3 +1,22 @@
+CREATE TABLE `cms_site_visit_log` (
+  `log_id` bigint NOT NULL,
+  `site_id` bigint NOT NULL,
+  `catalog_id` bigint DEFAULT NULL,
+  `content_id` bigint DEFAULT NULL,
+  `host` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `uri` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ip` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `address` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `referer` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `browser` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `user_agent` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `os` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `device_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `locale` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `evt_time` datetime NOT NULL,
+  PRIMARY KEY (`log_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE `cms_dynamic_page` (
   `page_id` bigint NOT NULL COMMENT 'ID',
   `site_id` bigint NOT NULL COMMENT '站点ID',

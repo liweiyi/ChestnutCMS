@@ -18,6 +18,7 @@ package com.chestnut.cms.dynamic.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.dynamic.core.IDynamicPageInitData;
 import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
+import com.chestnut.cms.dynamic.domain.vo.DynamicPageInitDataTypeVO;
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -78,7 +79,9 @@ public class DynamicPageController extends BaseRestController {
 
 	@GetMapping("/init_data_types")
 	public R<?> getInitDataTypes() {
-		return R.ok(initDataTypes);
+		List<DynamicPageInitDataTypeVO> list = initDataTypes.stream()
+				.map(DynamicPageInitDataTypeVO::newInstance).toList();
+		return R.ok(list);
 	}
 
 	@GetMapping("/{pageId}")

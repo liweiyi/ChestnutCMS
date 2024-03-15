@@ -22,6 +22,7 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SortUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.mapper.TagWordGroupMapper;
@@ -44,7 +45,7 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 
 	@Override
 	public TagWordGroup addTagWordGroup(TagWordGroup group) {
-		checkUnique(group.getParentId(), null, group.getName(), group.getCode());
+		checkUnique(group.getOwner(), null, group.getCode());
 
 		group.setGroupId(IdUtils.getSnowflakeId());
 		group.setWordTotal(0L);
@@ -58,7 +59,7 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 		TagWordGroup dbGroup = this.getById(group.getGroupId());
 		Assert.notNull(dbGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", group.getGroupId()));
 
-		checkUnique(group.getParentId(), dbGroup.getGroupId(), group.getName(), group.getCode());
+		checkUnique(group.getOwner(), dbGroup.getGroupId(), group.getCode());
 
 		dbGroup.setName(group.getName());
 		dbGroup.setRemark(group.getRemark());
@@ -66,12 +67,12 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 		this.updateById(group);
 	}
 
-	private void checkUnique(Long parentId, Long groupId, String name, String code) {
-		Long count = this.lambdaQuery().eq(TagWordGroup::getParentId, parentId)
-				.ne(groupId != null && groupId > 0, TagWordGroup::getGroupId, groupId)
-				.and(wrapper -> wrapper.eq(TagWordGroup::getName, name).or().eq(TagWordGroup::getCode, code))
+	private void checkUnique(String owner, Long groupId, String code) {
+		Long count = this.lambdaQuery().eq(StringUtils.isNotEmpty(owner), TagWordGroup::getOwner, owner)
+				.ne(IdUtils.validate(groupId), TagWordGroup::getGroupId, groupId)
+				.eq(TagWordGroup::getCode, code)
 				.count();
-		Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception("name/code"));
+		Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception("code"));
 	}
 
 	@Override

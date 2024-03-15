@@ -73,7 +73,7 @@ public class CmsSitePropertyTag extends AbstractListTag {
 				.eq(StringUtils.isNotEmpty(code), CmsSiteProperty::getPropCode, code);
 		q.apply(StringUtils.isNotEmpty(condition), condition);
 		Page<CmsSiteProperty> pageResult = this.sitePropertyService.page(new Page<>(pageIndex, size, page), q);
-		if (pageIndex > 1 & pageResult.getRecords().size() == 0) {
+		if (pageIndex > 1 & pageResult.getRecords().isEmpty()) {
 			throw new TemplateException("站点自定义属性数据列表页码超出上限：" + pageIndex, env);
 		}
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());

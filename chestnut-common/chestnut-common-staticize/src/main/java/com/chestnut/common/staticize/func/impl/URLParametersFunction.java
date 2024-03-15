@@ -65,6 +65,6 @@ public class URLParametersFunction extends AbstractFunc  {
 
 	@Override
 	public List<FuncArg> getFuncArgs() {
-		return List.of();
+		return List.of(new FuncArg("URL", FuncArgType.String, true, null));
 	}
 }

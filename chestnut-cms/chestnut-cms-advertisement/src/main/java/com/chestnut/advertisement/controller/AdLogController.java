@@ -77,8 +77,17 @@ public class AdLogController extends BaseRestController {
 	}
 
 	@GetMapping("/chart")
-	public R<?> getLineChartStatDatas(@RequestParam @Min(1) Long advertisementId, @RequestParam Date beginTime, @RequestParam Date endTime) {
-		List<CmsAdHourStat> list = this.advHourStatMapper.selectHourStat(advertisementId, FORMAT.format(beginTime), FORMAT.format(endTime));
+	public R<?> getLineChartStatDatas(
+			@RequestParam @Min(1) Long advertisementId,
+			@RequestParam Date beginTime,
+			@RequestParam Date endTime
+	) {
+		LambdaQueryWrapper<CmsAdHourStat> q = new LambdaQueryWrapper<CmsAdHourStat>()
+				.eq(CmsAdHourStat::getAdvertisementId, advertisementId)
+				.gt(Objects.nonNull(beginTime), CmsAdHourStat::getHour, beginTime)
+				.gt(Objects.nonNull(endTime), CmsAdHourStat::getHour, endTime)
+				.orderByAsc(CmsAdHourStat::getHour);
+		List<CmsAdHourStat> list = this.advHourStatMapper.selectList(q);
 		if (!list.isEmpty()) {
 			Map<String, String> map = this.advService.getAdvertisementMap();
 			list.forEach(l -> l.setAdName(map.get(l.getAdvertisementId().toString())));

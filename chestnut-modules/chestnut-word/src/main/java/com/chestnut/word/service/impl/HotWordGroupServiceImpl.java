@@ -21,6 +21,7 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SortUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.word.domain.HotWord;
 import com.chestnut.word.domain.HotWordGroup;
@@ -42,7 +43,7 @@ public class HotWordGroupServiceImpl extends ServiceImpl<HotWordGroupMapper, Hot
 
 	@Override
 	public HotWordGroup addHotWordGroup(HotWordGroup group) {
-		this.checkUnique(group.getGroupId(), group.getName(), group.getCode());
+		this.checkUnique(group.getOwner(), group.getGroupId(), group.getCode());
 
 		group.setGroupId(IdUtils.getSnowflakeId());
 		group.setWordTotal(0L);
@@ -57,7 +58,7 @@ public class HotWordGroupServiceImpl extends ServiceImpl<HotWordGroupMapper, Hot
 		HotWordGroup db = this.getById(group.getGroupId());
 		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", group.getGroupId()));
 
-		this.checkUnique(group.getGroupId(), group.getName(), group.getCode());
+		this.checkUnique(group.getOwner(), group.getGroupId(), group.getCode());
 
 		db.setName(group.getName());
 		db.setCode(group.getCode());
@@ -74,10 +75,10 @@ public class HotWordGroupServiceImpl extends ServiceImpl<HotWordGroupMapper, Hot
 		}
 	}
 
-	private void checkUnique(Long groupId, String name, String code) {
-		Long count = this.lambdaQuery().ne(groupId != null && groupId > 0, HotWordGroup::getGroupId, groupId)
-				.and(wrapper -> wrapper.eq(HotWordGroup::getName, name).or().eq(HotWordGroup::getCode, code))
-				.count();
+	private void checkUnique(String owner, Long groupId, String code) {
+		Long count = this.lambdaQuery().eq(StringUtils.isNotEmpty(owner), HotWordGroup::getOwner, owner)
+				.ne(IdUtils.validate(groupId), HotWordGroup::getGroupId, groupId)
+				.eq(HotWordGroup::getCode, code).count();
 		Assert.isTrue(count == 0, WordErrorCode.CONFLIECT_HOT_WORD_GROUP::exception);
 	}
 }

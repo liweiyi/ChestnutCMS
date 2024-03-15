@@ -288,6 +288,26 @@ public class CmsContent extends BaseEntityWithLogicDelete {
      */
     @TableField(typeHandler = JacksonTypeHandler.class)
     private Map<String, Object> configProps;
+
+    /**
+     * 备用字段1
+     */
+    private String prop1;
+
+    /**
+     * 备用字段2
+     */
+    private String prop2;
+
+    /**
+     * 备用字段3
+     */
+    private String prop3;
+
+    /**
+     * 备用字段4
+     */
+    private String prop4;
     
     public boolean isLock() {
     	return YesOrNo.isYes(this.isLock);

@@ -19,6 +19,13 @@
               :disabled="selectedGroupId==''"
               @click="handleAdd">{{ $t("Common.Add") }}</el-button>
             <el-button 
+              type="primary"
+              icon="el-icon-plus"
+              size="mini"
+              plain
+              :disabled="selectedGroupId==''"
+              @click="handleBatchAdd">{{ $t("Common.BatchAdd") }}</el-button>
+            <el-button 
               type="danger"
               icon="el-icon-delete"
               size="mini"
@@ -118,6 +125,28 @@
         <el-button @click="closeDialog(false)">{{ $t("Common.Cancel") }}</el-button>
       </div>
     </el-dialog>
+    <!-- 批量添加TAG词弹窗 -->
+    <el-dialog :title="$t('Common.BatchAdd')"
+               :visible.sync="batchAddOpen"
+               :close-on-click-modal="false"
+               width="500px"
+               append-to-body>
+      <el-form ref="formBatch"
+               :model="formBatch"
+               :rules="rulesBatch"
+               label-width="80px">
+        <el-form-item 
+          :label="$t('WordMgr.TAG.TAGWord')"
+          prop="words">
+          <el-input type="textarea" :rows="5" v-model="formBatch.words" :placeholder="$t('WordMgr.TAG.Placeholder.BatchAdd')" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer"
+           class="dialog-footer">
+        <el-button type="primary" @click="submitBatchAddForm">{{ $t("Common.Confirm") }}</el-button>
+        <el-button @click="handleBatchAddClose(false)">{{ $t("Common.Cancel") }}</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <style scoped>
@@ -126,7 +155,7 @@
 }
 </style>
 <script>
-import { getTagWordList, addTagWord, editTagWord, deleteTagWord } from "@/api/word/tagWord";
+import { getTagWordList, addTagWord, batchAddTagWords, editTagWord, deleteTagWord } from "@/api/word/tagWord";
 import CMSTagWordGroupTree from '@/views/cms/word/tagWordGroupTree';
 import CMSLogoView from '@/views/cms/components/LogoView';
 
@@ -148,6 +177,13 @@ export default {
         groupId: undefined,
         pageSize: 20,
         pageNo: 1
+      },
+      batchAddOpen: false,
+      formBatch: {},
+      rulesBatch: {
+        words: [
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" }
+        ],
       },
       diagTitle: "",
       open: false,
@@ -202,6 +238,27 @@ export default {
       this.open = false;
       this.reset();
       loadList && this.loadWordList();
+    },
+    handleBatchAdd () {
+      this.formBatch = {}
+      this.batchAddOpen = true;
+    },
+    handleBatchAddClose(loadList) {
+      this.batchAddOpen = false;
+      this.formBatch = {}
+      loadList && this.loadWordList()
+    },
+    submitBatchAddForm () {
+      this.$refs["formBatch"].validate(valid => {
+        if (valid) {
+          batchAddTagWords({ groupId: this.selectedGroupId, words: this.formBatch.words.split("\n") }).then(response => {
+            if (response.code == 200) {
+              this.$modal.msgSuccess(response.msg);
+              this.handleBatchAddClose(true)
+            }
+          }); 
+        }
+      });
     },
     handleAdd () {
       this.reset();

@@ -15,26 +15,32 @@
  */
 package com.chestnut.search.service.impl;
 
-import java.time.LocalDateTime;
-
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.search.domain.SearchLog;
+import com.chestnut.search.domain.SearchWord;
+import com.chestnut.search.domain.dto.SearchLogDTO;
+import com.chestnut.search.mapper.SearchLogMapper;
+import com.chestnut.search.service.ISearchLogService;
+import com.chestnut.search.service.ISearchWordHourStatService;
+import com.chestnut.search.service.ISearchWordService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.search.domain.SearchLog;
-import com.chestnut.search.domain.dto.SearchLogDTO;
-import com.chestnut.search.mapper.SearchLogMapper;
-import com.chestnut.search.service.ISearchLogService;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 @Service
 public class SearchLogServiceImpl extends ServiceImpl<SearchLogMapper, SearchLog> implements ISearchLogService {
 
 	private final AsyncTaskManager asyncTaskManager;
+
+	private final ISearchWordService searchWordStatService;
+
+	private final ISearchWordHourStatService searchWordHourStatService;
 
 	@Override
 	public void addSearchLog(SearchLogDTO dto) {
@@ -49,6 +55,10 @@ public class SearchLogServiceImpl extends ServiceImpl<SearchLogMapper, SearchLog
 			sLog.setSource(dto.getSource());
 			sLog.setClientType(ServletUtils.getDeviceType(dto.getUserAgent()));
 			this.save(sLog);
+
+			SearchWord searchWord = searchWordStatService.getSearchWord(sLog.getWord(), sLog.getSource());
+			searchWordStatService.increaseSearchCount(searchWord);
+			searchWordHourStatService.handleSearchLog(searchWord, sLog.getLogTime());
 		});
 	}
 
@@ -69,6 +79,10 @@ public class SearchLogServiceImpl extends ServiceImpl<SearchLogMapper, SearchLog
 			sLog.setClientType(ServletUtils.getDeviceType(userAgent));
 			sLog.setSource(source);
 			this.save(sLog);
+
+			SearchWord searchWord = searchWordStatService.getSearchWord(sLog.getWord(), sLog.getSource());
+			searchWordStatService.increaseSearchCount(searchWord);
+			searchWordHourStatService.handleSearchLog(searchWord, sLog.getLogTime());
 		});
 	}
 }

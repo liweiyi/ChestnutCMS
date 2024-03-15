@@ -15,20 +15,15 @@
  */
 package com.chestnut.common.utils;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
+
 import java.lang.management.ManagementFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
-
-import org.apache.commons.lang3.time.DateFormatUtils;
 
 /**
  * 时间工具类
@@ -44,6 +39,8 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
 	public static String YYYY_MM_DD = "yyyy-MM-dd";
 
+	public static String YYYYMMDDHH = "yyyyMMddHH";
+
 	public static String YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
 
 	public static String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
@@ -55,6 +52,8 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	public static DateTimeFormatter FORMAT_YYYY_MM_DD_HH_MM_SS = DateTimeFormatter.ofPattern(YYYY_MM_DD_HH_MM_SS);
 	
 	public static DateTimeFormatter FORMAT_YYYY_MM_DD = DateTimeFormatter.ofPattern(YYYY_MM_DD);
+
+	public static DateTimeFormatter FORMAT_YYYYMMDDHH = DateTimeFormatter.ofPattern(YYYYMMDDHH);
 
 	/**
 	 * 获取当前Date型日期

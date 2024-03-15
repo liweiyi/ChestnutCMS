@@ -59,6 +59,8 @@ import java.util.regex.Matcher;
 @RequiredArgsConstructor
 public class EXModelCoreDataHandler implements ICoreDataHandler {
 
+    private static final String XMODEL_TABLE_SUFFIX = "_cms_exmodel";
+
     private final ExtendModelMapper modelDataMapper;
 
     private final IModelService modelService;
@@ -88,11 +90,11 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
 
         // 扩展模型
         List<XModel> modelList = this.modelService.lambdaQuery().in(XModel::getModelId, modelIdStrings).list();
-        context.saveData(XModel.TABLE_NAME, JacksonUtils.to(modelList));
+        context.saveData(XModel.TABLE_NAME + XMODEL_TABLE_SUFFIX, JacksonUtils.to(modelList));
         // 扩展模型字段
         List<XModelField> fieldList = this.modelFieldService.lambdaQuery()
                 .in(XModelField::getModelId, modelIdStrings).list();
-        context.saveData(XModelField.TABLE_NAME, JacksonUtils.to(fieldList));
+        context.saveData(XModelField.TABLE_NAME + XMODEL_TABLE_SUFFIX, JacksonUtils.to(fieldList));
         // 扩展模型数据
         int pageSize = 200;
         int fileIndex = 1;
@@ -117,7 +119,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
         AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入扩展模型");
         // XModel
         Map<Long, Long> modelIdMapping = new HashMap<>();
-        List<File> files = context.readDataFiles(XModel.TABLE_NAME);
+        List<File> files = context.readDataFiles(XModel.TABLE_NAME + XMODEL_TABLE_SUFFIX);
         files.forEach(f -> {
             List<XModel> list = JacksonUtils.fromList(f, XModel.class);
             for (XModel data : list) {
@@ -141,7 +143,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
         });
         // XModelField
         AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入扩展模型字段");
-        files = context.readDataFiles(XModelField.TABLE_NAME);
+        files = context.readDataFiles(XModelField.TABLE_NAME + XMODEL_TABLE_SUFFIX);
         files.forEach(f -> {
             List<XModelField> list = JacksonUtils.fromList(f, XModelField.class);
             for (XModelField data : list) {
@@ -198,7 +200,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     });
                     modelDataMapper.insert(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入扩展模型字段失败：" + data.getModelId()
+                    AsyncTaskManager.addErrMessage("导入扩展模型数据失败：" + data.getModelId()
                             + data.getDataType() + "-" + data.getDataId());
                     log.error("Import xmodel data failed: {} - {}", data.getModelId(), data.getDataId(), e);
                 }

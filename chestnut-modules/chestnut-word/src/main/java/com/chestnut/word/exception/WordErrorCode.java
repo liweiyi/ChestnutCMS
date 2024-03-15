@@ -26,7 +26,7 @@ public enum WordErrorCode implements ErrorCode {
 	CONFLIECT_ERROR_PRONE_WORD,
 	
 	/**
-	 * 热词分組名称/编码冲突
+	 * 热词分組编码冲突
 	 */
 	CONFLIECT_HOT_WORD_GROUP,
 

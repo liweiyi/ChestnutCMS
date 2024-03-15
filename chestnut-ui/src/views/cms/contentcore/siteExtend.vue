@@ -255,6 +255,16 @@
       </el-card>
       <el-card shadow="hover">
         <div slot="header" class="clearfix">
+          <span>{{ $t('CMS.Site.Extend.SEO') }}</span>
+        </div>
+        <el-form-item 
+          :label="$t('CMS.Site.Extend.BaiduPushAccessSecret')"
+          prop="BaiduPushAccessSecret">
+          <el-input v-model="form_extend.BaiduPushAccessSecret"></el-input>
+        </el-form-item>
+      </el-card>
+      <el-card shadow="hover">
+        <div slot="header" class="clearfix">
           <span>{{ $t('CMS.Site.Extend.StatConfCardTitle') }}</span>
         </div>
         <el-form-item 

@@ -18,7 +18,7 @@ package com.chestnut.xmodel.core;
 import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 
 /**
- * 元数据模型字段类型
+ * 元数据模型字段控件类型
  *
  * @author 兮玥
  * @email 190785909@qq.com

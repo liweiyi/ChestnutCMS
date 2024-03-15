@@ -63,7 +63,7 @@ public class AccountBindEmailDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "会员绑定邮箱页";
+        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
     }
 
     @Override

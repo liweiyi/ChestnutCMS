@@ -17,6 +17,8 @@ package com.chestnut.cms.dynamic.core;
 
 import com.chestnut.common.staticize.core.TemplateContext;
 
+import java.util.Map;
+
 /**
  * 动态页面初始化数据接口
  *
@@ -27,7 +29,7 @@ public interface IDynamicPageInitData {
 
     String BEAN_PREFIX = "DynamicPageInitData.";
 
-    void initTemplateData(TemplateContext context);
+    void initTemplateData(TemplateContext context, Map<String, String> parameters);
 
     String getType();
 

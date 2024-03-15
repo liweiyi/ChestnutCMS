@@ -39,8 +39,8 @@ public class XModelFieldDataDTO {
     
     private Object value;
 
-	private String valueSrc;
-    
+	private Object valueObj;
+
 	public static XModelFieldDataDTO newInstance(XModelField field, String value) {
 		XModelFieldDataDTO dto = new XModelFieldDataDTO();
 		dto.setLabel(field.getName());

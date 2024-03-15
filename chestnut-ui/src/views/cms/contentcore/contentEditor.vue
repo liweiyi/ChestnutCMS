@@ -10,6 +10,7 @@
           <el-button plain type="warning" v-if="isLock" size="mini" icon="el-icon-unlock" @click="handleChangeLockState">{{ $t('CMS.Content.Unlock') }}</el-button>
           <el-button plain type="primary" v-else size="mini" icon="el-icon-lock" @click="handleChangeLockState">{{ $t('CMS.Content.Lock') }}</el-button>
           <el-button plain type="primary" size="mini" icon="el-icon-share" @click="handleRelaContent">{{ $t('CMS.Content.RelaContent') }}</el-button>
+          <el-button plain type="primary" size="mini" icon="el-icon-files" @click="handlePushToBaidu">{{ $t('CMS.Content.PushToBaidu') }}</el-button>
           <el-button v-if="openEditorW" plain type="warning" size="mini" icon="el-icon-close" @click="handleClose">{{ $t('Common.Close') }}</el-button>
           <el-button v-else plain type="warning" size="mini" icon="el-icon-back" @click="handleGoBack">{{ $t('CMS.Content.BackToList') }}</el-button>
         </div>
@@ -237,6 +238,7 @@
 </template>
 <script>
 import { getInitContentEditorData, addContent, saveContent, toPublishContent, publishContent, lockContent, unLockContent, moveContent } from "@/api/contentcore/content";
+import { pushToBaidu } from "@/api/seo/baidupush";
 import Sticky from '@/components/Sticky'
 // import CKEditor5 from '@/components/CKEditor5';
 import UEditor from '@/views/cms/components/UEditorPlus'
@@ -642,6 +644,15 @@ export default {
     },
     handleRelaContentClose() {
       this.openRelaContentDialog = false;
+    },
+    handlePushToBaidu() {
+      pushToBaidu([ this.form.contentId ]).then(response => {
+        let msg = "[pc] 成功 1 条，剩余 9 条.<br/>【】 成功";
+        response.data.forEach(item => {
+          msg += "【" + item.publishPipeCode + "】成功 " + item.success + " 条，剩余 " + item.remain + " 条。<br/>"
+        })
+        this.$modal.alert(msg)
+      })
     }
   }
 };

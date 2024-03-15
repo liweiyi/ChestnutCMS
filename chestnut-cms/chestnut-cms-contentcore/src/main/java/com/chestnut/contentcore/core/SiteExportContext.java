@@ -97,9 +97,9 @@ public class SiteExportContext implements ISiteThemeContext {
      * @param dest 目标路径，项目资源根目录（resourceRoot）
      */
     public void saveFile(File source, String dest) {
+        dest = ExportDir + SiteDirPath + dest;
         File destFile = new File(SiteUtils.getSiteResourceRoot(site) + dest);
         try {
-            dest = ExportDir + SiteDirPath + dest;
             if (source.isDirectory()) {
                 FileUtils.copyDirectory(source, destFile);
             } else {
