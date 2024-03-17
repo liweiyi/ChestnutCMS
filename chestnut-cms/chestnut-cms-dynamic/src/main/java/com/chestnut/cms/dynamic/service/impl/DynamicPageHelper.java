@@ -15,8 +15,10 @@
  */
 package com.chestnut.cms.dynamic.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.cms.dynamic.core.IDynamicPageInitData;
 import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
+import com.chestnut.cms.dynamic.mapper.CmsDynamicPageMapper;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IDynamicPageType;
@@ -34,12 +36,13 @@ public class DynamicPageHelper {
 
     private static final String CACHE_PREFIX = CMSConfig.CachePrefix + "dynamic_page:";
 
-
     private final RedisCache redisCache;
 
     private final Map<String, IDynamicPageInitData> dynamicPageInitDataMap;
 
     private final Map<String, IDynamicPageType> dynamicPageTypeMap;
+
+    private final CmsDynamicPageMapper dynamicPageMapper;
 
     public IDynamicPageInitData getDynamicPageInitData(String type) {
         return dynamicPageInitDataMap.get(IDynamicPageInitData.BEAN_PREFIX + type);
@@ -50,7 +53,7 @@ public class DynamicPageHelper {
         if (Objects.nonNull(dynamicPageType)) {
             return dynamicPageType.getRequestPath();
         }
-        CmsDynamicPage dynamicPage = getDynamicPage(siteId, code);
+        CmsDynamicPage dynamicPage = getDynamicPageByCode(siteId, code);
         if (Objects.nonNull(dynamicPage)) {
             return dynamicPage.getPath();
         }
@@ -67,10 +70,24 @@ public class DynamicPageHelper {
         this.redisCache.setCacheObject(CACHE_PREFIX + dynamicPage.getSiteId() + ":" + dynamicPage.getCode(), dynamicPage);
     }
 
-    public CmsDynamicPage getDynamicPage(Long siteId, String path) {
+    public CmsDynamicPage getDynamicPageByPath(Long siteId, String path) {
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
-        return redisCache.getCacheObject(CACHE_PREFIX + siteId + ":" + path);
+        LambdaQueryWrapper<CmsDynamicPage> q = new LambdaQueryWrapper<CmsDynamicPage>()
+                .eq(CmsDynamicPage::getSiteId, siteId)
+                .eq(CmsDynamicPage::getPath, path);
+        return redisCache.getCacheObject(CACHE_PREFIX + siteId + ":" + path, () ->
+            this.dynamicPageMapper.selectOne(q)
+        );
+    }
+
+    public CmsDynamicPage getDynamicPageByCode(Long siteId, String code) {
+        LambdaQueryWrapper<CmsDynamicPage> q = new LambdaQueryWrapper<CmsDynamicPage>()
+                .eq(CmsDynamicPage::getSiteId, siteId)
+                .eq(CmsDynamicPage::getCode, code);
+        return redisCache.getCacheObject(CACHE_PREFIX + siteId + ":" + code, () ->
+                this.dynamicPageMapper.selectOne(q)
+        );
     }
 }

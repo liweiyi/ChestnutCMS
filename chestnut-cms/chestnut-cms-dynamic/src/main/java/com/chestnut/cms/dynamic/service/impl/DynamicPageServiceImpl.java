@@ -29,7 +29,6 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SpringUtils;
-import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
@@ -55,8 +54,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, CmsDynamicPage>
         implements IDynamicPageService, CommandLineRunner {
-
-    private static final String CACHE_PREFIX = CMSConfig.CachePrefix + "dynamic_page:";
 
     private final ISiteService siteService;
 
@@ -185,7 +182,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
             this.catchException("/", response, new RuntimeException("Site not found: " + siteId));
             return;
         }
-        CmsDynamicPage dynamicPage = dynamicPageHelper.getDynamicPage(siteId, requestURI);
+        CmsDynamicPage dynamicPage = dynamicPageHelper.getDynamicPageByPath(siteId, requestURI);
         String template = dynamicPage.getTemplates().get(publishPipeCode);
         File templateFile = this.templateService.findTemplateFile(site, template, publishPipeCode);
         if (Objects.isNull(templateFile) || !templateFile.exists()) {
