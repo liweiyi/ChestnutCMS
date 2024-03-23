@@ -1,8 +1,10 @@
 package ${packageName}.controller;
 
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import java.util.List;
-import javax.servlet.http.HttpServletResponse;
-import org.springframework.security.access.prepost.PreAuthorize;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.utils.IdUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,17 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.chestnut.common.annotation.Log;
-import com.chestnut.common.core.controller.BaseController;
-import com.chestnut.common.core.domain.AjaxResult;
-import com.chestnut.common.enums.BusinessType;
+import com.chestnut.common.security.web.BaseRestController;
 import ${packageName}.domain.${ClassName};
 import ${packageName}.service.I${ClassName}Service;
-import com.chestnut.common.utils.poi.ExcelUtil;
-#if($table.crud || $table.sub)
-import com.chestnut.common.core.page.TableDataInfo;
-#elseif($table.tree)
-#end
+import com.chestnut.common.security.anno.Priv;
+import com.chestnut.system.security.AdminUserType;
+import lombok.RequiredArgsConstructor;
+import com.chestnut.common.domain.R;
 
 /**
  * ${functionName}Controller
@@ -30,9 +28,10 @@ import com.chestnut.common.core.page.TableDataInfo;
  * @author ${author}
  * @date ${datetime}
  */
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/${moduleName}/${businessName}")
-public class ${ClassName}Controller extends BaseController
+public class ${ClassName}Controller extends BaseRestController
 {
     @Autowired
     private I${ClassName}Service ${className}Service;
@@ -40,76 +39,113 @@ public class ${ClassName}Controller extends BaseController
     /**
      * 查询${functionName}列表
      */
-    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:list')")
+    //@Priv(type = AdminUserType.TYPE, value = CommentPriv.View)
     @GetMapping("/list")
 #if($table.crud || $table.sub)
-    public TableDataInfo list(${ClassName} ${className})
+    public R<?> list(${ClassName} ${className})
     {
-        startPage();
-        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
-        return getDataTable(list);
+        PageRequest pr = this.getPageRequest();
+        LambdaQueryChainWrapper<CcProducts> wrapper = this.ccProductsService.lambdaQuery();
+        #foreach($column in $columns)
+            #set($queryType=$column.queryType)
+            #set($javaField=$column.javaField)
+            #set($javaType=$column.javaType)
+            #set($columnName=$column.columnName)
+            #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+            #if($column.query)
+                #if($column.queryType == "EQ")
+                    if (${className}.get${AttrName}() != null) {
+                        wrapper.eq(${ClassName}::get${AttrName},${className}.get${AttrName}());
+                    }
+                #elseif($queryType == "NE")
+                    if (${className}.get${AttrName}() != null) {
+                        wrapper.ne(${ClassName}::get${AttrName},${className}.get${AttrName}());
+                    }
+                #elseif($queryType == "GT")
+                    if (${className}.get${AttrName}() != null) {
+                        wrapper.gt(${ClassName}::get${AttrName},${className}.get${AttrName}());
+                    }
+                #elseif($queryType == "GTE")
+                    if (${className}.get${AttrName}() != null) {
+                        wrapper.gte(${ClassName}::get${AttrName},${className}.get${AttrName}());
+                    }
+                #elseif($queryType == "LT")
+                    if (${className}.get${AttrName}() != null) {
+                        wrapper.lt(${ClassName}::get${AttrName},${className}.get${AttrName}());
+                    }
+                #elseif($queryType == "LTE")
+                    if (${className}.get${AttrName}() != null) {
+                        wrapper.lte(${ClassName}::get${AttrName},${className}.get${AttrName}());
+                    }
+                #elseif($queryType == "LIKE")
+                    if (${className}.get${AttrName}() != null) {
+                        wrapper.like(${ClassName}::get${AttrName},${className}.get${AttrName}());
+                    }
+                #end
+            #end
+        #end
+
+        Page<CcProducts> page = wrapper
+                .page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
+
+
+        return this.bindDataTable(page);
     }
 #elseif($table.tree)
-    public AjaxResult list(${ClassName} ${className})
+    public R<?> list(${ClassName} ${className})
     {
         List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
-        return success(list);
+        return R.ok();
     }
 #end
 
-    /**
-     * 导出${functionName}列表
-     */
-    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:export')")
-    @Log(title = "${functionName}", businessType = BusinessType.EXPORT)
-    @PostMapping("/export")
-    public void export(HttpServletResponse response, ${ClassName} ${className})
-    {
-        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
-        ExcelUtil<${ClassName}> util = new ExcelUtil<${ClassName}>(${ClassName}.class);
-        util.exportExcel(response, list, "${functionName}数据");
-    }
+##    /**
+##     * 导出${functionName}列表
+##     */
+##    @PostMapping("/export")
+##    public void export(HttpServletResponse response, ${ClassName} ${className})
+##    {
+##        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
+##        ExcelUtil<${ClassName}> util = new ExcelUtil<${ClassName}>(${ClassName}.class);
+##        util.exportExcel(response, list, "${functionName}数据");
+##    }
 
     /**
      * 获取${functionName}详细信息
      */
-    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:query')")
     @GetMapping(value = "/{${pkColumn.javaField}}")
-    public AjaxResult getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField})
+    public R<?> getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField})
     {
-        return success(${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
+        return R.ok(this.${className}Service.getById(id));
     }
 
     /**
      * 新增${functionName}
      */
-    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:add')")
-    @Log(title = "${functionName}", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody ${ClassName} ${className})
+    public R<?> add(@RequestBody ${ClassName} ${className})
     {
-        return toAjax(${className}Service.insert${ClassName}(${className}));
+        this.${className}Service.save(${className});
+        return R.ok();
     }
 
     /**
      * 修改${functionName}
      */
-    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:edit')")
-    @Log(title = "${functionName}", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody ${ClassName} ${className})
+    public R<?> edit(@RequestBody ${ClassName} ${className})
     {
-        return toAjax(${className}Service.update${ClassName}(${className}));
+        this.${className}Service.updateById(${className});
+        return R.ok();
     }
 
     /**
      * 删除${functionName}
      */
-    @PreAuthorize("@ss.hasPermi('${permissionPrefix}:remove')")
-    @Log(title = "${functionName}", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{${pkColumn.javaField}s}")
-    public AjaxResult remove(@PathVariable ${pkColumn.javaType}[] ${pkColumn.javaField}s)
+    public R<?> remove(@PathVariable ${pkColumn.javaType}[] ${pkColumn.javaField}s)
     {
-        return toAjax(${className}Service.delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaField}s));
+        this.${className}Service.removeBatchByIds(List.of(${pkColumn.javaField}s));
+        return R.ok();
     }
 }
