@@ -37,11 +37,10 @@
         type="date"
         value-format="yyyy-MM-dd">
       </el-date-picker>
-      <el-date-picker v-if="field.controlType==='time'" 
+      <el-time-picker v-if="field.controlType==='time'" 
         v-model="field.value"
-        type="time"
         value-format="HH:mm:ss">
-      </el-date-picker>
+      </el-time-picker>
       <el-date-picker v-if="field.controlType==='datetime'" 
         v-model="field.value"
         type="datetime"

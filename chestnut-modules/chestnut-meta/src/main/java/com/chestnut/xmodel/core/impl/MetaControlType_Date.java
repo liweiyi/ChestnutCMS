@@ -15,8 +15,13 @@
  */
 package com.chestnut.xmodel.core.impl;
 
+import com.chestnut.common.utils.DateUtils;
 import com.chestnut.xmodel.core.IMetaControlType;
+import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * 元数据模型字段类型：日期选择框
@@ -37,5 +42,13 @@ public class MetaControlType_Date implements IMetaControlType {
     @Override
     public String getName() {
         return "{META.CONTROL_TYPE." + TYPE + "}";
+    }
+
+    @Override
+    public void parseFieldValue(XModelFieldDataDTO fieldData) {
+        Object value = fieldData.getValue();
+        if (Objects.nonNull(value) && value instanceof LocalDateTime ldt) {
+            fieldData.setValue(ldt.format(DateUtils.FORMAT_YYYY_MM_DD));
+        }
     }
 }

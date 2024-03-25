@@ -137,7 +137,7 @@
     />
 
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="140px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="160px">
         <el-form-item :label="$t('Monitor.ScheduledTask.Type')" prop="taskType">
           <el-select v-model="form.taskType" :disabled="form.taskId&&form.taskId>0">
             <el-option
@@ -154,11 +154,11 @@
             <el-radio label="Periodic">{{ $t('Monitor.ScheduledTask.TriggerTypePeriodic') }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="form.taskTrigger=='Cron'" :label="$t('Monitor.ScheduledTask.CronExpression')" prop="cron">
-          <el-input v-model="form.cron" />
+        <el-form-item v-if="form.taskTrigger=='Cron'" :label="$t('Monitor.ScheduledTask.CronExpression')" prop="data.cron">
+          <el-input v-model="form.data.cron" />
         </el-form-item>
-        <el-form-item v-if="form.taskTrigger=='Periodic'" :label="$t('Monitor.ScheduledTask.FixedRate')" prop="fixedRate">
-          <el-radio-group v-model="form.fixedRate">
+        <el-form-item v-if="form.taskTrigger=='Periodic'" :label="$t('Monitor.ScheduledTask.FixedRate')" prop="data.fixedRate">
+          <el-radio-group v-model="form.data.fixedRate">
             <el-radio
               v-for="dict in dict.type.YesOrNo"
               :key="dict.value"
@@ -172,11 +172,11 @@
             <i class="el-icon-info" />
           </el-tooltip>
         </el-form-item>
-        <el-form-item v-if="form.taskTrigger=='Periodic'" :label="$t('Monitor.ScheduledTask.PeriodicSeconds')" prop="seconds">
-          <el-input-number v-model="form.seconds" :min="1" />
+        <el-form-item v-if="form.taskTrigger=='Periodic'" :label="$t('Monitor.ScheduledTask.PeriodicSeconds')" prop="data.seconds">
+          <el-input-number v-model="form.data.seconds" :min="1" />
         </el-form-item>
-        <el-form-item v-if="form.taskTrigger=='Periodic'" :label="$t('Monitor.ScheduledTask.PeriodicDelaySeconds')" prop="delaySeconds">
-          <el-input-number v-model="form.delaySeconds"  :min="0" />
+        <el-form-item v-if="form.taskTrigger=='Periodic'" :label="$t('Monitor.ScheduledTask.PeriodicDelaySeconds')" prop="data.delaySeconds">
+          <el-input-number v-model="form.data.delaySeconds"  :min="0" />
         </el-form-item>
         <el-form-item :label="$t('Monitor.ScheduledTask.Status')" prop="status">
           <el-radio-group v-model="form.status" :disabled="form.taskId&&form.taskId>0">
@@ -278,6 +278,18 @@ export default {
         ],
         taskTrigger: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        'data.cron': [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        'data.fixedRate': [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        'data.seconds': [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        'data.delaySeconds': [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ]
       },
       logLoading: false,
@@ -319,7 +331,8 @@ export default {
       this.form = {
         status: "1",
         taskTrigger: "Cron",
-        fixedRate: "N"
+        fixedRate: "N",
+        data: {}
       };
       this.resetForm("form");
     },
@@ -345,14 +358,6 @@ export default {
       this.reset();
       const taskId = row.taskId || this.ids
       getTask(taskId).then(response => {
-        const args = JSON.parse(response.data.triggerArgs);
-        if (this.form.taskTrigger == 'Cron') {
-          response.data.cron = args.cron
-        } else if (this.form.taskTrigger == 'Periodic') {
-          response.data.fixedRate = args.fixedRate ? 'Y' : 'N'
-          response.data.seconds = args.seconds
-          response.data.delaySeconds = args.delaySeconds
-        }
         this.form = response.data;
         this.open = true;
         this.title = this.$t('Monitor.ScheduledTask.EditTitle');

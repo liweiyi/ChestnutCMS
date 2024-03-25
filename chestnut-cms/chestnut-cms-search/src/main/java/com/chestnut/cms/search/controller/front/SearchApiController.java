@@ -128,6 +128,8 @@ public class SearchApiController extends BaseRestController {
 			if (Objects.nonNull(catalog)) {
 				vo.setCatalogName(catalog.getName());
 			}
+			vo.setLink(InternalUrlUtils.getActualUrl(vo.getLink(), publishPipeCode, preview));
+			vo.setLogo(InternalUrlUtils.getActualUrl(vo.getLogo(), publishPipeCode, preview));
 			hit.highlight().forEach((key, value) -> {
 				try {
 					if (key.equals("fullText")) {
@@ -135,8 +137,6 @@ public class SearchApiController extends BaseRestController {
 					} else if (key.equals("title")) {
 						vo.setTitle(StringUtils.join(value.toArray(String[]::new)));
 					}
-					vo.setLink(InternalUrlUtils.getActualUrl(vo.getLink(), publishPipeCode, preview));
-					vo.setLogo(InternalUrlUtils.getActualUrl(vo.getLogo(), publishPipeCode, preview));
 				} catch (Exception ex) {
 					log.warn("Search api row parse failed: ", ex);
 				}

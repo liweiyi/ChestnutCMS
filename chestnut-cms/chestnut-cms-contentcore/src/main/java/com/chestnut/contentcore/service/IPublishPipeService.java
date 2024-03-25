@@ -15,71 +15,69 @@
  */
 package com.chestnut.contentcore.service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 public interface IPublishPipeService extends IService<CmsPublishPipe> {
 
 	/**
 	 * 新增发布通道数据
 	 * 
-	 * @param publishPipe
-	 * @throws IOException
+	 * @param publishPipe  发布通道信息
 	 */
-	public void addPublishPipe(CmsPublishPipe publishPipe) throws IOException;
+	void addPublishPipe(CmsPublishPipe publishPipe) throws IOException;
 
 	/**
 	 * 修改发布通道数据
 	 * 
-	 * @param publishPipe
-	 * @throws IOException
+	 * @param publishPipe 发布通道信息
 	 */
-	public void savePublishPipe(CmsPublishPipe publishPipe) throws IOException;
+	void savePublishPipe(CmsPublishPipe publishPipe) throws IOException;
 	
 	/**
 	 * 删除发布通道
 	 * 
-	 * @param publishPipeId
-	 * @throws IOException
+	 * @param publishPipeId 发布通道ID
 	 */
-	public void deletePublishPipe(List<Long> publishPipeId);
+	void deletePublishPipe(List<Long> publishPipeId);
 	
 	/**
 	 * 删除指定站点发布通道
 	 * 
-	 * @param site
-	 * @throws IOException
+	 * @param site 站点信息
 	 */
-	public void deletePublishPipeBySite(CmsSite site);
+	void deletePublishPipeBySite(CmsSite site);
 
 	 /**
-     * 获取指定站点可用发布通道
-     * 
-     * @param siteId
-     */
-    public List<CmsPublishPipe> getPublishPipes(Long siteId);
+      * 获取指定站点可用发布通道
+      *
+	  * @param siteId 站点ID
+	  * @return 结果列表
+      */
+    List<CmsPublishPipe> getPublishPipes(Long siteId);
 
     /**
      * 获取指定站点所有发布通道
      * 
-     * @param siteId
+     * @param siteId 站点ID
+	 * @return 结果列表
      */
-    public List<CmsPublishPipe> getAllPublishPipes(Long siteId);
+    List<CmsPublishPipe> getAllPublishPipes(Long siteId);
 
 	/**
 	 * 获取站点下指定使用场景的发布通道数据列表
 	 * 
-	 * @param siteId
-	 * @param useType
-	 * @param props
-	 * @return
+	 * @param siteId 站点ID
+	 * @param useType 使用方式
+	 * @param props 数据集合
+	 * @return 结果列表
 	 */
 	List<PublishPipeProp> getPublishPipeProps(Long siteId, PublishPipePropUseType useType,
 			Map<String, Map<String, Object>> props);
@@ -87,10 +85,10 @@ public interface IPublishPipeService extends IService<CmsPublishPipe> {
 	/**
 	 * 获取发布通道属性值
 	 * 
-	 * @param propKey
-	 * @param publishPipeCode
-	 * @param props
-	 * @return
+	 * @param propKey 发布通道属性唯一标识
+	 * @param publishPipeCode 发布通道编码
+	 * @param props 数据集合
+	 * @return 属性值
 	 */
 	String getPublishPipePropValue(String propKey, String publishPipeCode, Map<String, Map<String, Object>> props);
 }

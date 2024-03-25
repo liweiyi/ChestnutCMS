@@ -15,13 +15,12 @@
  */
 package com.chestnut.cms.image;
 
-import java.util.List;
-
+import com.chestnut.contentcore.core.IPublishPipeProp;
 import org.springframework.stereotype.Component;
 
-import com.chestnut.contentcore.core.IPublishPipeProp;
+import java.util.List;
 
-@Component
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_ImageDetailTemplate.KEY)
 public class PublishPipeProp_ImageDetailTemplate implements IPublishPipeProp {
 
 	public static final String KEY = DetailTemplatePropPrefix + ImageContentType.ID;

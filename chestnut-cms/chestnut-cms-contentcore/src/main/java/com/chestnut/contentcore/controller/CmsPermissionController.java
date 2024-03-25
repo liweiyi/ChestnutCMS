@@ -21,7 +21,6 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsPageWidget;
@@ -41,7 +40,6 @@ import com.chestnut.contentcore.perms.SitePermissionType.SitePrivItem;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.ISiteService;
-import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.system.domain.SysPermission;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -130,20 +128,21 @@ public class CmsPermissionController extends BaseRestController {
 
 	@GetMapping("/site/options")
 	public R<?> getSiteOptions(@RequestParam String ownerType, @RequestParam String owner) {
-		SysPermission permissions = this.permissionService.getPermission(ownerType, owner);
-		Set<String> sitePermissionKeys = sitePermissionType.deserialize(permissions.getPermissions().get(sitePermissionType.getId()));
+		List<CmsSite> list = this.siteService.lambdaQuery()
+				.select(List.of(CmsSite::getSiteId, CmsSite::getName))
+				.list();
+		Set<String> permissionKeys = this.permissionService.getPermissionKeys(ownerType, owner, SitePermissionType.ID);
 		Set<String> inheritedPermissionKeys = this.permissionService.getInheritedPermissionKeys(ownerType, owner, SitePermissionType.ID);
-		sitePermissionKeys.addAll(inheritedPermissionKeys);
-		List<Map<String, Object>> list = this.siteService.lambdaQuery().select(List.of(CmsSite::getSiteId, CmsSite::getName))
-				.list().stream()
-				.filter(site -> sitePermissionKeys.contains(SitePrivItem.View.getPermissionKey(site.getSiteId())))
+		permissionKeys.addAll(inheritedPermissionKeys);
+		List<Map<String, Object>> data = list.stream()
+				.filter(site -> permissionKeys.contains(SitePrivItem.View.getPermissionKey(site.getSiteId())))
 				.map(site -> {
 					Map<String, Object> map = new HashMap<>();
 					map.put("id", site.getSiteId());
 					map.put("name", site.getName());
 					return map;
 				}).toList();
-		return this.bindDataTable(list);
+		return this.bindDataTable(data);
 	}
 
 	@GetMapping("/catalog")

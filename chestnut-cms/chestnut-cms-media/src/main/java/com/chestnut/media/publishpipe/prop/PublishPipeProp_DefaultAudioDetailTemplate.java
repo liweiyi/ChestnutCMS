@@ -15,14 +15,13 @@
  */
 package com.chestnut.media.publishpipe.prop;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.contentcore.core.IPublishPipeProp;
 import com.chestnut.media.AudioContentType;
+import org.springframework.stereotype.Component;
 
-@Component
+import java.util.List;
+
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_DefaultAudioDetailTemplate.KEY)
 public class PublishPipeProp_DefaultAudioDetailTemplate implements IPublishPipeProp {
 
 	public static final String KEY = DefaultDetailTemplatePropPrefix + AudioContentType.ID;

@@ -21,6 +21,7 @@
     <el-row>
       <el-col>
         <el-table 
+          v-if="siteOptions.length > 0"
           v-loading="loading"
           :data="catalogPrivs"
           :height="tableHeight"
@@ -44,6 +45,9 @@
             </el-table-column>
           </template>
         </el-table>
+        <div v-else style="background-color: #f4f4f5;color: #909399;font-size:12px;line-height: 30px;padding-left:10px;">
+          <i class="el-icon-info mr5"></i>{{ $t("CMS.Catalog.NoSitePermissions") }}
+        </div>
       </el-col>
     </el-row>
   </div>
@@ -85,7 +89,7 @@ export default {
   },
   data() {
     return {
-      loading: true,
+      loading: false,
       tableHeight: 600,
       tableMaxHeight: 900,
       selectAll: false,

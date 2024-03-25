@@ -29,7 +29,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Component
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_CustomFormTemplate.KEY)
 public class PublishPipeProp_CustomFormTemplate implements IPublishPipeProp {
 
 	public static final String KEY = "defaultCustomFormTemplate";

@@ -24,24 +24,24 @@ public interface ITag {
      * 
      * <@value></@value>
      */
-    public String getTagName();
+    String getTagName();
 
     /**
      * 标签名称
      */
-    public String getName();
+    String getName();
 
     /**
      * 标签描述
      */
-    default public String getDescription() {
+    default String getDescription() {
         return "";
     }
     
     /**
      * 标签属性定义
      */
-    default public List<TagAttr> getTagAttrs() {
+    default List<TagAttr> getTagAttrs() {
     	return null;
     }
 }

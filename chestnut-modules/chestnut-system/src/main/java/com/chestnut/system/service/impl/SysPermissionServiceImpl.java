@@ -76,38 +76,37 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	}
 
 	@Override
+	public Set<String> getPermissionKeys(String ownerType, String owner, String permissionType) {
+		Set<String> permissionKeys = new HashSet<>();
+		// 权限
+		SysPermission userPermission = this.getPermission(ownerType, owner);
+		if (Objects.nonNull(userPermission)) {
+			this.permissionTypes.values().forEach(pt -> {
+				if (StringUtils.isEmpty(permissionType) || pt.getId().equals(permissionType)) {
+					String json = userPermission.getPermissions().get(pt.getId());
+					if (StringUtils.isNotEmpty(json)) {
+						permissionKeys.addAll(pt.deserialize(json));
+					}
+				}
+			});
+		}
+		return permissionKeys;
+	}
+
+	@Override
 	public Set<String> getUserPermissions(Long userId, @Nullable String permissionType) {
 		Set<String> permissions = new HashSet<>();
 		if (SecurityUtils.isSuperAdmin(userId)) {
 			permissions.add(ALL_PERMISSION);
 		} else {
 			// 用户权限
-			SysPermission userPermission = this.getPermission(PermissionOwnerType.User.name(), userId.toString());
-			if (userPermission != null) {
-				this.permissionTypes.values().forEach(pt -> {
-					if (StringUtils.isEmpty(permissionType) || pt.getId().equals(permissionType)) {
-						String json = userPermission.getPermissions().get(pt.getId());
-						if (StringUtils.isNotEmpty(json)) {
-							permissions.addAll(pt.deserialize(json));
-						}
-					}
-				});
-			}
+			Set<String> permissionKeys = getPermissionKeys(PermissionOwnerType.User.name(), userId.toString(), permissionType);
+			permissions.addAll(permissionKeys);
 			// 角色权限
 			List<SysRole> roles = this.roleMapper.selectRolesByUserId(userId);
 			roles.forEach(r -> {
-				SysPermission permission = this.getPermission(PermissionOwnerType.Role.name(),
-						r.getRoleId().toString());
-				if (permission != null) {
-					this.permissionTypes.values().forEach(pt -> {
-						if (StringUtils.isEmpty(permissionType) || pt.getId().equals(permissionType)) {
-							String json = permission.getPermissions().get(pt.getId());
-							if (StringUtils.isNotEmpty(json)) {
-								permissions.addAll(pt.deserialize(json));
-							}
-						}
-					});
-				}
+				Set<String> keys = getPermissionKeys(PermissionOwnerType.Role.name(), r.getRoleId().toString(), permissionType);
+				permissions.addAll(keys);
 			});
 		}
 		return permissions;

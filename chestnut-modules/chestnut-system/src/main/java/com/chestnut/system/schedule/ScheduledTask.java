@@ -22,8 +22,7 @@ import com.chestnut.system.service.ISysScheduledTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
@@ -92,7 +91,7 @@ public abstract class ScheduledTask implements Runnable {
 
 	private ScheduledFuture<?> future;
 
-	private ISysScheduledTaskService taskService;
+	private final ISysScheduledTaskService taskService;
 
 	public ScheduledTask(ISysScheduledTaskService taskService) {
 		this.taskService = taskService;
@@ -131,7 +130,7 @@ public abstract class ScheduledTask implements Runnable {
 	 * 提交到线程池时执行
 	 */
 	public void ready() {
-		log.debug("[{}]ScheduledTask ready: {}", Thread.currentThread().getName(), this.getTaskId());
+		log.debug("[{}]ScheduledTask ready: {}[{}]", Thread.currentThread().getName(), this.getType(), this.getTaskId());
 		this.status = ScheduledTaskStatus.READY;
 		this.readyTime = LocalDateTime.now();
 	}
@@ -140,7 +139,7 @@ public abstract class ScheduledTask implements Runnable {
 	 * 任务开始执行
 	 */
 	void start() {
-		log.debug("[{}]ScheduledTask start: {}", Thread.currentThread().getName(), this.getTaskId());
+		log.debug("[{}]ScheduledTask start: {}[{}]", Thread.currentThread().getName(), this.getType(), this.getTaskId());
 		this.status = ScheduledTaskStatus.RUNNING;
 		this.startTime = LocalDateTime.now();
 	}
@@ -152,7 +151,8 @@ public abstract class ScheduledTask implements Runnable {
 		if (this.getStatus() == ScheduledTaskStatus.INTERRUPTED) {
 			return;
 		}
-		log.debug("[{}]ScheduledTask completed: {}", Thread.currentThread().getName(), this.getTaskId());
+		long cost = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() - this.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
+		log.debug("[{}]ScheduledTask completed: {}[{}], cost: {}ms", Thread.currentThread().getName(), this.getType(), this.getTaskId(), cost);
 		this.setStatus(ScheduledTaskStatus.SUCCESS);
 		this.setEndTime(LocalDateTime.now());
 		this.setPercent(100);
@@ -162,7 +162,7 @@ public abstract class ScheduledTask implements Runnable {
 	 * 执行中断，设置中断标识
 	 */
 	public void interrupt() {
-		log.debug("[{}]ScheduledTask interrupted: {}", Thread.currentThread().getName(), this.getTaskId());
+		log.debug("[{}]ScheduledTask interrupted: {}[{}]", Thread.currentThread().getName(), this.getType(), this.getTaskId());
 		if (this.interrupt) {
 			return;
 		}

@@ -26,6 +26,8 @@ import com.chestnut.common.utils.StringUtils;
  * @email 190785909@qq.com
  */
 public interface IPublishPipeProp {
+
+	String BEAN_PREFIX = "PublishPipeProp_";
 	
 	String DetailTemplatePropPrefix = "detailTemplate_";
 	

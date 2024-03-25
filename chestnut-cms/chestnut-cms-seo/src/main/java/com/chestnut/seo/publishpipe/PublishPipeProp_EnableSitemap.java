@@ -30,7 +30,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Component
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_EnableSitemap.KEY)
 public class PublishPipeProp_EnableSitemap implements IPublishPipeProp {
 	
 	public static final String KEY = "enableSitemap";

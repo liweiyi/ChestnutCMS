@@ -16,12 +16,18 @@
 package com.chestnut.system.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.db.domain.BaseEntity;
-
+import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.system.exception.SysErrorCode;
+import com.chestnut.system.schedule.ScheduledTaskTriggerType;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Objects;
 
 /**
  * 定时任务配置表 sys_scheduled_task
@@ -57,4 +63,22 @@ public class SysScheduledTask extends BaseEntity {
 	 * 触发器配置（JSON格式）
 	 */
 	private String triggerArgs;
+
+	@TableField(exist = false)
+	private Object data;
+
+	public void writeTriggerArgsFromJson(JsonNode json) {
+		if (Objects.isNull(json)) {
+			return;
+		}
+		if (ScheduledTaskTriggerType.isCron(this.getTaskTrigger())) {
+			ScheduledTaskTriggerType.CronTriggerArgs args = ScheduledTaskTriggerType.CronTriggerArgs.fromJson(json);
+			this.setTriggerArgs(JacksonUtils.to(args));
+		} else if (ScheduledTaskTriggerType.isPeriodic(this.getTaskTrigger())) {
+			ScheduledTaskTriggerType.PeriodicTriggerArgs args = ScheduledTaskTriggerType.PeriodicTriggerArgs.fromJson(json);
+			this.setTriggerArgs(JacksonUtils.to(args));
+		} else {
+			throw SysErrorCode.SCHEDULED_TASK_TRIGGER_ERR.exception(this.getTaskTrigger());
+		}
+	}
 }

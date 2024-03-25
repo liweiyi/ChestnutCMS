@@ -17,6 +17,7 @@ package com.chestnut.system.domain.dto;
 
 import com.chestnut.common.security.domain.BaseDTO;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,14 +30,8 @@ public class ScheduledTaskDTO extends BaseDTO {
 	private String taskType;
 	
 	private String taskTrigger;
-	
-	private String cron;
-	
-	private String fixedRate;
-	
-	private Long seconds;
-	
-	private Long delaySeconds;
+
+	private JsonNode data;
 	
 	private String status;
 	

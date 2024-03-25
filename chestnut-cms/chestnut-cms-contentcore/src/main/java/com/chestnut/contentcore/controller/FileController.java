@@ -15,22 +15,7 @@
  */
 package com.chestnut.contentcore.controller;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
 import cn.dev33.satoken.annotation.SaMode;
-import com.chestnut.contentcore.config.CMSConfig;
-import com.chestnut.contentcore.util.CmsPrivUtils;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -40,16 +25,24 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.FileAddDTO;
 import com.chestnut.contentcore.domain.dto.FileOperateDTO;
 import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.IFileService;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.system.security.AdminUserType;
-
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 文件管理
@@ -74,21 +67,18 @@ public class FileController extends BaseRestController {
 	/**
 	 * 查询文件列表
 	 *
-	 * @param filePath
-	 * @param filename
-	 * @return
+	 * @param filePath 文件目录路径
+	 * @param fileName 文件名
 	 */
 	@GetMapping("/list")
-	public R<?> getFileList(@RequestParam("filePath") @NotEmpty String filePath,
-							@RequestParam("fileName") String filename) {
+	public R<?> getFileList(@RequestParam @NotEmpty String filePath,
+							@RequestParam(required = false, defaultValue = "") String fileName) {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
-		return this.fileService.getSiteFileList(site, filePath, filename);
+		return this.fileService.getSiteFileList(site, filePath, fileName);
 	}
 
 	/**
 	 * 获取目录树数据
-	 *
-	 * @return
 	 */
 	@GetMapping("/directoryTreeData")
 	public R<?> getDirectoryTree() {
@@ -151,7 +141,7 @@ public class FileController extends BaseRestController {
 	 * @return
 	 * @throws IOException
 	 */
-	@Log(title = "读取文", businessType = BusinessType.OTHER)
+	@Log(title = "读取文件", businessType = BusinessType.OTHER)
 	@PostMapping("/read")
 	public R<?> readFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());

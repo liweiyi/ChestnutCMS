@@ -338,7 +338,7 @@
   </div>
 </template>
 <script>
-import { saveSiteExtends, getSiteExtends  } from "@/api/contentcore/site";
+import { saveSiteExtends, getSiteExtends } from "@/api/contentcore/site";
 import { getHotWordGroupOptions } from "@/api/contentcore/word";
 import { listXModelOptions } from "@/api/contentcore/exmodel";
 import { refreshBdTongjiToken } from "@/api/stat/baidu";
@@ -418,9 +418,7 @@ export default {
     },
     loadHotWordGroups() {
       getHotWordGroupOptions().then(response => {
-        if (response.code == 200) {
-          this.hotWordGroups = response.data.rows;
-        }
+        this.hotWordGroups = response.data.rows;
       });
     },
     handleFileStorageTypeChange() {

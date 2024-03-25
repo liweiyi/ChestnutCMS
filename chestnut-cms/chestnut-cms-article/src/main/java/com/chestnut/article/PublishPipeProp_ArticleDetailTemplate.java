@@ -15,13 +15,12 @@
  */
 package com.chestnut.article;
 
-import java.util.List;
-
+import com.chestnut.contentcore.core.IPublishPipeProp;
 import org.springframework.stereotype.Component;
 
-import com.chestnut.contentcore.core.IPublishPipeProp;
+import java.util.List;
 
-@Component
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_ArticleDetailTemplate.KEY)
 public class PublishPipeProp_ArticleDetailTemplate implements IPublishPipeProp {
 
 	public static final String KEY = DetailTemplatePropPrefix + ArticleContentType.ID;

@@ -52,3 +52,12 @@ export function delPublishPipe(publishPipeIds) {
     data: publishPipeIds
   })
 }
+
+
+export function getPublishPipePropValue(params) {
+  return request({
+    url: '/cms/publishpipe/prop_value',
+    method: 'get',
+    params: params
+  })
+}

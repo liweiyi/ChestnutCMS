@@ -9,10 +9,11 @@ export function getDirectoryTreeData() {
 }
 
 // 获取指定目录下文件
-export function getFileList(filePath, fileName) {
+export function getFileList(params) {
   return request({
-    url: '/cms/file/list?filePath=' + filePath + '&fileName=' + fileName,
-    method: 'get'
+    url: '/cms/file/list',
+    method: 'get',
+    params: params
   })
 }
 

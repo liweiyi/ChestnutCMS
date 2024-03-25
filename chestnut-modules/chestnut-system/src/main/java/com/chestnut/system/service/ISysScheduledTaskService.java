@@ -37,33 +37,33 @@ public interface ISysScheduledTaskService extends IService<SysScheduledTask> {
 	 * 
 	 * @param task
 	 */
-	public void insertTask(ScheduledTaskDTO task);
+	void insertTask(ScheduledTaskDTO task);
 
 	/**
 	 * 编辑定时任务信息
 	 * 
 	 * @param task
 	 */
-	public void updateTask(ScheduledTaskDTO task);
+	void updateTask(ScheduledTaskDTO task);
 
 	/**
 	 * 删除定时任务
 	 * 
 	 * @param taskIds
 	 */
-	public void deleteTasks(List<Long> taskIds);
+	void deleteTasks(List<Long> taskIds);
 
 	/**
 	 * 立即执行一次
 	 */
-	public void execOnceImmediately(Long taskId);
+	void execOnceImmediately(Long taskId);
 
 	/**
 	 * 添加任务执行日志
 	 * 
 	 * @param scheduledTask
 	 */
-	public void addTaskLog(ScheduledTask scheduledTask);
+	void addTaskLog(ScheduledTask scheduledTask);
 
 	/**
 	 * 启用定时任务

@@ -50,4 +50,14 @@ public class ObjectUtils {
 		}
 		return Objects.nonNull(objects[index]);
 	}
+
+	/**
+	 * 指定对象是否为null或者转成string后为空字符串
+	 *
+	 * @param obj
+	 * @return
+	 */
+    public static boolean isNullOrEmptyStr(Object obj) {
+		return Objects.isNull(obj) || StringUtils.isEmpty(obj.toString());
+    }
 }

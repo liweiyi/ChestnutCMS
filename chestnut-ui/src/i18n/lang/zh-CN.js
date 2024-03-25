@@ -896,6 +896,8 @@ export default {
       SitemapUrlLimit: "Sitemap链接数量",
       GenSitemap: "生成Sitemap",
       SitemapProgressTitle: "生成Sitemap任务",
+      Domain: "站点域名",
+      UEditorCss: "文章编辑器CSS",
       Tab: {
         Basic: "基础信息",
         Extend: "扩展配置",
@@ -1036,6 +1038,9 @@ export default {
       CopyContentTip: "拷贝副本：完整复制内容，独立于来源自由修改。",
       MappingContent: "映射内容",
       MappingContentTip: "映射内容：仅生成基础信息，独立页面，扩展内容共享自源内容。",
+      SortUp: "上移",
+      SortDown: "下移",
+      NoSitePermissions: "无任何站点权限",
       RuleTips: {
         Name: "栏目名称不能为空",
         Alias: "不能为空且只能使用字母、数字和下划线",
@@ -1046,6 +1051,8 @@ export default {
       PublishProgressTitle: "发布栏目",
       DeleteProgressTitle: "删除栏目",
       MoveProgressTitle: "转移栏目",
+      TemplateConfig: "模板配置",
+      OtherConfig: "其他配置",
       Extend: {
         Basic: "基础配置",
         CatalogPageSize: "分页列表大小",
@@ -1138,7 +1145,8 @@ export default {
       LikeCount: "点赞数",
       CommentCount: "评论数",
       RelaContent: "相关内容",
-      PushToBaidu: "推送到百度"
+      PushToBaidu: "推送到百度",
+      ImportCSSTip: "应用站点/栏目发布通道设置的文章编辑器CSS",
     },
     Image: {
       Title: "标题",

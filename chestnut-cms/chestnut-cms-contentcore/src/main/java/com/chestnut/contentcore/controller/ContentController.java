@@ -66,6 +66,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -97,10 +98,12 @@ public class ContentController extends BaseRestController {
 	 * 内容列表
 	 */
 	@GetMapping("/list")
-	public R<?> listData(@RequestParam(name = "catalogId", required = false) Long catalogId,
-			@RequestParam(name = "title", required = false, defaultValue = "") String title,
-		 	@RequestParam(name = "contentType", required = false, defaultValue = "") String contentType,
-			@RequestParam(name = "status", required = false) String status) {
+	public R<?> listData(@RequestParam(required = false) Long catalogId,
+						 @RequestParam(required = false) String title,
+						 @RequestParam(required = false) String contentType,
+						 @RequestParam(required = false) String status,
+						 @RequestParam(required = false) LocalDateTime beginTime,
+						 @RequestParam(required = false) LocalDateTime endTime) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		if (!IdUtils.validate(catalogId)
 				|| !loginUser.hasPermission(CatalogPrivItem.View.getPermissionKey(catalogId))) {
@@ -114,7 +117,9 @@ public class ContentController extends BaseRestController {
 				.eq(CmsContent::getSiteId, site.getSiteId())
 				.eq(StringUtils.isNotEmpty(contentType), CmsContent::getContentType, contentType)
 				.like(StringUtils.isNotEmpty(title), CmsContent::getTitle, title)
-				.eq(StringUtils.isNotEmpty(status), CmsContent::getStatus, status);
+				.eq(StringUtils.isNotEmpty(status), CmsContent::getStatus, status)
+				.ge(Objects.nonNull(beginTime), CmsContent::getCreateTime, beginTime)
+				.le(Objects.nonNull(endTime), CmsContent::getCreateTime, endTime);
 		if (includeChild) {
 			CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
 			q.like(CmsContent::getCatalogAncestors, catalog.getAncestors());

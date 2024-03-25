@@ -35,13 +35,15 @@
         <span class="tree-node" slot-scope="{ node, data }">
           <span>{{ node.label }}</span>
           <span class="node-tool">
-            <el-button
-              type="text"
-              size="mini"
-              :title="$t('CMS.ContentCore.Preview')"
-              @click="handlePreview(data)">
-              <svg-icon icon-class="eye-open"></svg-icon>
-            </el-button>
+            <el-dropdown size="small" type="primary">
+              <el-link :underline="false" class="row-more-btn" icon="el-icon-more"></el-link>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item @click.native="handlePreview(data)"><svg-icon icon-class="eye-open" class="mr5"></svg-icon>{{ $t('CMS.ContentCore.Preview') }}</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-s-promotion" @click.native="handlePublish(data)" v-hasPermi="[ $p('Catalog:Publish:{0}', [ data.catalogId ]) ]">{{ $t('CMS.ContentCore.Publish') }}</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-sort-up" @click.native="handleSortUp(data)" v-hasPermi="[ $p('Catalog:Sort:{0}', [ data.catalogId ]) ]">{{ $t('CMS.Catalog.SortUp') }}</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-sort-down" @click.native="handleSortDown(data)" v-hasPermi="[ $p('Catalog:Sort:{0}', [ data.catalogId ]) ]">{{ $t('CMS.Catalog.SortDown') }}</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </span>
         </span>
       </el-tree>
@@ -85,17 +87,37 @@
         <el-button @click="cancel">{{ $t("Common.Cancel") }}</el-button>
       </div>
     </el-dialog>
+    
+    <el-dialog 
+      :title="$t('CMS.Catalog.PublishDialogTitle')"
+      :visible.sync="publishDialogVisible"
+      width="500px"
+      class="publish-dialog">
+      <div>
+        <p>{{ $t('Common.Tips') }}</p>
+        <p>{{ $t('CMS.Catalog.PublishTips') }}</p>
+        <el-checkbox v-model="publishChild">{{ $t('CMS.Catalog.ContainsChildren') }}</el-checkbox>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="publishDialogVisible = false">{{ $t("Common.Cancel") }}</el-button>
+        <el-button type="primary" @click="handleDoPublish">{{ $t("Common.Confirm") }}</el-button>
+      </span>
+    </el-dialog>
+    <!-- 进度条 -->
+    <cms-progress :title="$t('CMS.Catalog.PublishProgressTitle')" :open.sync="openProgress" :taskId="taskId" @close="handleCloseProgress"></cms-progress>
   </div>
 </template>
 <script>
-import { getCatalogTypes, getCatalogTreeData, addCatalog } from "@/api/contentcore/catalog";
+import { getCatalogTypes, getCatalogTreeData, addCatalog, publishCatalog, sortCatalog } from "@/api/contentcore/catalog";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import CMSProgress from '@/views/components/Progress';
 
 export default {
   name: "CMSCatalogTree",
   components: {
-    Treeselect
+    Treeselect,
+    'cms-progress': CMSProgress
   },
   props: {
     newBtn: {
@@ -149,7 +171,12 @@ export default {
         catalogType: [
           { required: true, message: this.$t('CMS.Catalog.RuleTips.CatalogType'), trigger: "blur" }
         ]
-      }
+      },
+      publishCatalogId: 0,
+      publishDialogVisible: false,
+      publishChild: false,
+      openProgress: false,
+      taskId: "",
     };
   },
   watch: {
@@ -244,7 +271,44 @@ export default {
         query: { type: "catalog", dataId: data.id },
       });
       window.open(routeData.href, '_blank');
-    }
+    },
+    handleSortUp (nodeData) {
+      let data = { catalogId: nodeData.id, sort: -1 }
+      sortCatalog(data).then(response => {
+          this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
+          this.loadCatalogTreeData();
+      });
+    },
+    handleSortDown (nodeData) {
+      let data = { catalogId: nodeData.id, sort: 1 }
+      sortCatalog(data).then(response => {
+          this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
+          this.loadCatalogTreeData();
+      });
+    },
+    handlePublish (nodeData) {
+      this.publishCatalogId = nodeData.id;
+      this.publishDialogVisible = true;
+    },
+    handleDoPublish() {
+      const data = {
+        catalogId: this.publishCatalogId,
+        publishChild: this.publishChild,
+        publishDetail: false,
+        publishStatus: 30
+      };
+      publishCatalog(data).then(response => {
+        this.taskId = response.data;
+        this.progressTitle = this.$t('CMS.Catalog.PublishProgressTitle');
+        this.progressType = "Publish";
+        this.openProgress = true;
+        this.$cache.local.set('publish_flag', "true")
+      }); 
+      this.publishDialogVisible = false;
+      this.publishChild = false;
+    },
+    handleCloseProgress() {
+    },
   }
 };
 </script>

@@ -202,7 +202,12 @@ public enum SysErrorCode implements ErrorCode {
 	/**
 	 * 任务正在运行中
 	 */
-	SCHEDULED_TASK_RUNNING;
+	SCHEDULED_TASK_RUNNING,
+
+	/**
+	 * 不支持的定时任务触发器类型：{0}
+	 */
+	SCHEDULED_TASK_UNSUPPORTED_TRIGGER;
 	
 	@Override
 	public String value() {

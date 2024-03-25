@@ -83,7 +83,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
                     .exception(triggerType, triggerArgJson));
 
             PeriodicTrigger periodicTrigger = new PeriodicTrigger(Duration.ofSeconds(args.getSeconds()));
-            periodicTrigger.setFixedRate(args.getFixedRate());
+            periodicTrigger.setFixedRate(YesOrNo.isYes(args.getFixedRate()));
             if (args.getDelaySeconds() > 0) {
                 periodicTrigger.setInitialDelay(Duration.ofSeconds(args.getDelaySeconds()));
             }
@@ -161,17 +161,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
         task.setTaskType(dto.getTaskType());
         task.setStatus(dto.getStatus());
         task.setTaskTrigger(dto.getTaskTrigger());
-        if (ScheduledTaskTriggerType.isCron(task.getTaskTrigger())) {
-            CronTriggerArgs args = new CronTriggerArgs();
-            args.setCron(dto.getCron());
-            task.setTriggerArgs(JacksonUtils.to(args));
-        } else {
-            PeriodicTriggerArgs args = new PeriodicTriggerArgs();
-            args.setFixedRate(YesOrNo.isYes(dto.getFixedRate()));
-            args.setSeconds(dto.getSeconds());
-            args.setDelaySeconds(dto.getDelaySeconds());
-            task.setTriggerArgs(JacksonUtils.to(args));
-        }
+        task.writeTriggerArgsFromJson(dto.getData());
         task.setRemark(dto.getRemark());
         task.createBy(dto.getOperator().getUsername());
 
@@ -188,17 +178,8 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
         Assert.isTrue(EnableOrDisable.isDisable(task.getStatus()), SysErrorCode.SCHEDULED_TASK_UPDATE_ERR::exception);
 
         task.setTaskTrigger(dto.getTaskTrigger());
-        if (ScheduledTaskTriggerType.isCron(task.getTaskTrigger())) {
-            CronTriggerArgs args = new CronTriggerArgs();
-            args.setCron(dto.getCron());
-            task.setTriggerArgs(JacksonUtils.to(args));
-        } else {
-            PeriodicTriggerArgs args = new PeriodicTriggerArgs();
-            args.setFixedRate(YesOrNo.isYes(dto.getFixedRate()));
-            args.setSeconds(dto.getSeconds());
-            args.setDelaySeconds(dto.getDelaySeconds());
-            task.setTriggerArgs(JacksonUtils.to(args));
-        }
+        task.writeTriggerArgsFromJson(dto.getData());
+
         task.setRemark(dto.getRemark());
         task.updateBy(dto.getOperator().getUsername());
         this.updateById(task);

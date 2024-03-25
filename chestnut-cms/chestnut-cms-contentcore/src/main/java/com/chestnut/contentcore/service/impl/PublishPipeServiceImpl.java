@@ -65,16 +65,17 @@ public class PublishPipeServiceImpl extends ServiceImpl<CmsPublishPipeMapper, Cm
 
 	/**
 	 * 获取站点下指定使用场景的发布通道数据列表
-	 * 
-	 * @param siteId
-	 * @param useType
-	 * @param props
-	 * @return
+	 *
+	 * @param siteId 站点ID
+	 * @param useType 使用类型
+	 * @param props 数据集合
+	 * @return 结果
 	 */
 	@Override
 	public List<PublishPipeProp> getPublishPipeProps(Long siteId, PublishPipePropUseType useType,
 			Map<String, Map<String, Object>> props) {
-		List<IPublishPipeProp> list = this.publishPipeProps.stream().filter(p -> p.getUseTypes().contains(useType))
+		List<IPublishPipeProp> list = this.publishPipeProps.stream()
+				.filter(p -> p.getUseTypes().contains(useType))
 				.toList();
 		return this.getPublishPipes(siteId).stream().map(pp -> {
 			PublishPipeProp prop = PublishPipeProp.newInstance(pp.getCode(), pp.getName(),
@@ -98,7 +99,8 @@ public class PublishPipeServiceImpl extends ServiceImpl<CmsPublishPipeMapper, Cm
 				return value;
 			}
 		}
-		Optional<IPublishPipeProp> opt = this.publishPipeProps.stream().filter(p -> p.getKey().equals(propKey)).findFirst();
+		Optional<IPublishPipeProp> opt = this.publishPipeProps.stream()
+				.filter(p -> p.getKey().equals(propKey)).findFirst();
 		if (opt.isPresent()) {
 			return opt.get().getDefaultValue();
 		} else {
@@ -128,7 +130,7 @@ public class PublishPipeServiceImpl extends ServiceImpl<CmsPublishPipeMapper, Cm
 	private static final String DEFAULT_INDEX_TEMPLATE_CONTENT = """
 			<html>
 				<head>
-					<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">
+					<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 					<title>${Site.name}</title>
 				</head>
 				<body>
@@ -136,7 +138,7 @@ public class PublishPipeServiceImpl extends ServiceImpl<CmsPublishPipeMapper, Cm
 					<h3>${Site.createTime!}</h3>
 				</body>
 			</html>
-			 		""";
+			""";
 
 	@Override
 	public void addPublishPipe(CmsPublishPipe publishPipe) throws IOException {

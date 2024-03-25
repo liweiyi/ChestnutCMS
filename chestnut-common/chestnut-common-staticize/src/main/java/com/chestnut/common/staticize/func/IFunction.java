@@ -28,28 +28,35 @@ public interface IFunction {
 	 * 
 	 * @return
 	 */
-	public String getFuncName();
+	String getFuncName();
 	
 	/**
 	 * 描述
 	 * 
 	 * @return
 	 */
-	public String getDesc();
+	String getDesc();
 	
 	/**
 	 * 获取函数参数定义列表
 	 * 
 	 * @return
 	 */
-	public List<FuncArg> getFuncArgs();
+	List<FuncArg> getFuncArgs();
+
+	/**
+	 * 函数别名
+	 */
+	default List<String> getAliases() {
+		return List.of();
+	}
 
 	/**
 	 * 模板函数参数
 	 */
 	@Getter
 	@Setter
-	public class FuncArg {
+	class FuncArg {
 		
 		private String name;
 		
@@ -67,7 +74,7 @@ public interface IFunction {
 		}
 	}
 	
-	public enum FuncArgType {
+	enum FuncArgType {
 		String, Int, Long, Float, Double, DateTime, Boolean
 	}
 }

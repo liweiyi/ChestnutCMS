@@ -25,6 +25,7 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysScheduledTask;
 import com.chestnut.system.domain.SysScheduledTaskLog;
@@ -33,10 +34,12 @@ import com.chestnut.system.domain.vo.ScheduledTaskVO;
 import com.chestnut.system.mapper.SysScheduledTaskLogMapper;
 import com.chestnut.system.schedule.IScheduledHandler;
 import com.chestnut.system.schedule.ScheduledTask;
+import com.chestnut.system.schedule.ScheduledTaskTriggerType;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysScheduledTaskService;
 import com.chestnut.system.validator.LongId;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -96,8 +99,7 @@ public class SysScheduledTaskController extends BaseRestController {
 	public R<?> getInfo(@PathVariable Long taskId) {
 		SysScheduledTask task = this.taskService.getById(taskId);
 		Assert.notNull(task, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("taskId", taskId));
-		
-		
+		task.setData(JacksonUtils.parse(task.getTriggerArgs()));
 		return R.ok(task);
 	}
 

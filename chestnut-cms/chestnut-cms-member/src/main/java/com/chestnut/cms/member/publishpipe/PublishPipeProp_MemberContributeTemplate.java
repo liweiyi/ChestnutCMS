@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@Component
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_MemberContributeTemplate.KEY)
 public class PublishPipeProp_MemberContributeTemplate implements IPublishPipeProp {
 
 	public static final String KEY = "memberContributeTemplate";

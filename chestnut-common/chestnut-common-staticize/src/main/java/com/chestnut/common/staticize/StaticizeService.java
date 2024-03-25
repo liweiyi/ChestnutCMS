@@ -136,6 +136,13 @@ public class StaticizeService {
 			Assert.isNull(cfg.getSharedVariable(func.getFuncName()),
 					() -> new IllegalArgumentException("Freemarker function conflict: " + func.getFuncName()));
 			cfg.setSharedVariable(func.getFuncName(), func);
+			if (!func.getAliases().isEmpty()) {
+				for (String alias : func.getAliases()) {
+					Assert.isNull(cfg.getSharedVariable(alias),
+							() -> new IllegalArgumentException("Freemarker function alias conflict: " + alias));
+					cfg.setSharedVariable(alias, func);
+				}
+			}
 		} catch (TemplateModelException e) {
 			log.error("Freemarker function '{}' register failed.", func.getFuncName());
 			throw new IllegalArgumentException(e);

@@ -181,9 +181,9 @@
           <el-form-item :label="$t('Common.CreateTime')">
             <el-date-picker 
               v-model="dateRange"
-              style="width: 240px"
-              value-format="yyyy-MM-dd"
-              type="daterange"
+              style="width: 386px"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              type="datetimerange"
               range-separator="-"
               :start-placeholder="$t('Common.BeginDate')"
               :end-placeholder="$t('Common.EndDate')"></el-date-picker>
@@ -371,8 +371,6 @@ export default {
         contentType: undefined,
         status: undefined,
         catalogId: undefined,
-        beginTime: undefined,
-        endTime: undefined,
         sorts: ''
       },
       topDialogVisible: false,
@@ -418,7 +416,11 @@ export default {
     loadContentList () {
       this.loading = true;
       this.queryParams.catalogId = this.catalogId;
-      getContentList(this.queryParams).then(response => {
+      getContentList({
+        beginTime: this.dateRange && this.dateRange.length == 2 ? this.dateRange[0] : null,
+        endTime: this.dateRange && this.dateRange.length == 2 ? this.dateRange[1] : null,
+        ... this.queryParams
+      }).then(response => {
         this.contentList = response.data.rows;
         this.total = parseInt(response.data.total);
         this.loading = false;
@@ -442,7 +444,6 @@ export default {
     handleRowClick (currentRow) {
       this.toggleAllCheckedRows();
       this.$refs.tableContentList.toggleRowSelection(currentRow);
-      this.selectedRows.push(currentRow);
     },
     toggleAllCheckedRows() {
       this.selectedRows.forEach(row => {

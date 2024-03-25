@@ -15,14 +15,13 @@
  */
 package com.chestnut.media.publishpipe.prop;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.contentcore.core.IPublishPipeProp;
 import com.chestnut.media.VideoContentType;
+import org.springframework.stereotype.Component;
 
-@Component
+import java.util.List;
+
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_VideoDetailTemplate.KEY)
 public class PublishPipeProp_VideoDetailTemplate implements IPublishPipeProp {
 
 	public static final String KEY = DetailTemplatePropPrefix + VideoContentType.ID;

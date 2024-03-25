@@ -15,11 +15,11 @@
  */
 package com.chestnut.xmodel.core.impl;
 
+import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.xmodel.core.IMetaFieldValidation;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * 非空判断
@@ -39,6 +39,6 @@ public class MetaFieldValidation_NotEmpty implements IMetaFieldValidation {
 
     @Override
     public boolean validate(Object fieldValue, Map<String, Object> args) {
-        return Objects.nonNull(fieldValue) && !fieldValue.toString().isBlank();
+        return !ObjectUtils.isNullOrEmptyStr(fieldValue);
     }
 }

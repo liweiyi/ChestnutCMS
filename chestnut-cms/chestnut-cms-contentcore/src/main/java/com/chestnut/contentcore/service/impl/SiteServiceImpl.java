@@ -25,6 +25,7 @@ import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IProperty;
+import com.chestnut.contentcore.core.IPublishPipeProp;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
@@ -68,6 +69,8 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 	private final ApplicationContext applicationContext;
 
 	private final ISysPermissionService permissionService;
+
+	private final Map<String, IPublishPipeProp> publishPipeProps;
 
 	private final RedisCache redisCache;
 
@@ -146,6 +149,9 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 			site.setResourceUrl(site.getResourceUrl() + "/");
 		}
 		// 发布通道数据处理
+        dto.getPublishPipeDatas().forEach(prop -> {
+            prop.getProps().entrySet().removeIf(e -> !publishPipeProps.containsKey(IPublishPipeProp.BEAN_PREFIX + e.getKey()));
+        });
 		Map<String, Map<String, Object>> publishPipeProps = dto.getPublishPipeDatas().stream()
 				.collect(Collectors.toMap(PublishPipeProp::getPipeCode, PublishPipeProp::getProps));
 		site.setPublishPipeProps(publishPipeProps);

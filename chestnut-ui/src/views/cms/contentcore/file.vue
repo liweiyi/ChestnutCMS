@@ -288,7 +288,7 @@ export default {
         return;
       }
       this.loading = true;
-      getFileList(this.selectedDirectory, this.fileName).then(response => {
+      getFileList({ filePath: this.selectedDirectory, fileName: this.fileName }).then(response => {
         this.fileList = response.data;
         this.fileList.forEach(f => {
             f.isImage = isImage(f.fileName);

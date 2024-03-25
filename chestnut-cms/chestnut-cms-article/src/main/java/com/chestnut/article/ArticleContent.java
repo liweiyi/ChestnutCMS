@@ -131,6 +131,9 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 
 	@Override
 	public String getFullText() {
+		if (this.getContentEntity().isLinkContent()) {
+			return super.getFullText();
+		}
 		return super.getFullText() + StringUtils.SPACE + HtmlUtils.clean(this.getExtendEntity().getContentHtml());
 	}
 

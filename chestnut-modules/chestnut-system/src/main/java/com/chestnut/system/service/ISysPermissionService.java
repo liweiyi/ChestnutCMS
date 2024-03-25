@@ -62,6 +62,16 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	void saveMenuPermissions(SysPermissionDTO dto);
 
 	/**
+	 * 获取指定类型权限列表
+	 *
+	 * @param ownerType
+	 * @param owner
+	 * @param permissionType
+	 * @return
+	 */
+	Set<String> getPermissionKeys(String ownerType, String owner, String permissionType);
+
+	/**
 	 * 获取用户权限列表
 	 * 
 	 * @param userId

@@ -48,6 +48,7 @@ import com.chestnut.search.SearchConsts;
 import com.chestnut.search.exception.SearchErrorCode;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
+import com.chestnut.xmodel.core.IMetaModelType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -131,6 +132,11 @@ public class ContentIndexController extends BaseRestController {
 		List<ESContentVO> list = sr.hits().hits().stream().map(hit -> {
 			ObjectNode source = hit.source();
 			ESContentVO vo = JacksonUtils.getObjectMapper().convertValue(source, ESContentVO.class);
+			source.fieldNames().forEachRemaining(fieldName -> {
+				if (fieldName.startsWith(IMetaModelType.DATA_FIELD_PREFIX)) {
+					vo.getExtendData().put(fieldName, source.get(fieldName).asText());
+				}
+			});
 			vo.setHitScore(hit.score());
 			vo.setPublishDateInstance(LocalDateTime.ofEpochSecond(vo.getPublishDate(), 0, ZoneOffset.UTC));
 			vo.setCreateTimeInstance(LocalDateTime.ofEpochSecond(vo.getCreateTime(), 0, ZoneOffset.UTC));
@@ -138,13 +144,13 @@ public class ContentIndexController extends BaseRestController {
 			if (Objects.nonNull(catalog)) {
 				vo.setCatalogName(catalog.getName());
 			}
-			hit.highlight().entrySet().forEach(e -> {
-				if (e.getKey().equals("fullText")) {
-					vo.setFullText(StringUtils.join(e.getValue().toArray(String[]::new)));
-				} else if (e.getKey().equals("title")) {
-					vo.setTitle(StringUtils.join(e.getValue().toArray(String[]::new)));
-				}
-			});
+			hit.highlight().forEach((key, value) -> {
+                if (key.equals("fullText")) {
+                    vo.setFullText(StringUtils.join(value.toArray(String[]::new)));
+                } else if (key.equals("title")) {
+                    vo.setTitle(StringUtils.join(value.toArray(String[]::new)));
+                }
+            });
 			return vo;
 		}).toList();
 		return this.bindDataTable(list, sr.hits().total().value());

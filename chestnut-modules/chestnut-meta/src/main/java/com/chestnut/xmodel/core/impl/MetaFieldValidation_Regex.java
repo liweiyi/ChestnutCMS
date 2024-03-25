@@ -42,8 +42,11 @@ public class MetaFieldValidation_Regex implements IMetaFieldValidation {
 
     @Override
     public boolean validate(Object fieldValue, Map<String, Object> args) {
+        if (ObjectUtils.isNullOrEmptyStr(fieldValue)) {
+            return true;
+        }
         String regex = MapUtils.getString(args, "regex");
-        if (ObjectUtils.isAnyNull(fieldValue) || StringUtils.isEmpty(regex)) {
+        if (StringUtils.isEmpty(regex)) {
             return true;
         }
         return Pattern.matches(regex, fieldValue.toString());

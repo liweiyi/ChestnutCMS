@@ -15,6 +15,8 @@
  */
 package com.chestnut.seo.service;
 
+import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.HttpUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -52,9 +54,8 @@ public class BaiduPushService {
 
     public List<BaiduPushResult> pushContents(CmsSite site, List<Long> contentIds) {
         String secret = BaiduPushAccessSecretProperty.getValue(site.getConfigProps());
-        if (StringUtils.isEmpty(secret)) {
-            return List.of();
-        }
+        Assert.notEmpty(secret, () -> new GlobalException("Baidu push access secret not configured."));
+
         List<CmsPublishPipe> publishPipes = publishPipeService.getPublishPipes(site.getSiteId());
         List<BaiduPushResult> results = new ArrayList<>(publishPipes.size());
         publishPipes.forEach(pp -> {

@@ -17,11 +17,12 @@ package com.chestnut.common.staticize.func.impl;
 
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.StringUtils;
-import freemarker.template.SimpleNumber;
 import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -50,14 +51,8 @@ public class MaxFunction extends AbstractFunc  {
 		if (StringUtils.isEmpty(args)) {
 			return StringUtils.EMPTY;
 		}
-		SimpleNumber max = (SimpleNumber) args[0];
-		for (int i = 1; i < args.length; i++) {
-			SimpleNumber simpleNumber = (SimpleNumber) args[i];
-			if (simpleNumber.getAsNumber().doubleValue() > max.getAsNumber().doubleValue()) {
-				max = simpleNumber;
-			}
-		}
-		return max;
+		List<Number> numbers = MinFunction.readNumbers(args);
+		return Collections.max(numbers, Comparator.comparing(Number::doubleValue));
 	}
 
 	@Override

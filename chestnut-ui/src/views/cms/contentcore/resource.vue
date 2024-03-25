@@ -308,11 +308,11 @@ export default {
     },
     handleUploadChange(file) {
       file.name = file.name.toLowerCase();
-      if (!file.name.endsWith(".png") && !file.name.endsWith(".jpg")) {
-        this.$modal.msgError(this.$t('CMS.Resource.FileTypeErrMsg'));
-        this.upload.fileList = [];
-        return;
-      }
+      // if (!file.name.endsWith(".png") && !file.name.endsWith(".jpg")) {
+      //   this.$modal.msgError(this.$t('CMS.Resource.FileTypeErrMsg'));
+      //   this.upload.fileList = [];
+      //   return;
+      // }
       this.form.name = file.name;
     },
     handleBeforeUpload(file) {

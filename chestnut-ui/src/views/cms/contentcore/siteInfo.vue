@@ -124,7 +124,7 @@
             :key="pp.pipeCode"
             :name="pp.pipeCode"
             :label="pp.pipeName">
-            <el-form-item label="URL">
+            <el-form-item :label="$t('CMS.Site.Domain')">
               <el-input v-model="pp.props.url" placeholder="http(s)://www.test.com/" />
             </el-form-item>
             <el-form-item :label="$t('CMS.Site.StaticFileType')">
@@ -167,6 +167,15 @@
             </el-form-item>
             <el-form-item v-if="pp.props.enableSitemap=='Y'" :label="$t('CMS.Site.SitemapUrlLimit')">
               <el-input-number v-model="pp.props.sitemapUrlLimit" :min="1" :max="50000"></el-input-number>
+            </el-form-item>
+            <el-form-item :label="$t('CMS.Site.UEditorCss')">
+              <el-input v-model="pp.props.ueditorCss">
+                <el-button 
+                  slot="append"
+                  type="primary"
+                  @click="handleSelectFile()"
+                >{{ $t("Common.Select") }}</el-button>
+              </el-input>
             </el-form-item>
           </el-tab-pane>
         </el-tabs>
@@ -242,6 +251,8 @@
       :publishPipeCode="publishPipeActiveName" 
       @ok="handleTemplateSelected"
       @cancel="handleTemplateSelectorCancel" />
+    <!-- 站点文件选择组件 -->
+    <cms-file-selector :open.sync="openFileSelector" :path="fileSelectorPath" suffix="css" @ok="handleSetUEditorStyle" @close="openFileSelector=false"></cms-file-selector>
     <!-- 进度条 -->
     <cms-progress :title="progressTitle" :open.sync="openProgress" :taskId.sync="taskId" @close="handleProgressClose"></cms-progress>
   </div>
@@ -254,6 +265,7 @@ import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
 import CMSProgress from '@/views/components/Progress';
 import CMSLogoView from '@/views/cms/components/LogoView';
 import CMSEXModelEditor from '@/views/cms/components/EXModelEditor';
+import CMSFileSelector from '@/views/cms/components/FileSelector';
 
 export default {
   name: "CMSSiteInfo",
@@ -261,12 +273,16 @@ export default {
     'cms-template-selector': CMSTemplateSelector,
     'cms-progress': CMSProgress,
     "cms-logo-view": CMSLogoView,
-    "cms-exmodel-editor": CMSEXModelEditor
+    "cms-exmodel-editor": CMSEXModelEditor,
+    "cms-file-selector": CMSFileSelector
   },
   dicts: ['CMSStaticSuffix','CMSSitemapPageType'],
   computed: {
     showEXModel() {
       return this.form_info.configProps && this.form_info.configProps.SiteExtendModel != null && this.form_info.configProps.SiteExtendModel.length > 0;
+    },
+    fileSelectorPath() {
+      return this.form_info.path + "_" + this.publishPipeActiveName + "/"
     }
   },
   props: {
@@ -301,7 +317,7 @@ export default {
       },
       openTemplateSelector: false,
       publishPipeActiveName: "",
-
+      openFileSelector: false,
       openProgress: false,
       taskId: "",
       siteId: this.site,
@@ -480,6 +496,19 @@ export default {
           })
         })
       }
+    },
+    handleSelectFile() {
+      this.openFileSelector = true;
+    },
+    handleSetUEditorStyle(files) {
+      if (files.length > 0) {
+        this.form_info.publishPipeDatas.map(item => {
+          if (item.pipeCode == this.publishPipeActiveName) {
+            item.props.ueditorCss = files[0].filePath;
+          }
+        });
+      }
+      this.openFileSelector = false;
     }
   }
 };

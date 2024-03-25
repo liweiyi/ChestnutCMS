@@ -89,7 +89,19 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	@Override
 	public String getSitePageData(CmsSite site, String publishPipeCode, boolean isPreview)
 			throws IOException, TemplateException {
-		TemplateContext context = this.generateSiteTemplateContext(site, publishPipeCode, isPreview);
+		String indexTemplate = site.getIndexTemplate(publishPipeCode);
+		File templateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);
+		if (Objects.isNull(templateFile)) {
+			throw ContentCoreErrorCode.TEMPLATE_EMPTY.exception(publishPipeCode, indexTemplate);
+		}
+		// 模板ID = 通道:站点目录:模板文件名
+		String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, indexTemplate);
+		TemplateContext context = new TemplateContext(templateKey, isPreview, publishPipeCode);
+		// init template datamode
+		TemplateUtils.initGlobalVariables(site, context);
+		// init templateType data to datamode
+		ITemplateType templateType = templateService.getTemplateType(SiteTemplateType.TypeId);
+		templateType.initTemplateData(site.getSiteId(), context);
 
 		long s = System.currentTimeMillis();
 		try (StringWriter writer = new StringWriter()) {
@@ -201,34 +213,32 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		try {
 			AsyncTaskManager
 					.setTaskMessage(StringUtils.messageFormat("[{0}]正在发布站点首页：{1}", publishPipeCode, site.getName()));
-			TemplateContext templateContext = this.generateSiteTemplateContext(site, publishPipeCode, false);
+
+			String indexTemplate = site.getIndexTemplate(publishPipeCode);
+			File templateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);
+			if (Objects.isNull(templateFile)) {
+				logger.warn(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]站点首页模板未配置或不存在：{1}",
+						publishPipeCode, site.getSiteId() + "#" + site.getName())));
+				return;
+			}
+			// 模板ID = 通道:站点目录:模板文件名
+			String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, indexTemplate);
+			TemplateContext context = new TemplateContext(templateKey, false, publishPipeCode);
+			// init template datamode
+			TemplateUtils.initGlobalVariables(site, context);
+			// init templateType data to datamode
+			ITemplateType templateType = templateService.getTemplateType(SiteTemplateType.TypeId);
+			templateType.initTemplateData(site.getSiteId(), context);
 
 			long s = System.currentTimeMillis();
-			templateContext.setDirectory(SiteUtils.getSiteRoot(site, publishPipeCode));
-			templateContext.setFirstFileName("index" + StringUtils.DOT + site.getStaticSuffix(publishPipeCode));
-			this.staticizeService.process(templateContext);
+			context.setDirectory(SiteUtils.getSiteRoot(site, publishPipeCode));
+			context.setFirstFileName("index" + StringUtils.DOT + site.getStaticSuffix(publishPipeCode));
+			this.staticizeService.process(context);
 			logger.debug("[{}]首页模板解析：{}，耗时：{}ms", publishPipeCode, site.getName(), (System.currentTimeMillis() - s));
 		} catch (Exception e) {
 			logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}][{1}]站点首页解析失败：{2}",
 					publishPipeCode, site.getName(), e.getMessage())), e);
 		}
-	}
-
-	private TemplateContext generateSiteTemplateContext(CmsSite site, String publishPipeCode, boolean isPreview) {
-		String indexTemplate = site.getIndexTemplate(publishPipeCode);
-		File templateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);
-		Assert.notNull(templateFile,
-				() -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(publishPipeCode, indexTemplate));
-
-		// 模板ID = 通道:站点目录:模板文件名
-		String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, indexTemplate);
-		TemplateContext templateContext = new TemplateContext(templateKey, isPreview, publishPipeCode);
-		// init template datamode
-		TemplateUtils.initGlobalVariables(site, templateContext);
-		// init templateType data to datamode
-		ITemplateType templateType = templateService.getTemplateType(SiteTemplateType.TypeId);
-		templateType.initTemplateData(site.getSiteId(), templateContext);
-		return templateContext;
 	}
 
 	@Override
@@ -712,7 +722,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		}
 		File templateFile = this.templateService.findTemplateFile(site, exTemplate, publishPipeCode);
 		if (templateFile == null) {
-			logger.warn("[{}]栏目[{}#{}]扩展模板未设置或文件不存在", publishPipeCode, catalog.getName(), content.getTitle());
+			logger.warn("[{}]内容[{}#{}]扩展模板未设置或文件不存在", publishPipeCode, catalog.getName(), content.getTitle());
 			return;
 		}
 		try {
@@ -775,8 +785,10 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		CmsPageWidget pw = pageWidget.getPageWidgetEntity();
 		CmsSite site = this.siteService.getSite(pw.getSiteId());
 		File templateFile = this.templateService.findTemplateFile(site, pw.getTemplate(), pw.getPublishPipeCode());
-		Assert.notNull(templateFile, () -> new RuntimeException(
-				StringUtils.messageFormat("页面部件【{0}%s#{1}%s】模板未配置或文件不存在", pw.getName(), pw.getCode())));
+		if (Objects.isNull(templateFile)) {
+			logger.warn(StringUtils.messageFormat("页面部件【{0}%s#{1}%s】模板未配置或文件不存在", pw.getName(), pw.getCode()));
+			return;
+		}
 		try {
 			// 静态化目录
 			String dirPath = SiteUtils.getSiteRoot(site, pw.getPublishPipeCode()) + pw.getPath();

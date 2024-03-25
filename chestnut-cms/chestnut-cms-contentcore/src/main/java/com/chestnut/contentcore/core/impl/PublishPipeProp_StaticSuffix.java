@@ -15,15 +15,14 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
+import com.chestnut.contentcore.core.IPublishPipeProp;
+import com.chestnut.contentcore.fixed.dict.StaticSuffix;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
-import com.chestnut.contentcore.core.IPublishPipeProp;
-import com.chestnut.contentcore.fixed.dict.StaticSuffix;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 发布通道属性：静态文件类型
@@ -31,7 +30,7 @@ import com.chestnut.contentcore.fixed.dict.StaticSuffix;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Component
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_StaticSuffix.KEY)
 public class PublishPipeProp_StaticSuffix implements IPublishPipeProp {
 
 	public static final String KEY = "staticSuffix";

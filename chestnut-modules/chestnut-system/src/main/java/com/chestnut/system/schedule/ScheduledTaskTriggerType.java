@@ -15,8 +15,11 @@
  */
 package com.chestnut.system.schedule;
 
+import com.chestnut.system.fixed.dict.YesOrNo;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.scheduling.support.CronExpression;
 
 public enum ScheduledTaskTriggerType {
 
@@ -35,6 +38,14 @@ public enum ScheduledTaskTriggerType {
 	public static class CronTriggerArgs {
 
 		private String cron;
+
+		public static CronTriggerArgs fromJson(JsonNode json) {
+			CronTriggerArgs args = new CronTriggerArgs();
+			// 尝试解析cron表达式
+			CronExpression expr = CronExpression.parse(json.required("cron").asText());
+			args.setCron(expr.toString());
+			return args;
+		}
 	}
 
 	@Getter
@@ -44,7 +55,7 @@ public enum ScheduledTaskTriggerType {
 		/**
 		 * 是否固定间隔执行
 		 */
-		private Boolean fixedRate = false;
+		private String fixedRate = YesOrNo.NO;
 
 		/**
 		 * 执行周期 fixedRate = true: 两次任务开始时间之间间隔指定时长 fixedRate = false:
@@ -56,5 +67,13 @@ public enum ScheduledTaskTriggerType {
 		 * 延时delay秒后开始执行
 		 */
 		private Long delaySeconds;
+
+		public static PeriodicTriggerArgs fromJson(JsonNode json) {
+			PeriodicTriggerArgs args = new PeriodicTriggerArgs();
+			args.setFixedRate(json.required("fixedRate").asText());
+			args.setSeconds(json.required("seconds").asLong());
+			args.setDelaySeconds(json.required("delaySeconds").asLong());
+			return args;
+		}
 	}
 }

@@ -15,14 +15,13 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
+import com.chestnut.contentcore.core.IPublishPipeProp;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
-import com.chestnut.contentcore.core.IPublishPipeProp;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 发布通道属性：栏目列表页默认模板
@@ -30,7 +29,7 @@ import com.chestnut.contentcore.core.IPublishPipeProp;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Component
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_DefaultListTemplate.KEY)
 public class PublishPipeProp_DefaultListTemplate implements IPublishPipeProp {
 
 	public static final String KEY = "defaultListTemplate";

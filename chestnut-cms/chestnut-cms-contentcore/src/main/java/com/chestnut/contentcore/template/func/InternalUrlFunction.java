@@ -69,4 +69,9 @@ public class InternalUrlFunction extends AbstractFunc  {
 	public List<FuncArg> getFuncArgs() {
 		return List.of(new FuncArg("内部链接", FuncArgType.String, true, null));
 	}
+
+	@Override
+	public List<String> getAliases() {
+		return List.of("iurl");
+	}
 }

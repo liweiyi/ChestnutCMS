@@ -86,18 +86,35 @@
           </el-row>
           <el-row v-if="this.form.linkFlag !== 'Y' && this.contentType === 'article'">
             <el-col class="pr10">
-              <el-card shadow="always">
-                <el-form-item :label="$t('CMS.Content.DownloadImage')" prop="downloadRemoteImage">
-                  <el-switch
-                    v-model="form.downloadRemoteImage"
-                    active-value="Y"
-                    inactive-value="N" />
-                    <span style="color: #909399;font-size:12px;"><i class="el-icon-info mr5 ml10"></i>{{ $t('CMS.Content.DownloadImageTip') }}</span>
-                </el-form-item>
-              </el-card>
               <el-card shadow="always" class="card-editor">
+                <el-row>
+                  <el-col :span="12">
+                    <el-form-item :label="$t('CMS.Content.DownloadImage')" prop="downloadRemoteImage" style="margin-bottom:0;">
+                      <el-switch
+                        v-model="form.downloadRemoteImage"
+                        active-value="Y"
+                        inactive-value="N" />
+                        <span style="color: #909399;font-size:12px;"><i class="el-icon-info mr5 ml10"></i>{{ $t('CMS.Content.DownloadImageTip') }}</span>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="12">
+                    <el-form-item style="text-align:right;">
+                      <el-tooltip class="item" effect="dark" :content="$t('CMS.Content.ImportCSSTip')" placement="top">
+                        <i class="el-icon-info" style="color:#909399;margin-right:16px;" />
+                      </el-tooltip>
+                      <el-radio-group v-model="ueditorImportCss" @change="handleChangeUEditorCSS()">
+                        <el-radio-button label="">无</el-radio-button>
+                        <el-radio-button 
+                          v-for="pp in publishPipeProps" 
+                          :key="pp.pipeCode" 
+                          :label="pp.pipeCode" 
+                        >{{ pp.pipeName }}</el-radio-button>
+                      </el-radio-group>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
                 <div class="content bg-purple-white">
-                  <ueditor v-model="form.contentHtml" :height="800"></ueditor>
+                  <ueditor editorId="ue_article" v-model="form.contentHtml" :height="800"></ueditor>
                 </div>
               </el-card>
             </el-col>
@@ -238,6 +255,7 @@
 </template>
 <script>
 import { getInitContentEditorData, addContent, saveContent, toPublishContent, publishContent, lockContent, unLockContent, moveContent } from "@/api/contentcore/content";
+import { getUEditorCSS } from "@/api/contentcore/article"
 import { pushToBaidu } from "@/api/seo/baidupush";
 import Sticky from '@/components/Sticky'
 // import CKEditor5 from '@/components/CKEditor5';
@@ -331,10 +349,12 @@ export default {
       publishAfterSave: false,
       toPublishAfterSave: false,
       openRelaContentDialog: false,
+      ueditorImportCss: ""
     };
   },
   created() {
     this.initData();
+    this.loadUEditorCSS();
   },
   methods: {
     handleTabClick(tab, event) {
@@ -647,12 +667,48 @@ export default {
     },
     handlePushToBaidu() {
       pushToBaidu([ this.form.contentId ]).then(response => {
-        let msg = "[pc] 成功 1 条，剩余 9 条.<br/>【】 成功";
+        let msg = "";
         response.data.forEach(item => {
           msg += "【" + item.publishPipeCode + "】成功 " + item.success + " 条，剩余 " + item.remain + " 条。<br/>"
         })
         this.$modal.alert(msg)
       })
+    },
+    loadUEditorCSS() {
+      if (this.contentType == 'article') {
+        getUEditorCSS({ catalogId: this.catalogId }).then(response => {
+          this.ueditorCss = response.data;
+        })
+      }
+    },
+    findUEIframes(element) {
+      const children = element.children[0].children;
+      for (let i = 0; i < children.length; i++) {
+        if (children[i].classList.contains("edui-editor-iframeholder")) {
+          return children[i].children[0]
+        }
+      }
+      return;
+    },
+    handleChangeUEditorCSS() {
+      const iframe = this.findUEIframes(document.getElementById('ue_article'));
+      const links = iframe.contentDocument.getElementsByTagName('link');
+      for (let i = 0; i < links.length; i++) {
+          if (links[i].id === 'import_css') {
+              links[i].parentNode.removeChild(links[i]);
+          }
+      }
+      if (this.ueditorImportCss && this.ueditorImportCss.length > 0) {
+        const css = this.ueditorCss[this.ueditorImportCss]
+        if (css && css.length > 0) {
+          const link = document.createElement('link');
+          link.setAttribute('rel', 'stylesheet');
+          link.setAttribute('type', 'text/css');
+          link.setAttribute("id", "import_css");
+          link.setAttribute('href', css);
+          iframe.contentDocument.head.appendChild(link);
+        }
+      }
     }
   }
 };

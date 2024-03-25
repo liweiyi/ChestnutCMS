@@ -15,6 +15,7 @@
  */
 package com.chestnut.xmodel.core.impl;
 
+import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.xmodel.core.IMetaFieldValidation;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +44,7 @@ public class MetaFieldValidation_DateTime implements IMetaFieldValidation {
 
     @Override
     public boolean validate(Object fieldValue, Map<String, Object> args) {
-        if (fieldValue == null) {
+        if (ObjectUtils.isNullOrEmptyStr(fieldValue)) {
             return true;
         }
         try {

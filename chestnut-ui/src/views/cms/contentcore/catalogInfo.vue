@@ -171,6 +171,7 @@
             :command="pp"
             :name="pp.pipeCode"
             :label="pp.pipeName">
+            <el-divider content-position="left">模板配置</el-divider>
             <el-form-item :label="$t('CMS.Catalog.IndexTemplate')" prop="indexTemplate">
               <el-input v-model="pp.props.indexTemplate">
                 <el-button 
@@ -230,6 +231,16 @@
                 icon="el-icon-bottom-right" 
                 type="primary" 
                 @click="handleApplyToChildren('contentExTemplate')">{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
+            </el-form-item>
+            <el-divider content-position="left">其他配置</el-divider>
+            <el-form-item :label="$t('CMS.Site.UEditorCss')">
+              <el-input v-model="pp.props.ueditorCss">
+                <el-button 
+                  slot="append"
+                  type="primary"
+                  @click="handleSelectFile()"
+                >{{ $t("Common.Select") }}</el-button>
+              </el-input>
             </el-form-item>
           </el-tab-pane>
         </el-tabs>
@@ -293,6 +304,8 @@
       :open="openContentSelector"
       @ok="handleContentSelectorOk"
       @close="handleContentSelectorClose"></cms-content-selector>
+    <!-- 站点文件选择组件 -->
+    <cms-file-selector :open.sync="openFileSelector" suffix="css" @ok="handleSetUEditorStyle" @close="openFileSelector=false"></cms-file-selector>
     <!-- 进度条 -->
     <cms-progress :title="progressTitle" :open.sync="openProgress" :taskId="taskId" @close="handleCloseProgress"></cms-progress>
   </div>
@@ -305,6 +318,7 @@ import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
 import CMSProgress from '@/views/components/Progress';
 import CMSLogoView from '@/views/cms/components/LogoView';
 import CMSEXModelEditor from '@/views/cms/components/EXModelEditor';
+import CMSFileSelector from '@/views/cms/components/FileSelector';
 
 export default {
   name: "CMSCatalogInfo",
@@ -314,7 +328,8 @@ export default {
     'cms-catalog-selector': CMSCatalogSelector,
     'cms-content-selector': CMSContentSelector,
     'cms-progress': CMSProgress,
-    "cms-logo-view": CMSLogoView
+    "cms-logo-view": CMSLogoView,
+    "cms-file-selector": CMSFileSelector
   },
   dicts: ['CMSStaticSuffix', 'CMSContentStatus'],
   props: {
@@ -375,7 +390,8 @@ export default {
         catalogType: [
           { required: true, message: this.$t('CMS.Catalog.RuleTips.CatalogType'), trigger: "blur" }
         ]
-      }
+      },
+      openFileSelector: false,
     };
   },
   created() {
@@ -577,6 +593,19 @@ export default {
     handleSortCatalogCancel() {
       this.showSortPop = false;
       this.sortValue = 0;
+    },
+    handleSelectFile() {
+      this.openFileSelector = true;
+    },
+    handleSetUEditorStyle(files) {
+      if (files.length > 0) {
+        this.form_info.publishPipeDatas.map(item => {
+          if (item.pipeCode == this.publishPipeActiveName) {
+            item.props.ueditorCss = files[0].filePath;
+          }
+        });
+      }
+      this.openFileSelector = false;
     }
   }
 };

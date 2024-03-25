@@ -30,7 +30,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Component
+@Component(IPublishPipeProp.BEAN_PREFIX + PublishPipeProp_SitemapUrlLimit.KEY)
 public class PublishPipeProp_SitemapUrlLimit implements IPublishPipeProp {
 	
 	public static final String KEY = "sitemapUrlLimit";

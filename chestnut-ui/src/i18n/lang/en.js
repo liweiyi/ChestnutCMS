@@ -896,6 +896,8 @@ export default {
       SitemapUrlLimit: "Sitemap Url Limit",
       GenSitemap: "Generate Sitemap",
       SitemapProgressTitle: "Generate sitemap task",
+      Domain: "URL",
+      UEditorCss: "UEditor CSS",
       Tab: {
         Basic: "Basic Information",
         Extend: "Extend Config",
@@ -1036,6 +1038,9 @@ export default {
       CopyContentTip: "Depe Copy: independently of the source.",
       MappingContent: "Mapping",
       MappingContentTip: "Mapping: only basic content, the extend content is from source.",
+      SortUp: "MoveUp",
+      SortDown: "MoveDown",
+      NoSitePermissions: "No site permissions.",
       RuleTips: {
         Name: "Cannot be empty",
         Alias: "Cannot be empty and only [A-Za-z0-9_]+",
@@ -1046,6 +1051,8 @@ export default {
       PublishProgressTitle: "Publish catalog task",
       DeleteProgressTitle: "Delete catalog task",
       MoveProgressTitle: "Move catalog task",
+      TemplateConfig: "Template Configuration",
+      OtherConfig: "Other Configuration",
       Extend: {
         Basic: "Basic",
         CatalogPageSize: "Page list Size",
@@ -1138,7 +1145,8 @@ export default {
       LikeCount: "Likes",
       CommentCount: "Comments",
       RelaContent: "Related contents",
-      PushToBaidu: "Push To Baidu"
+      PushToBaidu: "Push To Baidu",
+      ImportCSSTip: "Import site/catalog publish-pipe prop 'UEditor CSS'.",
     },
     Image: {
       Title: "Title",

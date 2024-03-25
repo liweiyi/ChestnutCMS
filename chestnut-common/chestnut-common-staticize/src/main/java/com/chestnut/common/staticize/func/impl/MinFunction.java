@@ -17,11 +17,13 @@ package com.chestnut.common.staticize.func.impl;
 
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.StringUtils;
-import freemarker.template.SimpleNumber;
-import freemarker.template.TemplateModelException;
+import freemarker.template.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -50,14 +52,32 @@ public class MinFunction extends AbstractFunc  {
 		if (StringUtils.isEmpty(args)) {
 			return StringUtils.EMPTY;
 		}
-		SimpleNumber min = (SimpleNumber) args[0];
-		for (int i = 1; i < args.length; i++) {
-			SimpleNumber simpleNumber = (SimpleNumber) args[i];
-			if (simpleNumber.getAsNumber().doubleValue() < min.getAsNumber().doubleValue()) {
-				min = simpleNumber;
-			}
-		}
-		return min;
+		List<Number> numbers = readNumbers(args);
+		return Collections.min(numbers, Comparator.comparing(Number::doubleValue));
+	}
+
+	static List<Number> readNumbers(Object... args) throws TemplateModelException {
+		ArrayList<Number> numbers = new ArrayList<>();
+        for (Object arg : args) {
+            if (arg instanceof SimpleNumber simpleNumber) {
+                numbers.add(simpleNumber.getAsNumber());
+            } else if (arg instanceof SimpleSequence simpleSequence) {
+                for (int j = 0; j < simpleSequence.size(); j++) {
+                    if (simpleSequence.get(j) instanceof SimpleNumber simpleNumber) {
+                        numbers.add(simpleNumber.getAsNumber());
+                    }
+                }
+            } else if (arg instanceof SimpleCollection simpleCollection) {
+                TemplateModelIterator iterator = simpleCollection.iterator();
+                while (iterator.hasNext()) {
+                    TemplateModel next = iterator.next();
+                    if (next instanceof SimpleNumber simpleNumber) {
+                        numbers.add(simpleNumber.getAsNumber());
+                    }
+                }
+            }
+        }
+		return numbers;
 	}
 
 	@Override
