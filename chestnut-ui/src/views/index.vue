@@ -12,7 +12,6 @@
       <el-col :span="12">
         <shortcut></shortcut>
         <cms-site-data-stat></cms-site-data-stat>
-        <qi-gua></qi-gua>
         <server-info></server-info>
       </el-col>
     </el-row>

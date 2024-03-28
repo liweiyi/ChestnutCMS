@@ -15,103 +15,102 @@
  */
 package com.chestnut.contentcore.service;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.CmsTemplate;
 import com.chestnut.contentcore.domain.dto.TemplateAddDTO;
-import com.chestnut.contentcore.domain.dto.TemplateRenameDTO;
 import com.chestnut.contentcore.domain.dto.TemplateUpdateDTO;
 import com.chestnut.contentcore.template.ITemplateType;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 public interface ITemplateService extends IService<CmsTemplate> {
 
-	void clearTemplateStaticContentCache(String templateId);
+	/**
+	 * 清理站点指定模板静态化缓存
+	 *
+	 * @param templateKey 唯一标识：相对resourceRoot路径
+	 */
+	void clearTemplateStaticContentCache(String templateKey);
 
 	/**
+	 * 清理站点所有模板静态化缓存
+	 *
+	 * @param site 站点信息
+	 */
+    void clearSiteAllTemplateStaticContentCache(CmsSite site);
+
+    /**
 	 * 获取模板类型
 	 * 
-	 * @param typeid
-	 * @return
+	 * @param typeid 模板类型唯一标识
 	 */
 	ITemplateType getTemplateType(String typeid);
 
 	/**
 	 * 获取模板静态化内容缓存，主要区块模板使用
 	 * 
-	 * @param templateId
-	 * @return
+	 * @param templateKey 相对resourceRoot路径
 	 */
-	String getTemplateStaticContentCache(String templateId);
+	String getTemplateStaticContentCache(String templateKey);
 
 	/**
 	 * 缓存模板静态化内容
 	 * 
-	 * @param templateId 相对resourceRoot路径
-	 * @param staticContent
+	 * @param templateKey 相对resourceRoot路径
 	 */
-	void setTemplateStaticContentCache(String templateId, String staticContent);
+	void setTemplateStaticContentCache(String templateKey, String staticContent);
 
 	/**
 	 * 扫描模板目录，创建模板数据库记录
 	 * 
-	 * @param site
+	 * @param site 站点数据
 	 */
 	void scanTemplates(CmsSite site);
 
 	/**
 	 * 保存模板内容
-	 * 
-	 * @throws IOException 
 	 */
 	void saveTemplate(CmsTemplate template, TemplateUpdateDTO dto) throws IOException;
 
 	/**
 	 * 模板文件重命名
 	 *
-	 * @param template
-	 * @param path
-	 * @param remark
-	 * @param operator
-	 * @throws IOException
+	 * @param template 模板信息
+	 * @param path 路径
+	 * @param remark 备注
+	 * @param operator 操作人
 	 */
 	void renameTemplate(CmsTemplate template, String path, String remark, String operator) throws IOException;
 
 	/**
 	 * 获取模板文件
 	 * 
-	 * @param template
-	 * @return
+	 * @param template 模板信息
 	 */
 	File getTemplateFile(CmsTemplate template);
 
 	/**
 	 * 查找模板文件
 	 * 
-	 * @param site
-	 * @param templatePath
-	 * @param publishPipeCode
-	 * @return
-	 * @throws FileNotFoundException 
+	 * @param site 站点信息
+	 * @param templatePath 模板路径
+	 * @param publishPipeCode 发布通道编码
 	 */
 	File findTemplateFile(CmsSite site, String templatePath, String publishPipeCode);
 
 	/**
 	 * 新建模板文件
 	 * 
-	 * @param dto
-	 * @throws IOException
+	 * @param dto 模板数据
 	 */
 	void addTemplate(TemplateAddDTO dto) throws IOException;
 
 	/**
 	 * 删除模板
-	 * @param templateIds
-	 * @throws IOException 
+	 * @param templateIds 模板ID列表
 	 */
 	void deleteTemplates(CmsSite site, List<Long> templateIds) throws IOException;
 }

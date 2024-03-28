@@ -17,7 +17,6 @@ package com.chestnut.contentcore.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.redis.RedisCache;
-import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
@@ -44,8 +43,6 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -67,19 +64,28 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 	private final ISiteService siteService;
 
 	@Override
-	public String getTemplateStaticContentCache(String templateId) {
-		return this.redisCache.getCacheObject(TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX + templateId);
+	public String getTemplateStaticContentCache(String templateKey) {
+		return this.redisCache.getCacheObject(TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX + templateKey);
 	}
 
 	@Override
-	public void setTemplateStaticContentCache(String templateId, String staticContent) {
-		this.redisCache.setCacheObject(TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX + templateId, staticContent, 24,
+	public void setTemplateStaticContentCache(String templateKey, String staticContent) {
+		this.redisCache.setCacheObject(TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX + templateKey, staticContent, 24,
 				TimeUnit.HOURS);
 	}
 
 	@Override
-	public void clearTemplateStaticContentCache(String templateId) {
-		this.redisCache.deleteObject(TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX + templateId);
+	public void clearTemplateStaticContentCache(String templateKey) {
+		this.redisCache.deleteObject(TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX + templateKey);
+	}
+
+	@Override
+	public void clearSiteAllTemplateStaticContentCache(CmsSite site) {
+		List<CmsTemplate> dbTemplates = this.lambdaQuery().eq(CmsTemplate::getSiteId, site.getSiteId()).list();
+		dbTemplates.forEach(template -> {
+			String templateKey = SiteUtils.getTemplateKey(site, template.getPublishPipeCode(), template.getPath());
+			clearTemplateStaticContentCache(templateKey);
+		});
 	}
 
 	@Override
@@ -153,14 +159,6 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 		});
 	}
 
-	/**
-	 * 模板文件重命名
-	 *
-	 * @param template
-	 * @param path
-	 * @param remark
-	 * @param operator
-	 */
 	@Override
 	public void renameTemplate(CmsTemplate template, String path, String remark, String operator) throws IOException {
 		String newPath = FileExUtils.normalizePath(path);
@@ -198,11 +196,6 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 		this.clearTemplateStaticContentCache(template);
 	}
 
-	/**
-	 * 新建模板文件
-	 *
-	 * @param dto
-	 */
 	@Override
 	public void addTemplate(TemplateAddDTO dto) throws IOException {
 		CmsTemplate template = new CmsTemplate();
@@ -248,12 +241,6 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 		this.clearTemplateStaticContentCache(templateKey);
 	}
 
-	/**
-	 * 获取模板文件
-	 *
-	 * @param template
-	 * @return
-	 */
 	@Override
 	public File getTemplateFile(CmsTemplate template) {
 		CmsSite site = this.siteService.getSite(template.getSiteId());

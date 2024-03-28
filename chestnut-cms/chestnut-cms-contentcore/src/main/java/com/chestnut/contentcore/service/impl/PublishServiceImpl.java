@@ -48,7 +48,6 @@ import com.chestnut.contentcore.util.*;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,15 +129,8 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 
 			@Override
 			public void run0() throws InterruptedException {
-				List<CmsPublishPipe> publishPipes = publishPipeService.getPublishPipes(site.getSiteId());
-				publishPipes.forEach(pp -> {
-					try {
-						String siteRoot = SiteUtils.getSiteRoot(site, pp.getCode());
-						FileUtils.deleteDirectory(new File(siteRoot + "include/"));
-					} catch (IOException e) {
-						logger.error("Delete site publish pipe include directory failed: {}", pp.getCode(), e);
-					}
-				});
+				// 发布全站先清理所有模板缓存
+				templateService.clearSiteAllTemplateStaticContentCache(site);
 
 				List<CmsCatalog> catalogList = catalogService
 						.list(new LambdaQueryWrapper<CmsCatalog>().eq(CmsCatalog::getSiteId, site.getSiteId()));

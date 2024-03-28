@@ -48,7 +48,9 @@ public class CmsStatApiController extends BaseRestController {
 	public void visitSite(
 			@RequestParam("sid") Long siteId,
 			@RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
-			@RequestParam(value = "id", required = false, defaultValue = "0") Long contentId) {
+			@RequestParam(value = "id", required = false, defaultValue = "0") Long contentId,
+			@RequestParam(value = "h", required = false) String host,
+			@RequestParam(value = "p", required = false) String path) {
 		StatEvent evt = new StatEvent();
 		evt.setType(PageViewStatEventHandler.TYPE);
 		ObjectNode objectNode = JacksonUtils.objectNode();
@@ -58,6 +60,8 @@ public class CmsStatApiController extends BaseRestController {
 		evt.setData(objectNode);
 		evt.setEvtTime(LocalDateTime.now());
 		evt.fillRequestData(ServletUtils.getRequest());
+		evt.getRequestData().setHost(host);
+		evt.getRequestData().setUri(path);
 		statEventService.dealStatEvent(evt);
 	}
 }
