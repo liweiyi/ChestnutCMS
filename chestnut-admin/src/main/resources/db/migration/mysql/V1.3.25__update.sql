@@ -11,4 +11,4 @@ ALTER TABLE cc_hot_word_group ADD COLUMN word_total bigint DEFAULT 0;
 ALTER TABLE cc_hot_word ADD COLUMN owner VARCHAR(100);
 UPDATE cc_hot_word_group SET word_total = (SELECT count(*) FROM cc_hot_word WHERE cc_hot_word.group_id=cc_hot_word_group.group_id);
 
-UPDATE sys_memu set component = 'cms/word/word' WHERE menu_id = '2039';
+UPDATE sys_menu set component = 'cms/word/word' WHERE menu_id = '2039';
