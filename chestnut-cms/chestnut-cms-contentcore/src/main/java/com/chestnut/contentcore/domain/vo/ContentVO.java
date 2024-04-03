@@ -210,6 +210,41 @@ public class ContentVO {
      * 发布通道配置
      */
     private List<PublishPipeProp> publishPipeProps;
+
+    /**
+     * SEO标题
+     */
+    private String seoTitle;
+
+    /**
+     * SEO关键词
+     */
+    private String seoKeywords;
+
+    /**
+     * SEO描述
+     */
+    private String seoDescription;
+
+    /**
+     * 备用字段1
+     */
+    private String prop1;
+
+    /**
+     * 备用字段2
+     */
+    private String prop2;
+
+    /**
+     * 备用字段3
+     */
+    private String prop3;
+
+    /**
+     * 备用字段4
+     */
+    private String prop4;
     
     /**
      * 备注

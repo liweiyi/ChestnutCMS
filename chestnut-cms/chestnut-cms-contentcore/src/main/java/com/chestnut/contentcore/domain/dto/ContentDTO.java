@@ -15,21 +15,19 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.BeanUtils;
-
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.enums.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.util.InternalUrlUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Getter 
 @Setter
@@ -220,7 +218,25 @@ public class ContentDTO {
 	 */
 	private Map<String, Object> params;
 
+	/**
+	 * 状态
+	 */
 	private String status;
+
+	/**
+	 * SEO标题
+	 */
+	private String seoTitle;
+
+	/**
+	 * SEO关键词
+	 */
+	private String seoKeywords;
+
+	/**
+	 * SEO描述
+	 */
+	private String seoDescription;
 
 	/**
 	 * 备用字段1
