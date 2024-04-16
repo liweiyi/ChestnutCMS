@@ -200,22 +200,30 @@ public class CmsPermissionController extends BaseRestController {
 
 	@PutMapping("/catalog")
 	public R<?> saveCatalogPermissions(@RequestBody @Validated SaveCatalogPermissionDTO dto) {
-		Set<String> perms = new HashSet<>();
-		this.invokeCatalogPerms(dto.getPerms(), perms);
-		this.permissionService.savePermissions(dto.getOwnerType(), dto.getOwner(), perms,
+		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner());
+		Set<String> permissionKeys = new HashSet<>();
+		if (Objects.nonNull(permission)) {
+			String json = permission.getPermissions().get(CatalogPermissionType.ID);
+			permissionKeys.addAll(this.catalogPermissionType.deserialize(json));
+		}
+		this.invokeCatalogPerms(permissionKeys, dto.getPerms());
+		this.permissionService.savePermissions(dto.getOwnerType(), dto.getOwner(), permissionKeys,
 				CatalogPermissionType.ID, StpAdminUtil.getLoginUser().getUsername());
 		return R.ok();
 	}
 
-	private void invokeCatalogPerms(List<CatalogPrivVO> list, Set<String> perms) {
+	private void invokeCatalogPerms(Set<String> permissionKeys, List<CatalogPrivVO> list) {
 		list.forEach(vo -> {
 			vo.getPerms().forEach((k, v) -> {
+				String permissionKey = CatalogPrivItem.valueOf(k).getPermissionKey(vo.getCatalogId());
 				if (v.isGranted() && !v.isInherited()) {
-					perms.add(CatalogPrivItem.valueOf(k).getPermissionKey(vo.getCatalogId()));
+					permissionKeys.add(permissionKey);
+				} else {
+					permissionKeys.remove(permissionKey);
 				}
 			});
 			if (StringUtils.isNotEmpty(vo.getChildren())) {
-				this.invokeCatalogPerms(vo.getChildren(), perms);
+				this.invokeCatalogPerms(permissionKeys, vo.getChildren());
 			}
 		});
 	}
@@ -262,15 +270,24 @@ public class CmsPermissionController extends BaseRestController {
 
 	@PutMapping("/pageWidget")
 	public R<?> savePageWidgetPermissions(@RequestBody @Validated SavePageWidgetPermissionDTO dto) {
-		Set<String> perms = new HashSet<>();
+		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner());
+		Set<String> permissionKeys = new HashSet<>();
+		if (Objects.nonNull(permission)) {
+			String json = permission.getPermissions().get(PageWidgetPermissionType.ID);
+			permissionKeys.addAll(this.pageWidgetPermissionType.deserialize(json));
+		}
+
 		dto.getPerms().forEach(vo -> {
 			vo.getPerms().forEach((k, v) -> {
+				String permissionKey = PageWidgetPermissionType.PageWidgetPrivItem.valueOf(k).getPermissionKey(vo.getPageWidgetId());
 				if (v.isGranted() && !v.isInherited()) {
-					perms.add(PageWidgetPermissionType.PageWidgetPrivItem.valueOf(k).getPermissionKey(vo.getPageWidgetId()));
+					permissionKeys.add(permissionKey);
+				} else {
+					permissionKeys.remove(permissionKey);
 				}
 			});
 		});
-		this.permissionService.savePermissions(dto.getOwnerType(), dto.getOwner(), perms,
+		this.permissionService.savePermissions(dto.getOwnerType(), dto.getOwner(), permissionKeys,
 				PageWidgetPermissionType.ID, StpAdminUtil.getLoginUser().getUsername());
 		return R.ok();
 	}
