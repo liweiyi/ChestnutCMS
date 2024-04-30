@@ -91,7 +91,7 @@ public class CatalogPublishTask implements IPublishTask<CmsCatalog> {
         MapRecord<String, String, String> record = MapRecord.create(CMSPublishConfig.PublishStreamName, Map.of(
                 "type", Type,
                 "id", dataId
-        )).withId(RecordId.of(Instant.now().toEpochMilli(), catalog.getCatalogId()));
+        ));
         redisTemplate.opsForStream().add(record);
     }
 

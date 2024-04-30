@@ -106,7 +106,7 @@ public class ContentPublishTask implements IPublishTask<CmsContent> {
         MapRecord<String, String, String> record = MapRecord.create(CMSPublishConfig.PublishStreamName, Map.of(
                 "type", Type,
                 "id", dataId
-        )).withId(RecordId.of(Instant.now().toEpochMilli(), content.getContentId()));
+        ));
         redisTemplate.opsForStream().add(record);
     }
 

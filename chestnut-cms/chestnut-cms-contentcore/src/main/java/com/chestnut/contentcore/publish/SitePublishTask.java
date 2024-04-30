@@ -33,12 +33,10 @@ import com.chestnut.contentcore.util.TemplateUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 
@@ -75,7 +73,7 @@ public class SitePublishTask implements IPublishTask<CmsSite> {
         MapRecord<String, String, String> record = MapRecord.create(CMSPublishConfig.PublishStreamName, Map.of(
                 "type", Type,
                 "id", dataId
-        )).withId(RecordId.of(Instant.now().toEpochMilli(), site.getSiteId()));
+        ));
         redisTemplate.opsForStream().add(record);
     }
 
