@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.storage.IFileStorageType;
 import com.chestnut.common.storage.StorageReadArgs;
@@ -41,6 +42,7 @@ import com.chestnut.contentcore.properties.FileStorageTypeProperty;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
+import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.ResourceUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
@@ -57,6 +59,7 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Matcher;
 
 @Service
 @RequiredArgsConstructor
@@ -317,6 +320,53 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		IFileStorageType fileStorageType = fileStorageTypes.get(IFileStorageType.BEAN_NAME_PREIFX + type);
 		Assert.notNull(fileStorageType, () -> StorageErrorCode.UNSUPPORTED_STORAGE_TYPE.exception(type));
 		return fileStorageType;
+	}
+
+	/**
+	 * 解析html中的图片标签，如果是远程地址图片则下载到资源库中并将图片标签的src替换为资源内部链接
+	 *
+	 * @param html HTML文本
+	 * @param site 所属站点
+	 * @param operator 操作人
+	 */
+	@Override
+	public String downloadRemoteImages(String html, CmsSite site, String operator) {
+		if (StringUtils.isBlank(html)) {
+			return html;
+		}
+		Matcher matcher = ResourceUtils.ImgHtmlTagPattern.matcher(html);
+		int lastEndIndex = 0;
+		StringBuilder sb = new StringBuilder();
+		while (matcher.find(lastEndIndex)) {
+			int s = matcher.start();
+			sb.append(html, lastEndIndex, s);
+
+			String imgTag = matcher.group();
+			String src = matcher.group(1);
+			try {
+				if (StringUtils.startsWithIgnoreCase(src, "data:image/")) {
+					// base64图片保存到资源库
+					CmsResource resource = addBase64Image(site, operator, src);
+					if (Objects.nonNull(resource)) {
+						imgTag = imgTag.replaceFirst("data:image/([^'\"]+)", src);
+					}
+				} else if (!InternalUrlUtils.isInternalUrl(src) && ServletUtils.isHttpUrl(src)) {
+					// 非iurl的http链接则下载图片
+					CmsResource resource = downloadImageFromUrl(src, site.getSiteId(), operator);
+					if (Objects.nonNull(resource)) {
+						imgTag = StringUtils.replaceEx(imgTag, src, resource.getInternalUrl());
+					}
+				}
+			} catch (Exception e1) {
+				String imgSrc = (src.startsWith("data:image/") ? src.substring(0, 20) : src);
+				log.warn("Save image failed: " + imgSrc);
+				AsyncTaskManager.addErrMessage("Download remote image failed: " + imgSrc);
+			}
+			sb.append(imgTag);
+			lastEndIndex = matcher.end();
+		}
+		sb.append(html.substring(lastEndIndex));
+		return sb.toString();
 	}
 
 	private final List<IResourceStat> resourceStats;

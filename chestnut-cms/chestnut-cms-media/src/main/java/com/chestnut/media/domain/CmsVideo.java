@@ -51,7 +51,7 @@ public class CmsVideo extends BaseEntityWithLogicDelete {
     /**
      * 所属站点ID
      */
-    private long siteId;
+    private Long siteId;
 
     /**
      * 视频封面图

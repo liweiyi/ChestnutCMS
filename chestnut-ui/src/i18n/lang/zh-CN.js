@@ -964,7 +964,8 @@ export default {
         CommentCardTitle: " 评论配置",
         EnableCommentAudit: "是否需要审核",
         SEO: "搜索引擎优化配置",
-        BaiduPushAccessSecret: "百度收录API秘钥"
+        BaiduPushAccessSecret: "百度收录API秘钥",
+        DownloadRemoteImage: "默认开启文章远程图片下载"
       },
       Property: {
         QueryPlaceholder: "输入名称/编码查询",
@@ -1346,6 +1347,7 @@ export default {
       Func: "模板函数",
       InputFuncName: "输入模板函数名称",
       UsageDesc: "用法描述：",
+      FuncAlias: "函数别名：",
       FuncArgs: "函数参数：",
       FuncName: "函数方法名",
       FuncDesc: "描述",

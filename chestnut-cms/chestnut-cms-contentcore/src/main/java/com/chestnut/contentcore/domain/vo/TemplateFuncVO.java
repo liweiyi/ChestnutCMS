@@ -29,6 +29,8 @@ import lombok.Setter;
 public class TemplateFuncVO {
 	
 	private String funcName;
+
+	private List<String> aliases;
 	
 	private String desc;
 	

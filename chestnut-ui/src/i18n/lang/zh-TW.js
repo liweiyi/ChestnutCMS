@@ -964,7 +964,8 @@ export default {
         CommentCardTitle: " 評論配置",
         EnableCommentAudit: "是否需要審核",
         SEO: "搜索引擎優化配置",
-        BaiduPushAccessSecret: "百度收錄API秘鑰"
+        BaiduPushAccessSecret: "百度收錄API秘鑰",
+        DownloadRemoteImage: "默認開啟文章遠程圖片下載"
       },
       Property: {
         QueryPlaceholder: "輸入名稱/編碼查詢",
@@ -1346,6 +1347,7 @@ export default {
       Func: "模板函數",
       InputFuncName: "輸入模板函數名稱",
       UsageDesc: "用法描述：",
+      FuncAlias: "函數別名：",
       FuncArgs: "函數參數：",
       FuncName: "函數方法名",
       FuncDesc: "描述",

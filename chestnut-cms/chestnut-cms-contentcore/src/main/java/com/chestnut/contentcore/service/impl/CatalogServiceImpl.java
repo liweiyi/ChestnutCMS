@@ -52,6 +52,8 @@ import com.chestnut.contentcore.util.*;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.service.ISysPermissionService;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -76,6 +78,8 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 	private final ISiteService siteService;
 
 	private final RedisCache redisCache;
+
+	private final RedissonClient redissonClient;
 
 	private final CmsCatalogMapper catalogMapper;
 
@@ -306,7 +310,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		LambdaQueryWrapper<CmsCatalog> q = new LambdaQueryWrapper<CmsCatalog>().in(CmsCatalog::getCatalogId,
 				dto.getToCatalogIds());
 		List<CmsCatalog> toCatalogs = this.list(q);
-		if (toCatalogs.size() > 0) {
+		if (!toCatalogs.isEmpty()) {
 			for (CmsCatalog toCatalog : toCatalogs) {
 				List<PublishPipeProp> publishPipeProps = dto.getPublishPipeProps();
 				for (PublishPipeProp publishPipeProp : publishPipeProps) {
@@ -393,14 +397,13 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		fromCatalog.setSortFlag(SortUtils.getDefaultSortValue());
 		invokedCatalogs.put(fromCatalog.getCatalogId(), fromCatalog);
 		// 3、依次处理所有栏目
-		for (int i = 0; i < children.size(); i++) {
-			AsyncTaskManager.setTaskMessage("更新转移栏目子栏目数据");
-			CmsCatalog child = children.get(i);
-			CmsCatalog parent = invokedCatalogs.get(child.getParentId());
-			child.setAncestors(CatalogUtils.getCatalogAncestors(parent.getAncestors(), child.getCatalogId()));
-			child.setTreeLevel(parent.getTreeLevel() + 1);
-			invokedCatalogs.put(child.getCatalogId(), child);
-		}
+        for (CmsCatalog child : children) {
+            AsyncTaskManager.setTaskMessage("更新转移栏目子栏目数据");
+            CmsCatalog parent = invokedCatalogs.get(child.getParentId());
+            child.setAncestors(CatalogUtils.getCatalogAncestors(parent.getAncestors(), child.getCatalogId()));
+            child.setTreeLevel(parent.getTreeLevel() + 1);
+            invokedCatalogs.put(child.getCatalogId(), child);
+        }
 		// 4、目标栏目子栏目数+1
 		if (Objects.nonNull(toCatalog)) {
 			AsyncTaskManager.setTaskMessage("更新转移目标栏目数据");
@@ -466,7 +469,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 					.eq(CmsCatalog::getSiteId, catalog.getSiteId()).eq(CmsCatalog::getParentId, catalog.getParentId())
 					.lt(CmsCatalog::getSortFlag, catalog.getSortFlag()).orderByDesc(CmsCatalog::getSortFlag)
 					.page(new Page<>(1, Math.abs(sort), false)).getRecords();
-			if (beforeCatalogs.size() == 0) {
+			if (beforeCatalogs.isEmpty()) {
 				return; // 无需排序
 			}
 			CmsCatalog targetCatalog = beforeCatalogs.get(beforeCatalogs.size() - 1);
@@ -483,7 +486,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 					.eq(CmsCatalog::getSiteId, catalog.getSiteId()).eq(CmsCatalog::getParentId, catalog.getParentId())
 					.gt(CmsCatalog::getSortFlag, catalog.getSortFlag()).orderByAsc(CmsCatalog::getSortFlag)
 					.page(new Page<>(1, sort, false)).getRecords();
-			if (afterCatalogs.size() == 0) {
+			if (afterCatalogs.isEmpty()) {
 				return; // 无需排序
 			}
 			CmsCatalog targetCatalog = afterCatalogs.get(afterCatalogs.size() - 1);
@@ -494,5 +497,18 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 			afterCatalogs.forEach(this::clearCache);
 		}
 		this.clearCache(catalog);
+	}
+
+	@Override
+	public void changeContentCount(Long catalogId, int delta) {
+		RLock lock = redissonClient.getLock("Catalog-" + catalogId);
+		lock.lock();
+		try {
+			CmsCatalog catalog = getById(catalogId);
+			lambdaUpdate().set(CmsCatalog::getContentCount, catalog.getContentCount() + delta)
+					.eq(CmsCatalog::getCatalogId, catalog.getCatalogId()).update();
+		} finally {
+			lock.unlock();
+		}
 	}
 }

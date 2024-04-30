@@ -21,9 +21,11 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
+import com.chestnut.contentcore.publish.CatalogPublishTask;
+import com.chestnut.contentcore.publish.ContentPublishTask;
+import com.chestnut.contentcore.publish.SitePublishTask;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.schedule.IScheduledHandler;
 import com.xxl.job.core.handler.IJobHandler;
@@ -53,8 +55,12 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 	private final ICatalogService catalogService;
 	
 	private final IContentService contentService;
-	
-	private final IPublishService publishService;
+
+	private final SitePublishTask sitePublisher;
+
+	private final CatalogPublishTask catalogPublisher;
+
+	private final ContentPublishTask contentPublisher;
 
 	@Override
 	public String getId() {
@@ -76,8 +82,9 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 					.list(new LambdaQueryWrapper<CmsCatalog>().eq(CmsCatalog::getSiteId, site.getSiteId()));
 			for (CmsCatalog catalog : catalogList) {
 				// 先发布内容
-				int pageSize = 500;
+				long pageSize = 500;
 				LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
+						.select(CmsContent::getContentId)
 						.eq(CmsContent::getCatalogId, catalog.getCatalogId())
 						.eq(CmsContent::getStatus, ContentStatus.TO_PUBLISHED)
 						.le(CmsContent::getPublishDate, LocalDateTime.now());
@@ -85,16 +92,16 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 				for (int i = 0; i * pageSize < total; i++) {
 					Page<CmsContent> page = contentService.page(new Page<>(i, pageSize, false), q);
 					for (CmsContent xContent : page.getRecords()) {
-						this.publishService.contentStaticize(xContent);
+						contentPublisher.publish(xContent);
 					}
 				}
 			}
 			// 发布栏目
 			for (CmsCatalog catalog : catalogList) {
-				this.publishService.catalogStaticize(catalog, -1);
+				catalogPublisher.publish(catalog);
 			}
 			// 发布站点
-			this.publishService.siteStaticize(site);
+			sitePublisher.publish(site);
 		}
 		logger.info("Job '{}' completed, cost: {}ms", JOB_NAME, System.currentTimeMillis() - s);
 	}

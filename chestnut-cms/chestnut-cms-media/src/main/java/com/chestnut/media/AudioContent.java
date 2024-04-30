@@ -22,6 +22,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.media.domain.CmsAudio;
 import com.chestnut.media.service.IAudioService;
 
@@ -56,7 +57,7 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 				audio.setSiteId(this.getSiteId());
 				audio.setType(FileExUtils.getExtension(audio.getPath()).toUpperCase());
 				audio.setSortFlag(i);
-				audio.createBy(this.getOperator().getUsername());
+				audio.createBy(this.getOperatorUName());
 				this.getAudioService().progressAudioInfo(audio);
 			}
 			this.getAudioService().saveBatch(audioList);
@@ -102,7 +103,7 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 					dbAudio.setType(FileExUtils.getExtension(audio.getPath()).toUpperCase());
 					this.getAudioService().progressAudioInfo(dbAudio);
 				}
-				dbAudio.updateBy(this.getOperator().getUsername());
+				dbAudio.updateBy(this.getOperatorUName());
 				this.getAudioService().updateById(dbAudio);
 			} else {
 				audio.setAudioId(IdUtils.getSnowflakeId());
@@ -111,7 +112,7 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 				audio.setSiteId(this.getSiteId());
 				audio.setType(FileExUtils.getExtension(audio.getPath()).toUpperCase());
 				audio.setSortFlag(i);
-				audio.createBy(this.getOperator().getUsername());
+				audio.createBy(this.getOperatorUName());
 				this.getAudioService().progressAudioInfo(audio);
 				this.getAudioService().save(audio);
 			}
@@ -132,11 +133,11 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 	public void copyTo(CmsCatalog toCatalog, Integer copyType) {
 		super.copyTo(toCatalog, copyType);
 
-		if (this.hasExtendEntity()) {
+		if (this.hasExtendEntity() && ContentCopyType.isIndependency(copyType)) {
 			Long newContentId = (Long) this.getParams().get("NewContentId");
 			List<CmsAudio> audioList = this.getAudioService().getAlbumAudioList(this.getContentEntity().getContentId());
 			for (CmsAudio audio : audioList) {
-				audio.createBy(this.getOperator().getUsername());
+				audio.createBy(this.getOperatorUName());
 				audio.setAudioId(IdUtils.getSnowflakeId());
 				audio.setContentId(newContentId);
 				audio.setSiteId(toCatalog.getSiteId());

@@ -29,77 +29,67 @@ public interface IResourceService extends IService<CmsResource> {
 
 	/**
 	 * 上传资源
-	 * 
-	 * @param dto
-	 * @return 
-	 * @throws IOException
 	 */
 	CmsResource addResource(ResourceUploadDTO dto) throws IOException;
 
 	/**
 	 * 修改资源
-	 *
-	 * @param dto
-	 * @return
-	 * @throws IOException
 	 */
 	CmsResource editResource(ResourceUploadDTO dto) throws IOException;
 
 	/**
 	 * 添加base64图片资源
 	 * 
-	 * @param site
-	 * @param operator
-	 * @param base64Data
-	 * @throws IOException
+	 * @param site 所属站点
+	 * @param operator 操作人
+	 * @param base64Data BASE64图片信息
 	 */
 	CmsResource addBase64Image(CmsSite site, String operator, String base64Data) throws IOException;
 
 	/**
 	 * 添加本地文件到资源库
 	 *
-	 * @param site
-	 * @param operator
-	 * @param imageFile
-	 * @return
-	 * @throws IOException
+	 * @param site 所属站点
+	 * @param operator 操作人
+	 * @param imageFile 图片文件
 	 */
 	CmsResource addImageFromFile(CmsSite site, String operator, File imageFile) throws IOException;
 
 	/**
 	 * 删除资源
 	 * 
-	 * @param resourceIds
-	 * @return
+	 * @param resourceIds 素材ID列表
 	 */
 	void deleteResource(List<Long> resourceIds);
 
 	/**
 	 * 获取资源访问路径
 	 * 
-	 * @param resource
-	 * @param preview
-	 * @return
+	 * @param resource 素材信息
+	 * @param preview 是否预览模式
 	 */
 	String getResourceLink(CmsResource resource, boolean preview);
 
 	/**
 	 * 下载资源文件
-	 * 
-	 * @param resource
-	 * @param os
 	 */
 	void downloadResource(CmsResource resource, HttpServletResponse os);
 
 	/**
 	 * 下载远程图片
 	 * 
-	 * @param url
-	 * @param siteId
-	 * @param operator
-	 * @return
-	 * @throws IOException
-	 * @throws Exception 
+	 * @param url 远程图片地址
+	 * @param siteId 站点ID
+	 * @param operator 操作人
 	 */
 	CmsResource downloadImageFromUrl(String url, long siteId, String operator) throws Exception;
+
+	/**
+	 * 解析html中的图片标签，如果是远程地址图片则下载到资源库中并将图片标签的src替换为资源内部链接
+	 *
+	 * @param html HTML文本
+	 * @param site 所属站点
+	 * @param operator 操作人
+	 */
+    String downloadRemoteImages(String html, CmsSite site, String operator);
 }

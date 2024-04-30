@@ -24,6 +24,9 @@
               <el-descriptions :title="$t('CMS.Staticize.UsageDesc')" :colon="false">
                 <el-descriptions-item :contentStyle="{width:'100%'}">{{ scope.row.desc }}</el-descriptions-item>
               </el-descriptions>
+              <el-descriptions :title="$t('CMS.Staticize.FuncAlias')" :colon="false">
+                <el-descriptions-item :contentStyle="{width:'100%'}">{{ formatAliases(scope.row.aliases) }}</el-descriptions-item>
+              </el-descriptions>
               <el-descriptions :title="$t('CMS.Staticize.FuncArgs')" :colon="false">
                 <el-descriptions-item :contentStyle="{width:'100%'}">
                   <el-table :data="scope.row.funcArgs" border>
@@ -95,6 +98,12 @@ export default {
     },
     handleRowClick(row) {
       this.$refs.funcListTable.toggleRowExpansion(row);
+    },
+    formatAliases(aliases) {
+      if (!aliases || aliases.length == 0) {
+        return ""
+      }
+      return aliases.map(alias => "[ "+alias+" ]").join(", ")
     }
   }
 };

@@ -18,32 +18,27 @@ package com.chestnut.contentcore.template.tag;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.staticize.FreeMarkerUtils;
-import com.chestnut.common.staticize.StaticizeConstants;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
-import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.dto.ContentDTO;
+import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
-import freemarker.template.TemplateModel;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -72,7 +67,8 @@ public class CmsContentClosestTag extends AbstractListTag {
 		Assert.notNull(content, () -> new TemplateException(StringUtils.messageFormat("Tag attr[contentid={0}] data not found.", contentId), env));
 
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
-				.eq(CmsContent::getCatalogId, content.getCatalogId());
+				.eq(CmsContent::getCatalogId, content.getCatalogId())
+				.eq(CmsContent::getStatus, ContentStatus.PUBLISHED);
 		if (CmsContentTag.SortTagAttr.isRecent(sort)) {
 			q.gt(isNext, CmsContent::getPublishDate, content.getPublishDate());
 			q.lt(!isNext, CmsContent::getPublishDate, content.getPublishDate());

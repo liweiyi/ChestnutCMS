@@ -15,15 +15,30 @@
  */
 package com.chestnut.contentcore.publish;
 
+import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.staticize.StaticizeService;
+import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.config.CMSPublishConfig;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.IPublishService;
+import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.service.ITemplateService;
+import com.chestnut.contentcore.template.ITemplateType;
+import com.chestnut.contentcore.template.impl.SiteTemplateType;
+import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.connection.stream.RecordId;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 
@@ -33,16 +48,21 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Slf4j
 @RequiredArgsConstructor
 @Component(IPublishTask.BeanPrefix + SitePublishTask.Type)
-public class SitePublishTask implements IPublishTask {
+public class SitePublishTask implements IPublishTask<CmsSite> {
 
-    private final IPublishService publishService;
+    public final static String Type = "site";
 
     private final ISiteService siteService;
 
-    public final static String Type = "site";
+    private final IPublishPipeService publishPipeService;
+
+    private final ITemplateService templateService;
+
+    private final StaticizeService staticizeService;
+
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     public String getType() {
@@ -50,13 +70,62 @@ public class SitePublishTask implements IPublishTask {
     }
 
     @Override
-    public void publish(Map<String, String> dataMap) {
+    public void publish(CmsSite site) {
+        String dataId = site.getSiteId().toString();
+        MapRecord<String, String, String> record = MapRecord.create(CMSPublishConfig.PublishStreamName, Map.of(
+                "type", Type,
+                "id", dataId
+        )).withId(RecordId.of(Instant.now().toEpochMilli(), site.getSiteId()));
+        redisTemplate.opsForStream().add(record);
+    }
+
+    @Override
+    public void staticize(Map<String, String> dataMap) {
+        logger.info("开始发布：" + JacksonUtils.to(dataMap));
         Long siteId = MapUtils.getLong(dataMap, "id");
         if (IdUtils.validate(siteId)) {
             CmsSite site = this.siteService.getSite(siteId);
             if (Objects.nonNull(site)) {
-                this.publishService.siteStaticize(site);
+                this.siteStaticize(site);
             }
+        }
+        logger.info("结束发布：" + JacksonUtils.to(dataMap));
+    }
+
+    public void siteStaticize(CmsSite site) {
+        this.publishPipeService.getPublishPipes(site.getSiteId())
+                .forEach(pp -> doSiteStaticize(site, pp.getCode()));
+    }
+
+    private void doSiteStaticize(CmsSite site, String publishPipeCode) {
+        try {
+            AsyncTaskManager
+                    .setTaskMessage(StringUtils.messageFormat("[{0}]正在发布站点首页：{1}", publishPipeCode, site.getName()));
+
+            String indexTemplate = site.getIndexTemplate(publishPipeCode);
+            File templateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);
+            if (Objects.isNull(templateFile)) {
+                logger.warn(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]站点首页模板未配置或不存在：{1}",
+                        publishPipeCode, site.getSiteId() + "#" + site.getName())));
+                return;
+            }
+            // 模板ID = 通道:站点目录:模板文件名
+            String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, indexTemplate);
+            TemplateContext context = new TemplateContext(templateKey, false, publishPipeCode);
+            // init template datamode
+            TemplateUtils.initGlobalVariables(site, context);
+            // init templateType data to datamode
+            ITemplateType templateType = templateService.getTemplateType(SiteTemplateType.TypeId);
+            templateType.initTemplateData(site.getSiteId(), context);
+
+            long s = System.currentTimeMillis();
+            context.setDirectory(SiteUtils.getSiteRoot(site, publishPipeCode));
+            context.setFirstFileName("index" + StringUtils.DOT + site.getStaticSuffix(publishPipeCode));
+            this.staticizeService.process(context);
+            logger.debug("[{}]首页模板解析：{}，耗时：{}ms", publishPipeCode, site.getName(), (System.currentTimeMillis() - s));
+        } catch (Exception e) {
+            logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}][{1}]站点首页解析失败：{2}",
+                    publishPipeCode, site.getName(), e.getMessage())), e);
         }
     }
 }

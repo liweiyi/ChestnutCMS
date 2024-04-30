@@ -15,21 +15,6 @@
  */
 package com.chestnut.contentcore.template.tag;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import com.chestnut.contentcore.properties.EnableSSIProperty;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.io.FileUtils;
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
@@ -40,17 +25,31 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.properties.EnableSSIProperty;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.util.PageWidgetUtils;
 import com.chestnut.contentcore.util.SiteUtils;
-
+import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.FileUtils;
+import org.springframework.stereotype.Component;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
@@ -146,7 +145,7 @@ public class CmsPageWidgetTag extends AbstractTag {
 			env.setOut(writer);
 			Template includeTemplate = env.getTemplateForInclusion(templateName,
 					StandardCharsets.UTF_8.displayName(), true);
-			env.setVariable("PageWidget", wrap(env, pageWidget));
+			env.setVariable(TemplateUtils.TemplateVariable_PageWidget, wrap(env, pageWidget));
 			env.include(includeTemplate);
 			return writer.getBuffer().toString();
 		} finally {

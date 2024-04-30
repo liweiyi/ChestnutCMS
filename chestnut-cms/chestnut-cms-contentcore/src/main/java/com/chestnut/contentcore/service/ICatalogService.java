@@ -15,21 +15,17 @@
  */
 package com.chestnut.contentcore.service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.contentcore.domain.CmsCatalog;
-import com.chestnut.contentcore.domain.dto.CatalogAddDTO;
-import com.chestnut.contentcore.domain.dto.CatalogApplyConfigPropsDTO;
-import com.chestnut.contentcore.domain.dto.CatalogApplyPublishPipeDTO;
-import com.chestnut.contentcore.domain.dto.CatalogUpdateDTO;
-import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
+import com.chestnut.contentcore.domain.dto.*;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public interface ICatalogService extends IService<CmsCatalog> {
 	
@@ -179,4 +175,12 @@ public interface ICatalogService extends IService<CmsCatalog> {
 	 * @param sort
 	 */
 	void sortCatalog(Long catalogId, Integer sort);
+
+	/**
+	 * 栏目内容数变更
+	 *
+	 * @param catalogId
+	 * @param delta
+	 */
+	void changeContentCount(Long catalogId, int delta);
 }

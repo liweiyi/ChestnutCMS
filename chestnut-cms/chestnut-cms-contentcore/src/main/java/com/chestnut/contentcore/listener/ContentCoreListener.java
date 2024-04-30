@@ -192,7 +192,7 @@ public class ContentCoreListener {
 	@EventListener
 	public void afterContentOffline(AfterContentOfflineEvent event) {
 		final Long contentId = event.getContent().getContentEntity().getContentId();
-		final String operator = event.getContent().getOperator().getUsername();
+		final String operator = event.getContent().getOperatorUName();
 		asyncTaskManager.execute(() -> {
 			// 映射关联内容同步下线
 			List<CmsContent> mappingList = contentService.lambdaQuery()

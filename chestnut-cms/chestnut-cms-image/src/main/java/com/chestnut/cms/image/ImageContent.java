@@ -26,6 +26,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.enums.ContentCopyType;
 
 public class ImageContent extends AbstractContent<List<CmsImage>> {
 
@@ -53,7 +54,7 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 				image.setSiteId(this.getContentEntity().getSiteId());
 				image.setImageType(FileExUtils.getExtension(image.getPath()));
 				image.setSortFlag(i);
-				image.createBy(this.getOperator().getUsername());
+				image.createBy(this.getOperatorUName());
 			}
 			this.getImageService().saveBatch(images);
 		}
@@ -84,7 +85,7 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 			CmsImage image = images.get(i);
 			if (IdUtils.validate(image.getImageId())) {
 				image.setSortFlag(i);
-				image.updateBy(this.getOperator().getUsername());
+				image.updateBy(this.getOperatorUName());
 				this.getImageService().updateById(image);
 			} else {
 				image.setImageId(IdUtils.getSnowflakeId());
@@ -92,7 +93,7 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 				image.setSiteId(this.getContentEntity().getSiteId());
 				image.setImageType(FileExUtils.getExtension(image.getPath()));
 				image.setSortFlag(i);
-				image.createBy(this.getOperator().getUsername());
+				image.createBy(this.getOperatorUName());
 				this.getImageService().save(image);
 			}
 		}
@@ -112,11 +113,11 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 	public void copyTo(CmsCatalog toCatalog, Integer copyType) {
 		super.copyTo(toCatalog, copyType);
 
-		if (hasExtendEntity()) {
+		if (this.hasExtendEntity() && ContentCopyType.isIndependency(copyType)) {
 			Long newContentId = (Long) this.getParams().get("NewContentId");
 			List<CmsImage> albumImages = this.getImageService().getAlbumImages(this.getContentEntity().getContentId());
 			for (CmsImage image : albumImages) {
-				image.createBy(this.getOperator().getUsername());
+				image.createBy(this.getOperatorUName());
 				image.setImageId(IdUtils.getSnowflakeId());
 				image.setContentId(newContentId);
 				this.getImageService().save(image);

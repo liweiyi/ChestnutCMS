@@ -21,15 +21,12 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.contentcore.config.CMSPublishConfig;
 import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.StreamInfo;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 /**
  * 发布日志管理

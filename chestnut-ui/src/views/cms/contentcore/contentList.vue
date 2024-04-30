@@ -2,7 +2,7 @@
   <div class="cms-content-list">
     <el-row :gutter="10" class="mb12">
       <el-col :span="1.5">
-        <el-popover class="btn-permi" placement="bottom-start" :width="350" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
+        <el-popover class="btn-permi" placement="bottom-start" :width="400" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
           <el-row style="margin-bottom:20px;text-align:right;">
             <el-radio-group v-model="addContentType">
               <el-radio-button 
@@ -102,8 +102,8 @@
             <svg-icon icon-class="recommend" /> {{ $t('CMS.Content.Recommend') }}<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item icon="el-icon-plus" @click.native="handleRecommend">{{ $t('CMS.Content.Recommend') }}</el-dropdown-item>
-            <el-dropdown-item icon="el-icon-minus" @click.native="handleCancelRecommend">{{ $t('CMS.Content.CancelRecommend') }}</el-dropdown-item>
+            <el-dropdown-item icon="el-icon-plus" :disabled="multiple" @click.native="handleRecommend">{{ $t('CMS.Content.Recommend') }}</el-dropdown-item>
+            <el-dropdown-item icon="el-icon-minus" :disabled="multiple" @click.native="handleCancelRecommend">{{ $t('CMS.Content.CancelRecommend') }}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </el-col>
@@ -117,8 +117,8 @@
             <svg-icon icon-class="fire" /> {{ $t('CMS.Content.Hot') }}<i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item icon="el-icon-plus" @click.native="handleHot">{{ $t('CMS.Content.Hot') }}</el-dropdown-item>
-            <el-dropdown-item icon="el-icon-minus" @click.native="handleCancelHot">{{ $t('CMS.Content.CancelHot') }}</el-dropdown-item>
+            <el-dropdown-item icon="el-icon-plus" :disabled="multiple" @click.native="handleHot">{{ $t('CMS.Content.Hot') }}</el-dropdown-item>
+            <el-dropdown-item icon="el-icon-minus" :disabled="multiple" @click.native="handleCancelHot">{{ $t('CMS.Content.CancelHot') }}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </el-col>
@@ -541,6 +541,7 @@ export default {
       }
       this.isCopy = true;
       this.openCatalogSelector = true;
+      console.log(this.selectedRows.map(item => item.contentId))
     },
     doCopy(catalogs, copyType) {
       const data = {  

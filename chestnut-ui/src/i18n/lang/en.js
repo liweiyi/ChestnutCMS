@@ -964,7 +964,8 @@ export default {
         CommentCardTitle: " Comment Configuration",
         EnableCommentAudit: "Enable Comment Audit",
         SEO: "SEO Configuration",
-        BaiduPushAccessSecret: "Baidu Push API Secret"
+        BaiduPushAccessSecret: "Baidu Push API Secret",
+        DownloadRemoteImage: "Enable download remote image"
       },
       Property: {
         QueryPlaceholder: "Input name/code",
@@ -1346,6 +1347,7 @@ export default {
       Func: "Template Function",
       InputFuncName: "Input function name",
       UsageDesc: "Usage: ",
+      FuncAlias: "Alias: ",
       FuncArgs: "Arguments: ",
       FuncName: "Function Name",
       FuncDesc: "Description",

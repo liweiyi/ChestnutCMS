@@ -79,6 +79,7 @@ public class StaticizeController extends BaseRestController {
 				arg.setName(I18nUtils.get(arg.getName()));
 				arg.setDesc(I18nUtils.get(arg.getDesc()));
 			});
+			vo.setAliases(func.getAliases());
 			return vo;
 		}).toList();
 		return R.ok(list);

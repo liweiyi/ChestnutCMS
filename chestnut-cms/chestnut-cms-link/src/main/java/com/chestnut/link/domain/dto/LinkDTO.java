@@ -43,6 +43,8 @@ public class LinkDTO {
     private String logo;
     
     private Long sortFlag;
+
+    private String remark;
     
 	public static LinkDTO newInstance(CmsLink link) {
 		LinkDTO dto = new LinkDTO();

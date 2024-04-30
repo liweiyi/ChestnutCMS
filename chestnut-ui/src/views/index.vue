@@ -25,7 +25,6 @@ import ServerInfo from '@/views/system/dashboard/serverInfo'
 import CmsSiteVisitStat from '@/views/cms/dashboard/siteVisitStat'
 import CmsSiteDataStat from '@/views/cms/dashboard/siteDataStat'
 
-
 export default {
   name: 'Index',
   components: {

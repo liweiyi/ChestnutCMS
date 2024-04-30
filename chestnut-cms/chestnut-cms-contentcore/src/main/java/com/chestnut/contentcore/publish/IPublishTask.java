@@ -15,7 +15,8 @@
  */
 package com.chestnut.contentcore.publish;
 
-import org.apache.poi.ss.formula.functions.T;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -25,11 +26,21 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public interface IPublishTask {
+public interface IPublishTask<T> {
+
+    Logger logger = LoggerFactory.getLogger("publish");
 
     String BeanPrefix = "PublishTask_";
 
     String getType();
 
-    void publish(Map<String, String> dataMap);
+    /**
+     * 创建发布任务
+     */
+    void publish(T data);
+
+    /**
+     * 静态化
+     */
+    void staticize(Map<String, String> dataMap);
 }

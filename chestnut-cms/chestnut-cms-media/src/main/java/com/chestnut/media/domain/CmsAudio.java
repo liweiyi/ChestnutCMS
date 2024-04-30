@@ -49,7 +49,7 @@ public class CmsAudio extends BaseEntityWithLogicDelete {
     /**
      * 所属站点ID
      */
-    private long siteId;
+    private Long siteId;
 
     /**
      * 音频标题

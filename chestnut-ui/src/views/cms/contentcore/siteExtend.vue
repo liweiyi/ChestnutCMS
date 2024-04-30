@@ -106,6 +106,15 @@
             inactive-value="N">
           </el-switch>
         </el-form-item>
+        <el-form-item :label="$t('CMS.Site.Extend.DownloadRemoteImage')" prop="DownloadRemoteImage">
+          <el-switch
+            v-model="form_extend.DownloadRemoteImage"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+        </el-form-item>
         <el-form-item :label="$t('CMS.Site.Extend.RecycleKeepDays')" prop="RecycleKeepDays">
           <el-input-number v-model="form_extend.RecycleKeepDays" controls-position="right" :min="0"></el-input-number>
           <div style="color: #909399;font-size:12px;line-height: 30px;">

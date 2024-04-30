@@ -89,6 +89,11 @@ public class TemplateUtils {
 	public final static String TemplateVariable_Content = "Content";
 
 	/**
+	 * 模板变量：页面组件信息
+	 */
+	public final static String TemplateVariable_PageWidget = "PageWidget";
+
+	/**
 	 * 模板变量：logo链接
 	 */
 	public final static String TemplateVariable_OBJ_LogoSrc = "logoSrc";

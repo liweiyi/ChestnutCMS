@@ -50,7 +50,7 @@ public class CMSPublishConfig {
 
     private final StringRedisTemplate redisTemplate;
 
-    private final Map<String, IPublishTask> publishTaskMap;
+    private final Map<String, IPublishTask<?>> publishTaskMap;
 
     public static final String PublishStreamName = "ChestnutCMSPublishStream";
 

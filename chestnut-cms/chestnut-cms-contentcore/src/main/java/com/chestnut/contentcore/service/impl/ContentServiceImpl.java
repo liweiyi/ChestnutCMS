@@ -118,6 +118,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 			contentType.recover(backupContent.getContentId());
 
 			this.contentMapper.recoverById(backupContent.getContentId());
+			this.catalogService.changeContentCount(backupContent.getCatalogId(), 1);
 		}
 	}
 

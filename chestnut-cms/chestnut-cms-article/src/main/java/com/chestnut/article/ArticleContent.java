@@ -18,21 +18,26 @@ package com.chestnut.article;
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.properties.AutoArticleLogo;
 import com.chestnut.article.service.IArticleService;
-import com.chestnut.article.service.impl.ArticleServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.HtmlUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.enums.ContentCopyType;
+import com.chestnut.contentcore.service.IResourceService;
+import com.chestnut.contentcore.util.ResourceUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import org.springframework.beans.BeanUtils;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 
 public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 
 	private IArticleService articleService;
+
+	private IResourceService resourceService;
 
 	@Override
 	public Long add() {
@@ -45,12 +50,12 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 		articleDetail.setContentId(this.getContentEntity().getContentId());
 		articleDetail.setSiteId(this.getContentEntity().getSiteId());
 		// 处理内部链接
-		String contentHtml = this.getArticleService().saveInternalUrl(articleDetail.getContentHtml());
+		String contentHtml = ResourceUtils.dealHtmlInternalUrl(articleDetail.getContentHtml());
 		// 处理文章正文远程图片
 		if (YesOrNo.isYes(articleDetail.getDownloadRemoteImage())) {
 			AsyncTaskManager.setTaskPercent(90);
-			contentHtml = this.getArticleService().downloadRemoteImages(contentHtml, this.getSite(),
-					this.getOperator().getUsername());
+			contentHtml = this.getResourceService().downloadRemoteImages(contentHtml, this.getSite(),
+					this.getOperatorUName());
 		}
 		articleDetail.setContentHtml(contentHtml);
 		// 正文首图作为logo
@@ -74,12 +79,12 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 		}
 		CmsArticleDetail articleDetail = this.getExtendEntity();
 		// 处理内部链接
-		String contentHtml = this.getArticleService().saveInternalUrl(articleDetail.getContentHtml());
+		String contentHtml = ResourceUtils.dealHtmlInternalUrl(articleDetail.getContentHtml());
 		// 处理文章正文远程图片
 		if (YesOrNo.isYes(articleDetail.getDownloadRemoteImage())) {
 			AsyncTaskManager.setTaskPercent(90);
-			contentHtml = this.getArticleService().downloadRemoteImages(contentHtml, this.getSite(),
-					this.getOperator().getUsername());
+			contentHtml = this.getResourceService().downloadRemoteImages(contentHtml, this.getSite(),
+					this.getOperatorUName());
 		}
 		articleDetail.setContentHtml(contentHtml);
 		// 正文首图作为logo
@@ -99,7 +104,7 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 		if (StringUtils.isEmpty(contentHtml)) {
 			return contentHtml;
 		}
-		Matcher matcher = ArticleServiceImpl.ImgHtmlTagPattern.matcher(contentHtml);
+		Matcher matcher = ResourceUtils.ImgHtmlTagPattern.matcher(contentHtml);
 		if (matcher.find()) {
 			String imgSrc = matcher.group(1);
 			if (StringUtils.isNotEmpty(imgSrc)) {
@@ -120,7 +125,7 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 	@Override
 	public void copyTo(CmsCatalog toCatalog, Integer copyType) {
 		super.copyTo(toCatalog, copyType);
-		if (this.hasExtendEntity()) {
+		if (this.hasExtendEntity() && ContentCopyType.isIndependency(copyType)) {
 			Long newContentId = (Long) this.getParams().get("NewContentId");
 			CmsArticleDetail newArticleDetail = new CmsArticleDetail();
 			BeanUtils.copyProperties(this.getExtendEntity(), newArticleDetail, "contentId");
@@ -138,9 +143,16 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 	}
 
 	public IArticleService getArticleService() {
-		if (this.articleService == null) {
+		if (Objects.isNull(this.articleService)) {
 			this.articleService = SpringUtils.getBean(IArticleService.class);
 		}
 		return this.articleService;
+	}
+
+	public IResourceService getResourceService() {
+		if (Objects.isNull(this.resourceService)) {
+			this.resourceService = SpringUtils.getBean(IResourceService.class);
+		}
+		return this.resourceService;
 	}
 }

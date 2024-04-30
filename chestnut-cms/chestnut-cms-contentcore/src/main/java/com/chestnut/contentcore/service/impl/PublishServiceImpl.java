@@ -25,7 +25,6 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
-import com.chestnut.contentcore.config.CMSPublishConfig;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IPageWidget;
@@ -54,8 +53,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.redis.connection.stream.MapRecord;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -82,6 +79,12 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	private final StaticizeService staticizeService;
 
 	private final AsyncTaskManager asyncTaskManager;
+
+	private final SitePublishTask sitePublishTask;
+
+	private final CatalogPublishTask catalogPublishTask;
+
+	private final ContentPublishTask contentPublishTask;
 
 	private ApplicationContext applicationContext;
 
@@ -117,8 +120,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(site.getSiteId());
 		Assert.isTrue(!publishPipes.isEmpty(), ContentCoreErrorCode.NO_PUBLISHPIPE::exception);
 
-		Map<String, String> data = Map.of("type", SitePublishTask.Type, "id", site.getSiteId().toString());
-		redisTemplate.opsForStream().add(MapRecord.create(CMSPublishConfig.PublishStreamName, data));
+		asyncPublishSite(site);
 
 //		this.siteStaticize(site);
 	}
@@ -136,7 +138,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 						.list(new LambdaQueryWrapper<CmsCatalog>().eq(CmsCatalog::getSiteId, site.getSiteId()));
 				for (CmsCatalog catalog : catalogList) {
 					// 先发布内容
-					int pageSize = 100;
+					int pageSize = 500;
 					long lastContentId = 0L;
 					long total = contentService.lambdaQuery().eq(CmsContent::getCatalogId, catalog.getCatalogId())
 							.eq(CmsContent::getStatus, contentStatus)
@@ -188,11 +190,8 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		return asyncTask;
 	}
 
-	private final StringRedisTemplate redisTemplate;
-
 	private void asyncPublishSite(CmsSite site) {
-		Map<String, String> data = Map.of("type", SitePublishTask.Type, "id", site.getSiteId().toString());
-		redisTemplate.opsForStream().add(MapRecord.create(CMSPublishConfig.PublishStreamName, data));
+		sitePublishTask.publish(site);
 	}
 
 	@Override
@@ -362,8 +361,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	}
 
 	public void asyncPublishCatalog(final CmsCatalog catalog) {
-		Map<String, String> data = Map.of("type", CatalogPublishTask.Type, "id", catalog.getCatalogId().toString());
-		redisTemplate.opsForStream().add(MapRecord.create(CMSPublishConfig.PublishStreamName, data));
+		catalogPublishTask.publish(catalog);
 	}
 
 	@Override
@@ -574,18 +572,14 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		if (publishPipeCodes.isEmpty()) {
 			return;
 		}
-		{
-			Map<String, String> data = Map.of("type", ContentPublishTask.Type, "id", content.getContentEntity().getContentId().toString());
-			redisTemplate.opsForStream().add(MapRecord.create(CMSPublishConfig.PublishStreamName, data));
-		}
+		contentPublishTask.publish(content.getContentEntity());
 		// 关联内容静态化，映射的引用内容
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
 				.eq(CmsContent::getCopyId, content.getContentEntity().getContentId())
 				.eq(CmsContent::getCopyType, ContentCopyType.Mapping);
 		List<CmsContent> mappingContents = contentService.list(q);
 		for (CmsContent mappingContent : mappingContents) {
-			Map<String, String> data = Map.of("type", ContentPublishTask.Type, "id", mappingContent.getContentId().toString());
-			redisTemplate.opsForStream().add(MapRecord.create(CMSPublishConfig.PublishStreamName, data));
+			contentPublishTask.publish(mappingContent);
 		}
 	}
 
@@ -760,6 +754,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 					pageWidget.getPublishPipeCode());
 			// init template global variables
 			TemplateUtils.initGlobalVariables(site, templateContext);
+			templateContext.getVariables().put(TemplateUtils.TemplateVariable_PageWidget, pageWidget);
 			// init templateType data to datamode
 			ITemplateType templateType = this.templateService.getTemplateType(SiteTemplateType.TypeId);
 			templateType.initTemplateData(site.getSiteId(), templateContext);
@@ -793,6 +788,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			templateContext.setFirstFileName(staticFileName);
 			// init template datamode
 			TemplateUtils.initGlobalVariables(site, templateContext);
+			templateContext.getVariables().put(TemplateUtils.TemplateVariable_PageWidget, pageWidget);
 			// init templateType data to datamode
 			ITemplateType templateType = templateService.getTemplateType(SiteTemplateType.TypeId);
 			templateType.initTemplateData(site.getSiteId(), templateContext);

@@ -22,6 +22,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.media.domain.CmsVideo;
 import com.chestnut.media.service.IVideoService;
 
@@ -61,7 +62,7 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 				video.setSiteId(this.getContentEntity().getSiteId());
 				video.setSiteId(this.getSiteId());
 				video.setSortFlag(i);
-				video.createBy(this.getOperator().getUsername());
+				video.createBy(this.getOperatorUName());
 				if (!TYPE_SHARE.equals(video.getType())) {
 					video.setType(FileExUtils.getExtension(video.getPath()).toUpperCase());
 					this.getVideoService().progressVideoInfo(video);
@@ -113,14 +114,14 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 					}
 				}
 				dbVideo.setCover(video.getCover());
-				dbVideo.updateBy(this.getOperator().getUsername());
+				dbVideo.updateBy(this.getOperatorUName());
 				this.getVideoService().updateById(dbVideo);
 			} else {
 				video.setVideoId(IdUtils.getSnowflakeId());
 				video.setContentId(this.getContentEntity().getContentId());
 				video.setSiteId(this.getSiteId());
 				video.setSortFlag(i);
-				video.createBy(this.getOperator().getUsername());
+				video.createBy(this.getOperatorUName());
 				if (!TYPE_SHARE.equals(video.getType())) {
 					video.setType(FileExUtils.getExtension(video.getPath()).toUpperCase());
 					this.getVideoService().progressVideoInfo(video);
@@ -145,11 +146,11 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 	public void copyTo(CmsCatalog toCatalog, Integer copyType) {
 		super.copyTo(toCatalog, copyType);
 
-		if (this.hasExtendEntity()) {
+		if (this.hasExtendEntity() && ContentCopyType.isIndependency(copyType)) {
 			Long newContentId = (Long) this.getParams().get("NewContentId");
 			List<CmsVideo> videoList = this.getVideoService().getAlbumVideoList(this.getContentEntity().getContentId());
 			for (CmsVideo video : videoList) {
-				video.createBy(this.getOperator().getUsername());
+				video.createBy(this.getOperatorUName());
 				video.setVideoId(IdUtils.getSnowflakeId());
 				video.setContentId(newContentId);
 				video.setSiteId(toCatalog.getSiteId());

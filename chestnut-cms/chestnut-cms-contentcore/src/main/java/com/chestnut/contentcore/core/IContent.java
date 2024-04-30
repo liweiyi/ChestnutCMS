@@ -15,13 +15,15 @@
  */
 package com.chestnut.contentcore.core;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.system.SysConstants;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 内容抽象接口
@@ -92,6 +94,17 @@ public interface IContent<T> {
 	 * 获取操作人信息
 	 */
 	LoginUser getOperator();
+
+	/**
+	 * 获取操作人用户名
+	 */
+	default String getOperatorUName() {
+		if (Objects.nonNull(getOperator())) {
+			return getOperator().getUsername();
+		} else {
+			return SysConstants.SYS_OPERATOR;
+		}
+	}
 
 	/**
 	 * 设置操作人信息

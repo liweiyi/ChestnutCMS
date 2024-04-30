@@ -140,7 +140,7 @@ public interface IPublishService {
      * @throws IOException
      * @throws TemplateException
      */
-    void publishContent(List<Long> contentIds, LoginUser operator) throws IOException, TemplateException;
+    void publishContent(List<Long> contentIds, LoginUser operator) ;
 
     /**
      * 内容异步静态化<br/>

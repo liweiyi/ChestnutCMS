@@ -17,6 +17,7 @@ package com.chestnut.cms.word.template.tag;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
@@ -60,7 +61,10 @@ public class CmsTagWordGroupTag extends AbstractListTag {
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
 		String group = MapUtils.getString(attrs, TAG_ATTR_CODE);
-		Optional<TagWordGroup> opt = tagWordGroupService.lambdaQuery().eq(TagWordGroup::getCode, group).oneOpt();
+		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Optional<TagWordGroup> opt = tagWordGroupService.lambdaQuery()
+				.eq(TagWordGroup::getOwner, siteId)
+				.eq(TagWordGroup::getCode, group).oneOpt();
 		if (opt.isEmpty()) {
 			throw new TemplateException("Tag word group not found: " + group, env);
 		}

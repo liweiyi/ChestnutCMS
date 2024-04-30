@@ -128,12 +128,12 @@ export default {
         this.loading = false;
       });
     } else {
-      const onlineDate = new Date()
+      let onlineDate = new Date()
       onlineDate.setHours(0)
       onlineDate.setMinutes(0)
       onlineDate.setSeconds(0)
-      this.form.onlineDate = onlineDate
-      this.form.offlineDate = new Date(2999, 11, 31)
+      this.$set(this.form, "onlineDate", this.parseTime(onlineDate))
+      this.$set(this.form, "offlineDate", this.parseTime(new Date(2999, 11, 31)))
     }
   },
   methods: {

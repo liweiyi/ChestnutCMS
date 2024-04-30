@@ -70,6 +70,20 @@
             <pattern>${log.pattern}</pattern>
         </encoder>
     </appender>
+
+    <!-- 发布日志输出  -->
+    <appender name="publish" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/publish.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 按天回滚 daily -->
+            <fileNamePattern>${log.path}/publish.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 日志最大的历史 60天 -->
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
 	
 	<!-- 系统模块日志级别控制  -->
 	<logger name="com.chestnut" level="info" />
@@ -89,5 +103,10 @@
 	<!--系统定时任务日志-->
     <logger name="cron" level="info">
         <appender-ref ref="cron"/>
+    </logger>
+
+    <!--系统发布日志-->
+    <logger name="publish" level="info">
+        <appender-ref ref="publish"/>
     </logger>
 </configuration> 

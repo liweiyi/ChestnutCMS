@@ -142,6 +142,9 @@
         <el-form-item v-if="form.linkId" :label="$t('CMS.FriendLink.SortFlag')" prop="sortFlag">
           <el-input-number v-model="form.sortFlag" controls-position="right" :min="0" />
         </el-form-item>
+        <el-form-item :label="$t('Common.Remark')" prop="remark">
+          <el-input v-model="form.remark" />
+        </el-form-item>
       </el-form>
       <div slot="footer"
            class="dialog-footer">

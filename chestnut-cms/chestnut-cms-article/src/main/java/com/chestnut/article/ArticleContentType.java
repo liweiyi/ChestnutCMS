@@ -15,18 +15,11 @@
  */
 package com.chestnut.article;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.domain.dto.ArticleDTO;
 import com.chestnut.article.domain.vo.ArticleVO;
 import com.chestnut.article.mapper.CmsArticleDetailMapper;
+import com.chestnut.article.properties.DownloadRemoteImage;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -38,6 +31,7 @@ import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
+import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.enums.ContentOpType;
@@ -45,10 +39,17 @@ import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPublishPipeService;
+import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
-
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component(IContentType.BEAN_NAME_PREFIX + ArticleContentType.ID)
 @RequiredArgsConstructor
@@ -61,6 +62,8 @@ public class ArticleContentType implements IContentType {
     private final CmsContentMapper contentMapper;
 
     private final CmsArticleDetailMapper articleMapper;
+
+    private final ISiteService siteService;
 
     private final ICatalogService catalogService;
 
@@ -155,6 +158,8 @@ public class ArticleContentType implements IContentType {
             vo.setContentId(IdUtils.getSnowflakeId());
             vo.setCatalogId(catalog.getCatalogId());
             vo.setContentType(ID);
+            CmsSite site = siteService.getSite(catalog.getSiteId());
+            vo.setDownloadRemoteImage(DownloadRemoteImage.getValue(site.getConfigProps()));
             // 发布通道初始数据
             vo.setPublishPipe(publishPipes.stream().map(CmsPublishPipe::getCode).toArray(String[]::new));
             // 发布通道模板数据

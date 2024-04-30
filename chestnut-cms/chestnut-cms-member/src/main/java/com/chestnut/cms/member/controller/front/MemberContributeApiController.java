@@ -159,11 +159,9 @@ public class MemberContributeApiController extends BaseRestController implements
 				cmsContent.setTopCatalog(CatalogUtils.getTopCatalog(toCatalog));
 				cmsContent.setSortFlag(SortUtils.getDefaultSortValue());
 				// 目标栏目内容数量+1
-				toCatalog.setContentCount(toCatalog.getContentCount() + 1);
-				this.catalogService.updateById(toCatalog);
+				this.catalogService.changeContentCount(toCatalog.getCatalogId(), 1);
 				// 源栏目内容数量-1
-				fromCatalog.setContentCount(fromCatalog.getContentCount() - 1);
-				this.catalogService.updateById(fromCatalog);
+				this.catalogService.changeContentCount(fromCatalog.getCatalogId(), -1);
 			}
 			CmsArticleDetail articleDetail = this.articleService.getById(cmsContent.getContentId());
 			articleDetail.setContentHtml(dto.getContentHtml());

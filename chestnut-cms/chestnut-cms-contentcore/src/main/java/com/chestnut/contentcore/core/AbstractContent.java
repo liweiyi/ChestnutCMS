@@ -34,10 +34,10 @@ import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import org.springframework.beans.BeanUtils;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -142,23 +142,22 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		content.setSiteId(catalog.getSiteId());
 		content.setCatalogAncestors(catalog.getAncestors());
 		content.setTopCatalog(CatalogUtils.getTopCatalog(catalog));
-		content.setDeptId(this.getOperator().getDeptId());
+		content.setDeptId(Objects.nonNull(this.getOperator()) ? this.getOperator().getDeptId() : 0);
 		content.setContentType(this.getContentType());
 
 		content.setStatus(ContentStatus.DRAFT);
 		content.setSortFlag(SortUtils.getDefaultSortValue());
 		content.setIsLock(YesOrNo.NO);
-		content.createBy(this.getOperator().getUsername());
+		content.createBy(this.getOperatorUName());
 
 		// 栏目内容数+1
-		this.getCatalogService().lambdaUpdate().set(CmsCatalog::getContentCount, catalog.getContentCount() + 1)
-				.eq(CmsCatalog::getCatalogId, catalog.getCatalogId()).update();
+		this.getCatalogService().changeContentCount(catalog.getCatalogId(), 1);
 		return this.getContentEntity().getContentId();
 	}
 
 	void checkLock() {
 		boolean lockContent = content.isLock() && StringUtils.isNotEmpty(content.getLockUser())
-				&& !content.getLockUser().equals(this.getOperator().getUsername());
+				&& !content.getLockUser().equals(this.getOperatorUName());
 		Assert.isFalse(lockContent, () -> ContentCoreErrorCode.CONTENT_LOCKED.exception(content.getLockUser()));
 	}
 
@@ -179,7 +178,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		if (ContentStatus.isToPublishOrPublished(content.getStatus())) {
 			content.setStatus(ContentStatus.EDITING);
 		}
-		content.updateBy(this.getOperator().getUsername());
+		content.updateBy(this.getOperatorUName());
 		return this.getContentEntity().getContentId();
 	}
 
@@ -190,9 +189,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		// 直接删除站内映射内容
 		this.getContentService().getContentMapper().deleteMappingIgnoreLogicDel(content.getContentId());
 		// 栏目内容数-1
-		CmsCatalog catalog = this.getCatalogService().getById(this.getCatalogId());
-		catalog.setContentCount(catalog.getContentCount() - 1);
-		this.getCatalogService().updateById(catalog);
+		this.getCatalogService().changeContentCount(getCatalogId(), -1);
 	}
 
 	@Override
@@ -235,7 +232,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		newContent.setTopCatalog(CatalogUtils.getTopCatalog(toCatalog));
 		newContent.setDeptCode(toCatalog.getDeptCode());
 		newContent.setSortFlag(SortUtils.getDefaultSortValue());
-		newContent.createBy(this.getOperator().getUsername());
+		newContent.createBy(this.getOperatorUName());
 		newContent.setCopyType(copyType);
 		if (content.getCopyId() > 0 && ContentCopyType.isMapping(content.getCopyType())) {
 			newContent.setCopyId(content.getCopyId()); // 映射内容溯源
@@ -250,8 +247,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		this.getContentService().save(newContent);
 		this.getParams().put("NewContentId", newContent.getContentId());
 		// 栏目内容数+1
-		toCatalog.setContentCount(toCatalog.getContentCount() + 1);
-		this.getCatalogService().updateById(toCatalog);
+		this.getCatalogService().changeContentCount(toCatalog.getCatalogId(), 1);
 	}
 
 	@Override
@@ -275,25 +271,23 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		content.setPublishPipeProps(null);
 		// 重置发布状态
 		content.setStatus(ContentStatus.DRAFT);
-		content.updateBy(this.getOperator().getUsername());
+		content.updateBy(this.getOperatorUName());
 		this.getContentService().updateById(content);
 		// 目标栏目内容数量+1
-		toCatalog.setContentCount(toCatalog.getContentCount() + 1);
-		this.getCatalogService().updateById(toCatalog);
+		this.getCatalogService().changeContentCount(toCatalog.getCatalogId(), 1);
 		// 源栏目内容数量-1
-		fromCatalog.setContentCount(fromCatalog.getContentCount() - 1);
-		this.getCatalogService().updateById(fromCatalog);
+		this.getCatalogService().changeContentCount(fromCatalog.getCatalogId(), -1);
 	}
 
 	@Override
 	public void setTop(LocalDateTime topEndTime) {
 		content.setTopFlag(Instant.now().toEpochMilli());
 		content.setTopDate(topEndTime);
-		content.updateBy(this.getOperator().getUsername());
+		content.updateBy(this.getOperatorUName());
 		this.getContentService().updateById(content);
 		// 重新发布内容
 		if (ContentStatus.isPublished(this.getContentEntity().getStatus())) {
-			this.publish();
+			this.getPublishService().publishContent(List.of(content.getContentId()), getOperator());
 		}
 	}
 
@@ -301,11 +295,11 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	public void cancelTop() {
 		content.setTopFlag(0L);
 		content.setTopDate(null);
-		content.updateBy(Objects.nonNull(this.getOperator()) ? this.getOperator().getUsername(): "__System");
+		content.updateBy(this.getOperatorUName());
 		this.getContentService().updateById(content);
 		// 重新发布内容
 		if (ContentStatus.isPublished(this.getContentEntity().getStatus())) {
-			this.publish();
+			this.getPublishService().publishContent(List.of(content.getContentId()), getOperator());
 		}
 	}
 
@@ -331,7 +325,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		} else {
 			this.content.setSortFlag((next.getSortFlag() + prev.getSortFlag()) / 2);
 		}
-		this.getContentEntity().updateBy(this.getOperator().getUsername());
+		this.getContentEntity().updateBy(this.getOperatorUName());
 		this.getContentService().updateById(content);
 	}
 
@@ -339,7 +333,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	public void offline() {
 		String status = this.getContentEntity().getStatus();
 		this.getContentEntity().setStatus(ContentStatus.OFFLINE);
-		this.getContentEntity().updateBy(this.getOperator().getUsername());
+		this.getContentEntity().updateBy(this.getOperatorUName());
 		this.getContentService().updateById(this.getContentEntity());
 
 		if (ContentStatus.isPublished(status)) {
@@ -358,7 +352,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	@Override
 	public void toPublish() {
 		this.getContentEntity().setStatus(ContentStatus.TO_PUBLISHED);
-		this.getContentEntity().updateBy(this.getOperator().getUsername());
+		this.getContentEntity().updateBy(this.getOperatorUName());
 		this.getContentService().updateById(this.getContentEntity());
 	}
 
