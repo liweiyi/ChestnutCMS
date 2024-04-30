@@ -134,13 +134,6 @@
               <cms-video-editor v-model="form.videoList" @choose="handleSetLogo"></cms-video-editor>
             </el-col>
           </el-row>
-          <!-- Book -->
-          <el-row v-if="this.form.linkFlag !== 'Y' && this.contentType === 'book'">
-            <el-col class="pr10">
-              <cms-book-editor v-model="form"></cms-book-editor>
-            </el-col>
-          </el-row>
-          <!-- Book End -->
         </el-col>
         <el-col :span="8">
           <div class="bg-purple-white">
@@ -271,9 +264,6 @@ import CMSProgress from '@/views/components/Progress';
 import CMSImageEditor from '@/views/cms/imageAlbum/editor';
 import CMSAudioEditor from '@/views/cms/media/audioEditor';
 import CMSVideoEditor from '@/views/cms/media/videoEditor';
-// Book
-import CMSBookEditor from '@/views/cms/book/editor';
-// Book End
 import CMSLogoView from '@/views/cms/components/LogoView';
 import CMSResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
@@ -298,9 +288,6 @@ export default {
     "cms-image-editor": CMSImageEditor,
     "cms-audio-editor": CMSAudioEditor,
     "cms-video-editor": CMSVideoEditor,
-    // Book
-    "cms-book-editor": CMSBookEditor,
-    // Book End
     "cms-resource-dialog": CMSResourceDialog,
     "cms-logo-view": CMSLogoView,
     'cms-catalog-selector': CMSCatalogSelector,
