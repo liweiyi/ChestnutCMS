@@ -15,27 +15,30 @@
  */
 package com.chestnut.contentcore.config;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.config.properties.CMSProperties;
+import com.chestnut.contentcore.config.properties.CMSPublishProperties;
+import com.chestnut.contentcore.publish.CmsStaticizeService;
+import com.chestnut.contentcore.publish.IPublishStrategy;
+import com.chestnut.contentcore.publish.strategies.ThreadPoolPublishStrategy;
 import com.chestnut.system.fixed.config.BackendContext;
-
 import freemarker.cache.FileTemplateLoader;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * CMS配置
@@ -45,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Configuration
-@EnableConfigurationProperties(CMSProperties.class)
+@EnableConfigurationProperties({ CMSProperties.class, CMSPublishProperties.class })
 public class CMSConfig implements WebMvcConfigurer {
 
 	public static String CachePrefix = "cms:";
@@ -116,5 +119,11 @@ public class CMSConfig implements WebMvcConfigurer {
 			this.redisCache.deleteObject(keys);
 			log.info("Clear redis caches with prefix `{}`", this.properties.getCacheName());
 		}
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(IPublishStrategy.class)
+	public IPublishStrategy publishStrategy(CMSPublishProperties publishProperties, CmsStaticizeService cmsStaticizeService) {
+		return new ThreadPoolPublishStrategy(publishProperties, cmsStaticizeService);
 	}
 }

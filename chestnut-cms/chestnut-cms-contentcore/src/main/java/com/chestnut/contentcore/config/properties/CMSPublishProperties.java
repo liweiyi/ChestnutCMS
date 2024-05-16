@@ -28,8 +28,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "chestnut.cms.publish")
+@ConfigurationProperties(prefix = CMSPublishProperties.PREFIX)
 public class CMSPublishProperties {
+
+	public static final String PREFIX = "chestnut.cms.publish";
 
 	/**
 	 * 启动时清理发布消息队列
@@ -40,6 +42,11 @@ public class CMSPublishProperties {
 	 * 发布消息消费者数量
 	 */
 	private int consumerCount = 2;
+
+	/**
+	 * 发布策略
+	 */
+	private String strategy;
 
 	private final AsyncProperties.Pool pool = new AsyncProperties.Pool();
 

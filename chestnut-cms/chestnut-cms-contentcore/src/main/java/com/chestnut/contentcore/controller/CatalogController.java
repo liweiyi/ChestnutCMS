@@ -188,14 +188,18 @@ public class CatalogController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@GetMapping("/treeData")
-	public R<?> treeData() {
+	public R<?> treeData(@RequestParam(required = false, defaultValue = "false") Boolean disableLink) {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		List<CmsCatalog> catalogs = this.catalogService.lambdaQuery().eq(CmsCatalog::getSiteId, site.getSiteId())
 				.orderByAsc(CmsCatalog::getSortFlag).list().stream().filter(c -> loginUser
 						.hasPermission(CatalogPrivItem.View.getPermissionKey(c.getCatalogId())))
 				.toList();
-		List<TreeNode<String>> treeData = catalogService.buildCatalogTreeData(catalogs);
+		List<TreeNode<String>> treeData = catalogService.buildCatalogTreeData(catalogs, (catalog, node) -> {
+			if (disableLink) {
+				node.setDisabled(CatalogType_Link.ID.equals(catalog.getCatalogType()));
+			}
+		});
 		return R.ok(Map.of("rows", treeData, "siteName", site.getName()));
 	}
 

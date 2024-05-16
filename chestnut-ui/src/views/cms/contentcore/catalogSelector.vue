@@ -37,7 +37,7 @@
           <el-button 
             v-if="showRootNode"
             type="text" 
-            :class="'tree-root' + (rootSelected?' is-current':'')"
+            :class="'tree-root' + (rootSelected?' cc-current':'')"
             icon="el-icon-s-home"
             @click="handleTreeRootClick">{{ siteName }}</el-button>
           <el-tree 
@@ -51,8 +51,10 @@
             node-key="id"
             ref="tree"
             default-expand-all
-            highlight-current
             @node-click="handleNodeClick">
+            <template slot-scope="{ node, data }">
+              <span :id="'tn-'+node.id" :class="node.disabled?'cc-disabled':''">{{ node.label }}</span>
+            </template>
           </el-tree>
         </el-scrollbar>
       </div>
@@ -95,6 +97,12 @@ export default {
     checkStrictly: {
       type: Boolean,
       default: true,
+      required: false
+    },
+    // 是否不允许选择链接栏目
+    disableLink: {
+      type: Boolean,
+      default: false,
       required: false
     }
   },
@@ -143,7 +151,7 @@ export default {
       this.selectedCatalogs = [];
       this.rootSelected = false;
       this.loading = true;
-      getCatalogTreeData().then(response => {
+      getCatalogTreeData({disableLink: this.disableLink}).then(response => {
         if (response.code == 200) {
           this.catalogOptions = response.data.rows;
           this.siteName = response.data.siteName; 
@@ -155,10 +163,21 @@ export default {
       if (!value) return true;
       return data.label.indexOf(value) > -1;
     },
-    handleNodeClick (data) {
+    setNodeHighlight(node) {
+      document.querySelectorAll(".cc-current").forEach(item => item.classList.remove("cc-current"));
+      if (node) {
+        document.querySelector("#tn-"+node.id).classList.add("cc-current");
+      }
+    },
+    handleNodeClick (data, node) {
       if (!this.multiple) {
-        this.selectedCatalogs = [{ id: data.id, name: data.label, props: data.props }];
-        this.rootSelected = false;
+        if (!this.disableLink || !data.disabled) {
+          this.setNodeHighlight(node)
+          this.selectedCatalogs = [{ id: data.id, name: data.label, props: data.props }];
+          this.rootSelected = false;
+        } else {
+          this.$refs.tree.setCurrentKey(null)
+        }
       }
     },
     handleTreeRootClick(e) {
@@ -179,6 +198,7 @@ export default {
         this.$modal.alertWarning(this.$t('CMS.Catalog.SelectCatalogFirst'));
         return;
       }
+      this.setNodeHighlight()
       this.$emit("ok", this.selectedCatalogs, this.copyType);
     },
     handleCancel () {
@@ -215,10 +235,14 @@ export default {
   border-radius: 0;
   padding: 5px;
 }
-.catalog-selector .tree-container .is-current {
-  background-color: #edf6ff;
-}
 .catalog-selector .tree-container .tree-root:hover {
   background-color: #F5F7FA;
+}
+.catalog-selector .tree-container .cc-current {
+  color: #409EFF;
+}
+.catalog-selector .tree-container .cc-disabled {
+  color: #C0C4CC;
+  cursor: not-allowed;
 }
 </style>

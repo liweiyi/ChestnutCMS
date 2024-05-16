@@ -200,7 +200,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
             // init template datamode
             TemplateUtils.initGlobalVariables(site, templateContext);
             // init templateType data to datamode
-            templateContext.getVariables().put("Request", parameters);
+            templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, parameters);
             // 动态页面自定义数据
             if (Objects.nonNull(dynamicPage.getInitDataTypes())) {
                 dynamicPage.getInitDataTypes().forEach(initDataType -> {

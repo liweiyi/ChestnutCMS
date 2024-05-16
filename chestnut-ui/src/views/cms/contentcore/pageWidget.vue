@@ -57,7 +57,7 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('CMS.PageWidget.Path')" align="left" width="180" prop="path" :show-overflow-tooltip="true" />
-      <el-table-column :label="$t('Common.Operation')" align="left" width="200" class-name="small-padding fixed-width">
+      <el-table-column :label="$t('Common.Operation')" align="right" width="250" class-name="small-padding fixed-width">
         <template slot-scope="scope">
             <span class="btn-cell-wrap">
               <el-button 

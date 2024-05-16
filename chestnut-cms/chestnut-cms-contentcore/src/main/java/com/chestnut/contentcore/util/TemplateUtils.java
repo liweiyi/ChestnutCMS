@@ -39,6 +39,16 @@ import java.util.Map;
 public class TemplateUtils {
 
 	/**
+	 * 模板变量：请求参数
+	 */
+	public final static String TemplateVariable_Request = "Request";
+
+	/**
+	 * 模板变量：<@cms_include>标签file属性请求参数
+	 */
+	public final static String TemplateVariable_IncludeRequest = "IncludeRequest";
+
+	/**
 	 * 模板变量：预览模式登录用户token键名
 	 */
 	public final static String TemplateVariable_TokenName = "TokenName";

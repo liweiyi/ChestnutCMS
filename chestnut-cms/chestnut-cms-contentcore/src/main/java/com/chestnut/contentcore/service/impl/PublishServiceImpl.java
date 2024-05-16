@@ -35,9 +35,10 @@ import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.listener.event.AfterContentPublishEvent;
 import com.chestnut.contentcore.properties.MaxPageOnContentPublishProperty;
-import com.chestnut.contentcore.publish.CatalogPublishTask;
-import com.chestnut.contentcore.publish.ContentPublishTask;
-import com.chestnut.contentcore.publish.SitePublishTask;
+import com.chestnut.contentcore.publish.staticize.CatalogStaticizeType;
+import com.chestnut.contentcore.publish.staticize.ContentStaticizeType;
+import com.chestnut.contentcore.publish.staticize.SiteStaticizeType;
+import com.chestnut.contentcore.publish.IPublishStrategy;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.template.ITemplateType;
 import com.chestnut.contentcore.template.impl.CatalogTemplateType;
@@ -80,11 +81,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 
 	private final AsyncTaskManager asyncTaskManager;
 
-	private final SitePublishTask sitePublishTask;
-
-	private final CatalogPublishTask catalogPublishTask;
-
-	private final ContentPublishTask contentPublishTask;
+	private final IPublishStrategy publishStrategy;
 
 	private ApplicationContext applicationContext;
 
@@ -191,7 +188,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	}
 
 	private void asyncPublishSite(CmsSite site) {
-		sitePublishTask.publish(site);
+		publishStrategy.publish(SiteStaticizeType.TYPE, site.getSiteId().toString());
 	}
 
 	@Override
@@ -361,7 +358,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	}
 
 	public void asyncPublishCatalog(final CmsCatalog catalog) {
-		catalogPublishTask.publish(catalog);
+		publishStrategy.publish(CatalogStaticizeType.TYPE, catalog.getCatalogId().toString());
 	}
 
 	@Override
@@ -572,14 +569,14 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		if (publishPipeCodes.isEmpty()) {
 			return;
 		}
-		contentPublishTask.publish(content.getContentEntity());
+		publishStrategy.publish(ContentStaticizeType.TYPE, content.getContentEntity().getContentId().toString());
 		// 关联内容静态化，映射的引用内容
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
 				.eq(CmsContent::getCopyId, content.getContentEntity().getContentId())
 				.eq(CmsContent::getCopyType, ContentCopyType.Mapping);
 		List<CmsContent> mappingContents = contentService.list(q);
 		for (CmsContent mappingContent : mappingContents) {
-			contentPublishTask.publish(mappingContent);
+			publishStrategy.publish(ContentStaticizeType.TYPE, mappingContent.getContentId().toString());
 		}
 	}
 

@@ -64,7 +64,6 @@ public class ImageWatermarkArgsProperty implements IProperty {
 	public ImageWatermarkArgs getPropValue(Map<String, String> configProps) {
 		String v = MapUtils.getString(configProps, ID);
 		if (StringUtils.isNotEmpty(v)) {
-			System.out.println(v);
 			return JacksonUtils.from(v, ImageWatermarkArgs.class);
 		}
 		return defaultValue();

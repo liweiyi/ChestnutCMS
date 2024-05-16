@@ -232,7 +232,7 @@
       <el-table-column 
         :label="$t('Common.Operation')"
         align="center"
-        width="220"
+        width="260"
         class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <span class="btn-cell-wrap">
@@ -541,7 +541,6 @@ export default {
       }
       this.isCopy = true;
       this.openCatalogSelector = true;
-      console.log(this.selectedRows.map(item => item.contentId))
     },
     doCopy(catalogs, copyType) {
       const data = {  

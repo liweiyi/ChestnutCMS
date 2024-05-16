@@ -199,12 +199,12 @@ public class FreeMarkerUtils {
 
 	private static TemplateModel evalTemplateModel(Environment env, String[] names) throws TemplateModelException {
 		TemplateModel model = env.getVariable(names[0]);
-		if (model == null || !(model instanceof TemplateHashModel)) {
+		if (!(model instanceof TemplateHashModel)) {
 			throw new TemplateModelException();
 		}
 		for (int i = 1; i < names.length - 1; i++) {
 			model = ((TemplateHashModel) model).get(names[i]);
-			if (model == null || !(model instanceof TemplateHashModel)) {
+			if (!(model instanceof TemplateHashModel)) {
 				throw new TemplateModelException();
 			}
 		}

@@ -76,6 +76,7 @@ export default {
   watch: {
     tags(newVal) {
       this.tagList = newVal;
+      this.$emit("change", newVal);
     }
   },
   data () {

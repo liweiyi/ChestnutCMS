@@ -781,6 +781,10 @@ export default {
     }
   },
   CMS: {
+    Dashboard: {
+      PublishStrategy: "Publish Strategy",
+      ResourceRoot: "Resource Root"
+    },
     ContentCore: {
       ContentType: "Content Type",
       CatalogType: "Catalog Type",
@@ -1201,6 +1205,43 @@ export default {
       UploadCover: "Upload",
       ScreenshotDialog: "Video Screenshot",
       SetLogo: "Set Album Cover"
+    },
+    Book: {
+      Basic: "Book Info",
+      PublicationDate: "Pub. Date",
+      Publisher: "Publisher",
+      NumberOfPages: "Num. of pages",
+      NumberOfWords: "Num. of words",
+      Producer: "Producer",
+      OriginalTitle: "Original title",
+      Translators: "Translators",
+      Price: "Price",
+      CurrencyFen: "Fen",
+      Completed: "Completed",
+      Intro: "Introduce",
+      ChapterList: "Chapters",
+      InputChapterTitle: "Chapter title",
+      SortAsc: "ASC",
+      SortDesc: "DESC",
+      PublishDate: "Publish date",
+      PublishImmediately: "Publish Immediately",
+      ChapterTitle: "Chapter title",
+      Publish: "Publish",
+      ToPublish: "Scheduled",
+      Offline: "Offline",
+      ToPublishDialogTitle: "Scheduled Publish",
+      PublishSuccess: "Publish Success",
+      OfflineSuccess: "Offline Success",
+      ToPublishSuccess: "Scheduled Publish Success",
+      CloseChapterEditorTip: "Chapter data not saved, are you sure to quit?",
+      Route: {
+        EditChapter: "Edit book chapter"
+      },
+      RuleTips: {
+        Title: "Title cannot be empty.",
+        Content: "Content cannot be empty.",
+        PublishDate: "Publish date cannot be empty."
+      }
     },
     PageWidget: {
       Type: "Type",

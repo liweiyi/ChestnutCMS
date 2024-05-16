@@ -17,7 +17,7 @@
       </el-col>
     </el-row>
     <el-row class="art-editor-container" :gutter="10" v-loading="loading">
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="110px">
         <el-col :span="16">
           <el-row>
             <el-col class="pr10">
@@ -241,6 +241,7 @@
     <!-- 栏目选择组件 -->
     <cms-catalog-selector
       :open="openCatalogSelector"
+      :disableLink="disableLinkCatalog"
       @ok="handleCatalogSelectorOk"
       @close="handleCatalogSelectorClose"></cms-catalog-selector>
     <!-- 内容选择组件 -->
@@ -323,6 +324,7 @@ export default {
       contentType: this.$route.query.type,
       opType: !this.$route.query.id || this.$route.query.id == '0' ? 'ADD' : 'UPDATE',
       openCatalogSelector: false,
+      disableLinkCatalog: false,
       catalogSelectorFor: undefined,
       openContentSelector: false,
       // 表单参数
@@ -576,6 +578,7 @@ export default {
     },
     handleCatalogChange() {
       this.openCatalogSelector = true;
+      this.disableLinkCatalog = false;
       this.catalogSelectorFor = "change";
     },
     handleCatalogSelectorOk(catalogs) {
@@ -616,6 +619,7 @@ export default {
       } else if (type === 'catalog') {
         this.openCatalogSelector = true;
         this.catalogSelectorFor = 'linkflag';
+        this.disableLinkCatalog = true;
       }
     },
     handleContentSelectorOk(contents) {

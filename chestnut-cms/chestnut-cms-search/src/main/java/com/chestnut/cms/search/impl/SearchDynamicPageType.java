@@ -78,7 +78,7 @@ public class SearchDynamicPageType implements IDynamicPageType {
 
     @Override
     public void initTemplateData(Map<String, String> parameters, TemplateContext templateContext) {
-        templateContext.getVariables().put("Request", ServletUtils.getParameters());
+        templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, ServletUtils.getParameters());
         String link = "_search?q=" + parameters.get("q");
         if (templateContext.isPreview()) {
             link += "&sid=" + parameters.get("sid") + "&pp=" + templateContext.getPublishPipeCode() + "&preview=true";

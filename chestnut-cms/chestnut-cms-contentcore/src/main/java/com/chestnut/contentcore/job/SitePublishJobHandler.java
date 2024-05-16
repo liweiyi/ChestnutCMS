@@ -21,9 +21,10 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
-import com.chestnut.contentcore.publish.CatalogPublishTask;
-import com.chestnut.contentcore.publish.ContentPublishTask;
-import com.chestnut.contentcore.publish.SitePublishTask;
+import com.chestnut.contentcore.publish.staticize.CatalogStaticizeType;
+import com.chestnut.contentcore.publish.staticize.ContentStaticizeType;
+import com.chestnut.contentcore.publish.staticize.SiteStaticizeType;
+import com.chestnut.contentcore.publish.IPublishStrategy;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.ISiteService;
@@ -56,11 +57,7 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 	
 	private final IContentService contentService;
 
-	private final SitePublishTask sitePublisher;
-
-	private final CatalogPublishTask catalogPublisher;
-
-	private final ContentPublishTask contentPublisher;
+	private final IPublishStrategy publishStrategy;
 
 	@Override
 	public String getId() {
@@ -92,16 +89,16 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 				for (int i = 0; i * pageSize < total; i++) {
 					Page<CmsContent> page = contentService.page(new Page<>(i, pageSize, false), q);
 					for (CmsContent xContent : page.getRecords()) {
-						contentPublisher.publish(xContent);
+						publishStrategy.publish(ContentStaticizeType.TYPE, xContent.getContentId().toString());
 					}
 				}
 			}
 			// 发布栏目
 			for (CmsCatalog catalog : catalogList) {
-				catalogPublisher.publish(catalog);
+				publishStrategy.publish(CatalogStaticizeType.TYPE, catalog.getCatalogId().toString());
 			}
 			// 发布站点
-			sitePublisher.publish(site);
+			publishStrategy.publish(SiteStaticizeType.TYPE, site.getSiteId().toString());
 		}
 		logger.info("Job '{}' completed, cost: {}ms", JOB_NAME, System.currentTimeMillis() - s);
 	}

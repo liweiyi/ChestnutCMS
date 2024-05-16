@@ -40,24 +40,24 @@ public interface IPageWidget {
 	/**
 	 * 页面部件基础数据实例
 	 */
-	public CmsPageWidget getPageWidgetEntity();
+	CmsPageWidget getPageWidgetEntity();
 
-	public void setPageWidgetEntity(CmsPageWidget cmsPageWdiget);
+	void setPageWidgetEntity(CmsPageWidget cmsPageWdiget);
 
 	/**
 	 * 操作人
 	 * 
 	 * @param loginUser
 	 */
-	public void setOperator(LoginUser loginUser);
+	void setOperator(LoginUser loginUser);
 
-	public LoginUser getOperator();
+	LoginUser getOperator();
 
-	public void add();
+	void add();
 
-	public void save();
+	void save();
 
-	public void delete();
+	void delete();
 
-	public void publish() throws TemplateException, IOException;
+	void publish() throws TemplateException, IOException;
 }

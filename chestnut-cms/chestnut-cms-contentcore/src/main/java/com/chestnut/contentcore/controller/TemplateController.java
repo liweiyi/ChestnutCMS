@@ -178,8 +178,6 @@ public class TemplateController extends BaseRestController {
 		fileName = FileExUtils.normalizePath(fileName);
 		String[] split = fileName.substring(0, fileName.indexOf(suffix)).split("/");
 		for (String item : split) {
-			System.out.println(item);
-			System.out.println(Pattern.matches("[a-zA-Z0-9_]+", item));
 			if (StringUtils.isEmpty(item) || !Pattern.matches("^[a-zA-Z0-9_]+$", item)) {
 				return false;
 			}

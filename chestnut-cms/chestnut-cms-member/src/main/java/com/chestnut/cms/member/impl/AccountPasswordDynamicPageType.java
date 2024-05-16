@@ -15,10 +15,12 @@
  */
 package com.chestnut.cms.member.impl;
 
+import com.chestnut.cms.member.CmsMemberConstants;
 import com.chestnut.cms.member.publishpipe.PublishPipeProp_MemberPasswordTemplate;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.core.IDynamicPageType;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.service.IMemberService;
@@ -95,8 +97,9 @@ public class AccountPasswordDynamicPageType implements IDynamicPageType {
     public void initTemplateData(Map<String, String> parameters, TemplateContext templateContext) {
         Long memberId = MapUtils.getLong(parameters, "memberId");
         Member member = this.memberService.getById(memberId);
-        templateContext.getVariables().put("Member", member);
-        templateContext.getVariables().put("MemberResourcePrefix", MemberUtils.getMemberResourcePrefix(templateContext.isPreview()));
-        templateContext.getVariables().put("Request", ServletUtils.getParameters());
+        templateContext.getVariables().put(CmsMemberConstants.TEMPLATE_VARIABLE_MEMBER, member);
+        templateContext.getVariables().put(CmsMemberConstants.TEMPLATE_VARIABLE_MEMBER_RESOURCE_PREFIX,
+                MemberUtils.getMemberResourcePrefix(templateContext.isPreview()));
+        templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, ServletUtils.getParameters());
     }
 }

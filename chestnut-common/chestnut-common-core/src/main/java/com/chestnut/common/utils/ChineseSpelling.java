@@ -20,11 +20,26 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 public class ChineseSpelling {
 
 	private static LinkedHashMap<String, String> specialFamilyNames = new LinkedHashMap<>();
+
+	public static int countChineseCharactersByRegex(String input) {
+		// 使用正则表达式匹配中文字符
+		String regex = "[\\u4e00-\\u9fa5]";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(input);
+
+		int count = 0;
+		while (matcher.find()) {
+			count++;
+		}
+		return count;
+	}
 
 	/**
 	 * 获得单个汉字的GBK编码

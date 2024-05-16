@@ -171,7 +171,7 @@
             :command="pp"
             :name="pp.pipeCode"
             :label="pp.pipeName">
-            <el-divider content-position="left">模板配置</el-divider>
+            <el-divider content-position="left">{{ $t('CMS.Catalog.TemplateConfig') }}</el-divider>
             <el-form-item :label="$t('CMS.Catalog.IndexTemplate')" prop="indexTemplate">
               <el-input v-model="pp.props.indexTemplate">
                 <el-button 
@@ -232,7 +232,7 @@
                 type="primary" 
                 @click="handleApplyToChildren('contentExTemplate')">{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
             </el-form-item>
-            <el-divider content-position="left">其他配置</el-divider>
+            <el-divider content-position="left">{{ $t('CMS.Catalog.OtherConfig') }}</el-divider>
             <el-form-item :label="$t('CMS.Site.UEditorCss')">
               <el-input v-model="pp.props.ueditorCss">
                 <el-button 
@@ -297,6 +297,7 @@
     <cms-catalog-selector
       :open="openCatalogSelector"
       :showRootNode="showCatalogSelectorRootNode"
+      :disableLink="disableLinkCatalog"
       @ok="handleCatalogSelectorOk"
       @close="handleCatalogSelectorClose"></cms-catalog-selector>
     <!-- 内容选择组件 -->
@@ -355,6 +356,7 @@ export default {
       openCatalogSelector: false,
       catalogSelectorFor: undefined,
       showCatalogSelectorRootNode: false,
+      disableLinkCatalog: false,
       openContentSelector: false,
       openTemplateSelector: false, // 是否显示模板选择弹窗
       propKey: "", // 选择模板时记录变更的模板对应属性Key
@@ -502,6 +504,7 @@ export default {
       this.catalogSelectorFor = "MoveCatalog";
       this.openCatalogSelector = true;
       this.showCatalogSelectorRootNode = true;
+      this.disableLinkCatalog = false;
     },
     handleCloseProgress() {
       if (this.progressType == 'Delete' || this.progressType == 'Move') {
@@ -540,6 +543,7 @@ export default {
       } else if (type === 'catalog') {
         this.openCatalogSelector = true;
         this.showCatalogSelectorRootNode = false;
+        this.disableLinkCatalog = true;
         this.catalogSelectorFor = "";
       }
     },

@@ -91,7 +91,7 @@ public class DynamicPageService {
             // init template datamode
             TemplateUtils.initGlobalVariables(site, templateContext);
             // init templateType data to datamode
-            templateContext.getVariables().put("Request", ServletUtils.getParameters());
+            templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, ServletUtils.getParameters());
             dpt.initTemplateData(parameters, templateContext);
             // staticize
             this.staticizeService.process(templateContext, response.getWriter());

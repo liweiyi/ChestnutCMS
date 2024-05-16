@@ -144,7 +144,9 @@ public class CoreController extends BaseRestController {
 			// init templateType data to datamode
 			ITemplateType templateType = this.templateService.getTemplateType(SiteTemplateType.TypeId);
 			templateType.initTemplateData(siteId, templateContext);
-			templateContext.getVariables().put("Request", params);
+			templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, params);
+			// TODO 兼容历史版本，下个大版本移除IncludeRequest模板变量
+			templateContext.getVariables().put("IncludeRequest", params);
 			templateContext.getVariables().put("ClientType", ServletUtils.getDeviceType());
 			// staticize
 			this.staticizeService.process(templateContext, ServletUtils.getResponse().getWriter());

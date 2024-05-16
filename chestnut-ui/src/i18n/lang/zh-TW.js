@@ -730,7 +730,7 @@ export default {
       JVMVersion: "Java版本",
       JVMStartTime: "啟動時間",
       JVMRunTime: "運行時間",
-      JVMHome: "安裝了路徑",
+      JVMHome: "安裝路徑",
       ProjectDir: "項目路徑",
       JVMArgs: "運行參數",
       Disk: "磁碟狀態",
@@ -781,6 +781,10 @@ export default {
     }
   },
   CMS: {
+    Dashboard: {
+      PublishStrategy: "發佈策略",
+      ResourceRoot: "資源目錄"
+    },
     ContentCore: {
       ContentType: "內容類型",
       CatalogType: "欄目類型",
@@ -1201,6 +1205,43 @@ export default {
       UploadCover: "上傳視頻封面圖",
       ScreenshotDialog: "視頻封面截圖",
       SetLogo: "設為視頻集封面"
+    },
+    Book: {
+      Basic: "圖書信息",
+      PublicationDate: "出版時間",
+      Publisher: "出版社",
+      NumberOfPages: "頁數",
+      NumberOfWords: "字數",
+      Producer: "出品方",
+      OriginalTitle: "原著名",
+      Translators: "譯者",
+      Price: "價格",
+      CurrencyFen: "分",
+      Completed: "是否完結",
+      Intro: "介紹",
+      ChapterList: "章節列表",
+      InputChapterTitle: "輸入章節標題",
+      SortAsc: "順序",
+      SortDesc: "倒序",
+      PublishDate: "發佈時間",
+      PublishImmediately: "立即發佈",
+      ChapterTitle: "章節標題",
+      Publish: "發佈",
+      ToPublish: "定時發佈",
+      Offline: "下線",
+      ToPublishDialogTitle: "定時發佈",
+      PublishSuccess: "發佈成功",
+      OfflineSuccess: "下線成功",
+      ToPublishSuccess: "定時發佈成功",
+      CloseChapterEditorTip: "章節數據未保存，確認關閉嗎？",
+      Route: {
+        EditChapter: "編輯章節"
+      },
+      RuleTips: {
+        Title: "標題不能為空",
+        Content: "章節內容不能為空",
+        PublishDate: "發佈時間不能為空"
+      }
     },
     PageWidget: {
       Type: "類型",

@@ -18,16 +18,17 @@ package com.chestnut.contentcore.controller;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.contentcore.config.properties.CMSProperties;
+import com.chestnut.contentcore.domain.vo.CmsConfigurationDashboardVO;
 import com.chestnut.contentcore.publish.IPublishStrategy;
 import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 发布日志管理
+ * 首页看板数据
  * 
  * @author 兮玥
  * @email 190785909@qq.com
@@ -35,25 +36,19 @@ import org.springframework.web.bind.annotation.RestController;
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/cms/publish/")
-public class PublishLogController extends BaseRestController {
+@RequestMapping("/cms/dashboard/")
+public class DashboardController extends BaseRestController {
 
 	private final IPublishStrategy publishStrategy;
 
-	/**
-	 * 发布队列任务数量
-	 */
-	@GetMapping("/taskCount")
-	public R<?> getPublishTaskCount() {
-		return R.ok(publishStrategy.getTaskCount());
-	}
+	private final CMSProperties properties;
 
-	/**
-	 * 清理发布队列
-	 */
-	@DeleteMapping("/clear")
-	public R<?> clearPublishTask() {
-		publishStrategy.cleanTasks();
-		return R.ok();
+	@GetMapping("/config")
+	public R<?> getCmsConfiguration() {
+		CmsConfigurationDashboardVO vo = CmsConfigurationDashboardVO.builder()
+				.publishStrategy(publishStrategy.getId())
+				.resourceRoot(properties.getResourceRoot())
+				.build();
+		return R.ok(vo);
 	}
 }

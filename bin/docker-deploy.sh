@@ -31,5 +31,5 @@ for NONE_IMAGE_ID in ${NONE_IMAGE_ID_ARR[*]}; do
   echo ">>>>>delete docker <none> image done: $NONE_IMAGE_ID"
 done
 
-# 启动容器
-docker-compose up -d
+# 启动容器，老版本命令是docker-compose up -d
+docker compose up -d

@@ -29,10 +29,9 @@ import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateModel;
+import freemarker.template.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Component;
@@ -47,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class CmsIncludeTag extends AbstractTag {
@@ -128,7 +128,11 @@ public class CmsIncludeTag extends AbstractTag {
 		if (context.isPreview()) {
 			Template includeTemplate = env.getTemplateForInclusion(includeTemplateKey,
 					StandardCharsets.UTF_8.displayName(), true);
-			env.setVariable("IncludeRequest", wrap(env, StringUtils.splitToMap(params, "&", "=")));
+			Map<String, String> paramsMap = StringUtils.splitToMap(params, "&", "=");
+			Map<String, String> mergeParams = mergeRequestVariable(env, paramsMap);
+			env.setVariable(TemplateUtils.TemplateVariable_Request, wrap(env, mergeParams));
+			// TODO 兼容历史版本，下个大版本移除IncludeRequest模板变量
+			env.setVariable("IncludeRequest", wrap(env, mergeParams));
 			env.include(includeTemplate);
 		} else if (virtual) {
 			// 动态模板
@@ -159,6 +163,23 @@ public class CmsIncludeTag extends AbstractTag {
 		return null;
 	}
 
+	private Map<String, String> mergeRequestVariable(Environment env, Map<String, String> params) throws TemplateModelException {
+		TemplateModel variable = env.getVariable(TemplateUtils.TemplateVariable_Request);
+		if (Objects.nonNull(variable)) {
+			if (variable instanceof TemplateHashModelEx2 req) {
+				for (TemplateHashModelEx2.KeyValuePairIterator iterator = req.keyValuePairIterator();iterator.hasNext();) {
+					TemplateHashModelEx2.KeyValuePair next = iterator.next();
+					String key = ((SimpleScalar) next.getKey()).getAsString();
+					if (params.containsKey(key)) {
+						log.warn("<@cms_include> file parameter `{}` conflicts with the Request parameter.", key);
+					}
+					params.put(key, ((SimpleScalar) next.getValue()).getAsString());
+				}
+			}
+		}
+		return params;
+	}
+
 	/**
 	 * 生成包含模板静态化内容
 	 */
@@ -169,7 +190,10 @@ public class CmsIncludeTag extends AbstractTag {
 			env.setOut(writer);
 			Template includeTemplate = env.getTemplateForInclusion(includeTemplateName,
 					StandardCharsets.UTF_8.displayName(), true);
-			env.setVariable("IncludeRequest", wrap(env, params));
+			Map<String, String> mergeParams = mergeRequestVariable(env, params);
+			env.setVariable(TemplateUtils.TemplateVariable_Request, wrap(env, mergeParams));
+			// TODO 兼容历史版本，下个大版本移除IncludeRequest模板变量
+			env.setVariable("IncludeRequest", wrap(env, mergeParams));
 			env.include(includeTemplate);
 			return writer.getBuffer().toString();
 		} finally {

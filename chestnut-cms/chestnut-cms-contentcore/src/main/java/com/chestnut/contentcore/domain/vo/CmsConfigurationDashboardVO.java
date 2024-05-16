@@ -13,27 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.cms.member;
+package com.chestnut.contentcore.domain.vo;
 
-/**
- * CMS会员扩展模块静态常量
- *
- * @author 兮玥
- * @email 190785909@qq.com
- */
-public interface CmsMemberConstants {
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
-    String MEMBER_FAVORITES_DATA_TYPE = "cms_content";
+@Getter
+@Setter
+@Builder
+public class CmsConfigurationDashboardVO {
 
-    String MEMBER_LIKE_DATA_TYPE = "cms_content";
+	private String publishStrategy;
 
-    /**
-     * 模板变量：会员信息
-     */
-    String TEMPLATE_VARIABLE_MEMBER = "Member";
-
-    /**
-     * 模板变量：会员资源前缀
-     */
-    String TEMPLATE_VARIABLE_MEMBER_RESOURCE_PREFIX = "MemberResourcePrefix";
+	private String resourceRoot;
 }

@@ -16,6 +16,7 @@
 package com.chestnut.cms.dynamic.core.impl;
 
 import com.chestnut.cms.dynamic.core.IDynamicPageInitData;
+import com.chestnut.cms.member.CmsMemberConstants;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.member.security.StpMemberUtil;
@@ -49,8 +50,9 @@ public class MemberDynamicPageInitData implements IDynamicPageInitData {
     public void initTemplateData(TemplateContext context, Map<String, String> parameters) {
         if (StpMemberUtil.isLogin()) {
             LoginUser loginUser = StpMemberUtil.getLoginUser();
-            context.getVariables().put("Member", loginUser.getUser());
-            context.getVariables().put("MemberResourcePrefix", MemberUtils.getMemberResourcePrefix(context.isPreview()));
+            context.getVariables().put(CmsMemberConstants.TEMPLATE_VARIABLE_MEMBER, loginUser.getUser());
+            context.getVariables().put(CmsMemberConstants.TEMPLATE_VARIABLE_MEMBER_RESOURCE_PREFIX,
+                    MemberUtils.getMemberResourcePrefix(context.isPreview()));
         }
     }
 }

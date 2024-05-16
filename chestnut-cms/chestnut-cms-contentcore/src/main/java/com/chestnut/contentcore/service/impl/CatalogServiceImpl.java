@@ -63,6 +63,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -129,7 +130,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 	}
 
 	@Override
-	public List<TreeNode<String>> buildCatalogTreeData(List<CmsCatalog> catalogs) {
+	public List<TreeNode<String>> buildCatalogTreeData(List<CmsCatalog> catalogs, BiConsumer<CmsCatalog, TreeNode<String>> consumer) {
 		if (Objects.isNull(catalogs)) {
 			return List.of();
 		}
@@ -142,6 +143,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 					c.getLogo() == null ? "" : c.getLogo(), "logoSrc", logoSrc == null ? "" : logoSrc, "description",
 					c.getDescription() == null ? "" : c.getDescription());
 			treeNode.setProps(props);
+			consumer.accept(c, treeNode);
 			return treeNode;
 		}).toList();
 		return TreeNode.build(list);

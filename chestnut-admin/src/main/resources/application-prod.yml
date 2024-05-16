@@ -20,7 +20,11 @@ chestnut:
   cms:
     resourceRoot: /home/app/wwwroot_release
     publish:
-      consumerCount: 1
+      pool:
+        threadNamePrefix: "CMS-PUBLISH-"
+        queueCapacity: 10000
+        coreSize: 2
+        maxSize: 4
 
 # 开发环境配置
 server:

@@ -17,10 +17,11 @@ export function getContentTypes() {
 }
 
 // 查询栏目树结构
-export function getCatalogTreeData() {
+export function getCatalogTreeData(params) {
   return request({
     url: '/cms/catalog/treeData',
-    method: 'get'
+    method: 'get',
+    params: params
   })
 }
 

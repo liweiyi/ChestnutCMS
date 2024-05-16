@@ -20,7 +20,6 @@ import org.springframework.util.AntPathMatcher;
 
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -743,9 +742,6 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	 * @return
 	 */
     public static Map<String, String> getPathParameterMap(String path) {
-		if (Objects.isNull(path) || !path.contains("?")) {
-			return Map.of();
-		}
 		String str = substringAfter(path, "?");
 		return splitToMap(str, "&", "=");
     }

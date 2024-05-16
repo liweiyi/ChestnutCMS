@@ -15,9 +15,11 @@
  */
 package com.chestnut.cms.member.impl;
 
+import com.chestnut.cms.member.CmsMemberConstants;
 import com.chestnut.cms.member.publishpipe.PublishPipeProp_AccountCentreTemplate;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.contentcore.core.IDynamicPageType;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.service.IMemberStatDataService;
 import com.chestnut.member.util.MemberUtils;
@@ -92,9 +94,10 @@ public class AccountCentreDynamicPageType implements IDynamicPageType {
         Long siteId = MapUtils.getLong(parameters, "sid");
         Long memberId = MapUtils.getLong(parameters, "memberId");
         MemberCache member = this.memberStatDataService.getMemberCache(memberId);
-        templateContext.getVariables().put("Member", member);
-        templateContext.getVariables().put("MemberResourcePrefix", MemberUtils.getMemberResourcePrefix(templateContext.isPreview()));
-        templateContext.getVariables().put("Request", parameters);
+        templateContext.getVariables().put(CmsMemberConstants.TEMPLATE_VARIABLE_MEMBER, member);
+        templateContext.getVariables().put(CmsMemberConstants.TEMPLATE_VARIABLE_MEMBER_RESOURCE_PREFIX,
+                MemberUtils.getMemberResourcePrefix(templateContext.isPreview()));
+        templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, parameters);
         templateContext.setPageIndex(MapUtils.getIntValue(parameters, "page", 1));
 
         String link = "account/" + memberId + "?type=" + parameters.get("type");

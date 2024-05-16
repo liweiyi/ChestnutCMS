@@ -2,7 +2,7 @@
   <div class="dashboard-container">
     <el-card shadow="hover" class="mb10">
       <div slot="header" class="clearfix">
-        <span>系统信息</span>
+        <span>{{ $t("Monitor.Server.ApplicationInfo") }}</span>
       </div>
       <div class="el-table el-table--enable-row-hover el-table--medium">
         <table cellspacing="0" style="width: 100%;">
@@ -19,6 +19,14 @@
               <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('Monitor.Server.JVMRunTime') }}</div></td>
               <td class="el-table__cell is-leaf"><div class="cell">{{ serverInfo.runTime }}</div></td>
             </tr>
+            <tr>
+              <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('CMS.Dashboard.PublishStrategy') }}</div></td>
+              <td class="el-table__cell is-leaf" colspan="3"><div class="cell">{{ config.publishStrategy }}</div></td>
+            </tr>
+            <tr>
+              <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('CMS.Dashboard.ResourceRoot') }}</div></td>
+              <td class="el-table__cell is-leaf" colspan="3"><div class="cell">{{ config.resourceRoot }}</div></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -28,6 +36,7 @@
 </template>
 <script>
 import { getDashboardServerInfo } from "@/api/monitor/server";
+import { getCmsConfiguration } from "@/api/contentcore/dashboard";
 
 export default {
   name: "ServerInfoDashboard",
@@ -35,16 +44,23 @@ export default {
     return {
       serverInfo: {
         app: {}
-      }
+      },
+      config:{}
     };
   },
   created() {
     this.loadServerInfo();
+    this.loadCmsConfiguration();
   },
   methods: {
     loadServerInfo() {
       getDashboardServerInfo().then(response => {
         this.serverInfo = response.data;
+      })
+    },
+    loadCmsConfiguration() {
+      getCmsConfiguration().then(response => {
+        this.config = response.data;
       })
     }
   }

@@ -26,6 +26,8 @@ import com.chestnut.contentcore.domain.dto.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public interface ICatalogService extends IService<CmsCatalog> {
 	
@@ -52,7 +54,7 @@ public interface ICatalogService extends IService<CmsCatalog> {
 	 * @param catalogs
 	 * @return
 	 */
-	List<TreeNode<String>> buildCatalogTreeData(List<CmsCatalog> catalogs);
+	List<TreeNode<String>> buildCatalogTreeData(List<CmsCatalog> catalogs, BiConsumer<CmsCatalog, TreeNode<String>> consumer);
 
 	/**
 	 * 校验栏目别名、目录是否重复

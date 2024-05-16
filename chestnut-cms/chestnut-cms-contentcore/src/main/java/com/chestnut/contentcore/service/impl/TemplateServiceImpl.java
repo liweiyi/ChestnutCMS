@@ -112,7 +112,6 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 						.filter(t -> t.getPublishPipeCode().equals(pp.getCode()) && t.getPath().equals(path))
 						.findFirst();
 				opt.ifPresentOrElse(t -> {
-					System.out.println("scan template: " + file.getName() + "|" + file.lastModified() + " = " + t.getModifyTime());
 					if (t.getModifyTime() != file.lastModified()) {
 						try {
 							t.setFilesize(file.length());
