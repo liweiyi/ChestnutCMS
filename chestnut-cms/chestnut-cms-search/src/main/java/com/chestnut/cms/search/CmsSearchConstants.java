@@ -25,6 +25,10 @@ public interface CmsSearchConstants {
 
     String SEARCH_SOURCE_PREFIX = "cms:";
 
+    static String indexName(String uniqueId) {
+        return "cc_" + uniqueId;
+    }
+
     static String generateSearchSource(Long siteId) {
         return SEARCH_SOURCE_PREFIX + siteId;
     }

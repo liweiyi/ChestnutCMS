@@ -11,13 +11,43 @@
               <tbody>
                 <tr>
                   <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('Monitor.Server.AppName') }}</div></td>
-                  <td class="el-table__cell is-leaf"><div class="cell" v-if="server.sys">{{ server.app.name }}</div></td>
+                  <td class="el-table__cell is-leaf"><div class="cell" v-if="server.sys">{{ server.app.name }} [ {{ server.app.alias }} ]</div></td>
                   <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('Monitor.Server.AppVersion') }}</div></td>
                   <td class="el-table__cell is-leaf"><div class="cell" v-if="server.sys">{{ server.app.version }}</div></td>
                 </tr>
               </tbody>
             </table>
           </div>
+        </el-card>
+      </el-col>
+      <el-col :span="24" class="card-box">
+        <el-card>
+          <div slot="header">
+            <span>{{ $t("Monitor.Server.DbInfo") }}</span>
+          </div>
+          <el-card v-for="(db, index) in server.dataSources.list" :key="index" style="margin: 15px 0;">
+            <div slot="header">
+              <span>{{ $t("Monitor.Server.DbPoolName") }}：{{ db.poolName }}</span>
+            </div>
+            <div class="el-table el-table--enable-row-hover el-table--medium">
+              <table cellspacing="0" style="width: 100%;">
+                <tbody>
+                  <tr>
+                    <td width="10%" class="el-table__cell is-leaf"><div class="cell attrname">{{ $t("Monitor.Server.DbDriverClass") }}</div></td>
+                    <td class="el-table__cell is-leaf"><div class="cell">{{ db.driverClass }}</div></td>
+                  </tr>
+                  <tr>
+                    <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t("Monitor.Server.DbUrl") }}</div></td>
+                    <td class="el-table__cell is-leaf"><div class="cell">{{ db.url }}</div></td>
+                  </tr>
+                  <tr>
+                    <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t("Monitor.Server.DbUserName") }}</div></td>
+                    <td class="el-table__cell is-leaf"><div class="cell">{{ db.username }}</div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </el-card>
         </el-card>
       </el-col>
 

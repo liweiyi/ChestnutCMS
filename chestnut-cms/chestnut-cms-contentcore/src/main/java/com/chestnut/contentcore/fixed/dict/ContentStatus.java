@@ -15,15 +15,14 @@
  */
 package com.chestnut.contentcore.fixed.dict;
 
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.system.fixed.FixedDictType;
 import com.chestnut.system.service.ISysDictTypeService;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * 启用/禁用
@@ -76,5 +75,9 @@ public class ContentStatus extends FixedDictType {
 
 	public static <T> void decode(List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {
 		dictTypeService.decode(TYPE, list, getter, setter);
+	}
+
+	public static List<String> all() {
+		return List.of(DRAFT, TO_PUBLISHED, PUBLISHED, OFFLINE, EDITING);
 	}
 }

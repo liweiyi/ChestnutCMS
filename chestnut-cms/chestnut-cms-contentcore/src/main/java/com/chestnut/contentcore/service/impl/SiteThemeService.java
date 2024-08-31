@@ -38,7 +38,6 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -75,7 +74,7 @@ public class SiteThemeService {
 
     private final List<ICoreDataHandler> contentCoreHandlers;
 
-    public AsyncTask importSiteTheme(CmsSite site, final File zipFile, LoginUser operator) throws IOException {
+    public AsyncTask importSiteTheme(CmsSite site, final File zipFile, LoginUser operator) {
         // TODO 校验数据，必须无栏目、内容、页面部件等数据的站点才能导入
         AsyncTask asyncTask = new AsyncTask() {
 
@@ -243,7 +242,7 @@ public class SiteThemeService {
                                 content.createBy(operator.getUsername());
                                 // 处理logo
                                 content.setLogo(context.dealInternalUrl(content.getLogo()));
-                                contentService.save(content);
+                                contentService.dao().save(content);
                                 context.getContentIdMap().put(sourceContentId, content.getContentId());
                                 if (content.isLinkContent()) {
                                     linkContents.add(content);
@@ -283,7 +282,7 @@ public class SiteThemeService {
                     });
                     linkContents.forEach(content -> {
                         String iurl = context.dealInternalUrl(content.getRedirectUrl());
-                        contentService.lambdaUpdate().set(CmsContent::getRedirectUrl, iurl)
+                        contentService.dao().lambdaUpdate().set(CmsContent::getRedirectUrl, iurl)
                                 .eq(CmsContent::getContentId, content.getContentId()).update();
                     });
                     // 其他模块数据处理
@@ -372,7 +371,7 @@ public class SiteThemeService {
                                 .eq(CmsContent::getSiteId, site.getSiteId())
                                 .gt(CmsContent::getContentId, offset)
                                 .orderByAsc(CmsContent::getContentId);
-                        Page<CmsContent> page = contentService.page(new Page<>(1, pageSize, false), q);
+                        Page<CmsContent> page = contentService.dao().page(new Page<>(1, pageSize, false), q);
                         if (!page.getRecords().isEmpty()) {
                             context.saveData(CmsContent.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                             offset = page.getRecords().get(page.getRecords().size() - 1).getContentId();

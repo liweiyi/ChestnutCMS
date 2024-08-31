@@ -15,11 +15,14 @@
  */
 package com.chestnut.article;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.chestnut.article.domain.BCmsArticleDetail;
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.domain.dto.ArticleDTO;
 import com.chestnut.article.domain.vo.ArticleVO;
-import com.chestnut.article.mapper.CmsArticleDetailMapper;
 import com.chestnut.article.properties.DownloadRemoteImage;
+import com.chestnut.article.service.IArticleService;
+import com.chestnut.common.db.DBConstants;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -28,19 +31,18 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
-import com.chestnut.contentcore.domain.CmsCatalog;
-import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.CmsPublishPipe;
-import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.*;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 import com.chestnut.contentcore.domain.vo.ContentVO;
+import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.enums.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
-import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.service.ICatalogService;
+import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -59,15 +61,15 @@ public class ArticleContentType implements IContentType {
 
     private final static String NAME = "{CMS.CONTENTCORE.CONTENT_TYPE." + ID + "}";
 
-    private final CmsContentMapper contentMapper;
-
-    private final CmsArticleDetailMapper articleMapper;
-
     private final ISiteService siteService;
 
     private final ICatalogService catalogService;
 
     private final IPublishPipeService publishPipeService;
+
+    private final IArticleService articleService;
+
+    private final IContentService contentService;
 
     @Override
     public String getId() {
@@ -93,7 +95,7 @@ public class ArticleContentType implements IContentType {
     public IContent<?> loadContent(CmsContent xContent) {
         ArticleContent articleContent = new ArticleContent();
         articleContent.setContentEntity(xContent);
-        CmsArticleDetail articleDetail = this.articleMapper.selectById(xContent.getContentId());
+        CmsArticleDetail articleDetail = this.articleService.dao().getById(xContent.getContentId());
         articleContent.setExtendEntity(articleDetail);
         return articleContent;
     }
@@ -104,7 +106,7 @@ public class ArticleContentType implements IContentType {
 
         CmsContent contentEntity;
         if (dto.getOpType() == ContentOpType.UPDATE) {
-            contentEntity = this.contentMapper.selectById(dto.getContentId());
+            contentEntity = this.contentService.dao().getById(dto.getContentId());
             Assert.notNull(contentEntity,
                     () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", dto.getContentId()));
         } else {
@@ -141,10 +143,10 @@ public class ArticleContentType implements IContentType {
         List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(catalog.getSiteId());
         ArticleVO vo;
         if (IdUtils.validate(contentId)) {
-            CmsContent contentEntity = this.contentMapper.selectById(contentId);
+            CmsContent contentEntity = this.contentService.dao().getById(contentId);
             Assert.notNull(contentEntity, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 
-            CmsArticleDetail extendEntity = this.articleMapper.selectById(contentId);
+            CmsArticleDetail extendEntity = this.articleService.dao().getById(contentId);
             vo = ArticleVO.newInstance(contentEntity, extendEntity);
             if (StringUtils.isNotEmpty(vo.getLogo())) {
                 vo.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(vo.getLogo()));
@@ -172,12 +174,24 @@ public class ArticleContentType implements IContentType {
     }
 
     @Override
-    public void recover(Long contentId) {
-        this.articleMapper.recoverById(contentId);
+    public void recover(BCmsContent backupContent) {
+        this.contentService.dao().recover(backupContent);
+
+        if (!YesOrNo.isYes(backupContent.getLinkFlag()) && !ContentCopyType.isMapping(backupContent.getCopyType())) {
+            BCmsArticleDetail backupArticle = this.articleService.dao().getOneBackup(new LambdaQueryWrapper<BCmsArticleDetail>()
+                    .eq(BCmsArticleDetail::getContentId, backupContent.getContentId())
+                    .eq(BCmsArticleDetail::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
+            this.articleService.dao().recover(backupArticle);
+        }
     }
 
     @Override
     public void deleteBackups(Long contentId) {
-        this.articleMapper.deleteLogicDeletedById(contentId);
+        this.contentService.dao().deleteBackups(new LambdaQueryWrapper<BCmsContent>()
+                .eq(BCmsContent::getContentId, contentId)
+                .eq(BCmsContent::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
+        this.articleService.dao().deleteBackups(new LambdaQueryWrapper<BCmsArticleDetail>()
+                .eq(BCmsArticleDetail::getContentId, contentId)
+                .eq(BCmsArticleDetail::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
     }
 }

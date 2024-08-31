@@ -18,7 +18,6 @@ package com.chestnut.cms.comment.template.tag;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.comment.CommentConsts;
 import com.chestnut.comment.domain.Comment;
-import com.chestnut.comment.domain.vo.CommentVO;
 import com.chestnut.comment.fixed.dict.CommentAuditStatus;
 import com.chestnut.comment.service.ICommentService;
 import com.chestnut.common.staticize.FreeMarkerUtils;
@@ -73,7 +72,7 @@ public class CmsCommentTag extends AbstractListTag {
 			return TagPageData.of(List.of(), 0);
 		}
 		List<Long> contentIds = pageResult.getRecords().stream().map(c -> Long.valueOf(c.getSourceId())).toList();
-		Map<String, CmsContent> contents = this.contentService.listByIds(contentIds)
+		Map<String, CmsContent> contents = this.contentService.dao().listByIds(contentIds)
 				.stream().collect(Collectors.toMap(c -> c.getContentId().toString(), c -> c));
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		pageResult.getRecords().forEach(comment -> {

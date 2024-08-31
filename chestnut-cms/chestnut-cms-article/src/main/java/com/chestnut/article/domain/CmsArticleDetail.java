@@ -18,9 +18,10 @@ package com.chestnut.article.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.chestnut.common.db.domain.LogicDeleteEntity;
+import com.chestnut.common.db.domain.IBackupable;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 
 /**
  * 文章详情表对象 [cms_article_detail]
@@ -31,7 +32,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @TableName(CmsArticleDetail.TABLE_NAME)
-public class CmsArticleDetail extends LogicDeleteEntity {
+public class CmsArticleDetail implements IBackupable<BCmsArticleDetail> {
 
     public static final String TABLE_NAME = "cms_article_detail";
 
@@ -65,4 +66,11 @@ public class CmsArticleDetail extends LogicDeleteEntity {
      * 是否下载远程图片
      */
     private String downloadRemoteImage;
+
+    @Override
+    public BCmsArticleDetail toBackupEntity() {
+        BCmsArticleDetail backupEntity = new BCmsArticleDetail();
+        BeanUtils.copyProperties(this, backupEntity);
+        return backupEntity;
+    }
 }

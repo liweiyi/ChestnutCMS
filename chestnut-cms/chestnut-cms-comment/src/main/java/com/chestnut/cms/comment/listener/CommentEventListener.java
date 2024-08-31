@@ -48,7 +48,7 @@ public class CommentEventListener {
 		if (!COMMENT_SOURCE_TYPE_CONTENT.equals(event.getComment().getSourceType())) {
 			return;
 		}
-		Optional<CmsContent> opt = this.contentService.lambdaQuery()
+		Optional<CmsContent> opt = this.contentService.dao().lambdaQuery()
 				.select(List.of(CmsContent::getSiteId))
 				.eq(CmsContent::getContentId, event.getComment().getSourceId())
 				.oneOpt();

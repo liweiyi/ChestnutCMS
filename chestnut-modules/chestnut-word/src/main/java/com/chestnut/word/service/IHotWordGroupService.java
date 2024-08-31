@@ -42,4 +42,13 @@ public interface IHotWordGroupService extends IService<HotWordGroup> {
 	 * @param groupIds
 	 */
 	void deleteHotWordGroups(List<Long> groupIds);
+
+	/**
+	 * 校验热词分组编码唯一性
+	 *
+	 * @param owner
+	 * @param groupId
+	 * @param code
+	 */
+    void checkUnique(String owner, Long groupId, String code);
 }

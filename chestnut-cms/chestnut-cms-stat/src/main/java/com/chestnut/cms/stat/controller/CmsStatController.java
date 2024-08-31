@@ -80,7 +80,7 @@ public class CmsStatController extends BaseRestController {
 	public R<?> getSiteVisitLogList() {
 		PageRequest pr = this.getPageRequest();
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
-		Page<CmsSiteVisitLog> page = new LambdaQueryChainWrapper<CmsSiteVisitLog>(this.siteVisitLogMapper)
+		Page<CmsSiteVisitLog> page = new LambdaQueryChainWrapper<>(this.siteVisitLogMapper)
 				.eq(CmsSiteVisitLog::getSiteId, site.getSiteId()).orderByDesc(CmsSiteVisitLog::getEvtTime)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
 		return this.bindDataTable(page);
@@ -91,7 +91,7 @@ public class CmsStatController extends BaseRestController {
 		PageRequest pr = getPageRequest();
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 
-		LambdaQueryChainWrapper<CmsContent> q = this.contentService.lambdaQuery()
+		LambdaQueryChainWrapper<CmsContent> q = this.contentService.dao().lambdaQuery()
 				.eq(CmsContent::getSiteId, site.getSiteId())
 				.like(StringUtils.isNotEmpty(title), CmsContent::getTitle, title);
 		if (!pr.getSorts().isEmpty()) {

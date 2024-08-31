@@ -27,6 +27,7 @@ import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.customform.CmsCustomFormMetaModelType;
 import com.chestnut.customform.permission.CustomFormPriv;
 import com.chestnut.system.security.AdminUserType;
@@ -36,8 +37,10 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p>
@@ -68,13 +71,30 @@ public class CustomFormDataController extends BaseRestController {
                 sqlBuilder.and().eq(CmsCustomFormMetaModelType.FIELD_CLIENT_IP.getFieldName(), ip);
             }
         });
-        return this.bindDataTable(page);
+        List<Map<String, Object>> dataList = page.getRecords().stream().map(data -> {
+            Map<String, Object> map = new HashMap<>();
+            data.forEach((k, v)  -> {
+                if (Objects.nonNull(v) && InternalUrlUtils.isInternalUrl(v.toString())) {
+                    map.put(k + "_src", InternalUrlUtils.getActualPreviewUrl(v.toString()));
+                }
+                map.put(k, v);
+            });
+            return map;
+        }).toList();
+        return this.bindDataTable(dataList, page.getTotal());
     }
 
     @GetMapping("/detail")
     public R<?> getCustomFormDataDetail(@RequestParam @LongId Long formId, @RequestParam @LongId Long dataId) {
-        Map<String, Object> dataMap = this.modelDataService.getModelDataByPkValue(formId,
+        Map<String, Object> map = this.modelDataService.getModelDataByPkValue(formId,
                 Map.of(CmsCustomFormMetaModelType.FIELD_DATA_ID.getCode(), dataId));
+        Map<String, Object> dataMap = new HashMap<>();
+        map.forEach((k, v) -> {
+            if (Objects.nonNull(v) && InternalUrlUtils.isInternalUrl(v.toString())) {
+                dataMap.put(k + "_src", InternalUrlUtils.getActualPreviewUrl(v.toString()));
+            }
+            dataMap.put(k, v);
+        });
         return R.ok(dataMap);
     }
 

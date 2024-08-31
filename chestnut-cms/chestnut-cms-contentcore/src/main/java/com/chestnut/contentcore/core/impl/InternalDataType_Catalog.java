@@ -15,20 +15,18 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import java.io.IOException;
-
-import com.chestnut.contentcore.util.CatalogUtils;
-import com.chestnut.system.fixed.dict.YesOrNo;
-import org.springframework.stereotype.Component;
-
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPublishService;
-
+import com.chestnut.system.fixed.dict.YesOrNo;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * 内部数据类型：栏目
@@ -62,5 +60,14 @@ public class InternalDataType_Catalog implements IInternalDataType {
 	public String getLink(InternalURL internalUrl, int pageIndex, String publishPipeCode, boolean isPreview) {
 		CmsCatalog catalog = catalogService.getCatalog(internalUrl.getId());
 		return this.catalogService.getCatalogLink(catalog, pageIndex, publishPipeCode, isPreview);
+	}
+
+	@Override
+	public boolean isLinkData(Long id) {
+		CmsCatalog catalog = catalogService.getCatalog(id);
+		if (Objects.isNull(catalog)) {
+			return false;
+		}
+		return CatalogType_Link.ID.equals(catalog.getCatalogType());
 	}
 }

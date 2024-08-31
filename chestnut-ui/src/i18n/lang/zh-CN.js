@@ -260,6 +260,7 @@ export default {
       EditAvatar: '修改头像',
       UploadAvatar: '点击上传头像',
       SelectUser: "选择用户",
+      IsAllocatedRole: "已分配",
       Dialog: {
         Add: "添加用户信息",
         Edit: "编辑用户信息",
@@ -609,6 +610,8 @@ export default {
       PasswordRetryLockSecondsTip: "最长不超过365天",
       AddTitle: "添加安全配置",
       EditTitle: "编辑安全配置",
+      ForceModifyPwd: "首次登录或重置密码后需要修改密码！",
+      PwdExpired: "密码已过期，为了您的账号安全请立即修改密码！"
     },
     WeChat: {
       Backend: "后台登录",
@@ -740,7 +743,12 @@ export default {
       DiskSize: "总大小",
       DiskLeftSize: "可用大小",
       DiskUsedSize: "已用大小",
-      DiskUsedPercent: "已用百分比"
+      DiskUsedPercent: "已用百分比",
+      DbInfo: "数据库信息",
+      DbPoolName: "数据源",
+      DbDriverClass: "数据库驱动",
+      DbUrl: "数据库连接",
+      DbUserName: "用户名"
     },
     Cache: {
       Basic: "基本信息",
@@ -969,7 +977,8 @@ export default {
         EnableCommentAudit: "是否需要审核",
         SEO: "搜索引擎优化配置",
         BaiduPushAccessSecret: "百度收录API秘钥",
-        DownloadRemoteImage: "默认开启文章远程图片下载"
+        DownloadRemoteImage: "开启文章远程图片下载",
+        EnableSiteDeleteBackup: "开启站点删除备份"
       },
       Property: {
         QueryPlaceholder: "输入名称/编码查询",
@@ -1013,6 +1022,9 @@ export default {
         Extend: "扩展配置",
       },
       AddCatalog: "添加栏目",
+      BatchAddCatalog: "批量添加栏目",
+      BatchAddTip: "每行一个栏目，依次使用2个空格表示下级栏目。",
+      CatalogTree: "栏目树",
       CatalogNamePlaceholder: "输入栏目名称",
       ParentCatalog: "上级栏目",
       Basic: "基础属性",
@@ -1027,6 +1039,7 @@ export default {
       RedirectUrl: "链接地址",
       Desc: "栏目描述",
       StaticFlag: "是否静态化",
+      TagIgnore: "栏目标签忽略",
       Logo: "引导图",
       PublishPipeConf: "发布通道属性",
       IndexTemplate: "栏目首页模板",
@@ -1151,6 +1164,7 @@ export default {
       CommentCount: "评论数",
       RelaContent: "相关内容",
       PushToBaidu: "推送到百度",
+      PushToBaiduResult: "【{0}】成功 {1} 条，剩余 {2} 条。<br/>",
       ImportCSSTip: "应用站点/栏目发布通道设置的文章编辑器CSS",
     },
     Image: {
@@ -1307,7 +1321,7 @@ export default {
       FileSize: "大小",
       UploadResource: "上传资源",
       UploadTip1: "将文件拖到此处，或点击上传",
-      UploadTip2: "只能上传{0}文件，且不超过{1}",
+      UploadTip2: "只能上传 {0} 文件，且不超过 {1}",
       AddDialogTitle: "添加资源",
       EditDialogTitle: "编辑资源",
       FileTypeErrMsg: "文件格式错误，请上传图片类型,如：.jpg，.png后缀的文件。",
@@ -1511,6 +1525,9 @@ export default {
       TAGWordLogo: "图片",
       AddTAGTitle: "新增TAG词",
       EditTAGTitle: "编辑TAG词",
+      SelectorTitle: "选择TAG词",
+      TagList: "TAG词列表",
+      SelectedTagList: "已选TAG词",
       Placeholder: {
         InputGroupName: "输入分组名称",
         SelectParentGroup: "选择上级分组",

@@ -23,7 +23,6 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.domain.vo.ContentApiVO;
 import com.chestnut.contentcore.domain.vo.ContentDynamicDataVO;
 import com.chestnut.contentcore.domain.vo.ContentVO;
@@ -58,9 +57,6 @@ public class ContentApiController extends BaseRestController {
 
 	/**
 	 * 内容动态数据，评论数、点赞数、收藏数、浏览数
-	 *
-	 * @param contentIdsStr
-	 * @return
 	 */
 	@GetMapping("/data")
 	public R<List<ContentDynamicDataVO>> getContentDynamicData(@RequestParam("ids") String contentIdsStr) {
@@ -128,7 +124,7 @@ public class ContentApiController extends BaseRestController {
 			q.orderByDesc(Arrays.asList(CmsContent::getTopFlag, CmsContent::getSortFlag));
 		}
 
-		Page<CmsContent> pageResult = this.contentService.page(new Page<>(pageNumber, pageSize, false), q);
+		Page<CmsContent> pageResult = this.contentService.dao().page(new Page<>(pageNumber, pageSize, false), q);
 		if (pageResult.getRecords().isEmpty()) {
 			return R.ok(List.of());
 		}
@@ -151,7 +147,7 @@ public class ContentApiController extends BaseRestController {
 	}
 
 	/**
-	 * 按浏览量排序获取数据
+	 * TODO 按浏览量排序获取数据
 	 */
 	public R<ContentVO> getHotContentList() {
 

@@ -51,9 +51,11 @@ public class HotWordServiceImpl extends ServiceImpl<HotWordMapper, HotWord> impl
 	private final HotWordGroupMapper hotWordGroupMapper;
 
 	@Override
-	public Map<String, HotWordCache> getHotWords(String groupCode) {
+	public Map<String, HotWordCache> getHotWords(String owner, String groupCode) {
 		return this.redisCache.getCacheMap(CACHE_PREFIX + groupCode, () -> {
-			Optional<HotWordGroup> groupOpt = new LambdaQueryChainWrapper<>(this.hotWordGroupMapper).eq(HotWordGroup::getCode, groupCode).oneOpt();
+			Optional<HotWordGroup> groupOpt = new LambdaQueryChainWrapper<>(this.hotWordGroupMapper)
+					.eq(HotWordGroup::getOwner, owner)
+					.eq(HotWordGroup::getCode, groupCode).oneOpt();
 			return groupOpt.map(hotWordGroup -> this.lambdaQuery()
 							.eq(HotWord::getGroupId, hotWordGroup.getGroupId())
 							.list().stream()
@@ -65,7 +67,7 @@ public class HotWordServiceImpl extends ServiceImpl<HotWordMapper, HotWord> impl
 	}
 
 	@Override
-	public String replaceHotWords(String text, String[] groupCodes, String target, String replacementTemplate) {
+	public String replaceHotWords(String text, String owner, String[] groupCodes, String target, String replacementTemplate) {
 		if (Objects.isNull(groupCodes) || groupCodes.length == 0) {
 			return text;
 		}
@@ -73,7 +75,7 @@ public class HotWordServiceImpl extends ServiceImpl<HotWordMapper, HotWord> impl
 			replacementTemplate = WordConstants.HOT_WORD_REPLACEMENT;
 		}
 		for (String groupCode : groupCodes) {
-			Map<String, HotWordCache> hotWords = this.getHotWords(groupCode);
+			Map<String, HotWordCache> hotWords = this.getHotWords(owner, groupCode);
             for (Entry<String, HotWordCache> e : hotWords.entrySet()) {
                 if (StringUtils.isEmpty(target)) {
                     target = e.getValue().getTarget();

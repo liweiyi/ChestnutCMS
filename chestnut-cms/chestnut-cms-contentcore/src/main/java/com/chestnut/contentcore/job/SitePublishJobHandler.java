@@ -85,9 +85,9 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 						.eq(CmsContent::getCatalogId, catalog.getCatalogId())
 						.eq(CmsContent::getStatus, ContentStatus.TO_PUBLISHED)
 						.le(CmsContent::getPublishDate, LocalDateTime.now());
-				long total = contentService.count(q);
+				long total = contentService.dao().count(q);
 				for (int i = 0; i * pageSize < total; i++) {
-					Page<CmsContent> page = contentService.page(new Page<>(i, pageSize, false), q);
+					Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
 					for (CmsContent xContent : page.getRecords()) {
 						publishStrategy.publish(ContentStaticizeType.TYPE, xContent.getContentId().toString());
 					}

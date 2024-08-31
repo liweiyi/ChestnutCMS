@@ -55,6 +55,7 @@
               type="text"
               icon="el-icon-s-promotion"
               size="small"
+                v-hasPermi="[ $p('PageWidget:Publish:{0}', [ scope.row.pageWidgetId ]) ]"
               @click="handlePublish(scope.row)">{{ $t('CMS.ContentCore.Publish') }}</el-button>
             <el-button
               type="text"
@@ -65,11 +66,13 @@
               type="text"
               icon="el-icon-edit"
               size="small"
+              v-hasPermi="[ $p('PageWidget:Edit:{0}', [ scope.row.pageWidgetId ]) ]"
               @click="handleEdit(scope.row)">{{ $t("Common.Edit") }}</el-button>
             <el-button
               type="text"
               icon="el-icon-delete"
               size="small"
+              v-hasPermi="[ $p('PageWidget:Delete:{0}', [ scope.row.pageWidgetId ]) ]"
               @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
           </template>
         </el-table-column>

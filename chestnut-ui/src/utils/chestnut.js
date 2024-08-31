@@ -257,7 +257,7 @@ export function isImage(filename) {
     return false;
   }
   let suffix = filename.substring(filename.lastIndexOf('.'));
-  return ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff'].indexOf(suffix) > -1
+  return ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff', '.svg'].indexOf(suffix) > -1
 }
 
 export function getFileSvgIconClass(path) {

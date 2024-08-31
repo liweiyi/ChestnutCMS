@@ -31,7 +31,10 @@ import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CatalogUtils;
+import com.chestnut.contentcore.util.ContentCoreUtils;
+import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
+import lombok.Setter;
 import org.springframework.beans.BeanUtils;
 
 import java.time.Instant;
@@ -45,6 +48,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	private CmsContent content;
 
+	@Setter
 	private T extendEntity;
 
 	private CmsSite site;
@@ -59,6 +63,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	private IPublishService publishService;
 
+	@Setter
 	private Map<String, Object> params;
 
 	private LoginUser operator;
@@ -109,10 +114,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		return this.extendEntity;
 	}
 
-	public void setExtendEntity(T extendEntity) {
-		this.extendEntity = extendEntity;
-	}
-
 	@Override
 	public LoginUser getOperator() {
 		return this.operator;
@@ -139,6 +140,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 				this.getContentEntity().getContentId(), this.getContentEntity().getTitle())) {
 			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
 		}
+		checkRedirectUrl();
 		content.setSiteId(catalog.getSiteId());
 		content.setCatalogAncestors(catalog.getAncestors());
 		content.setTopCatalog(CatalogUtils.getTopCatalog(catalog));
@@ -161,6 +163,18 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		Assert.isFalse(lockContent, () -> ContentCoreErrorCode.CONTENT_LOCKED.exception(content.getLockUser()));
 	}
 
+	void checkRedirectUrl() {
+		if (content.isLinkContent()) {
+			// 校验redirectUrl是否是内部链接且非链接数据
+			InternalURL internalURL = InternalUrlUtils.parseInternalUrl(content.getRedirectUrl());
+			if (Objects.nonNull(internalURL)) {
+				IInternalDataType idt = ContentCoreUtils.getInternalDataType(internalURL.getType());
+				Assert.isFalse(idt.isLinkData(internalURL.getId()),
+						ContentCoreErrorCode.DENY_LINK_TO_LINK_INTERNAL_DATA::exception);
+			}
+		}
+	}
+
 	@Override
 	public Long save() {
 		checkLock();
@@ -175,6 +189,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 				throw ContentCoreErrorCode.CANNOT_EDIT_PUBLISHED_CONTENT.exception();
 			}
 		}
+		checkRedirectUrl();
 		if (ContentStatus.isToPublishOrPublished(content.getStatus())) {
 			content.setStatus(ContentStatus.EDITING);
 		}
@@ -185,9 +200,12 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	@Override
 	public void delete() {
 		this.checkLock();
-		this.getContentService().removeById(this.getContentEntity());
+		// 删除到备份表
+		this.getContentService().dao().deleteByIdAndBackup(this.getContentEntity(), getOperatorUName());
 		// 直接删除站内映射内容
-		this.getContentService().getContentMapper().deleteMappingIgnoreLogicDel(content.getContentId());
+		this.getContentService().dao().remove(new LambdaQueryWrapper<CmsContent>()
+				.eq(CmsContent::getCopyType, ContentCopyType.Mapping)
+				.eq(CmsContent::getCopyId, this.getContentEntity().getContentId()));
 		// 栏目内容数-1
 		this.getCatalogService().changeContentCount(getCatalogId(), -1);
 	}
@@ -208,7 +226,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			update = true;
 		}
 		if (update) {
-			this.getContentService().updateById(content);
+			this.getContentService().dao().updateById(content);
 		}
 		// 静态化
 		this.getPublishService().asyncPublishContent(this);
@@ -216,7 +234,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	}
 
 	@Override
-	public void copyTo(CmsCatalog toCatalog, Integer copyType) {
+	public CmsContent copyTo(CmsCatalog toCatalog, Integer copyType) {
 		checkLock();
 		if (this.getContentService().checkSameTitle(toCatalog.getSiteId(), toCatalog.getCatalogId(), null,
 				this.getContentEntity().getTitle())) {
@@ -244,10 +262,11 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			newContent.setPublishDate(null);
 			newContent.setOfflineDate(null);
 		}
-		this.getContentService().save(newContent);
+		this.getContentService().dao().save(newContent);
 		this.getParams().put("NewContentId", newContent.getContentId());
 		// 栏目内容数+1
 		this.getCatalogService().changeContentCount(toCatalog.getCatalogId(), 1);
+		return newContent;
 	}
 
 	@Override
@@ -272,7 +291,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		// 重置发布状态
 		content.setStatus(ContentStatus.DRAFT);
 		content.updateBy(this.getOperatorUName());
-		this.getContentService().updateById(content);
+		this.getContentService().dao().updateById(content);
 		// 目标栏目内容数量+1
 		this.getCatalogService().changeContentCount(toCatalog.getCatalogId(), 1);
 		// 源栏目内容数量-1
@@ -284,7 +303,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		content.setTopFlag(Instant.now().toEpochMilli());
 		content.setTopDate(topEndTime);
 		content.updateBy(this.getOperatorUName());
-		this.getContentService().updateById(content);
+		this.getContentService().dao().updateById(content);
 		// 重新发布内容
 		if (ContentStatus.isPublished(this.getContentEntity().getStatus())) {
 			this.getPublishService().publishContent(List.of(content.getContentId()), getOperator());
@@ -296,7 +315,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		content.setTopFlag(0L);
 		content.setTopDate(null);
 		content.updateBy(this.getOperatorUName());
-		this.getContentService().updateById(content);
+		this.getContentService().dao().updateById(content);
 		// 重新发布内容
 		if (ContentStatus.isPublished(this.getContentEntity().getStatus())) {
 			this.getPublishService().publishContent(List.of(content.getContentId()), getOperator());
@@ -309,7 +328,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			return; // 排序目标是自己直接返回
 		}
 		checkLock();
-		CmsContent next = this.getContentService().getById(targetContentId);
+		CmsContent next = this.getContentService().dao().getById(targetContentId);
 		if (next.getTopFlag() > 0 && this.getContentEntity().getTopFlag() == 0) {
 			this.content.setTopFlag(next.getTopFlag() + 1); // 非置顶内容排到置顶内容前需要置顶
 		} else if (this.getContentEntity().getTopFlag() > 0 && next.getTopFlag() == 0) {
@@ -319,14 +338,14 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
 				.eq(CmsContent::getCatalogId, next.getCatalogId()).gt(CmsContent::getSortFlag, next.getSortFlag())
 				.orderByAsc(CmsContent::getSortFlag).last("limit 1");
-		CmsContent prev = this.getContentService().getOne(q);
+		CmsContent prev = this.getContentService().dao().getOne(q);
 		if (prev == null) {
 			this.content.setSortFlag(SortUtils.getDefaultSortValue());
 		} else {
 			this.content.setSortFlag((next.getSortFlag() + prev.getSortFlag()) / 2);
 		}
 		this.getContentEntity().updateBy(this.getOperatorUName());
-		this.getContentService().updateById(content);
+		this.getContentService().dao().updateById(content);
 	}
 
 	@Override
@@ -334,7 +353,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		String status = this.getContentEntity().getStatus();
 		this.getContentEntity().setStatus(ContentStatus.OFFLINE);
 		this.getContentEntity().updateBy(this.getOperatorUName());
-		this.getContentService().updateById(this.getContentEntity());
+		this.getContentService().dao().updateById(this.getContentEntity());
 
 		if (ContentStatus.isPublished(status)) {
 				// 已发布内容删除静态页面
@@ -353,7 +372,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	public void toPublish() {
 		this.getContentEntity().setStatus(ContentStatus.TO_PUBLISHED);
 		this.getContentEntity().updateBy(this.getOperatorUName());
-		this.getContentService().updateById(this.getContentEntity());
+		this.getContentService().dao().updateById(this.getContentEntity());
 	}
 
 	@Override
@@ -386,10 +405,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			this.params = new HashMap<>();
 		}
 		return this.params;
-	}
-
-	public void setParams(Map<String, Object> params) {
-		this.params = params;
 	}
 
 	public ISiteService getSiteService() {

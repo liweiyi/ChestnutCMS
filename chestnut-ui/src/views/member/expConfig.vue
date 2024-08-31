@@ -150,9 +150,8 @@
         :rules="rules"
         label-width="145px">
         <el-form-item :label="$t('Member.ExpOpType')" prop="opTypeName">
-          <el-input v-model="form.opTypeName" :disabled="true" style="width: 186px" />
+          <el-input class="mr5"  v-model="form.opTypeName" :disabled="true" style="width: 186px" />
           <el-button 
-            class="ml5" 
             icon="el-icon-search" 
             type="success" 
             :disabled="form.configId!=undefined&&form.configId!=0" 

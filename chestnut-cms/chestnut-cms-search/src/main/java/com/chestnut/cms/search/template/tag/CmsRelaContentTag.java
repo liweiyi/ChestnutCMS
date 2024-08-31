@@ -19,7 +19,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.chestnut.cms.search.es.doc.ESContent;
+import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.service.ContentIndexService;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
@@ -33,6 +33,7 @@ import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.search.SearchConsts;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import freemarker.core.Environment;
@@ -75,7 +76,7 @@ public class CmsRelaContentTag extends AbstractListTag {
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 		long catalogId = MapUtils.getLongValue(attrs, "catalogid", 0);
 		String keywords = StringUtils.replaceEx(MapUtils.getString(attrs, "keywords"), ",", " ");
 		if (this.searchService.isElasticSearchAvailable() && StringUtils.isNotEmpty(keywords)) {
@@ -103,7 +104,7 @@ public class CmsRelaContentTag extends AbstractListTag {
 	private List<CmsContent> findContentByDB(long siteId, long catalogId, int size) {
 		CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
 		boolean isCatalogNonNull = Objects.nonNull(catalog);
-		Page<CmsContent> pageMin = this.contentService.lambdaQuery().select(List.of(CmsContent::getContentId))
+		Page<CmsContent> pageMin = this.contentService.dao().lambdaQuery().select(List.of(CmsContent::getContentId))
 				.eq(CmsContent::getSiteId, siteId)
 				.likeRight(isCatalogNonNull, CmsContent::getCatalogAncestors, catalog.getAncestors())
 				.orderByAsc(CmsContent::getContentId)
@@ -112,7 +113,7 @@ public class CmsRelaContentTag extends AbstractListTag {
 			return List.of();
 		}
 		Long minContentId = pageMin.getRecords().get(0).getContentId();
-		Page<CmsContent> pageMax = this.contentService.lambdaQuery().select(List.of(CmsContent::getContentId))
+		Page<CmsContent> pageMax = this.contentService.dao().lambdaQuery().select(List.of(CmsContent::getContentId))
 				.eq(CmsContent::getSiteId, siteId)
 				.likeRight(isCatalogNonNull, CmsContent::getCatalogAncestors, catalog.getAncestors())
 				.orderByDesc(CmsContent::getContentId)
@@ -122,7 +123,7 @@ public class CmsRelaContentTag extends AbstractListTag {
 		}
 		Long maxContentId = pageMax.getRecords().get(0).getContentId();
 		long random = ThreadLocalRandom.current().nextLong(minContentId, maxContentId);
-		Page<CmsContent> page = this.contentService.lambdaQuery().eq(CmsContent::getSiteId, siteId)
+		Page<CmsContent> page = this.contentService.dao().lambdaQuery().eq(CmsContent::getSiteId, siteId)
 				.likeRight(isCatalogNonNull, CmsContent::getCatalogAncestors, catalog.getAncestors())
 				.ge(CmsContent::getContentId, random).orderByAsc(CmsContent::getContentId)
 				.page(new Page<>(1, size, false));
@@ -131,7 +132,7 @@ public class CmsRelaContentTag extends AbstractListTag {
 
 	private List<ContentDTO> findContentByIndex(long siteId, long catalogId, String keywords, int size) throws IOException {
 		SearchResponse<ObjectNode> sr = esClient.search(s -> {
-			s.index(ESContent.INDEX_NAME) // 索引
+			s.index(CmsSearchConstants.indexName(Long.toString(siteId))) // 索引
 					.query(q ->
 							q.bool(b -> {
 								b.must(must -> must.term(tq -> tq.field("siteId").value(siteId)));

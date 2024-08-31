@@ -19,9 +19,13 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.chestnut.common.db.domain.BaseEntityWithLogicDelete;
+import com.chestnut.common.db.domain.IBackupable;
+import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
+
+import java.io.Serial;
 
 /**
  * 图集图片表对象 [cms_image]
@@ -32,9 +36,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @TableName(CmsImage.TABLE_NAME)
-public class CmsImage extends BaseEntityWithLogicDelete {
+public class CmsImage extends BaseEntity implements IBackupable<BCmsImage> {
 
-    private static final long serialVersionUID=1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     
     public static final String TABLE_NAME = "cms_image";
 
@@ -114,4 +119,11 @@ public class CmsImage extends BaseEntityWithLogicDelete {
      * 排序字段
      */
     private Integer sortFlag;
+
+    @Override
+    public BCmsImage toBackupEntity() {
+        BCmsImage backupEntity = new BCmsImage();
+        BeanUtils.copyProperties(this, backupEntity);
+        return backupEntity;
+    }
 }

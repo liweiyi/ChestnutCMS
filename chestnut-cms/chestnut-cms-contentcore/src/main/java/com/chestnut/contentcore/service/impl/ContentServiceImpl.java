@@ -17,7 +17,6 @@ package com.chestnut.contentcore.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -30,10 +29,8 @@ import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.impl.CatalogType_Common;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
-import com.chestnut.contentcore.domain.CmsCatalog;
-import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.CmsPublishPipe;
-import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.dao.CmsContentDAO;
+import com.chestnut.contentcore.domain.*;
 import com.chestnut.contentcore.domain.dto.CopyContentDTO;
 import com.chestnut.contentcore.domain.dto.MoveContentDTO;
 import com.chestnut.contentcore.domain.dto.SetTopContentDTO;
@@ -41,7 +38,6 @@ import com.chestnut.contentcore.domain.dto.SortContentDTO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.*;
-import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.properties.RepeatTitleCheckProperty;
 import com.chestnut.contentcore.service.ICatalogService;
@@ -64,17 +60,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent> implements IContentService {
+public class ContentServiceImpl implements IContentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ContentServiceImpl.class);
 
 	private final ApplicationContext applicationContext;
-
-	private final CmsContentMapper contentMapper;
 
 	private final ISiteService siteService;
 
@@ -84,16 +81,18 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 
 	private final AsyncTaskManager asyncTaskManager;
 
+	private final CmsContentDAO dao;
+
 	@Override
-	public CmsContentMapper getContentMapper() {
-		return contentMapper;
+	public CmsContentDAO dao() {
+		return dao;
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteContents(List<Long> contentIds, LoginUser operator) {
 		for (Long contentId : contentIds) {
-			CmsContent xContent = this.getById(contentId);
+			CmsContent xContent = this.dao().getById(contentId);
 			Assert.notNull(xContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 			PermissionUtils.checkPermission(CatalogPrivItem.DeleteContent.getPermissionKey(xContent.getCatalogId()), operator);
 
@@ -112,37 +111,42 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void recoverContents(List<Long> backupIds, LoginUser operator) {
-		List<CmsContent> backupContents = this.contentMapper.selectByIdsWithLogicDel(backupIds);
-		for (CmsContent backupContent : backupContents) {
+		Map<Long, Integer> catalogContentIncr = new HashMap<>();
+		List<BCmsContent> backupContents = this.dao().getBackupByIds(backupIds);
+		for (BCmsContent backupContent : backupContents) {
 			IContentType contentType = ContentCoreUtils.getContentType(backupContent.getContentType());
-			contentType.recover(backupContent.getContentId());
+			contentType.recover(backupContent);
 
-			this.contentMapper.recoverById(backupContent.getContentId());
-			this.catalogService.changeContentCount(backupContent.getCatalogId(), 1);
+			catalogContentIncr.put(
+					backupContent.getCatalogId(),
+					catalogContentIncr.getOrDefault(backupContent.getCatalogId(), 0) + 1
+			);
 		}
+		catalogContentIncr.forEach(this.catalogService::changeContentCount);
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteRecycleContents(List<Long> backupIds) {
-		List<CmsContent> backupContents = this.contentMapper.selectByIdsWithLogicDel(backupIds);
-		for (CmsContent backupContent : backupContents) {
+		List<BCmsContent> backupContents = this.dao().listBackupContentByIds(backupIds, List.of(
+				BCmsContent::getContentId,
+				BCmsContent::getContentType
+		));
+		for (BCmsContent backupContent : backupContents) {
 			IContentType contentType = ContentCoreUtils.getContentType(backupContent.getContentType());
 			contentType.deleteBackups(backupContent.getContentId());
 		}
-		this.contentMapper.deleteByIdsIgnoreLogicDel(backupIds);
-		this.removeByIds(backupIds);
 	}
 
 	@Override
-	public boolean deleteContentsByCatalog(CmsCatalog catalog, LoginUser operator) {
-		int pageSize = 100;
-		long total = this.lambdaQuery().likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors()).count();
+	public void deleteContentsByCatalog(CmsCatalog catalog, LoginUser operator) {
+		long pageSize = 100;
+		long total = this.dao().lambdaQuery().likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors()).count();
 
 		for (int i = 0; i * pageSize < total; i++) {
 			AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize / total),
 					"正在栏目删除内容：" + (i * pageSize) + " / " + total);
-			this.lambdaQuery().likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors())
+			this.dao().lambdaQuery().likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors())
 					.page(new Page<>(i, pageSize, false)).getRecords().forEach(content -> {
 						IContentType contentType = ContentCoreUtils.getContentType(content.getContentType());
 						IContent<?> icontent = contentType.loadContent(content);
@@ -150,7 +154,6 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 						icontent.delete();
 					});
 		}
-		return false;
 	}
 
 	@Override
@@ -180,7 +183,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 
 	@Override
 	public void lock(Long contentId, String operator) {
-		CmsContent content = this.getById(contentId);
+		CmsContent content = this.dao().getById(contentId);
 		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 		boolean checkLock = content.isLock() && StringUtils.isNotEmpty(content.getLockUser())
 				&& !StringUtils.equals(content.getLockUser(), operator);
@@ -189,12 +192,12 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 		content.setIsLock(YesOrNo.YES);
 		content.setLockUser(operator);
 		content.updateBy(operator);
-		this.updateById(content);
+		this.dao().updateById(content);
 	}
 
 	@Override
 	public void unLock(Long contentId, String operator) {
-		CmsContent content = this.getById(contentId);
+		CmsContent content = this.dao().getById(contentId);
 		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 		if (!content.isLock()) {
 			return;
@@ -205,7 +208,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 		content.setIsLock(YesOrNo.NO);
 		content.setLockUser(StringUtils.EMPTY);
 		content.updateBy(operator);
-		this.updateById(content);
+		this.dao().updateById(content);
 	}
 
 	@Override
@@ -258,10 +261,10 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 	public void copy(CopyContentDTO dto) {
 		List<Long> contentIds = dto.getContentIds();
 		for (Long contentId : contentIds) {
-			CmsContent cmsContent = this.getById(contentId);
+			CmsContent cmsContent = this.dao().getById(contentId);
 			Assert.notNull(cmsContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 
-			Long[] catalogIds = dto.getCatalogIds().stream().filter(id -> id != cmsContent.getCatalogId())
+			Long[] catalogIds = dto.getCatalogIds().stream().filter(id -> !Objects.equals(id, cmsContent.getCatalogId()))
 					.toArray(Long[]::new);
 			for (Long catalogId : catalogIds) {
 				CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
@@ -274,7 +277,8 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 				IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 				IContent<?> content = ct.loadContent(cmsContent);
 				content.setOperator(dto.getOperator());
-				content.copyTo(catalog, dto.getCopyType());
+				CmsContent newContent = content.copyTo(catalog, dto.getCopyType());
+				this.applicationContext.publishEvent(new AfterContentCopyEvent(this, content.getContentEntity(), newContent));
 			}
 		}
 	}
@@ -284,7 +288,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 	public void move(MoveContentDTO dto) {
 		List<Long> contentIds = dto.getContentIds();
 		for (Long contentId : contentIds) {
-			CmsContent cmsContent = this.getById(contentId);
+			CmsContent cmsContent = this.dao().getById(contentId);
 			Assert.notNull(cmsContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 
 			if (cmsContent.getCatalogId().equals(dto.getCatalogId())) {
@@ -307,7 +311,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void setTop(SetTopContentDTO dto) {
-		List<CmsContent> contents = this.listByIds(dto.getContentIds());
+		List<CmsContent> contents = this.dao().listByIds(dto.getContentIds());
 		for (CmsContent c : contents) {
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
@@ -319,7 +323,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void cancelTop(List<Long> contentIds, LoginUser operator) {
-		List<CmsContent> contents = this.listByIds(contentIds);
+		List<CmsContent> contents = this.dao().listByIds(contentIds);
 		for (CmsContent c : contents) {
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
@@ -331,7 +335,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void offline(List<Long> contentIds, LoginUser operator) {
-		List<CmsContent> contents = this.listByIds(contentIds);
+		List<CmsContent> contents = this.dao().listByIds(contentIds);
 		for (CmsContent c : contents) {
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
@@ -345,7 +349,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void sort(SortContentDTO dto) {
-		CmsContent c = this.getById(dto.getContentId());
+		CmsContent c = this.dao().getById(dto.getContentId());
 		IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 		IContent<?> content = ct.loadContent(c);
 		content.setOperator(dto.getOperator());
@@ -355,7 +359,7 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void toPublish(List<Long> contentIds, LoginUser operator) {
-		List<CmsContent> contents = this.listByIds(contentIds);
+		List<CmsContent> contents = this.dao().listByIds(contentIds);
 		for (CmsContent c : contents) {
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
@@ -382,12 +386,12 @@ public class ContentServiceImpl extends ServiceImpl<CmsContentMapper, CmsContent
 				LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
 						.eq(CmsContent::getSiteId, siteId).eq(CmsContent::getTitle, title)
 						.ne(contentId != null && contentId > 0, CmsContent::getContentId, contentId);
-				return this.count(q) > 0;
+				return this.dao().count(q) > 0;
 			} else if (RepeatTitleCheckProperty.CheckType_Catalog.equals(repeatTitleCheckType)) {
 				LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
 						.eq(CmsContent::getCatalogId, catalogId).eq(CmsContent::getTitle, title)
 						.ne(contentId != null && contentId > 0, CmsContent::getContentId, contentId);
-				return this.count(q) > 0;
+				return this.dao().count(q) > 0;
 			}
 		}
 		return false;

@@ -18,6 +18,8 @@ package com.chestnut.cms.dynamic;
 import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
 import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.contentcore.core.ICoreDataHandler;
@@ -28,9 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 自定义动态模板核心数据处理器
@@ -64,6 +64,9 @@ public class DynamicCoreHandler implements ICoreDataHandler {
             List<CmsDynamicPage> list = JacksonUtils.fromList(f, CmsDynamicPage.class);
             for (CmsDynamicPage data : list) {
                 try {
+                    Long count = dynamicPageService.lambdaQuery().eq(CmsDynamicPage::getPath, data.getPath()).count();
+                    Assert.isTrue(count == 0, () -> new GlobalException("自定义动态模板路径重复：" + data.getPath()));
+
                     data.setPageId(IdUtils.getSnowflakeId());
                     data.setSiteId(context.getSite().getSiteId());
                     data.createBy(context.getOperator());

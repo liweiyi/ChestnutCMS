@@ -80,8 +80,7 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	CONFLICT_CATALOG,
 
 	/**
-	 * 栏目层级超出上限<br/>
-	 * @see com.chestnut.contentcore.ContentCoreConsts.CATALOG_MAX_TREE_LEVEL
+	 * 栏目层级超出上限
 	 */
 	CATALOG_MAX_TREE_LEVEL,
 
@@ -168,7 +167,17 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	/**
 	 * 只能删除初稿或已下线内容
 	 */
-	DEL_CONTENT_ERR;
+	DEL_CONTENT_ERR,
+
+	/**
+	 * 不能链接到链接内容或栏目
+	 */
+	DENY_LINK_TO_LINK_INTERNAL_DATA,
+
+	/**
+	 * 上传文件超过限制
+	 */
+	RESOURCE_ACCEPT_SIZE_LIMIT;
 
 	@Override
 	public String value() {

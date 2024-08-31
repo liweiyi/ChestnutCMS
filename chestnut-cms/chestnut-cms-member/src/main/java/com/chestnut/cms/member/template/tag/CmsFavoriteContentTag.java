@@ -69,7 +69,7 @@ public class CmsFavoriteContentTag extends AbstractListTag {
 		}
 
 		List<Long> contentIds = pageResult.getRecords().stream().map(MemberFavorites::getDataId).toList();
-		List<CmsContent> contents = this.contentService.listByIds(contentIds);
+		List<CmsContent> contents = this.contentService.dao().listByIds(contentIds);
 
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		List<ContentDTO> list = contents.stream().map(c -> {

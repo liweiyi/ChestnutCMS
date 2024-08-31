@@ -60,9 +60,9 @@ public class ResourceUtils {
         return list.get(0);
     }
 
-    public static String getResourcePrefix(String storageType, CmsSite site, boolean isPreview) {
+    public static String getResourcePrefix(String storageType, CmsSite site, String publishPipeCode, boolean isPreview) {
         if (LocalFileStorageType.TYPE.equals(storageType)) {
-            return SiteUtils.getResourcePrefix(site, isPreview);
+            return SiteUtils.getResourcePrefix(site, publishPipeCode, isPreview);
         }
         FileStorageArgsProperty.FileStorageArgs fileStorageArgs = FileStorageArgsProperty.getValue(site.getConfigProps());
         if (fileStorageArgs != null && StringUtils.isNotEmpty(fileStorageArgs.getDomain())) {

@@ -15,16 +15,16 @@
  */
 package com.chestnut.contentcore.util;
 
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.core.IInternalDataType;
+import com.chestnut.contentcore.core.InternalURL;
+import com.chestnut.contentcore.exception.InternalUrlParseException;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.contentcore.core.IInternalDataType;
-import com.chestnut.contentcore.core.InternalURL;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 内部链接处理工具类
@@ -76,8 +76,12 @@ public class InternalUrlUtils {
 	}
 
 	public static String getActualUrl(InternalURL internalUrl, String publishPipeCode, boolean isPreview) {
-		IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(internalUrl.getType());
-		return internalDataType.getLink(internalUrl, 1, publishPipeCode, isPreview);
+		try {
+			IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(internalUrl.getType());
+			return internalDataType.getLink(internalUrl, 1, publishPipeCode, isPreview);
+		} catch (Exception e) {
+			throw new InternalUrlParseException(e.getMessage(), e);
+		}
 	}
 
 	/**

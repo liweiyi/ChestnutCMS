@@ -63,7 +63,7 @@ public class ResourceType_Image implements IResourceType {
 	
 	public static final  String NAME = "{CMS.CONTENTCORE.RESOURCE_TYPE." + ID + "}";
 
-	public final static String[] SuffixArray = { "jpg", "jpeg", "gif", "png", "ico", "webp" };
+	public final static String[] SuffixArray = { "jpg", "jpeg", "gif", "png", "ico", "webp", "svg" };
 
 	private final ISiteService siteService;
 

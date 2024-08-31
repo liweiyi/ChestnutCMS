@@ -21,7 +21,7 @@ import com.chestnut.system.service.ISysDictTypeService;
 import org.springframework.stereotype.Component;
 
 /**
- * 分词库自定义词类型
+ * 分词方式
  */
 @Component(FixedDictType.BEAN_PREFIX + WordAnalyzeType.TYPE)
 public class WordAnalyzeType extends FixedDictType {

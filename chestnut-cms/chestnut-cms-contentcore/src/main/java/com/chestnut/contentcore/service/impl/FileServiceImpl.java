@@ -149,6 +149,8 @@ public class FileServiceImpl implements IFileService {
 
 	@Override
 	public void renameFile(CmsSite site, String filePath, String rename) throws IOException {
+		this.checkFileType(rename);
+
     	String path = FileExUtils.normalizePath(filePath);
     	if (path.startsWith("/")) {
     		path = path.substring(1);
@@ -173,6 +175,8 @@ public class FileServiceImpl implements IFileService {
 
 	@Override
 	public void addFile(CmsSite site, FileAddDTO dto) throws IOException {
+		this.checkFileType(dto.getFileName());
+
 		String dir = dto.getDir();
     	dir = FileExUtils.normalizePath(dir);
     	if (dir.startsWith("/")) {

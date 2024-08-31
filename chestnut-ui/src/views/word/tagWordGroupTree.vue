@@ -26,7 +26,7 @@
                highlight-current
                @node-click="handleNodeClick">
         <span class="tree-node" slot-scope="{ node, data }">
-          <span>{{ node.label }}</span>
+          <span class="node-text" :title="node.label">{{ node.label }}</span>
           <span class="node-tool">
             <el-button
               type="text"
@@ -246,11 +246,22 @@ export default {
 .group-tree .tree-node {
   width: 100%;
   line-height: 30px;
+  position: relative;
+  overflow: hidden;
+}
+.group-tree .tree-node .node-text {
+  display: block;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 .group-tree .tree-node .node-tool {
   display: none;
   position: absolute;
-  right: 5px;
+  right: 0;
+  top: 0;
+  background-color: #fff;
+  padding: 0 5px;
+  opacity: 0.8;
 }
 .group-tree .tree-node:hover .node-tool {
   display: inline-block;

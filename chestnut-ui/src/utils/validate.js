@@ -30,7 +30,7 @@ export function urlValidator(rule, value, callback) {
   if (!value || value.length == 0) {
     return callback(new Error(i18n.t('Common.RuleTips.NotEmpty')));
   }
-  if (!validURL(value)) {
+  if (!validURL(value) && value.indexOf("iurl://") < 0) {
     return callback(new Error(i18n.t('Common.RuleTips.Url')));
   }
   callback();

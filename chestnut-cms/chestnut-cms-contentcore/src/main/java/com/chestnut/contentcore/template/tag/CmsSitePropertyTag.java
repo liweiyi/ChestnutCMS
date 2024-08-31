@@ -15,25 +15,23 @@
  */
 package com.chestnut.contentcore.template.tag;
 
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSiteProperty;
 import com.chestnut.contentcore.service.ISitePropertyService;
-
+import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -60,11 +58,7 @@ public class CmsSitePropertyTag extends AbstractListTag {
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex)
 			throws TemplateException {
-		long siteId = MapUtils.getLongValue(attrs, TagAttr_SiteId,
-				FreeMarkerUtils.evalLongVariable(env, "Site.siteId"));
-		if (siteId <= 0) {
-			throw new TemplateException("站点数据ID异常：" + siteId, env);
-		}
+		long siteId = TemplateUtils.evalSiteId(env);
 		String code = MapUtils.getString(attrs, TagAttr_Code);
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 

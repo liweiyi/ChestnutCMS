@@ -97,7 +97,7 @@
       :close-on-click-modal="false"
       width="500px"
       append-to-body>
-      <el-form ref="form" :model="form" label-width="100px">
+      <el-form ref="form" :model="form" label-width="120px" :rules="rules">
         <el-form-item :label="$t('Search.WordStat.Word')" prop="word">
           <el-input v-model="form.word" />
         </el-form-item>
@@ -131,7 +131,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleTopDialogOk">{{ $t("Common.Confirm") }}</el-button>
-        <el-button @click="this.topDialogVisible=false">{{ $t("Common.Cancel") }}</el-button>
+        <el-button @click="topDialogVisible=false">{{ $t("Common.Cancel") }}</el-button>
       </div>
     </el-dialog>
 
@@ -197,6 +197,14 @@ export default {
       title: "",
       open: false,
       form: {},
+      rules: {
+        word: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        searchTotal: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+      },
       topDialogVisible: false,
       openTrend: false,
       queryParams: {

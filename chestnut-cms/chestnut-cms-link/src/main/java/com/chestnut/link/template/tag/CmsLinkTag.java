@@ -15,27 +15,25 @@
  */
 package com.chestnut.link.template.tag;
 
-import java.util.List;
-import java.util.Map;
-
-import com.chestnut.common.staticize.FreeMarkerUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.link.domain.CmsLink;
 import com.chestnut.link.domain.CmsLinkGroup;
 import com.chestnut.link.service.ILinkGroupService;
 import com.chestnut.link.service.ILinkService;
-
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -62,7 +60,7 @@ public class CmsLinkTag extends AbstractListTag {
 		if (StringUtils.isEmpty(code)) {
 			throw new TemplateException("属性code不能为空", env);
 		}
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 		CmsLinkGroup group = this.linkGroupService.getOne(new LambdaQueryWrapper<CmsLinkGroup>()
 				.eq(CmsLinkGroup::getSiteId, siteId)
 				.eq(CmsLinkGroup::getCode, code));

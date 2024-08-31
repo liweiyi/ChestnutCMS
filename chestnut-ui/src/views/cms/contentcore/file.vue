@@ -59,7 +59,12 @@
           </el-card>
         </el-header>
         <el-main>
-          <el-table v-loading="loading" :data="fileList" @selection-change="handleSelectionChange" size="mini">
+          <el-table 
+            v-loading="loading" 
+            :data="fileList" 
+            @row-dblclick="handleEdit"
+            @selection-change="handleSelectionChange" 
+            size="mini">
             <el-table-column type="selection" width="50" align="center" />
             <el-table-column :label="$t('CMS.File.FileName')" align="left" prop="fileName">
               <template slot-scope="scope">
@@ -159,7 +164,8 @@
             :limit="1">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">{{ $t('CMS.File.UploadTip') }}</div>
-            </el-upload>
+            <div slot="tip" class="el-upload__tip">{{ $t('CMS.Resource.UPloadTip', [ upload.accept, fileSizeName ]) }}</div>
+          </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -173,6 +179,7 @@
 import { getToken } from "@/utils/auth";
 import { isImage, getFileSvgIconClass } from "@/utils/chestnut";
 import { getDirectoryTreeData, getFileList, renameFile, addFile, deleteFile } from "@/api/contentcore/file";
+import { getConfigKey } from "@/api/system/config";
 
 export default {
   name: "CMSFile",
@@ -214,6 +221,8 @@ export default {
       uploadForm: {},
       // 上传参数
       upload: {
+        acceptSize: 0,
+        accept: "*",
         // 是否禁用上传
         isUploading: false,
         // 设置上传的请求头部
@@ -240,6 +249,13 @@ export default {
     },
     disableAdd() {
       return this.selectedDirectory == "" || this.selectedDirectory == "/"
+    },
+    fileSizeName() {
+      if (this.upload.acceptSize > 0) {
+        return this.upload.acceptSize / 1024 / 1024 + " MB"
+      } else {
+        return "∞";
+      }
     }
   },
   watch: {
@@ -252,6 +268,14 @@ export default {
     this.treeSideHeight = height - 150;
     this.loadDirectory();
     this.loadFileList();
+    getConfigKey("ResourceUploadAcceptSize").then(res => {
+      this.upload.acceptSize = parseInt(res.data);
+    });
+    getConfigKey("AllowUploadFileType").then(res => {
+      if (res.data && res.data.length > 0) {
+        this.upload.accept = res.data;
+      }
+    });
   },
   methods: {
     filterNode (value, data) {
@@ -338,12 +362,14 @@ export default {
       });
     },
     handleEdit (row) {
-      this.$router.push({ 
-        path: "/cms/file/editor", 
-        query: { 
-          filePath: row.filePath 
-        } 
-      });
+      if (row.canEdit) {
+        this.$router.push({ 
+          path: "/cms/file/editor", 
+          query: { 
+            filePath: row.filePath 
+          } 
+        });
+      }
     },
     // TODO 裁剪图片
     handleCrop (row) {

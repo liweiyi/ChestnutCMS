@@ -15,9 +15,7 @@
  */
 package com.chestnut.article.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.article.domain.CmsArticleDetail;
-import com.chestnut.article.mapper.CmsArticleDetailMapper;
+import com.chestnut.article.dao.CmsArticleDetailDAO;
 import com.chestnut.article.service.IArticleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +24,12 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ArticleServiceImpl extends ServiceImpl<CmsArticleDetailMapper, CmsArticleDetail>
-		implements IArticleService {
+public class ArticleServiceImpl implements IArticleService {
 
+	private final CmsArticleDetailDAO dao;
+
+	@Override
+	public CmsArticleDetailDAO dao() {
+		return this.dao;
+	}
 }

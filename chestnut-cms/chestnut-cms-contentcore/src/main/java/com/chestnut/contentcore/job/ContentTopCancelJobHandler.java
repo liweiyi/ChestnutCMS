@@ -58,14 +58,14 @@ public class ContentTopCancelJobHandler extends IJobHandler implements ISchedule
 	public void exec() throws Exception {
 		logger.info("Job start: {}", JOB_NAME);
 		long s = System.currentTimeMillis();
-		int pageSize = 500;
+		long pageSize = 500;
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
 				.gt(CmsContent::getTopFlag, 0)
 				.le(CmsContent::getTopDate, LocalDateTime.now());
-		long total = contentService.count(q);
+		long total = contentService.dao().count(q);
 		for (int i = 0; i * pageSize < total; i++) {
 			logger.debug("Job '{}' running: {} / {}", JOB_NAME, i * 100, total);
-			Page<CmsContent> page = contentService.page(new Page<>(i, pageSize, false), q);
+			Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
 			for (CmsContent xContent : page.getRecords()) {
 				IContentType ct = ContentCoreUtils.getContentType(xContent.getContentType());
 				IContent<?> content = ct.loadContent(xContent);

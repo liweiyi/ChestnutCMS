@@ -15,9 +15,6 @@
  */
 package com.chestnut.vote.mapper;
 
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Update;
-
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.chestnut.vote.domain.Vote;
 
@@ -31,12 +28,4 @@ import com.chestnut.vote.domain.Vote;
  */
 public interface VoteMapper extends BaseMapper<Vote> {
 
-	/**
-	 * 参与数+1
-	 * 
-	 * @param voteId
-	 * @return
-	 */
-	@Update("UPDATE " + Vote.TABLE_NAME + " SET total = total + 1 WHERE vote_id = #{voteId}")
-	public int incrVoteTotal(@Param("voteId") Long voteId);
 }

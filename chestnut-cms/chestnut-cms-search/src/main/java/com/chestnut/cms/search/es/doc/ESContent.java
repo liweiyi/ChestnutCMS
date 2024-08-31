@@ -22,8 +22,6 @@ import lombok.Setter;
 @Setter
 public class ESContent {
 	
-	public static final String INDEX_NAME = "cms_content";
-
 	private Long contentId;
 
 	private String contentType;

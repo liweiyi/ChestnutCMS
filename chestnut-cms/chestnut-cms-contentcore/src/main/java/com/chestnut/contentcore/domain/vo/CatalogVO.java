@@ -114,6 +114,11 @@ public class CatalogVO {
     private String staticFlag;
 
     /*
+     * 栏目是否在标签中忽略
+     */
+    private String tagIgnore;
+
+    /*
      * 自定义首页文件名
      */
     private String indexFileName;

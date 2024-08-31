@@ -15,28 +15,22 @@
  */
 package com.chestnut.media.util;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.function.Supplier;
-
-import org.apache.commons.lang3.time.StopWatch;
-
 import com.chestnut.common.utils.ServletUtils;
-
 import lombok.extern.slf4j.Slf4j;
-import ws.schild.jave.Encoder;
-import ws.schild.jave.EncoderException;
-import ws.schild.jave.InputFormatException;
-import ws.schild.jave.MultimediaObject;
-import ws.schild.jave.ScreenExtractor;
+import org.apache.commons.lang3.time.StopWatch;
+import ws.schild.jave.*;
 import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.EncodingAttributes;
 import ws.schild.jave.encode.VideoAttributes;
 import ws.schild.jave.filtergraphs.OverlayWatermark;
 import ws.schild.jave.filters.helpers.OverlayLocation;
 import ws.schild.jave.info.MultimediaInfo;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.function.Supplier;
 
 @Slf4j
 public class MediaUtils {
@@ -173,6 +167,21 @@ public class MediaUtils {
 		int quality = 1;
 		screenExtractor.renderOneImage(multimediaObject, width, height, millis, output, quality);
 		log.info("原视频 = {},生成截图 = {}", source.getAbsolutePath(), output.getAbsolutePath());
+	}
+
+	public static void generateRemoteVideoScreenshot(URL url, File output, long timestamp)
+			throws EncoderException {
+		if (timestamp <= 0) {
+			timestamp = 1;
+		}
+		MultimediaObject multimediaObject = new MultimediaObject(url, true);
+		ScreenExtractor screenExtractor = new ScreenExtractor();
+		int width = -1;
+		int height = -1;
+		long millis = timestamp * 1000;
+		int quality = 1;
+		screenExtractor.renderOneImage(multimediaObject, width, height, millis, output, quality);
+		log.info("原视频 = {},生成截图 = {}", url.getPath(), output.getAbsolutePath());
 	}
 
 	public static void main(String[] args) {

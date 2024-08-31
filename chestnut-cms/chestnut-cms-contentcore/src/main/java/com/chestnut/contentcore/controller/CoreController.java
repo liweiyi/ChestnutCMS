@@ -149,7 +149,10 @@ public class CoreController extends BaseRestController {
 			templateContext.getVariables().put("IncludeRequest", params);
 			templateContext.getVariables().put("ClientType", ServletUtils.getDeviceType());
 			// staticize
-			this.staticizeService.process(templateContext, ServletUtils.getResponse().getWriter());
+			HttpServletResponse response = ServletUtils.getResponse();
+			response.setCharacterEncoding(Charset.defaultCharset().displayName());
+			response.setContentType("text/html; charset=" + Charset.defaultCharset().displayName());
+			this.staticizeService.process(templateContext, response.getWriter());
 			log.debug("[{}]动态区块模板解析：{}，耗时：{}", publishPipeCode, template, System.currentTimeMillis() - s);
 		} catch (TemplateException | IOException e) {
 			log.error("[{}]Process ssi virtual failed: {}", publishPipeCode, template);

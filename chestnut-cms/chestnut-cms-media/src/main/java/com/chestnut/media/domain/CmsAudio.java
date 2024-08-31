@@ -19,9 +19,13 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.chestnut.common.db.domain.BaseEntityWithLogicDelete;
+import com.chestnut.common.db.domain.IBackupable;
+import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
+
+import java.io.Serial;
 
 /**
  * 音频数据表对象 [cms_audio]
@@ -32,9 +36,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @TableName(CmsAudio.TABLE_NAME)
-public class CmsAudio extends BaseEntityWithLogicDelete {
+public class CmsAudio extends BaseEntity implements IBackupable<BCmsAudio> {
 
-    private static final long serialVersionUID=1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     
     public static final String TABLE_NAME = "cms_audio";
 
@@ -124,4 +129,11 @@ public class CmsAudio extends BaseEntityWithLogicDelete {
      * 排序字段
      */
     private Integer sortFlag;
+
+    @Override
+    public BCmsAudio toBackupEntity() {
+        BCmsAudio backupEntity = new BCmsAudio();
+        BeanUtils.copyProperties(this, backupEntity);
+        return backupEntity;
+    }
 }

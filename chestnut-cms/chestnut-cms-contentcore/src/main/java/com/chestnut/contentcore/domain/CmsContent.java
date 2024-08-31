@@ -21,11 +21,14 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
-import com.chestnut.common.db.domain.BaseEntityWithLogicDelete;
+import com.chestnut.common.db.domain.BaseEntity;
+import com.chestnut.common.db.domain.IBackupable;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 
+import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -38,19 +41,20 @@ import java.util.Map;
 @Getter
 @Setter
 @TableName(value = CmsContent.TABLE_NAME, autoResultMap = true)
-public class CmsContent extends BaseEntityWithLogicDelete {
+public class CmsContent extends BaseEntity implements IBackupable<BCmsContent> {
 
-    private static final long serialVersionUID=1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     
     public static final String TABLE_NAME = "cms_content";
-    
+
     public static final Map<String, SFunction<CmsContent, ?>> MAP_PARAMS = Map.of(
             "publishDate", CmsContent::getPublishDate,"createTime", CmsContent::getCreateTime,
             "viewCount", CmsContent::getViewCount, "favoriteCount", CmsContent::getFavoriteCount,
             "likeCount", CmsContent::getLikeCount, "commentCount", CmsContent::getCommentCount);
-    
+
     public static SFunction<CmsContent, ?> getSFunction(String key) {
-    	return MAP_PARAMS.get(key);
+        return MAP_PARAMS.get(key);
     }
 
     /**
@@ -308,12 +312,19 @@ public class CmsContent extends BaseEntityWithLogicDelete {
      * 备用字段4
      */
     private String prop4;
-    
+
     public boolean isLock() {
-    	return YesOrNo.isYes(this.isLock);
+    	return YesOrNo.isYes(getIsLock());
     }
     
     public boolean isLinkContent() {
-    	return YesOrNo.isYes(this.linkFlag);
+    	return YesOrNo.isYes(getLinkFlag());
+    }
+
+    @Override
+    public BCmsContent toBackupEntity() {
+        BCmsContent backupEntity = new BCmsContent();
+        BeanUtils.copyProperties(this, backupEntity);
+        return backupEntity;
     }
 }

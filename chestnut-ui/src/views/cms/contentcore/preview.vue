@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container preview-page">
     <el-container>
       <el-header class="header-bar" v-if="type!=='pagewidget'" style="padding-top: 15px">
         <el-row :gutter="10" class="mb8">
@@ -67,6 +67,9 @@ export default {
       previewClass: "preview preview_pc",
     };
   },
+  mounted() {
+    document.body.style['overflow-y'] = 'hidden';
+  },
   created() {
     this.loadPublishPipes();
   },
@@ -91,14 +94,11 @@ export default {
   }
 };
 </script>
-<style>
-body {
-  overflow-y: hidden;
-}
-.app-container { 
+<style scoped>
+.preview-page { 
   padding:0; 
 }
-.header-bar {
+.preview-page .header-bar {
   height:40px;
   padding-top: 15px;
   background-color: #f7f7f7;
@@ -106,10 +106,10 @@ body {
   position:relative;
   z-index: 999;
 }
-.el-main {
+.preview-page .el-main {
   padding: 0;
 }
-.el-button {
+.preview-page .el-button {
   margin-left: 10px;
 }
 .preview {

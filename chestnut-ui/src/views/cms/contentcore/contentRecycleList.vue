@@ -254,9 +254,9 @@ export default {
       this.handleQuery();
     },
     handleDelete (row) {
-      const contentIds = row.contentId ? [ row.contentId ] : this.selectedRows.map(row => row.contentId);
+      const backupIds = row.backupId ? [ row.backupId ] : this.selectedRows.map(row => row.backupId);
       this.$modal.confirm(this.$t('Common.ConfirmDelete')).then(function () {
-        return deleteRecycleContents(contentIds);
+        return deleteRecycleContents(backupIds);
       }).then(() => {
         this.loadRecyclecontentRecycleList();
         this.$modal.msgSuccess(this.$t('Common.DeleteSuccess'));
@@ -268,8 +268,8 @@ export default {
       this.tableMaxHeight = this.tableHeight;
     },
     handleRecover(row) {
-      const contentIds = row.contentId ? [ row.contentId ] : this.selectedRows.map(row => row.contentId);
-      recoverRecycleContent(contentIds).then(response => {
+      const backupIds = row.backupId ? [ row.backupId ] : this.selectedRows.map(row => row.backupId);
+      recoverRecycleContent(backupIds).then(response => {
         this.loadRecyclecontentRecycleList();
         this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
       });

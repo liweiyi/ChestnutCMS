@@ -27,10 +27,10 @@ import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.dto.SysPermissionDTO;
 import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.mapper.SysPermissionMapper;
-import com.chestnut.system.mapper.SysRoleMapper;
 import com.chestnut.system.permission.IPermissionType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysPermissionService;
+import com.chestnut.system.service.ISysRoleService;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,7 +42,7 @@ import java.util.*;
 public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, SysPermission>
 		implements ISysPermissionService {
 
-	private final SysRoleMapper roleMapper;
+	private final ISysRoleService roleService;
 
 	private final Map<String, IPermissionType> permissionTypes;
 
@@ -103,7 +103,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 			Set<String> permissionKeys = getPermissionKeys(PermissionOwnerType.User.name(), userId.toString(), permissionType);
 			permissions.addAll(permissionKeys);
 			// 角色权限
-			List<SysRole> roles = this.roleMapper.selectRolesByUserId(userId);
+			List<SysRole> roles = this.roleService.selectRolesByUserId(userId);
 			roles.forEach(r -> {
 				Set<String> keys = getPermissionKeys(PermissionOwnerType.Role.name(), r.getRoleId().toString(), permissionType);
 				permissions.addAll(keys);
@@ -130,7 +130,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 		IPermissionType pt = getPermissionType(permissionType);
 		if (PermissionOwnerType.isUser(ownerType)) {
 			// 查找用户继承自角色的权限
-			List<SysRole> roles = this.roleMapper.selectRolesByUserId(Long.valueOf(owner));
+			List<SysRole> roles = this.roleService.selectRolesByUserId(Long.valueOf(owner));
 			if (!roles.isEmpty()) {
 				List<SysPermission> rolePermissions = this.lambdaQuery()
 						.eq(SysPermission::getOwnerType, PermissionOwnerType.Role.name())

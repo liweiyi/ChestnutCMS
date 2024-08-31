@@ -66,7 +66,7 @@ public class CmsVideoTag extends AbstractListTag {
 		if (contentId <= 0) {
 			throw new TemplateException("视频集内容ID错误：" + contentId, env);
 		}
-		CmsContent c = this.contentService.getById(contentId);
+		CmsContent c = this.contentService.dao().getById(contentId);
 		if (ContentCopyType.isMapping(c.getCopyType())) {
 			contentId = c.getCopyId();
 		}
@@ -76,7 +76,7 @@ public class CmsVideoTag extends AbstractListTag {
 		q.apply(StringUtils.isNotEmpty(condition), condition);
 		q.orderByAsc(CmsVideo::getSortFlag);
 
-		Page<CmsVideo> pageResult = this.videoService.page(new Page<>(pageIndex, size, page), q);
+		Page<CmsVideo> pageResult = this.videoService.dao().page(new Page<>(pageIndex, size, page), q);
 		if (pageIndex > 1 & pageResult.getRecords().isEmpty()) {
 			throw new TemplateException("内容列表页码超出上限：" + pageIndex, env);
 		}

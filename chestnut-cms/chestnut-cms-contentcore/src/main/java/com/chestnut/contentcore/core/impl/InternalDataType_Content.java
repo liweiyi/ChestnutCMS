@@ -15,10 +15,6 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import java.io.IOException;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.core.IInternalDataType;
@@ -26,9 +22,12 @@ import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishService;
-
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * 内部数据类型：内容
@@ -53,7 +52,7 @@ public class InternalDataType_Content implements IInternalDataType {
 
     @Override
     public String getPageData(RequestData requestData) throws IOException, TemplateException {
-        CmsContent content = contentService.getById(requestData.getDataId());
+        CmsContent content = contentService.dao().getById(requestData.getDataId());
         Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", requestData.getDataId()));
 
         return this.publishService.getContentPageData(content, requestData.getPageIndex(), requestData.getPublishPipeCode(), requestData.isPreview());
@@ -61,9 +60,18 @@ public class InternalDataType_Content implements IInternalDataType {
 
     @Override
     public String getLink(InternalURL internalUrl, int pageIndex, String publishPipeCode, boolean isPreview) {
-        CmsContent content = contentService.getById(internalUrl.getId());
+        CmsContent content = contentService.dao().getById(internalUrl.getId());
         Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", internalUrl.getId()));
 
         return this.contentService.getContentLink(content, 1, publishPipeCode, isPreview);
+    }
+
+    @Override
+    public boolean isLinkData(Long id) {
+        CmsContent content = contentService.dao().getById(id);
+        if (Objects.isNull(content)) {
+            return false;
+        }
+        return content.isLinkContent();
     }
 }

@@ -41,11 +41,11 @@ public interface IInternalDataType {
 	 * 获取内部数据预览地址
 	 * 预览路径规则：cms/preview/{内部数据类型}/{数据id}?pp={发布通道编码}&pi={页码}
 	 *
-	 * @param type
-	 * @param id
-	 * @param publishPipeCode
-	 * @param pageIndex
-	 * @return
+	 * @param type 内部数据类型
+	 * @param id 数据ID
+	 * @param publishPipeCode 发布通道编码
+	 * @param pageIndex 页码
+	 * @return 预览地址
 	 */
 	static String getPreviewPath(String type, Long id, String publishPipeCode, int pageIndex) {
 		String path = "cms/preview/" + type + "/" + id + "?pp=" + publishPipeCode;
@@ -63,11 +63,11 @@ public interface IInternalDataType {
 	 * 获取内部数据动态浏览地址
 	 * 动态路径规则：cms/view/{内部数据类型}/{数据id}?pp={发布通道编码}&pi={页码}
 	 *
-	 * @param type
-	 * @param id
-	 * @param publishPipeCode
-	 * @param pageIndex
-	 * @return
+	 * @param type 内部数据类型
+	 * @param id 数据ID
+	 * @param publishPipeCode 发布通道编码
+	 * @param pageIndex 页码
+	 * @return 动态浏览地址
 	 */
 	static String getViewPath(String type, Long id, String publishPipeCode, int pageIndex) {
 		String path = "cms/view/" + type + "/" + id + "?pp=" + publishPipeCode;
@@ -88,11 +88,6 @@ public interface IInternalDataType {
 
 	/**
 	 * 获取模板解析页面内容
-	 *
-	 * @param requestData
-	 * @return
-	 * @throws IOException
-	 * @throws TemplateException
 	 */
 	default String getPageData(RequestData requestData) throws IOException, TemplateException {
 		return StringUtils.EMPTY;
@@ -105,13 +100,16 @@ public interface IInternalDataType {
 	 * @param pageIndex 页码
 	 * @param publishPipeCode 发布通道编码
 	 * @param preview 是否预览模式
-	 * @return
 	 */
 	default String getLink(InternalURL internalUrl, int pageIndex, String publishPipeCode, boolean preview) {
 		return StringUtils.EMPTY;
 	}
 
-	@Getter
+    default boolean isLinkData(Long id) {
+		return false;
+	}
+
+    @Getter
 	@Setter
 	class RequestData {
 

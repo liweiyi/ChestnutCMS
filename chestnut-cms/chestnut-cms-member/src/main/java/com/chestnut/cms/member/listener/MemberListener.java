@@ -62,7 +62,7 @@ public class MemberListener {
     @EventListener
     public void beforeMemberFavorite(BeforeMemberFavoriteEvent event) {
         if (CmsMemberConstants.MEMBER_FAVORITES_DATA_TYPE.equals(event.getDataType())) {
-            CmsContent content = this.contentService.getById(event.getDataId());
+            CmsContent content = this.contentService.dao().getById(event.getDataId());
             Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("dataId", event.getDataId()));
         }
     }
@@ -86,7 +86,7 @@ public class MemberListener {
     @EventListener
     public void beforeMemberLike(BeforeMemberLikeEvent event) {
         if (CmsMemberConstants.MEMBER_LIKE_DATA_TYPE.equals(event.getDataType())) {
-            CmsContent content = this.contentService.getById(event.getDataId());
+            CmsContent content = this.contentService.dao().getById(event.getDataId());
             Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("dataId", event.getDataId()));
         }
     }

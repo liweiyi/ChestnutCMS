@@ -15,13 +15,6 @@
  */
 package com.chestnut.contentcore.template.tag;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.StaticizeConstants;
@@ -34,11 +27,16 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.service.IPageWidgetService;
-
+import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -76,12 +74,12 @@ public class CmsPageWidgetDataTag extends AbstractTag {
 
 	@Override
 	public Map<String, TemplateModel> execute0(Environment env, Map<String, String> attrs)
-			throws TemplateException, IOException {
+			throws TemplateException {
 		String code = attrs.get(TagAttr_Code);
 		if (StringUtils.isEmpty(code)) {
 			throw new TemplateException("参数[code]不能为空", env);
 		}
-		Long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 		
 		LambdaQueryWrapper<CmsPageWidget> q = new LambdaQueryWrapper<CmsPageWidget>()
 				.eq(CmsPageWidget::getSiteId, siteId)

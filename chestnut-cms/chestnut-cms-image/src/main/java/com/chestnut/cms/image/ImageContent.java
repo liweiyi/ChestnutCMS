@@ -15,8 +15,6 @@
  */
 package com.chestnut.cms.image;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.cms.image.domain.CmsImage;
 import com.chestnut.cms.image.service.IImageService;
@@ -26,7 +24,10 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.enums.ContentCopyType;
+
+import java.util.List;
 
 public class ImageContent extends AbstractContent<List<CmsImage>> {
 
@@ -40,7 +41,7 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 	@Override
 	public Long add() {
 		super.add();
-		this.getContentService().save(this.getContentEntity());
+		this.getContentService().dao().save(this.getContentEntity());
 
 		if (!hasExtendEntity()) {
 			return this.getContentEntity().getContentId();
@@ -56,7 +57,7 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 				image.setSortFlag(i);
 				image.createBy(this.getOperatorUName());
 			}
-			this.getImageService().saveBatch(images);
+			this.getImageService().dao().saveBatch(images);
 		}
 		return this.getContentEntity().getContentId();
 	}
@@ -64,11 +65,11 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 	@Override
 	public Long save() {
 		super.save();
-		this.getContentService().updateById(this.getContentEntity());
+		this.getContentService().dao().updateById(this.getContentEntity());
 		// 处理图片
 		List<CmsImage> images = this.getExtendEntity();
 		if (!this.hasExtendEntity()) {
-			this.getImageService().remove(new LambdaQueryWrapper<CmsImage>().eq(CmsImage::getContentId,
+			this.getImageService().dao().remove(new LambdaQueryWrapper<CmsImage>().eq(CmsImage::getContentId,
 					this.getContentEntity().getContentId()));
 			return this.getContentEntity().getContentId();
 		}
@@ -77,7 +78,7 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 		// 先删除数据
 		List<Long> updateImageIds = imageList.stream().map(CmsImage::getImageId)
 				.filter(IdUtils::validate).toList();
-		this.getImageService()
+		this.getImageService().dao()
 				.remove(new LambdaQueryWrapper<CmsImage>()
 						.eq(CmsImage::getContentId, this.getContentEntity().getContentId())
 						.notIn(!updateImageIds.isEmpty(), CmsImage::getImageId, updateImageIds));
@@ -86,7 +87,7 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 			if (IdUtils.validate(image.getImageId())) {
 				image.setSortFlag(i);
 				image.updateBy(this.getOperatorUName());
-				this.getImageService().updateById(image);
+				this.getImageService().dao().updateById(image);
 			} else {
 				image.setImageId(IdUtils.getSnowflakeId());
 				image.setContentId(this.getContentEntity().getContentId());
@@ -94,7 +95,7 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 				image.setImageType(FileExUtils.getExtension(image.getPath()));
 				image.setSortFlag(i);
 				image.createBy(this.getOperatorUName());
-				this.getImageService().save(image);
+				this.getImageService().dao().save(image);
 			}
 		}
 		return this.getContentEntity().getContentId();
@@ -104,14 +105,16 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 	public void delete() {
 		super.delete();
 		if (this.hasExtendEntity()) {
-			this.getImageService().lambdaQuery().eq(CmsImage::getContentId, this.getContentEntity().getContentId()).list()
-					.forEach(image -> this.getImageService().removeById(image));
+			this.getImageService().dao().deleteByContentIdAndBackup(
+					this.getContentEntity().getContentId(),
+					this.getOperatorUName()
+				);
 		}
 	}
 
 	@Override
-	public void copyTo(CmsCatalog toCatalog, Integer copyType) {
-		super.copyTo(toCatalog, copyType);
+	public CmsContent copyTo(CmsCatalog toCatalog, Integer copyType) {
+		CmsContent copyContent = super.copyTo(toCatalog, copyType);
 
 		if (this.hasExtendEntity() && ContentCopyType.isIndependency(copyType)) {
 			Long newContentId = (Long) this.getParams().get("NewContentId");
@@ -120,10 +123,11 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 				image.createBy(this.getOperatorUName());
 				image.setImageId(IdUtils.getSnowflakeId());
 				image.setContentId(newContentId);
-				this.getImageService().save(image);
+				this.getImageService().dao().save(image);
 			}
 		}
-	}
+        return copyContent;
+    }
 
 	private IImageService getImageService() {
 		if (this.imageService == null) {

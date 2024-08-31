@@ -15,8 +15,11 @@
  */
 package com.chestnut.article.listener;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.article.domain.BCmsArticleDetail;
+import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.domain.vo.ArticleVO;
-import com.chestnut.article.mapper.CmsArticleDetailMapper;
+import com.chestnut.article.service.IArticleService;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.listener.event.AfterContentEditorInitEvent;
@@ -27,27 +30,51 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ArticleListener {
 
-	private final CmsArticleDetailMapper articleMapper;
+	private final IArticleService articleService;
 
 	@EventListener
 	public void beforeSiteDelete(BeforeSiteDeleteEvent event) {
 		CmsSite site = event.getSite();
-		int pageSize = 500;
+		int pageSize = 1000;
 		// 删除文章数据
 		try {
-			long total = this.articleMapper.selectCountBySiteIdIgnoreLogicDel(site.getSiteId());
+			long total = this.articleService.dao().countBySiteId(site.getSiteId());
 			for (long i = 0; i * pageSize < total; i++) {
-				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除文章详情备份数据：" + (i * pageSize) + "/" + total);
-				this.articleMapper.deleteBySiteIdIgnoreLogicDel(site.getSiteId(), pageSize);
+				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除文章数据：" + (i * pageSize) + "/" + total);
+
+				List<Long> contentIds = this.articleService.dao().pageBySiteId(
+						new Page<>(0, pageSize, false),
+						site.getSiteId(),
+						List.of(CmsArticleDetail::getContentId)
+				).getRecords().stream().map(CmsArticleDetail::getContentId).toList();
+				this.articleService.dao().removeBatchByIds(contentIds);
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除文章详情错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage("删除文章数据错误：" + e.getMessage());
 			log.error("Delete article failed on site[{}] delete.", site.getSiteId(), e);
+		}
+		// 删除文章备份数据
+		try {
+			long total = this.articleService.dao().countBackupBySiteId(site.getSiteId());
+			for (long i = 0; i * pageSize < total; i++) {
+				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除文章备份数据：" + (i * pageSize) + "/" + total);
+				List<Long> backupIds = this.articleService.dao().pageBackupBySiteId(
+								new Page<>(0, pageSize, false),
+								site.getSiteId(),
+								List.of(BCmsArticleDetail::getBackupId)
+						).getRecords().stream().map(BCmsArticleDetail::getBackupId).toList();
+				this.articleService.dao().removeBackupBatchByIds(backupIds);
+			}
+		} catch (Exception e) {
+			AsyncTaskManager.addErrMessage("删除文章备份数据错误：" + e.getMessage());
+			log.error("Delete backup article failed on site[{}] delete.", site.getSiteId(), e);
 		}
 	}
 

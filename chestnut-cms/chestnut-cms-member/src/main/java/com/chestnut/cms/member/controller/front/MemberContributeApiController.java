@@ -30,7 +30,6 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.SortUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
@@ -52,13 +51,13 @@ import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.security.StpMemberUtil;
-import com.chestnut.member.service.IMemberStatDataService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -70,6 +69,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Map;
+
+import static com.chestnut.common.utils.SortUtils.getDefaultSortValue;
 
 /**
  * 会员个人中心
@@ -93,15 +94,13 @@ public class MemberContributeApiController extends BaseRestController implements
 
 	private final IArticleService articleService;
 
-	private final IMemberStatDataService memberStatDataService;
-
 	private ApplicationContext applicationContext;
 
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@DeleteMapping
 	public R<?> deleteContribute(@RequestParam("cid") @LongId Long contentId) {
-		CmsContent xContent = this.contentService.getById(contentId);
+		CmsContent xContent = this.contentService.dao().getById(contentId);
 		if (xContent == null) {
 			return R.fail("内容不存在");
 		}
@@ -137,7 +136,7 @@ public class MemberContributeApiController extends BaseRestController implements
 		}
 		LoginUser loginUser = StpMemberUtil.getLoginUser();
 		if (IdUtils.validate(dto.getContentId())) {
-			CmsContent cmsContent = this.contentService.getById(dto.getContentId());
+			CmsContent cmsContent = this.contentService.dao().getById(dto.getContentId());
 			if (!loginUser.getUserId().equals(cmsContent.getContributorId())) {
 				return R.fail("内容ID错误");
 			}
@@ -157,13 +156,13 @@ public class MemberContributeApiController extends BaseRestController implements
 				cmsContent.setCatalogId(toCatalog.getCatalogId());
 				cmsContent.setCatalogAncestors(toCatalog.getAncestors());
 				cmsContent.setTopCatalog(CatalogUtils.getTopCatalog(toCatalog));
-				cmsContent.setSortFlag(SortUtils.getDefaultSortValue());
+				cmsContent.setSortFlag(getDefaultSortValue());
 				// 目标栏目内容数量+1
 				this.catalogService.changeContentCount(toCatalog.getCatalogId(), 1);
 				// 源栏目内容数量-1
 				this.catalogService.changeContentCount(fromCatalog.getCatalogId(), -1);
 			}
-			CmsArticleDetail articleDetail = this.articleService.getById(cmsContent.getContentId());
+			CmsArticleDetail articleDetail = this.articleService.dao().getById(cmsContent.getContentId());
 			articleDetail.setContentHtml(dto.getContentHtml());
 
 			ArticleContent content = new ArticleContent();
@@ -240,12 +239,12 @@ public class MemberContributeApiController extends BaseRestController implements
 				.eq(CmsContent::getContributorId, memberId)
 				.lt(offset > 0, CmsContent::getPublishDate, LocalDateTime.ofInstant(Instant.ofEpochMilli(offset), ZoneId.systemDefault()))
 				.orderByDesc(CmsContent::getPublishDate);
-		Page<CmsContent> page = contentService.page(new Page<>(1, limit, false), q);
+		Page<CmsContent> page = contentService.dao().page(new Page<>(1, limit, false), q);
 		return this.bindDataTable(page);
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 }

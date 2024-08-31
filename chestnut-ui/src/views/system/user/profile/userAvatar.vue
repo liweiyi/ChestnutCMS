@@ -1,6 +1,12 @@
 <template>
   <div>
-    <div class="user-info-head" @click="editCropper()"><img v-bind:src="options.img" :title="$t('System.User.UploadAvatar')" class="img-circle img-lg" /></div>
+    <div class="user-info-head" @click="editCropper()">
+      <el-image :src="options.img" :title="$t('System.User.UploadAvatar')" class="img-circle img-lg">
+        <div slot="error" class="image-slot">
+          <img src="@/assets/images/default_home_avatar.png" class="img-circle img-lg" />
+        </div>
+      </el-image>
+    </div>
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body @opened="modalOpened"  @close="closeDialog">
       <el-row>
         <el-col :xs="24" :md="12" :style="{height: '350px'}">

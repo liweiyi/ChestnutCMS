@@ -15,12 +15,12 @@
  */
 package com.chestnut.contentcore.core;
 
-import java.io.IOException;
-
+import com.chestnut.contentcore.domain.BCmsContent;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.vo.ContentVO;
-
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.io.IOException;
 
 /**
  * 内容类型
@@ -75,7 +75,6 @@ public interface IContentType extends Comparable<IContentType> {
 	 * 加载内容数据，根据cmsContent.contentId拉取内容扩展表数据
 	 * 
 	 * @param xContent
-	 * @return
 	 */
 	IContent<?> loadContent(CmsContent xContent);
 
@@ -83,33 +82,30 @@ public interface IContentType extends Comparable<IContentType> {
      * 从请求读取内容数据
      * 
      * @param request
-     * @return
-     * @throws IOException
      */
     IContent<?> readRequest(HttpServletRequest request) throws IOException;
     
     /**
      * 初始化内容编辑页面数据
      * 
-     * @param catalogId
-     * @param contentId
-     * @return
+     * @param catalogId 栏目ID
+     * @param contentId 内容ID
      */
     ContentVO initEditor(Long catalogId, Long contentId);
 
     /**
      * 恢复内容扩展实体备份表数据
      * 
-     * @param contentId
+     * @param backupContent 备份内容
      */
-	default void recover(Long contentId) {
+	default void recover(BCmsContent backupContent) {
 		
 	}
 
 	/**
 	 * 删除内容扩展实体备份表数据
 	 * 
-	 * @param contentId
+	 * @param contentId 内容ID
 	 */
 	default void deleteBackups(Long contentId) {
 		

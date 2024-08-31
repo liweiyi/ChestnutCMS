@@ -38,6 +38,8 @@ import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.AuthRoleDTO;
 import com.chestnut.system.domain.dto.UserImportData;
 import com.chestnut.system.domain.vo.UserInfoVO;
+import com.chestnut.system.fixed.dict.EnableOrDisable;
+import com.chestnut.system.mapper.SysUserRoleMapper;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -84,6 +86,8 @@ public class SysUserController extends BaseRestController {
 
 	private final ISysPostService postService;
 
+	private final SysUserRoleMapper userRoleMapper;
+
 	protected final Validator validator;
 
 	/**
@@ -115,7 +119,7 @@ public class SysUserController extends BaseRestController {
 		}
 		StringWriter logWriter = new StringWriter();
 		SysUserReadListener readListener = new SysUserReadListener(this.userService, this.deptService, this.roleService,
-				this.postService);
+				this.postService, this.userRoleMapper);
 		readListener.setValidator(validator);
 		readListener.setOperator(StpAdminUtil.getLoginUser().getUsername());
 		readListener.setUpdateSupport(updateSupport);
@@ -143,7 +147,9 @@ public class SysUserController extends BaseRestController {
 			user = userService.getById(userId);
 			user.setAvatarSrc(SystemConfig.getResourcePrefix() + user.getAvatar());
 			user.setRoleIds(
-					roleService.selectRolesByUserId(userId).stream().map(SysRole::getRoleId).toArray(Long[]::new));
+					roleService.selectRolesByUserId(userId, EnableOrDisable.ENABLE)
+							.stream().map(SysRole::getRoleId).toArray(Long[]::new)
+			);
 			user.setPostIds(
 					postService.selectPostListByUserId(userId).stream().map(SysPost::getPostId).toArray(Long[]::new));
 		}
@@ -205,7 +211,7 @@ public class SysUserController extends BaseRestController {
 		SysUser user = userService.getById(userId);
 		Assert.notNull(user, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(userId));
 
-		List<SysRole> userRoles = roleService.selectRolesByUserId(userId);
+		List<SysRole> userRoles = roleService.selectRolesByUserId(userId, EnableOrDisable.ENABLE);
 		user.setRoleIds(userRoles.stream().map(SysRole::getRoleId).toArray(Long[]::new));
 		List<SysRole> roles = this.roleService.list();
 		return R.ok(UserInfoVO.builder().user(user).roles(roles).build());
@@ -249,7 +255,7 @@ public class SysUserController extends BaseRestController {
 		SysUser user = (SysUser) loginUser.getUser();
 		Optional<IUserPreference> findFirst = this.userPreferenceList.stream().filter(up -> up.getId().equals(id))
 				.findFirst();
-		if (!findFirst.isPresent()) {
+		if (findFirst.isEmpty()) {
 			return R.fail();
 		}
 		Object value = findFirst.get().getDefaultValue();
@@ -261,7 +267,7 @@ public class SysUserController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE)
 	@PutMapping("/savePreferences")
-	public R<?> saveUserPreferences(@RequestBody @NotNull Map<String, Object> userPreferences) throws Exception {
+	public R<?> saveUserPreferences(@RequestBody @NotNull Map<String, Object> userPreferences) {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
 		Map<String, Object> map = this.userPreferenceList.stream().collect(Collectors.toMap(IUserPreference::getId,
 				up -> userPreferences.getOrDefault(up.getId(), up.getDefaultValue())));

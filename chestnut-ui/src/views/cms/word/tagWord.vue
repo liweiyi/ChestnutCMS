@@ -63,7 +63,7 @@
             <el-table-column type="index" :label="$t('Common.RowNo')" align="center" width="50" />
             <el-table-column :label="$t('WordMgr.TAG.TAGWord')" align="left" prop="word" />
             <el-table-column :label="$t('Common.Sort')" align="center" prop="sortFlag" width="120"/>
-            <el-table-column :label="$t('WordMgr.TAG.TAGWordUseCount')" align="center" prop="useCount" width="120"/>
+            <!-- <el-table-column :label="$t('WordMgr.TAG.TAGWordUseCount')" align="center" prop="useCount" width="120"/> -->
             <el-table-column :label="$t('WordMgr.TAG.TAGWordHitCount')" align="center" prop="hitCount" width="120"/>
             <el-table-column :label="$t('Common.CreateTime')" align="center" width="160">
               <template slot-scope="scope">

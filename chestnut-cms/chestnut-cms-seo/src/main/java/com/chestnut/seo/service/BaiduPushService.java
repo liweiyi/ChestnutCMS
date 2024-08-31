@@ -66,7 +66,7 @@ public class BaiduPushService {
             if (domain.contains("://")) {
                 domain = StringUtils.substringAfter(domain, "://");
             }
-            List<CmsContent> list = contentService.lambdaQuery().in(CmsContent::getContentId, contentIds).list();
+            List<CmsContent> list = contentService.dao().lambdaQuery().in(CmsContent::getContentId, contentIds).list();
             List<String> urls = list.stream().map(content -> contentService
                     .getContentLink(content, 1, pp.getCode(), false)).toList();
 

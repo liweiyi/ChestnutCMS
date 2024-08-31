@@ -75,8 +75,10 @@ public class HotWordGroupServiceImpl extends ServiceImpl<HotWordGroupMapper, Hot
 		}
 	}
 
-	private void checkUnique(String owner, Long groupId, String code) {
-		Long count = this.lambdaQuery().eq(StringUtils.isNotEmpty(owner), HotWordGroup::getOwner, owner)
+	@Override
+	public void checkUnique(String owner, Long groupId, String code) {
+		Long count = this.lambdaQuery()
+				.eq(StringUtils.isNotEmpty(owner), HotWordGroup::getOwner, owner)
 				.ne(IdUtils.validate(groupId), HotWordGroup::getGroupId, groupId)
 				.eq(HotWordGroup::getCode, code).count();
 		Assert.isTrue(count == 0, WordErrorCode.CONFLIECT_HOT_WORD_GROUP::exception);

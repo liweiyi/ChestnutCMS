@@ -15,15 +15,6 @@
  */
 package com.chestnut.advertisement.template.tag;
 
-import java.util.List;
-import java.util.Map;
-
-import com.chestnut.common.staticize.tag.TagAttrOption;
-import com.chestnut.contentcore.fixed.config.SiteApiUrl;
-import com.chestnut.contentcore.properties.SiteApiUrlProperty;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.advertisement.domain.CmsAdvertisement;
@@ -34,14 +25,20 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
+import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.service.IPageWidgetService;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
-
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
@@ -72,7 +69,7 @@ public class CmsAdvertisementTag extends AbstractListTag {
 		String code = MapUtils.getString(attrs, TagAttr_Code);
 		String redirectType = MapUtils.getString(attrs, TagAttr_RedirectType, RedirectType.None.name());
 
-		Long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 		CmsPageWidget adSpace = this.pageWidgetService.getOne(new LambdaQueryWrapper<CmsPageWidget>()
 				.eq(CmsPageWidget::getSiteId, siteId)
 				.eq(CmsPageWidget::getCode, code));
@@ -86,7 +83,7 @@ public class CmsAdvertisementTag extends AbstractListTag {
 				.eq(CmsAdvertisement::getState, EnableOrDisable.ENABLE);
 		q.apply(StringUtils.isNotEmpty(condition), condition);
 		Page<CmsAdvertisement> pageResult = this.advertisementService.page(new Page<>(pageIndex, size, page), q);
-		if (pageIndex > 1 & pageResult.getRecords().size() == 0) {
+		if (pageIndex > 1 & pageResult.getRecords().isEmpty()) {
 			throw new TemplateException(StringUtils.messageFormat("Page data empty: pageIndex = {0}", pageIndex), env) ;
 		}
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);

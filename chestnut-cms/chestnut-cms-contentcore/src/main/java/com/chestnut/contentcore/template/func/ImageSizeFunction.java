@@ -25,6 +25,7 @@ import java.util.Objects;
 import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
 import freemarker.template.TemplateBooleanModel;
+import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.geometry.Positions;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Component;
@@ -51,6 +52,7 @@ import net.coobird.thumbnailator.Thumbnails;
 /**
  * Freemarker模板自定义函数：生成图片缩略图
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ImageSizeFunction extends AbstractFunc {
@@ -118,7 +120,7 @@ public class ImageSizeFunction extends AbstractFunc {
 						+ StringUtils.substringAfterLast(actualUrl, ".");
 			}
 		} catch (IOException e) {
-			throw new TemplateModelException("Generate thumbnail failed!", e);
+			log.warn("Generate thumbnail failed: " + actualUrl, e);
 		}
 		return actualUrl;
 	}

@@ -113,7 +113,7 @@ public class ContentController extends BaseRestController {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 		boolean includeChild = IncludeChildContentPreference.getValue(StpAdminUtil.getLoginUser());
 
-		LambdaQueryChainWrapper<CmsContent> q = this.contentService.lambdaQuery()
+		LambdaQueryChainWrapper<CmsContent> q = this.contentService.dao().lambdaQuery()
 				.eq(CmsContent::getSiteId, site.getSiteId())
 				.eq(StringUtils.isNotEmpty(contentType), CmsContent::getContentType, contentType)
 				.like(StringUtils.isNotEmpty(title), CmsContent::getTitle, title)
@@ -209,6 +209,10 @@ public class ContentController extends BaseRestController {
 	@Log(title = "发布内容", businessType = BusinessType.OTHER)
 	@PostMapping("/publish")
 	public R<String> publish(@RequestBody @Validated PublishContentDTO publishContentDTO) throws TemplateException, IOException {
+		CmsContent content = contentService.dao().getById(publishContentDTO.getContentIds().get(0));
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkPermission(CatalogPrivItem.Publish.getPermissionKey(content.getCatalogId()), loginUser);
+
 		this.publishService.publishContent(publishContentDTO.getContentIds(), StpAdminUtil.getLoginUser());
 		return R.ok();
 	}
@@ -320,9 +324,9 @@ public class ContentController extends BaseRestController {
 	@Log(title = "添加内容属性", businessType = BusinessType.UPDATE)
 	@PostMapping("/attr")
 	public R<?> addContentsAttribute(@RequestBody @Validated ChangeContentAttrDTO dto) {
-		this.contentService.listByIds(dto.getContentIds()).forEach(content -> {
+		this.contentService.dao().listByIds(dto.getContentIds()).forEach(content -> {
 			int attributes = ContentAttribute.append(content.getAttributes(), ContentAttribute.bit(dto.getAttr()));
-			this.contentService.lambdaUpdate().set(CmsContent::getAttributes, attributes).eq(CmsContent::getContentId, content.getContentId()).update();
+			this.contentService.dao().lambdaUpdate().set(CmsContent::getAttributes, attributes).eq(CmsContent::getContentId, content.getContentId()).update();
 		});
 		return R.ok();
 	}
@@ -330,9 +334,9 @@ public class ContentController extends BaseRestController {
 	@Log(title = "移除内容属性", businessType = BusinessType.UPDATE)
 	@DeleteMapping("/attr")
 	public R<?> removeContentsAttribute(@RequestBody @Validated ChangeContentAttrDTO dto) {
-		this.contentService.listByIds(dto.getContentIds()).forEach(content -> {
+		this.contentService.dao().listByIds(dto.getContentIds()).forEach(content -> {
 			int attributes = ContentAttribute.remove(content.getAttributes(), ContentAttribute.bit(dto.getAttr()));
-			this.contentService.lambdaUpdate().set(CmsContent::getAttributes, attributes).eq(CmsContent::getContentId, content.getContentId()).update();
+			this.contentService.dao().lambdaUpdate().set(CmsContent::getAttributes, attributes).eq(CmsContent::getContentId, content.getContentId()).update();
 		});
 		return R.ok();
 	}

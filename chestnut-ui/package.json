@@ -1,6 +1,6 @@
 {
   "name": "ChestnutCMS",
-  "version": "1.4.5",
+  "version": "1.5.0",
   "description": "ChestnutCMS[栗子内容管理系统]",
   "author": "",
   "license": "Apache-2.0",
@@ -36,7 +36,6 @@
     "url": "https://gitee.com/liweiyi/ChestnutCMS.git"
   },
   "dependencies": {
-    "@ckeditor/ckeditor5-vue2": "^3.0.1",
     "@riophae/vue-treeselect": "0.4.0",
     "axios": "0.24.0",
     "clipboard": "2.0.8",

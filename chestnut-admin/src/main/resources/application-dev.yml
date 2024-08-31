@@ -5,7 +5,7 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.4.5
+  version: 1.5.0
   # 版权年份
   copyrightYear: 2022-2024
   system:
@@ -26,9 +26,9 @@ chestnut:
 # 开发环境配置
 server:
   # 服务器的HTTP端口，默认为8080
-  port: 8080
+  port: 9080
   # 开启优雅停机
-  shutdown: graceful
+  shutdown: graceful 
   servlet:
     # 应用的访问路径
     context-path: /
@@ -55,12 +55,12 @@ spring:
   messages:
     # 国际化资源文件路径
     basename: i18n/messages
-  lifecycle:
+  lifecycle: 
     # 设置停机缓冲时间，默认：30s
-    timeout-per-shutdown-phase: 20s
+    timeout-per-shutdown-phase: 20s 
   # 文件上传
   servlet:
-    multipart:
+    multipart: 
       # 单个文件大小
       max-file-size:  100MB
       # 设置总上传的文件大小
@@ -89,8 +89,8 @@ spring:
       password: b18a03
       # 连接超时时间
       timeout: 10s
-      lettuce:
-        pool:
+      lettuce: 
+        pool: 
           # 连接池中的最小空闲连接
           min-idle: 0
           # 连接池中的最大空闲连接
@@ -125,7 +125,7 @@ spring:
         master:
           type: ${spring.datasource.type}
           driverClassName: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://127.0.0.1:3308/chestnut_cms?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
+          url: jdbc:mysql://127.0.0.1:3308/chestnut_cms?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&&nullCatalogMeansCurrent=true
           username: root
           password: hello1234
         # 从库
@@ -204,32 +204,28 @@ management:
     logfile:
       external-file: ./logs/client.log
 
-sa-token:
-  # token名称 (同时也是cookie名称)
-  token-name: Authorization
-  # token前缀
-  token-prefix: Bearer
-  # token有效期，单位s 默认30天, -1代表永不过期
-  timeout: 2592000
-  # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
-  active-timeout: -1
-  # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录)
-  is-concurrent: true
-  # 在多人登录同一账号时，是否共用一个token (为true时所有登录共用一个token, 为false时每次登录新建一个token)
-  is-share: true
-  # token风格
-  token-style: uuid
-  # 是否输出操作日志
-  is-log: true
-
+sa-token: 
+    # token名称 (同时也是cookie名称)
+    token-name: Authorization
+    # token前缀
+    token-prefix: Bearer
+    # token有效期，单位s 默认30天, -1代表永不过期 
+    timeout: 2592000
+    # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
+    active-timeout: -1
+    # 是否允许同一账号并发登录 (为true时允许一起登录, 为false时新登录挤掉旧登录) 
+    is-concurrent: true
+    # 在多人登录同一账号时，是否共用一个token (为true时所有登录共用一个token, 为false时每次登录新建一个token) 
+    is-share: true
+    # token风格
+    token-style: uuid
+    # 是否输出操作日志 
+    is-log: true            
+  
 # MyBatis配置
 mybatis-plus:
   global-config:
     enable-sql-runner: true
-    db-config:
-      logic-delete-field: deleted # 全局逻辑删除的实体字段名
-      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
-      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
   # 搜索指定包别名
   typeAliasesPackage: com.chestnut.**.domain
   # 配置mapper的扫描，找到所有的mapper.xml映射文件
@@ -238,15 +234,15 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 # 防止XSS攻击
-xss:
+xss: 
   # 过滤开关
   enabled: true
   mode: clean
   # 过滤链接
-  urlPatterns:
-    - /system/*
-    - /monitor/*
-    - /tool/*
+  urlPatterns: 
+   - /system/* 
+   - /monitor/*
+   - /tool/*
 
 xxl:
   job:
@@ -259,7 +255,7 @@ xxl:
       ### 执行器注册 [选填]：优先使用该配置作为注册地址，为空时使用内嵌服务 ”IP:PORT“ 作为注册地址。从而更灵活的支持容器类型执行器动态IP和动态映射端口问题。
       #address: 
       ### 执行器IP [选填]：默认为空表示自动获取IP，多网卡时可手动设置指定IP，该IP不会绑定Host仅作为通讯实用；地址信息用于 "执行器注册" 和 "调度中心请求并触发任务"；
-      ip:
+      ip: 
       ### 执行器端口号 [选填]：小于等于0则自动获取；默认端口为9999，单机部署多个执行器时，注意要配置不同执行器端口；
       port: 9968
       ### 执行器运行日志文件存储磁盘路径 [选填] ：需要对该路径拥有读写权限；为空则使用默认路径；

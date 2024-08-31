@@ -15,8 +15,7 @@
     </el-form>
 
     <el-row>
-      <div class="groovy_result">
-      {{ resultString }}
+      <div class="groovy_result" v-html="resultString">
       </div>
     </el-row>
   </div>

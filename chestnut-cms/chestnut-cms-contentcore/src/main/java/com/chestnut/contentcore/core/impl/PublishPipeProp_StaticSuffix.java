@@ -34,7 +34,9 @@ import java.util.Objects;
 public class PublishPipeProp_StaticSuffix implements IPublishPipeProp {
 
 	public static final String KEY = "staticSuffix";
-	
+
+	private static final String DEFAULT_VALUE = StaticSuffix.SHTML;
+
 	@Override
 	public String getKey() {
 		return KEY;
@@ -47,7 +49,7 @@ public class PublishPipeProp_StaticSuffix implements IPublishPipeProp {
 	
 	@Override
 	public String getDefaultValue() {
-		return StaticSuffix.SHTML;
+		return DEFAULT_VALUE;
 	}
 
 	@Override
@@ -56,9 +58,10 @@ public class PublishPipeProp_StaticSuffix implements IPublishPipeProp {
 	}
 
 	public static String getValue(String publishPipeCode, Map<String, Map<String, Object>> publishPipeProps) {
+		String v = null;
 		if (Objects.nonNull(publishPipeProps)) {
-			return MapUtils.getString(publishPipeProps.get(publishPipeCode), KEY);
+			 v = MapUtils.getString(publishPipeProps.get(publishPipeCode), KEY);
 		}
-		return StaticSuffix.SHTML;
+		return Objects.requireNonNullElse(v, DEFAULT_VALUE);
 	}
 }

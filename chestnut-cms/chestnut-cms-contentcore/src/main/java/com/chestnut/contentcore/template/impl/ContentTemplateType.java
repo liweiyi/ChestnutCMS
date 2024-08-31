@@ -51,7 +51,7 @@ public class ContentTemplateType implements ITemplateType {
 
 	@Override
 	public void initTemplateData(Object dataId, TemplateContext context) {
-		CmsContent content = this.contentService.getById(ConvertUtils.toLong(dataId));
+		CmsContent content = this.contentService.dao().getById(ConvertUtils.toLong(dataId));
 		Map<String, Object> contentMap = ReflectASMUtils.beanToMap(content);
 		String link = this.contentService.getContentLink(content, 1,
 				context.getPublishPipeCode(), context.isPreview());

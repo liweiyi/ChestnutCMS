@@ -59,7 +59,7 @@ public class MetaControlType_ContentSelect implements IMetaControlType {
             fieldData.setValueObj(Map.of());
             return;
         }
-        Optional<CmsContent> content = contentService.lambdaQuery()
+        Optional<CmsContent> content = contentService.dao().lambdaQuery()
                 .select(List.of(CmsContent::getContentId, CmsContent::getTitle))
                 .eq(CmsContent::getContentId, value).oneOpt();
         if (content.isEmpty()) {

@@ -19,6 +19,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.es.doc.ESContent;
 import com.chestnut.cms.search.permission.CmsSearchPriv;
 import com.chestnut.cms.search.service.ContentIndexService;
@@ -43,6 +44,7 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.search.SearchConsts;
 import com.chestnut.search.exception.SearchErrorCode;
@@ -59,6 +61,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Priv(type = AdminUserType.TYPE, value = CmsSearchPriv.ContentIndexView)
 @RequiredArgsConstructor
@@ -76,7 +80,7 @@ public class ContentIndexController extends BaseRestController {
 
 	private final ElasticsearchClient esClient;
 
-	private void checkElasticSearchEnabled() throws IOException {
+	private void checkElasticSearchEnabled() {
 		Assert.isTrue(this.searchService.isElasticSearchAvailable(), SearchErrorCode.ESConnectFail::exception);
 	}
 
@@ -86,13 +90,12 @@ public class ContentIndexController extends BaseRestController {
 								   @RequestParam(value = "contentType", required = false) String contentType) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
 		PageRequest pr = this.getPageRequest();
-
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		String indexName = CmsSearchConstants.indexName(site.getSiteId().toString());
 		SearchResponse<ObjectNode> sr = esClient.search(s -> {
-			s.index(ESContent.INDEX_NAME) // 索引
+			s.index(indexName) // 索引
 					.query(q ->
 							q.bool(b -> {
-								b.must(must -> must.term(tq -> tq.field("siteId").value(site.getSiteId())));
 								if (StringUtils.isNotEmpty(contentType)) {
 									b.must(must -> must.term(tq -> tq.field("contentType").value(contentType)));
 								}
@@ -142,7 +145,11 @@ public class ContentIndexController extends BaseRestController {
 			vo.setCreateTimeInstance(LocalDateTime.ofEpochSecond(vo.getCreateTime(), 0, ZoneOffset.UTC));
 			CmsCatalog catalog = this.catalogService.getCatalog(vo.getCatalogId());
 			if (Objects.nonNull(catalog)) {
-				vo.setCatalogName(catalog.getName());
+				String catalogName = Stream.of(catalog.getAncestors().split(CatalogUtils.ANCESTORS_SPLITER)).map(cid -> {
+					CmsCatalog parent = this.catalogService.getCatalog(Long.valueOf(cid));
+					return Objects.nonNull(parent) ? parent.getName() : "[Unknown]";
+				}).collect(Collectors.joining(" > "));
+				vo.setCatalogName(catalogName);
 			}
 			hit.highlight().forEach((key, value) -> {
                 if (key.equals("fullText")) {
@@ -159,7 +166,8 @@ public class ContentIndexController extends BaseRestController {
 	@GetMapping("/content/{contentId}")
 	public R<?> selectDocumentDetail(@PathVariable(value = "contentId") @LongId Long contentId) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
-		ESContent source = this.searchService.getContentDocDetail(contentId);
+		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		ESContent source = this.searchService.getContentDocDetail(site.getSiteId(), contentId);
 		return R.ok(source);
 	}
 
@@ -167,7 +175,8 @@ public class ContentIndexController extends BaseRestController {
 	@DeleteMapping("/contents")
 	public R<?> deleteDocuments(@RequestBody @NotEmpty List<Long> contentIds) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
-		this.searchService.deleteContentDoc(contentIds);
+		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		this.searchService.deleteContentDoc(site.getSiteId(), contentIds);
 		return R.ok();
 	}
 
@@ -175,7 +184,7 @@ public class ContentIndexController extends BaseRestController {
 	@PostMapping("/build/{contentId}")
 	public R<?> buildContentIndex(@PathVariable("contentId") @LongId Long contentId) throws IOException {
 		this.checkElasticSearchEnabled();
-		CmsContent content = this.contentService.getById(contentId);
+		CmsContent content = this.contentService.dao().getById(contentId);
 		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 
 		IContentType ct = ContentCoreUtils.getContentType(content.getContentType());

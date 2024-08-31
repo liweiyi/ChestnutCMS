@@ -31,14 +31,13 @@
             <el-form-item 
               :label="$t('CMS.Site.DefaultTemplate.CatalogList')"
               prop="defaultListTemplate">
-              <el-input v-model="pp.props.defaultListTemplate">
+              <el-input class="mr5" v-model="pp.props.defaultListTemplate">
                 <el-button 
                   slot="append"
                   type="primary"
                   @click="handleSelectTemplate('defaultListTemplate')">{{ $t("Common.Select") }}</el-button>
               </el-input>
               <el-button 
-                class="ml5"
                 icon="el-icon-finished" 
                 type="primary" 
                 plain 
@@ -50,14 +49,13 @@
               :command="ct"
               :label="ct.name + $t('CMS.Site.DefaultTemplate.ContentDetail')"
               :prop="`defaultDetailTemplate_${ct.id}`">
-              <el-input v-model="pp.props[`defaultDetailTemplate_${ct.id}`]">
+              <el-input class="mr5" v-model="pp.props[`defaultDetailTemplate_${ct.id}`]">
                 <el-button 
                   slot="append"
                   type="primary"
                   @click="handleSelectTemplate(`defaultDetailTemplate_${ct.id}`)">{{ $t("Common.Select") }}</el-button>
               </el-input>
               <el-button 
-                class="ml5"
                 icon="el-icon-finished" 
                 type="primary" 
                 plain 
@@ -66,14 +64,13 @@
             <el-form-item 
               :label="$t('CMS.Site.DefaultTemplate.CustomForm')"
               prop="defaultCustomFormTemplate">
-              <el-input v-model="pp.props.defaultCustomFormTemplate">
+              <el-input class="mr5" v-model="pp.props.defaultCustomFormTemplate">
                 <el-button 
                   slot="append"
                   type="primary"
                   @click="handleSelectTemplate('defaultCustomFormTemplate')">{{ $t("Common.Select") }}</el-button>
               </el-input>
               <el-button 
-                class="ml5"
                 icon="el-icon-finished" 
                 type="primary" 
                 plain 

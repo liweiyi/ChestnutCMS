@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public interface ICatalogService extends IService<CmsCatalog> {
 	
@@ -74,6 +73,13 @@ public interface ICatalogService extends IService<CmsCatalog> {
      * @throws IOException 
      */
 	CmsCatalog addCatalog(CatalogAddDTO dto);
+
+	/**
+	 * 批量添加栏目
+	 *
+	 * @param dto
+	 */
+	void batchAddCatalog(CatalogBatchAddDTO dto);
 
 	/**
 	 * 编辑栏目

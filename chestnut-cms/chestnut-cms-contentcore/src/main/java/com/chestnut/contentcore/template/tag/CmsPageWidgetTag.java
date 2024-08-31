@@ -100,7 +100,7 @@ public class CmsPageWidgetTag extends AbstractTag {
 		String code = attrs.get(TagAttr_Code);
 		Assert.notEmpty(code, () -> new TemplateException("参数[code]不能为空", env));
 
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		long siteId = TemplateUtils.evalSiteId(env);
 		CmsPageWidget pw = this.pageWidgetService.lambdaQuery().eq(CmsPageWidget::getSiteId, siteId)
 				.eq(CmsPageWidget::getCode, code).one();
 		Assert.notNull(pw, () -> new TemplateException(StringUtils.messageFormat("页面部件[{0}]不存在", code), env));

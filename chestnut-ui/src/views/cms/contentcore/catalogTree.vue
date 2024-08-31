@@ -1,12 +1,18 @@
 <template>
   <div class="catalog-tree">
     <div class="head-container">
-      <el-button 
-        v-if="showNewBtn"
-        type="text"
-        icon="el-icon-plus"
-        @click="handleAdd"
-        style="margin-top:2px;">{{ $t('CMS.Catalog.AddCatalog') }}</el-button>
+      <el-dropdown v-if="showNewBtn" placement="bottom-start" style="margin-top:2px;">
+        <el-button 
+          type="text"
+          @click="handleAdd"
+          icon="el-icon-plus">
+          {{ $t('CMS.Catalog.AddCatalog') }}<i class="el-icon-arrow-down el-icon--right"></i>
+        </el-button>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item @click.native="handleAdd">{{ $t('CMS.Catalog.AddCatalog') }}</el-dropdown-item>
+          <el-dropdown-item @click.native="handleBatchAdd">{{ $t('CMS.Catalog.BatchAddCatalog') }}</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
       <el-input 
         :placeholder="$t('CMS.Catalog.CatalogNamePlaceholder')"
         v-model="filterCatalogName"
@@ -18,6 +24,7 @@
     <div class="tree-container">
       <el-button 
         :loading="loading"
+        :title="siteName"
         type="text" 
         class="tree-header"
         icon="el-icon-s-home"
@@ -33,7 +40,7 @@
         highlight-current
         @node-click="handleNodeClick">
         <span class="tree-node" slot-scope="{ node, data }">
-          <span>{{ node.label }}</span>
+          <span class="node-text" :title="node.label">{{ node.label }}</span>
           <span class="node-tool">
             <el-dropdown size="small" type="primary">
               <el-link :underline="false" class="row-more-btn" icon="el-icon-more"></el-link>
@@ -64,7 +71,7 @@
           <treeselect v-model="form.parentId" :options="catalogOptions" />
         </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.Name')"  prop="name">
-          <el-input v-model="form.name" />
+          <el-input v-model="form.name" @blur="handleNameBlur" />
         </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.Alias')" prop="alias">
           <el-input v-model="form.alias" />
@@ -89,6 +96,36 @@
     </el-dialog>
     
     <el-dialog 
+      :title="$t('CMS.Catalog.BatchAddCatalog')"
+      :visible.sync="openBatchAdd"
+      :close-on-click-modal="false"
+      :loading="loading"
+      width="500px"
+      style="padding-top:0;padding-bottom:0;"
+      append-to-body>
+      <el-form 
+        ref="formBatch"
+        :model="formBatch"
+        :rules="rulesBatch"
+        label-position="top"
+        label-width="70px">
+        <el-form-item :label="$t('CMS.Catalog.ParentCatalog')" prop="parentId">
+          <treeselect v-model="formBatch.parentId" :options="catalogOptions" />
+        </el-form-item>
+        <el-form-item :label="$t('CMS.Catalog.CatalogTree')" prop="catalogs">
+          <el-input v-model="formBatch.catalogs" type="textarea" :rows="10" />
+        </el-form-item>
+      </el-form>
+      <div style="background-color: #f4f4f5;color: #909399;font-size:12px;line-height: 30px;padding-left:10px;">
+        <i class="el-icon-info mr5"></i>{{ $t("CMS.Catalog.BatchAddTip") }}
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleBatchAddSave">{{ $t("Common.Confirm") }}</el-button>
+        <el-button @click="openBatchAdd=false">{{ $t("Common.Cancel") }}</el-button>
+      </div>
+    </el-dialog>
+    
+    <el-dialog 
       :title="$t('CMS.Catalog.PublishDialogTitle')"
       :visible.sync="publishDialogVisible"
       width="500px"
@@ -108,7 +145,7 @@
   </div>
 </template>
 <script>
-import { getCatalogTypes, getCatalogTreeData, addCatalog, publishCatalog, sortCatalog } from "@/api/contentcore/catalog";
+import { getCatalogTypes, getCatalogTreeData, addCatalog, batchAddCatalog, publishCatalog, sortCatalog, generateAliasAndPath } from "@/api/contentcore/catalog";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import CMSProgress from '@/views/components/Progress';
@@ -148,7 +185,6 @@ export default {
       siteName: undefined,
       // 当前选中栏目ID
       selectedCatalogId: undefined,
-      selectedCatalogPath: "",
       treeExpandedKeys: [],
       defaultProps: {
         children: "children",
@@ -170,6 +206,13 @@ export default {
         ],
         catalogType: [
           { required: true, message: this.$t('CMS.Catalog.RuleTips.CatalogType'), trigger: "blur" }
+        ]
+      },
+      openBatchAdd: false,
+      formBatch: {},
+      rulesBatch: {
+        catalogs: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ]
       },
       publishCatalogId: 0,
@@ -222,7 +265,6 @@ export default {
     // 根节点点击事件
     handleTreeRootClick() {
       this.selectedCatalogId = undefined;
-      this.selectedCatalogPath = "";
       this.$cache.local.remove("LastSelectedCatalogId");
       this.$refs.tree.setCurrentKey(null);
       this.$emit("node-click", null);
@@ -230,7 +272,6 @@ export default {
     // 节点单击事件
     handleNodeClick (data) {
       this.selectedCatalogId = data.id;
-      this.selectedCatalogPath = data.props.path;
       this.$cache.local.set("LastSelectedCatalogId", this.selectedCatalogId);
       this.$emit("node-click", data);
     },
@@ -243,10 +284,26 @@ export default {
     resetAddForm () {
       this.resetForm("form");
     },
+    handleNameBlur() {
+      let data = this.openBatchAdd ? this.formBatch : this.form;
+      if (!data.name || data.name.length == 0) {
+        return;
+      }
+      if (!data.alias || data.alias.length == 0 || !data.path || data.path.length == 0) {
+        generateAliasAndPath({ parentId: data.parentId, name: data.name }).then(response => {
+          if (!data.alias || data.alias.length == 0) {
+            data.alias = response.data.alias;
+          }
+          if (!data.path || data.path.length == 0) {
+            data.path = response.data.path;
+          }
+        })
+      }
+    },
     /** 新增按钮操作 */
     handleAdd () {
       this.resetAddForm();
-      this.form = { parentId: this.selectedCatalogId, path: this.selectedCatalogPath };
+      this.form = { parentId: this.selectedCatalogId, alias: "", path: "", catalogType: this.catalogTypeOptions[0].id };
       this.diagOpen = true;
     },
     /** 新增栏目提交 */
@@ -259,6 +316,23 @@ export default {
           addCatalog(this.form).then(response => {
               this.$cache.local.set("LastSelectedCatalogId", response.data.catalogId);
               this.diagOpen = false;
+              this.$modal.msgSuccess(this.$t('Common.AddSuccess'));
+              this.loadCatalogTreeData();
+          });
+        }
+      });
+    },
+    handleBatchAdd () {
+      this.formBatch = { parentId: this.selectedCatalogId }
+      this.openBatchAdd = true;
+    },
+    handleBatchAddSave() {
+      this.$refs["formBatch"].validate(valid => {
+        if (valid) {
+          this.loading = true;
+          batchAddCatalog(this.formBatch).then(response => {
+              this.openBatchAdd = false;
+              this.loading = false;
               this.$modal.msgSuccess(this.$t('Common.AddSuccess'));
               this.loadCatalogTreeData();
           });
@@ -324,6 +398,9 @@ export default {
   width: 100%;
   text-align: left;
   padding-left: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .catalog-tree-header:hover {
   background-color: #F5F7FA;
@@ -331,11 +408,19 @@ export default {
 .catalog-tree .tree-node {
   width: 100%;
   line-height: 30px;
+  position: relative;
+  overflow: hidden;
+}
+.catalog-tree .tree-node .node-text {
+  display: block;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 .catalog-tree .tree-node .node-tool {
   display: none;
   position: absolute;
   right: 5px;
+  top: 0;
 }
 .catalog-tree .tree-node:hover .node-tool {
   display: inline-block;

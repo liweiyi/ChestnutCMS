@@ -18,6 +18,7 @@ package com.chestnut.search.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.IP2RegionUtils;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.search.domain.SearchLog;
 import com.chestnut.search.domain.SearchWord;
@@ -46,6 +47,7 @@ public class SearchLogServiceImpl extends ServiceImpl<SearchLogMapper, SearchLog
 	public void addSearchLog(SearchLogDTO dto) {
 		asyncTaskManager.execute(() -> {
 			SearchLog sLog = new SearchLog();
+			sLog.setLogId(IdUtils.getSnowflakeId());
 			sLog.setWord(dto.getWord());
 			sLog.setIp(dto.getIp());
 			sLog.setLocation(IP2RegionUtils.ip2Region(dto.getIp()));
@@ -70,6 +72,7 @@ public class SearchLogServiceImpl extends ServiceImpl<SearchLogMapper, SearchLog
 		final LocalDateTime logTime = LocalDateTime.now();
 		asyncTaskManager.execute(() -> {
 			SearchLog sLog = new SearchLog();
+			sLog.setLogId(IdUtils.getSnowflakeId());
 			sLog.setWord(query);
 			sLog.setIp(ip);
 			sLog.setLocation(IP2RegionUtils.ip2Region(ip));

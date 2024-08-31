@@ -106,7 +106,7 @@
     </logger>
 
     <!--系统发布日志-->
-    <logger name="publish" level="info">
+    <logger name="publish" level="debug">
         <appender-ref ref="publish"/>
     </logger>
 </configuration> 

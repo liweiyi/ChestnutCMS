@@ -63,7 +63,7 @@ public class CmsContentClosestTag extends AbstractListTag {
 		String sort = attrs.get(TagAttr_Sort);
 		Long contentId = MapUtils.getLong(attrs, TagAttr_ContentId);
 
-		CmsContent content = this.contentService.getById(contentId);
+		CmsContent content = this.contentService.dao().getById(contentId);
 		Assert.notNull(content, () -> new TemplateException(StringUtils.messageFormat("Tag attr[contentid={0}] data not found.", contentId), env));
 
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
@@ -83,7 +83,7 @@ public class CmsContentClosestTag extends AbstractListTag {
 			q.orderBy(true, isNext, CmsContent::getSortFlag);
 		}
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
-		Page<CmsContent> pageResult = this.contentService.page(new Page<>(1, 1, false), q);
+		Page<CmsContent> pageResult = this.contentService.dao().page(new Page<>(1, 1, false), q);
 		if (pageResult.getRecords().isEmpty()) {
 			return TagPageData.of(List.of(), 0);
 		}

@@ -15,13 +15,12 @@
  */
 package com.chestnut.advertisement.mapper;
 
-import java.util.List;
-
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.chestnut.advertisement.domain.CmsAdHourStat;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.chestnut.advertisement.domain.CmsAdHourStat;
+import java.util.List;
 
 public interface CmsAdHourStatMapper extends BaseMapper<CmsAdHourStat> {
 
@@ -34,6 +33,6 @@ public interface CmsAdHourStatMapper extends BaseMapper<CmsAdHourStat> {
 			GROUP BY advertisement_id ORDER BY `click` DESC, `view` DESC
 			</script>
 			""")
-	public List<CmsAdHourStat> selectGroupByAdvId(@Param("siteId") Long siteId, @Param("begin") String begin,
+	List<CmsAdHourStat> selectGroupByAdvId(@Param("siteId") Long siteId, @Param("begin") String begin,
 			@Param("end") String end);
 }

@@ -26,13 +26,14 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.staticize.core.TemplateContext;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.SortUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.*;
 import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.config.CMSConfig;
+import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.IProperty;
+import com.chestnut.contentcore.core.InternalURL;
+import com.chestnut.contentcore.core.impl.CatalogType_Common;
+import com.chestnut.contentcore.core.impl.CatalogType_Link;
 import com.chestnut.contentcore.core.impl.InternalDataType_Catalog;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
@@ -59,10 +60,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
@@ -81,8 +79,6 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 	private final RedisCache redisCache;
 
 	private final RedissonClient redissonClient;
-
-	private final CmsCatalogMapper catalogMapper;
 
 	private final CmsContentMapper contentMapper;
 
@@ -189,6 +185,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		catalog.setChildCount(0);
 		catalog.setStaticFlag(YesOrNo.YES);
 		catalog.setVisibleFlag(YesOrNo.YES);
+		catalog.setTagIgnore(YesOrNo.NO);
 		catalog.createBy(dto.getOperator().getUsername());
 		this.save(catalog);
 		// 授权给添加人
@@ -198,6 +195,86 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 				CmsPrivUtils.getAllCatalogPermissions(catalog.getCatalogId())
 		);
 		return catalog;
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void batchAddCatalog(CatalogBatchAddDTO dto) {
+		CmsCatalog rootParent = null;
+		if (IdUtils.validate(dto.getParentId())) {
+			rootParent = getCatalog(dto.getParentId());
+		}
+		List<CmsCatalog> list = this.lambdaQuery()
+				.select(CmsCatalog::getAlias, CmsCatalog::getPath)
+				.eq(CmsCatalog::getSiteId, dto.getSiteId())
+				.list();
+		Set<String> aliasSet = list.stream().map(CmsCatalog::getAlias).collect(Collectors.toSet());
+		Set<String> pathSet = list.stream().map(CmsCatalog::getPath).collect(Collectors.toSet());
+
+		List<CmsCatalog> catalogs = new ArrayList<>();
+		String[] arr = dto.getCatalogs().split("\n");
+		Map<Integer, CmsCatalog> lastTreeLevelCatalogs = new HashMap<>();
+        for (String item : arr) {
+			CmsCatalog catalog = new CmsCatalog();
+			catalog.setCatalogId(IdUtils.getSnowflakeId());
+			catalog.setName(item.trim());
+			catalog.setParentId(0L);
+			catalog.setTreeLevel(1);
+			catalog.setAlias(ChineseSpelling.getCapitalizedSpelling(catalog.getName()).toLowerCase());
+			catalog.setPath(catalog.getAlias() + StringUtils.SLASH);
+			catalog.setChildCount(0);
+
+			int treeLevel = StringUtils.countMatches(item, " ") / 2 + 1;
+			CmsCatalog parent = rootParent;
+			if (treeLevel > 1) {
+				parent = lastTreeLevelCatalogs.get(treeLevel - 1);
+			}
+			if (Objects.nonNull(parent)) {
+				catalog.setParentId(parent.getCatalogId());
+				catalog.setTreeLevel(parent.getTreeLevel() + 1) ;
+
+				catalog.setAlias(parent.getAlias() + StringUtils.Underline + catalog.getAlias());
+				catalog.setPath(parent.getPath() + catalog.getPath());
+
+				parent.setChildCount(parent.getChildCount() + 1);
+			}
+			int index = 1;
+			while(aliasSet.contains(catalog.getAlias())) {
+				index++;
+				catalog.setAlias(catalog.getAlias() + index);
+			}
+			index = 1;
+			if (pathSet.contains(catalog.getPath())) {
+				index++;
+				String path = StringUtils.substringBeforeLast(catalog.getPath(), StringUtils.SLASH);
+				catalog.setPath(path + index + StringUtils.SLASH);
+			}
+			catalog.setAncestors(CatalogUtils.getCatalogAncestors(parent, catalog.getCatalogId()));
+			catalog.setSiteId(dto.getSiteId());
+			catalog.setCatalogType(CatalogType_Common.ID);
+			catalog.setSortFlag(SortUtils.getDefaultSortValue());
+			catalog.setContentCount(0);
+			catalog.setStaticFlag(YesOrNo.YES);
+			catalog.setVisibleFlag(YesOrNo.YES);
+			catalog.setTagIgnore(YesOrNo.NO);
+			catalog.createBy(dto.getOperator().getUsername());
+			catalogs.add(catalog);
+
+			lastTreeLevelCatalogs.put(treeLevel, catalog);
+			aliasSet.add(catalog.getAlias());
+			pathSet.add(catalog.getPath());
+        }
+
+		if (saveBatch(catalogs)) {
+			// 授权给添加人
+			catalogs.forEach(catalog -> {
+				this.permissionService.grantUserPermission(
+						dto.getOperator(),
+						CatalogPermissionType.ID,
+						CmsPrivUtils.getAllCatalogPermissions(catalog.getCatalogId())
+				);
+			});
+		}
 	}
 
 	@Override
@@ -212,6 +289,8 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		boolean checkCatalogUnique = this.checkCatalogUnique(catalog.getSiteId(), catalog.getCatalogId(),
 				dto.getAlias(), dto.getPath());
 		Assert.isTrue(checkCatalogUnique, ContentCoreErrorCode.CONFLICT_CATALOG::exception);
+		// 校验内链
+		checkRedirectUrl(dto.getCatalogType(), dto.getRedirectUrl());
 
 		String oldPath = catalog.getPath();
 		BeanUtils.copyProperties(dto, catalog);
@@ -225,6 +304,18 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		this.clearCache(catalog);
 		this.applicationContext.publishEvent(new AfterCatalogSaveEvent(this, catalog, oldPath, dto.getParams()));
 		return catalog;
+	}
+
+	void checkRedirectUrl(String catalogType, String redirectUrl) {
+		if (CatalogType_Link.ID.equals(catalogType)) {
+			// 校验redirectUrl是否是链接到了内部链接数据
+			InternalURL internalURL = InternalUrlUtils.parseInternalUrl(redirectUrl);
+			if (Objects.nonNull(internalURL)) {
+				IInternalDataType idt = ContentCoreUtils.getInternalDataType(internalURL.getType());
+				Assert.isFalse(idt.isLinkData(internalURL.getId()),
+						ContentCoreErrorCode.DENY_LINK_TO_LINK_INTERNAL_DATA::exception);
+			}
+		}
 	}
 
 	@Override
@@ -476,7 +567,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 			}
 			CmsCatalog targetCatalog = beforeCatalogs.get(beforeCatalogs.size() - 1);
 			// 更新排序值
-			this.catalogMapper.catalogSortPlusOne(targetCatalog.getSortFlag(), catalog.getSortFlag());
+			this.catalogSortPlusOne(targetCatalog.getSortFlag(), catalog.getSortFlag());
 			this.lambdaUpdate().set(CmsCatalog::getSortFlag, targetCatalog.getSortFlag())
 					.eq(CmsCatalog::getCatalogId, catalog.getCatalogId()).update();
 			beforeCatalogs.forEach(this::clearCache);
@@ -493,12 +584,42 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 			}
 			CmsCatalog targetCatalog = afterCatalogs.get(afterCatalogs.size() - 1);
 			// 更新排序值
-			this.catalogMapper.catalogSortMinusOne(catalog.getSortFlag(), targetCatalog.getSortFlag());
+			this.catalogSortMinusOne(catalog.getSortFlag(), targetCatalog.getSortFlag());
 			this.lambdaUpdate().set(CmsCatalog::getSortFlag, targetCatalog.getSortFlag())
 					.eq(CmsCatalog::getCatalogId, catalog.getCatalogId()).update();
 			afterCatalogs.forEach(this::clearCache);
 		}
 		this.clearCache(catalog);
+	}
+
+	/**
+	 * 排序标识范围内[startSort, endSort)的所有栏目排序值+1
+	 */
+	private void catalogSortPlusOne(long startSort, long endSort) {
+		List<CmsCatalog> catalogs = this.lambdaQuery()
+				.select(CmsCatalog::getCatalogId, CmsCatalog::getSortFlag)
+				.ge(CmsCatalog::getSortFlag, startSort)
+				.lt(CmsCatalog::getSortFlag, endSort)
+				.list();
+		catalogs.forEach(catalog -> {
+			this.lambdaUpdate().set(CmsCatalog::getSortFlag, catalog.getSortFlag() + 1)
+					.eq(CmsCatalog::getCatalogId, catalog.getCatalogId()).update();
+		});
+	}
+
+	/**
+	 * 排序标识范围内(startSort, endSort]的所有栏目排序值-1
+	 */
+	private void catalogSortMinusOne(long startSort, long endSort) {
+		List<CmsCatalog> catalogs = this.lambdaQuery()
+				.select(CmsCatalog::getCatalogId, CmsCatalog::getSortFlag)
+				.gt(CmsCatalog::getSortFlag, startSort)
+				.le(CmsCatalog::getSortFlag, endSort)
+				.list();
+		catalogs.forEach(catalog -> {
+			this.lambdaUpdate().set(CmsCatalog::getSortFlag, catalog.getSortFlag() - 1)
+					.eq(CmsCatalog::getCatalogId, catalog.getCatalogId()).update();
+		});
 	}
 
 	@Override

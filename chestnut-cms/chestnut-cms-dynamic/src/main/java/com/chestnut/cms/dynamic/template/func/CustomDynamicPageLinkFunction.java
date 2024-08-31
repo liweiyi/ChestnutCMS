@@ -61,7 +61,7 @@ public class CustomDynamicPageLinkFunction extends AbstractFunc  {
 
 		Environment env = Environment.getCurrentEnvironment();
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 		String path = this.dynamicPageHelper.getDynamicPagePath(siteId, code);
 		if (StringUtils.isEmpty(path)) {
 			throw new TemplateModelException("Unknown dynamic page code: " + code);
@@ -70,12 +70,12 @@ public class CustomDynamicPageLinkFunction extends AbstractFunc  {
 			path += "?preview=true";
 			path = TemplateUtils.appendTokenParameter(path, Environment.getCurrentEnvironment());
 		}
-		if (args.length == 2) {
+		if (args.length > 1) {
 			String queryString = args[1].toString();
 			path += (path.contains("?") ? "&" : "?") + queryString;
 		}
 		boolean ignoreBaseArg = true;
-		if (args.length == 3) {
+		if (args.length > 2) {
 			ignoreBaseArg = ((TemplateBooleanModel) args[2]).getAsBoolean();
 		}
 		if (context.isPreview() || !ignoreBaseArg) {

@@ -41,6 +41,7 @@ import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.service.IMemberExpConfigService;
 import com.chestnut.member.service.IMemberStatDataService;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeansException;
@@ -51,6 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -78,7 +80,7 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 		Comment comment = this.commentMapper.selectById(commentId);
 		Assert.notNull(comment, CommentErrorCode.API_COMMENT_NOT_FOUND::exception);
 
-		this.incrCommentLikeCount(comment, uid);
+		this.incrCommentLikeCount(commentId, uid);
 	}
 
 	@Override
@@ -87,28 +89,36 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 		Comment comment = this.commentMapper.selectById(commentId);
 		Assert.notNull(comment, CommentErrorCode.API_COMMENT_NOT_FOUND::exception);
 
-		this.decrCommentLikeCount(comment, uid);
+		this.decrCommentLikeCount(commentId, uid);
 	}
 
-	private void incrCommentLikeCount(Comment comment, long uid) {
-		this.changeCommentLikeCount(comment, uid, true);
+	private void incrCommentLikeCount(Long commentId, long uid) {
+		this.changeCommentLikeCount(commentId, uid, true);
 	}
 
-	private void decrCommentLikeCount(Comment comment, long uid) {
-		this.changeCommentLikeCount(comment, uid, false);
+	private void decrCommentLikeCount(Long commentId, long uid) {
+		this.changeCommentLikeCount(commentId, uid, false);
 	}
 
-	private void changeCommentLikeCount(Comment comment, long uid, boolean increase) {
-		RLock lock = redissonClient.getLock("CommentLike-" + comment.getCommentId());
+	private void changeCommentLikeCount(Long commentId, long uid, boolean increase) {
+		RLock lock = redissonClient.getLock("CommentLike-" + commentId);
 		lock.lock();
 		try {
+			Comment comment = this.commentService.lambdaQuery()
+					.select(Comment::getLikeCount, Comment::getCommentId, Comment::getUid)
+					.eq(Comment::getCommentId, commentId).one();
+			if (Objects.isNull(comment)) {
+				return;
+			}
 			if (increase) {
 				Long count = this.commentLikeMapper.selectCount(new LambdaQueryWrapper<CommentLike>()
 						.eq(CommentLike::getCommentId, comment.getCommentId()).eq(CommentLike::getUid, uid));
 				if (count > 0) {
 					return;
 				}
-				this.commentMapper.incrCommentLikeCount(comment.getCommentId());
+				this.commentService.lambdaUpdate().set(Comment::getLikeCount, comment.getLikeCount() + 1)
+						.eq(Comment::getCommentId, comment.getCommentId()).update();
+
 				CommentLike commentLike = new CommentLike();
 				commentLike.setCommentId(comment.getCommentId());
 				commentLike.setUid(uid);
@@ -119,7 +129,8 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 			} else {
 				this.commentLikeMapper.delete(new LambdaQueryWrapper<CommentLike>()
 						.eq(CommentLike::getCommentId, comment.getCommentId()).eq(CommentLike::getUid, uid));
-				this.commentMapper.decrCommentLikeCount(comment.getCommentId());
+				this.commentService.lambdaUpdate().set(Comment::getLikeCount, comment.getLikeCount() - 1)
+						.eq(Comment::getCommentId, comment.getCommentId()).update();
 			}
 		} finally {
 			lock.unlock();
@@ -181,7 +192,7 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 				.orderByDesc(Comment::getCommentId)
 				.page(new Page<>(1, limit, false));
 		List<Comment> list = page.getRecords();
-		List<CommentVO> comments = list.stream().map(comment -> {
+        return list.stream().map(comment -> {
 			CommentVO vo = CommentVO.newInstance(comment);
 			vo.setUser(this.memberStatDataService.getMemberCache(comment.getUid()));
 			if (comment.getReplyCount() > 0) {
@@ -198,7 +209,6 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 			}
 			return vo;
 		}).toList();
-		return comments;
 	}
 
 	@Override
@@ -212,7 +222,7 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 				.page(new Page<>(1, limit, false));
 		List<Comment> list = page.getRecords();
 		MemberCache memberCache = this.memberStatDataService.getMemberCache(memberId);
-		List<CommentVO> comments = list.stream().map(comment -> {
+        return list.stream().map(comment -> {
 			CommentVO vo = CommentVO.newInstance(comment);
 			vo.setUser(memberCache);
 			if (comment.getReplyUid() > 0) {
@@ -220,7 +230,6 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 			}
 			return vo;
 		}).toList();
-		return comments;
 	}
 
 	private List<Comment> loadCommentReplyList(Long commentId, Integer limit, Long offset) {
@@ -235,7 +244,7 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 	@Override
 	public List<CommentVO> getCommentReplyList(Long commentId, Integer limit, Long offset) {
 		List<Comment> list = loadCommentReplyList(commentId, limit, offset);
-		List<CommentVO> comments = list.stream().map(reply -> {
+        return list.stream().map(reply -> {
 			CommentVO vo = CommentVO.newInstance(reply);
 			vo.setUser(this.memberStatDataService.getMemberCache(reply.getUid()));
 			if (reply.getReplyUid() > 0) {
@@ -243,7 +252,6 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 			}
 			return vo;
 		}).toList();
-		return comments;
 	}
 
 	@Override
@@ -251,7 +259,7 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 	public void deleteUserComment(Long userId, Long commentId) {
 		Comment comment = this.commentService.getById(commentId);
 		Assert.notNull(comment, CommentErrorCode.API_COMMENT_NOT_FOUND::exception);
-		Assert.isTrue(comment.getUid() == userId, CommentErrorCode.API_ACCESS_DENY::exception);
+		Assert.isTrue(Objects.equals(comment.getUid(), userId), CommentErrorCode.API_ACCESS_DENY::exception);
 		// 直接评论且存在未删除回复的不直接删除，标记为删除状态
 		if (comment.getParentId() == 0 && comment.getReplyCount() > 0) {
 			this.commentService.lambdaUpdate()
@@ -278,10 +286,16 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 		RLock lock = redissonClient.getLock("Comment-" + commentId);
 		lock.lock();
 		try {
+			Comment comment = this.commentService.getById(commentId);
+			if (Objects.isNull(comment)) {
+				return;
+			}
 			if (increase) {
-				this.commentMapper.incrCommentReplyCount(commentId);
+				this.commentService.lambdaUpdate().set(Comment::getReplyCount, comment.getReplyCount() + 1)
+						.eq(Comment::getCommentId, comment.getCommentId()).update();
 			} else {
-				this.commentMapper.decrCommentReplyCount(commentId);
+				this.commentService.lambdaUpdate().set(Comment::getReplyCount, comment.getReplyCount() - 1)
+						.eq(Comment::getCommentId, comment.getCommentId()).update();
 			}
 		} finally {
 			lock.unlock();
@@ -297,7 +311,7 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 }

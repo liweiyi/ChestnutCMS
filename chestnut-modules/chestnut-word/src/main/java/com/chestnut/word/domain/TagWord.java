@@ -64,12 +64,12 @@ public class TagWord extends BaseEntity {
     /**
      * 使用次数
      */
-    private String useCount;
+    private Long useCount;
 
     /**
      * 点击次数
      */
-    private String hitCount;
+    private Long hitCount;
 
     /**
      * 图片预览路径

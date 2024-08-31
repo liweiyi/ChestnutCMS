@@ -101,14 +101,20 @@ export default {
     handleSelectAll() {
       this.selectAll = !this.selectAll;
       this.sitePrivs.forEach(row => {
-        Object.keys(row.perms).forEach(key => row.perms[key].granted = this.selectAll)
+        Object.keys(row.perms).forEach(key => {
+          if (!row.perms[key].inherited) {
+            row.perms[key].granted = this.selectAll
+          }
+        })
       })
     },
     handleRowSelectAll(value, siteId) {
       this.sitePrivs.some(row => {
         if (row.siteId == siteId) {
           Object.keys(row.perms).forEach(key => {
-            row.perms[key].granted = value;
+            if (!row.perms[key].inherited) {
+              row.perms[key].granted = value;
+            }
           })
           return true;
         }
@@ -120,9 +126,11 @@ export default {
       this.sitePrivs.forEach(row => {
         Object.keys(row.perms).forEach(key => {
           if (key == column) {
-            row.perms[key].granted = this.selectColumnAll[column];
-            if (this.selectColumnAll[column]) {
-              row.perms['View'].granted = this.selectColumnAll[column]
+            if (!row.perms[key].inherited) {
+              row.perms[key].granted = this.selectColumnAll[column];
+              if (this.selectColumnAll[column]) {
+                row.perms['View'].granted = this.selectColumnAll[column]
+              }
             }
           }
         })

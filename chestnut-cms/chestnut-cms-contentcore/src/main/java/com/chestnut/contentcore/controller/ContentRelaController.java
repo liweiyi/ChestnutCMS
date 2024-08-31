@@ -59,9 +59,9 @@ public class ContentRelaController extends BaseRestController {
 				new Page<>(pr.getPageNumber(), pr.getPageSize(), true),
 				new LambdaQueryWrapper<CmsContentRela>().eq(CmsContentRela::getContentId, contentId)
 		);
-		if (pageResult.getRecords().size() > 0) {
+		if (!pageResult.getRecords().isEmpty()) {
 			List<Long> contentIds = pageResult.getRecords().stream().map(CmsContentRela::getRelaContentId).toList();
-			List<CmsContent> contents = this.contentService.lambdaQuery().in(CmsContent::getContentId, contentIds).list();
+			List<CmsContent> contents = this.contentService.dao().lambdaQuery().in(CmsContent::getContentId, contentIds).list();
 			return this.bindDataTable(contents, pageResult.getTotal());
 		} else {
 			return this.bindDataTable(pageResult);
@@ -70,7 +70,7 @@ public class ContentRelaController extends BaseRestController {
 
 	@PostMapping
 	public R<?> addRelaContents(@RequestParam Long contentId, @RequestBody List<Long> relaContentIds) {
-		CmsContent content = this.contentService.getById(contentId);
+		CmsContent content = this.contentService.dao().getById(contentId);
 		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 		List<Long> contentIds = contentRelaService.list(new LambdaQueryWrapper<CmsContentRela>()
 						.eq(CmsContentRela::getContentId, contentId))

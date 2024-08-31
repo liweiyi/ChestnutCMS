@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.template.func;
 
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDictData;
@@ -24,6 +25,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -58,8 +61,15 @@ public class DictFunction extends AbstractFunc {
 		if (StringUtils.isBlank(dictType)) {
 			return List.of();
 		}
-		String dictValue = args.length > 1 ? args[1].toString() : null;
+		String dictValue = (args.length > 1 && Objects.nonNull(args[1])) ? args[1].toString() : StringUtils.EMPTY;
+		String localeKey = (args.length > 2 && Objects.nonNull(args[2])) ? args[2].toString() : StringUtils.EMPTY;
 		List<SysDictData> datas = dictTypeService.selectDictDatasByType(dictType);
+		if (StringUtils.isNotEmpty(localeKey)) {
+			I18nUtils.replaceI18nFields(datas, Locale.forLanguageTag(localeKey));
+		} else {
+			I18nUtils.replaceI18nFields(datas);
+		}
+		I18nUtils.replaceI18nFields(datas, Locale.getDefault());
 		if (StringUtils.isNotBlank(dictValue)) {
 			Optional<SysDictData> first = datas.stream().filter(data -> StringUtils.equals(data.getDictValue(), dictValue)).findFirst();
 			if (first.isEmpty()) {
@@ -73,6 +83,7 @@ public class DictFunction extends AbstractFunc {
 	@Override
 	public List<FuncArg> getFuncArgs() {
 		return List.of(new FuncArg("字典类型", FuncArgType.String, true, null),
-				new FuncArg("字典数据值", FuncArgType.String, false, null));
+				new FuncArg("字典数据值", FuncArgType.String, false, null),
+				new FuncArg("国际化标识", FuncArgType.String, false, null));
 	}
 }

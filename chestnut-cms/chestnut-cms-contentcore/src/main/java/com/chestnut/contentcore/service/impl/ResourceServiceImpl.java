@@ -289,9 +289,9 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 	}
 
 	@Override
-	public String getResourceLink(CmsResource resource, boolean isPreview) {
+	public String getResourceLink(CmsResource resource, String publishPipeCode, boolean isPreview) {
 		CmsSite site = this.siteService.getSite(resource.getSiteId());
-		String prefix = ResourceUtils.getResourcePrefix(resource.getStorageType(), site, isPreview);
+		String prefix = ResourceUtils.getResourcePrefix(resource.getStorageType(), site, publishPipeCode, isPreview);
 		return prefix + resource.getPath();
 	}
 

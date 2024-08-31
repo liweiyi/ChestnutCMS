@@ -15,34 +15,33 @@
  */
 package com.chestnut.media.service.impl;
 
+import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.media.dao.CmsAudioDAO;
+import com.chestnut.media.domain.CmsAudio;
+import com.chestnut.media.service.IAudioService;
+import com.chestnut.media.util.MediaUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import ws.schild.jave.info.MultimediaInfo;
+
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.contentcore.util.InternalUrlUtils;
-import com.chestnut.media.domain.CmsAudio;
-import com.chestnut.media.mapper.CmsAudioMapper;
-import com.chestnut.media.service.IAudioService;
-import com.chestnut.media.util.MediaUtils;
-
-import lombok.RequiredArgsConstructor;
-import ws.schild.jave.info.MultimediaInfo;
-
 @RequiredArgsConstructor
 @Service
-public class AudioServiceImpl extends ServiceImpl<CmsAudioMapper, CmsAudio> implements IAudioService {
+public class AudioServiceImpl implements IAudioService {
+
+	private final CmsAudioDAO dao;
 	
 	@Override
 	public List<CmsAudio> getAlbumAudioList(Long contentId) {
-		return this.lambdaQuery().eq(CmsAudio::getContentId, contentId).list();
+		return this.dao().lambdaQuery().eq(CmsAudio::getContentId, contentId).list();
 	}
 	
 	/**
 	 * 处理音频信息
 	 * 
-	 * @param audio
+	 * @param audio 音频数据
 	 */
 	@Override
 	public void progressAudioInfo(CmsAudio audio) {
@@ -60,5 +59,10 @@ public class AudioServiceImpl extends ServiceImpl<CmsAudioMapper, CmsAudio> impl
 			audio.setBitRate(multimediaInfo.getAudio().getBitRate());
 			audio.setSamplingRate(multimediaInfo.getAudio().getSamplingRate());
 		}
+	}
+
+	@Override
+	public CmsAudioDAO dao() {
+		return dao;
 	}
 }

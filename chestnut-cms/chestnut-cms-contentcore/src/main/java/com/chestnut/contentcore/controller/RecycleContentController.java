@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.controller;
 
 import cn.dev33.satoken.annotation.SaMode;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
@@ -23,10 +24,11 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
-import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.domain.BCmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.ISiteService;
@@ -57,8 +59,6 @@ public class RecycleContentController extends BaseRestController {
 
 	private final ISiteService siteService;
 
-	private final CmsContentMapper contentMapper;
-
 	private final IContentService contentService;
 
 	@GetMapping
@@ -69,8 +69,13 @@ public class RecycleContentController extends BaseRestController {
 		PageRequest pr = getPageRequest();
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 
-		Page<CmsContent> page = this.contentMapper.selectPageWithLogicDel(new Page<>(pr.getPageNumber(), pr.getPageSize(), true),
-				site.getSiteId(), catalogId, contentType, status, title);
+		LambdaQueryWrapper<BCmsContent> q = new LambdaQueryWrapper<BCmsContent>().eq(BCmsContent::getSiteId, site.getSiteId())
+				.eq(IdUtils.validate(catalogId), BCmsContent::getCatalogId, catalogId)
+				.eq(StringUtils.isNotEmpty(contentType), BCmsContent::getContentType, contentType)
+				.like(StringUtils.isNotEmpty(title), BCmsContent::getTitle, title)
+				.eq(StringUtils.isNotEmpty(status), BCmsContent::getStatus, status);
+		Page<BCmsContent> page = this.contentService.dao().getBackupMapper()
+				.selectPage(new Page<>(pr.getPageNumber(), pr.getPageSize(), true), q);
 		return this.bindDataTable(page);
 	}
 

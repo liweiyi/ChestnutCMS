@@ -4,14 +4,14 @@
 
 	<groupId>com.chestnut</groupId>
 	<artifactId>chestnut</artifactId>
-	<version>1.4.5</version>
+	<version>1.5.0</version>
 	<packaging>pom</packaging>
 
 	<name>ChestnutCMS</name>
 	<description>栗子内容管理系统</description>
 
 	<properties>
-		<chestnut.version>1.4.5</chestnut.version>
+		<chestnut.version>1.5.0</chestnut.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
@@ -46,6 +46,7 @@
 		<xxl-job-core.version>2.4.0</xxl-job-core.version>
 		<flyway.version>9.22.3</flyway.version>
 		<ali-opensearch.version>1.0.2</ali-opensearch.version>
+		<flowable.version>7.0.1</flowable.version>
 	</properties>
 
 	<!-- 依赖声明 -->

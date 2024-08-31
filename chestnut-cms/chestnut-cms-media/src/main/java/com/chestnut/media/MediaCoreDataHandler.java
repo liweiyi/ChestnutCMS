@@ -35,7 +35,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * 广告页面部件内容核心数据处理器
+ * 音视频内容核心数据处理器
  *
  * @author 兮玥
  * @email 190785909@qq.com
@@ -61,7 +61,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     .eq(CmsAudio::getSiteId, context.getSite().getSiteId())
                     .gt(CmsAudio::getAudioId, offset)
                     .orderByAsc(CmsAudio::getAudioId);
-            Page<CmsAudio> page = audioService.page(new Page<>(1, pageSize, false), q);
+            Page<CmsAudio> page = audioService.dao().page(new Page<>(1, pageSize, false), q);
             if (!page.getRecords().isEmpty()) {
                 context.saveData(CmsAudio.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                 if (page.getRecords().size() < pageSize) {
@@ -82,7 +82,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     .eq(CmsVideo::getSiteId, context.getSite().getSiteId())
                     .gt(CmsVideo::getVideoId, offset)
                     .orderByAsc(CmsVideo::getVideoId);
-            Page<CmsVideo> page = videoService.page(new Page<>(1, pageSize, false), q);
+            Page<CmsVideo> page = videoService.dao().page(new Page<>(1, pageSize, false), q);
             if (!page.getRecords().isEmpty()) {
                 context.saveData(CmsVideo.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                 if (page.getRecords().size() < pageSize) {
@@ -110,7 +110,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     data.setContentId(context.getContentIdMap().get(data.getContentId()));
                     data.createBy(context.getOperator());
                     data.setPath(context.dealInternalUrl(data.getPath()));
-                    audioService.save(data);
+                    audioService.dao().save(data);
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入音频内容数据失败：" + data.getTitle()
                             + "[" + data.getAudioId() + "]");
@@ -126,11 +126,12 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
             for (CmsVideo data : list) {
                 try {
                     data.setVideoId(IdUtils.getSnowflakeId());
+                    data.setCover(context.dealInternalUrl(data.getCover()));
                     data.setSiteId(context.getSite().getSiteId());
                     data.setContentId(context.getContentIdMap().get(data.getContentId()));
                     data.createBy(context.getOperator());
                     data.setPath(context.dealInternalUrl(data.getPath()));
-                    videoService.save(data);
+                    videoService.dao().save(data);
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入视频内容数据失败：" + data.getTitle()
                             + "[" + data.getVideoId() + "]");

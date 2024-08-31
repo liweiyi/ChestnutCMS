@@ -28,7 +28,7 @@ import java.util.Map;
  * 素材库图片默认缩略图宽度配置
  *
  * @author 兮玥
- * @mail 190785909@qq.com
+ * @email 190785909@qq.com
  */
 @Component(IProperty.BEAN_NAME_PREFIX + ThumbnailWidthProperty.ID)
 public class ThumbnailWidthProperty implements IProperty {

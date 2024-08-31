@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog 
-      title="选择tag词"
+      :title="$t('WordMgr.TAG.SelectorTitle')"
       :visible.sync="visible"
       width="1100px"
       :close-on-click-modal="false"
@@ -18,7 +18,7 @@
         <el-col :span="20" :xs="24">
           <el-row :gutter="24">
             <el-col :span="16" :xs="24">
-              <span>标签列表</span>
+              <span>{{ $t('WordMgr.TAG.TagList') }}</span>
               <el-divider></el-divider>
               <el-tag 
                 :key="tag.wordId"
@@ -28,7 +28,7 @@
               </el-tag>
             </el-col>
             <el-col :span="8" :xs="24">
-              <span>已选择的标签</span>
+              <span>{{ $t('WordMgr.TAG.SelectedTagList') }}</span>
               <el-divider></el-divider>
               <el-tag 
                 closable
@@ -142,5 +142,11 @@ export default {
 .tag-selector-dialog .el-tag {
   margin-bottom: 5px;
   margin-right: 5px;
+}
+.tag-selector-dialog .el-tag.el-tag--success:hover {
+  cursor: pointer;
+}
+.tag-selector-dialog .el-tag.el-tag--info:hover {
+  cursor: not-allowed;
 }
 </style>

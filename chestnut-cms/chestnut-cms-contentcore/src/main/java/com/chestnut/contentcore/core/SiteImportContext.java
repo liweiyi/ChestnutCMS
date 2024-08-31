@@ -25,6 +25,7 @@ import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -39,6 +40,7 @@ import java.util.stream.Stream;
 /**
  * 站点主题导入上下文
  */
+@Slf4j
 @Getter
 @Setter
 public class SiteImportContext implements ISiteThemeContext {
@@ -114,6 +116,8 @@ public class SiteImportContext implements ISiteThemeContext {
                 }
                 return internalURL.toIUrl();
             }
+            log.warn("iurl `{}` missing source data.", iurl);
+            return StringUtils.EMPTY; // iurl无法找到来源数据直接忽略
         }
         return iurl;
     }

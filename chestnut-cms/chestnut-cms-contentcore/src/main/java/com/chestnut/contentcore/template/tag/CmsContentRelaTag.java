@@ -69,7 +69,7 @@ public class CmsContentRelaTag extends AbstractListTag {
 				new LambdaQueryWrapper<CmsContentRela>().eq(CmsContentRela::getContentId, contentId));
 		if (!pageResult.getRecords().isEmpty()) {
 			List<Long> contentIds = pageResult.getRecords().stream().map(CmsContentRela::getRelaContentId).toList();
-			List<CmsContent> contents = this.contentService.lambdaQuery().in(CmsContent::getContentId, contentIds).list();
+			List<CmsContent> contents = this.contentService.dao().lambdaQuery().in(CmsContent::getContentId, contentIds).list();
 			List<ContentDTO> result = contents.stream().map(c -> {
 				ContentDTO dto = ContentDTO.newInstance(c);
 				dto.setLink(this.contentService.getContentLink(c, 1,

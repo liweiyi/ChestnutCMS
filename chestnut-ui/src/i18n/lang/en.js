@@ -260,6 +260,7 @@ export default {
       EditAvatar: 'Edit Avatar',
       UploadAvatar: 'Click to upload avatar',
       SelectUser: "Select User",
+      IsAllocatedRole: "Allocated",
       Dialog: {
         Add: "Add User",
         Edit: "Edit User",
@@ -609,6 +610,8 @@ export default {
       PasswordRetryLockSecondsTip: "Maximum of 100 days.",
       AddTitle: "Add Security Configuration",
       EditTitle: "Edit Security Configuration",
+      ForceModifyPwd: "Password needs to be changed after first login or password reset!",
+      PwdExpired: "Your password has expired. For the security of your account, please change the password immediately!"
     },
     WeChat: {
       Backend: "Backend",
@@ -740,7 +743,12 @@ export default {
       DiskSize: "Size",
       DiskLeftSize: "Left",
       DiskUsedSize: "Used",
-      DiskUsedPercent: "Percent"
+      DiskUsedPercent: "Percent",
+      DbInfo: "Data Source List",
+      DbPoolName: "Data Source",
+      DbDriverClass: "Driver Class",
+      DbUrl: "URL",
+      DbUserName: "User Name"
     },
     Cache: {
       Basic: "Basic Infomation",
@@ -969,7 +977,8 @@ export default {
         EnableCommentAudit: "Enable Comment Audit",
         SEO: "SEO Configuration",
         BaiduPushAccessSecret: "Baidu Push API Secret",
-        DownloadRemoteImage: "Enable download remote image"
+        DownloadRemoteImage: "Enable Download Remote Image",
+        EnableSiteDeleteBackup: "Enable Site Delete Backup"
       },
       Property: {
         QueryPlaceholder: "Input name/code",
@@ -1013,6 +1022,9 @@ export default {
         Extend: "Extend Configuration",
       },
       AddCatalog: "Add Catalog",
+      BatchAddCatalog: "Batch Add Catalog",
+      BatchAddTip: "Each line has one catalog, and two spaces are used in sequence to represent subordinate catalog.",
+      CatalogTree: "Catalog Tree",
       CatalogNamePlaceholder: "Input catalog name",
       ParentCatalog: "Parent Catalog",
       Basic: "Basic",
@@ -1027,6 +1039,7 @@ export default {
       RedirectUrl: "Redirect Url",
       Desc: "Description",
       StaticFlag: "Enable Staticize",
+      TagIgnore: "Ingore By Directive",
       Logo: "Logo",
       PublishPipeConf: "Publish pipe configuration",
       IndexTemplate: "Index Template",
@@ -1151,6 +1164,7 @@ export default {
       CommentCount: "Comments",
       RelaContent: "Related contents",
       PushToBaidu: "Push To Baidu",
+      PushToBaiduResult: "[ {0} ] Success: {1}, remain: {2}.<br/>",
       ImportCSSTip: "Import site/catalog publish-pipe prop 'UEditor CSS'.",
     },
     Image: {
@@ -1511,6 +1525,9 @@ export default {
       TAGWordLogo: "Image",
       AddTAGTitle: "Add TAG",
       EditTAGTitle: "Edit TAG",
+      SelectorTitle: "Select TAG",
+      TagList: "TAG List",
+      SelectedTagList: "Selected",
       Placeholder: {
         InputGroupName: "Input group name...",
         SelectParentGroup: "Select parent group...",

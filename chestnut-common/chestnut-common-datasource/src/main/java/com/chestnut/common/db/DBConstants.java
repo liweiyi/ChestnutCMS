@@ -24,6 +24,20 @@ package com.chestnut.common.db;
 public class DBConstants {
 
     /**
+     * 删除备份标识
+     */
+    public static final String BACKUP_REMARK_DELETE = "DELETE";
+
+    /**
+     * 备份表前缀
+     */
+    public static final String BACKUP_TABLE_PREFIX = "b_";
+
+    public static String toBackupTableName(String tableName) {
+        return BACKUP_TABLE_PREFIX + tableName;
+    }
+
+    /**
      * 逻辑删除标识：未删除
      */
     public static final int DELETED_NO = 0;
@@ -34,6 +48,6 @@ public class DBConstants {
     public static final int DELETED_YES = 1;
 
     public static boolean isDeleted(Integer deleted) {
-        return deleted != null && deleted.intValue() == DELETED_YES;
+        return deleted != null && deleted == DELETED_YES;
     }
 }

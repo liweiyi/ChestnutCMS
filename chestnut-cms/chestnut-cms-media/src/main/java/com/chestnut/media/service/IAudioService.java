@@ -15,25 +15,26 @@
  */
 package com.chestnut.media.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.chestnut.common.db.mybatisplus.HasDAO;
+import com.chestnut.media.dao.CmsAudioDAO;
 import com.chestnut.media.domain.CmsAudio;
 
 import java.util.List;
 
-public interface IAudioService extends IService<CmsAudio> {
+public interface IAudioService extends HasDAO<CmsAudioDAO> {
 
 	/**
 	 * 获取音频集音频列表数据
 	 * 
-	 * @param contentId
-	 * @return
+	 * @param contentId 内容ID
+	 * @return 音频列表
 	 */
-	public List<CmsAudio> getAlbumAudioList(Long contentId);
+	List<CmsAudio> getAlbumAudioList(Long contentId);
 
 	/**
 	 * 处理音频信息
 	 * 
-	 * @param audio
+	 * @param audio 音频数据
 	 */
 	void progressAudioInfo(CmsAudio audio);
 }

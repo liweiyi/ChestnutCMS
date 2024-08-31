@@ -15,10 +15,10 @@
  */
 package com.chestnut.system.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysRole;
+
+import java.util.List;
 
 /**
  * 角色业务层
@@ -28,87 +28,74 @@ import com.chestnut.system.domain.SysRole;
  */
 public interface ISysRoleService extends IService<SysRole> {
 
+	default List<SysRole> selectRolesByUserId(Long userId) {
+		return selectRolesByUserId(userId, null);
+	}
+
 	/**
 	 * 根据用户ID查询角色列表
 	 * 
-	 * @param userId
-	 *            用户ID
+	 * @param userId 用户ID
 	 * @return 角色列表
 	 */
-	public List<SysRole> selectRolesByUserId(Long userId);
+	List<SysRole> selectRolesByUserId(Long userId, String status);
 
 	/**
 	 * 根据用户ID查询角色权限
 	 * 
-	 * @param userId
-	 *            用户ID
+	 * @param userId 用户ID
 	 * @return 权限列表
 	 */
-	public List<String> selectRoleKeysByUserId(Long userId);
+	List<String> selectRoleKeysByUserId(Long userId);
 
 	/**
 	 * 新增保存角色信息
 	 * 
-	 * @param role
-	 *            角色信息
-	 * @return 结果
+	 * @param role 角色信息
 	 */
-	public void insertRole(SysRole role);
+	void insertRole(SysRole role);
 
 	/**
 	 * 修改保存角色信息
 	 * 
-	 * @param role
-	 *            角色信息
-	 * @return 结果
+	 * @param role 角色信息
 	 */
-	public void updateRole(SysRole role);
+	void updateRole(SysRole role);
 
 	/**
 	 * 修改角色状态
 	 * 
-	 * @param role
-	 *            角色信息
-	 * @return 结果
+	 * @param role 角色信息
 	 */
-	public void updateRoleStatus(SysRole role);
+	void updateRoleStatus(SysRole role);
 
 	/**
 	 * 批量删除角色信息
 	 * 
-	 * @param roleIds
-	 *            需要删除的角色ID
-	 * @return 结果
+	 * @param roleIds 需要删除的角色ID
 	 */
-	public void deleteRoleByIds(List<Long> roleIds);
+	void deleteRoleByIds(List<Long> roleIds);
 
 	/**
 	 * 批量取消授权用户角色
 	 * 
-	 * @param roleId
-	 *            角色ID
-	 * @param userIds
-	 *            需要取消授权的用户数据ID
-	 * @return 结果
+	 * @param roleId 角色ID
+	 * @param userIds 需要取消授权的用户数据ID
 	 */
-	public void deleteAuthUsers(Long roleId, List<Long> userIds);
+	void deleteAuthUsers(Long roleId, List<Long> userIds);
 
 	/**
 	 * 批量选择授权用户角色
 	 * 
-	 * @param roleId
-	 *            角色ID
-	 * @param userIds
-	 *            需要删除的用户数据ID
-	 * @return 结果
+	 * @param roleId 角色ID
+	 * @param userIds 需要删除的用户数据ID
 	 */
-	public void insertAuthUsers(Long roleId, List<Long> userIds);
+	void insertAuthUsers(Long roleId, List<Long> userIds);
 
 	/**
 	 * 获取缓存角色信息
 	 * 
-	 * @param roleCode
-	 * @return
+	 * @param roleCode 角色编码
 	 */
 	SysRole getRole(String roleCode);
 }

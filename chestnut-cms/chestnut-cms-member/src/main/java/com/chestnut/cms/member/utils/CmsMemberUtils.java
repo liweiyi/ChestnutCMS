@@ -18,8 +18,8 @@ package com.chestnut.cms.member.utils;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
-import freemarker.template.TemplateBooleanModel;
 import freemarker.template.TemplateModelException;
 
 /**
@@ -32,7 +32,7 @@ public class CmsMemberUtils {
 
     public static String getAccountUrl(Long memberId, String type, Environment env, boolean includeBaseArgs) throws TemplateModelException {
         String url;
-        Long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+        Long siteId = TemplateUtils.evalSiteId(env);
         TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
         if (context.isPreview()) {
             url = FreeMarkerUtils.evalStringVariable(env, "ApiPrefix")
@@ -44,7 +44,7 @@ public class CmsMemberUtils {
             }
         }
         if (StringUtils.isNotEmpty(type)) {
-            url += (url.indexOf("?") > -1 ? "&" : "?") + "type=" + type;
+            url += (url.contains("?") ? "&" : "?") + "type=" + type;
         }
         return url;
     }

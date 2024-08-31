@@ -15,13 +15,6 @@
  */
 package com.chestnut.block;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import com.chestnut.block.domain.vo.ManualPageWidgetVO;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -30,10 +23,14 @@ import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.vo.PageWidgetVO;
 import com.chestnut.contentcore.util.InternalUrlUtils;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 手动控制区块页面部件<br/>
@@ -98,7 +95,10 @@ public class ManualPageWidgetType implements IPageWidgetType {
 		if (list == null) {
 			list = List.of();
 		}
-		list.forEach(rd -> rd.getItems().forEach(item -> item.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(item.logo))));
+		list.forEach(rd -> rd.getItems().forEach(item -> {
+			item.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(item.logo));
+			item.setLink(item.getUrl());
+		}));
 		return list;
 	}
 	
@@ -119,8 +119,11 @@ public class ManualPageWidgetType implements IPageWidgetType {
 		private String titleStyle;
 		
 		private String summary;
-		
+
+		@Deprecated
 		private String url;
+
+		private String link;
 		
 		private String logo;
 		

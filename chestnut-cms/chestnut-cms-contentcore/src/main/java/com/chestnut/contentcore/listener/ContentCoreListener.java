@@ -16,13 +16,13 @@
 package com.chestnut.contentcore.listener;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
 import com.chestnut.contentcore.domain.*;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.*;
-import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
@@ -55,8 +55,6 @@ public class ContentCoreListener {
 	
 	private final IResourceService resourceService;
 	
-	private final CmsContentMapper contentMapper;
-	
 	private final IPageWidgetService pageWidgetService;
 	
 	private final ITemplateService templateService;
@@ -76,10 +74,28 @@ public class ContentCoreListener {
 		this.pageWidgetService.remove(new LambdaQueryWrapper<CmsPageWidget>().eq(CmsPageWidget::getSiteId, site.getSiteId()));
 		// 删除内容数据
 		try {
-			long total = this.contentMapper.selectCountBySiteIdIgnoreLogicDel(site.getSiteId());
+			long total = this.contentService.dao().countBySiteId(site.getSiteId());
+			for (long i = 0; i * pageSize < total; i++) {
+				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除内容数据：" + (i * pageSize) + "/" + total);
+				List<Long> contentIds = this.contentService.dao()
+						.pageBySiteId(
+								new Page<>(0, pageSize, false),
+								site.getSiteId(),
+								List.of(CmsContent::getContentId)
+						).getRecords().stream().map(CmsContent::getContentId).toList();
+				this.contentService.dao().removeBatchByIds(contentIds);
+			}
+			// 删除备份内容数据
+			total = this.contentService.dao().countBackupBySiteId(site.getSiteId());
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除内容备份数据：" + (i * pageSize) + "/" + total);
-				this.contentMapper.deleteBySiteIdIgnoreLogicDel(site.getSiteId(), pageSize);
+				List<Long> backupIds = this.contentService.dao()
+						.pageBackupBySiteId(
+								new Page<>(0, pageSize, false),
+								site.getSiteId(),
+								List.of(BCmsContent::getContentId)
+						).getRecords().stream().map(BCmsContent::getBackupId).toList();
+				this.contentService.dao().removeBackupBatchByIds(backupIds);
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除内容错误：" + e.getMessage());
@@ -195,7 +211,7 @@ public class ContentCoreListener {
 		final String operator = event.getContent().getOperatorUName();
 		asyncTaskManager.execute(() -> {
 			// 映射关联内容同步下线
-			List<CmsContent> mappingList = contentService.lambdaQuery()
+			List<CmsContent> mappingList = contentService.dao().lambdaQuery()
 					.gt(CmsContent::getCopyType, ContentCopyType.Mapping)
 					.eq(CmsContent::getCopyId, contentId).list();
 			for (CmsContent c : mappingList) {
@@ -205,17 +221,17 @@ public class ContentCoreListener {
 				c.setStatus(ContentStatus.OFFLINE);
 				c.updateBy(operator);
 			}
-			contentService.updateBatchById(mappingList);
+			contentService.dao().updateBatchById(mappingList);
 			// 标题内容同步下线
 			String internalUrl = InternalUrlUtils.getInternalUrl(InternalDataType_Content.ID, contentId);
-			List<CmsContent> linkList = contentService.lambdaQuery().eq(CmsContent::getLinkFlag, YesOrNo.YES)
+			List<CmsContent> linkList = contentService.dao().lambdaQuery().eq(CmsContent::getLinkFlag, YesOrNo.YES)
 					.eq(CmsContent::getRedirectUrl, internalUrl).list();
 			for (CmsContent c : linkList) {
 				c.setStatus(ContentStatus.OFFLINE);
 				c.updateBy(operator);
 			}
 			mappingList.addAll(linkList);
-			contentService.updateBatchById(mappingList);
+			contentService.dao().updateBatchById(mappingList);
 		});
 	}
 }

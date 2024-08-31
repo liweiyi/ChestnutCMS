@@ -66,7 +66,7 @@ public class CmsImageTag extends AbstractListTag {
 		if (contentId <= 0) {
 			throw new TemplateException("图集内容ID错误：" + contentId, env);
 		}
-		CmsContent c = this.contentService.getById(contentId);
+		CmsContent c = this.contentService.dao().getById(contentId);
 		if (ContentCopyType.isMapping(c.getCopyType())) {
 			contentId = c.getCopyId();
 		}
@@ -75,8 +75,8 @@ public class CmsImageTag extends AbstractListTag {
 		LambdaQueryWrapper<CmsImage> q = new LambdaQueryWrapper<CmsImage>().eq(CmsImage::getContentId, contentId);
 		q.apply(StringUtils.isNotEmpty(condition), condition);
 		q.orderByAsc(CmsImage::getSortFlag);
-		Page<CmsImage> pageResult = this.imageService.page(new Page<>(pageIndex, size, page), q);
-		if (pageIndex > 1 & pageResult.getRecords().size() == 0) {
+		Page<CmsImage> pageResult = this.imageService.dao().page(new Page<>(pageIndex, size, page), q);
+		if (pageIndex > 1 & pageResult.getRecords().isEmpty()) {
 			throw new TemplateException("内容列表页码超出上限：" + pageIndex, env);
 		}
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);

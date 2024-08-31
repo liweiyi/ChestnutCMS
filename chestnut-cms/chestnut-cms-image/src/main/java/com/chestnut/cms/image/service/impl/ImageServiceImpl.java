@@ -15,20 +15,27 @@
  */
 package com.chestnut.cms.image.service.impl;
 
-import java.util.List;
-
+import com.chestnut.cms.image.dao.CmsImageDAO;
+import com.chestnut.cms.image.domain.CmsImage;
+import com.chestnut.cms.image.service.IImageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.cms.image.domain.CmsImage;
-import com.chestnut.cms.image.mapper.CmsImageMapper;
-import com.chestnut.cms.image.service.IImageService;
+import java.util.List;
 
 @Service
-public class ImageServiceImpl extends ServiceImpl<CmsImageMapper, CmsImage> implements IImageService {
+@RequiredArgsConstructor
+public class ImageServiceImpl implements IImageService {
+
+	private final CmsImageDAO dao;
 
 	@Override
 	public List<CmsImage> getAlbumImages(Long contentId) {
-		return this.lambdaQuery().eq(CmsImage::getContentId, contentId).list();
+		return this.dao().lambdaQuery().eq(CmsImage::getContentId, contentId).list();
+	}
+
+	@Override
+	public CmsImageDAO dao() {
+		return dao;
 	}
 }

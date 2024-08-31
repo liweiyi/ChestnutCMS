@@ -15,19 +15,9 @@
  */
 package com.chestnut.vote.service.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
@@ -50,8 +40,19 @@ import com.chestnut.vote.mapper.VoteMapper;
 import com.chestnut.vote.mapper.VoteSubjectItemMapper;
 import com.chestnut.vote.mapper.VoteSubjectMapper;
 import com.chestnut.vote.service.IVoteService;
-
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -61,8 +62,6 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 
 	private ApplicationContext applicationContext;
 	
-	private final VoteMapper voteMapper;
-
 	private final VoteSubjectMapper subjectMapper;
 
 	private final VoteSubjectItemMapper itemMapper;
@@ -140,6 +139,7 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 					vo.setContent(item.getContent());
 					vo.setDescription(item.getDescription());
 					vo.setSortFlag(item.getSortFlag());
+					vo.setVoteTotal(item.getVoteTotal().longValue());
 					return vo;
 				}).collect(Collectors.groupingBy(VoteSubjectItemVO::getSubjectId));
 
@@ -169,7 +169,7 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 
@@ -223,14 +223,13 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 		// 删除问卷调查相关日志
 		this.voteLogMapper.delete(new LambdaQueryWrapper<VoteLog>().in(VoteLog::getVoteId, voteIds));
 		// 更新缓存
-		voteIds.forEach(voteId -> this.clearVoteCache(voteId));
+		voteIds.forEach(this::clearVoteCache);
 	}
 
 	/**
 	 * 更新问卷参与数和主题选项票数
 	 * 
-	 * @param voteLog
-	 * @param vote
+	 * @param voteLog 投票日志
 	 */
 	public void onVoteSubmit(VoteLog voteLog) {
 		RLock lock = redissonClient.getLock("VoteTotalUpdate-" + voteLog.getVoteId());
@@ -238,14 +237,26 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 		try {
 			VoteVO vote = this.getVote(voteLog.getVoteId());
 			// 问卷调查参与数+1
-			this.voteMapper.incrVoteTotal(voteLog.getVoteId());
+			Vote voteEntity = this.lambdaQuery().select(Vote::getVoteId, Vote::getTotal)
+					.eq(Vote::getVoteId, voteLog.getVoteId()).one();
+			this.lambdaUpdate().set(Vote::getTotal, voteEntity.getTotal() + 1)
+					.eq(Vote::getVoteId, voteLog.getVoteId()).update();
 			// 单选/多选主题选项票数+1
 			vote.getSubjects().forEach(subject -> {
 				if (!VoteSubjectType.isInput(subject.getType())) {
 					String result = voteLog.getResult().get(subject.getSubjectId());
-					this.itemMapper.incrItemTotal(Long.valueOf(result));
+					VoteSubjectItem item = new LambdaQueryChainWrapper<>(this.itemMapper)
+							.select(VoteSubjectItem::getItemId, VoteSubjectItem::getTotal)
+							.eq(VoteSubjectItem::getItemId, result)
+							.one();
+					new LambdaUpdateChainWrapper<>(this.itemMapper)
+							.set(VoteSubjectItem::getTotal, item.getTotal() + 1)
+							.eq(VoteSubjectItem::getItemId, item.getItemId())
+							.update();
 				}
 			});
+			// 更新缓存
+			this.redisCache.setCacheObject(CACHE_PREFIX + vote.getVoteId(), vote);
 		} finally {
 			lock.unlock();
 		}

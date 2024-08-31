@@ -38,7 +38,7 @@ public class SearchLog implements Serializable {
 
 	public static final String TABLE_NAME = "search_log";
 
-	@TableId(value = "log_id", type = IdType.AUTO)
+	@TableId(value = "log_id", type = IdType.INPUT)
 	private Long logId;
 
 	/**

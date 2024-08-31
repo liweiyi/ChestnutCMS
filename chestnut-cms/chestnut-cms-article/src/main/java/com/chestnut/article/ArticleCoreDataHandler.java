@@ -59,8 +59,8 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
                     .eq(CmsArticleDetail::getSiteId, context.getSite().getSiteId())
                     .gt(CmsArticleDetail::getContentId, offset)
                     .orderByAsc(CmsArticleDetail::getContentId);
-            Page<CmsArticleDetail> page = articleService.page(new Page<>(1, pageSize, false), q);
-            if (page.getRecords().size() > 0) {
+            Page<CmsArticleDetail> page = articleService.dao().page(new Page<>(1, pageSize, false), q);
+            if (!page.getRecords().isEmpty()) {
                 context.saveData(CmsArticleDetail.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                 if (page.getRecords().size() < pageSize) {
                     break;
@@ -101,7 +101,7 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
                     }
                     html.append(contentHtml.substring(index));
                     data.setContentHtml(html.toString());
-                    articleService.save(data);
+                    articleService.dao().save(data);
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入文章数据失败：" + oldContentId);
                     log.error("Import article detail failed: {}", oldContentId, e);

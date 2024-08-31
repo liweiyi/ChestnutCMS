@@ -15,12 +15,14 @@
  */
 package com.chestnut.contentcore.job;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.contentcore.core.IContentType;
-import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.mapper.CmsContentMapper;
+import com.chestnut.contentcore.domain.BCmsContent;
 import com.chestnut.contentcore.properties.RecycleKeepDaysProperty;
+import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.system.schedule.IScheduledHandler;
@@ -30,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 回收站内容过期回收
@@ -46,7 +47,7 @@ public class RecycleExpireJobHandler extends IJobHandler implements IScheduledHa
 
 	private final ISiteService siteService;
 
-	private final CmsContentMapper contentMapper;
+	private final IContentService contentService;
 
 	@Override
 	public String getId() {
@@ -65,22 +66,25 @@ public class RecycleExpireJobHandler extends IJobHandler implements IScheduledHa
 		this.siteService.list().forEach(site -> {
 			int days = RecycleKeepDaysProperty.getValue(site.getConfigProps());
 			if (days > 0) {
+				BaseMapper<BCmsContent> backupMapper = this.contentService.dao().getBackupMapper();
 				LocalDateTime expireTime = DateUtils.getDayStart(LocalDateTime.now().minusDays(days));
-				long total = this.contentMapper.selectCountBeforeWithLogicDel(expireTime);
-				int pageSize = 100;
+
+				long total = backupMapper.selectCount(new LambdaQueryWrapper<BCmsContent>()
+						.lt(BCmsContent::getBackupTime, expireTime));
+				long pageSize = 500;
+				LambdaQueryWrapper<BCmsContent> q = new LambdaQueryWrapper<BCmsContent>()
+						.select(BCmsContent::getContentId, BCmsContent::getContentType)
+						.lt(BCmsContent::getBackupTime, expireTime);
 				for (int i = 0; i * pageSize < total; i++) {
 					logger.debug("Job '{}' running: 【{}】 {} / {}", JOB_NAME, site.getName(), i * pageSize, total);
 					try {
-						Page<CmsContent> page = this.contentMapper.selectPageBeforeWithLogicDel(
-								new Page<>(i, pageSize, false), expireTime);
+						Page<BCmsContent> page = backupMapper.selectPage(new Page<>(i, pageSize, false), q);
 						page.getRecords().forEach(rc -> {
 							IContentType contentType = ContentCoreUtils.getContentType(rc.getContentType());
 							contentType.deleteBackups(rc.getContentId());
 						});
-						List<Long> contentIds = page.getRecords().stream().map(CmsContent::getContentId).toList();
-						contentMapper.deleteByIdsIgnoreLogicDel(contentIds);
 					} catch (Exception e) {
-						logger.error("Job '{}' err: " + e.getMessage(), e);
+						logger.error("Job '{}' err: " + e.getMessage(), JOB_NAME);
 					}
 				}
 			}

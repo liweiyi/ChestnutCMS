@@ -17,6 +17,10 @@ package com.chestnut.cms.word.template.func;
 
 import java.util.List;
 
+import com.chestnut.common.staticize.FreeMarkerUtils;
+import com.chestnut.common.staticize.core.TemplateContext;
+import com.chestnut.contentcore.util.TemplateUtils;
+import freemarker.core.Environment;
 import org.springframework.stereotype.Component;
 
 import com.chestnut.common.staticize.func.AbstractFunc;
@@ -70,11 +74,13 @@ public class ReplaceHotWord extends AbstractFunc  {
 			return text;
 		}
 		String[] codes = StringUtils.split(groupCode, StringUtils.COMMA);
+		Long siteId = TemplateUtils.evalSiteId(Environment.getCurrentEnvironment());
+
 		String replacementTemplate = null;
 		if (args.length == 3) {
 			replacementTemplate = ConvertUtils.toStr(args[2]);
 		}
-		return this.hotWordService.replaceHotWords(text, codes, null, replacementTemplate);
+		return this.hotWordService.replaceHotWords(text, siteId.toString(), codes, null, replacementTemplate);
 	}
 
 	@Override

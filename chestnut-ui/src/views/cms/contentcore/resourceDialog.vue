@@ -36,8 +36,18 @@
                 :on-success="handleFileUploadSuccess"
                 :on-error="handleFileUploadError"
                 :on-exceed="handleFileUloadExceed"
+                :on-change="handleFileChange"
                 :auto-upload="false">
-                <i class="el-icon-plus"></i>
+                <i slot="default" class="el-icon-plus"></i>
+                <div slot="file" slot-scope="{file}">
+                  <img v-if="isImageResource(file.name)" class="el-upload-list__item-thumbnail" :src="file.url" />
+                  <svg-icon v-else :icon-class="getResourceFileIconClass(file.name)" />
+                  <span class="el-upload-list__item-actions">
+                    <span class="el-upload-list__item-delete" @click="handleRemoveFile(file)">
+                      <i class="el-icon-delete"></i>
+                    </span>
+                  </span>
+                </div>
                 <div slot="tip" class="el-upload__tip">{{ $t('CMS.Resource.UPloadTip', [ upload.accept, fileSizeName ]) }}</div>
               </el-upload>
             </el-form-item>
@@ -141,6 +151,7 @@
 import { isImage, getFileSvgIconClass } from "@/utils/chestnut";
 import { getToken } from "@/utils/auth";
 import { getResrouceList, getResourceTypes } from "@/api/contentcore/resource";
+import { getConfigKey } from "@/api/system/config";
 export default {
   name: "CMSResourceDialog",
   props: {
@@ -174,8 +185,8 @@ export default {
       // 上传参数
       upload: {
         isUploading: false, // 上传按钮loading
-        // accept: ".jpg,.png,.mp3,.mp4,.flv,.pdf", // 文件类型限制
-        acceptSize: 20 * 1024 * 1024,
+        accept: "", // 文件类型限制
+        acceptSize: 0,
         limit: this.uploadLimit, // 文件数限制
         headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get("CurrentSite") },
         url: process.env.VUE_APP_BASE_API + "/cms/resource/upload", // 上传的地址
@@ -207,7 +218,11 @@ export default {
       return this.form_upload.source=='net'
     },
     fileSizeName() {
-      return this.upload.acceptSize / 1024 / 1024 + " MB"
+      if (this.upload.acceptSize > 0) {
+        return this.upload.acceptSize / 1024 / 1024 + " MB"
+      } else {
+        return "∞";
+      }
     }
   },
   watch: {
@@ -225,6 +240,12 @@ export default {
     rtype (newVal) {
       this.loadResourceTypes();
     }
+  },
+  created() {
+    this.loadResourceTypes();
+    getConfigKey("ResourceUploadAcceptSize").then(res => {
+      this.upload.acceptSize = parseInt(res.data);
+    });
   },
   methods: {
     isImageResource(src) {
@@ -257,12 +278,10 @@ export default {
     },
     loadResourceTypes() {
       getResourceTypes().then(response => {
-        response.data.some((item) => {
+        response.data.forEach((item) => {
           if (item.id == this.rtype) {
             this.upload.accept = "." + item.accepts.replaceAll(",", ",.")
-            return true;
           }
-          return false;
         })
       });
     },
@@ -298,6 +317,17 @@ export default {
       this.dateRange = [];
       this.filterQuery.owner = false;
       this.handleQuery();
+    },
+    handleRemoveFile (file) {
+      for (var i = 0; i < this.upload.fileList.length; i++) {
+        if (this.upload.fileList[i].uid == file.uid) {
+          this.upload.fileList.splice(i, 1)
+          break;
+        }
+      }
+    },
+    handleFileChange (file, fileList) {
+      this.upload.fileList = fileList
     },
     handleFileBeforeUpload (file) {
       if (this.upload.acceptSize > 0 && file.size > this.upload.acceptSize) {
@@ -358,7 +388,7 @@ export default {
             width: 0, 
             height: 0, 
             fileSize: 0,
-            fileSizeName: "0",
+            fileSizeName: "",
             resourceType: "unknown",
             net: true
           });
@@ -423,6 +453,10 @@ export default {
 };
 </script>
 <style>
+.resource-dialog .el-upload-list__item .svg-icon {
+  width: 66px;
+  height: 66px;
+}
 .resource-dialog .el-aside {
   height: 500px;
 }

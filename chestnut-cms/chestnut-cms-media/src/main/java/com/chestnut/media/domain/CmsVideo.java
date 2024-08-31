@@ -19,9 +19,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.chestnut.common.db.domain.BaseEntityWithLogicDelete;
+import com.chestnut.common.db.domain.IBackupable;
+import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 
 import java.io.Serial;
 
@@ -34,8 +36,9 @@ import java.io.Serial;
 @Getter
 @Setter
 @TableName(CmsVideo.TABLE_NAME)
-public class CmsVideo extends BaseEntityWithLogicDelete {
+public class CmsVideo extends BaseEntity implements IBackupable<BCmsVideo> {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     
     public static final String TABLE_NAME = "cms_video";
@@ -137,4 +140,11 @@ public class CmsVideo extends BaseEntityWithLogicDelete {
      * 排序字段
      */
     private Integer sortFlag;
+
+    @Override
+    public BCmsVideo toBackupEntity() {
+        BCmsVideo backupEntity = new BCmsVideo();
+        BeanUtils.copyProperties(this, backupEntity);
+        return backupEntity;
+    }
 }

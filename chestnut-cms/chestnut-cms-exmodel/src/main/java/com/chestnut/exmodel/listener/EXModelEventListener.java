@@ -15,10 +15,12 @@
  */
 package com.chestnut.exmodel.listener;
 
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.NumberUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.service.ICatalogService;
@@ -124,6 +126,29 @@ public class EXModelEventListener {
 							CmsExtendMetaModelType.FIELD_DATA_TYPE.getCode(), ExtendModelDataType.CONTENT,
 							CmsExtendMetaModelType.FIELD_DATA_ID.getCode(), dataId
 					)));
+		}
+	}
+
+	@EventListener
+	public void afterContentCopy(AfterContentCopyEvent event) {
+		CmsContent sourceContent = event.getSourceContent();
+		CmsCatalog sourceCatalog = catalogService.getCatalog(sourceContent.getCatalogId());
+		String sourceModelId = ContentExtendModelProperty.getValue(sourceCatalog.getConfigProps());
+
+		CmsContent copyContent = event.getCopyContent();
+		CmsCatalog copyCatalog = catalogService.getCatalog(copyContent.getCatalogId());
+		String copyModelId = ContentExtendModelProperty.getValue(copyCatalog.getConfigProps());
+
+		if (NumberUtils.isDigits(sourceModelId) && IdUtils.validate(Long.valueOf(sourceModelId))
+				&& sourceModelId.equals(copyModelId)) {
+			Map<String, Object> data = this.modelDataService.getModelDataByPkValue(Long.valueOf(sourceModelId), Map.of(
+					CmsExtendMetaModelType.FIELD_MODEL_ID.getCode(), sourceModelId,
+					CmsExtendMetaModelType.FIELD_DATA_TYPE.getCode(), ExtendModelDataType.CONTENT,
+					CmsExtendMetaModelType.FIELD_DATA_ID.getCode(), sourceContent.getContentId()
+			));
+			if (!data.isEmpty()) {
+				this.saveModelData(Long.valueOf(sourceModelId), ExtendModelDataType.CONTENT, copyContent.getContentId().toString(), data);
+			}
 		}
 	}
 

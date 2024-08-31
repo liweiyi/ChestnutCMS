@@ -16,27 +16,25 @@
 package com.chestnut.cms.stat.service.impl;
 
 import com.chestnut.cms.stat.baidu.BaiduTongjiConfig;
-import com.chestnut.cms.stat.baidu.vo.BaiduSiteVO;
-import com.chestnut.cms.stat.properties.BaiduTjAccessTokenProperty;
-import com.chestnut.common.domain.R;
-import com.chestnut.contentcore.service.ISiteService;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Service;
-
 import com.chestnut.cms.stat.baidu.BaiduTongjiUtils;
+import com.chestnut.cms.stat.baidu.vo.BaiduSiteVO;
 import com.chestnut.cms.stat.exception.CmsStatErrorCode;
+import com.chestnut.cms.stat.properties.BaiduTjAccessTokenProperty;
 import com.chestnut.cms.stat.properties.BaiduTjRefreshTokenProperty;
 import com.chestnut.cms.stat.service.ICmsStatService;
+import com.chestnut.common.domain.R;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.domain.CmsSite;
-
+import com.chestnut.contentcore.service.ISiteService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class CmsStatServiceImpl implements ICmsStatService {
 
 	private final ISiteService siteService;
@@ -57,8 +55,7 @@ public class CmsStatServiceImpl implements ICmsStatService {
 	/**
 	 * 刷新百度统计AccessToken
 	 * 
-	 * @param site
-	 * @return
+	 * @param site 站点数据
 	 */
 	@Override
 	public void refreshBaiduAccessToken(CmsSite site) {

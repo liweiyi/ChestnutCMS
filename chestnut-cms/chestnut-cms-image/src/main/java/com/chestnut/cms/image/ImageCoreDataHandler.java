@@ -57,7 +57,7 @@ public class ImageCoreDataHandler implements ICoreDataHandler {
                     .eq(CmsImage::getSiteId, context.getSite().getSiteId())
                     .gt(CmsImage::getImageId, offset)
                     .orderByAsc(CmsImage::getImageId);
-            Page<CmsImage> page = imageService.page(new Page<>(1, pageSize, false), q);
+            Page<CmsImage> page = imageService.dao().page(new Page<>(1, pageSize, false), q);
             if (!page.getRecords().isEmpty()) {
                 context.saveData(CmsImage.TABLE_NAME, JacksonUtils.to(page.getRecords()), fileIndex);
                 if (page.getRecords().size() < pageSize) {
@@ -85,7 +85,7 @@ public class ImageCoreDataHandler implements ICoreDataHandler {
                     data.setContentId(context.getContentIdMap().get(data.getContentId()));
                     data.createBy(context.getOperator());
                     data.setPath(context.dealInternalUrl(data.getPath()));
-                    imageService.save(data);
+                    imageService.dao().save(data);
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入图集内容数据失败：" + data.getTitle()
                             + "[" + data.getImageId() + "]");

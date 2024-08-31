@@ -15,8 +15,8 @@
  */
 package com.chestnut.article.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.chestnut.article.domain.CmsArticleDetail;
+import com.chestnut.article.dao.CmsArticleDetailDAO;
+import com.chestnut.common.db.mybatisplus.HasDAO;
 
 /**
  * 文章服务类
@@ -24,6 +24,5 @@ import com.chestnut.article.domain.CmsArticleDetail;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public interface IArticleService extends IService<CmsArticleDetail> {
-
+public interface IArticleService extends HasDAO<CmsArticleDetailDAO> {
 }

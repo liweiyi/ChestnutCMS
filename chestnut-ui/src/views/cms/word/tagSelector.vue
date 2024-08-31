@@ -1,34 +1,35 @@
 <template>
   <div>
     <el-dialog 
-      title="选择tag词"
+      :title="$t('WordMgr.TAG.SelectorTitle')"
       :visible.sync="visible"
       width="1100px"
       :close-on-click-modal="false"
       custom-class="tag-selector-dialog"
       append-to-body>
       <el-row :gutter="24">
-        <el-col :span="4" :xs="24">
+        <el-col :span="6" :xs="24">
           <cms-tagword-group-tree 
             ref="groupTree"
             :showAdd="false"
             @node-click="handleTreeNodeClick">
           </cms-tagword-group-tree>
         </el-col>
-        <el-col :span="20" :xs="24">
+        <el-col :span="18" :xs="24">
           <el-row :gutter="24">
             <el-col :span="16" :xs="24">
-              <span>标签列表</span>
+              <span>{{ $t('WordMgr.TAG.TagList') }}</span>
               <el-divider></el-divider>
               <el-tag 
                 :key="tag.wordId"
                 v-for="tag in tagList"
+                :type="tagType(tag)"
                 @click="handleSelectTag(tag)">
                 {{ tag.word }} 
               </el-tag>
             </el-col>
             <el-col :span="8" :xs="24">
-              <span>已选择的标签</span>
+              <span>{{ $t('WordMgr.TAG.SelectedTagList') }}</span>
               <el-divider></el-divider>
               <el-tag 
                 closable
@@ -63,11 +64,17 @@ export default {
       type: Boolean,
       default: false,
       required: true
+    },
+    tags: {
+      type: Array,
+      default: [],
+      required: false
     }
   },
   watch: {
     open () {
       this.visible = this.open;
+      this.selectedTags = this.tags;
     },
     visible (newVal) {
       if (!newVal) {
@@ -75,6 +82,9 @@ export default {
       } else {
         this.loadWordList();
       }
+    },
+    tags (newVal) {
+      console.log("tags", newVal)
     }
   },
   data () {
@@ -93,6 +103,10 @@ export default {
     };
   },
   methods: {
+    tagType(tag) {
+      console.log(this.selectedTags, tag)
+      return this.selectedTags.indexOf(tag.word) > -1 ? "info" : "success" 
+    },
     handleTreeNodeClick(data) {
       const groupId = data && data != null ? data.id : 0;
       if (groupId !== this.queryParams.groupId) {
@@ -142,5 +156,11 @@ export default {
 .tag-selector-dialog .el-tag {
   margin-bottom: 5px;
   margin-right: 5px;
+}
+.tag-selector-dialog .el-tag.el-tag--success:hover {
+  cursor: pointer;
+}
+.tag-selector-dialog .el-tag.el-tag--info:hover {
+  cursor: not-allowed;
 }
 </style>

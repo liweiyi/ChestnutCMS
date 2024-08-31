@@ -13,6 +13,7 @@
             type="primary"
             icon="el-icon-add"
             size="mini"
+            v-hasPermi="[ $p('Catalog:EditContent:{0}', [ cid ]) ]"
             @click="handleAdd">{{ $t("Common.Add") }}
           </el-button>
           <el-button 
@@ -21,6 +22,7 @@
             icon="el-icon-delete"
             size="mini"
             :disabled="multiple"
+            v-hasPermi="[ $p('Catalog:EditContent:{0}', [ cid ]) ]"
             @click="handleDelete">{{ $t("Common.Delete") }}
           </el-button>
         </el-col>

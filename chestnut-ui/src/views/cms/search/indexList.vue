@@ -60,7 +60,7 @@
     <el-table v-loading="loading" :data="contentList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="ID" align="center" prop="contentId" width="180" />
-      <el-table-column :label="$t('CMS.Content.Catalog')" align="center" width="180" prop="catalogName" />
+      <el-table-column :label="$t('CMS.Content.Catalog')" align="left" width="180" prop="catalogName" :show-overflow-tooltip="true" />
       <el-table-column :label="$t('CMS.Content.Title')" align="left" prop="title">
         <template slot-scope="scope">
           <span v-html="scope.row.title"></span>
@@ -90,6 +90,11 @@
             icon="el-icon-search"
             size="small"
             @click="handleShowDetail(scope.row)">{{ $t("Common.Details") }}</el-button>
+          <el-button 
+            type="text"
+            icon="el-icon-edit"
+            size="small"
+            @click="handleEdit(scope.row)">{{ $t("Common.Edit") }}</el-button>
           <el-button 
             type="text"
             icon="el-icon-delete"
@@ -130,6 +135,7 @@
 </template>
 <script>
 import CMSProgress from '@/views/components/Progress';
+import { getUserPreference } from "@/api/system/user";
 import { getContentTypes } from "@/api/contentcore/catalog";
 import { getContentIndexList, deleteContentIndex, rebuildIndex } from "@/api/contentcore/search";
 
@@ -170,7 +176,8 @@ export default {
         pageSize: 10,
       },
       // 表单参数
-      form: {}
+      form: {},
+      openEditorW: false
     };
   },
   created () {
@@ -178,6 +185,9 @@ export default {
       this.contentTypeOptions = response.data;
       this.addContentType = this.contentTypeOptions[0].id;
     });
+    getUserPreference('OpenContentEditorW').then(response => {
+      this.openEditorW = response.data == 'Y'
+    })
     this.getList();
   },
   methods: {
@@ -235,6 +245,20 @@ export default {
     cancel () {
       this.open = false;
     },
+    handleEdit (row) {
+      this.openEditor(row.catalogId, row.contentId, row.contentType);
+    },
+    openEditor(catalogId, contentId, contentType) {
+      if (this.openEditorW) {
+        let routeData = this.$router.resolve({
+          path: "/cms/content/editorW",
+          query: { type: contentType, catalogId: catalogId, id: contentId },
+        });
+        window.open(routeData.href, '_blank');
+      } else {
+        this.$router.push({ path: "/cms/content/editor", query: { type: contentType, catalogId: catalogId, id: contentId, w: this.openEditorW } });
+      }
+    },
     handleDelete (row) {
       const contentIds = row.contentId ? [ row.contentId ] : this.ids;
       this.$modal.confirm(this.$t('Common.ConfirmDelete')).then(function () {
@@ -252,8 +276,8 @@ export default {
         }
       });
     },
-    handleProgressClose(resultStatus) {
-      if (resultStatus == 'SUCCESS' || resultStatus == 'INTERRUPTED') {
+    handleProgressClose(result) {
+      if (result.status == 'SUCCESS' || result.status == 'INTERRUPTED') {
         this.getList();
       }
     }

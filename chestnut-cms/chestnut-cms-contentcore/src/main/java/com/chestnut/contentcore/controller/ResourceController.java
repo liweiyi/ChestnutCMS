@@ -36,6 +36,8 @@ import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.ImageCropDTO;
 import com.chestnut.contentcore.domain.dto.ResourceUploadDTO;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.config.ResourceUploadAcceptSize;
 import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
@@ -113,7 +115,7 @@ public class ResourceController extends BaseRestController {
 				if (r.getPath().startsWith("http://") || r.getPath().startsWith("https://")) {
 					r.setSrc(r.getPath());
 				} else {
-					String resourceLink = this.resourceService.getResourceLink(r, true);
+					String resourceLink = this.resourceService.getResourceLink(r, null, true);
 					r.setSrc(resourceLink);
 				}
 				r.setInternalUrl(InternalDataType_Resource.getInternalUrl(r));
@@ -141,6 +143,9 @@ public class ResourceController extends BaseRestController {
 			String remark
 	) {
 		Assert.isFalse(resourceFile.isEmpty(), () -> CommonErrorCode.NOT_EMPTY.exception("file"));
+		// 文件大小校验
+		Long acceptSize = ResourceUploadAcceptSize.getValue();
+		Assert.isTrue(acceptSize <= 0 || acceptSize >= resourceFile.getSize(), ContentCoreErrorCode.RESOURCE_ACCEPT_SIZE_LIMIT::exception);
 		try {
 			CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 			ResourceUploadDTO dto = ResourceUploadDTO.builder()
@@ -175,6 +180,9 @@ public class ResourceController extends BaseRestController {
 	@PostMapping("/upload")
 	public R<CmsResource> uploadFile(@RequestParam("file") MultipartFile multipartFile) throws Exception {
 		Assert.notNull(multipartFile, () -> CommonErrorCode.NOT_EMPTY.exception("file"));
+		// 文件大小校验
+		Long acceptSize = ResourceUploadAcceptSize.getValue();
+		Assert.isTrue(acceptSize <= 0 || acceptSize >= multipartFile.getSize(), ContentCoreErrorCode.RESOURCE_ACCEPT_SIZE_LIMIT::exception);
 
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 		ResourceUploadDTO dto = ResourceUploadDTO.builder().site(site).file(multipartFile).build();

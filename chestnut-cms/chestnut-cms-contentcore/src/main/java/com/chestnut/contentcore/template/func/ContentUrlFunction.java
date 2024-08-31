@@ -19,11 +19,8 @@ import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.ISiteService;
 import freemarker.core.Environment;
 import freemarker.template.SimpleNumber;
 import freemarker.template.SimpleScalar;
@@ -63,7 +60,7 @@ public class ContentUrlFunction extends AbstractFunc {
 			return StringUtils.EMPTY;
 		}
 		long contentId = ((SimpleNumber) args[0]).getAsNumber().longValue();
-		CmsContent content = this.contentService.getById(contentId);
+		CmsContent content = this.contentService.dao().getById(contentId);
 		if (Objects.isNull(content)) {
 			return StringUtils.EMPTY;
 		}

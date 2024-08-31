@@ -15,21 +15,19 @@
  */
 package com.chestnut.contentcore.template.func;
 
-import java.util.List;
-import java.util.Objects;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
-
 import freemarker.core.Environment;
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Freemarker模板自定义函数：处理内部链接
@@ -62,7 +60,11 @@ public class InternalUrlFunction extends AbstractFunc  {
 		if (Objects.isNull(simpleScalar)) {
 			return StringUtils.EMPTY;
 		}
-		return InternalUrlUtils.getActualUrl(simpleScalar.getAsString(), context.getPublishPipeCode(), context.isPreview());
+		try {
+			return InternalUrlUtils.getActualUrl(simpleScalar.getAsString(), context.getPublishPipeCode(), context.isPreview());
+		} catch (Exception e) {
+			throw new TemplateModelException(e);
+		}
 	}
 
 	@Override

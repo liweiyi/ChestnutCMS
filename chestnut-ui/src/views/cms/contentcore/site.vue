@@ -234,12 +234,15 @@ export default {
       this.$modal.confirm(this.$t("Common.ConfirmDelete")).then(function () {
         return delSite(siteId);
       }).then(response => {
+        if (this.$cache.local.get("CurrentSite") == siteId) {
+          this.$cache.local.set("CurrentSite", "0")
+        }
         this.taskId = response.data;
         this.openProgress = true;
       }).catch(function () { });
     },
     handleCloseProgress() {
-        this.$router.go(0); // 删除站点时刷新下，当前站点删除需要重置当前站点
+      this.$router.go(0); // 删除站点时刷新下
     },
     handlePreview(row) {
       const siteId = row.siteId;

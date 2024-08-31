@@ -17,12 +17,14 @@ package com.chestnut.cms.search.service;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
-import co.elastic.clients.elasticsearch._types.mapping.Property;
+import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.bulk.BulkOperation;
 import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.cms.search.CmsSearchConstants;
+import com.chestnut.cms.search.CmsSearchErrorCode;
 import com.chestnut.cms.search.es.doc.ESContent;
 import com.chestnut.cms.search.fixed.config.SearchAnalyzeType;
 import com.chestnut.cms.search.properties.EnableIndexProperty;
@@ -76,48 +78,81 @@ public class ContentIndexService implements CommandLineRunner {
 
 	private final ExModelService extendModelService;
 
-	private void createIndex() throws IOException {
-		String analyzeType = SearchAnalyzeType.getValue();
-		// 创建索引
-		Map<String, Property> properties = new HashMap<>();
-//		properties.put("catalogAncestors", Property.of(fn -> fn.keyword(b -> b
-//				.ignoreAbove(500) // 指定字符串字段的最大长度。超过该长度的字符串将被截断或忽略。
-//		)));
-//		properties.put("contentType", Property.of(fn -> fn.keyword(b -> b
-//				.ignoreAbove(20)
-//		)));
-//		properties.put("logo", Property.of(fn -> fn.keyword(b -> b
-//				.ignoreAbove(256)
-//		)));
-		properties.put("tags", Property.of(fn ->fn.keyword(b -> b.store(true))));
-		properties.put("keywords", Property.of(fn ->fn.keyword(b -> b.store(true))));
-		properties.put("title", Property.of(fn -> fn.text(b -> b
-				.store(true) // 是否存储在索引中
-				.analyzer(analyzeType)
-		)));
-		properties.put("fullText", Property.of(fn -> fn.text(b -> b
-				.analyzer(analyzeType)
-		)));
-		CreateIndexResponse response = esClient.indices().create(fn -> fn
-				.index(ESContent.INDEX_NAME)
-				.mappings(mb -> mb.properties(properties)));
-		Assert.isTrue(response.acknowledged(), () -> new RuntimeException("Create Index[cms_content] failed."));
+	public void createIndex(CmsSite site) {
+		String indexName = CmsSearchConstants.indexName(site.getSiteId().toString());
+		try {
+			boolean exists = esClient.indices().exists(fn -> fn.index(indexName)).value();
+			if (exists) {
+				return;
+			}
+			String analyzeType = SearchAnalyzeType.getValue();
+			// 创建索引
+			TypeMapping typeMapping = new TypeMapping.Builder()
+				.properties("title", fn -> fn.text(b -> b
+					.analyzer(analyzeType)
+					.fields("suggest", s -> s
+						.completion(c -> c
+							.analyzer(analyzeType) // The index analyzer to use, defaults to simple.
+							.searchAnalyzer(analyzeType) // The search analyzer to use, defaults to value of analyzer.
+//							.preserveSeparators(true) // 默认true，设置成false会忽略空格进行匹配
+//							.preservePositionIncrements(true) // 默认true，设置成false会忽略停用词
+							.maxInputLength(50)
+					))
+				))
+				.properties("fullText", fn -> fn.text(b -> b
+					.analyzer(analyzeType)
+				))
+				.properties("keywords", fn -> fn
+					.keyword(b -> b.index(false)
+//						.ignoreAbove(500) // keywords可通过设置ignoreAbove指定字段被索引的最大长度（默认值：256）。超过该长度的字符串将不会被索引，但依然会存储。
+					)
+				)
+				.properties("tags", fn -> fn.keyword(b -> b.index(false)))
+				.properties("contentType", fn -> fn.keyword(b -> b))
+				.properties("catalogAncestors", fn -> fn.keyword(b -> b))
+				.properties("logo", fn -> fn.keyword(b -> b.index(false)))
+				.properties("author", fn -> fn.keyword(b -> b))
+				.properties("editor", fn -> fn.keyword(b -> b))
+				.properties("status", fn -> fn.keyword(b -> b))
+				.properties("publishDate", fn -> fn.long_(l -> l))
+				.build();
+			CreateIndexResponse response = esClient.indices().create(fn -> fn
+					.index(indexName)
+					.mappings(typeMapping));
+			Assert.isTrue(response.acknowledged(), CmsSearchErrorCode.CREATE_INDEX_ERR::exception);
+		} catch (IOException e) {
+			log.error("Create elasticsearch index failed: " + indexName, e);
+		}
+	}
+
+	/**
+	 * 删除站点索引库
+	 */
+	public void deleteIndex(CmsSite site) {
+		String indexName = CmsSearchConstants.indexName(site.getSiteId().toString());
+		try {
+			boolean exists = esClient.indices().exists(fn -> fn.index(indexName)).value();
+			if (exists) {
+				return;
+			}
+			esClient.indices().delete(fn -> fn.index(indexName));
+		} catch (IOException e) {
+			log.error("Delete elasticsearch index failed: " + indexName, e);
+		}
 	}
 
 	public void deleteContentIndices(CmsSite site) throws IOException {
-		boolean exists = esClient.indices().exists(fn -> fn.index(ESContent.INDEX_NAME)).value();
-		if (exists) {
-			// 删除站点索引文档数据
-			long total = this.contentService.lambdaQuery().eq(CmsContent::getSiteId, site.getSiteId()).count();
-			long pageSize = 1000;
-			for (int i = 0; i * pageSize < total; i++) {
-				List<Long> contentIds = this.contentService.lambdaQuery()
-						.select(List.of(CmsContent::getContentId))
-						.eq(CmsContent::getSiteId, site.getSiteId())
-						.page(new Page<>(i, pageSize, false))
-						.getRecords().stream().map(CmsContent::getContentId).toList();
-				deleteContentDoc(contentIds);
-			}
+		createIndex(site);
+		// 删除站点索引文档数据
+		long total = this.contentService.dao().lambdaQuery().eq(CmsContent::getSiteId, site.getSiteId()).count();
+		long pageSize = 1000;
+		for (int i = 0; i * pageSize < total; i++) {
+			List<Long> contentIds = this.contentService.dao().lambdaQuery()
+					.select(List.of(CmsContent::getContentId))
+					.eq(CmsContent::getSiteId, site.getSiteId())
+					.page(new Page<>(i, pageSize, false))
+					.getRecords().stream().map(CmsContent::getContentId).toList();
+			deleteContentDoc(site.getSiteId(), contentIds);
 		}
 	}
 
@@ -125,6 +160,8 @@ public class ContentIndexService implements CommandLineRunner {
 	 * 创建/更新内容索引Document
 	 */
 	public void createContentDoc(IContent<?> content) {
+		CmsSite site = siteService.getSite(content.getSiteId());
+		createIndex(site);
 		// 判断栏目/站点配置是否生成索引
 		String enableIndex = EnableIndexProperty.getValue(content.getCatalog().getConfigProps(),
 				content.getSite().getConfigProps());
@@ -133,7 +170,7 @@ public class ContentIndexService implements CommandLineRunner {
 		}
 		try {
 			esClient.update(fn -> fn
-					.index(ESContent.INDEX_NAME)
+					.index(CmsSearchConstants.indexName(content.getSiteId().toString()))
 					.id(content.getContentEntity().getContentId().toString())
 					.doc(newESContentDoc(content))
 					.docAsUpsert(true), ESContent.class);
@@ -143,7 +180,7 @@ public class ContentIndexService implements CommandLineRunner {
 		}
 	}
 
-	private void batchContentDoc(CmsSite site, CmsCatalog catalog, List<CmsContent> contents) {
+	private void batchContentDoc(CmsSite site, CmsCatalog catalog, List<CmsContent> contents) throws IOException {
 		if (contents.isEmpty()) {
 			return;
 		}
@@ -152,36 +189,37 @@ public class ContentIndexService implements CommandLineRunner {
 			// 判断栏目/站点配置是否生成索引
 			String enableIndex = EnableIndexProperty.getValue(catalog.getConfigProps(), site.getConfigProps());
 			if (YesOrNo.isYes(enableIndex)) {
-				IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
-				IContent<?> icontent = contentType.loadContent(xContent);
-				BulkOperation bulkOperation = BulkOperation.of(b ->
-								b.update(up -> up.index(ESContent.INDEX_NAME)
-										.id(xContent.getContentId().toString())
-										.action(action -> action.docAsUpsert(true).doc(newESContentDoc(icontent))))
-//						b.create(co -> co.index(ESContent.INDEX_NAME)
-//						.id(xContent.getContentId().toString()).document(newESContent(icontent)))
-				);
-				bulkOperationList.add(bulkOperation);
+				try {
+					IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
+					IContent<?> icontent = contentType.loadContent(xContent);
+					BulkOperation bulkOperation = BulkOperation.of(b ->
+									b.update(up -> up.index(CmsSearchConstants.indexName(xContent.getSiteId().toString()))
+											.id(xContent.getContentId().toString())
+											.action(action -> action.docAsUpsert(true).doc(newESContentDoc(icontent))))
+					);
+					bulkOperationList.add(bulkOperation);
+				} catch (Exception e) {
+					log.error("Generate es content instance fail.", e);
+					AsyncTaskManager.addErrMessage(e.getMessage());
+				}
 			}
 		}
-		if (bulkOperationList.isEmpty()) {
-			return;
-		}
-		// 批量新增索引
-		try {
+		if (!bulkOperationList.isEmpty()) {
 			esClient.bulk(bulk -> bulk.operations(bulkOperationList));
-		} catch (ElasticsearchException | IOException e) {
-			AsyncTaskManager.addErrMessage(e.getMessage());
-			log.error("Batch create es index document failed: {}>{}", site.getSiteId(), catalog.getCatalogId(), e);
 		}
 	}
 
 	/**
 	 * 删除内容索引
 	 */
-	public void deleteContentDoc(List<Long> contentIds) throws ElasticsearchException, IOException {
+	public void deleteContentDoc(Long siteId, List<Long> contentIds) throws ElasticsearchException, IOException {
+		CmsSite site = siteService.getSite(siteId);
+		createIndex(site);
 		List<BulkOperation> bulkOperationList = contentIds.stream().map(contentId -> BulkOperation
-				.of(b -> b.delete(dq -> dq.index(ESContent.INDEX_NAME).id(contentId.toString())))).toList();
+				.of(b -> b.delete(dq -> dq
+						.index(CmsSearchConstants.indexName(siteId.toString()))
+						.id(contentId.toString())
+				))).toList();
 		this.esClient.bulk(bulk -> bulk.operations(bulkOperationList));
 	}
 
@@ -195,15 +233,20 @@ public class ContentIndexService implements CommandLineRunner {
 					.ne(CmsContent::getLinkFlag, YesOrNo.YES)
 					.eq(!includeChild, CmsContent::getCatalogId, catalog.getCatalogId())
 					.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors());
-			long total = this.contentService.count(q);
+			long total = this.contentService.dao().count(q);
 			long pageSize = 200;
 			int count = 1;
 			for (int i = 0; i * pageSize < total; i++) {
-				AsyncTaskManager.setTaskProgressInfo((int) (count++ * 100 / total),
-						"正在重建栏目【" + catalog.getName() + "】内容索引");
-				Page<CmsContent> page = contentService.page(new Page<>(i, pageSize, false), q);
-				batchContentDoc(site, catalog, page.getRecords());
-				AsyncTaskManager.checkInterrupt(); // 允许中断
+                try {
+					AsyncTaskManager.setTaskProgressInfo((int) (count++ * 100 / total),
+							"正在重建栏目【" + catalog.getName() + "】内容索引");
+					AsyncTaskManager.checkInterrupt(); // 允许中断
+					Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
+                    batchContentDoc(site, catalog, page.getRecords());
+                } catch (IOException e) {
+                    log.error("Create es documents fail.", e);
+					AsyncTaskManager.addErrMessage(e.getMessage());
+                }
 			}
 		}
 	}
@@ -215,17 +258,35 @@ public class ContentIndexService implements CommandLineRunner {
 		AsyncTask asyncTask = new AsyncTask() {
 
 			@Override
-			public void run0() throws Exception {
-				// 先删除内容索引 TODO batchDelete
-				deleteContentIndices(site);
+			public void run0() {
+				try {
+					String indexName = CmsSearchConstants.indexName(site.getSiteId().toString());
+					boolean exists = esClient.indices().exists(fn -> fn.index(indexName)).value();
+					if (exists) {
+						// 先删除内容索引文档
+						deleteContentIndices(site);
 
-				List<CmsCatalog> catalogs = catalogService.lambdaQuery()
-						.eq(CmsCatalog::getSiteId, site.getSiteId()).list();
-				for (CmsCatalog catalog : catalogs) {
-					rebuildCatalog(catalog, false);
+						esClient.indices().delete(fn ->fn.index(indexName));
+						while(exists) {
+							exists = esClient.indices().exists(fn -> fn.index(indexName)).value();
+							if (exists) {
+								Thread.sleep(2000);
+							}
+						}
+					}
+					createIndex(site);
+
+					List<CmsCatalog> catalogs = catalogService.lambdaQuery()
+							.eq(CmsCatalog::getSiteId, site.getSiteId()).list();
+					for (CmsCatalog catalog : catalogs) {
+						rebuildCatalog(catalog, false);
+					}
+					this.setProgressInfo(100, "重建全站索引完成");
+				} catch (Exception e) {
+					log.error("RebuildAllContentIndex failed.", e);
+					addErrorMessage(e.getMessage());
 				}
-				this.setProgressInfo(100, "重建全站索引完成");
-			}
+            }
 		};
 		asyncTask.setTaskId("RebuildAllContentIndex");
 		asyncTask.setType("ContentCore");
@@ -240,8 +301,12 @@ public class ContentIndexService implements CommandLineRunner {
 	 * @param contentId 内容ID
 	 * @return 索引Document详情
 	 */
-	public ESContent getContentDocDetail(Long contentId) throws ElasticsearchException, IOException {
-		GetResponse<ESContent> res = this.esClient.get(qb -> qb.index(ESContent.INDEX_NAME).id(contentId.toString()),
+	public ESContent getContentDocDetail(Long siteId, Long contentId) throws ElasticsearchException, IOException {
+		CmsSite site = siteService.getSite(siteId);
+		createIndex(site);
+		GetResponse<ESContent> res = this.esClient.get(qb -> qb
+						.index(CmsSearchConstants.indexName(siteId.toString()))
+						.id(contentId.toString()),
 				ESContent.class);
 		return res.source();
 	}
@@ -253,6 +318,7 @@ public class ContentIndexService implements CommandLineRunner {
 		data.put("siteId", content.getSiteId());
 		data.put("catalogId", content.getCatalogId());
 		data.put("catalogAncestors", content.getContentEntity().getCatalogAncestors());
+		data.put("topCatalog", Long.valueOf(content.getCatalog().getAncestors().split(":")[0]));
 		data.put("author", content.getContentEntity().getAuthor());
 		data.put("editor", content.getContentEntity().getEditor());
 		data.put("keywords", content.getContentEntity().getKeywords());
@@ -291,10 +357,11 @@ public class ContentIndexService implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		if (isElasticSearchAvailable()) {
-			boolean exists = esClient.indices().exists(fn -> fn.index(ESContent.INDEX_NAME)).value();
-			if (!exists) {
-				this.createIndex(); // 创建内容索引库
-			}
+            // 创建内容索引库
+            this.siteService.lambdaQuery()
+					.select(CmsSite::getSiteId)
+					.list()
+					.forEach(this::createIndex);
 		} else {
 			log.warn("ES service not available!");
 		}

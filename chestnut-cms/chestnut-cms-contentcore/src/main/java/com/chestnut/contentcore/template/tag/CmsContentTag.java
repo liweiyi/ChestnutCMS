@@ -15,16 +15,6 @@
  */
 package com.chestnut.contentcore.template.tag;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import com.chestnut.common.staticize.tag.TagAttrOption;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.staticize.FreeMarkerUtils;
@@ -32,6 +22,7 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
+import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
@@ -42,11 +33,17 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.template.exception.CatalogNotFoundException;
 import com.chestnut.contentcore.util.CatalogUtils;
-import com.chestnut.contentcore.util.InternalUrlUtils;
-
+import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -81,9 +78,9 @@ public class CmsContentTag extends AbstractListTag {
 		if (catalogId > 0) {
 			catalog = this.catalogService.getCatalog(catalogId);
 		}
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		long siteId = TemplateUtils.evalSiteId(env);
 		String alias = MapUtils.getString(attrs, "catalogalias");
-		if (catalog == null && StringUtils.isNotEmpty(alias)) {
+		if (Objects.isNull(catalog) && StringUtils.isNotEmpty(alias)) {
 			catalog = this.catalogService.getCatalogByAlias(siteId, alias);
 		}
 		String level = MapUtils.getString(attrs, "level");
@@ -95,12 +92,14 @@ public class CmsContentTag extends AbstractListTag {
 
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<>();
 		q.eq(CmsContent::getSiteId, siteId).eq(!"-1".equals(status), CmsContent::getStatus, ContentStatus.PUBLISHED);
-		if (LevelTagAttr.isCurrent(level)) {
-			q.eq(CmsContent::getCatalogId, catalog.getCatalogId());
-		} else if (LevelTagAttr.isChild(level)) {
-			q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors() + CatalogUtils.ANCESTORS_SPLITER);
-		} else if (LevelTagAttr.isCurrentAndChild(level)) {
-			q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors());
+		if (Objects.nonNull(catalog)) {
+			if (LevelTagAttr.isCurrent(level)) {
+				q.eq(CmsContent::getCatalogId, catalog.getCatalogId());
+			} else if (LevelTagAttr.isChild(level)) {
+				q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors() + CatalogUtils.ANCESTORS_SPLITER);
+			} else if (LevelTagAttr.isCurrentAndChild(level)) {
+				q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors());
+			}
 		}
 		String hasAttribute = MapUtils.getString(attrs, "hasattribute");
 		if (StringUtils.isNotEmpty(hasAttribute)) {
@@ -128,7 +127,7 @@ public class CmsContentTag extends AbstractListTag {
 		}
 
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
-		Page<CmsContent> pageResult = this.contentService.page(new Page<>(pageIndex, size, page), q);
+		Page<CmsContent> pageResult = this.contentService.dao().page(new Page<>(pageIndex, size, page), q);
 		if (pageIndex > 1 & pageResult.getRecords().isEmpty()) {
 			throw new TemplateException("内容列表页码超出上限：" + pageIndex, env);
 		}

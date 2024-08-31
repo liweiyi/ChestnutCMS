@@ -15,13 +15,6 @@
  */
 package com.chestnut.system.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -31,11 +24,18 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysPost;
+import com.chestnut.system.domain.SysUserPost;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.mapper.SysPostMapper;
+import com.chestnut.system.mapper.SysUserPostMapper;
 import com.chestnut.system.service.ISysPostService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 岗位信息 服务层处理
@@ -44,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> implements ISysPostService {
 
-	private final SysPostMapper postMapper;
+	private final SysUserPostMapper userPostMapper;
 
 	private final RedisCache redisCache;
 
@@ -70,7 +70,9 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 	 */
 	@Override
 	public List<SysPost> selectPostListByUserId(Long userId) {
-		List<Long> postIds = this.postMapper.selectUserPostIds(userId);
+		List<Long> postIds = this.userPostMapper.selectList(
+					new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, userId)
+				).stream().map(SysUserPost::getPostId).toList();
 		if (StringUtils.isEmpty(postIds)) {
 			return Collections.emptyList();
 		}
@@ -113,15 +115,14 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 	/**
 	 * 批量删除岗位信息
 	 * 
-	 * @param postIds
-	 *            需要删除的岗位ID
-	 * @return 结果
+	 * @param postIds 需要删除的岗位ID
 	 */
 	@Override
 	public void deletePostByIds(List<Long> postIds) {
 		List<SysPost> posts = this.listByIds(postIds);
 		for (SysPost post : posts) {
-			Long count = this.postMapper.getUserCountByPostId(post.getPostId());
+			Long count = this.userPostMapper.selectCount(new LambdaQueryWrapper<SysUserPost>()
+					.in(SysUserPost::getPostId, post.getPostId()));
 			Assert.isTrue(count == 0, () -> SysErrorCode.POST_USER_NOT_EMPTY.exception(post.getPostName()));
 
 			this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + post.getPostCode());
@@ -132,14 +133,12 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 	/**
 	 * 新增保存岗位信息
 	 * 
-	 * @param post
-	 *            岗位信息
-	 * @return 结果
+	 * @param post 岗位信息
 	 */
 	@Override
 	public void insertPost(SysPost post) {
 		boolean checkPostUnique = this.checkPostUnique(post);
-		Assert.isTrue(checkPostUnique, () -> CommonErrorCode.DATA_CONFLICT.exception());
+		Assert.isTrue(checkPostUnique, CommonErrorCode.DATA_CONFLICT::exception);
 
 		post.setPostId(IdUtils.getSnowflakeId());
 		post.setCreateTime(LocalDateTime.now());
@@ -150,16 +149,14 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 	/**
 	 * 修改保存岗位信息
 	 * 
-	 * @param post
-	 *            岗位信息
-	 * @return 结果
+	 * @param post 岗位信息
 	 */
 	@Override
 	public void updatePost(SysPost post) {
 		SysPost db = this.getById(post.getPostId());
 		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(post.getPostId()));
 		boolean checkPostUnique = this.checkPostUnique(post);
-		Assert.isTrue(checkPostUnique, () -> CommonErrorCode.DATA_CONFLICT.exception());
+		Assert.isTrue(checkPostUnique, CommonErrorCode.DATA_CONFLICT::exception);
 
 		post.setUpdateTime(LocalDateTime.now());
 		this.updateById(post);

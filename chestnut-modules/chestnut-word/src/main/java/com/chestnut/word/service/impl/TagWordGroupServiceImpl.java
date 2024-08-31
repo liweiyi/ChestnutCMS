@@ -59,7 +59,7 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 		TagWordGroup dbGroup = this.getById(group.getGroupId());
 		Assert.notNull(dbGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", group.getGroupId()));
 
-		checkUnique(group.getOwner(), dbGroup.getGroupId(), group.getCode());
+		checkUnique(dbGroup.getOwner(), dbGroup.getGroupId(), group.getCode());
 
 		dbGroup.setName(group.getName());
 		dbGroup.setRemark(group.getRemark());
@@ -67,7 +67,8 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 		this.updateById(group);
 	}
 
-	private void checkUnique(String owner, Long groupId, String code) {
+	@Override
+	public void checkUnique(String owner, Long groupId, String code) {
 		Long count = this.lambdaQuery().eq(StringUtils.isNotEmpty(owner), TagWordGroup::getOwner, owner)
 				.ne(IdUtils.validate(groupId), TagWordGroup::getGroupId, groupId)
 				.eq(TagWordGroup::getCode, code)
@@ -87,7 +88,7 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 	@Override
 	public List<TreeNode<String>> buildTreeData(List<TagWordGroup> groups) {
 		List<TreeNode<String>> list = new ArrayList<>();
-		if (groups != null && groups.size() > 0) {
+		if (groups != null && !groups.isEmpty()) {
 			groups.forEach(c -> {
 				TreeNode<String> treeNode = new TreeNode<>(String.valueOf(c.getGroupId()),
 						String.valueOf(c.getParentId()), c.getName(), c.getParentId() == 0);

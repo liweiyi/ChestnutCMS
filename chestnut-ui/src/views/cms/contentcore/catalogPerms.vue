@@ -151,7 +151,11 @@ export default {
     },
     selectCatalogPrivs(arr, checked) {
       arr.forEach(row => {
-        Object.keys(row.perms).forEach(key => row.perms[key].granted = checked)
+        Object.keys(row.perms).forEach(key => {
+          if (!row.perms[key].inherited) {
+            row.perms[key].granted = checked
+          }
+        })
         if (row.children && row.children.length > 0) {
           this.selectCatalogPrivs(row.children, checked)
         }
@@ -167,7 +171,9 @@ export default {
             const permItems = Object.keys(row.perms)
             if (checked) {
               permItems.forEach(key => {
-                row.perms[key].granted = checked;
+                if (!row.perms[key].inherited) {
+                  row.perms[key].granted = checked;
+                }
               })
             } else {
               let hasCheckedPerm = false;
@@ -180,7 +186,9 @@ export default {
               if (hasCheckedPerm) {
                 permItems.forEach(key => {
                   if (key != 'View') {
-                    row.perms[key].granted = checked;
+                    if (!row.perms[key].inherited) {
+                      row.perms[key].granted = checked;
+                    }
                   }
                 })
                 row.perms['View'].granted = hasCheckedPerm
@@ -203,9 +211,11 @@ export default {
       arr.forEach(row => {
         Object.keys(row.perms).forEach(key => {
           if (key == column) {
-            row.perms[key].granted = checked;
-            if (checked) {
-              row.perms['View'].granted = checked
+            if (!row.perms[key].inherited) {
+              row.perms[key].granted = checked;
+              if (checked) {
+                row.perms['View'].granted = checked
+              }
             }
           }
         })

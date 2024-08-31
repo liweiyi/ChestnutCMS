@@ -30,6 +30,7 @@
     
     <tag-selector
       :open="showTagSelector"
+      :tags="selectedTags"
       @ok="handleTagSelectorOk"
       @close="handleTagSelectorClose"></tag-selector>
   </div>
@@ -76,12 +77,15 @@ export default {
   watch: {
     tags(newVal) {
       this.tagList = newVal;
-      this.$emit("change", newVal);
+    },
+    tagList(newVal) {
+      this.selectedTags = [...newVal]
     }
   },
   data () {
     return {
       tagList: this.tags,
+      selectedTags: [],
       showTagSelector: false,
       inputValue: '',
       inputVisible: false,
@@ -119,7 +123,11 @@ export default {
     handleTagSelectorOk(tags) {
       this.showTagSelector = false;
       if (tags) {
-        tags.forEach(tag => this.tagList.push(tag));
+        tags.forEach(tag => {
+          if (this.tagList.indexOf(tag) < 0) {
+            this.tagList.push(tag)
+          }
+        });
       }
     },
     handleTagSelectorClose() {

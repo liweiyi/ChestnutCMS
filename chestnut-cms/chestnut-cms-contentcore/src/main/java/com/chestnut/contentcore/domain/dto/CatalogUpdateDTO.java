@@ -77,6 +77,11 @@ public class CatalogUpdateDTO extends BaseDTO {
     private String staticFlag;
 
     /*
+     * 栏目是否在标签中忽略
+     */
+    private String tagIgnore;
+
+    /*
      * 栏目类型
      */
     @NotBlank

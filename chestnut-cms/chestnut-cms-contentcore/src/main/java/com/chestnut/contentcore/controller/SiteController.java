@@ -254,7 +254,7 @@ public class SiteController extends BaseRestController {
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
         Map<String, Object> configProps = ConfigPropertyUtils.parseConfigProps(site.getConfigProps(), UseType.Site);
-        configProps.put("PreviewPrefix", SiteUtils.getResourcePrefix(site, true));
+        configProps.put("PreviewPrefix", SiteUtils.getResourcePreviewPrefix(site));
         return R.ok(configProps);
     }
 
@@ -348,7 +348,7 @@ public class SiteController extends BaseRestController {
             File file = new File(dir + path);
             FileExUtils.mkdirs(file.getParentFile().getAbsolutePath());
             FileUtils.writeByteArrayToFile(file, multipartFile.getBytes());
-            String src = SiteUtils.getResourcePrefix(site, true) + path;
+            String src = SiteUtils.getResourcePreviewPrefix(site) + path;
             return R.ok(Map.of("path", path, "src", src));
         } catch (Exception e) {
             return R.fail(e.getMessage());

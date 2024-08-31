@@ -19,12 +19,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * 栏目内容统计数据
@@ -80,4 +80,14 @@ public class CmsCatalogContentStat implements Serializable {
 	 * 重新编辑内容数量
 	 */
 	private Integer editingTotal;
+
+	public void changeStatusTotal(String status, int total) {
+		switch(status) {
+			case ContentStatus.DRAFT -> draftTotal = total;
+			case ContentStatus.TO_PUBLISHED -> toPublishTotal = total;
+			case ContentStatus.PUBLISHED -> publishedTotal = total;
+			case ContentStatus.OFFLINE -> offlineTotal = total;
+			case ContentStatus.EDITING -> editingTotal = total;
+		}
+	}
 }

@@ -15,26 +15,22 @@
  */
 package com.chestnut.cms.vote.template.tag;
 
-import java.util.List;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.chestnut.common.utils.StringUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.vote.service.ICmsVoteService;
-import com.chestnut.common.staticize.FreeMarkerUtils;
-import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.vote.domain.Vote;
 import com.chestnut.vote.service.IVoteService;
-
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -49,16 +45,9 @@ public class CmsVoteTag extends AbstractListTag {
 	private final ICmsVoteService cmsVoteService;
 
 	@Override
-	public List<TagAttr> getTagAttrs() {
-		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr("siteid", false, TagAttrDataType.STRING, "站点ID"));
-		return tagAttrs;
-	}
-
-	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex)
 			throws TemplateException {
-		long siteId = MapUtils.getLongValue(attrs, "siteid", FreeMarkerUtils.evalLongVariable(env, "Site.siteId"));
+		Long siteId = TemplateUtils.evalSiteId(env);
 		String voteSource = this.cmsVoteService.getVoteSource(siteId);
 		LambdaQueryWrapper<Vote> q = new LambdaQueryWrapper<Vote>().eq(Vote::getSource, voteSource);
 

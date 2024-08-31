@@ -21,6 +21,7 @@ import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.service.ITagWordGroupService;
@@ -57,7 +58,10 @@ public class CmsTagWordTag extends AbstractListTag {
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
 		String group = MapUtils.getString(attrs, "group");
-		Optional<TagWordGroup> opt = tagWordGroupService.lambdaQuery().eq(TagWordGroup::getCode, group).oneOpt();
+		Long siteId = TemplateUtils.evalSiteId(env);
+		Optional<TagWordGroup> opt = tagWordGroupService.lambdaQuery()
+				.eq(TagWordGroup::getOwner, siteId)
+				.eq(TagWordGroup::getCode, group).oneOpt();
 		if (opt.isEmpty()) {
 			throw new TemplateException("Tag word group not found: " + group, env);
 		}

@@ -4,11 +4,11 @@
       <el-input v-model="user.oldPassword" :placeholder="$t('AccountCenter.OldPwdPlaceHolder')" style="width:240px" type="password" show-password/>
     </el-form-item>
     <el-form-item :label="$t('AccountCenter.NewPwd')" prop="newPassword">
-      <el-tooltip class="item" effect="dark" placement="right">
+      <el-tooltip v-if="passwordRuleTips&&passwordRuleTips.length>0" class="item" effect="dark" placement="right">
         <el-input v-model="user.newPassword" :placeholder="$t('AccountCenter.NewPwdPlaceHolder')" style="width:240px" type="password" show-password/>
-        <div slot="content" v-html="passwordRuleTips">
-        </div>
+        <div slot="content" v-html="passwordRuleTips"></div>
       </el-tooltip>
+      <el-input v-else v-model="user.newPassword" :placeholder="$t('AccountCenter.NewPwdPlaceHolder')" style="width:240px" type="password" show-password/>
     </el-form-item>
     <el-form-item :label="$t('AccountCenter.ConfirmPwd')" prop="confirmPassword">
       <el-input v-model="user.confirmPassword" :placeholder="$t('AccountCenter.ConfirmPwdPlaceHolder')" style="width:240px" type="password" show-password/>

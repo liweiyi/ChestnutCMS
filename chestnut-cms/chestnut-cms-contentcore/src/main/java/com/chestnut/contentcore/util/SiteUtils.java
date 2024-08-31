@@ -70,15 +70,23 @@ public class SiteUtils {
         return getSiteResourceRoot(site.getPath());
     }
 
+    public static String getResourcePreviewPrefix(CmsSite site) {
+        return CMSConfig.getResourcePreviewPrefix() + getSiteResourcePath(site.getPath());
+    }
+
     /**
      * 获取站点资源文件访问链接前缀
      *
      * @param site 站点
+     * @param publishPipeCode 发布通道编码
      * @param isPreview 是否预览模式
      */
-    public static String getResourcePrefix(CmsSite site, boolean isPreview) {
-        if (isPreview || StringUtils.isEmpty(site.getResourceUrl())) {
-            return CMSConfig.getResourcePreviewPrefix() + getSiteResourcePath(site.getPath());
+    public static String getResourcePrefix(CmsSite site, String publishPipeCode, boolean isPreview) {
+        if (isPreview) {
+            return getResourcePreviewPrefix(site);
+        }
+        if (StringUtils.isEmpty(site.getResourceUrl())) {
+            return getPublishPipePrefix(site, publishPipeCode, false);
         }
         return site.getResourceUrl();
     }

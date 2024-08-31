@@ -17,8 +17,8 @@ package com.chestnut.cms.search.template.tag;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.search.CmsSearchConstants;
-import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.tag.AbstractListTag;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.service.ISearchWordService;
 import freemarker.core.Environment;
@@ -41,7 +41,7 @@ public class CmsSearchWordTag extends AbstractListTag {
 	
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 		String source = CmsSearchConstants.generateSearchSource(siteId);
 		Page<SearchWord> pageResult = this.searchWordService.lambdaQuery()
 				.eq(SearchWord::getSource, source)

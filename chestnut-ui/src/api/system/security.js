@@ -52,3 +52,10 @@ export function changeConfigStatus(configId) {
     method: "put"
   });
 }
+
+export function checkSecurityConfig(configId) {
+  return request({
+    url: "/system/security/config/check",
+    method: "get"
+  });
+}

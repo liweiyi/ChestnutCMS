@@ -17,11 +17,9 @@ package com.chestnut.cms.search.template.tag;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.SortOrder;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
-import com.chestnut.cms.search.es.doc.ESContent;
+import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.vo.ESContentVO;
-import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
@@ -29,6 +27,7 @@ import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.exmodel.CmsExtendMetaModelType;
 import com.chestnut.search.SearchConsts;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -37,7 +36,6 @@ import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
-import org.ehcache.shadow.org.terracotta.context.query.QueryBuilder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -76,7 +74,7 @@ public class CmsSearchContentTag extends AbstractListTag {
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 		String mode = MapUtils.getString(attrs, ATTR_MODE, SearchMode.FullText.name());
 		String query = MapUtils.getString(attrs, ATTR_QUERY);
 //		if (StringUtils.isEmpty(query)) {
@@ -86,7 +84,7 @@ public class CmsSearchContentTag extends AbstractListTag {
 		Long catalogId = MapUtils.getLong(attrs, ATTR_CATALOG_ID);
 		try {
 			SearchResponse<ObjectNode> sr = esClient.search(s -> {
-				s.index(ESContent.INDEX_NAME) // 索引
+				s.index(CmsSearchConstants.indexName(siteId.toString())) // 索引
 					.query(q ->
 						q.bool(b -> {
 							b.must(must -> must.term(tq -> tq.field("siteId").value(siteId)));

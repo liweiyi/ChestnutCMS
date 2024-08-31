@@ -31,10 +31,12 @@ import java.util.stream.Collectors;
  */
 public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
-	/** 下划线 */
-	private static final char SEPARATOR = '_';
-
 	public static final String DOT = ".";
+
+	/** 下划线 */
+	public static final char C_Underline = '_';
+
+	public static final String Underline = "" + C_Underline;
 
 	/**
 	 * 字符常量：反斜杠 {@code "/"}
@@ -397,9 +399,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 			}
 
 			if (preCharIsUpperCase && curreCharIsUpperCase && !nexteCharIsUpperCase) {
-				sb.append(SEPARATOR);
+				sb.append(Underline);
 			} else if ((i != 0 && !preCharIsUpperCase) && curreCharIsUpperCase) {
-				sb.append(SEPARATOR);
+				sb.append(Underline);
 			}
 			sb.append(Character.toLowerCase(c));
 		}
@@ -472,7 +474,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 
-			if (c == SEPARATOR) {
+			if (c == C_Underline) {
 				upperCase = true;
 			} else if (upperCase) {
 				sb.append(Character.toUpperCase(c));

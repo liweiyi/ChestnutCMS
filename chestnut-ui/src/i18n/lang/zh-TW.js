@@ -260,6 +260,7 @@ export default {
       EditAvatar: '修改頭像',
       UploadAvatar: '點擊上傳頭像',
       SelectUser: "選擇用戶",
+      IsAllocatedRole: "已分配",
       Dialog: {
         Add: "添加用戶資訊",
         Edit: "編輯用戶資訊",
@@ -609,6 +610,8 @@ export default {
       PasswordRetryLockSecondsTip: "最長不超過365天",
       AddTitle: "添加安全配置",
       EditTitle: "編輯安全配置",
+      ForceModifyPwd: "首次登錄或重置密碼後需要修改密碼！",
+      PwdExpired: "密碼已過期，為了您的賬號安全請立即修改密碼！"
     },
     WeChat: {
       Backend: "後台登錄",
@@ -740,7 +743,12 @@ export default {
       DiskSize: "總大小",
       DiskLeftSize: "可用大小",
       DiskUsedSize: "已用大小",
-      DiskUsedPercent: "已用百分比"
+      DiskUsedPercent: "已用百分比",
+      DbInfo: "資料庫信息",
+      DbPoolName: "資料來源",
+      DbDriverClass: "資料庫驅動",
+      DbUrl: "資料庫連接",
+      DbUserName: "用戶名"
     },
     Cache: {
       Basic: "基本資訊",
@@ -969,7 +977,8 @@ export default {
         EnableCommentAudit: "是否需要審核",
         SEO: "搜索引擎優化配置",
         BaiduPushAccessSecret: "百度收錄API秘鑰",
-        DownloadRemoteImage: "默認開啟文章遠程圖片下載"
+        DownloadRemoteImage: "開啟文章遠程圖片下載",
+        EnableSiteDeleteBackup: "開啟站點刪除備份"
       },
       Property: {
         QueryPlaceholder: "輸入名稱/編碼查詢",
@@ -1013,6 +1022,9 @@ export default {
         Extend: "擴展配置",
       },
       AddCatalog: "添加欄目",
+      BatchAddCatalog: "批量添加欄目",
+      BatchAddTip: "每行一個欄目，依次使用2個空格表示下級欄目。",
+      CatalogTree: "欄目樹",
       CatalogNamePlaceholder: "輸入欄目名稱",
       ParentCatalog: "上級欄目",
       Basic: "基礎屬性",
@@ -1027,6 +1039,7 @@ export default {
       RedirectUrl: "連結地址",
       Desc: "欄目描述",
       StaticFlag: "是否靜態化",
+      TagIgnore: "欄目標籤忽略",
       Logo: "引導圖",
       PublishPipeConf: "發布通道屬性",
       IndexTemplate: "欄目首頁模板",
@@ -1151,6 +1164,7 @@ export default {
       CommentCount: "評論數",
       RelaContent: "相關內容",
       PushToBaidu: "推送到百度",
+      PushToBaiduResult: "【{0}】成功 {1} 條，剩餘 {2} 條。<br/>",
       ImportCSSTip: "應用站點/欄目發佈通道設置的文章編輯器CSS",
     },
     Image: {
@@ -1307,7 +1321,7 @@ export default {
       FileSize: "大小",
       UploadResource: "上傳資源",
       UploadTip1: "將檔案拖到此處，或點擊上傳",
-      UploadTip2: "只能上傳{0}檔案，且不超過{1}",
+      UploadTip2: "只能上傳 {0} 檔案，且不超過 {1}",
       AddDialogTitle: "添加資源",
       EditDialogTitle: "編輯資源",
       FileTypeErrMsg: "檔案格式錯誤，請上傳圖片類型,如：.jpg，.png尾碼的檔案。",
@@ -1511,6 +1525,9 @@ export default {
       TAGWordLogo: "圖片",
       AddTAGTitle: "新增TAG詞",
       EditTAGTitle: "編輯TAG詞",
+      SelectorTitle: "選擇TAG詞",
+      TagList: "TAG詞列表",
+      SelectedTagList: "已選TAG詞",
       Placeholder: {
         InputGroupName: "輸入分組名稱",
         SelectParentGroup: "選擇上級分組",

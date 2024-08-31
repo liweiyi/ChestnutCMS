@@ -54,11 +54,11 @@ public class AllowUploadFileType extends FixedConfig {
 	 * @param ext
 	 * @return
 	 */
-	public static boolean isAllow(String ext) {
+	public static boolean  isAllow(String ext) {
 		if (StringUtils.isEmpty(ext)) {
 			return false;
 		}
-		if (ext.indexOf(".") > -1) {
+		if (ext.contains(".")) {
 			ext = StringUtils.substringAfterLast(ext, ".");
 		}
 		if (ALLOWED_UPLOAD_EXTENSION.contains(ext)) {

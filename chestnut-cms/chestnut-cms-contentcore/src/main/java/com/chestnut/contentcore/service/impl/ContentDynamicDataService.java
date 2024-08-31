@@ -99,7 +99,7 @@ public class ContentDynamicDataService {
         });
         contentIds.forEach(contentId -> {
             if (!findContentIds.contains(contentId)) {
-                CmsContent content = this.contentService.getById(contentId);
+                CmsContent content = this.contentService.dao().getById(contentId);
                 if (content != null) {
                     ContentDynamicDataVO data = new ContentDynamicDataVO(content);
                     this.redisCache.setCacheMapValue(CONTENT_DYNAMIC_DATA_CACHE, contentId, data);
@@ -126,7 +126,7 @@ public class ContentDynamicDataService {
         try {
             ContentDynamicDataVO data = this.redisCache.getCacheMapValue(CONTENT_DYNAMIC_DATA_CACHE, contentId.toString());
             if (Objects.isNull(data)) {
-                CmsContent content = this.contentService.getById(contentId);
+                CmsContent content = this.contentService.dao().getById(contentId);
                 if (Objects.isNull(content)) {
                     return;
                 }
@@ -152,7 +152,7 @@ public class ContentDynamicDataService {
         dynamicUpdates.keys().asIterator().forEachRemaining(contentId -> {
             ContentDynamicDataVO data = dynamicUpdates.remove(contentId);
             if (data != null) {
-                this.contentService.lambdaUpdate().set(CmsContent::getFavoriteCount, data.getFavorites())
+                this.contentService.dao().lambdaUpdate().set(CmsContent::getFavoriteCount, data.getFavorites())
                         .set(CmsContent::getLikeCount, data.getLikes())
                         .set(CmsContent::getCommentCount, data.getComments())
                         .set(CmsContent::getViewCount, data.getViews())

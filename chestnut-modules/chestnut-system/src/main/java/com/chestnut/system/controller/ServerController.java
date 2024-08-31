@@ -15,10 +15,12 @@
  */
 package com.chestnut.system.controller;
 
+import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DynamicDataSourceProperties;
 import com.chestnut.common.config.properties.ChestnutProperties;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.utils.DateUtils;
+import com.chestnut.system.domain.vo.server.AppInfo;
 import com.chestnut.system.domain.vo.server.Server;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
@@ -28,8 +30,6 @@ import lombok.Setter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import oshi.SystemInfo;
-import oshi.hardware.HardwareAbstractionLayer;
 
 /**
  * 服务器监控
@@ -42,13 +42,17 @@ import oshi.hardware.HardwareAbstractionLayer;
 public class ServerController {
 
 	private final ChestnutProperties properties;
+
+	private final DynamicDataSourceProperties dataSourceProperties;
 	
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorServerList)
 	@GetMapping()
 	public R<?> getInfo() throws Exception {
 		Server server = new Server();
 		server.copyTo();
+		server.getDataSources().initFrom(dataSourceProperties.getDatasource().values());
 		server.getApp().setName(properties.getName());
+		server.getApp().setAlias(properties.getAlias());
 		server.getApp().setVersion(properties.getVersion());
 		return R.ok(server);
 	}
@@ -69,7 +73,7 @@ public class ServerController {
 	@Setter
 	static class DashboardServerData {
 
-		private Server.AppInfo app = new Server.AppInfo();
+		private AppInfo app = new AppInfo();
 
 		private String startTime;
 

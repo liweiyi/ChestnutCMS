@@ -89,7 +89,7 @@ public class BaiduSitemapService {
     public AsyncTask asyncGenerateSitemapXml(final CmsSite site) {
         AsyncTask asyncTask = new AsyncTask() {
             @Override
-            public void run0() throws Exception {
+            public void run0() {
                 generateSitemapXml(site);
             }
         };
@@ -114,6 +114,7 @@ public class BaiduSitemapService {
     public void generateSitemapXml(CmsSite site, List<CmsPublishPipe> publishPipes) {
         long s = System.currentTimeMillis();
         List<CmsCatalog> catalogs = this.catalogService.lambdaQuery()
+                .eq(CmsCatalog::getSiteId, site.getSiteId())
                 .eq(CmsCatalog::getVisibleFlag, YesOrNo.YES)
                 .eq(CmsCatalog::getStaticFlag, YesOrNo.YES)
                 .eq(CmsCatalog::getCatalogType, CatalogType_Common.ID)
@@ -142,7 +143,8 @@ public class BaiduSitemapService {
         });
         // 内容链接
         int count = 0; // 计数
-        Long total = this.contentService.lambdaQuery()
+        Long total = this.contentService.dao().lambdaQuery()
+                .eq(CmsContent::getSiteId, site.getSiteId())
                 .eq(CmsContent::getStatus, ContentStatus.PUBLISHED)
                 .eq(CmsContent::getCopyType, 0)
                 .ne(CmsContent::getLinkFlag, YesOrNo.YES)
@@ -158,7 +160,7 @@ public class BaiduSitemapService {
                         .ne(CmsContent::getLinkFlag, YesOrNo.YES)
                         .gt(CmsContent::getContentId, lastContentId)
                         .orderByAsc(CmsContent::getContentId);
-                Page<CmsContent> page = contentService.page(new Page<>(0, pageSize, false), q);
+                Page<CmsContent> page = contentService.dao().page(new Page<>(0, pageSize, false), q);
                 for (CmsContent content : page.getRecords()) {
                     lastContentId = content.getContentId();
                     String lastmod = content.getPublishDate().format(FORMAT);
@@ -175,9 +177,7 @@ public class BaiduSitemapService {
             }
         }
         // 剩余链接写入文件
-        creatorMap.forEach((code, creator) -> {
-            creator.writeFile();
-        });
+        creatorMap.forEach((code, creator) -> creator.writeFile());
         // 创建sitemapindex.xml
         publishPipes.forEach(pp -> {
             try {

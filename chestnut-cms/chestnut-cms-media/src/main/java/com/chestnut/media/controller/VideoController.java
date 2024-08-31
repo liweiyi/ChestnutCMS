@@ -61,10 +61,6 @@ public class VideoController extends BaseRestController {
 	public R<?> screenshot(@RequestBody  @Validated VideoScreenshotDTO dto, HttpServletRequest request)
 			throws EncoderException, IOException {
 		CmsSite site = this.siteService.getCurrentSite(request);
-		InternalURL internalURL = InternalUrlUtils.parseInternalUrl(dto.getPath());
-		if (Objects.nonNull(internalURL)) {
-			dto.setPath(internalURL.getPath());
-		}
 		CmsResource cmsResource = this.videoService.videoScreenshot(site, dto.getPath(),
 				dto.getTimestamp(), StpAdminUtil.getLoginUser());
 		return R.ok(cmsResource);

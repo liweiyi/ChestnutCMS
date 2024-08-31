@@ -2,7 +2,7 @@
   <div class="cms-content-list">
     <el-row :gutter="10" class="mb12">
       <el-col :span="1.5">
-        <el-popover class="btn-permi" placement="bottom-start" :width="400" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
+        <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="400" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
           <el-row style="margin-bottom:20px;text-align:right;">
             <el-radio-group v-model="addContentType">
               <el-radio-button 
@@ -174,7 +174,9 @@
               <el-button type="primary" icon="el-icon-search" @click="handleQuery">{{ $t("Common.Search") }}</el-button>
               <el-button icon="el-icon-refresh" @click="resetQuery">{{ $t("Common.Reset") }}</el-button>
             </el-button-group>
-            <el-button icon="el-icon-plus" class="ml10" @click="showSearch=!showSearch">{{ $t("Common.More") }}</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button icon="el-icon-plus" @click="showSearch=!showSearch">{{ $t("Common.More") }}</el-button>
           </el-form-item>
         </div>
         <div class="mb12" v-show="showSearch">
@@ -302,7 +304,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleTopDialogOk">{{ $t("Common.Confirm") }}</el-button>
-        <el-button @click="this.topDialogVisible=false">{{ $t("Common.Cancel") }}</el-button>
+        <el-button @click="topDialogVisible=false">{{ $t("Common.Cancel") }}</el-button>
       </div>
     </el-dialog>
     <!-- 进度条 -->
@@ -353,6 +355,7 @@ export default {
     return {
       // 遮罩层
       loading: false,
+      addPopoverVisible: false,
       showSearch: false,
       contentTypeOptions: [],
       catalogId: this.cid,
@@ -465,6 +468,7 @@ export default {
         this.$modal.msgError(this.$t("CMS.Content.SelectCatalogFirst"));
         return;
       }
+      this.addPopoverVisible = false;
       this.openEditor(this.catalogId, 0, this.addContentType);
     },
     handleEdit (row) {
@@ -476,7 +480,11 @@ export default {
           path: "/cms/content/editorW",
           query: { type: contentType, catalogId: catalogId, id: contentId },
         });
-        window.open(routeData.href, '_blank');
+        let winEditor = window.open(routeData.href, '_blank');
+        let that = this;
+        winEditor.onbeforeunload = function () {
+          that.loadContentList();
+        }
       } else {
         this.$router.push({ path: "/cms/content/editor", query: { type: contentType, catalogId: catalogId, id: contentId, w: this.openEditorW } });
       }
@@ -551,6 +559,9 @@ export default {
       copyContent(data).then(response => {
         this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
         this.openCatalogSelector = false;
+        if (this.catalogId && data.catalogIds.indexOf(this.catalogId) > -1) {
+          this.loadContentList();
+        }
       });
     },
     handleMove(row) {

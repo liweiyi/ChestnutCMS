@@ -60,7 +60,7 @@
                 <el-link :href="scope.row.url" target="_blank">{{ scope.row.url }}</el-link>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('WordMgr.HotWord.HotWordUseCount')" align="center" prop="useCount" width="120"/>
+            <!-- <el-table-column :label="$t('WordMgr.HotWord.HotWordUseCount')" align="center" prop="useCount" width="120"/> -->
             <el-table-column :label="$t('WordMgr.HotWord.HotWordHitCount')" align="center" prop="hitCount" width="120"/>
             <el-table-column :label="$t('Common.CreateTime')" align="center" width="160">
               <template slot-scope="scope">

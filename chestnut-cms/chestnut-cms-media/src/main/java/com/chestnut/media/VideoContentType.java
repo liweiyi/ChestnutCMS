@@ -15,7 +15,8 @@
  */
 package com.chestnut.media;
 
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.chestnut.common.db.DBConstants;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -24,21 +25,26 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
+import com.chestnut.contentcore.domain.BCmsContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 import com.chestnut.contentcore.domain.vo.ContentVO;
+import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.enums.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
-import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.service.ICatalogService;
+import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.media.domain.BCmsVideo;
 import com.chestnut.media.domain.CmsVideo;
 import com.chestnut.media.domain.dto.VideoAlbumDTO;
 import com.chestnut.media.domain.vo.VideoAlbumVO;
-import com.chestnut.media.mapper.CmsVideoMapper;
+import com.chestnut.media.mapper.BCmsVideoMapper;
+import com.chestnut.media.service.IVideoService;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -58,9 +64,9 @@ public class VideoContentType implements IContentType {
     
     private final static String NAME = "{CMS.CONTENTCORE.CONTENT_TYPE." + ID + "}";
 
-	private final CmsContentMapper contentMapper;
+	private final IContentService contentService;
 
-	private final CmsVideoMapper videoMapper;
+	private final IVideoService videoService;
 	
 	private final ICatalogService catalogService;
 
@@ -104,7 +110,7 @@ public class VideoContentType implements IContentType {
 
 		CmsContent contentEntity;
 		if (dto.getOpType() == ContentOpType.UPDATE) {
-			contentEntity = this.contentMapper.selectById(dto.getContentId());
+			contentEntity = this.contentService.dao().getById(dto.getContentId());
 			Assert.notNull(contentEntity,
 					() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", dto.getContentId()));
 		} else {
@@ -137,10 +143,10 @@ public class VideoContentType implements IContentType {
 		List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(catalog.getSiteId());
 		VideoAlbumVO vo;
 		if (IdUtils.validate(contentId)) {
-			CmsContent contentEntity = this.contentMapper.selectById(contentId);
+			CmsContent contentEntity = this.contentService.dao().getById(contentId);
 			Assert.notNull(contentEntity, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 
-			List<CmsVideo> list = new LambdaQueryChainWrapper<>(this.videoMapper).eq(CmsVideo::getContentId, contentId)
+			List<CmsVideo> list = this.videoService.dao().lambdaQuery().eq(CmsVideo::getContentId, contentId)
 					.orderByAsc(CmsVideo::getSortFlag).list();
 			list.forEach(video -> {
 				video.setSrc(InternalUrlUtils.getActualPreviewUrl(video.getPath()));
@@ -174,12 +180,26 @@ public class VideoContentType implements IContentType {
 	}
 
 	@Override
-	public void recover(Long contentId) {
-		this.videoMapper.recoverByContentId(contentId);
+	public void recover(BCmsContent backupContent) {
+		this.contentService.dao().recover(backupContent);
+
+		if (!YesOrNo.isYes(backupContent.getLinkFlag()) && !ContentCopyType.isMapping(backupContent.getCopyType())) {
+			BCmsVideoMapper backupMapper = this.videoService.dao().getBackupMapper();
+			List<BCmsVideo> backups = backupMapper.selectList(new LambdaQueryWrapper<BCmsVideo>()
+					.eq(BCmsVideo::getContentId, backupContent.getContentId())
+					.eq(BCmsVideo::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
+
+			backups.forEach(backupImage -> this.videoService.dao().recover(backupImage));
+		}
 	}
 
 	@Override
 	public void deleteBackups(Long contentId) {
-		this.videoMapper.deleteLogicDeletedByContentId(contentId);
+		this.contentService.dao().deleteBackups(new LambdaQueryWrapper<BCmsContent>()
+				.eq(BCmsContent::getContentId, contentId)
+				.eq(BCmsContent::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
+		this.videoService.dao().deleteBackups(new LambdaQueryWrapper<BCmsVideo>()
+				.eq(BCmsVideo::getContentId, contentId)
+				.eq(BCmsVideo::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
 	}
 }

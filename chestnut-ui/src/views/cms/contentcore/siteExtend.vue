@@ -73,6 +73,15 @@
             inactive-value="N">
           </el-switch>
         </el-form-item>
+        <el-form-item :label="$t('CMS.Site.Extend.EnableSiteDeleteBackup')" prop="EnableSiteDeleteBackup">
+          <el-switch
+            v-model="form_extend.EnableSiteDeleteBackup"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+        </el-form-item>
         <el-form-item :label="$t('CMS.Site.Extend.SiteApiUrl')" prop="SiteApiUrl">
           <el-input v-model="form_extend.SiteApiUrl" placeholder="http(s)://"></el-input>
         </el-form-item>

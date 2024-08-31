@@ -324,6 +324,7 @@
       direction="rtl"
       size="60%"
       :with-header="false"
+      destroy-on-close
       :visible.sync="openPermissionDialog"
       :before-close="handleGrantPermsClose">
       <role-permission owner-type='User' :owner='owner'></role-permission>

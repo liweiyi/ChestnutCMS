@@ -22,7 +22,6 @@ import com.chestnut.cms.member.domain.vo.ContributeArticleVO;
 import com.chestnut.cms.member.publishpipe.PublishPipeProp_MemberContributeTemplate;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IDynamicPageType;
 import com.chestnut.contentcore.domain.CmsContent;
@@ -117,8 +116,8 @@ public class AccountContributeDynamicPageType implements IDynamicPageType {
 
         Long contentId = MapUtils.getLong(parameters, "cid", 0L);
         if (IdUtils.validate(contentId)) {
-            CmsContent content = this.contentService.getById(contentId);
-            CmsArticleDetail articleDetail = this.articleService.getById(content.getContentId());
+            CmsContent content = this.contentService.dao().getById(contentId);
+            CmsArticleDetail articleDetail = this.articleService.dao().getById(content.getContentId());
             ContributeArticleVO article = ContributeArticleVO.newInstance(content, articleDetail);
             if (StringUtils.isNotEmpty(content.getLogo())) {
                 article.setLogoSrc(InternalUrlUtils.getActualUrl(article.getLogo(), templateContext.getPublishPipeCode(), templateContext.isPreview()));

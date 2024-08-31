@@ -15,52 +15,52 @@
  */
 package com.chestnut.media.service.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-
-import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.domain.LoginUser;
-import com.chestnut.common.utils.Assert;
+import com.chestnut.common.storage.local.LocalFileStorageType;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.contentcore.core.IInternalDataType;
+import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.IResourceService;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.ContentCoreUtils;
+import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.media.dao.CmsVideoDAO;
+import com.chestnut.media.domain.CmsVideo;
+import com.chestnut.media.service.IVideoService;
+import com.chestnut.media.util.MediaUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.contentcore.util.InternalUrlUtils;
-import com.chestnut.media.domain.CmsVideo;
-import com.chestnut.media.mapper.CmsVideoMapper;
-import com.chestnut.media.service.IVideoService;
-import com.chestnut.media.util.MediaUtils;
-
 import ws.schild.jave.EncoderException;
 import ws.schild.jave.info.MultimediaInfo;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.Objects;
+
+import static com.chestnut.contentcore.core.impl.InternalDataType_Resource.InternalUrl_Param_StorageType;
+
 @Service
 @RequiredArgsConstructor
-public class VideoServiceImpl extends ServiceImpl<CmsVideoMapper, CmsVideo> implements IVideoService {
+public class VideoServiceImpl implements IVideoService {
 
-	private final ISiteService siteService;
+	private final CmsVideoDAO dao;
 
 	private final IResourceService resourceService;
 
 	@Override
 	public List<CmsVideo> getAlbumVideoList(Long contentId) {
-		return this.lambdaQuery().eq(CmsVideo::getContentId, contentId).list();
+		return this.dao().lambdaQuery().eq(CmsVideo::getContentId, contentId).list();
 	}
 
 	/**
 	 * 处理视频信息
-	 *
-	 * @param video
 	 */
 	@Override
 	public void progressVideoInfo(CmsVideo video) {
@@ -85,24 +85,41 @@ public class VideoServiceImpl extends ServiceImpl<CmsVideoMapper, CmsVideo> impl
 	@Override
 	public CmsResource videoScreenshot(CmsSite site, String videoPath, Long timestamp, LoginUser operator)
 			throws EncoderException, IOException {
+		InternalURL internalURL = InternalUrlUtils.parseInternalUrl(videoPath);
+		if (Objects.isNull(internalURL)) {
+			throw new RuntimeException("InternalUrl parse failed.");
+		}
 		String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
-		videoPath = siteResourceRoot + videoPath;
+        String storageType = internalURL.getParams().get(InternalUrl_Param_StorageType);
+		if (LocalFileStorageType.TYPE.equals(storageType)) {
+			videoPath = siteResourceRoot + internalURL.getPath();
+		} else {
+			IInternalDataType idt = ContentCoreUtils.getInternalDataType(InternalDataType_Resource.ID);
+			videoPath = idt.getLink(internalURL, 1, "", false);
+		}
 		File screenshotFile = new File(siteResourceRoot + "tmp/video_screenshot/" + IdUtils.simpleUUID() + ".jpg");
 		FileUtils.forceMkdirParent(screenshotFile);
 
 		try {
-			MediaUtils.generateVideoScreenshot(new File(videoPath), screenshotFile, timestamp);
+			if (ServletUtils.isHttpUrl(videoPath)) {
+				MediaUtils.generateRemoteVideoScreenshot(new URL(videoPath), screenshotFile, timestamp);
+			} else {
+				MediaUtils.generateVideoScreenshot(new File(videoPath), screenshotFile, timestamp);
+			}
 			CmsResource imgResource = this.resourceService.addImageFromFile(site,
 					operator.getUsername(), screenshotFile);
-			imgResource.setSrc(this.resourceService.getResourceLink(imgResource, true));
+			imgResource.setSrc(this.resourceService.getResourceLink(imgResource, null, true));
 			imgResource.setInternalUrl(InternalDataType_Resource.getInternalUrl(imgResource));
 			return imgResource;
-		} catch (Exception e) {
-			throw e;
 		} finally {
 			if (screenshotFile.exists()) {
 				FileUtils.delete(screenshotFile);
 			}
 		}
+	}
+
+	@Override
+	public CmsVideoDAO dao() {
+		return dao;
 	}
 }

@@ -16,10 +16,13 @@
 package com.chestnut.cms.image;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.chestnut.cms.image.domain.BCmsImage;
 import com.chestnut.cms.image.domain.CmsImage;
 import com.chestnut.cms.image.domain.dto.ImageAlbumDTO;
 import com.chestnut.cms.image.domain.vo.ImageAlbumVO;
-import com.chestnut.cms.image.mapper.CmsImageMapper;
+import com.chestnut.cms.image.mapper.BCmsImageMapper;
+import com.chestnut.cms.image.service.IImageService;
+import com.chestnut.common.db.DBConstants;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -28,17 +31,20 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
+import com.chestnut.contentcore.domain.BCmsContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 import com.chestnut.contentcore.domain.vo.ContentVO;
+import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.enums.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
-import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.service.ICatalogService;
+import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -58,9 +64,9 @@ public class ImageContentType implements IContentType {
     
     private final static String NAME = "{CMS.CONTENTCORE.CONTENT_TYPE." + ID + "}";
 
-	private final CmsContentMapper contentMapper;
+	private final IContentService contentService;
 
-	private final CmsImageMapper imageMapper;
+	private final IImageService imageService;
 
 	private final ICatalogService catalogService;
 
@@ -104,7 +110,7 @@ public class ImageContentType implements IContentType {
 
 		CmsContent contentEntity;
 		if (dto.getOpType() == ContentOpType.UPDATE) {
-			contentEntity = this.contentMapper.selectById(dto.getContentId());
+			contentEntity = this.contentService.dao().getById(dto.getContentId());
 			Assert.notNull(contentEntity,
 					() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", dto.getContentId()));
 		} else {
@@ -137,12 +143,12 @@ public class ImageContentType implements IContentType {
 		List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(catalog.getSiteId());
 		ImageAlbumVO vo;
 		if (IdUtils.validate(contentId)) {
-			CmsContent contentEntity = this.contentMapper.selectById(contentId);
+			CmsContent contentEntity = this.contentService.dao().getById(contentId);
 			Assert.notNull(contentEntity, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 
 			LambdaQueryWrapper<CmsImage> q = new LambdaQueryWrapper<CmsImage>().eq(CmsImage::getContentId, contentId)
 					.orderByAsc(CmsImage::getSortFlag);
-			List<CmsImage> list = this.imageMapper.selectList(q);
+			List<CmsImage> list = this.imageService.dao().list(q);
 			list.forEach(img -> {
 				img.setSrc(InternalUrlUtils.getActualPreviewUrl(img.getPath()));
 				img.setFileSizeName(FileUtils.byteCountToDisplaySize(img.getFileSize()));
@@ -172,12 +178,26 @@ public class ImageContentType implements IContentType {
 	}
 
 	@Override
-	public void recover(Long contentId) {
-		this.imageMapper.recoverByContentId(contentId);
+	public void recover(BCmsContent backupContent) {
+		this.contentService.dao().recover(backupContent);
+
+		if (!YesOrNo.isYes(backupContent.getLinkFlag()) && !ContentCopyType.isMapping(backupContent.getCopyType())) {
+			BCmsImageMapper backupMapper = this.imageService.dao().getBackupMapper();
+			List<BCmsImage> backupImages = backupMapper.selectList(new LambdaQueryWrapper<BCmsImage>()
+					.eq(BCmsImage::getContentId, backupContent.getContentId())
+					.eq(BCmsImage::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
+
+			backupImages.forEach(backupImage -> this.imageService.dao().recover(backupImage));
+		}
 	}
 
 	@Override
 	public void deleteBackups(Long contentId) {
-		this.imageMapper.deleteLogicDeletedByContentId(contentId);
+		this.contentService.dao().deleteBackups(new LambdaQueryWrapper<BCmsContent>()
+				.eq(BCmsContent::getContentId, contentId)
+				.eq(BCmsContent::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
+		this.imageService.dao().deleteBackups(new LambdaQueryWrapper<BCmsImage>()
+				.eq(BCmsImage::getContentId, contentId)
+				.eq(BCmsImage::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
 	}
 }

@@ -114,7 +114,7 @@ public class CmsIncludeTag extends AbstractTag {
 		String file = attrs.get(TagAttr_FILE);
 		Assert.notEmpty(file, () -> new TemplateException("参数[file]不能为空", env));
 
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 		CmsSite site = this.siteService.getSite(siteId);
 
 		boolean ssi = MapUtils.getBoolean(attrs, TagAttr_SSI, EnableSSIProperty.getValue(site.getConfigProps()));

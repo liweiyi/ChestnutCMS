@@ -44,7 +44,7 @@ public class CmsSearchController extends BaseRestController {
     private final DynamicPageService dynamicPageService;
 
     @GetMapping(SearchDynamicPageType.REQUEST_PATH)
-    public void accountCentre(@RequestParam(value ="q", required = false, defaultValue = "") @Length(max = 50) String query,
+    public void searchPage(@RequestParam(value ="q", required = false, defaultValue = "") @Length(max = 50) String query,
                               @RequestParam("sid") Long siteId,
                               @RequestParam("pp") String publishPipeCode,
                               @RequestParam(value = "ot", required = false ,defaultValue = "false") Boolean onlyTitle,

@@ -15,18 +15,18 @@
  */
 package com.chestnut.cms.image.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.chestnut.cms.image.dao.CmsImageDAO;
 import com.chestnut.cms.image.domain.CmsImage;
+import com.chestnut.common.db.mybatisplus.HasDAO;
 
 import java.util.List;
 
-public interface IImageService extends IService<CmsImage> {
+public interface IImageService extends HasDAO<CmsImageDAO> {
 
 	/**
 	 * 获取图集中的图片列表
 	 * 
-	 * @param contentId
-	 * @return
+	 * @param contentId 内容ID
 	 */
-	public List<CmsImage> getAlbumImages(Long contentId);
+	List<CmsImage> getAlbumImages(Long contentId);
 }

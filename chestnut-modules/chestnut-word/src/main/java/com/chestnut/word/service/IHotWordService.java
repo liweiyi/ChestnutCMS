@@ -52,19 +52,18 @@ public interface IHotWordService extends IService<HotWord> {
 	/**
 	 * 获取指定分组热词集合
 	 * 
-	 * @param groupCode
-	 * @return
+	 * @param groupCode 热词分组编码
 	 */
-	Map<String, HotWordCache> getHotWords(String groupCode);
+	Map<String, HotWordCache> getHotWords(String owner, String groupCode);
 
 	/**
 	 * 按指定热词分组处理内容中的热词
 	 * 
-	 * @param text
-	 * @param groupCodes
-	 * @param target
-	 * @param replacementTemplate
-	 * @return
+	 * @param text 待处理文本
+	 * @param owner 热词分组所有者
+	 * @param groupCodes 热词分组编码列表
+	 * @param target 热词链接跳转方式
+	 * @param replacementTemplate 自定义替换模板
 	 */
-	String replaceHotWords(String text, String[] groupCodes, String target, String replacementTemplate);
+	String replaceHotWords(String text, String owner, String[] groupCodes, String target, String replacementTemplate);
 }

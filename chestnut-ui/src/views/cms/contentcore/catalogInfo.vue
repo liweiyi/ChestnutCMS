@@ -156,6 +156,15 @@
             inactive-value="N">
           </el-switch>
         </el-form-item>
+        <el-form-item :label="$t('CMS.Catalog.TagIgnore')" prop="tagIgnore">
+          <el-switch
+            v-model="form_info.tagIgnore"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+        </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.Logo')" prop="logo">
           <cms-logo-view v-model="form_info.logo" :src="form_info.logoSrc" :height="150"></cms-logo-view>
         </el-form-item>
@@ -182,7 +191,7 @@
               </el-input>
             </el-form-item>
             <el-form-item :label="$t('CMS.Catalog.ListTemplate')" prop="listTemplate">
-              <el-input v-model="pp.props.listTemplate">
+              <el-input class="mr5" v-model="pp.props.listTemplate">
                 <el-button 
                   slot="append"
                   type="primary"
@@ -191,7 +200,6 @@
               </el-input>
               <el-button 
                 plain 
-                class="ml5"
                 icon="el-icon-bottom-right" 
                 type="primary" 
                 @click="handleApplyToChildren('listTemplate')">{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
@@ -202,7 +210,7 @@
               :command="ct"
               :label="ct.name + $t('CMS.Catalog.DetailTemplate')"
               :prop="`detailTemplate_${ct.id}`">
-              <el-input v-model="pp.props[`detailTemplate_${ct.id}`]">
+              <el-input class="mr5" v-model="pp.props[`detailTemplate_${ct.id}`]">
                 <el-button 
                   slot="append"
                   type="primary"
@@ -210,7 +218,6 @@
                 >{{ $t("Common.Select") }}</el-button>
               </el-input>
               <el-button 
-                class="ml5"
                 icon="el-icon-bottom-right" 
                 type="primary" 
                 plain 
@@ -218,7 +225,7 @@
               >{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
             </el-form-item>
             <el-form-item :label="$t('CMS.Catalog.ContentExTemplate')" prop="contentExTemplate">
-              <el-input v-model="pp.props.contentExTemplate">
+              <el-input class="mr5" v-model="pp.props.contentExTemplate">
                 <el-button 
                   slot="append"
                   type="primary"
@@ -227,7 +234,6 @@
               </el-input>
               <el-button 
                 plain 
-                class="ml5"
                 icon="el-icon-bottom-right" 
                 type="primary" 
                 @click="handleApplyToChildren('contentExTemplate')">{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
@@ -497,6 +503,9 @@ export default {
           this.progressTitle = this.$t('CMS.Catalog.DeleteProgressTitle');
           this.progressType = "Delete";
           this.openProgress = true;
+          
+          console.log("parentId", this.form_info.parentId)
+          this.$cache.local.set("LastSelectedCatalogId", this.form_info.parentId);
         }
       });
     },

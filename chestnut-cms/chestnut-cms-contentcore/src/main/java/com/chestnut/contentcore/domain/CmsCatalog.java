@@ -131,6 +131,11 @@ public class CmsCatalog extends BaseEntity {
 	private String visibleFlag;
 
 	/**
+	 * 栏目是否在标签中忽略
+	 */
+	private String tagIgnore;
+
+	/**
 	 * 排序字段
 	 */
 	private Long sortFlag;

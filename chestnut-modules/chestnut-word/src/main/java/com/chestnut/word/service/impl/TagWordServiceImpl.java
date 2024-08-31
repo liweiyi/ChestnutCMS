@@ -20,6 +20,7 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SortUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.domain.dto.BatchAddTagDTO;
@@ -84,7 +85,7 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 				Assert.isTrue(checkUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("word"));
 			}
 
-			List<TagWord> list = dto.getWords().stream().map(word -> {
+			List<TagWord> list = dto.getWords().stream().filter(StringUtils::isNotBlank).map(word -> {
 				TagWord tagWord = new TagWord();
 				tagWord.setWordId(IdUtils.getSnowflakeId());
 				tagWord.setGroupId(dto.getGroupId());

@@ -146,7 +146,7 @@
             :limit="1">
               <i class="el-icon-upload"></i>
               <div class="el-upload__text">{{ $t('CMS.Resource.UploadTip1') }}</div>
-              <div class="el-upload__tip" slot="tip">{{ $t('CMS.Resource.UploadTip2', [ '[.jpg, .png]',  '500kb']) }}</div>
+              <div class="el-upload__tip" slot="tip">{{ $t('CMS.Resource.UploadTip2', [ upload.accept,  fileSizeName ]) }}</div>
             </el-upload>
         </el-form-item>
         <el-form-item :label="$t('CMS.Resource.Name')" prop="name">
@@ -168,6 +168,7 @@
 import { getFileSvgIconClass } from "@/utils/chestnut";
 import { getToken } from "@/utils/auth";
 import { getResourceTypes, getResrouceList, getResourceDetail, delResource } from "@/api/contentcore/resource";
+import { getConfigKey } from "@/api/system/config";
 
 export default {
   name: "CmsResource",
@@ -212,6 +213,8 @@ export default {
       upload: {
         // 是否禁用上传
         isUploading: false,
+        accept: "",
+        acceptSize: 0,
         // 设置上传的请求头部
         headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get("CurrentSite") },
         // 上传的地址
@@ -222,7 +225,19 @@ export default {
       },
     };
   },
+  computed: {
+    fileSizeName() {
+      if (this.upload.acceptSize > 0) {
+        return this.upload.acceptSize / 1024 / 1024 + " MB"
+      } else {
+        return "∞";
+      }
+    }
+  },
   created () {
+    getConfigKey("ResourceUploadAcceptSize").then(res => {
+      this.upload.acceptSize = parseInt(res.data);
+    });
     this.loadResourceTypes();
     this.getList();
   },
@@ -230,6 +245,9 @@ export default {
     loadResourceTypes() {
       getResourceTypes().then(response => {
         this.resourceTypes = response.data;
+        this.resourceTypes.forEach((item) => {
+            this.upload.accept += "." + item.accepts.replaceAll(",", ",.")
+        })
       });
     },
     /** 查询资源列表 */

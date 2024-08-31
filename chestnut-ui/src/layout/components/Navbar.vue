@@ -27,7 +27,11 @@
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <img :src="avatar" class="user-avatar">
+          <el-image :src="avatar" class="user-avatar">
+            <div slot="error" class="image-slot">
+              <img src="@/assets/images/default_banner_avatar.png" class="user-avatar" />
+            </div>
+          </el-image>
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
@@ -50,6 +54,8 @@
 </template>
 
 <script>
+import { checkSecurityConfig } from "@/api/system/security";
+
 import { mapGetters } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import TopNav from '@/components/TopNav'
@@ -77,6 +83,11 @@ export default {
     CurrentSite,
     PublishTask,
   },
+  data() {
+    return {
+      securityConfig: {}
+    }
+  },
   computed: {
     ...mapGetters([
       'sidebar',
@@ -100,7 +111,35 @@ export default {
       }
     }
   },
+  created() {
+    this.loadSecurityConfig();
+  },
   methods: {
+    loadSecurityConfig() {
+      checkSecurityConfig().then(res => {
+        if (res.data) {
+          this.securityConfig = res.data;
+          if (this.securityConfig.forceModifyPassword) {
+            checkResetPassword(this.$t('System.Security.ForceModifyPwd'))
+          } else if (this.securityConfig.isPasswordExpired) {
+            checkResetPassword(this.$t('System.Security.PwdExpired'))
+          }
+        }
+      });
+    },
+    checkResetPassword(msg) {
+      this.$alert(msg, {
+          dangerouslyUseHTMLString: true,
+          showClose: false,
+          closeOnClickModal: false,
+          closeOnPressEscape: false,
+          closeOnHashChange: false,
+          confirmButtonText: this.$t('Common.Confirm'),
+          callback: action => {
+            this.$router.push({ path: "/user/profile", query: { tab: "resetPwd" } });
+          }
+        });
+    },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },

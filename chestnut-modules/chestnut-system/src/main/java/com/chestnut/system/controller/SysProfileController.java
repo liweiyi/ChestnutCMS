@@ -45,6 +45,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -124,6 +125,7 @@ public class SysProfileController extends BaseRestController {
 
 		boolean update = this.userService.lambdaUpdate()
 				.set(SysUser::getPassword, SecurityUtils.passwordEncode(newPassword))
+				.set(SysUser::getPasswordModifyTime, LocalDateTime.now())
 				.eq(SysUser::getUserId, loginUser.getUserId()).update();
 		return update ? R.ok() : R.fail();
 	}

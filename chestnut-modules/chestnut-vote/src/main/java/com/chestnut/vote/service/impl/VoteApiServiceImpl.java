@@ -15,14 +15,6 @@
  */
 package com.chestnut.vote.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
-import org.springframework.stereotype.Service;
-
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
@@ -36,8 +28,15 @@ import com.chestnut.vote.exception.VoteErrorCode;
 import com.chestnut.vote.service.IVoteApiService;
 import com.chestnut.vote.service.IVoteLogService;
 import com.chestnut.vote.service.IVoteService;
-
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +56,7 @@ public class VoteApiServiceImpl implements IVoteApiService {
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void submitVote(VoteSubmitDTO dto) {
 		VoteVO vote = this.getVote(dto.getVoteId());
 		Assert.notNull(vote, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("voteId", dto.getVoteId()));
@@ -94,9 +94,7 @@ public class VoteApiServiceImpl implements IVoteApiService {
 			voteLog.setUserAgent(dto.getUserAgent());
 			voteLogService.save(voteLog);
 			// 更新问卷参与数和主题选项票数
-			this.asyncTaskManager.execute(() -> {
-				this.voteService.onVoteSubmit(voteLog);
-			});
+			this.asyncTaskManager.execute(() -> this.voteService.onVoteSubmit(voteLog));
 		} finally {
 			lock.unlock();
 		}

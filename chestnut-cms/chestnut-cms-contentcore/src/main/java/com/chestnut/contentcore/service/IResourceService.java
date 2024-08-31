@@ -66,9 +66,10 @@ public interface IResourceService extends IService<CmsResource> {
 	 * 获取资源访问路径
 	 * 
 	 * @param resource 素材信息
+	 * @param publishPipeCode 发布通道编码
 	 * @param preview 是否预览模式
 	 */
-	String getResourceLink(CmsResource resource, boolean preview);
+	String getResourceLink(CmsResource resource, String publishPipeCode, boolean preview);
 
 	/**
 	 * 下载资源文件

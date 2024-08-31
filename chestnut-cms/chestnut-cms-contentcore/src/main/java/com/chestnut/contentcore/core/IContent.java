@@ -108,25 +108,18 @@ public interface IContent<T> {
 
 	/**
 	 * 设置操作人信息
-	 * 
-	 * @param operator
 	 */
 	void setOperator(LoginUser operator);
 
 	/**
-	 * 复制内容到指定栏目
-	 * 
-	 * @param catalog
-	 * @param copyType
-	 * @return
-	 */
-	void copyTo(CmsCatalog catalog, Integer copyType);
+     * 复制内容到指定栏目
+     *
+     * @return
+     */
+	CmsContent copyTo(CmsCatalog catalog, Integer copyType);
 
 	/**
 	 * 转移内容到指定栏目
-	 * 
-	 * @param catalog
-	 * @return
 	 */
 	void moveTo(CmsCatalog catalog);
 
@@ -137,32 +130,26 @@ public interface IContent<T> {
 
 	/**
 	 * 设置自定义参数
-	 * 
-	 * @param params
 	 */
 	void setParams(Map<String, Object> params);
 
 	/**
 	 * 置顶
-	 * @return
 	 */
 	void setTop(LocalDateTime topEndTime);
 
 	/**
 	 * 取消置顶
-	 * @return
 	 */
 	void cancelTop();
 
 	/**
 	 * 排序
-	 * @return
 	 */
 	void sort(Long targetContentId);
 
 	/**
 	 * 下线
-	 * @return
 	 */
 	void offline();
 
@@ -173,14 +160,11 @@ public interface IContent<T> {
 
 	/**
 	 * 归档
-	 * @return
 	 */
 	void archive();
 
 	/**
 	 * 全文检索分词内容
-	 * 
-	 * @return
 	 */
 	String getFullText();
 

@@ -30,7 +30,6 @@ import com.chestnut.contentcore.service.impl.ContentDynamicDataService;
 import com.chestnut.member.domain.MemberFavorites;
 import com.chestnut.member.domain.MemberLike;
 import com.chestnut.member.domain.vo.MemberCache;
-import com.chestnut.member.domain.vo.MemberMenuVO;
 import com.chestnut.member.service.IMemberFavoritesService;
 import com.chestnut.member.service.IMemberLikeService;
 import com.chestnut.member.service.IMemberStatDataService;
@@ -39,7 +38,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -65,9 +63,6 @@ public class MemberContentApiController extends BaseRestController {
 
 	/**
 	 * 内容动态数据，评论数、点赞数、收藏数、浏览数
-	 *
-	 * @param contentIdsStr
-	 * @return
 	 */
 	@GetMapping("/content/data")
 	public R<List<ContentDynamicDataWithContributorVO>> getContentDynamicData(@RequestParam("ids") String contentIdsStr) {
@@ -119,7 +114,7 @@ public class MemberContentApiController extends BaseRestController {
 		List<MemberFavorites> memberFavorites = this.memberFavoritesService
 				.getMemberFavorites(memberId, CmsMemberConstants.MEMBER_FAVORITES_DATA_TYPE, limit, offset);
 		List<Long> contentIds = memberFavorites.stream().map(MemberFavorites::getDataId).toList();
-		List<FavoriteContentVO> contents = this.contentService.lambdaQuery().in(CmsContent::getContentId, contentIds)
+		List<FavoriteContentVO> contents = this.contentService.dao().lambdaQuery().in(CmsContent::getContentId, contentIds)
 				.list().stream().map(FavoriteContentVO::newInstance).toList();
 		return this.bindDataTable(contents);
 	}
@@ -135,7 +130,7 @@ public class MemberContentApiController extends BaseRestController {
 		List<MemberLike> memberLikes = this.memberLikeService
 				.getMemberLikes(memberId, CmsMemberConstants.MEMBER_LIKE_DATA_TYPE, limit, offset);
 		List<Long> contentIds = memberLikes.stream().map(MemberLike::getDataId).toList();
-		List<FavoriteContentVO> contents = this.contentService.lambdaQuery().in(CmsContent::getContentId, contentIds)
+		List<FavoriteContentVO> contents = this.contentService.dao().lambdaQuery().in(CmsContent::getContentId, contentIds)
 				.list().stream().map(FavoriteContentVO::newInstance).toList();
 		return this.bindDataTable(contents);
 	}

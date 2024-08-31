@@ -27,10 +27,7 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.*;
 import com.chestnut.contentcore.core.ICatalogType;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IProperty.UseType;
@@ -64,6 +61,7 @@ import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 栏目管理
@@ -138,6 +136,24 @@ public class CatalogController extends BaseRestController {
 		dto.setSiteId(currentSite.getSiteId());
 		dto.setOperator(StpAdminUtil.getLoginUser());
 		return R.ok(this.catalogService.addCatalog(dto));
+	}
+
+	/**
+	 * 批量新增栏目数据
+	 */
+	@Priv(
+			type = AdminUserType.TYPE,
+			value = { ContentCorePriv.ResourceView, "Site:AddCatalog:${#_header['CurrentSite']}"},
+			mode = SaMode.AND
+	)
+	@Log(title = "批量新增栏目", businessType = BusinessType.INSERT)
+	@PostMapping("/batchAdd")
+	public R<?> batchAddCatalog(@RequestBody @Validated CatalogBatchAddDTO dto) {
+		CmsSite currentSite = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		dto.setSiteId(currentSite.getSiteId());
+		dto.setOperator(StpAdminUtil.getLoginUser());
+		this.catalogService.batchAddCatalog(dto);
+		return R.ok();
 	}
 
 	/**
@@ -254,7 +270,7 @@ public class CatalogController extends BaseRestController {
 		Map<String, Object> configProps = ConfigPropertyUtils.parseConfigProps(catalog.getConfigProps(),
 				UseType.Catalog);
 		configProps.put("siteId", catalog.getSiteId());
-		configProps.put("PreviewPrefix", SiteUtils.getResourcePrefix(this.siteService.getSite(catalog.getSiteId()), true));
+		configProps.put("PreviewPrefix", SiteUtils.getResourcePreviewPrefix(this.siteService.getSite(catalog.getSiteId())));
 		return R.ok(configProps);
 	}
 
@@ -340,5 +356,19 @@ public class CatalogController extends BaseRestController {
 		}
 		this.catalogService.sortCatalog(dto.getCatalogId(), dto.getSort());
 		return R.ok();
+	}
+
+	@Priv(type = AdminUserType.TYPE)
+	@PostMapping("/spelling")
+	public R<?> getChineseCapitalizedSpellingForAliasAndPath(@RequestBody CatalogNameToSpellingDTO dto) {
+		CmsCatalog parent = catalogService.getCatalog(dto.getParentId());
+		String spelling = ChineseSpelling.getCapitalizedSpelling(dto.getName()).toLowerCase();
+		String alias = spelling;
+		String path = spelling + StringUtils.SLASH;
+		if (Objects.nonNull(parent)) {
+			alias = parent.getAlias() + StringUtils.Underline + alias;
+			path = parent.getPath() + path;
+		}
+		return R.ok(Map.of("alias", alias, "path", path));
 	}
 }

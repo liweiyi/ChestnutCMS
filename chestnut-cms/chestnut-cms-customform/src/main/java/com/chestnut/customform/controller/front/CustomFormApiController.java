@@ -20,10 +20,16 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
+import com.chestnut.contentcore.domain.CmsResource;
+import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.service.IResourceService;
+import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.customform.CmsCustomFormMetaModelType;
 import com.chestnut.customform.domain.CmsCustomForm;
 import com.chestnut.customform.service.ICustomFormService;
 import com.chestnut.member.security.StpMemberUtil;
+import com.chestnut.system.SysConstants;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.xmodel.service.IModelDataService;
@@ -35,6 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
@@ -55,6 +62,10 @@ public class CustomFormApiController extends BaseRestController {
 	private final ICustomFormService customFormService;
 
 	private final IModelDataService modelDataService;
+
+	private final IResourceService resourceService;
+
+	private final ISiteService siteService;
 
 	@IgnoreDemoMode
 	@PostMapping("/submit")
@@ -83,6 +94,19 @@ public class CustomFormApiController extends BaseRestController {
 		formData.put(CmsCustomFormMetaModelType.FIELD_CLIENT_IP.getCode(), clientIp);
 		formData.put(CmsCustomFormMetaModelType.FIELD_UUID.getCode(), uuid);
 		formData.put(CmsCustomFormMetaModelType.FIELD_CREATE_TIME.getCode(), LocalDateTime.now());
+
+		CmsSite site = siteService.getSite(form.getSiteId());
+
+		formData.forEach((k, v) -> {
+			if (Objects.nonNull(v) && v.toString().startsWith("data:image/png;base64,")) {
+                try {
+					CmsResource resource = resourceService.addBase64Image(site, SysConstants.SYS_OPERATOR, v.toString());
+					formData.put(k, InternalDataType_Resource.getInternalUrl(resource));
+				} catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+		});
 
 		this.modelDataService.saveModelData(form.getModelId(), formData);
 		return R.ok();

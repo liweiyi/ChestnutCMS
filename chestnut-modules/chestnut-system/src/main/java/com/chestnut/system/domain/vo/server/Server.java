@@ -46,6 +46,8 @@ public class Server {
 
 	private AppInfo app = new AppInfo();
 
+	private DataSources dataSources = new DataSources();
+
 	/**
 	 * CPU相关信息
 	 */
@@ -69,7 +71,7 @@ public class Server {
 	/**
 	 * 磁盘相关信息
 	 */
-	private List<SysFile> sysFiles = new LinkedList<SysFile>();
+	private List<SysFile> sysFiles = new LinkedList<>();
 
 	public void copyTo() throws Exception {
 		SystemInfo si = new SystemInfo();
@@ -187,25 +189,5 @@ public class Server {
 		} else {
 			return String.format("%d B", size);
 		}
-	}
-
-	@Getter
-	@Setter
-	public static class AppInfo {
-
-		/**
-		 * 系统名称
-		 */
-		private String name;
-
-		/**
-		 * 系统代号
-		 */
-		private String alias;
-
-		/**
-		 * 系统版本
-		 */
-		private String version;
 	}
 }

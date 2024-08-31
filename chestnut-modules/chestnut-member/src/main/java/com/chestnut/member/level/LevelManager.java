@@ -28,7 +28,7 @@ import lombok.Setter;
  * 等级管理器
  * 
  * @author 兮玥
- * @mail liweiyimwz@126.com
+ * @email 190785909@126.com
  */
 @Getter
 @Setter

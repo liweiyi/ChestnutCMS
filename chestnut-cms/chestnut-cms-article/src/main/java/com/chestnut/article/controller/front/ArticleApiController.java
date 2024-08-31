@@ -26,7 +26,6 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.ICatalogService;
@@ -109,12 +108,12 @@ public class ArticleApiController extends BaseRestController {
             q.orderByDesc(Arrays.asList(CmsContent::getTopFlag, CmsContent::getSortFlag));
         }
 
-        Page<CmsContent> pageResult = this.contentService.page(new Page<>(pageNumber, pageSize, false), q);
+        Page<CmsContent> pageResult = this.contentService.dao().page(new Page<>(pageNumber, pageSize, false), q);
         if (pageResult.getRecords().isEmpty()) {
             return R.ok(List.of());
         }
         List<Long> contentIds = pageResult.getRecords().stream().map(CmsContent::getContentId).toList();
-        Map<Long, CmsArticleDetail> articleDetails = this.articleService.listByIds(contentIds)
+        Map<Long, CmsArticleDetail> articleDetails = this.articleService.dao().listByIds(contentIds)
                 .stream().collect(Collectors.toMap(CmsArticleDetail::getContentId, c -> c));
 
         Map<Long, CmsCatalog> loadedCatalogs = new HashMap<>();

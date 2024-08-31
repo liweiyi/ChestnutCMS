@@ -29,6 +29,7 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.template.tag.CmsIncludeTag;
 import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.customform.CustomFormConsts;
 import com.chestnut.customform.domain.CmsCustomForm;
 import com.chestnut.customform.mapper.CustomFormMapper;
@@ -101,7 +102,7 @@ public class CmsCustomFormTag extends AbstractTag {
 		String code = attrs.get(TagAttr_Code);
 		Assert.notEmpty(code, () -> new TemplateException("参数[code]不能为空", env));
 
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 
 		CmsCustomForm form = new LambdaQueryChainWrapper<>(this.customFormMapper)
 				.eq(CmsCustomForm::getSiteId, siteId)

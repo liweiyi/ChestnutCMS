@@ -55,11 +55,10 @@ public class ArticleUtils {
 
     /**
      * 替换文章正文内容扩展模板占位符，需要在处理图片链接前处理
-     *
+     * <p>
      * 占位符：<img src="/UEditorPlus/themes/default/images/spacer.gif" ex_cid="{content.id}" title="{content.title}" class="img_group_placeholder" />
      * 替换为ssi引用标签
-     *
-     * @return
+     * </p>
      */
     public static String dealContentEx(String articleBody, String publishPipeCode, boolean isPreview) {
         if (StringUtils.isBlank(articleBody)) {
@@ -70,12 +69,12 @@ public class ArticleUtils {
         StringBuilder sb = new StringBuilder();
         while (matcher.find(lastEndIndex)) {
             int s = matcher.start();
-            sb.append(articleBody.substring(lastEndIndex, s));
+            sb.append(articleBody, lastEndIndex, s);
 
             String placeholderImgTag = matcher.group();
             String contentId = matcher.group(1);
             try {
-                CmsContent _content = contentService.getById(contentId);
+                CmsContent _content = contentService.dao().getById(contentId);
                 if (_content != null) {
                     CmsSite site = siteService.getSite(_content.getSiteId());
                     CmsCatalog catalog = catalogService.getCatalog(_content.getCatalogId());
@@ -89,7 +88,7 @@ public class ArticleUtils {
                             placeholderImgTag = StringUtils.messageFormat(CmsIncludeTag.SSI_INCLUDE_TAG, "/" + staticFilePath);
                         } else {
                             // 获取浏览内容
-                            placeholderImgTag = publishService.getContentExPageData(_content, publishPipeCode, false);;
+                            placeholderImgTag = publishService.getContentExPageData(_content, publishPipeCode, false);
                         }
                     }
                 } else {
@@ -113,11 +112,10 @@ public class ArticleUtils {
 
     /**
      * 替换文章正文页面部件占位符，需要在处理图片链接前处理
-     *
+     * <p>
      * 占位符：<img src="/UEditorPlus/themes/default/images/spacer.gif" pw_code="{pageWidget.code}" title="{pageWidget.name}" class="pw_placeholder" />
      * 替换为ssi引用标签
-     *
-     * @return
+     * </p>
      */
     public static String dealPageWidget(CmsContent content, String articleBody, boolean isPreview) {
         if (StringUtils.isBlank(articleBody)) {
@@ -130,7 +128,7 @@ public class ArticleUtils {
         StringBuilder sb = new StringBuilder();
         while (matcher.find(lastEndIndex)) {
             int s = matcher.start();
-            sb.append(articleBody.substring(lastEndIndex, s));
+            sb.append(articleBody, lastEndIndex, s);
 
             String placeholderImgTag = matcher.group();
             String pageWidgetCode = matcher.group(1);
@@ -139,9 +137,8 @@ public class ArticleUtils {
                 if (pw != null) {
                     if (isPreview) {
                         IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(InternalDataType_PageWidget.ID);
-                        String pageData = internalDataType.getPageData(new IInternalDataType.RequestData(pw.getPageWidgetId(),
+                        placeholderImgTag = internalDataType.getPageData(new IInternalDataType.RequestData(pw.getPageWidgetId(),
                                 1, pw.getPublishPipeCode(), true, null));
-                        placeholderImgTag = pageData;
                     } else {
                         boolean ssiEnabled = EnableSSIProperty.getValue(site.getConfigProps());
                         if (catalog.isStaticize() && ssiEnabled) {
@@ -150,9 +147,8 @@ public class ArticleUtils {
                             placeholderImgTag = StringUtils.messageFormat(CmsIncludeTag.SSI_INCLUDE_TAG, "/" + staticFilePath);
                         } else {
                             IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(InternalDataType_PageWidget.ID);
-                            String pageData = internalDataType.getPageData(new IInternalDataType.RequestData(pw.getPageWidgetId(),
+                            placeholderImgTag = internalDataType.getPageData(new IInternalDataType.RequestData(pw.getPageWidgetId(),
                                     1, pw.getPublishPipeCode(), false, null));
-                            placeholderImgTag = pageData;
                         }
                     }
                 }

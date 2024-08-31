@@ -28,7 +28,7 @@ import java.util.Map;
  * 内容列表页的每页默认条数
  *
  * @author 兮玥
- * @mail 190785909@qq.com
+ * @email 190785909@qq.com
  */
 @Component(IProperty.BEAN_NAME_PREFIX + CatalogPageSizeProperty.ID)
 public class CatalogPageSizeProperty implements IProperty {

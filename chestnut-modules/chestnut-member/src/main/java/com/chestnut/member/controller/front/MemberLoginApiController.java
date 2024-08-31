@@ -248,7 +248,7 @@ public class MemberLoginApiController extends BaseRestController {
 		member.setNickName(dto.getNickName());
 		member.setSlogan(dto.getSlogan());
 		member.setDescription(dto.getDescription());
-		StpAdminUtil.setLoginUser(loginUser);
+		StpMemberUtil.setLoginUser(loginUser);
 
 		this.memberStatDataService.removeMemberCache(member.getMemberId());
 		return R.ok();

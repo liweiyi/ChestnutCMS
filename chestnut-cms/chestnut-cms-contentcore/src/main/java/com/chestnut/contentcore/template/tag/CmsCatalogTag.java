@@ -15,16 +15,6 @@
  */
 package com.chestnut.contentcore.template.tag;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.chestnut.common.staticize.tag.TagAttrOption;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.staticize.FreeMarkerUtils;
@@ -32,16 +22,22 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
+import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.template.exception.CatalogNotFoundException;
-import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
-
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -73,7 +69,7 @@ public class CmsCatalogTag extends AbstractListTag {
 		long catalogId = MapUtils.getLongValue(attrs, TAG_ATTR_ID);
 		CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
 
-		long siteId = FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+		Long siteId = TemplateUtils.evalSiteId(env);
 		String alias = MapUtils.getString(attrs, TAG_ATTR_ALIAS);
 		if (Objects.isNull(catalog) && StringUtils.isNotEmpty(alias)) {
 			catalog = this.catalogService.getCatalogByAlias(siteId, alias);
@@ -85,7 +81,7 @@ public class CmsCatalogTag extends AbstractListTag {
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 
 		LambdaQueryWrapper<CmsCatalog> q = new LambdaQueryWrapper<>();
-		q.eq(CmsCatalog::getSiteId, siteId).eq(CmsCatalog::getVisibleFlag, YesOrNo.YES);
+		q.eq(CmsCatalog::getSiteId, siteId).eq(CmsCatalog::getVisibleFlag, YesOrNo.YES).ne(CmsCatalog::getTagIgnore, YesOrNo.YES);
 		if (CatalogTagLevel.isCurrent(level)) {
 			q.eq(CmsCatalog::getParentId, catalog.getParentId());
 		} else if (CatalogTagLevel.isChild(level)) {

@@ -15,9 +15,6 @@
  */
 package com.chestnut.contentcore.service;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.core.IContent;
@@ -26,8 +23,10 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.CmsSite;
-
 import freemarker.template.TemplateException;
+
+import java.io.IOException;
+import java.util.List;
 
 public interface IPublishService {
 
@@ -55,15 +54,6 @@ public interface IPublishService {
     AsyncTask publishAll(CmsSite site, final String contentStatus, final LoginUser operator);
 
     /**
-     * 站点首页静态化<br/>
-     * <p>
-     * 此方法仅做静态化逻辑，提供发布内容/栏目调用支持，支持异步任务
-     *
-     * @param site
-     */
-    void siteStaticize(CmsSite site);
-
-    /**
      * 站点首页页面内容
      *
      * @param site
@@ -88,17 +78,6 @@ public interface IPublishService {
      */
     String getCatalogPageData(CmsCatalog catalog, int pageIndex, boolean listFlag, String publishPipeCode, boolean isPreview)
             throws IOException, TemplateException;
-
-    void catalogStaticize(CmsCatalog catalog);
-
-    /**
-     * 发布栏目<br/>
-     * 同步方法，仅生成指定栏目各个发布通的静态文件
-     *
-     * @param catalog
-     * @param pageMax
-     */
-    void catalogStaticize(CmsCatalog catalog, int pageMax);
 
     /**
      * 发布栏目，异步任务
@@ -141,14 +120,6 @@ public interface IPublishService {
      * @throws TemplateException
      */
     void publishContent(List<Long> contentIds, LoginUser operator) ;
-
-    /**
-     * 内容异步静态化<br/>
-     * 供栏目发布及站点发布调用
-     *
-     * @param cmsContent
-     */
-    void contentStaticize(CmsContent cmsContent);
 
     /**
      * 获取内容扩展模板解析内容

@@ -102,6 +102,8 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     Long oldGroupId = data.getGroupId();
                     data.setGroupId(IdUtils.getSnowflakeId());
                     data.setOwner(context.getSite().getSiteId().toString());
+                    tagWordGroupService.checkUnique(data.getOwner(), data.getGroupId(), data.getCode());
+
                     data.createBy(context.getOperator());
                     tagWordGroupService.save(data);
                     tagGroupIdMap.put(oldGroupId, data);
@@ -147,6 +149,8 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     Long oldGroupId = data.getGroupId();
                     data.setGroupId(IdUtils.getSnowflakeId());
                     data.setOwner(context.getSite().getSiteId().toString());
+                    hotWordGroupService.checkUnique(data.getOwner(), data.getGroupId(), data.getCode());
+
                     data.createBy(context.getOperator());
                     hotWordGroupService.save(data);
                     hotGroupIdMap.put(oldGroupId, data.getGroupId());

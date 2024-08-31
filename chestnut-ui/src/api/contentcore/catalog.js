@@ -41,6 +41,13 @@ export function addCatalog(data) {
     data: data
   })
 }
+export function batchAddCatalog(data) {
+  return request({
+    url: '/cms/catalog/batchAdd',
+    method: 'post',
+    data: data
+  })
+}
 
 // 修改栏目
 export function updateCatalog(data) {
@@ -120,6 +127,7 @@ export function changeVisible(catlaogId, visible) {
     data: { catalogId: catlaogId, visible: visible }
   })
 }
+
 export function sortCatalog(data) {
   return request({
     url: '/cms/catalog/sort',
@@ -127,3 +135,12 @@ export function sortCatalog(data) {
     data: data
   })
 }
+
+export function generateAliasAndPath(data) {
+  return request({
+    url: '/cms/catalog/spelling',
+    method: 'post',
+    data: data
+  })
+}
+

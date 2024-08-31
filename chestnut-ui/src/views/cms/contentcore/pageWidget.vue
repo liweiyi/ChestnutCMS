@@ -32,7 +32,6 @@
       :height="tableHeight"
       :max-height="tableMaxHeight"
       @row-click="handleRowClick"
-      @cell-dblclick="handleEdit"
       @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column :label="$t('CMS.PageWidget.Name')" prop="name" :show-overflow-tooltip="true">
@@ -79,6 +78,7 @@
                 size="mini"
                 type="text"
                 icon="el-icon-edit"
+                v-hasPermi="[ $p('PageWidget:Edit:{0}', [ scope.row.pageWidgetId ]) ]"
                 @click="handleEdit(scope.row)">{{ $t('Common.Edit') }}</el-button>
             </span>
             <span class="btn-cell-wrap">

@@ -5,7 +5,11 @@
           <el-row :gutter="20">
             <el-col :span="2">
               <div class="div-avatar">
-                <img :src="userInfo.avatar" class="home-user-avatar" />
+                <el-image :src="userInfo.avatar" class="home-user-avatar">
+                  <div slot="error" class="image-slot">
+                    <img src="@/assets/images/default_home_avatar.png" class="home-user-avatar" />
+                  </div>
+                </el-image>
               </div>
             </el-col>
             <el-col :span="22">

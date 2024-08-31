@@ -74,7 +74,7 @@ public class DynamicPageLinkFunction extends AbstractFunc  {
 			path = TemplateUtils.appendTokenParameter(path, Environment.getCurrentEnvironment());
 		}
 		if (!ignoreBaseArg) {
-			path += (path.contains("?") ? "&" : "?") + "sid=" + FreeMarkerUtils.evalLongVariable(Environment.getCurrentEnvironment(), "Site.siteId")
+			path += (path.contains("?") ? "&" : "?") + "sid=" + TemplateUtils.evalSiteId(Environment.getCurrentEnvironment())
 					+ "&pp=" + context.getPublishPipeCode();
 		}
 		return path;

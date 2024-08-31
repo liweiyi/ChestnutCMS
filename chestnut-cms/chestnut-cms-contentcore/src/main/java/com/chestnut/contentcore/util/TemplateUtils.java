@@ -113,6 +113,18 @@ public class TemplateUtils {
 	 */
 	public final static String TemplateVariable_OBJ_Link = "link";
 
+	public static Long evalSiteId(Environment env) throws TemplateModelException {
+		return FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
+	}
+
+	public static Long evalCatalogId(Environment env) throws TemplateModelException {
+		return FreeMarkerUtils.evalLongVariable(env, "Catalog.catalogId");
+	}
+
+	public static Long evalContentId(Environment env) throws TemplateModelException {
+		return FreeMarkerUtils.evalLongVariable(env, "Content.contentId");
+	}
+
 	/**
 	 * 添加站点数据到模板上线文变量中
 	 *
@@ -171,9 +183,11 @@ public class TemplateUtils {
 		context.getVariables().put(TemplateVariable_IsPreview, context.isPreview());
 		context.getVariables().put(TemplateVariable_PublishPipeCode, context.getPublishPipeCode());
 		// 发布通道静态化文件访问前缀
-		context.getVariables().put(TemplateVariable_Prefix, SiteUtils.getPublishPipePrefix(site, context.getPublishPipeCode(), context.isPreview()));
+		String prefix = SiteUtils.getPublishPipePrefix(site, context.getPublishPipeCode(), context.isPreview());
+		context.getVariables().put(TemplateVariable_Prefix, prefix);
 		// 资源文件访问前缀
-		context.getVariables().put(TemplateVariable_ResourcePrefix, SiteUtils.getResourcePrefix(site, context.isPreview()));
+		String resourcePrefix = SiteUtils.getResourcePrefix(site, context.getPublishPipeCode(), context.isPreview());
+		context.getVariables().put(TemplateVariable_ResourcePrefix, resourcePrefix);
 		// 站点API访问前缀
 		context.getVariables().put(TemplateVariable_ApiPrefix, SiteApiUrlProperty.getValue(site, context.getPublishPipeCode()));
 		// 添加站点数据
@@ -193,8 +207,8 @@ public class TemplateUtils {
 		if (StringUtils.isEmpty(url)) {
 			return url;
 		}
-		String tokenName = FreeMarkerUtils.getStringVariable(Environment.getCurrentEnvironment(), TemplateUtils.TemplateVariable_TokenName);
-		String token = FreeMarkerUtils.getStringVariable(Environment.getCurrentEnvironment(), TemplateUtils.TemplateVariable_Token);
+		String tokenName = FreeMarkerUtils.getStringVariable(env, TemplateUtils.TemplateVariable_TokenName);
+		String token = FreeMarkerUtils.getStringVariable(env, TemplateUtils.TemplateVariable_Token);
 		if (url.contains("?")) {
 			return url + "&" + tokenName + "=" + token;
 		}

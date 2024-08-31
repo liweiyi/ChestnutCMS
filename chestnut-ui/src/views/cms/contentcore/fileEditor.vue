@@ -1,9 +1,18 @@
 <template>
   <div class="app-container" v-loading="loading">
     <el-card class="btn-card mb12">
+      <el-row>
+        <el-col :span="4" style="text-algin:right;">
       <div class="grid-btn-bar bg-purple-white">
         <el-button plain type="primary" size="mini" icon="el-icon-edit" @click="handleSave">{{ $t('Common.Save') }}</el-button>
       </div>
+        </el-col>
+        <el-col :span="20">
+          <div class="template-info">
+            <el-tag type="success">{{ $t('CMS.File.File') }} : {{ this.form.filePath }}</el-tag>
+          </div>
+        </el-col>
+      </el-row>
     </el-card>
     <el-row>
       <codemirror 

@@ -72,7 +72,7 @@ public class WordEventListener {
 			CmsSite site = siteService.getSite(content.getCatalog().getSiteId());
 			String[] groupCodes = HotWordGroupsProperty.getHotWordGroupCodes(content.getCatalog().getConfigProps(), site.getConfigProps());
 			if (Objects.nonNull(groupCodes) && groupCodes.length > 0) {
-				contentHtml = hotWordService.replaceHotWords(contentHtml, groupCodes, null, null);
+				contentHtml = hotWordService.replaceHotWords(contentHtml, site.getSiteId().toString(), groupCodes, null, null);
 			}
 			articleDetail.setContentHtml(contentHtml);
 		}

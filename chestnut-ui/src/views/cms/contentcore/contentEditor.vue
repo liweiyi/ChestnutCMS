@@ -3,16 +3,61 @@
     <el-row>
       <el-col :span="24">
         <div class="grid-btn-bar bg-purple-white">
-          <el-button plain type="success" size="mini" icon="el-icon-edit" @click="handleSave">{{ $t("Common.Save") }}</el-button>
-          <el-button plain type="primary" size="mini" icon="el-icon-timer" @click="handleToPublish">{{ $t('CMS.ContentCore.ToPublish') }}</el-button>
-          <el-button plain type="primary" size="mini" icon="el-icon-s-promotion" @click="handlePublish">{{ $t('CMS.ContentCore.Publish') }}</el-button>
-          <el-button plain type="primary" size="mini" @click="handlePreview"><svg-icon icon-class="eye-open" class="mr5"></svg-icon>{{ $t('CMS.ContentCore.Preview') }}</el-button>
-          <el-button plain type="warning" v-if="isLock" size="mini" icon="el-icon-unlock" @click="handleChangeLockState">{{ $t('CMS.Content.Unlock') }}</el-button>
-          <el-button plain type="primary" v-else size="mini" icon="el-icon-lock" @click="handleChangeLockState">{{ $t('CMS.Content.Lock') }}</el-button>
-          <el-button plain type="primary" size="mini" icon="el-icon-share" @click="handleRelaContent">{{ $t('CMS.Content.RelaContent') }}</el-button>
-          <el-button plain type="primary" size="mini" icon="el-icon-files" @click="handlePushToBaidu">{{ $t('CMS.Content.PushToBaidu') }}</el-button>
-          <el-button v-if="openEditorW" plain type="warning" size="mini" icon="el-icon-close" @click="handleClose">{{ $t('Common.Close') }}</el-button>
-          <el-button v-else plain type="warning" size="mini" icon="el-icon-back" @click="handleGoBack">{{ $t('CMS.Content.BackToList') }}</el-button>
+          <el-row :gutter="10">
+            <el-col :span="1.5">
+              <el-button plain type="success" size="mini" icon="el-icon-edit" v-if="contentId=='0'" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]" @click="handleSave">{{ $t("Common.Save") }}</el-button>
+              <el-button plain type="success" size="mini" icon="el-icon-edit" v-else v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleSave">{{ $t("Common.Save") }}</el-button>
+            </el-col>
+            <el-col :span="1.5">
+              <el-button plain type="primary" size="mini" icon="el-icon-timer" v-hasPermi="[ $p('Catalog:Publish:{0}', [ catalogId ]) ]" @click="handleToPublish">{{ $t('CMS.ContentCore.ToPublish') }}</el-button>
+            </el-col>
+            <el-col :span="1.5">
+              <el-button plain type="primary" size="mini" icon="el-icon-s-promotion" v-hasPermi="[ $p('Catalog:Publish:{0}', [ catalogId ]) ]" @click="handlePublish">{{ $t('CMS.ContentCore.Publish') }}</el-button>
+            </el-col>
+            <el-col :span="1.5">
+              <el-button plain type="primary" size="mini" @click="handlePreview"><svg-icon icon-class="eye-open" class="mr5"></svg-icon>{{ $t('CMS.ContentCore.Preview') }}</el-button>
+            </el-col>
+            <el-col :span="1.5">
+              <el-button plain type="warning" v-if="isLock" size="mini" icon="el-icon-unlock" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleChangeLockState">{{ $t('CMS.Content.Unlock') }}</el-button>
+              <el-button plain type="primary" v-else size="mini" icon="el-icon-lock" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleChangeLockState">{{ $t('CMS.Content.Lock') }}</el-button>
+            </el-col>
+            <el-col :span="1.5">
+              <el-button plain type="primary" size="mini" icon="el-icon-share" @click="handleRelaContent">{{ $t('CMS.Content.RelaContent') }}</el-button>
+            </el-col>
+            <el-col :span="1.5">
+              <el-button plain type="primary" size="mini" icon="el-icon-files" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handlePushToBaidu">{{ $t('CMS.Content.PushToBaidu') }}</el-button>
+            </el-col>
+            <el-col :span="1.5">
+              <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="400" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
+                <el-row style="margin-bottom:20px;text-align:right;">
+                  <el-radio-group v-model="addContentType">
+                    <el-radio-button 
+                      v-for="ct in contentTypeOptions"
+                      :key="ct.id"
+                      :label="ct.id"
+                    >{{ct.name}}</el-radio-button>
+                  </el-radio-group>
+                </el-row>
+                <el-row style="text-align:right;">
+                  <el-button 
+                    plain
+                    type="primary"
+                    size="small"
+                    @click="handleAdd">{{ $t('Common.Confirm') }}</el-button>
+                </el-row>
+                <el-button 
+                  type="primary"
+                  slot="reference"
+                  icon="el-icon-plus"
+                  size="mini"
+                  plain>{{ $t("Common.Add") }}<i class="el-icon-arrow-down el-icon--right"></i>
+                </el-button>
+              </el-popover>
+            </el-col>
+            <el-col :span="1.5">
+              <el-button plain type="warning" size="mini" icon="el-icon-close" @click="handleClose">{{ $t('Common.Close') }}</el-button>
+            </el-col>
+          </el-row>
         </div>
       </el-col>
     </el-row>
@@ -255,6 +300,7 @@
   </div>
 </template>
 <script>
+import { getContentTypes } from "@/api/contentcore/catalog";
 import { getInitContentEditorData, addContent, saveContent, toPublishContent, publishContent, lockContent, unLockContent, moveContent } from "@/api/contentcore/content";
 import { getUEditorCSS } from "@/api/contentcore/article"
 import { pushToBaidu } from "@/api/seo/baidupush";
@@ -320,13 +366,14 @@ export default {
       activeName: "basic",
       catalogId: this.$route.query.catalogId || '0',
       contentId: this.$route.query.id || '0',
-      openEditorW: this.$route.path == '/cms/content/editorW',
       contentType: this.$route.query.type,
-      opType: !this.$route.query.id || this.$route.query.id == '0' ? 'ADD' : 'UPDATE',
       openCatalogSelector: false,
       disableLinkCatalog: false,
       catalogSelectorFor: undefined,
       openContentSelector: false,
+      contentTypeOptions: [],
+      addContentType: "",
+      addPopoverVisible: false,
       // 表单参数
       form: {
         attributes: [],
@@ -339,6 +386,7 @@ export default {
         tags:[],
         keywords:[]
       },
+      isUpdateOperate: false,
       initDataStr: undefined, // 初始化数据jsonString
       publishPipeProps: [],
       rules: {
@@ -357,6 +405,10 @@ export default {
   created() {
     this.initData();
     this.loadUEditorCSS();
+    getContentTypes().then(response => {
+      this.contentTypeOptions = response.data;
+      this.addContentType = this.contentTypeOptions[0].id;
+    });
   },
   methods: {
     handleTabClick(tab, event) {
@@ -395,15 +447,17 @@ export default {
           }
         });
         this.initDataStr = JSON.stringify(this.form);
+        this.isUpdateOperate = (this.form.createTime && this.form.createTime.length > 0) == true
       });
     },
     handleShowOtherTitle() {
       this.showOtherTitle = !this.showOtherTitle;
     },
     isFormChanged() {
+      console.log(this.initDataStr, JSON.stringify(this.form))
       return JSON.stringify(this.form) != this.initDataStr;
     },
-    handleGoBack() {
+    handleClose() {
       const that = this;
       if (this.isFormChanged()) {
         this.$confirm(this.$t('CMS.Content.CloseContentEditorTip'), this.$t('Common.SystemTip'), {
@@ -411,25 +465,18 @@ export default {
           cancelButtonText: this.$t('Common.Cancel'),
           type: "warning",
         }).then(function () {
-          const obj = { path: "/configs/content" };
-          that.$tab.closeOpenPage(obj);
+          that.closePage();
         }).catch(function () { });
+      } else {
+        this.closePage();
+      }
+    },
+    closePage() {
+      if (this.$route.path.endsWith('editorW')) {
+        window.close();
       } else {
         const obj = { path: "/configs/content" };
         this.$tab.closeOpenPage(obj);
-      }
-    },
-    handleClose() {
-      if (this.isFormChanged()) {
-        this.$confirm(this.$t('CMS.Content.CloseContentEditorTip'), this.$t('Common.SystemTip'), {
-          confirmButtonText: this.$t('Common.Confirm'),
-          cancelButtonText: this.$t('Common.Cancel'),
-          type: "warning",
-        }).then(function () {
-          window.close();
-        }).catch(function () { });
-      } else {
-        window.close();
       }
     },
     // 表单重置
@@ -482,8 +529,8 @@ export default {
           if (this.xmodelVisible) {
             this.form.params = this.$refs.EXModelEditor.getDatas();
           }
-          this.form.opType = this.opType;
-          if (this.opType == 'UPDATE') {
+          console.log(this.isUpdateOperate, this.form)
+          if (this.isUpdateOperate) {
             saveContent(this.form).then(response => {
               this.taskId = response.data.taskId;
               this.openProgress = true;
@@ -502,7 +549,7 @@ export default {
       });
     },
     handleToPublish() {
-      if (this.opType == 'ADD' || this.isFormChanged()) {
+      if (!this.isUpdateOperate || this.isFormChanged()) {
         this.handleSave();
         this.toPublishAfterSave = true;
         return;
@@ -515,7 +562,7 @@ export default {
       });
     },
     handlePublish () {
-      if (this.opType == 'ADD' || this.isFormChanged()) {
+      if (!this.isUpdateOperate || this.isFormChanged()) {
         this.handleSave();
         this.publishAfterSave = true;
         return;
@@ -538,21 +585,8 @@ export default {
           this.toPublishAfterSave = false;
           this.doToPublishContent();
         }
-        if (this.opType == 'ADD') {
-          if (this.openEditorW) {
-            let routeData = this.$router.resolve({
-              path: this.$route.path,
-              query: { type: this.contentType, catalogId: this.catalogId, id: this.contentId },
-            });
-            window.open(routeData.href, '_self');
-          } else {
-            this.opType = 'UPDATE';
-            this.$router.push({ path: "/cms/content/editor", query: { type: this.contentType, catalogId: this.catalogId, id: this.contentId } });
-            this.initData();
-          }
-        } else {
-          this.initDataStr = JSON.stringify(this.form);
-        }
+        this.initData();
+        this.$router.push({ path: this.$route.path, query: { type: this.contentType, catalogId: this.catalogId, id: this.contentId } });
       }
     },
     handlePreview () {
@@ -673,6 +707,7 @@ export default {
       pushToBaidu([ this.form.contentId ]).then(response => {
         let msg = "";
         response.data.forEach(item => {
+          msg + this.$t('CMS.Content.CloseContentEditorTip', [ item.publishPipeCode, item.success, item.remain ])
           msg += "【" + item.publishPipeCode + "】成功 " + item.success + " 条，剩余 " + item.remain + " 条。<br/>"
         })
         this.$modal.alert(msg)
@@ -713,6 +748,27 @@ export default {
           iframe.contentDocument.head.appendChild(link);
         }
       }
+    },
+    handleAdd () {
+      if (this.isFormChanged()) {
+        let that = this;
+        this.$confirm(this.$t('CMS.Content.CloseContentEditorTip'), this.$t('Common.SystemTip'), {
+          confirmButtonText: this.$t('Common.Confirm'),
+          cancelButtonText: this.$t('Common.Cancel'),
+          type: "warning",
+        }).then(function () {
+          that.handleNewContent();
+        }).catch(function (e) { console.log(e) });
+      } else {
+        this.handleNewContent();
+      }
+    },
+    handleNewContent() {
+      this.addPopoverVisible = false;
+      this.contentId = '0';
+      this.contentType = this.addContentType;
+      this.$router.push({ path: this.$route.path, query: { type: this.contentType, catalogId: this.catalogId, id: this.contentId } });
+      this.initData();
     }
   }
 };

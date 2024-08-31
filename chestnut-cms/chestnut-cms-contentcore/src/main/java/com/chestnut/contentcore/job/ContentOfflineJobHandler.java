@@ -63,9 +63,9 @@ public class ContentOfflineJobHandler extends IJobHandler implements IScheduledH
 				.select(CmsContent::getContentId)
 				.eq(CmsContent::getStatus, ContentStatus.PUBLISHED)
 				.le(CmsContent::getOfflineDate, LocalDateTime.now());
-		long total = contentService.count(q);
+		long total = contentService.dao().count(q);
 		for (int i = 0; i * pageSize < total; i++) {
-			Page<CmsContent> page = contentService.page(new Page<>(i, pageSize, false), q);
+			Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
 			for (CmsContent xContent : page.getRecords()) {
 				contentService.offline(List.of(xContent.getContentId()), null);
 			}

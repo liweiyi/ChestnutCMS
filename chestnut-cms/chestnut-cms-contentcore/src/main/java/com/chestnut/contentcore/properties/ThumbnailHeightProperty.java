@@ -28,7 +28,7 @@ import java.util.Map;
  * 素材库图片默认缩略图高度配置
  *
  * @author 兮玥
- * @mail 190785909@qq.com
+ * @email 190785909@qq.com
  */
 @Component(IProperty.BEAN_NAME_PREFIX + ThumbnailHeightProperty.ID)
 public class ThumbnailHeightProperty implements IProperty {

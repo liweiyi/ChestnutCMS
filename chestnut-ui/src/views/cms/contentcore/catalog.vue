@@ -63,7 +63,6 @@ export default {
       this.$refs.catalogTree.loadCatalogTreeData();
     },
     handleCatalogDelete() {
-      this.$cache.local.remove("LastSelectedCatalogId");
       this.$refs.catalogTree.loadCatalogTreeData();
     },
     handleTreeNodeClick(data) {

@@ -18,10 +18,9 @@ package com.chestnut.cms.search.listener;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import com.chestnut.cms.search.service.ContentIndexService;
 import com.chestnut.contentcore.core.IContent;
-import com.chestnut.contentcore.listener.event.AfterCatalogMoveEvent;
-import com.chestnut.contentcore.listener.event.AfterContentDeleteEvent;
-import com.chestnut.contentcore.listener.event.AfterContentOfflineEvent;
-import com.chestnut.contentcore.listener.event.AfterContentPublishEvent;
+import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.listener.event.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -35,48 +34,67 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ESSearchListener {
 
-	private final ContentIndexService searchService;
+	private final ContentIndexService contentIndexService;
+
+	@EventListener
+	public void afterSiteDelete(AfterSiteDeleteEvent event) {
+		if (!contentIndexService.isElasticSearchAvailable()) {
+			return;
+		}
+		CmsSite site = event.getSite();
+		contentIndexService.deleteIndex(site);
+	}
+
+	@EventListener
+	public void afterSiteAdd(AfterSiteAddEvent event) {
+		if (!contentIndexService.isElasticSearchAvailable()) {
+			return;
+		}
+		contentIndexService.createIndex(event.getSite());
+	}
 
 	@EventListener
 	public void afterContentDelete(AfterContentDeleteEvent event) {
-		if (!searchService.isElasticSearchAvailable()) {
+		if (!contentIndexService.isElasticSearchAvailable()) {
 			return;
 		}
+		CmsContent content = event.getContent().getContentEntity();
 		try {
-			this.searchService.deleteContentDoc(List.of(event.getContent().getContentEntity().getContentId()));
+			this.contentIndexService.deleteContentDoc(content.getSiteId(), List.of(content.getContentId()));
 		} catch (ElasticsearchException | IOException e) {
-			log.error("Delete es index document failed: {}", event.getContent().getContentEntity().getContentId(), e);
+			log.error("Delete es index document failed: {}", content.getContentId(), e);
 		}
 	}
 
 	@EventListener
 	public void afterContentPublish(AfterContentPublishEvent event) {
-		if (!searchService.isElasticSearchAvailable()) {
+		if (!contentIndexService.isElasticSearchAvailable()) {
 			return;
 		}
 		IContent<?> content = event.getContent();
-		this.searchService.createContentDoc(content);
+		this.contentIndexService.createContentDoc(content);
 	}
 
 	@EventListener
 	public void afterContentOfflineEvent(AfterContentOfflineEvent event) {
-		if (!searchService.isElasticSearchAvailable()) {
+		if (!contentIndexService.isElasticSearchAvailable()) {
 			return;
 		}
+		CmsContent content = event.getContent().getContentEntity();
 		try {
-			this.searchService.deleteContentDoc(List.of(event.getContent().getContentEntity().getContentId()));
+			this.contentIndexService.deleteContentDoc(content.getSiteId(), List.of(content.getContentId()));
 		} catch (ElasticsearchException | IOException e) {
-			log.error("Delete es index document failed: {}", event.getContent().getContentEntity().getContentId(), e);
+			log.error("Delete es index document failed: {}", content.getContentId(), e);
 		}
 	}
 
 	@EventListener
 	public void afterCatalogMoveEvent(AfterCatalogMoveEvent event) {
-		if (!searchService.isElasticSearchAvailable()) {
+		if (!contentIndexService.isElasticSearchAvailable()) {
 			return;
 		}
 		try {
-			this.searchService.rebuildCatalog(event.getFromCatalog(), true);
+			this.contentIndexService.rebuildCatalog(event.getFromCatalog(), true);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}

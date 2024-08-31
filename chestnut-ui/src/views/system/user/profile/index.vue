@@ -72,7 +72,7 @@ export default {
       user: {},
       roleGroup: {},
       postGroup: {},
-      activeTab: "userinfo"
+      activeTab: this.$route.query.tab || "userinfo"
     };
   },
   created() {

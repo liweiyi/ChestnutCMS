@@ -72,7 +72,12 @@
         :label="field.name"
         :show-overflow-tooltip="true">
         <template slot-scope="scope">
-          {{ scope.row[field.code] }}
+          <el-image v-if="field.controlType=='CMSImage'" :src="scope.row[field.code + '_src']" style="max-width:300px;">
+              <div slot="error" class="image-slot">
+                <i class="el-icon-picture-outline"></i>
+              </div>
+          </el-image>
+          <span v-else>{{ scope.row[field.code] }}</span>
         </template>
       </el-table-column>
       <el-table-column  
@@ -112,7 +117,8 @@
           <el-form-item
             v-if="field.editable"
             :label="field.name">
-            <el-input v-model="form[field.code]" />
+            <cms-logo-view v-if="field.controlType=='CMSImage'" v-model="form[field.code]" :src="form[field.code + '_src']" :height="150"></cms-logo-view>
+            <el-input v-else v-model="form[field.code]" />
           </el-form-item>
         </div>
       </el-form>
@@ -126,9 +132,13 @@
 <script>
 import { listModelAllField } from "@/api/meta/model";
 import { listCustomFormDatas, getCustomFormData, addCustomFormData, editCustomFormData, deleteCustomFormDatas } from "@/api/customform/customform";
+import CMSLogoView from '@/views/cms/components/LogoView';
 
 export default {
   name: "CustomFormList",
+  components: {
+    "cms-logo-view": CMSLogoView,
+  },
   data () {
     return {
       loading: true,

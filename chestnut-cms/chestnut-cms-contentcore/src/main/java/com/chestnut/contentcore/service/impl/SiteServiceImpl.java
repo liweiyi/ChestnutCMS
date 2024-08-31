@@ -31,12 +31,14 @@ import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
 import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.listener.event.AfterSiteAddEvent;
 import com.chestnut.contentcore.listener.event.AfterSiteDeleteEvent;
 import com.chestnut.contentcore.listener.event.AfterSiteSaveEvent;
 import com.chestnut.contentcore.listener.event.BeforeSiteDeleteEvent;
 import com.chestnut.contentcore.mapper.CmsSiteMapper;
 import com.chestnut.contentcore.perms.SitePermissionType;
 import com.chestnut.contentcore.perms.SitePermissionType.SitePrivItem;
+import com.chestnut.contentcore.properties.EnableSiteDeleteBackupProperty;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
@@ -45,18 +47,24 @@ import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysPermissionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> implements ISiteService {
@@ -133,6 +141,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 				SitePermissionType.ID,
 				CmsPrivUtils.getAllSitePermissions(site.getSiteId())
 		);
+		this.applicationContext.publishEvent(new AfterSiteAddEvent(this, site, dto));
 		return site;
 	}
 
@@ -177,6 +186,21 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		AsyncTaskManager.setTaskMessage("正在删除站点数据");
 		this.removeById(site.getSiteId());
 		this.clearCache(site.getSiteId());
+
+		if (EnableSiteDeleteBackupProperty.getValue(site.getConfigProps())) {
+			// 备份站点资源目录
+			String siteRoot = SiteUtils.getSiteResourceRoot(site);
+			String bakDir = CMSConfig.getResourceRoot() + site.getPath() + "_bak_"
+					+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+			File siteRootFile = new File(siteRoot);
+			if (siteRootFile.exists()) {
+				try {
+					FileUtils.moveDirectory(siteRootFile, new File(bakDir));
+				} catch (IOException e) {
+					log.error("Move directory {} to {} failed.", siteRoot, bakDir);
+				}
+			}
+		}
 
 		applicationContext.publishEvent(new AfterSiteDeleteEvent(this, site));
 	}

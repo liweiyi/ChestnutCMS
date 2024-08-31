@@ -32,6 +32,7 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 import com.chestnut.contentcore.fixed.config.TemplateSuffix;
 import com.chestnut.contentcore.mapper.CmsPublishPipeMapper;
+import com.chestnut.contentcore.properties.EnableSiteDeleteBackupProperty;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.SiteUtils;
@@ -63,14 +64,6 @@ public class PublishPipeServiceImpl extends ServiceImpl<CmsPublishPipeMapper, Cm
 
 	private final List<IPublishPipeProp> publishPipeProps;
 
-	/**
-	 * 获取站点下指定使用场景的发布通道数据列表
-	 *
-	 * @param siteId 站点ID
-	 * @param useType 使用类型
-	 * @param props 数据集合
-	 * @return 结果
-	 */
 	@Override
 	public List<PublishPipeProp> getPublishPipeProps(Long siteId, PublishPipePropUseType useType,
 			Map<String, Map<String, Object>> props) {
@@ -174,7 +167,7 @@ public class PublishPipeServiceImpl extends ServiceImpl<CmsPublishPipeMapper, Cm
 	}
 
 	@Override
-	public void savePublishPipe(CmsPublishPipe publishPipe) throws IOException {
+	public void savePublishPipe(CmsPublishPipe publishPipe) {
 		boolean checkCodeUnique = checkCodeUnique(publishPipe.getCode(), publishPipe.getSiteId(),
 				publishPipe.getPublishpipeId());
 		Assert.isTrue(checkCodeUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("code: " + publishPipe.getCode()));
@@ -231,16 +224,18 @@ public class PublishPipeServiceImpl extends ServiceImpl<CmsPublishPipeMapper, Cm
 	}
 
 	private void onPublishPipeDelete(CmsPublishPipe pipe, CmsSite site) {
-		// 删除发布通道目录，实际备份目录
-		String siteRoot = SiteUtils.getSiteRoot(site, pipe.getCode());
-		String bakDir = CMSConfig.getResourceRoot() + site.getPath() + "_" + pipe.getCode() + "_bak_"
-				+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-		File siteRootFile = new File(siteRoot);
-		if (siteRootFile.exists()) {
-			try {
-				FileUtils.moveDirectory(siteRootFile, new File(bakDir));
-			} catch (IOException e) {
-				log.error("Move directory {} to {} failed.", siteRootFile, bakDir);
+		if (EnableSiteDeleteBackupProperty.getValue(site.getConfigProps())) {
+			// 删除发布通道目录，实际备份目录
+			String siteRoot = SiteUtils.getSiteRoot(site, pipe.getCode());
+			String bakDir = CMSConfig.getResourceRoot() + site.getPath() + "_" + pipe.getCode() + "_bak_"
+					+ LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+			File siteRootFile = new File(siteRoot);
+			if (siteRootFile.exists()) {
+				try {
+					FileUtils.moveDirectory(siteRootFile, new File(bakDir));
+				} catch (IOException e) {
+					log.error("Move directory {} to {} failed.", siteRootFile, bakDir);
+				}
 			}
 		}
 	}

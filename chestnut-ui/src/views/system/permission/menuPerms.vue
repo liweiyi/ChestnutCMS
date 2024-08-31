@@ -71,6 +71,7 @@ export default {
       expandAll: true,
       menuTreeData: [],
       perms: [],
+      disabledPerms: [],
       form: {},
       defaultProps: {
         children: 'children',
@@ -85,8 +86,9 @@ export default {
       getMenuPerms(params).then(response => {
         this.menuTreeData = this.handleTree(response.data.menus, '0', "menuId");
         this.perms = response.data.perms;
+        this.disabledPerms = response.data.disabledPerms;
         this.$nextTick(() => {
-          this.setCheckedMenu(this.menuTreeData, response.data.disabledPerms);
+          this.setCheckedMenu(this.menuTreeData, this.disabledPerms);
           this.loading = false;
         })
       });
@@ -120,8 +122,21 @@ export default {
       }
     },
     handleSelectAll() {
-      this.$refs.menu.setCheckedNodes(!this.selectAll ? this.menuTreeData : []);
+      this.checkAll(this.menuTreeData, !this.selectAll)
       this.selectAll = !this.selectAll;
+    },
+    checkAll(menus, checked) {
+      menus.forEach(m => {
+          if (this.disabledPerms.includes(m.perms)) {
+            this.$refs.menu.setChecked(m.menuId, true);
+            this.$set(m, "disabled", true);
+          } else {
+            this.$refs.menu.setChecked(m.menuId, checked);
+          }
+          if (m.children && m.children.length > 0) {
+            this.checkAll(m.children, checked);
+          }
+        });
     },
     handleExpandAll() {
       let treeList = this.menuTreeData;

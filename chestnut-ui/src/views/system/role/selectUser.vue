@@ -1,6 +1,6 @@
 <template>
   <!-- 授权用户 -->
-  <el-dialog :title="$t('System.User.SelectUser')" :visible.sync="visible" width="800px" top="5vh" append-to-body>
+  <el-dialog :title="$t('System.User.SelectUser')" :visible.sync="visible" width="1000px" top="5vh" append-to-body>
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true">
       <el-form-item :label="$t('System.User.UserName')" prop="userName">
         <el-input
@@ -41,6 +41,11 @@
         <el-table-column :label="$t('Common.CreateTime')" align="center" prop="createTime" width="180">
           <template slot-scope="scope">
             <span>{{ parseTime(scope.row.createTime) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column :label="$t('System.User.IsAllocatedRole')" align="center" prop="allocated">
+          <template slot-scope="scope">
+            <i v-if="scope.row.allocated" class="el-icon-check" style="font-weight:600;color:green;"></i>
           </template>
         </el-table-column>
       </el-table>

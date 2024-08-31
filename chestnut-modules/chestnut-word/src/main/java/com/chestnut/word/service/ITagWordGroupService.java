@@ -15,11 +15,11 @@
  */
 package com.chestnut.word.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.word.domain.TagWordGroup;
+
+import java.util.List;
 
 public interface ITagWordGroupService extends IService<TagWordGroup> {
 	
@@ -40,6 +40,15 @@ public interface ITagWordGroupService extends IService<TagWordGroup> {
 	void editTagWordGroup(TagWordGroup group);
 
 	/**
+	 * 校验TAG词分组编码唯一性
+	 *
+	 * @param owner
+	 * @param groupId
+	 * @param code
+	 */
+    void checkUnique(String owner, Long groupId, String code);
+
+    /**
 	 * 删除TAG词分组
 	 * 
 	 * @param groupIds

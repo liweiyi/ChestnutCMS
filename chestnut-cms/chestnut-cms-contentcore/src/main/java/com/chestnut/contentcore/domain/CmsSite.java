@@ -15,21 +15,22 @@
  */
 package com.chestnut.contentcore.domain;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.chestnut.common.db.domain.BaseEntity;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_IndexTemplate;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_SiteUrl;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_StaticSuffix;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 站点表对象 [cms_site]
@@ -160,6 +161,6 @@ public class CmsSite extends BaseEntity {
 		if (ppUrl != null && !ppUrl.endsWith("/")) {
 			ppUrl += "/";
 		}
-		return ppUrl;
+		return Objects.requireNonNullElse(ppUrl, StringUtils.EMPTY);
     }
 }

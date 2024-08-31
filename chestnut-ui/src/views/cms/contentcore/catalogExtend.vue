@@ -44,6 +44,7 @@
         </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.Extend.CatalogExModel')" prop="CatalogExtendModel">
           <el-select 
+            class="mr5"
             v-model="form_extend.CatalogExtendModel" 
             filterable 
             clearable >
@@ -55,7 +56,7 @@
             </el-option>
           </el-select>
           <el-button 
-            class="ml5 btn-apply-child"
+            class="btn-apply-child"
             icon="el-icon-finished" 
             type="primary" 
             plain 
@@ -63,6 +64,7 @@
         </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.Extend.ContentExModel')" prop="ContentExtendModel">
           <el-select 
+            class="mr5"
             v-model="form_extend.ContentExtendModel" 
             filterable 
             clearable>
@@ -74,7 +76,7 @@
             </el-option>
           </el-select>
           <el-button 
-            class="ml5 btn-apply-child"
+            class="btn-apply-child"
             icon="el-icon-finished" 
             type="primary" 
             plain 

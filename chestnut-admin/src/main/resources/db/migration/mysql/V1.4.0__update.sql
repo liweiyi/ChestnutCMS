@@ -307,6 +307,12 @@ delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'DICT.Gender.2
 insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655491147, 'zh-TW', 'DICT.Gender.2', '位置');
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'DICT.I18nDictType';
 insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655491148, 'zh-TW', 'DICT.I18nDictType', '國際化語言標籤');
+delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'DICT.I18nDictType.zh-TW';
+insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655491149, 'zh-TW', 'DICT.I18nDictType.zh-TW', '繁體中文');
+delete from sys_i18n_dict where lang_tag = 'zh-CN' and lang_key = 'DICT.I18nDictType.zh-TW';
+insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655491150, 'zh-CN', 'DICT.I18nDictType.zh-TW', '繁體中文');
+delete from sys_i18n_dict where lang_tag = 'en' and lang_key = 'DICT.I18nDictType.zh-TW';
+insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655491151, 'en', 'DICT.I18nDictType.zh-TW', '繁體中文');
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'DICT.LoginLogType';
 insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655491152, 'zh-TW', 'DICT.LoginLogType', '登錄日誌類型');
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'DICT.LoginLogType.0';

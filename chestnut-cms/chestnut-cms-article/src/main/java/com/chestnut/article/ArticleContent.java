@@ -24,6 +24,7 @@ import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.util.ResourceUtils;
@@ -43,7 +44,7 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 	public Long add() {
 		super.add();
 		if (!this.hasExtendEntity()) {
-			this.getContentService().save(this.getContentEntity());
+			this.getContentService().dao().save(this.getContentEntity());
 			return this.getContentEntity().getContentId();
 		}
 		CmsArticleDetail articleDetail = this.getExtendEntity();
@@ -63,8 +64,8 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 				&& AutoArticleLogo.getValue(this.getSite().getConfigProps())) {
 			this.getContentEntity().setLogo(this.getFirstImage(articleDetail.getContentHtml()));
 		}
-		this.getContentService().save(this.getContentEntity());
-		this.getArticleService().save(articleDetail);
+		this.getContentService().dao().save(this.getContentEntity());
+		this.getArticleService().dao().save(articleDetail);
 		return this.getContentEntity().getContentId();
 	}
 
@@ -73,8 +74,8 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 		super.save();
 		// 非映射内容或标题内容修改文章详情
 		if (!this.hasExtendEntity()) {
-			this.getContentService().updateById(this.getContentEntity());
-			this.getArticleService().removeById(this.getContentEntity().getContentId());
+			this.getContentService().dao().updateById(this.getContentEntity());
+			this.getArticleService().dao().removeById(this.getContentEntity().getContentId());
 			return this.getContentEntity().getContentId();
 		}
 		CmsArticleDetail articleDetail = this.getExtendEntity();
@@ -92,8 +93,8 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 				&& AutoArticleLogo.getValue(this.getSite().getConfigProps())) {
 			this.getContentEntity().setLogo(this.getFirstImage(articleDetail.getContentHtml()));
 		}
-		this.getContentService().updateById(this.getContentEntity());
-		this.getArticleService().saveOrUpdate(articleDetail);
+		this.getContentService().dao().updateById(this.getContentEntity());
+		this.getArticleService().dao().saveOrUpdate(articleDetail);
 		return this.getContentEntity().getContentId();
 	}
 
@@ -118,21 +119,23 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 	public void delete() {
 		super.delete();
 		if (this.hasExtendEntity()) {
-			this.getArticleService().removeById(this.getContentEntity().getContentId());
+			this.getArticleService().dao()
+					.deleteByIdAndBackup(this.getExtendEntity(), this.getOperatorUName());
 		}
 	}
 
 	@Override
-	public void copyTo(CmsCatalog toCatalog, Integer copyType) {
-		super.copyTo(toCatalog, copyType);
+	public CmsContent copyTo(CmsCatalog toCatalog, Integer copyType) {
+		CmsContent copyContent = super.copyTo(toCatalog, copyType);
 		if (this.hasExtendEntity() && ContentCopyType.isIndependency(copyType)) {
 			Long newContentId = (Long) this.getParams().get("NewContentId");
 			CmsArticleDetail newArticleDetail = new CmsArticleDetail();
 			BeanUtils.copyProperties(this.getExtendEntity(), newArticleDetail, "contentId");
 			newArticleDetail.setContentId(newContentId);
-			this.getArticleService().save(newArticleDetail);
+			this.getArticleService().dao().save(newArticleDetail);
 		}
-	}
+        return copyContent;
+    }
 
 	@Override
 	public String getFullText() {
