@@ -308,3 +308,4 @@ ALTER TABLE sys_user MODIFY COLUMN `status` varchar(1);
 ALTER TABLE sys_user MODIFY COLUMN `force_modify_password` varchar(1);
 
 ALTER TABLE cms_catalog add column tag_ignore varchar(1);
+UPDATE cms_catalog SET tag_ignore = 'N';
