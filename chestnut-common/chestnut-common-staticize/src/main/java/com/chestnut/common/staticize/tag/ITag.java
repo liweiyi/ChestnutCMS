@@ -42,6 +42,6 @@ public interface ITag {
      * 标签属性定义
      */
     default List<TagAttr> getTagAttrs() {
-    	return null;
+    	return List.of();
     }
 }

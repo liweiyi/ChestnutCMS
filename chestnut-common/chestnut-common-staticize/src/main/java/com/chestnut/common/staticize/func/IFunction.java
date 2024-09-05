@@ -15,10 +15,10 @@
  */
 package com.chestnut.common.staticize.func;
 
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 public interface IFunction {
 	
@@ -42,7 +42,9 @@ public interface IFunction {
 	 * 
 	 * @return
 	 */
-	List<FuncArg> getFuncArgs();
+	default List<FuncArg> getFuncArgs() {
+		return List.of();
+	}
 
 	/**
 	 * 函数别名
