@@ -34,7 +34,7 @@ import CMSCatalogInfo from '@/views/cms/contentcore/catalogInfo';
 import CMSCatalogExtend from '@/views/cms/contentcore/catalogExtend';
 
 export default {
-  name: "CMSCatalog",
+  name: "CmsContentcoreCatalog",
   components: {
     'cms-catalog-tree': CMSCatalogTree,
     'cms-catalog-info': CMSCatalogInfo,

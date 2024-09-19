@@ -236,7 +236,7 @@ import { isBlank, validEmail, validPhoneNumber } from '@/utils/validate';
 import { getMemberList, getMemberDetail, addMember, updateMember, deleteMembers, resetMemberPassword } from "@/api/member/member";
 
 export default {
-  name: "MemberList",
+  name: "MemberMemberList",
   dicts: [ 'MemberStatus' ],
   data () {
     const validateMember = (rule, value, callback) => {

@@ -130,7 +130,7 @@
 import { list, delLogininfor, cleanLogininfor } from "@/api/monitor/logininfor";
 
 export default {
-  name: "Logininfor",
+  name: "MonitorLogsLogininfor",
   dicts: ['SuccessOrFail'],
   data() {
     return {

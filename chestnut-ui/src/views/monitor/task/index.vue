@@ -249,7 +249,7 @@
 import { getTaskTypes, listTask, getTask, delTask, addTask, updateTask, enableTask, disableTask, executeTask, getTaskLogs, delTaskLogs } from "@/api/monitor/task";
 
 export default {
-  name: "ScheduledTask",
+  name: "MonitorTaskIndex",
   dicts: ['YesOrNo', 'EnableOrDisable', 'SuccessOrFail'],
   data() {
     return {

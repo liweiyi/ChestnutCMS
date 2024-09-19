@@ -87,7 +87,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		String dir = resourceType.getUploadPath()
 				+ LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd")) + StringUtils.SLASH;
 		// 下载图片
-		byte[] imageBytes = HttpUtils.syncDownload(url);
+		byte[] imageBytes = HttpUtils.syncDownload(url, true);
 		Assert.notNull(imageBytes, () -> CommonErrorCode.REQUEST_FAILED.exception(url));
 
 		CmsResource resource = new CmsResource();

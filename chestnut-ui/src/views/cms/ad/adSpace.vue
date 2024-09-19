@@ -147,7 +147,7 @@ import { listAdSpaces, addAdSpace, editAdSpace, deleteAdSpace, publishAdSpace } 
 import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
 
 export default {
-  name: "CMSAdSpace",
+  name: "CmsAdAdSpace",
   components: {
     'cms-template-selector': CMSTemplateSelector
   },

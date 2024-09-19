@@ -134,7 +134,7 @@ import { codeValidator } from '@/utils/validate'
 import { getLinkGroupList, addLinkGroup, editLinkGroup, deleteLinkGroup } from "@/api/link/linkGroup";
 
 export default {
-  name: "CmsLinkGroup",
+  name: "CmsLinkLinkGroup",
   data () {
     return {
       // 遮罩层

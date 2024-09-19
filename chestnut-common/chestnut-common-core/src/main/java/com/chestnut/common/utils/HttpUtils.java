@@ -17,6 +17,9 @@ package com.chestnut.common.utils;
 
 import org.apache.commons.lang3.RandomUtils;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -27,6 +30,10 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
@@ -42,6 +49,40 @@ public class HttpUtils {
 	public static String randomUserAgent() {
 		int index = RandomUtils.nextInt(0, USER_AGENTS.length);
 		return USER_AGENTS[index];
+	}
+
+	private static SSLContext trustAllSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
+		TrustManager[] trustAllCerts = new TrustManager[] {
+				new X509TrustManager() {
+					public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+					public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+					public X509Certificate[] getAcceptedIssuers() {
+						return new X509Certificate[0];
+					}
+				}
+		};
+
+		SSLContext sslContext = SSLContext.getInstance("TLS");
+		sslContext.init(null, trustAllCerts, new SecureRandom());
+		return sslContext;
+	}
+
+	private static HttpClient buildHttpClient() throws NoSuchAlgorithmException, KeyManagementException {
+		return buildHttpClient(false);
+	}
+
+	private static HttpClient buildHttpClient(boolean ignoreSSL) throws NoSuchAlgorithmException, KeyManagementException {
+		return buildHttpClient(ignoreSSL, Duration.ofSeconds(30));
+	}
+
+	private static HttpClient buildHttpClient(boolean ignoreSSL, Duration connectTimeout) throws NoSuchAlgorithmException, KeyManagementException {
+		HttpClient.Builder builder = HttpClient.newBuilder()
+				.connectTimeout(Objects.requireNonNullElse(connectTimeout, Duration.ofSeconds(30)))
+				.followRedirects(Redirect.ALWAYS);
+		if (ignoreSSL) {
+			builder.sslContext(trustAllSSLContext());
+		}
+		return builder.build();
 	}
 
 	/**
@@ -69,26 +110,19 @@ public class HttpUtils {
 		}
 	}
 
-	public static String post(URI uri, String body, Map<String, String> headers) {
-		try {
-			if (Objects.isNull(body)) {
-				body = StringUtils.EMPTY;
-			}
-			HttpClient httpClient = HttpClient.newBuilder()
-					.connectTimeout(Duration.ofSeconds(30))
-					.followRedirects(Redirect.ALWAYS)
-					.build();
-			HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
-					.POST(BodyPublishers.ofString(body, StandardCharsets.UTF_8));
-			headers.forEach(builder::header);
-			if (!headers.containsKey("Content-Type")) {
-				builder.header("Content-Type", "application/json");
-			}
-			HttpRequest httpRequest = builder.build();
-			return httpClient.send(httpRequest, BodyHandlers.ofString()).body();
-		} catch (IOException | InterruptedException e) {
-			throw new RuntimeException(e);
+	public static String post(URI uri, String body, Map<String, String> headers) throws Exception {
+		if (Objects.isNull(body)) {
+			body = StringUtils.EMPTY;
 		}
+		HttpClient httpClient = buildHttpClient(true);
+		HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+				.POST(BodyPublishers.ofString(body, StandardCharsets.UTF_8));
+		headers.forEach(builder::header);
+		if (!headers.containsKey("Content-Type")) {
+			builder.header("Content-Type", "application/json");
+		}
+		HttpRequest httpRequest = builder.build();
+		return httpClient.send(httpRequest, BodyHandlers.ofString()).body();
 	}
 
 	/**
@@ -102,79 +136,33 @@ public class HttpUtils {
 	 * @param jsonBody
 	 * @return
 	 */
-	public static String postJSON(URI uri, String jsonBody){
+	public static String postJSON(URI uri, String jsonBody) throws Exception {
 		return post(uri, jsonBody, Map.of("User-Agent", USER_AGENTS[0]));
 	}
 
-	public static byte[] syncDownload(String uri) {
-		HttpClient httpClient = HttpClient.newBuilder()
-				.connectTimeout(Duration.ofSeconds(30))
-				.followRedirects(Redirect.ALWAYS)
-				.build();
+
+	public static byte[] syncDownload(String uri) throws Exception {
+		return syncDownload(uri, false);
+	}
+
+	public static byte[] syncDownload(String uri, boolean ignoreSSL) throws Exception {
+		HttpClient httpClient = buildHttpClient(ignoreSSL);
 		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
 				.setHeader("User-Agent", randomUserAgent())
 				.GET().build();
-		try {
-			return httpClient.send(httpRequest, BodyHandlers.ofByteArray()).body();
-		} catch (IOException | InterruptedException e) {
-			throw new RuntimeException(e);
-		}
+		return httpClient.send(httpRequest, BodyHandlers.ofByteArray()).body();
+    }
+
+	public static InputStream syncDownloadInputStream(String uri) throws Exception {
+		return syncDownloadInputStream(uri, true);
 	}
 
-	public static InputStream syncDownloadInputStream(String uri) {
-		HttpClient httpClient = HttpClient.newBuilder()
-				.connectTimeout(Duration.ofSeconds(30))
-				.followRedirects(Redirect.ALWAYS)
-				.build();
+	public static InputStream syncDownloadInputStream(String uri, boolean ignoreSSL) throws Exception {
+		HttpClient httpClient = buildHttpClient(ignoreSSL);
 		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
 				.setHeader("User-Agent", randomUserAgent())
 				.GET().build();
-		try {
-			return httpClient.send(httpRequest, BodyHandlers.ofInputStream()).body();
-		} catch (IOException | InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public static void main(String[] args) {
-		syncDownload("http://www.liandu24.com/wp-content/uploads/2023/07/2023070513161507784652.png");
-	}
-
-	/**
-	 * 通过丢弃响应体的get请求获取响应头信息，抛弃get响应body
-	 *
-	 * @param uri
-	 * @param headerName
-	 * @return
-	 */
-	public static String getDiscardingContentType(String uri) {
-		return getDiscardingHeader(uri, "content-type");
-	}
-
-	/**
-	 * 通过丢弃响应体的get请求获取响应头信息，抛弃get响应body
-	 *
-	 * @param uri
-	 * @param headerName
-	 * @return
-	 */
-	public static String getDiscardingHeader(String uri, String headerName) {
-		try {
-			HttpClient httpClient = HttpClient.newBuilder()
-					.connectTimeout(Duration.ofSeconds(30))
-					.followRedirects(Redirect.ALWAYS)
-					.build();
-			HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
-					.setHeader("User-Agent", randomUserAgent())
-					.GET().build();
-			Optional<String> headerValue = httpClient.send(httpRequest, BodyHandlers.discarding()).headers().firstValue(headerName);
-			if (headerValue.isPresent()) {
-				return headerValue.get();
-			}
-		} catch (IOException | InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		return null;
+		return httpClient.send(httpRequest, BodyHandlers.ofInputStream()).body();
 	}
 
 	/**
@@ -183,18 +171,39 @@ public class HttpUtils {
 	 * @param uri
 	 * @param destPath
 	 */
-	public static void asyncDownload(String uri, Path destPath) {
-		HttpClient httpClient = HttpClient.newBuilder()
-				.connectTimeout(Duration.ofSeconds(30))
-				.followRedirects(Redirect.ALWAYS)
-				.build();
+	public static void asyncDownload(String uri, Path destPath) throws Exception {
+		HttpClient httpClient = buildHttpClient(true);
 		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
 				.setHeader("User-Agent", randomUserAgent())
 				.GET().build();
 		httpClient.sendAsync(httpRequest, BodyHandlers.ofFile(destPath));
 	}
 
-	public static void asyncDownload(String uri, String destPath) {
+	public static void asyncDownload(String uri, String destPath) throws Exception {
 		asyncDownload(uri, Path.of(destPath));
 	}
+
+	/**
+	 * 通过丢弃响应体的get请求获取响应头信息，抛弃get响应body
+	 *
+	 * @param uri
+	 */
+	public static String getDiscardingContentType(String uri) throws Exception {
+		return getDiscardingHeader(uri, "content-type");
+	}
+
+	/**
+	 * 通过丢弃响应体的get请求获取响应头信息，抛弃get响应body
+	 *
+	 * @param uri
+	 * @param headerName
+	 */
+	public static String getDiscardingHeader(String uri, String headerName) throws Exception {
+		HttpClient httpClient = buildHttpClient(true);
+		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
+				.setHeader("User-Agent", randomUserAgent())
+				.GET().build();
+		Optional<String> headerValue = httpClient.send(httpRequest, BodyHandlers.discarding()).headers().firstValue(headerName);
+        return headerValue.orElse(null);
+    }
 }

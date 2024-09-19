@@ -35,8 +35,4 @@ public class AfterContentSaveEvent extends ApplicationEvent {
 		this.content = content;
 		this.add = add;
 	}
-
-	public boolean isAdd() {
-		return add;
-	}
 }

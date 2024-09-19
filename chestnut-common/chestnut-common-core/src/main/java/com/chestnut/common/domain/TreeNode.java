@@ -93,6 +93,11 @@ public class TreeNode<T> implements Serializable {
 		return result;
 	}
 
+	public static <T> TreeVO<T> build(List<TreeNode<T>> list, String rootName) {
+		List<TreeNode<T>> treeNodes = build(list);
+		return TreeVO.newInstance(rootName, treeNodes);
+	}
+
 	public TreeNode(T nodeId, T parentId, String nodeName, boolean isRoot) {
 		this.id = nodeId;
 		this.parentId = parentId;

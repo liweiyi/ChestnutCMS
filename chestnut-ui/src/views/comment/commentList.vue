@@ -212,7 +212,7 @@ import { getCommentList, getCommentReplyList, getCommentLikeList, deleteComments
 import CommentLikeDialog from '@/views/comment/commentLike';
 
 export default {
-  name: "CommentList",
+  name: "CommentCommentList",
   components: {
     "comment-like-dialog": CommentLikeDialog
   },

@@ -167,7 +167,7 @@
 import { listPost, getPost, delPost, addPost, updatePost } from "@/api/system/post";
 
 export default {
-  name: "Post",
+  name: "SystemPostIndex",
   dicts: ['EnableOrDisable'],
   data() {
     return {

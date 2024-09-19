@@ -190,7 +190,7 @@
 import { list, delOperlog, cleanOperlog } from "@/api/monitor/operlog";
 
 export default {
-  name: "Operlog",
+  name: "MonitorLogsOperation",
   data() {
     return {
       // 遮罩层

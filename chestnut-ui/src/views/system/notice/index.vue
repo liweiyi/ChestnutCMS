@@ -180,7 +180,7 @@
 import { listNotice, getNotice, delNotice, addNotice, updateNotice } from "@/api/system/notice";
 
 export default {
-  name: "Notice",
+  name: "SystemNoticeIndex",
   dicts: ['NoticeStatus', 'NoticeType'],
   data() {
     return {

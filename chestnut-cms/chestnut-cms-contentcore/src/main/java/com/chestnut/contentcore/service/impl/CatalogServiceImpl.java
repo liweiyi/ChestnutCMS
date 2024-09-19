@@ -322,21 +322,20 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 	@Transactional(rollbackFor = Exception.class)
 	public CmsCatalog deleteCatalog(long catalogId, LoginUser operator) {
 		CmsCatalog catalog = this.getById(catalogId);
-		applicationContext.publishEvent(new BeforeCatalogDeleteEvent(this, catalog, operator));
-
-		AsyncTaskManager.setTaskMessage("正在删除栏目数据");
 		long childCount = lambdaQuery().eq(CmsCatalog::getParentId, catalog.getCatalogId()).count();
 		Assert.isTrue(childCount == 0, ContentCoreErrorCode.DEL_CHILD_FIRST::exception);
-
+		// 删除前事件发布
+		applicationContext.publishEvent(new BeforeCatalogDeleteEvent(this, catalog, operator));
+		// 删除栏目
+		AsyncTaskManager.setTaskMessage("正在删除栏目数据");
 		if (catalog.getParentId() > 0) {
 			CmsCatalog parentCatalog = getById(catalog.getParentId());
 			parentCatalog.setChildCount(parentCatalog.getChildCount() - 1);
 			updateById(parentCatalog);
 		}
-		// 删除栏目
 		removeById(catalogId);
-		// 清除缓存
 		clearCache(catalog);
+
 		applicationContext.publishEvent(new AfterCatalogDeleteEvent(this, catalog));
 		return catalog;
 	}

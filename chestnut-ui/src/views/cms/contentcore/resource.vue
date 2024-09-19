@@ -171,7 +171,7 @@ import { getResourceTypes, getResrouceList, getResourceDetail, delResource } fro
 import { getConfigKey } from "@/api/system/config";
 
 export default {
-  name: "CmsResource",
+  name: "CmsContentcoreResource",
   data () {
     return {
       // 遮罩层

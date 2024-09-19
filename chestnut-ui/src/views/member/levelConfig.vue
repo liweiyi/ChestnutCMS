@@ -158,7 +158,7 @@
 import { getLevelTypes, getLevelConfigList, getLevelConfigDetail, addLevelConfig, updateLevelConfig, deleteLevelConfigs } from "@/api/member/levelConfig";
 
 export default {
-  name: "MemberExpOperation",
+  name: "MemberLevelConfig",
   data () {
     return {
       // 遮罩层

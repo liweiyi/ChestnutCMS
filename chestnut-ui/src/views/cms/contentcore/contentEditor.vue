@@ -147,14 +147,13 @@
                       <el-tooltip class="item" effect="dark" :content="$t('CMS.Content.ImportCSSTip')" placement="top">
                         <i class="el-icon-info" style="color:#909399;margin-right:16px;" />
                       </el-tooltip>
-                      <el-radio-group v-model="ueditorImportCss" @change="handleChangeUEditorCSS()">
-                        <el-radio-button label="">无</el-radio-button>
-                        <el-radio-button 
-                          v-for="pp in publishPipeProps" 
-                          :key="pp.pipeCode" 
-                          :label="pp.pipeCode" 
-                        >{{ pp.pipeName }}</el-radio-button>
-                      </el-radio-group>
+                      <el-select v-model="ueditorImportCss" :placeholder="$t('CMS.Content.Placeholder.ImportCSS')" clearable  @change="handleChangeUEditorCSS()">
+                        <el-option 
+                          v-for="pp in publishPipeProps"
+                          :key="pp.pipeCode"
+                          :label="pp.pipeName"
+                          :value="pp.pipeCode" />
+                      </el-select>
                     </el-form-item>
                   </el-col>
                 </el-row>

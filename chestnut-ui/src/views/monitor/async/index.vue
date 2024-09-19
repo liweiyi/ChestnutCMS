@@ -99,7 +99,7 @@ import { MessageBox } from 'element-ui'
 import { getTaskList, stopTask, removeTask } from "@/api/system/async";
 
 export default {
-  name: "CmsAsyncTaskList",
+  name: "MonitorAsyncIndex",
   data () {
     return {
       // 遮罩层

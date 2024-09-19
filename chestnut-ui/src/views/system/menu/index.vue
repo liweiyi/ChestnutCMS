@@ -302,7 +302,7 @@ import IconSelect from "@/components/IconSelect";
 import I18nEditor from '../../components/I18nFieldEditor';
 
 export default {
-  name: "Menu",
+  name: "SystemMenuIndex",
   dicts: ['YesOrNo', 'EnableOrDisable'],
   components: { Treeselect, IconSelect, I18nEditor },
   data() {

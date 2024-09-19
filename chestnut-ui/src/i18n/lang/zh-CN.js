@@ -23,6 +23,7 @@ export default {
     SaveSuccess: "保存成功",
     EditSuccess: '修改成功',
     DeleteSuccess: '删除成功',
+    CopySuccess: '复制成功',
     Yes: '是',
     No: '否',
     Enable: "启用",
@@ -294,7 +295,10 @@ export default {
       StatIndex: "统计分析默认菜单",
       IncludeChildContent: "内容列表是否显示子栏目内容",
       OpenContentEditorW: "内容编辑是否使用新窗口",
-      ShowContentSubTitle: "默认显示内容副标题"
+      ShowContentSubTitle: "默认显示内容副标题",
+      CatalogTreeExpandMode: "栏目树展开模式",
+      CatalogTreeExpandMode_Normal: "普通模式",
+      CatalogTreeExpandMode_Accordion: "手风琴模式",
     },
     UserRole: {
       UserInfo: "用户信息",
@@ -1092,6 +1096,7 @@ export default {
       },
       Placeholder: {
         Title: "输入内容标题",
+        ImportCSS: "选择发布通道样式",
       },
       Title: "标题",
       SubTitle: "副标题",
@@ -1791,6 +1796,33 @@ export default {
       EditTitle: "编辑消息推送配置",
       Placehoder: {
         Query: "输入名称"
+      }
+    }
+  },
+  Flowable: {
+    Category: {
+      AddCategory: "添加分类",
+      CategoryNamePlaceholder: "输入分类名称",
+      SortUp: "上移",
+      SortDown: "下移",
+      ParentCategory: "父级分类",
+      Name: "名称",
+      TreeRootName: "模型分类",
+    },
+    Model: {
+      Key: "唯一标识",
+      Name: "名称",
+      Version: "版本",
+      Status: "状态",
+      Design: "设计",
+      Suspend: "挂起",
+      Resume: "恢复",
+      Category: "所属分类",
+      AddModelTitle: "新建模型",
+      DesignTitle: "流程设计",
+      Placeholder: {
+        ModelKey: "输入模型标识",
+        ModelName: "输入模型名称"
       }
     }
   }

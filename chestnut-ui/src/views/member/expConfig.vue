@@ -221,7 +221,7 @@ import { getLevelTypes } from "@/api/member/levelConfig";
 import { getExpOperations, getExpConfigList, getExpConfigDetail, addExpConfig, updateExpConfig, deleteExpConfigs } from "@/api/member/expConfig";
 
 export default {
-  name: "MemberExpOperation",
+  name: "MemberExpConfig",
   data () {
     return {
       // 遮罩层

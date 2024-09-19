@@ -182,7 +182,7 @@
 import { listSecurityConfigs, getSecurityConfig, addSecurityConfig, saveSecurityConfig, deleteSecurityConfig, changeConfigStatus } from "@/api/system/security";
 
 export default {
-  name: "SysSecurityConfig",
+  name: "SysSecurityIndex",
   dicts: [ "EnableOrDisable", "SecurityPasswordRule", "SecurityPasswordSensitive", "SecurityPasswordRetryStrategy" ],
   data () {
     return {

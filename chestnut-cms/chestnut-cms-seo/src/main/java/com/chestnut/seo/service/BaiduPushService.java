@@ -29,6 +29,7 @@ import com.chestnut.seo.properties.BaiduPushAccessSecretProperty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -42,6 +43,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BaiduPushService {
@@ -72,10 +74,14 @@ public class BaiduPushService {
 
             String apiUrl = StringUtils.messageFormat(API, domain, secret);
             String body = StringUtils.join(urls, "\n");
-            String response = HttpUtils.post(URI.create(apiUrl), body, Map.of("Content-Type", "text/plain"));
-            BaiduPushResult r = JacksonUtils.from(response, BaiduPushResult.class);
-            r.setPublishPipeCode(pp.getCode());
-            results.add(r);
+            try {
+                String response = HttpUtils.post(URI.create(apiUrl), body, Map.of("Content-Type", "text/plain"));
+                BaiduPushResult r = JacksonUtils.from(response, BaiduPushResult.class);
+                r.setPublishPipeCode(pp.getCode());
+                results.add(r);
+            } catch (Exception e) {
+                log.error("Publish content to baidu failed!", e);
+            }
         });
         return results;
     }

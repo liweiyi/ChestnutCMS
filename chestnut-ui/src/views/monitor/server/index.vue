@@ -229,7 +229,7 @@
 import { getServer } from "@/api/monitor/server";
 
 export default {
-  name: "Server",
+  name: "MonitorServerIndex",
   data() {
     return {
       // 服务器信息

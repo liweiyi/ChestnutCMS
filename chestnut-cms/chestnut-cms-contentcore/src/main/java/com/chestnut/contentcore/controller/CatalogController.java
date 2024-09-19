@@ -44,6 +44,7 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.user.preference.CatalogTreeExpandModePreference;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -216,7 +217,11 @@ public class CatalogController extends BaseRestController {
 				node.setDisabled(CatalogType_Link.ID.equals(catalog.getCatalogType()));
 			}
 		});
-		return R.ok(Map.of("rows", treeData, "siteName", site.getName()));
+		return R.ok(Map.of(
+				"rows", treeData,
+				"siteName", site.getName(),
+				"expandMode", CatalogTreeExpandModePreference.getValue(loginUser))
+		);
 	}
 
 	/**

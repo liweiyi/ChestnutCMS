@@ -218,7 +218,7 @@ import { codeValidator } from '@/utils/validate'
 import { getVoteUserTypes, getVoteList, getVoteDetail, addVote, updateVote, deleteVotes } from "@/api/vote/vote";
 
 export default {
-  name: "VoteList",
+  name: "VoteIndex",
   dicts: [ 'VoteStatus', 'VoteViewType' ],
   components: { 
   },

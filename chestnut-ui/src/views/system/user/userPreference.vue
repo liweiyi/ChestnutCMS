@@ -18,8 +18,8 @@
       <el-form-item :label="$t('System.UserPreference.ShowContentSubTitle')" prop="ShowContentSubTitle">
         <el-switch
           v-model="form.ShowContentSubTitle"
-          active-text="是"
-          inactive-text="否"
+          :active-text="$t('Common.Yes')"
+          :inactive-text="$t('Common.No')"
           active-value="Y"
           inactive-value="N">
         </el-switch>
@@ -27,8 +27,8 @@
       <el-form-item :label="$t('System.UserPreference.IncludeChildContent')" prop="IncludeChildContent">
         <el-switch
           v-model="form.IncludeChildContent"
-          active-text="是"
-          inactive-text="否"
+          :active-text="$t('Common.Yes')"
+          :inactive-text="$t('Common.No')"
           active-value="Y"
           inactive-value="N">
         </el-switch>
@@ -36,11 +36,16 @@
       <el-form-item :label="$t('System.UserPreference.OpenContentEditorW')" prop="OpenContentEditorW">
         <el-switch
           v-model="form.OpenContentEditorW"
-          active-text="是"
-          inactive-text="否"
+          :active-text="$t('Common.Yes')"
+          :inactive-text="$t('Common.No')"
           active-value="Y"
           inactive-value="N">
         </el-switch>
+      </el-form-item>
+      <el-form-item :label="$t('System.UserPreference.CatalogTreeExpandMode')" prop="CatalogTreeExpandMode">
+        <el-select v-model="form.CatalogTreeExpandMode" clearable>
+          <el-option :label="$t('System.UserPreference.CatalogTreeExpandMode_Accordion')" value="accordion"></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" size="smjall" @click="handleSave">{{ $t('Common.Save') }}</el-button>

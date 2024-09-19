@@ -182,7 +182,7 @@ import { getDirectoryTreeData, getFileList, renameFile, addFile, deleteFile } fr
 import { getConfigKey } from "@/api/system/config";
 
 export default {
-  name: "CMSFile",
+  name: "CmsContentcoreFile",
   data () {
     return {
       treeSideHeight: 600,

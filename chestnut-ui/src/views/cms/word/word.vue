@@ -25,7 +25,7 @@ import CMSSensitiveWord from '@/views/word/sensitiveWord';
 import CMSErrorProneWord from '@/views/word/errorProneWord';
 
 export default {
-  name: "CMSWordTab",
+  name: "CmsWordWord",
   components: {
     'cms-tag-word': CMSTagWord,
     'cms-hot-word': CMSHotWord,

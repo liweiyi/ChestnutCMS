@@ -13,40 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.system.user.preference;
-
-import com.chestnut.common.utils.StringUtils;
+package com.chestnut.common.domain;
 
 /**
- * 用户偏好 配置项
- * 
+ * 树展开模式
+ *
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public interface IUserPreference {
-	
-	/**
-	 * 唯一标识
-	 */
-	String getId();
+public enum TreeExpandMode {
 
-	/**
-	 * 显示名称
-	 */
-	String getName();
+    /**
+     * 普通模式
+     */
+    Normal,
 
-	/**
-	 * 校验数据
-	 */
-	default boolean validate(Object config) {
-		return true;
-	}
-
-	
-	/**
-	 * 默认值
-	 */
-	default Object getDefaultValue() {
-		return StringUtils.EMPTY;
-	}
+    /**
+     * 手风琴模式
+     */
+    Accordion
 }

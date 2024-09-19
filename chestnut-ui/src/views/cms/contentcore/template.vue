@@ -191,7 +191,7 @@ import { getConfigKey } from "@/api/system/config"
 import { getTemplateList, getTemplateDetail, renameTemplate, addTemplate, delTemplate, clearIncludeCache } from "@/api/contentcore/template";
 
 export default {
-  name: "CmsTemplate",
+  name: "CmsContentcoreTemplate",
   data () {
     const validatePath = (rule, value, callback) => {
         if (!value || value.length == 0 || !value.endsWith(this.templateSuffix)) {

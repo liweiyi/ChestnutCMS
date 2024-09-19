@@ -167,7 +167,7 @@
 import { listI18nDict, getI18nDict, delI18nDict, addI18nDict, updateI18nDict, refreshCache } from "@/api/system/i18nDict";
 
 export default {
-  name: "I18nDict",
+  name: "SystemI18nIndex",
   dicts: [ 'I18nDictType' ],
   data() {
     return {

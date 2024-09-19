@@ -33,7 +33,7 @@
 import { getLogMenus } from "@/api/monitor/logs";
 
 export default {
-  name: "MonitorLogs",
+  name: "MonitorLogsIndex",
   data() {
     return {
       loading: true,

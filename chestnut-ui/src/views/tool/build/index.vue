@@ -155,6 +155,7 @@ let oldActiveId
 let tempActiveData
 
 export default {
+  name: "ToolBuildIndex",
   components: {
     draggable,
     render,

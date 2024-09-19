@@ -340,7 +340,7 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import RolePermission from '@/views/system/permission/permsTab';
 
 export default {
-  name: "User",
+  name: "SystemUserIndex",
   dicts: ['SysUserStatus', 'Gender', 'EnableOrDisable'],
   components: { 
     Treeselect,

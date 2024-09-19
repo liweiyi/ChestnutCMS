@@ -24,7 +24,7 @@
 import { executeGroovySrcity } from "@/api/system/groovy";
 
 export default {
-  name: "SysGroovyScript",
+  name: "SystemGroovyIndex",
   data() {
     return {
       loading: false,

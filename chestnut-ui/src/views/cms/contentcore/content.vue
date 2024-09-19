@@ -31,7 +31,7 @@ import CMSPageWidget from '@/views/cms/contentcore/pageWidget';
 import CMSContentRecycleList from '@/views/cms/contentcore/contentRecycleList';
 
 export default {
-  name: "CMSContent",
+  name: "CmsContentcoreContent",
   components: {
     'cms-catalog-tree': CMSCatalogTree,
     'cms-content-list': CMSContentList,

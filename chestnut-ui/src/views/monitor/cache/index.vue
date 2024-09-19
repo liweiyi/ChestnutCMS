@@ -71,7 +71,7 @@ import { getCache } from "@/api/monitor/cache";
 import echarts from "echarts";
 
 export default {
-  name: "Cache",
+  name: "MonitorCacheIndex",
   data() {
     return {
       // 统计命令信息

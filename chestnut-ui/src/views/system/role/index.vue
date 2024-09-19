@@ -214,7 +214,7 @@ import { listRole, getRole, delRole, addRole, updateRole, changeRoleStatus } fro
 import RolePermission from '@/views/system/permission/permsTab';
 
 export default {
-  name: "Role",
+  name: "SystemRoleIndex",
   dicts: ['EnableOrDisable'],
   components: { 
     'role-permission': RolePermission 

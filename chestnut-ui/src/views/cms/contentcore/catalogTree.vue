@@ -35,6 +35,7 @@
         :expand-on-click-node="false"
         :default-expanded-keys="treeExpandedKeys"
         :filter-node-method="filterNode"
+        :accordion="expandMode=='accordion'"
         node-key="id"
         ref="tree"
         highlight-current
@@ -178,13 +179,14 @@ export default {
       // 栏目类型
       catalogTypeOptions: [],
       // 栏目树过滤：栏目名称
-      filterCatalogName: undefined,
+      filterCatalogName: "",
       // 栏目树数据
-      catalogOptions: undefined,
+      catalogOptions: [],
       // 站点名称
-      siteName: undefined,
+      siteName: "",
+      expandMode: "",
       // 当前选中栏目ID
-      selectedCatalogId: undefined,
+      selectedCatalogId: "",
       treeExpandedKeys: [],
       defaultProps: {
         children: "children",
@@ -244,6 +246,7 @@ export default {
           this.$cache.local.remove("LastSelectedCatalogId");
         }
         this.siteName = response.data.siteName;
+        this.expandMode = response.data.expandMode;
         this.loading = false;
         this.$nextTick(() => {
           this.selectedCatalogId = this.$cache.local.get("LastSelectedCatalogId");

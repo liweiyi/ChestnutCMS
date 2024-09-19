@@ -23,6 +23,7 @@ export default {
     SaveSuccess: "保存成功",
     EditSuccess: '修改成功',
     DeleteSuccess: '刪除成功',
+    CopySuccess: '複製成功',
     Yes: '是',
     No: '否',
     Enable: "啟用",
@@ -294,7 +295,10 @@ export default {
       StatIndex: "統計分析預設菜單",
       IncludeChildContent: "內容列表是否顯示子欄目內容",
       OpenContentEditorW: "內容編輯是否使用新窗口",
-      ShowContentSubTitle: "預設顯示內容副標題"
+      ShowContentSubTitle: "預設顯示內容副標題",
+      CatalogTreeExpandMode: "欄目樹展開模式",
+      CatalogTreeExpandMode_Normal: "普通模式",
+      CatalogTreeExpandMode_Accordion: "手風琴模式",
     },
     UserRole: {
       UserInfo: "用戶資訊",
@@ -1092,6 +1096,7 @@ export default {
       },
       Placeholder: {
         Title: "輸入內容標題",
+        ImportCSS: "選擇發佈通道樣式",
       },
       Title: "標題",
       SubTitle: "副標題",
@@ -1788,6 +1793,33 @@ export default {
       EditTitle: "編輯消息推送配置",
       Placehoder: {
         Query: "輸入名稱"
+      }
+    }
+  },
+  Flowable: {
+    Category: {
+      AddCategory: "添加分類",
+      CategoryNamePlaceholder: "輸入分類名稱",
+      SortUp: "上移",
+      SortDown: "下移",
+      ParentCategory: "父級分類",
+      Name: "名稱",
+      TreeRootName: "模型分類",
+    },
+    Model: {
+      Key: "唯一標識",
+      Name: "名稱",
+      Version: "版本",
+      Status: "狀態",
+      Design: "設計",
+      Suspend: "掛起",
+      Resume: "恢復",
+      Category: "所屬分類",
+      AddModelTitle: "新建模型",
+      DesignTitle: "設計流程",
+      Placeholder: {
+        ModelKey: "輸入模型唯一標識",
+        ModelName: "輸入模型名稱"
       }
     }
   }

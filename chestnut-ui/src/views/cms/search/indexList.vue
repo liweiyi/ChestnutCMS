@@ -140,7 +140,7 @@ import { getContentTypes } from "@/api/contentcore/catalog";
 import { getContentIndexList, deleteContentIndex, rebuildIndex } from "@/api/contentcore/search";
 
 export default {
-  name: "CMSIndexList",
+  name: "CmsSearchIndexList",
   dicts: ['CMSContentStatus', 'CMSContentAttribute'],
   components: {
     'cms-progress': CMSProgress

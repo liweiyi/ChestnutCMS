@@ -150,7 +150,7 @@ public class FileExUtils {
 	 * @param url 图片地址
 	 * @return 图片后缀
 	 */
-	public static String getImageSuffix(String url) {
+	public static String getImageSuffix(String url) throws Exception {
 		String extension = getExtension(url);
 		if (StringUtils.isEmpty(extension)) {
 			// 尝试从response.header.content-type获取

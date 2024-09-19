@@ -23,6 +23,7 @@ export default {
     SaveSuccess: "Save Success",
     EditSuccess: 'Edit Success',
     DeleteSuccess: 'Delete Success',
+    CopySuccess: 'Copy Success',
     Yes: 'Yes',
     No: 'No',
     Enable: "Enable",
@@ -294,7 +295,10 @@ export default {
       StatIndex: "Statistics Default Menu",
       IncludeChildContent: "Include Children In Content List",
       OpenContentEditorW: "New Window For Content Editor",
-      ShowContentSubTitle: "Show Content Subtitle"
+      ShowContentSubTitle: "Show Content Subtitle",
+      CatalogTreeExpandMode: "Catalog Tree Expand Mode",
+      CatalogTreeExpandMode_Normal: "Common",
+      CatalogTreeExpandMode_Accordion: "Accordion",
     },
     UserRole: {
       UserInfo: "User Information",
@@ -1092,6 +1096,7 @@ export default {
       },
       Placeholder: {
         Title: "Input content title",
+        ImportCSS: "Select publish pipe style",
       },
       Title: "Title",
       SubTitle: "Subtitle",
@@ -1788,6 +1793,33 @@ export default {
       EditTitle: "Edit Message Pusher Config",
       Placehoder: {
         Query: "Input name..."
+      }
+    }
+  },
+  Flowable: {
+    Category: {
+      AddCategory: "Add Category",
+      CategoryNamePlaceholder: "Input category name...",
+      SortUp: "Move Up",
+      SortDown: "Move Down",
+      ParentCategory: "Parent",
+      Name: "Name",
+      TreeRootName: "Model Category",
+    },
+    Model: {
+      Key: "Key",
+      Name: "Name",
+      Version: "Version",
+      Status: "Status",
+      Design: "Design",
+      Suspend: "Suspend",
+      Resume: "Resume",
+      Category: "Category",
+      AddModelTitle: "Add Model",
+      DesignTitle: "Design Process",
+      Placeholder: {
+        ModelKey: "Input model key",
+        ModelName: "Input model name"
       }
     }
   }

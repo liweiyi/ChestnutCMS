@@ -224,7 +224,7 @@ import { listCustomForms, getCustomForm, addCustomForm, editCustomForm, deleteCu
 import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
 
 export default {
-  name: "CustomFormList",
+  name: "CmsCustomformIndex",
   dicts: [ 'CustomFormStatus', 'CustomFormRule' ],
   components: {
     'cms-template-selector': CMSTemplateSelector,

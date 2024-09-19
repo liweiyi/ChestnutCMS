@@ -164,7 +164,7 @@ import { listConfig, getConfig, delConfig, addConfig, updateConfig, refreshCache
 import I18nEditor from '@/views/components/I18nFieldEditor';
 
 export default {
-  name: "Config",
+  name: "SystemConfigIndex",
   components: {
     I18nEditor,
   },

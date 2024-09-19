@@ -132,7 +132,7 @@ import { delSite, addSite, listSite, publishSite  } from "@/api/contentcore/site
 import CMSProgress from '@/views/components/Progress';
 
 export default {
-  name: "Site",
+  name: "CmsContentcoreSite",
   components: {
     'cms-progress': CMSProgress,
   },

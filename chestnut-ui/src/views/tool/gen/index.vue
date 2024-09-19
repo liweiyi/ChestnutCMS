@@ -201,7 +201,7 @@ hljs.registerLanguage("javascript", require("highlight.js/lib/languages/javascri
 hljs.registerLanguage("sql", require("highlight.js/lib/languages/sql"));
 
 export default {
-  name: "Gen",
+  name: "ToolGenIndex",
   components: { importTable },
   data() {
     return {

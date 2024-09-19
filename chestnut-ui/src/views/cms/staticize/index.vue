@@ -23,7 +23,7 @@ import CMSDynamicTemplate from '@/views/cms/staticize/dynamicList';
 import CMSCustomDynamicTemplate from '@/views/cms/staticize/customDynamicList';
 
 export default {
-  name: "CMSStaticize",
+  name: "CmsStaticizeIndex",
   components: {
     'cms-template-tag': CMSTemplateTag,
     'cms-template-function': CMSTemplateFunc,

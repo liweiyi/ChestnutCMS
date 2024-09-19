@@ -11,7 +11,7 @@
             <div slot="content">
               {{ generateIconCode(item) }}
             </div>
-            <div class="icon-item">
+            <div class="icon-item" v-clipboard:copy="generateIconCode(item)" v-clipboard:success="clipboardSuccess">
               <svg-icon :icon-class="item" class-name="disabled" />
               <span>{{ item }}</span>
             </div>
@@ -24,9 +24,9 @@
             <div slot="content">
               {{ generateElementIconCode(item) }}
             </div>
-            <div class="icon-item">
-              <i :class="'el-icon-' + item" />
-              <span>{{ item }}</span>
+            <div class="icon-item" >
+              <i :class="'el-icon-' + item" v-clipboard:copy="generateElementIconCode(item)" v-clipboard:success="clipboardSuccess" />
+              <span v-clipboard:copy="'el-icon-' + item" v-clipboard:success="clipboardSuccess">{{ item }}</span>
             </div>
           </el-tooltip>
         </div>
@@ -40,7 +40,7 @@ import svgIcons from './svg-icons'
 import elementIcons from './element-icons'
 
 export default {
-  name: 'Icons',
+  name: 'ComponentsIconsIndex',
   data() {
     return {
       svgIcons,
@@ -53,6 +53,9 @@ export default {
     },
     generateElementIconCode(symbol) {
       return `<i class="el-icon-${symbol}" />`
+    },
+    clipboardSuccess() {
+      this.$modal.msgSuccess(this.$t('Common.CopySuccess'));
     }
   }
 }

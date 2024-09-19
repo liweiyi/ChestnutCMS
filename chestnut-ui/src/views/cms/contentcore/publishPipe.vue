@@ -107,7 +107,7 @@
 import { getPublishPipeList, getPublishPipeData, addPublishPipe, updatePublishPipe, delPublishPipe } from "@/api/contentcore/publishpipe";
 
 export default {
-  name: "CMSPublishPipe",
+  name: "CmsContentcorePublishPipe",
   dicts: ['EnableOrDisable'],
   data () {
     return {

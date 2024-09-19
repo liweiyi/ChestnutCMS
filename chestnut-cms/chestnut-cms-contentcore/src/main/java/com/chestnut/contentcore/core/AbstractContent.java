@@ -144,7 +144,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		content.setSiteId(catalog.getSiteId());
 		content.setCatalogAncestors(catalog.getAncestors());
 		content.setTopCatalog(CatalogUtils.getTopCatalog(catalog));
-		content.setDeptId(Objects.nonNull(this.getOperator()) ? this.getOperator().getDeptId() : 0);
+		content.setDeptId(Objects.requireNonNullElse(this.getOperator().getDeptId(), 0L));
 		content.setContentType(this.getContentType());
 
 		content.setStatus(ContentStatus.DRAFT);

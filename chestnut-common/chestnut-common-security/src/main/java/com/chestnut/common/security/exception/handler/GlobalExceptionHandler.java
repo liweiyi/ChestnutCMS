@@ -27,11 +27,14 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.stream.Collectors;
 
 /**
  * 全局异常处理器
@@ -112,6 +115,9 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(BindException.class)
 	public R<?> handleBindException(BindException e) {
-		return R.fail(e.getMessage());
+		String errMsg = e.getBindingResult().getAllErrors().stream()
+				.map(DefaultMessageSourceResolvable::getDefaultMessage)
+				.collect(Collectors.joining("\n"));
+		return R.fail(errMsg);
 	}
 }

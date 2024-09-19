@@ -123,7 +123,7 @@ import { listModelDataTables } from "@/api/meta/model";
 import { addXModel, editXModel, deleteXModel, listXModel } from "@/api/contentcore/exmodel";
 
 export default {
-  name: "CMSEXmodel",
+  name: "CmsExmodelModel",
   data () {
     return {
       // 遮罩层

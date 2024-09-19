@@ -160,7 +160,7 @@
 import { listCacheName, listCacheKey, getCacheValue, clearCacheName, clearCacheKey, clearCacheAll } from "@/api/monitor/cache";
 
 export default {
-  name: "CacheList",
+  name: "MonitorCacheList",
   data() {
     return {
       cacheNames: [],

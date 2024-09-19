@@ -13,40 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.system.user.preference;
-
-import com.chestnut.common.utils.StringUtils;
+package com.chestnut.common.validation;
 
 /**
- * 用户偏好 配置项
- * 
+ * 校验分组：新建
+ *
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public interface IUserPreference {
-	
-	/**
-	 * 唯一标识
-	 */
-	String getId();
-
-	/**
-	 * 显示名称
-	 */
-	String getName();
-
-	/**
-	 * 校验数据
-	 */
-	default boolean validate(Object config) {
-		return true;
-	}
-
-	
-	/**
-	 * 默认值
-	 */
-	default Object getDefaultValue() {
-		return StringUtils.EMPTY;
-	}
-}
+public interface AddGroup {}

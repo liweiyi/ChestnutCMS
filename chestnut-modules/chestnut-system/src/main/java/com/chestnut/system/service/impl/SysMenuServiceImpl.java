@@ -41,10 +41,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -67,7 +64,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	 */
 	@Override
 	public List<RouterVO> buildRouters(List<SysMenu> menus) {
-		List<RouterVO> routers = new LinkedList<RouterVO>();
+		List<RouterVO> routers = new LinkedList<>();
 		for (SysMenu menu : menus) {
 			RouterVO router = new RouterVO();
 			router.setHidden(YesOrNo.isNo(menu.getVisible()));
@@ -75,34 +72,34 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 			router.setPath(getRouterPath(menu));
 			router.setComponent(getComponent(menu));
 			router.setQuery(menu.getQuery());
-			router.setMeta(new MetaVO(menu.getMenuName(), menu.getIcon(), YesOrNo.isYes(menu.getIsCache()),
+			router.setMeta(new MetaVO(menu.getMenuName(), menu.getIcon(), YesOrNo.isNo(menu.getIsCache()),
 					menu.getPath()));
 			List<SysMenu> cMenus = menu.getChildren();
-			if (!cMenus.isEmpty() && cMenus.size() > 0 && MenuType.isDirectory(menu.getMenuType())) {
+			if (!cMenus.isEmpty() && MenuType.isDirectory(menu.getMenuType())) {
 				router.setAlwaysShow(true);
 				router.setRedirect("noRedirect");
 				router.setChildren(buildRouters(cMenus));
 			} else if (isMenuFrame(menu)) {
 				router.setMeta(null);
-				List<RouterVO> childrenList = new ArrayList<RouterVO>();
+				List<RouterVO> childrenList = new ArrayList<>();
 				RouterVO children = new RouterVO();
 				children.setPath(menu.getPath());
 				children.setComponent(menu.getComponent());
-				children.setName(StringUtils.capitalize(menu.getPath()));
+				children.setName(parseRouteName(menu));
 				children.setMeta(new MetaVO(menu.getMenuName(), menu.getIcon(),
-						YesOrNo.isYes(menu.getIsCache()), menu.getPath()));
+						YesOrNo.isNo(menu.getIsCache()), menu.getPath()));
 				children.setQuery(menu.getQuery());
 				childrenList.add(children);
 				router.setChildren(childrenList);
 			} else if (menu.getParentId().intValue() == 0 && isInnerLink(menu)) {
 				router.setMeta(new MetaVO(menu.getMenuName(), menu.getIcon()));
 				router.setPath("/");
-				List<RouterVO> childrenList = new ArrayList<RouterVO>();
+				List<RouterVO> childrenList = new ArrayList<>();
 				RouterVO children = new RouterVO();
 				String routerPath = innerLinkReplaceEach(menu.getPath());
 				children.setPath(routerPath);
 				children.setComponent(MenuComponentType.InnerLink.name());
-				children.setName(StringUtils.capitalize(routerPath));
+				children.setName(parseRouteName(menu));
 				children.setMeta(new MetaVO(menu.getMenuName(), menu.getIcon(), menu.getPath()));
 				childrenList.add(children);
 				router.setChildren(childrenList);
@@ -239,12 +236,15 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	 * @return 路由名称
 	 */
 	public String getRouteName(SysMenu menu) {
-		String routerName = StringUtils.capitalize(menu.getPath());
-		// 非外链并且是一级目录（类型为目录）
-		if (isMenuFrame(menu)) {
-			routerName = StringUtils.EMPTY;
+		if (StringUtils.isEmpty(menu.getComponent()) || isMenuFrame(menu)) {
+			return StringUtils.EMPTY;
 		}
-		return routerName;
+		return parseRouteName(menu);
+	}
+
+	private String parseRouteName(SysMenu menu) {
+		return Arrays.stream(menu.getComponent().split("/"))
+				.map(StringUtils::capitalize).collect(Collectors.joining(""));
 	}
 
 	/**
@@ -330,9 +330,9 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	 */
 	@Override
 	public List<SysMenu> getChildPerms(List<SysMenu> list, int parentId) {
-		List<SysMenu> returnList = new ArrayList<SysMenu>();
+		List<SysMenu> returnList = new ArrayList<>();
 		for (Iterator<SysMenu> iterator = list.iterator(); iterator.hasNext();) {
-			SysMenu t = (SysMenu) iterator.next();
+			SysMenu t = iterator.next();
 			// 一、根据传入的某个父节点ID,遍历该父节点的所有子节点
 			if (t.getParentId() == parentId) {
 				recursionFn(list, t);
@@ -344,9 +344,6 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 
 	/**
 	 * 递归列表
-	 *
-	 * @param list
-	 * @param t
 	 */
 	private void recursionFn(List<SysMenu> list, SysMenu t) {
 		// 得到子节点列表
@@ -363,14 +360,12 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	 * 得到子节点列表
 	 */
 	private List<SysMenu> getChildList(List<SysMenu> list, SysMenu t) {
-		List<SysMenu> tlist = new ArrayList<SysMenu>();
-		Iterator<SysMenu> it = list.iterator();
-		while (it.hasNext()) {
-			SysMenu n = (SysMenu) it.next();
-			if (n.getParentId().longValue() == t.getMenuId().longValue()) {
-				tlist.add(n);
-			}
-		}
+		List<SysMenu> tlist = new ArrayList<>();
+        for (SysMenu n : list) {
+            if (n.getParentId().longValue() == t.getMenuId().longValue()) {
+                tlist.add(n);
+            }
+        }
 		return tlist;
 	}
 
@@ -378,13 +373,11 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	 * 判断是否有子节点
 	 */
 	private boolean hasChild(List<SysMenu> list, SysMenu t) {
-		return getChildList(list, t).size() > 0;
+		return !getChildList(list, t).isEmpty();
 	}
 
 	/**
 	 * 内链域名特殊字符替换
-	 *
-	 * @return
 	 */
 	public String innerLinkReplaceEach(String path) {
 		return StringUtils.replaceEach(path,

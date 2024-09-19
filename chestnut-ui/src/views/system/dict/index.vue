@@ -170,7 +170,7 @@ import { listType, getType, delType, addType, updateType, refreshCache } from "@
 import I18nEditor from '@/views/components/I18nFieldEditor';
 
 export default {
-  name: "Dict",
+  name: "SystemDictIndex",
   components: {
     I18nEditor,
   },
