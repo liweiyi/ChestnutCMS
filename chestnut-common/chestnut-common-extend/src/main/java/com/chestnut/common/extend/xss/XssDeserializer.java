@@ -15,21 +15,16 @@
  */
 package com.chestnut.common.extend.xss;
 
-import java.io.IOException;
-import java.util.Objects;
-
-import com.fasterxml.jackson.core.JacksonException;
+import com.chestnut.common.extend.enums.XssMode;
+import com.chestnut.common.utils.StringUtils;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.type.LogicalType;
-import com.chestnut.common.extend.enums.XssMode;
-import com.chestnut.common.utils.HtmlUtils;
-import com.chestnut.common.utils.StringUtils;
-
 import lombok.RequiredArgsConstructor;
+
+import java.io.IOException;
 
 @RequiredArgsConstructor
 public class XssDeserializer extends JsonDeserializer<String> {
@@ -42,14 +37,14 @@ public class XssDeserializer extends JsonDeserializer<String> {
 	}
 	
 	@Override
-	public String getNullValue(DeserializationContext ctxt) throws JsonMappingException {
+	public String getNullValue(DeserializationContext ctxt) {
 		return StringUtils.EMPTY;
 	}
 	
 	@Override
-	public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+	public String deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         if (p.hasToken(JsonToken.VALUE_STRING)) {
-            return deal(p.getText());
+            return XssContextHolder.xssProcess(p.getText(), mode);
         }
         JsonToken token = p.getCurrentToken();
 		if (token.isScalarValue()) {
@@ -59,16 +54,5 @@ public class XssDeserializer extends JsonDeserializer<String> {
             }
 		}
         return (String) ctxt.handleUnexpectedToken(String.class, p);
-	}
-	
-	private String deal(String text) {
-		if (Objects.nonNull(text) && !XssContextHolder.isIgnore()) {
-			if (mode == XssMode.CLEAN) {
-				text = HtmlUtils.clean(text);
-			} else {
-				text = HtmlUtils.escape(text);
-			}
-		}
-		return text;
 	}
 }

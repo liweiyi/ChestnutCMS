@@ -15,6 +15,10 @@
  */
 package com.chestnut.common.extend.xss;
 
+import com.chestnut.common.extend.enums.XssMode;
+import com.chestnut.common.utils.HtmlUtils;
+import com.chestnut.common.utils.StringUtils;
+
 import java.util.Objects;
 
 public class XssContextHolder {
@@ -22,10 +26,10 @@ public class XssContextHolder {
 	private static final ThreadLocal<Boolean> CONTEXT = new ThreadLocal<>();
 	
 	/**
-	 * 默认为true
+	 * 默认：false
 	 */
 	public static boolean isIgnore() {
-		return Objects.isNull(CONTEXT.get()) ? true : CONTEXT.get();
+		return Objects.requireNonNullElse(CONTEXT.get(), false);
 	}
 	
 	public static void ignore() {
@@ -34,5 +38,16 @@ public class XssContextHolder {
 	
 	public static void remove() {
 		CONTEXT.remove();
+	}
+
+	public static String xssProcess(String value, XssMode xssMode) {
+		if (!isIgnore() && StringUtils.isNotEmpty(value)) {
+			if (xssMode == XssMode.CLEAN) {
+				value = HtmlUtils.clean(value);
+			} else {
+				value = HtmlUtils.htmlEscape(value);
+			}
+		}
+		return value;
 	}
 }

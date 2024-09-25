@@ -15,23 +15,23 @@
  */
 package com.chestnut.common.extend.config;
 
-import java.util.Collections;
-import java.util.List;
-
+import com.chestnut.common.extend.config.properties.XssProperties;
+import com.chestnut.common.extend.xss.XssDeserializer;
+import com.chestnut.common.extend.xss.XssFilter;
+import com.chestnut.common.extend.xss.XssInterceptor;
+import com.chestnut.common.utils.StringUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.chestnut.common.extend.config.properties.XssProperties;
-import com.chestnut.common.extend.xss.XssDeserializer;
-import com.chestnut.common.extend.xss.XssInterceptor;
-import com.chestnut.common.utils.StringUtils;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Collections;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Configuration
@@ -45,15 +45,28 @@ public class XssConfig implements WebMvcConfigurer {
 		if (xssProperties.isEnabled()) {
 			List<String> urlPatterns = xssProperties.getUrlPatterns();
 			if (StringUtils.isEmpty(urlPatterns)) {
-				urlPatterns.add("/**");
+				urlPatterns = List.of("/**");
 			}
 			List<String> excludes = xssProperties.getExcludes();
 			if (StringUtils.isEmpty(excludes)) {
 				excludes = Collections.emptyList();
 			}
 			registry.addInterceptor(new XssInterceptor()).addPathPatterns(urlPatterns)
-					.excludePathPatterns(excludes).order(Ordered.LOWEST_PRECEDENCE);
+					.excludePathPatterns(excludes).order(Ordered.HIGHEST_PRECEDENCE);
 		}
+	}
+
+	@Bean
+	public FilterRegistrationBean<XssFilter> filterRegistrationBean() {
+		FilterRegistrationBean<XssFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new XssFilter(xssProperties.getMode()));
+		registrationBean.setName("ChestnutXSSFilter");
+		List<String> urlPatterns = xssProperties.getUrlPatterns();
+		if (StringUtils.isEmpty(urlPatterns)) {
+			urlPatterns = List.of("/*");
+		}
+		registrationBean.addUrlPatterns(urlPatterns.toArray(String[]::new));
+		return registrationBean;
 	}
 	
 	@Bean
