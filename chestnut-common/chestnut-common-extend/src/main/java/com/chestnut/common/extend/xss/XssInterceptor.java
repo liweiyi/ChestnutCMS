@@ -21,23 +21,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import java.util.Objects;
-
 public class XssInterceptor implements HandlerInterceptor {
 	
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 		if (handler instanceof HandlerMethod handlerMethod) {
-			XssIgnore xssIgnore = handlerMethod.getMethodAnnotation(XssIgnore.class);
-			if (Objects.nonNull(xssIgnore)) {
-				XssContextHolder.ignore();
-			}
+			XssContextHolder.ignore(handlerMethod.hasMethodAnnotation(XssIgnore.class));
 		}
 		return true;
-	}
-	
-	@Override
-	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-		XssContextHolder.remove();
 	}
 }

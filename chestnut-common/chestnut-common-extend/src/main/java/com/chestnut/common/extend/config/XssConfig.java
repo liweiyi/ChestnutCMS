@@ -17,10 +17,10 @@ package com.chestnut.common.extend.config;
 
 import com.chestnut.common.extend.config.properties.XssProperties;
 import com.chestnut.common.extend.xss.XssDeserializer;
-import com.chestnut.common.extend.xss.XssFilter;
 import com.chestnut.common.extend.xss.XssInterceptor;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.extend.xss.XssOncePerRequestFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -30,7 +30,6 @@ import org.springframework.core.Ordered;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -43,33 +42,23 @@ public class XssConfig implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		if (xssProperties.isEnabled()) {
-			List<String> urlPatterns = xssProperties.getUrlPatterns();
-			if (StringUtils.isEmpty(urlPatterns)) {
-				urlPatterns = List.of("/**");
-			}
-			List<String> excludes = xssProperties.getExcludes();
-			if (StringUtils.isEmpty(excludes)) {
-				excludes = Collections.emptyList();
-			}
-			registry.addInterceptor(new XssInterceptor()).addPathPatterns(urlPatterns)
-					.excludePathPatterns(excludes).order(Ordered.HIGHEST_PRECEDENCE);
+			registry.addInterceptor(new XssInterceptor()).addPathPatterns(List.of("/**"))
+					.order(Ordered.HIGHEST_PRECEDENCE);
 		}
 	}
 
 	@Bean
-	public FilterRegistrationBean<XssFilter> filterRegistrationBean() {
-		FilterRegistrationBean<XssFilter> registrationBean = new FilterRegistrationBean<>();
-		registrationBean.setFilter(new XssFilter(xssProperties.getMode()));
+	@ConditionalOnProperty(value = "xss.enabled", havingValue = "true")
+	public FilterRegistrationBean<XssOncePerRequestFilter> filterRegistrationBean() {
+		FilterRegistrationBean<XssOncePerRequestFilter> registrationBean = new FilterRegistrationBean<>();
+		registrationBean.setFilter(new XssOncePerRequestFilter(xssProperties.getMode()));
 		registrationBean.setName("ChestnutXSSFilter");
-		List<String> urlPatterns = xssProperties.getUrlPatterns();
-		if (StringUtils.isEmpty(urlPatterns)) {
-			urlPatterns = List.of("/*");
-		}
-		registrationBean.addUrlPatterns(urlPatterns.toArray(String[]::new));
+		registrationBean.addUrlPatterns("/*");
 		return registrationBean;
 	}
 	
 	@Bean
+	@ConditionalOnProperty(value = "xss.enabled", havingValue = "true")
 	public Jackson2ObjectMapperBuilderCustomizer xssCustomizer() {
 		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder.deserializerByType(String.class,
 				new XssDeserializer(xssProperties.getMode()));

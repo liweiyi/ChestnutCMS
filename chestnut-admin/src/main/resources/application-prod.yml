@@ -220,12 +220,6 @@ mybatis-plus:
 xss: 
   # 过滤开关
   enabled: true
-  mode: clean
-  # 过滤链接
-  urlPatterns: 
-   - /system/* 
-   - /monitor/*
-   - /tool/*
 
 xxl:
   job:

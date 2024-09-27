@@ -15,14 +15,10 @@
  */
 package com.chestnut.common.extend.config.properties;
 
-import java.util.List;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import com.chestnut.common.extend.enums.XssMode;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Setter
 @Getter
@@ -37,15 +33,5 @@ public class XssProperties {
 	/**
 	 * 处理方式
 	 */
-	private XssMode mode;
-	
-	/**
-	 * 不进行处理的路径
-	 */
-	private List<String> excludes;
-	
-	/**
-	 * 处理指定路径
-	 */
-	private List<String> urlPatterns;
+	private XssMode mode = XssMode.ESCAPE;
 }

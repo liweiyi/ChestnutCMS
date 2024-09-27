@@ -26,14 +26,14 @@ public class XssContextHolder {
 	private static final ThreadLocal<Boolean> CONTEXT = new ThreadLocal<>();
 	
 	/**
-	 * 默认：false
+	 * 默认：true
 	 */
 	public static boolean isIgnore() {
-		return Objects.requireNonNullElse(CONTEXT.get(), false);
+		return Objects.requireNonNullElse(CONTEXT.get(), true);
 	}
 	
-	public static void ignore() {
-		CONTEXT.set(true);
+	public static void ignore(Boolean ignore) {
+		CONTEXT.set(ignore);
 	}
 	
 	public static void remove() {
