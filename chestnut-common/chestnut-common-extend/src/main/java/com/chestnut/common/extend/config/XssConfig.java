@@ -57,10 +57,10 @@ public class XssConfig implements WebMvcConfigurer {
 		return registrationBean;
 	}
 	
-	@Bean
-	@ConditionalOnProperty(value = "xss.enabled", havingValue = "true")
-	public Jackson2ObjectMapperBuilderCustomizer xssCustomizer() {
-		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder.deserializerByType(String.class,
-				new XssDeserializer(xssProperties.getMode()));
-	}
+//	@Bean
+//	@ConditionalOnProperty(value = "xss.enabled", havingValue = "true")
+//	public Jackson2ObjectMapperBuilderCustomizer xssCustomizer() {
+//		return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder.deserializerByType(String.class,
+//				new XssDeserializer(xssProperties.getMode()));
+//	}
 }
