@@ -104,7 +104,7 @@ public class SiteThemeService {
                                 data.createBy(context.getOperator());
                                 sitePropertyService.save(data);
                             } catch (Exception e) {
-                                this.addErrorMessage("导入站点扩展属性数据`" + propertyId + "`失败：" + e.getMessage());
+                                this.addErrorMessage("导入站点扩展属性数据失败：" + propertyId);
                                 log.error("Import site property failed: {}", propertyId, e);
                             }
                         });
@@ -123,7 +123,7 @@ public class SiteThemeService {
                                 resourceService.save(data);
                                 context.getResourceIdMap().put(oldResource, data.getResourceId());
                             } catch (Exception e) {
-                                this.addErrorMessage("导入素材资源数据`" + oldResource + "`失败：" + e.getMessage());
+                                this.addErrorMessage("导入素材资源数据失败：" + oldResource);
                                 log.error("Import site resource failed: {}", oldResource, e);
                             }
                         });
@@ -163,7 +163,7 @@ public class SiteThemeService {
                                     }
                                 }
                                 if (StringUtils.isEmpty(data.getTagIgnore())) {
-                                    data.setTagIgnore(YesOrNo.NO); // 兼容历史主题包
+                                    data.setTagIgnore(YesOrNo.NO);
                                 }
                                 data.createBy(context.getOperator());
                                 // 处理logo
@@ -174,7 +174,7 @@ public class SiteThemeService {
                                     linkCatalogs.add(data);
                                 }
                             } catch (Exception e) {
-                                this.addErrorMessage("导入栏目`"+sourceCatalogId+"`数据失败：" + data.getName());
+                                this.addErrorMessage("导入栏目数据失败：" + data.getName());
                                 log.error("Import catalog failed: {}", sourceCatalogId, e);
                             }
                         });
@@ -191,7 +191,7 @@ public class SiteThemeService {
                                 data.setCreateBy(operator.getUsername());
                                 publishPipeService.addPublishPipe(data);
                             } catch (Exception e) {
-                                this.addErrorMessage("导入发布通道数据`"+data.getCode()+"`失败：" + e.getMessage());
+                                this.addErrorMessage("导入发布通道数据失败：" + data.getName());
                                 log.error("Import publish pipe failed: {}", oldPublishPipeId, e);
                             }
                         }
@@ -219,7 +219,7 @@ public class SiteThemeService {
                                 pageWidgetService.save(data);
                                 context.getPageWidgetIdMap().put(oldPageWidgetId, data.getPageWidgetId());
                             } catch (Exception e) {
-                                this.addErrorMessage("导入页面部件数据`" + oldPageWidgetId + "`失败：" + e.getMessage());
+                                this.addErrorMessage("导入页面部件数据失败：" + data.getName());
                                 log.error("Import page widget failed: {}", oldPageWidgetId, e);
                             }
                         });
@@ -234,9 +234,6 @@ public class SiteThemeService {
                             Long sourceContentId = content.getContentId();
                             try {
                                 CmsCatalog catalog = catalogService.getCatalog(context.getCatalogIdMap().get(content.getCatalogId()));
-                                if (Objects.isNull(catalog)) {
-                                    throw new RuntimeException("Catalog is missing.");
-                                }
 
                                 content.setContentId(IdUtils.getSnowflakeId());
                                 content.setSiteId(site.getSiteId());
@@ -248,20 +245,15 @@ public class SiteThemeService {
                                 content.setDeptCode(StringUtils.EMPTY);
                                 content.createBy(operator.getUsername());
                                 // 处理logo
-                                if (StringUtils.isNotEmpty(content.getLogo()) && StringUtils.isEmpty(content.getImages())) {
-                                    content.setImages(List.of(content.getLogo())); // 兼容老版本
-                                }
-                                if (StringUtils.isNotEmpty(content.getImages())) {
-                                    content.setImages(content.getImages().stream().map(context::dealInternalUrl).toList());
-                                }
+                                content.setLogo(context.dealInternalUrl(content.getLogo()));
                                 contentService.dao().save(content);
                                 context.getContentIdMap().put(sourceContentId, content.getContentId());
                                 if (content.isLinkContent()) {
                                     linkContents.add(content);
                                 }
                             } catch (Exception e) {
-                                this.addErrorMessage("导入内容数据`" + sourceContentId + "`失败：" + e.getMessage());
-                                log.error("Import content `{}` failed: {}", sourceContentId, e.getMessage(), e);
+                                this.addErrorMessage("导入内容数据失败：" + sourceContentId);
+                                log.error("Import content failed: {}", sourceContentId, e);
                             }
                         });
                     });
@@ -281,7 +273,7 @@ public class SiteThemeService {
                                 content.createBy(operator.getUsername());
                                 contentRelaService.save(content);
                             } catch (Exception e) {
-                                this.addErrorMessage("导入关联内容数据`" + sourceContentId + "`失败：" + e.getMessage());
+                                this.addErrorMessage("导入关联内容数据失败：" + sourceContentId);
                                 log.error("Import content rela data failed: {}", sourceContentId, e);
                             }
                         });
@@ -389,13 +381,9 @@ public class SiteThemeService {
                             offset = page.getRecords().get(page.getRecords().size() - 1).getContentId();
                             fileIndex++;
                             page.getRecords().forEach(content -> {
-                                if (Objects.nonNull(content.getImages())) {
-                                    content.getImages().forEach(img -> {
-                                        InternalURL internalURL = InternalUrlUtils.parseInternalUrl(img);
-                                        if (Objects.nonNull(internalURL)) {
-                                            context.getResourceIds().add(internalURL.getId());
-                                        }
-                                    });
+                                InternalURL internalURL = InternalUrlUtils.parseInternalUrl(content.getLogo());
+                                if (Objects.nonNull(internalURL)) {
+                                    context.getResourceIds().add(internalURL.getId());
                                 }
                             });
                             if (page.getRecords().size() < pageSize) {
