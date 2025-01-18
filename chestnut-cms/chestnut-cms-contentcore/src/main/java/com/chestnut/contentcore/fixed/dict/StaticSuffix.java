@@ -27,6 +27,9 @@ import com.chestnut.system.service.ISysDictTypeService;
 
 /**
  * 静态化文件名后缀
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Component(FixedDictType.BEAN_PREFIX + StaticSuffix.TYPE)
 public class StaticSuffix extends FixedDictType {

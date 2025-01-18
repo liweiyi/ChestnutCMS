@@ -34,8 +34,8 @@ public class CmsSearchWordTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_search_word";
 
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
 
 	private final ISearchWordService searchWordService;
 	
@@ -48,6 +48,11 @@ public class CmsSearchWordTag extends AbstractListTag {
 				.orderByDesc(SearchWord::getTopFlag, SearchWord::getSearchTotal)
 				.page(new Page<>(pageIndex, size, page));
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+	}
+
+	@Override
+	public Class<SearchWord> getDataClass() {
+		return SearchWord.class;
 	}
 
 	@Override

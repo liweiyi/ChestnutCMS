@@ -15,57 +15,59 @@
  */
 package com.chestnut.cms.vote.template.tag;
 
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
+import com.chestnut.cms.vote.exception.VoteNotFoundTemplateException;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.vote.domain.Vote;
 import com.chestnut.vote.domain.vo.VoteSubjectVO;
 import com.chestnut.vote.domain.vo.VoteVO;
 import com.chestnut.vote.service.IVoteService;
-
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class CmsVoteSubjectTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_vote_subject";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_CONTENT_ID = "{FREEMARKER.TAG." + TAG_NAME + ".code}";
+
+	public final static String ATTR_CODE = "code";
 
 	private final IVoteService voteService;
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr("code", true, TagAttrDataType.STRING, "问卷调查编码"));
+		tagAttrs.add(new TagAttr(ATTR_CODE, true, TagAttrDataType.STRING, ATTR_USAGE_CONTENT_ID));
 		return tagAttrs;
 	}
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex)
 			throws TemplateException {
-		String code = MapUtils.getString(attrs, "code");
-		if (StringUtils.isEmpty(code)) {
-			throw new TemplateException("属性code不能为空", env);
-		}
+		String code = MapUtils.getString(attrs, ATTR_CODE);
 		Vote vote = this.voteService.lambdaQuery().eq(Vote::getCode, code).one();
-		if (vote == null) {
-			throw new TemplateException("获取问卷调查数据失败：" + code, env);
-		}
-		
+		Assert.notNull(vote, () -> new VoteNotFoundTemplateException(code, env));
+
 		VoteVO vo = this.voteService.getVote(vote.getVoteId());
 		List<VoteSubjectVO> subjects = vo.getSubjects();
 		return TagPageData.of(subjects);
+	}
+
+	@Override
+	public Class<VoteSubjectVO> getDataClass() {
+		return VoteSubjectVO.class;
 	}
 
 	@Override

@@ -15,7 +15,9 @@
  */
 package com.chestnut.xmodel.core;
 
-import com.chestnut.xmodel.dto.XModelFieldDataDTO;
+import com.chestnut.common.utils.StringUtils;
+
+import java.util.Objects;
 
 /**
  * 元数据模型字段控件类型
@@ -38,8 +40,16 @@ public interface IMetaControlType {
     String getName();
 
     /**
-     * 处理组件关联字段数据
+     * 展示转存储
      */
-    default void parseFieldValue(XModelFieldDataDTO fieldData) {
+    default String valueAsString(Object obj) {
+        return Objects.isNull(obj) ? StringUtils.EMPTY : obj.toString();
+    }
+
+    /**
+     * 存储转展示
+     */
+    default Object stringAsValue(String valueStr) {
+        return valueStr;
     }
 }

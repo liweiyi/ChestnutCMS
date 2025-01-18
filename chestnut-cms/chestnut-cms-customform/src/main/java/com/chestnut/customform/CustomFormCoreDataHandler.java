@@ -115,8 +115,8 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<CmsCustomForm> list = JacksonUtils.fromList(f, CmsCustomForm.class);
             for (CmsCustomForm data : list) {
+                Long oldFormId = data.getFormId();
                 try {
-                    Long oldFormId = data.getFormId();
                     data.setFormId(IdUtils.getSnowflakeId());
                     data.setModelId(data.getFormId());
                     data.setSiteId(context.getSite().getSiteId());
@@ -124,8 +124,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     customFormService.save(data);
                     customFormIdMapping.put(oldFormId, data.getFormId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入自定义表单失败：" + data.getName()
-                            + "[" + data.getModelId() + "]");
+                    AsyncTaskManager.addErrMessage("导入自定义表单`" + oldFormId + "`失败：" + e.getMessage());
                     log.error("Import custom form failed: {}", data.getCode(), e);
                 }
             }
@@ -139,6 +138,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<XModel> list = JacksonUtils.fromList(f, XModel.class);
             for (XModel data : list) {
+                Long oldModelId = data.getModelId();
                 try {
                     data.setModelId(customFormIdMapping.get(data.getModelId()));
                     data.setCode(data.getModelId().toString());
@@ -146,8 +146,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     modelService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入自定义表单元数据模型失败：" + data.getName()
-                            + "[" + data.getModelId() + "]");
+                    AsyncTaskManager.addErrMessage("导入自定义表单元数据模型`" + oldModelId + "`失败：" + e.getMessage());
                     log.error("Import custom form xmodel failed: {}", data.getCode(), e);
                 }
             }
@@ -158,14 +157,14 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<XModelField> list = JacksonUtils.fromList(f, XModelField.class);
             for (XModelField data : list) {
+                Long oldFieldId = data.getFieldId();
                 try {
                     data.setFieldId(IdUtils.getSnowflakeId());
                     data.setModelId(customFormIdMapping.get(data.getModelId()));
                     data.createBy(context.getOperator());
                     modelFieldService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入自定义表单模型字段失败：" + data.getName()
-                            + "[" + data.getFieldId() + "]");
+                    AsyncTaskManager.addErrMessage("导入自定义表单模型字段`" + oldFieldId + "`失败：" + e.getMessage());
                     log.error("Import custom form xmodel field failed: {}", data.getCode(), e);
                 }
             }
@@ -176,6 +175,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<CmsCustomFormData> list = JacksonUtils.fromList(f, CmsCustomFormData.class);
             for (CmsCustomFormData data : list) {
+                String oldKey = data.getModelId() + "-" + data.getDataId();
                 try {
                     data.setDataId(IdUtils.getSnowflakeId());
                     data.setModelId(customFormIdMapping.get(data.getModelId()));
@@ -207,7 +207,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     });
                     customFormDataMapper.insert(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入自定义及表单数据失败：" + data.getModelId() + "-" + data.getDataId());
+                    AsyncTaskManager.addErrMessage("导入自定义及表单数据`" + oldKey + "`失败：" + e.getMessage());
                     log.error("Import custom form data failed: {} - {}", data.getModelId(), data.getDataId(), e);
                 }
             }

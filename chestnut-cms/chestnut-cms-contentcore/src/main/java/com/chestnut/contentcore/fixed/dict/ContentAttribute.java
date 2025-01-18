@@ -31,7 +31,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * 启用/禁用
+ * 内容属性
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Component(FixedDictType.BEAN_PREFIX + ContentAttribute.TYPE)
 public class ContentAttribute extends FixedDictType {

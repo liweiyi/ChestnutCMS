@@ -2,8 +2,7 @@ import axios from 'axios'
 import { Message } from 'element-ui'
 import { saveAs } from 'file-saver'
 import { getToken } from '@/utils/auth'
-import errorCode from '@/utils/errorCode'
-import { blobValidate } from "@/utils/chestnut";
+import { blobValidate, getResponseCodeErrMsg } from "@/utils/chestnut";
 
 const baseURL = process.env.VUE_APP_BASE_API
 
@@ -48,7 +47,7 @@ export default {
   async printErrMsg(data) {
     const resText = await data.text();
     const rspObj = JSON.parse(resText);
-    const errMsg = errorCode[rspObj.code] || rspObj.msg || errorCode['default']
+    const errMsg = getResponseCodeErrMsg(rspObj.code, rspObj.msg)
     Message.error(errMsg);
   }
 }

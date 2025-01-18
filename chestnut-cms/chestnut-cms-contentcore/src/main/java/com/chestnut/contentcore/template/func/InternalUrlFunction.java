@@ -38,7 +38,9 @@ public class InternalUrlFunction extends AbstractFunc  {
 
 	static final String FUNC_NAME = "internalUrl";
 	
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
 
 	@Override
 	public String getFuncName() {
@@ -69,7 +71,7 @@ public class InternalUrlFunction extends AbstractFunc  {
 
 	@Override
 	public List<FuncArg> getFuncArgs() {
-		return List.of(new FuncArg("内部链接", FuncArgType.String, true, null));
+		return List.of(new FuncArg(ARG1_NAME, FuncArgType.String, true, null));
 	}
 
 	@Override

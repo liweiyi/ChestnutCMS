@@ -15,20 +15,19 @@
  */
 package com.chestnut.common.async;
 
+import com.chestnut.common.async.enums.TaskStatus;
+import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.i18n.I18nUtils;
+import com.chestnut.common.utils.Assert;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.i18n.LocaleContextHolder;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
-import org.springframework.context.i18n.LocaleContextHolder;
-
-import com.chestnut.common.async.enums.TaskStatus;
-import com.chestnut.common.exception.GlobalException;
-import com.chestnut.common.i18n.I18nUtils;
-import com.chestnut.common.utils.Assert;
-
-import lombok.extern.slf4j.Slf4j;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 异步任务构造器
@@ -94,12 +93,18 @@ public abstract class AsyncTask implements Runnable {
 	/**
 	 * 中断标识
 	 */
-	private boolean interrupt = false;
+	private AtomicBoolean interrupt = new AtomicBoolean(false);
 
 	/**
 	 * 是否可被中断
 	 */
 	private boolean interruptible = false;
+
+	public AsyncTask() {}
+
+	public AsyncTask(String taskId) {
+		this.taskId = taskId;
+	}
 
 	@Override
 	public void run() {
@@ -164,10 +169,10 @@ public abstract class AsyncTask implements Runnable {
 	 * 执行中断，设置中断标识
 	 */
 	public void interrupt() {
-		if (this.interrupt) {
+		if (!this.interruptible || this.interrupt.get()) {
 			return;
 		}
-		this.interrupt = true;
+		this.interrupt.set(true);
 		this.setInterruptTime(LocalDateTime.now());
 		log.debug("[{}]Task interrupted: {}", Thread.currentThread().getName(), this.getTaskId());
 	}
@@ -178,7 +183,7 @@ public abstract class AsyncTask implements Runnable {
 	 * @throws InterruptedException
 	 */
 	public void checkInterrupt() throws InterruptedException {
-		Assert.isFalse(this.interrupt, () -> new InterruptedException("The task is interrupted: " + this.taskId));
+		Assert.isFalse(this.interrupt.get(), () -> new InterruptedException("The task is interrupted: " + this.taskId));
 	}
 
 	public boolean isExpired(long expireSeconds) {

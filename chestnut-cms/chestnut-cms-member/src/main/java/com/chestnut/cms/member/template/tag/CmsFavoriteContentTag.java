@@ -23,9 +23,8 @@ import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.dto.ContentDTO;
+import com.chestnut.contentcore.domain.vo.TagContentVO;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.member.domain.MemberFavorites;
 import com.chestnut.member.service.IMemberFavoritesService;
 import freemarker.core.Environment;
@@ -42,8 +41,11 @@ import java.util.Map;
 public class CmsFavoriteContentTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_favorite_content";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_UID = "{FREEMARKER.TAG." + TAG_NAME + ".uid}";
+
+	final static String ATTR_UID = "uid";
 
 	private final IContentService contentService;
 
@@ -52,13 +54,13 @@ public class CmsFavoriteContentTag extends AbstractListTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr("uid", false, TagAttrDataType.INTEGER, "用户ID"));
+		tagAttrs.add(new TagAttr(ATTR_UID, false, TagAttrDataType.INTEGER, ATTR_USAGE_UID));
 		return tagAttrs;
 	}
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		long uid = MapUtils.getLongValue(attrs, "uid");
+		long uid = MapUtils.getLongValue(attrs, ATTR_UID);
 
 		Page<MemberFavorites> pageResult = this.memberFavoritesService.lambdaQuery().eq(MemberFavorites::getMemberId, uid)
 				.eq(MemberFavorites::getDataType, CmsMemberConstants.MEMBER_FAVORITES_DATA_TYPE)
@@ -72,13 +74,17 @@ public class CmsFavoriteContentTag extends AbstractListTag {
 		List<CmsContent> contents = this.contentService.dao().listByIds(contentIds);
 
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
-		List<ContentDTO> list = contents.stream().map(c -> {
-			ContentDTO dto = ContentDTO.newInstance(c);
+		List<TagContentVO> list = contents.stream().map(c -> {
+			TagContentVO dto = TagContentVO.newInstance(c, context.getPublishPipeCode(), context.isPreview());
 			dto.setLink(this.contentService.getContentLink(c, 1, context.getPublishPipeCode(), context.isPreview()));
-			dto.setLogoSrc(InternalUrlUtils.getActualUrl(c.getLogo(), context.getPublishPipeCode(), context.isPreview()));
 			return dto;
 		}).toList();
 		return TagPageData.of(list, pageResult.getTotal());
+	}
+
+	@Override
+	public Class<TagContentVO> getDataClass() {
+		return TagContentVO.class;
 	}
 
 	@Override

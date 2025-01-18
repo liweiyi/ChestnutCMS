@@ -45,11 +45,15 @@ import java.util.Map;
 public class CmsAdvertisementTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_advertisement";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_CODE = "{FREEMARKER.TAG." + TAG_NAME + ".code}";
+	public final static String ATTR_USAGE_TYPE = "{FREEMARKER.TAG." + TAG_NAME + ".type}";
+	public final static String ATTR_OPTION_TYPE_NONE = "{FREEMARKER.TAG." + TAG_NAME + ".type.None}";
+	public final static String ATTR_OPTION_TYPE_STAT = "{FREEMARKER.TAG." + TAG_NAME + ".type.Stat}";
 
-	final static String TagAttr_Code = "code";
-	final static String TagAttr_RedirectType = "type";
+	final static String ATTR_CODE = "code";
+	final static String ATTR_TYPE = "type";
 
 	private final IAdvertisementService advertisementService;
 
@@ -58,23 +62,23 @@ public class CmsAdvertisementTag extends AbstractListTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr(TagAttr_Code, true, TagAttrDataType.STRING, "广告位编码"));
-		tagAttrs.add(new TagAttr(TagAttr_RedirectType, false, TagAttrDataType.STRING, "广告跳转方式",
+		tagAttrs.add(new TagAttr(ATTR_CODE, true, TagAttrDataType.STRING, ATTR_USAGE_CODE));
+		tagAttrs.add(new TagAttr(ATTR_TYPE, false, TagAttrDataType.STRING, ATTR_USAGE_TYPE,
 				RedirectType.toTagAttrOptions(), RedirectType.None.name()));
 		return tagAttrs;
 	}
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		String code = MapUtils.getString(attrs, TagAttr_Code);
-		String redirectType = MapUtils.getString(attrs, TagAttr_RedirectType, RedirectType.None.name());
+		String code = MapUtils.getString(attrs, ATTR_CODE);
+		String redirectType = MapUtils.getString(attrs, ATTR_TYPE, RedirectType.None.name());
 
 		Long siteId = TemplateUtils.evalSiteId(env);
 		CmsPageWidget adSpace = this.pageWidgetService.getOne(new LambdaQueryWrapper<CmsPageWidget>()
 				.eq(CmsPageWidget::getSiteId, siteId)
 				.eq(CmsPageWidget::getCode, code));
 		if (adSpace == null) {
-			throw new TemplateException(StringUtils.messageFormat("<@{0}>AD place `{1}` not exists.", this.getTagName(), code), env)  ;
+			throw new TemplateException(StringUtils.messageFormat("Advertising space `{0}` not exists.", code), env)  ;
 		}
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 
@@ -83,9 +87,6 @@ public class CmsAdvertisementTag extends AbstractListTag {
 				.eq(CmsAdvertisement::getState, EnableOrDisable.ENABLE);
 		q.apply(StringUtils.isNotEmpty(condition), condition);
 		Page<CmsAdvertisement> pageResult = this.advertisementService.page(new Page<>(pageIndex, size, page), q);
-		if (pageIndex > 1 & pageResult.getRecords().isEmpty()) {
-			throw new TemplateException(StringUtils.messageFormat("Page data empty: pageIndex = {0}", pageIndex), env) ;
-		}
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		List<AdvertisementVO> list = pageResult.getRecords().stream().map(ad ->{
 			AdvertisementVO vo = new AdvertisementVO(ad);
@@ -97,6 +98,11 @@ public class CmsAdvertisementTag extends AbstractListTag {
 			return vo;
 		}).toList();
 		return TagPageData.of(list, pageResult.getTotal());
+	}
+
+	@Override
+	public Class<AdvertisementVO> getDataClass() {
+		return AdvertisementVO.class;
 	}
 
 	@Override
@@ -115,8 +121,8 @@ public class CmsAdvertisementTag extends AbstractListTag {
 	}
 
 	private enum RedirectType {
-		None("原始链接"),
-		Stat("统计链接");
+		None(ATTR_OPTION_TYPE_NONE),
+		Stat(ATTR_OPTION_TYPE_STAT);
 
 		private final String desc;
 

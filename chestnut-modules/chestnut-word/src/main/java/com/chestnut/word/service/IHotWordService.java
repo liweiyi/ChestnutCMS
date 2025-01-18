@@ -16,11 +16,8 @@
 package com.chestnut.word.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.chestnut.word.cache.HotWordMonitoredCache;
 import com.chestnut.word.domain.HotWord;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -36,25 +33,12 @@ public interface IHotWordService extends IService<HotWord> {
 	@Transactional(rollbackFor = Exception.class)
     void deleteHotWords(List<Long> hotWordIds);
 
-    /**
-	 * 缓存热词对象
-	 */
-	@Getter
-	@Setter
-	@AllArgsConstructor
-	@NoArgsConstructor
-	class HotWordCache {
-		private String word;
-		private String url;
-		private String target;
-	}
-
 	/**
 	 * 获取指定分组热词集合
 	 * 
 	 * @param groupCode 热词分组编码
 	 */
-	Map<String, HotWordCache> getHotWords(String owner, String groupCode);
+	Map<String, HotWordMonitoredCache.HotWordCache> getHotWords(String owner, String groupCode);
 
 	/**
 	 * 按指定热词分组处理内容中的热词

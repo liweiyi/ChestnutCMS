@@ -26,17 +26,15 @@ import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.dto.ContentDTO;
+import com.chestnut.contentcore.domain.vo.TagContentVO;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.util.InternalUrlUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,23 +43,27 @@ import java.util.Map;
 public class CmsContentClosestTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_content_closest";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_CONTENT_ID = "{FREEMARKER.TAG." + TAG_NAME + ".contentId}";
+	public final static String ATTR_USAGE_TYPE = "{FREEMARKER.TAG." + TAG_NAME + ".type}";
+	public final static String ATTR_USAGE_SORT = "{FREEMARKER.TAG." + TAG_NAME + ".sort}";
+	public final static String ATTR_OPTION_TYPE_PREV = "{FREEMARKER.TAG." + TAG_NAME + ".type.Prev}";
+	public final static String ATTR_OPTION_TYPE_NEXT = "{FREEMARKER.TAG." + TAG_NAME + ".type.Next}";
 
+	final static String ATTR_CONTENT_ID = "contentid";
 
-	final static String TagAttr_ContentId = "contentid";
+	final static String ATTR_SORT = "sort";
 
-	final static String TagAttr_Sort = "sort";
-
-	final static String TagAttr_Type = "type";
+	final static String ATTR_TYPE = "type";
 
 	private final IContentService contentService;
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		boolean isNext = TypeTagAttr.isNext(attrs.get(TagAttr_Type));
-		String sort = attrs.get(TagAttr_Sort);
-		Long contentId = MapUtils.getLong(attrs, TagAttr_ContentId);
+		boolean isNext = TypeTagAttr.isNext(attrs.get(ATTR_TYPE));
+		String sort = attrs.get(ATTR_SORT);
+		Long contentId = MapUtils.getLong(attrs, ATTR_CONTENT_ID);
 
 		CmsContent content = this.contentService.dao().getById(contentId);
 		Assert.notNull(content, () -> new TemplateException(StringUtils.messageFormat("Tag attr[contentid={0}] data not found.", contentId), env));
@@ -87,13 +89,17 @@ public class CmsContentClosestTag extends AbstractListTag {
 		if (pageResult.getRecords().isEmpty()) {
 			return TagPageData.of(List.of(), 0);
 		}
-		List<ContentDTO> dataList = pageResult.getRecords().stream().map(c -> {
-			ContentDTO dto = ContentDTO.newInstance(c);
+		List<TagContentVO> dataList = pageResult.getRecords().stream().map(c -> {
+			TagContentVO dto = TagContentVO.newInstance(c, context.getPublishPipeCode(), context.isPreview());
 			dto.setLink(this.contentService.getContentLink(c, 1, context.getPublishPipeCode(), context.isPreview()));
-			dto.setLogoSrc(InternalUrlUtils.getActualUrl(c.getLogo(), context.getPublishPipeCode(), context.isPreview()));
 			return dto;
 		}).toList();
 		return TagPageData.of(dataList, dataList.size());
+	}
+
+	@Override
+	public Class<TagContentVO> getDataClass() {
+		return TagContentVO.class;
 	}
 
 	@Override
@@ -114,15 +120,15 @@ public class CmsContentClosestTag extends AbstractListTag {
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
-		List<TagAttr> tagAttrs = new ArrayList<>();
-		tagAttrs.add(new TagAttr(TagAttr_ContentId, true, TagAttrDataType.INTEGER, "内容ID"));
-		tagAttrs.add(new TagAttr(TagAttr_Type, true, TagAttrDataType.STRING, "类型", TypeTagAttr.toTagAttrOptions(), TypeTagAttr.Prev.name()));
-		tagAttrs.add(new TagAttr(TagAttr_Sort, false, TagAttrDataType.STRING, "排序方式", CmsContentTag.SortTagAttr.toTagAttrOptions(), CmsContentTag.SortTagAttr.Default.name()));
-		return tagAttrs;
+		return List.of(
+				new TagAttr(ATTR_CONTENT_ID, true, TagAttrDataType.INTEGER, ATTR_USAGE_CONTENT_ID),
+				new TagAttr(ATTR_TYPE, true, TagAttrDataType.STRING, ATTR_USAGE_TYPE, TypeTagAttr.toTagAttrOptions(), TypeTagAttr.Prev.name()),
+				new TagAttr(ATTR_SORT, false, TagAttrDataType.STRING, ATTR_USAGE_SORT, CmsContentTag.SortTagAttr.toTagAttrOptions(), CmsContentTag.SortTagAttr.Default.name())
+		);
 	}
 
 	enum TypeTagAttr {
-		Prev("上一篇"), Next("下一篇");
+		Prev(ATTR_OPTION_TYPE_PREV), Next(ATTR_OPTION_TYPE_NEXT);
 
 		private final String desc;
 

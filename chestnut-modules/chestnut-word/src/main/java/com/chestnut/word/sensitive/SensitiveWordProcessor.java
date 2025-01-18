@@ -15,16 +15,15 @@
  */
 package com.chestnut.word.sensitive;
 
+import com.chestnut.word.domain.SensitiveWord;
+import org.apache.commons.collections4.SetUtils;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.SetUtils;
-import org.springframework.stereotype.Component;
-
-import com.chestnut.word.domain.SensitiveWord;
 
 /**
  * 敏感词处理器
@@ -35,7 +34,7 @@ public class SensitiveWordProcessor {
 	/**
 	 * 敏感词表
 	 */
-	private DFAModel<SensitiveWordType> wordDFAModel = new DFAModel<SensitiveWordType>();
+	private DFAModel<SensitiveWordType> wordDFAModel = new DFAModel<>();
 
 	/**
 	 * 初始化敏感词模型数据
@@ -44,7 +43,7 @@ public class SensitiveWordProcessor {
 	 * @param whiteList
 	 */
 	public void init(List<SensitiveWord> blackList, List<SensitiveWord> whiteList) {
-		this.init(blackList.stream().map(SensitiveWord::getWord).collect(Collectors.toSet()), 
+		this.init(blackList.stream().map(SensitiveWord::getWord).collect(Collectors.toSet()),
 				whiteList.stream().map(SensitiveWord::getWord).collect(Collectors.toSet()));
 	}
 	
@@ -68,15 +67,19 @@ public class SensitiveWordProcessor {
 	
 	/**
 	 * 移除敏感词
-	 * 
-	 * @param word
 	 */
 	public void removeWord(String word) {
 		wordDFAModel.removeWord(word);
 	}
 	
 	public void removeWords(Set<String> words) {
-		words.forEach(word -> removeWord(word));
+		words.forEach(word -> wordDFAModel.removeWord(word));
+	}
+
+	public void reset(Set<String> blackWords, Set<String> whiteWords) {
+		this.wordDFAModel.getRoot().clear();
+		this.addWords(blackWords, SensitiveWordType.BLACK);
+		this.addWords(whiteWords, SensitiveWordType.WHITE);
 	}
 
 	/**
@@ -265,7 +268,7 @@ public class SensitiveWordProcessor {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * 匹配标识
 	 */

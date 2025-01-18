@@ -22,6 +22,7 @@ import com.chestnut.article.ArticleContentType;
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.service.IArticleService;
 import com.chestnut.cms.member.domain.dto.ArticleContributeDTO;
+import com.chestnut.cms.member.domain.vo.MemberContentVO;
 import com.chestnut.cms.member.properties.EnableContributeProperty;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -48,7 +49,6 @@ import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.ContentCoreUtils;
-import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.system.annotation.IgnoreDemoMode;
@@ -68,6 +68,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
 
 import static com.chestnut.common.utils.SortUtils.getDefaultSortValue;
@@ -145,7 +146,11 @@ public class MemberContributeApiController extends BaseRestController implements
 			}
 			cmsContent.setTitle(dto.getTitle());
 			cmsContent.setSummary(dto.getSummary());
-			cmsContent.setLogo(dto.getLogo());
+			if (StringUtils.isNotEmpty(dto.getLogo())) {
+				cmsContent.setImages(List.of(dto.getLogo()));
+			} else {
+				cmsContent.setImages(List.of());
+			}
 			cmsContent.setTags(dto.getTags().toArray(String[]::new));
 			// 重置发布状态
 			cmsContent.setStatus(ContentStatus.DRAFT);
@@ -182,8 +187,10 @@ public class MemberContributeApiController extends BaseRestController implements
 			contentEntity.setSiteId(catalog.getSiteId());
 			contentEntity.setLinkFlag(YesOrNo.NO);
 			contentEntity.setIsLock(YesOrNo.NO);
-			if (StringUtils.isNotEmpty(dto.getLogo()) && InternalUrlUtils.isInternalUrl(dto.getLogo())) {
-				contentEntity.setLogo(dto.getLogo());
+			if (StringUtils.isNotEmpty(dto.getLogo())) {
+				contentEntity.setImages(List.of(dto.getLogo()));
+			} else {
+				contentEntity.setImages(List.of());
 			}
 			if (StringUtils.isNotEmpty(dto.getTags())) {
 				contentEntity.setTags(dto.getTags().toArray(String[]::new));
@@ -240,7 +247,8 @@ public class MemberContributeApiController extends BaseRestController implements
 				.lt(offset > 0, CmsContent::getPublishDate, LocalDateTime.ofInstant(Instant.ofEpochMilli(offset), ZoneId.systemDefault()))
 				.orderByDesc(CmsContent::getPublishDate);
 		Page<CmsContent> page = contentService.dao().page(new Page<>(1, limit, false), q);
-		return this.bindDataTable(page);
+		List<MemberContentVO> list = page.getRecords().stream().map(MemberContentVO::newInstance).toList();
+		return this.bindDataTable(list, page.getTotal());
 	}
 
 	@Override

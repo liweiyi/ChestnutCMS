@@ -18,11 +18,11 @@ package com.chestnut.word.service.impl;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.word.WordConstants;
+import com.chestnut.word.cache.HotWordMonitoredCache;
 import com.chestnut.word.domain.HotWord;
 import com.chestnut.word.domain.HotWordGroup;
 import com.chestnut.word.mapper.HotWordGroupMapper;
@@ -42,28 +42,27 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HotWordServiceImpl extends ServiceImpl<HotWordMapper, HotWord> implements IHotWordService {
 
-	private static final String CACHE_PREFIX = "hotword:";
-
-	private final RedisCache redisCache;
+	private final HotWordMonitoredCache hotWordCache;
 
 	private final RedissonClient redissonClient;
 
 	private final HotWordGroupMapper hotWordGroupMapper;
 
 	@Override
-	public Map<String, HotWordCache> getHotWords(String owner, String groupCode) {
-		return this.redisCache.getCacheMap(CACHE_PREFIX + groupCode, () -> {
-			Optional<HotWordGroup> groupOpt = new LambdaQueryChainWrapper<>(this.hotWordGroupMapper)
-					.eq(HotWordGroup::getOwner, owner)
-					.eq(HotWordGroup::getCode, groupCode).oneOpt();
-			return groupOpt.map(hotWordGroup -> this.lambdaQuery()
-							.eq(HotWord::getGroupId, hotWordGroup.getGroupId())
-							.list().stream()
-							.collect(Collectors.toMap(HotWord::getWord, w ->
-								new HotWordCache(w.getWord(), w.getUrl(), w.getUrlTarget())
-							))
-			).orElseGet(Map::of);
-		});
+	public Map<String, HotWordMonitoredCache.HotWordCache> getHotWords(String owner, String groupCode) {
+		return this.hotWordCache.getCache(groupCode,
+				() -> {
+					Optional<HotWordGroup> groupOpt = new LambdaQueryChainWrapper<>(this.hotWordGroupMapper)
+							.eq(HotWordGroup::getOwner, owner)
+							.eq(HotWordGroup::getCode, groupCode).oneOpt();
+					return groupOpt.map(hotWordGroup -> this.lambdaQuery()
+									.eq(HotWord::getGroupId, hotWordGroup.getGroupId())
+									.list().stream()
+									.collect(Collectors.toMap(HotWord::getWord, w ->
+										new HotWordMonitoredCache.HotWordCache(w.getWord(), w.getUrl(), w.getUrlTarget())
+									))
+					).orElseGet(Map::of);
+				});
 	}
 
 	@Override
@@ -75,8 +74,8 @@ public class HotWordServiceImpl extends ServiceImpl<HotWordMapper, HotWord> impl
 			replacementTemplate = WordConstants.HOT_WORD_REPLACEMENT;
 		}
 		for (String groupCode : groupCodes) {
-			Map<String, HotWordCache> hotWords = this.getHotWords(owner, groupCode);
-            for (Entry<String, HotWordCache> e : hotWords.entrySet()) {
+			Map<String, HotWordMonitoredCache.HotWordCache> hotWords = this.getHotWords(owner, groupCode);
+            for (Entry<String, HotWordMonitoredCache.HotWordCache> e : hotWords.entrySet()) {
                 if (StringUtils.isEmpty(target)) {
                     target = e.getValue().getTarget();
                 }

@@ -15,12 +15,9 @@
  */
 package com.chestnut.word.sensitive;
 
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.word.domain.ErrorProneWord;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 易错词处理器
@@ -48,7 +45,12 @@ public class ErrorProneWordProcessor {
 	}
 	
 	public void removeWords(Set<String> words) {
-		words.forEach(word -> removeWord(word));
+		words.forEach(this::removeWord);
+	}
+
+	public void reset(Map<String, String> errorProneWords) {
+		this.wordDFAModel.getRoot().clear();
+		this.addWords(errorProneWords);
 	}
 
 	/**

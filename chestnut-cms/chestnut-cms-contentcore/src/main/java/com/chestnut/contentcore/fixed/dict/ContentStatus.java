@@ -25,7 +25,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * 启用/禁用
+ * 内容状态
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Component(FixedDictType.BEAN_PREFIX + ContentStatus.TYPE)
 public class ContentStatus extends FixedDictType {

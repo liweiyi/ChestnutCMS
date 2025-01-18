@@ -120,7 +120,7 @@ import * as baiduTongjiApi from "@/api/stat/baidu";
 import LineChart from '@/views/dashboard/LineChart'
 
 export default {
-  name: "CMSSiteBdTrendOverview",
+  name: "CMSSiteBdTimeTrend",
   components: {
     LineChart
   },

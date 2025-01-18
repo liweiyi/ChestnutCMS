@@ -15,15 +15,24 @@
  */
 package com.chestnut.common.redis;
 
-public interface IMonitoredCache {
+/**
+ * 后台缓存监控
+ */
+public interface IMonitoredCache<T> {
+
+	String BEAN_PREFIX = "MonitoredCache_";
+
+	String getId();
 
 	/**
 	 * 緩存Key（前缀）
 	 */
-	public String getCacheKey();
+    String getCacheKey();
 
 	/**
 	 * 缓存名称
 	 */
-	public String getCacheName();
+    String getCacheName();
+
+	T getCache(String cacheKey);
 }

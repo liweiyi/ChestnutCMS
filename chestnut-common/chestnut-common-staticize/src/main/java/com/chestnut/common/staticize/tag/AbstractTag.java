@@ -15,25 +15,22 @@
  */
 package com.chestnut.common.staticize.tag;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
+import com.chestnut.common.staticize.FreeMarkerUtils;
+import com.chestnut.common.staticize.enums.TagAttrDataType;
+import com.chestnut.common.staticize.exception.InvalidTagAttrTypeException;
+import com.chestnut.common.staticize.exception.InvalidTagAttrValueException;
+import com.chestnut.common.staticize.exception.MissionTagAttributeException;
+import com.chestnut.common.utils.StringUtils;
+import freemarker.core.Environment;
+import freemarker.template.*;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.chestnut.common.staticize.FreeMarkerUtils;
-import com.chestnut.common.staticize.enums.TagAttrDataType;
-import com.chestnut.common.utils.StringUtils;
-
-import freemarker.core.Environment;
-import freemarker.template.TemplateDirectiveBody;
-import freemarker.template.TemplateDirectiveModel;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateModel;
-import freemarker.template.TemplateModelException;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 自定义标签会作为共享变量添加到Configuration中。非线程安全！！！
@@ -119,20 +116,18 @@ public abstract class AbstractTag implements ITag, TemplateDirectiveModel {
 			for (TagAttr tagAttr : tagAttrs) {
 				String attrValue = FreeMarkerUtils.getStringFrom(attrs, tagAttr.getName());
 				if (tagAttr.isMandatory() && StringUtils.isEmpty(attrValue)) {
-					throw new TemplateException(StringUtils.messageFormat("The tag <@{0}> missing required attribute: {1}", this.getTagName(), tagAttr.getName()),
-							env);
+					throw new MissionTagAttributeException(this.getTagName(), tagAttr.getName(), env);
 				}
 				if (tagAttr.getDataType() == TagAttrDataType.INTEGER && StringUtils.isNotEmpty(attrValue)
 						&& !NumberUtils.isCreatable(attrValue)) {
-					throw new TemplateException(
-							StringUtils.messageFormat("The tag <@{0}> attribute `{1}` must be digit, but is: {2}", this.getTagName(), tagAttr.getName(), attrValue),
-							env);
+					throw new InvalidTagAttrTypeException(this.getTagName(), tagAttr.getName(),
+							tagAttr.getDataType(), attrValue, env);
 				}
 				if (tagAttr.getOptions() != null && StringUtils.isNotEmpty(attrValue)) {
 					String[] optionValues = tagAttr.getOptions().stream().map(TagAttrOption::lowerCaseValue).toArray(String[]::new);
 					if (!ArrayUtils.contains(optionValues, attrValue.toLowerCase())) {
-						throw new TemplateException(StringUtils.messageFormat("The tag <@{0}> attribute `{1}` = `{2}` is invalid, options: {3}", this.getTagName(),
-								tagAttr.getName(), attrValue, Arrays.toString(optionValues)), env);
+						throw new InvalidTagAttrValueException(this.getTagName(), tagAttr.getName(), attrValue,
+								Arrays.toString(optionValues), env);
 					}
 				}
 				if (StringUtils.isEmpty(attrValue) && StringUtils.isNotEmpty(tagAttr.getDefaultValue())) {

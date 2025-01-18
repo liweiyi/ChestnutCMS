@@ -15,18 +15,6 @@
  */
 package com.chestnut.system.controller.common;
 
-import java.util.Comparator;
-import java.util.List;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
@@ -38,9 +26,12 @@ import com.chestnut.system.domain.vo.AsyncTaskVO;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Comparator;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -94,6 +85,10 @@ public class AsyncController extends BaseRestController {
 	@PutMapping("/task/stop")
 	public R<?> stopAsyncTask(@RequestBody @NotEmpty List<String> taskIds) {
 		for (String taskId : taskIds) {
+			AsyncTask task = this.asyncTaskManager.getTask(taskId);
+			if (!task.isInterruptible()) {
+				return R.fail("The task cannot be interrupted: " + taskId);
+			}
 			this.asyncTaskManager.cancel(taskId);
 		}
 		return R.ok();

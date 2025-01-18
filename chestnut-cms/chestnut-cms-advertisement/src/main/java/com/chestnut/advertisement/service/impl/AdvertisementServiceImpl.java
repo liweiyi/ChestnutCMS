@@ -15,34 +15,40 @@
  */
 package com.chestnut.advertisement.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chestnut.advertisement.AdSpacePageWidgetType;
+import com.chestnut.advertisement.IAdvertisementType;
+import com.chestnut.advertisement.cache.AdMonitoredCache;
+import com.chestnut.advertisement.domain.CmsAdvertisement;
+import com.chestnut.advertisement.mapper.CmsAdvertisementMapper;
+import com.chestnut.advertisement.pojo.dto.AdvertisementDTO;
+import com.chestnut.advertisement.service.IAdvertisementService;
+import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.IdUtils;
+import com.chestnut.contentcore.core.IPageWidget;
+import com.chestnut.contentcore.core.IPageWidgetType;
+import com.chestnut.contentcore.domain.CmsPageWidget;
+import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.properties.SiteApiUrlProperty;
+import com.chestnut.contentcore.publish.IStaticizeType;
+import com.chestnut.contentcore.service.IPageWidgetService;
+import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.system.fixed.dict.EnableOrDisable;
+import com.chestnut.system.security.StpAdminUtil;
+import freemarker.template.TemplateException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.properties.SiteApiUrlProperty;
-import com.chestnut.contentcore.service.ISiteService;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.advertisement.IAdvertisementType;
-import com.chestnut.advertisement.domain.CmsAdvertisement;
-import com.chestnut.advertisement.mapper.CmsAdvertisementMapper;
-import com.chestnut.advertisement.pojo.dto.AdvertisementDTO;
-import com.chestnut.advertisement.service.IAdvertisementService;
-import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.redis.RedisCache;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.contentcore.config.CMSConfig;
-import com.chestnut.contentcore.domain.CmsPageWidget;
-import com.chestnut.contentcore.service.IPageWidgetService;
-import com.chestnut.system.fixed.dict.EnableOrDisable;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * <p>
@@ -57,15 +63,15 @@ import lombok.RequiredArgsConstructor;
 public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper, CmsAdvertisement>
 		implements IAdvertisementService {
 
-	private static final String CACHE_KEY_ADV_IDS = CMSConfig.CachePrefix + "adv-ids";
-
-	private final RedisCache redisCache;
+	private final AdMonitoredCache adCache;
 
 	private final Map<String, IAdvertisementType> advertisementTypes;
 
 	private final IPageWidgetService pageWidgetService;
 
 	private final ISiteService siteService;
+
+	private final AsyncTaskManager asyncTaskManager;
 
 	@Override
 	public IAdvertisementType getAdvertisementType(String typeId) {
@@ -79,10 +85,12 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 
 	@Override
 	public Map<String, String> getAdvertisementMap() {
-		return this.redisCache.getCacheMap(CACHE_KEY_ADV_IDS,
-				() -> this.lambdaQuery().select(List.of(CmsAdvertisement::getAdvertisementId, CmsAdvertisement::getName)).list()
-						.stream().collect(
-								Collectors.toMap(ad -> ad.getAdvertisementId().toString(), CmsAdvertisement::getName)));
+		return adCache.getCache(() -> {
+			return this.lambdaQuery()
+					.select(List.of(CmsAdvertisement::getAdvertisementId, CmsAdvertisement::getName))
+					.list().stream()
+					.collect(Collectors.toMap(ad -> ad.getAdvertisementId().toString(), CmsAdvertisement::getName));
+		});
 	}
 
 	@Override
@@ -99,7 +107,7 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 		advertisement.createBy(dto.getOperator().getUsername());
 		this.save(advertisement);
 
-		this.redisCache.deleteObject(CACHE_KEY_ADV_IDS);
+		this.adCache.clear();
 		return advertisement;
 	}
 
@@ -116,12 +124,14 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void deleteAdvertisement(List<Long> advertisementIds) {
 		this.removeByIds(advertisementIds);
-		this.redisCache.deleteObject(CACHE_KEY_ADV_IDS);
+		this.adCache.clear();
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void enableAdvertisement(List<Long> advertisementIds, String operator) {
 		List<CmsAdvertisement> list = this.listByIds(advertisementIds);
 		for (CmsAdvertisement ad : list) {
@@ -134,6 +144,7 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void disableAdvertisement(List<Long> advertisementIds, String operator) {
 		List<CmsAdvertisement> list = this.listByIds(advertisementIds);
 		for (CmsAdvertisement ad : list) {
@@ -143,7 +154,14 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 			}
 		}
 		this.updateBatchById(list);
-		// todo 重新发布
+		// 重新发布
+		asyncTaskManager.execute(() -> {
+			CmsPageWidget pageWidget = this.pageWidgetService.getById(list.get(0).getAdSpaceId());
+			IPageWidgetType pwt = pageWidgetService.getPageWidgetType(AdSpacePageWidgetType.ID);
+			IPageWidget pw = pwt.loadPageWidget(pageWidget);
+			pw.setOperator(StpAdminUtil.getLoginUser());
+			pw.publish();
+        });
 	}
 
 	@Override

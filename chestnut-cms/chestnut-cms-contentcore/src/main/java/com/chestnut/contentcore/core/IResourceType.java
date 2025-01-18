@@ -79,4 +79,8 @@ public interface IResourceType {
 		resource.setFileSize((long) bytes.length);
 		return bytes;
 	}
+
+	default void afterProcess(CmsResource resource) {
+
+	}
 }

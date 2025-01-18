@@ -49,3 +49,30 @@ export function getSiteTimeTrendDatas(params) {
     params: params
   })
 }
+
+// 站点访问来源数据
+export function getSiteVisitSource(params) {
+  return request({
+    url: '/cms/stat/baidu/sourceAll',
+    method: 'get',
+    params: params
+  })
+}
+
+// 搜索引擎来源数据
+export function getSiteEngineSource(params) {
+  return request({
+    url: '/cms/stat/baidu/sourceEngine',
+    method: 'get',
+    params: params
+  })
+}
+
+// 搜索词来源数据
+export function getSiteSearchWordSource(params) {
+  return request({
+    url: '/cms/stat/baidu/sourceSearchWord',
+    method: 'get',
+    params: params
+  })
+}

@@ -40,7 +40,11 @@ public class ContentUrlFunction extends AbstractFunc {
 
 	private static final String FUNC_NAME = "contentUrl";
 	
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
 
 	private final IContentService contentService;
 
@@ -71,7 +75,7 @@ public class ContentUrlFunction extends AbstractFunc {
 
 	@Override
 	public List<FuncArg> getFuncArgs() {
-		return List.of(new FuncArg("内容ID", FuncArgType.Long, true, null),
-				new FuncArg("发布通道编码", FuncArgType.String, true, null));
+		return List.of(new FuncArg(ARG1_NAME, FuncArgType.Long, true),
+				new FuncArg(ARG2_NAME, FuncArgType.String, true));
 	}
 }

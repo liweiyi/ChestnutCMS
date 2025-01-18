@@ -56,7 +56,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
 	@Override
 	public SysRole getRole(String roleCode) {
-		SysRole role = redisCache.getCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + roleCode);
+		SysRole role = redisCache.getCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + roleCode, SysRole.class);
 		if (Objects.nonNull(role)) {
 			return role;
 		}

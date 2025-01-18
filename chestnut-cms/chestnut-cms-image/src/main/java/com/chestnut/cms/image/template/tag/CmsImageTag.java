@@ -15,38 +15,42 @@
  */
 package com.chestnut.cms.image.template.tag;
 
-import java.util.List;
-import java.util.Map;
-
-import com.chestnut.common.utils.StringUtils;
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.image.domain.CmsImage;
+import com.chestnut.cms.image.domain.vo.TagImageVO;
 import com.chestnut.cms.image.service.IImageService;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
+import com.chestnut.common.staticize.exception.InvalidTagAttrValueException;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
+import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
-
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Component
 public class CmsImageTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_image";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_CONTENT_ID = "{FREEMARKER.TAG." + TAG_NAME + ".contentId}";
+
+	public final static String ATTR_CONTENT_ID = "contentId";
 
 	private final IContentService contentService;
 
@@ -55,16 +59,16 @@ public class CmsImageTag extends AbstractListTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr("contentid", true, TagAttrDataType.INTEGER, "图集内容ID"));
+		tagAttrs.add(new TagAttr(ATTR_CONTENT_ID, true, TagAttrDataType.INTEGER, ATTR_USAGE_CONTENT_ID));
 		return tagAttrs;
 	}
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex)
 			throws TemplateException {
-		long contentId = MapUtils.getLongValue(attrs, "contentid", 0);
-		if (contentId <= 0) {
-			throw new TemplateException("图集内容ID错误：" + contentId, env);
+		long contentId = MapUtils.getLongValue(attrs, ATTR_CONTENT_ID, 0);
+		if (IdUtils.validate(contentId)) {
+			throw new InvalidTagAttrValueException(getTagName(), ATTR_CONTENT_ID, String.valueOf(contentId), env);
 		}
 		CmsContent c = this.contentService.dao().getById(contentId);
 		if (ContentCopyType.isMapping(c.getCopyType())) {
@@ -76,15 +80,18 @@ public class CmsImageTag extends AbstractListTag {
 		q.apply(StringUtils.isNotEmpty(condition), condition);
 		q.orderByAsc(CmsImage::getSortFlag);
 		Page<CmsImage> pageResult = this.imageService.dao().page(new Page<>(pageIndex, size, page), q);
-		if (pageIndex > 1 & pageResult.getRecords().isEmpty()) {
-			throw new TemplateException("内容列表页码超出上限：" + pageIndex, env);
-		}
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
-		pageResult.getRecords().forEach(image -> {
-			image.setSrc(
-					InternalUrlUtils.getActualUrl(image.getPath(), context.getPublishPipeCode(), context.isPreview()));
-		});
-		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+		List<TagImageVO> dataList = pageResult.getRecords().stream().map(image -> {
+			TagImageVO vo = TagImageVO.newInstance(image);
+			vo.setSrc(InternalUrlUtils.getActualUrl(image.getPath(), context.getPublishPipeCode(), context.isPreview()));
+			return vo;
+		}).toList();
+		return TagPageData.of(dataList, pageResult.getTotal());
+	}
+
+	@Override
+	public Class<TagImageVO> getDataClass() {
+		return TagImageVO.class;
 	}
 
 	@Override

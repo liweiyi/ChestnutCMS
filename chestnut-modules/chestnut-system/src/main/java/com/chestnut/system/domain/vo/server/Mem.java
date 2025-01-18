@@ -16,6 +16,8 @@
 package com.chestnut.system.domain.vo.server;
 
 import com.chestnut.common.utils.Arith;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 內存相关信息
@@ -23,8 +25,10 @@ import com.chestnut.common.utils.Arith;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public class Mem
-{
+@Getter
+@Setter
+public class Mem {
+
     /**
      * 内存总量
      */
@@ -45,29 +49,14 @@ public class Mem
         return Arith.div(total, (1024 * 1024 * 1024), 2);
     }
 
-    public void setTotal(long total)
-    {
-        this.total = total;
-    }
-
     public double getUsed()
     {
         return Arith.div(used, (1024 * 1024 * 1024), 2);
     }
 
-    public void setUsed(long used)
-    {
-        this.used = used;
-    }
-
     public double getFree()
     {
         return Arith.div(free, (1024 * 1024 * 1024), 2);
-    }
-
-    public void setFree(long free)
-    {
-        this.free = free;
     }
 
     public double getUsage()

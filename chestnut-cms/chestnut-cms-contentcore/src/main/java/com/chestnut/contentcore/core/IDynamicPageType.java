@@ -17,6 +17,8 @@ package com.chestnut.contentcore.core;
 
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.StringUtils;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
@@ -31,9 +33,9 @@ public interface IDynamicPageType {
 
     String BEAN_PREFIX = "DynamicPageType_";
 
-    RequestArg REQUEST_ARG_SITE_ID = new RequestArg("sid", "站点ID", RequestArgType.Parameter, true, null);
-    RequestArg REQUEST_ARG_PUBLISHPIPE_CODE = new RequestArg("pp", "发布通道编码", RequestArgType.Parameter, true, null);
-    RequestArg REQUEST_ARG_PREVIEW = new RequestArg("preview", "是否预览模式", RequestArgType.Parameter, false, "false");
+    RequestArg REQUEST_ARG_SITE_ID = new RequestArg("sid", "{DYNAMIC_PAGE_TYPE.ARG.sid}", RequestArgType.Parameter, true);
+    RequestArg REQUEST_ARG_PUBLISHPIPE_CODE = new RequestArg("pp", "{DYNAMIC_PAGE_TYPE.ARG.pp}", RequestArgType.Parameter, true);
+    RequestArg REQUEST_ARG_PREVIEW = new RequestArg("preview", "{DYNAMIC_PAGE_TYPE.ARG.preview}", RequestArgType.Parameter, false, "false");
 
     /**
      * 类型
@@ -89,17 +91,27 @@ public interface IDynamicPageType {
 
     }
 
-    record RequestArg(
-            String name, // 参数名
+    @Getter
+    @Setter
+    class RequestArg {
+        private String name;
+        private String desc;
+        private RequestArgType type;
+        private boolean mandatory;
+        private String defValue;
 
-            String desc, // 参数说明
+        public RequestArg(String name, String desc, RequestArgType type, boolean mandatory) {
+            this(name, desc, type, mandatory, null);
+        }
 
-            RequestArgType type, // 类型：parameter, path
-
-            boolean mandatory, // 是否必填
-
-            String defaultValue // 默认值
-    ){}
+        public RequestArg(String name, String desc, RequestArgType type, boolean mandatory, String defValue) {
+            this.name = name;
+            this.desc = desc;
+            this.type = type;
+            this.mandatory = mandatory;
+            this.defValue = defValue;
+        }
+    }
 
     enum RequestArgType {
         Parameter, Path

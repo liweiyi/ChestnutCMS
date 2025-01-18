@@ -29,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * 广告页面部件内容核心数据处理器
@@ -61,6 +60,7 @@ public class AdCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<CmsAdvertisement> list = JacksonUtils.fromList(f, CmsAdvertisement.class);
             for (CmsAdvertisement data : list) {
+                Long oldAdvertisementId = data.getAdvertisementId();
                 try {
                     data.setAdvertisementId(IdUtils.getSnowflakeId());
                     data.setSiteId(context.getSite().getSiteId());
@@ -70,8 +70,7 @@ public class AdCoreDataHandler implements ICoreDataHandler {
                     data.setRedirectUrl(context.dealInternalUrl(data.getRedirectUrl()));
                     advertisementService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入广告数据失败：" + data.getName()
-                            + "[" + data.getAdvertisementId() + "]");
+                    AsyncTaskManager.addErrMessage("导入广告数据`" + oldAdvertisementId + "`失败：" + e.getMessage());
                     log.error("Import advertisement failed: {}", data.getAdvertisementId(), e);
                 }
             }

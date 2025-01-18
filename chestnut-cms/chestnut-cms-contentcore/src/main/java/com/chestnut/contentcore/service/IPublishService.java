@@ -18,6 +18,7 @@ package com.chestnut.contentcore.service;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.core.IContent;
+import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.IPageWidget;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
@@ -57,26 +58,25 @@ public interface IPublishService {
      * 站点首页页面内容
      *
      * @param site
-     * @param publishPipeCode
+     * @param requestData
      * @return
      * @throws IOException
      * @throws TemplateException
      */
-    String getSitePageData(CmsSite site, String publishPipeCode, boolean isPreview)
+    String getSitePageData(CmsSite site, IInternalDataType.RequestData requestData)
             throws IOException, TemplateException;
 
     /**
      * 获取栏目模板页面内容
      *
      * @param catalog
+     * @param requestData
      * @param listFlag
-     * @param publishPipeCode
-     * @param isPreview
      * @return
      * @throws IOException
      * @throws TemplateException
      */
-    String getCatalogPageData(CmsCatalog catalog, int pageIndex, boolean listFlag, String publishPipeCode, boolean isPreview)
+    String getCatalogPageData(CmsCatalog catalog, IInternalDataType.RequestData requestData, boolean listFlag)
             throws IOException, TemplateException;
 
     /**
@@ -95,13 +95,12 @@ public interface IPublishService {
      * 获取内容模板页面结果
      *
      * @param content
-     * @param pageIndex
-     * @param publishPipeCode
+     * @param requestData
      * @return
      * @throws IOException
      * @throws TemplateException
      */
-    String getContentPageData(CmsContent content, int pageIndex, String publishPipeCode, boolean isPreview)
+    String getContentPageData(CmsContent content, IInternalDataType.RequestData requestData)
             throws IOException, TemplateException;
 
     /**

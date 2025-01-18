@@ -44,11 +44,11 @@ public class SearchDynamicPageType implements IDynamicPageType {
             REQUEST_ARG_SITE_ID,
             REQUEST_ARG_PUBLISHPIPE_CODE,
             REQUEST_ARG_PREVIEW,
-            new RequestArg("q", "搜索词", RequestArgType.Parameter, false, null),
-            new RequestArg("cid", "栏目ID", RequestArgType.Parameter, false, null),
-            new RequestArg("ot", "是否只搜索标题", RequestArgType.Parameter, false, "false"),
-            new RequestArg("ct", "内容类型", RequestArgType.Parameter, false, null),
-            new RequestArg("page", "当前页码", RequestArgType.Parameter, false, "1")
+            new RequestArg("q", "{DYNAMIC_PAGE_TYPE." + TYPE + ".ARG.q}", RequestArgType.Parameter, false),
+            new RequestArg("cid", "{DYNAMIC_PAGE_TYPE." + TYPE + ".ARG.cid}", RequestArgType.Parameter, false),
+            new RequestArg("ot", "{DYNAMIC_PAGE_TYPE." + TYPE + ".ARG.ot}", RequestArgType.Parameter, false, Boolean.FALSE.toString()),
+            new RequestArg("ct", "{DYNAMIC_PAGE_TYPE." + TYPE + ".ARG.ct}", RequestArgType.Parameter, false),
+            new RequestArg("page", "{DYNAMIC_PAGE_TYPE." + TYPE + ".ARG.page}", RequestArgType.Parameter, false, "1")
         );
 
     @Override
@@ -58,7 +58,7 @@ public class SearchDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
+        return "{DYNAMIC_PAGE_TYPE." + TYPE + ".NAME}";
     }
 
     @Override

@@ -16,11 +16,13 @@
 package com.chestnut.contentcore.controller;
 
 import cn.dev33.satoken.annotation.SaMode;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
@@ -52,6 +54,7 @@ import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -177,14 +180,13 @@ public class CatalogController extends BaseRestController {
 	@DeleteMapping("/{catalogId}")
 	public R<String> deleteCatalog(@PathVariable("catalogId") @LongId Long catalogId) {
 		LoginUser operator = StpAdminUtil.getLoginUser();
-		AsyncTask task = new AsyncTask() {
+		AsyncTask task = new AsyncTask("Catalog-" + catalogId) {
 
 			@Override
 			public void run0() {
 				catalogService.deleteCatalog(catalogId, operator);
 			}
 		};
-		task.setTaskId("DeleteCatalog_" + catalogId);
 		this.asyncTaskManager.execute(task);
 		return R.ok(task.getTaskId());
 	}
@@ -282,6 +284,7 @@ public class CatalogController extends BaseRestController {
 	/**
 	 * 保存栏目扩展配置
 	 */
+	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#catalogId}")
 	@Log(title = "栏目扩展", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PutMapping("/extends/{catalogId}")
@@ -375,5 +378,49 @@ public class CatalogController extends BaseRestController {
 			path = parent.getPath() + path;
 		}
 		return R.ok(Map.of("alias", alias, "path", path));
+	}
+
+	@Priv(type = AdminUserType.TYPE)
+	@GetMapping("/tree")
+	public R<String> getCatalogTree(@RequestParam Long catalogId, HttpServletRequest request) {
+		CmsSite site = siteService.getCurrentSite(request);
+		CmsCatalog parent = null;
+		if (IdUtils.validate(catalogId)) {
+			parent = catalogService.getCatalog(catalogId);
+		}
+		LambdaQueryChainWrapper<CmsCatalog> q = catalogService.lambdaQuery()
+				.select(CmsCatalog::getName, CmsCatalog::getAncestors, CmsCatalog::getTreeLevel)
+				.eq(CmsCatalog::getSiteId, site.getSiteId());
+		if (Objects.nonNull(parent)) {
+			q.likeRight(CmsCatalog::getAncestors, parent.getAncestors());
+		}
+		List<CmsCatalog> list = q.list();
+		list.sort(Comparator.comparing(CmsCatalog::getAncestors));
+		StringBuilder sb = new StringBuilder();
+		list.forEach(catalog -> {
+			String prefix = StringUtils.leftPad("", (catalog.getTreeLevel() -1) * 2);
+			sb.append(prefix).append(catalog.getName()).append(StringUtils.LF);
+		});
+		return R.ok(sb.toString());
+	}
+
+	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#catalogId}")
+	@Log(title = "清空", businessType = BusinessType.UPDATE)
+	@PostMapping("/clear")
+	public R<String> clearCatalog(@RequestBody ClearCatalogDTO dto) {
+		LoginUser operator = StpAdminUtil.getLoginUser();
+		dto.setOperator(operator);
+		AsyncTask task = catalogService.clearCatalog(dto);
+		return R.ok(task.getTaskId());
+	}
+
+	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#catalogId}")
+	@Log(title = "合并", businessType = BusinessType.UPDATE)
+	@PostMapping("/merge")
+	public R<String> mergeCatalog(@RequestBody MergeCatalogDTO dto) {
+		LoginUser operator = StpAdminUtil.getLoginUser();
+		dto.setOperator(operator);
+		AsyncTask task = catalogService.mergeCatalogs(dto);
+		return R.ok(task.getTaskId());
 	}
 }

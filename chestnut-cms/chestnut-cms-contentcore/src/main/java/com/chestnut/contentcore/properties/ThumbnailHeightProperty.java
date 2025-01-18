@@ -59,7 +59,7 @@ public class ThumbnailHeightProperty implements IProperty {
 	
 	@Override
 	public Integer defaultValue() {
-		return 0;
+		return 128;
 	}
 	
 	@Override

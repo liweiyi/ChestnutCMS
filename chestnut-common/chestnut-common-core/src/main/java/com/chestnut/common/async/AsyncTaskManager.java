@@ -18,6 +18,7 @@ package com.chestnut.common.async;
 import com.chestnut.common.async.enums.TaskStatus;
 import com.chestnut.common.config.AsyncConfig;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -172,6 +173,20 @@ public class AsyncTaskManager {
 			task.setProgressInfo(percent, msg);
 		}
     }
+
+	public static void completed(String msg) {
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			if (StringUtils.isEmpty(msg)) {
+				msg = I18nUtils.get("{AsyncTask.SuccessMsg}");
+			}
+			task.setProgressInfo(100, msg);
+		}
+	}
+
+	public static void completed() {
+		completed(null);
+	}
 
 	/**
 	 * 设置进度条数据，进度增加剩余进度的十分之一

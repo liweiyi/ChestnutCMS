@@ -32,6 +32,9 @@
         <cms-ad-view v-if="currentMenu=='CmsAdViewLog'"></cms-ad-view>
         <cms-site-trend-overview v-if="currentMenu=='BdSiteTrendOverview'"></cms-site-trend-overview>
         <cms-site-timetrend v-if="currentMenu=='BdSiteTimeTrend'"></cms-site-timetrend>
+        <cms-site-visit-source v-if="currentMenu=='BdSiteVisitSource'"></cms-site-visit-source>
+        <cms-site-engine-source v-if="currentMenu=='BdSiteEngineSource'"></cms-site-engine-source>
+        <cms-site-searchword-source v-if="currentMenu=='BdSiteSearchWordSource'"></cms-site-searchword-source>
         <cms-content-stat v-if="currentMenu=='ContentDynamicStat'"></cms-content-stat>
         <cms-content-stat-by-catalog v-if="currentMenu=='ContentStatByCatalog'"></cms-content-stat-by-catalog>
         <cms-content-stat-by-user v-if="currentMenu=='ContentStatByUser'"></cms-content-stat-by-user>
@@ -45,8 +48,11 @@ import { getStatMenuTreeData } from "@/api/stat/stat";
 import CMSAdvertisementStat from '@/views/cms/ad/adStat';
 import CMSAdvertisementClickLog from '@/views/cms/ad/adClickLog';
 import CMSAdvertisementViewLog from '@/views/cms/ad/adViewLog';
-import CMSBdSiteTrendOverview from '@/views/cms/stat/bdSiteStat';
+import CMSBdSiteVisitSource from '@/views/cms/stat/bdSiteVisitSourceStat';
+import CMSBdSiteEngineSource from '@/views/cms/stat/bdSiteEngineSourceStat';
+import CMSBdSiteSearchWordSource from '@/views/cms/stat/bdSiteSearchWordSourceStat';
 import CMSBdSiteTimeTrend from '@/views/cms/stat/bdSiteTimeTrendStat';
+import CMSBdSiteTrendOverview from '@/views/cms/stat/bdSiteStat';
 import CMSContentDynamicStat from '@/views/cms/stat/contentDynamicStat';
 import ContentStatByCatalog from '@/views/cms/stat/contentStatByCatalog';
 import ContentStatByUser from '@/views/cms/stat/contentStatByUser';
@@ -64,6 +70,9 @@ export default {
     'cms-ad-view': CMSAdvertisementViewLog,
     'cms-site-trend-overview': CMSBdSiteTrendOverview,
     'cms-site-timetrend': CMSBdSiteTimeTrend,
+    'cms-site-visit-source': CMSBdSiteVisitSource,
+    'cms-site-engine-source': CMSBdSiteEngineSource,
+    'cms-site-searchword-source': CMSBdSiteSearchWordSource,
     'cms-content-stat': CMSContentDynamicStat,
     'cms-content-stat-by-catalog': ContentStatByCatalog,
     'cms-content-stat-by-user': ContentStatByUser

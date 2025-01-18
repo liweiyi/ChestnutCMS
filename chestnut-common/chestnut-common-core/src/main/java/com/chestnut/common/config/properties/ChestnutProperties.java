@@ -15,10 +15,9 @@
  */
 package com.chestnut.common.config.properties;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * 读取项目相关配置
@@ -47,16 +46,24 @@ public class ChestnutProperties {
 	 */
 	private Snowflake snowflake;
 
+	private GraphicsMagick graphicsMagick;
+
+	@Getter
+	@Setter
 	public static class Snowflake {
 
 		private short workerId = 1;
+	}
 
-		public short getWorkerId() {
-			return workerId;
-		}
+	@Getter
+	@Setter
+	public static class GraphicsMagick {
 
-		public void setWorkerId(short workerId) {
-			this.workerId = workerId;
-		}
+		public boolean enable = false;
+
+		/**
+		 * GraphicsMagick安装路径
+		 */
+		public String path;
 	}
 }

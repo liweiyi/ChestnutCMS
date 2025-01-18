@@ -39,8 +39,15 @@ public class CmsMemberFollowTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_member_follow";
 
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_UID = "{FREEMARKER.TAG." + TAG_NAME + ".uid}";
+	public final static String ATTR_USAGE_TYPE = "{FREEMARKER.TAG." + TAG_NAME + ".type}";
+	public final static String ATTR_OPTION_TYPE_FOLLOW = "{FREEMARKER.TAG." + TAG_NAME + ".type.follow}";
+	public final static String ATTR_OPTION_TYPE_FOLLOWER = "{FREEMARKER.TAG." + TAG_NAME + ".type.follower}";
+
+	public final static String ATTR_UID = "uid";
+	public final static String ATTR_TYPE = "type";
 
 	private final IMemberStatDataService memberStatDataService;
 
@@ -48,8 +55,8 @@ public class CmsMemberFollowTag extends AbstractListTag {
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		long uid = MapUtils.getLongValue(attrs, "uid");
-		String type = attrs.get("type");
+		long uid = MapUtils.getLongValue(attrs, ATTR_UID);
+		String type = attrs.get(ATTR_TYPE);
 
 		Page<MemberFollow> pageResult = this.memberFollowService.lambdaQuery()
 				.eq(MemberFollowTagType.isFollow(type), MemberFollow::getMemberId, uid)
@@ -60,13 +67,18 @@ public class CmsMemberFollowTag extends AbstractListTag {
 			return TagPageData.of(List.of(), pageResult.getTotal());
 		}
 		List<MemberCache> list = pageResult.getRecords().stream().map(mf -> {
-			if ("follow".equalsIgnoreCase(type)) {
+			if (MemberFollowTagType.isFollow(type)) {
 				return this.memberStatDataService.getMemberCache(mf.getFollowMemberId());
 			} else {
 				return this.memberStatDataService.getMemberCache(mf.getMemberId());
 			}
 		}).toList();
 		return TagPageData.of(list, pageResult.getTotal());
+	}
+
+	@Override
+	public Class<MemberCache> getDataClass() {
+		return MemberCache.class;
 	}
 
 	@Override
@@ -88,16 +100,14 @@ public class CmsMemberFollowTag extends AbstractListTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr("uid", false, TagAttrDataType.INTEGER, "用户ID"));
-		tagAttrs.add(new TagAttr("type", true, TagAttrDataType.STRING, "类型", MemberFollowTagType.toTagAttrOptions(), null));
+		tagAttrs.add(new TagAttr(ATTR_UID, false, TagAttrDataType.INTEGER, ATTR_USAGE_UID));
+		tagAttrs.add(new TagAttr(ATTR_TYPE, true, TagAttrDataType.STRING, ATTR_USAGE_TYPE, MemberFollowTagType.toTagAttrOptions()));
 		return tagAttrs;
 	}
 
 	private enum MemberFollowTagType {
-		// 所有站点
-		follow("关注"),
-		// 当前站点
-		follower("粉丝");
+		follow(ATTR_OPTION_TYPE_FOLLOW),
+		follower(ATTR_OPTION_TYPE_FOLLOWER);
 
 		private final String desc;
 

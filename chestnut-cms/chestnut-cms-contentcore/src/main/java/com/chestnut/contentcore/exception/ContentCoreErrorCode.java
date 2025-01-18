@@ -70,6 +70,11 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	UNSUPPORTED_DYNAMIC_PAGE_TYPE,
 
 	/**
+	 * 不支持的内容详情页路径规则：{0}
+	 */
+	UNSUPPORTED_CONTENT_PATH_RULE,
+
+	/**
 	 * 请先删除子栏目
 	 */
 	DEL_CHILD_FIRST,
@@ -177,7 +182,27 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	/**
 	 * 上传文件超过限制
 	 */
-	RESOURCE_ACCEPT_SIZE_LIMIT;
+	RESOURCE_ACCEPT_SIZE_LIMIT,
+
+	/**
+	 * 不能处理非图片资源
+	 */
+	ONLY_SUPPORT_IMAGE,
+
+	/**
+	 * 资源存储方式与站点配置不一致
+	 */
+	UNSUPPORTED_RESOURCE_STORAGE,
+
+	/**
+	 * 被合并栏目不能为空
+	 */
+	MERGE_CATALOG_IS_EMPTY,
+
+	/**
+	 * 不能合并包含子栏目的栏目
+	 */
+	MERGE_CATALOG_NOT_LEAF;
 
 	@Override
 	public String value() {

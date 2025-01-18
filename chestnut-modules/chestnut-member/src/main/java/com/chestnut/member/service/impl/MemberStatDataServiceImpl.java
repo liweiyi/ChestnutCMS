@@ -16,8 +16,8 @@
 package com.chestnut.member.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.member.cache.MemberMonitoredCache;
 import com.chestnut.member.core.IMemberStatData;
 import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.MemberStatData;
@@ -38,19 +38,17 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class MemberStatDataServiceImpl extends ServiceImpl<MemberStatDataMapper, MemberStatData> implements IMemberStatDataService {
 
-    private static final String CACHE_PREFIX = "cc:member:";
-
     private final IMemberService memberService;
 
     private final RedissonClient redissonClient;
 
-    private final RedisCache redisCache;
+    private final MemberMonitoredCache memberCache;
 
     private final Map<String, IMemberStatData> memberStatDataTypes;
 
     @Override
     public MemberCache getMemberCache(Long memberId) {
-        return this.redisCache.getCacheObject(CACHE_PREFIX + memberId, () -> {
+        return this.memberCache.get(memberId, () -> {
             Member member = memberService.getById(memberId);
             if (member == null) {
                 return null;
@@ -75,7 +73,7 @@ public class MemberStatDataServiceImpl extends ServiceImpl<MemberStatDataMapper,
 
     @Override
     public void removeMemberCache(Long memberId) {
-        this.redisCache.deleteObject(CACHE_PREFIX + memberId);
+        this.memberCache.clear(memberId);
     }
 
     @Async
@@ -105,7 +103,7 @@ public class MemberStatDataServiceImpl extends ServiceImpl<MemberStatDataMapper,
             value += delta;
             data.setValue(memberStatData.getField(), value);
             this.saveOrUpdate(data);
-            this.redisCache.deleteObject(CACHE_PREFIX + memberId);
+            this.memberCache.clear(memberId);
         } finally {
             lock.unlock();
         }

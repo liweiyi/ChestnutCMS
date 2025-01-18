@@ -19,6 +19,7 @@ import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.autoconfigure.context.MessageSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -84,6 +85,7 @@ public class SysI18nConfig {
 
 	public static class XyLocaleResolver extends AcceptHeaderLocaleResolver {
 		
+		@NotNull
 		@Override
 		public Locale resolveLocale(HttpServletRequest request) {
 			String languageTag = request.getParameter("lang");

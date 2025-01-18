@@ -100,11 +100,6 @@
           <dict-tag :options="dict.type.YesOrNo" :value="scope.row.fixed"/>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('System.Dict.Status')" align="center" prop="status">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.EnableOrDisable" :value="scope.row.status"/>
-        </template>
-      </el-table-column>
       <el-table-column :label="$t('Common.Remark')" align="center" prop="remark" :show-overflow-tooltip="true" />
       <el-table-column :label="$t('Common.CreateTime')" align="center" prop="createTime" width="180">
         <template slot-scope="scope">

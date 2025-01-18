@@ -27,6 +27,9 @@ import com.chestnut.system.service.ISysDictTypeService;
 
 /**
  * 页面部件状态
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Component(FixedDictType.BEAN_PREFIX + PageWidgetStatus.TYPE)
 public class PageWidgetStatus extends FixedDictType {

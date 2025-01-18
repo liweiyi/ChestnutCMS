@@ -18,8 +18,8 @@ package com.chestnut.contentcore.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -40,31 +40,21 @@ public class CmsSiteProperty extends BaseEntity {
     
     public static final String TABLE_NAME = "cms_site_property";
 
-    /**
-     * 属性ID-主键
-     */
     @TableId(value = "property_id", type = IdType.INPUT)
+    @XComment("ID")
     private Long propertyId;
 
-    /**
-     * 所属站点ID
-     */
+    @XComment("所属站点ID")
     private Long siteId;
 
-    /**
-     * 属性名称
-     */
+    @XComment("属性名称")
     @NotBlank
     private String propName;
 
-    /**
-     * 属性代码
-     */
-    @Pattern(regexp = "[A-Za-z0-9_]+")
+    @XComment("属性编码")
+    @Pattern(regexp = "[A-Za-z0-9_]+", message = "{VALIDATOR.CMS.SITE_PROPERTY.REGEXP_ERR}")
     private String propCode;
 
-    /**
-     * 属性值
-     */
+    @XComment("属性值")
     private String propValue;
 }

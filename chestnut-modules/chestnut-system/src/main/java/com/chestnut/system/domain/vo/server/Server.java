@@ -19,6 +19,7 @@ import com.chestnut.common.utils.Arith;
 import com.chestnut.common.utils.ServletUtils;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.SystemUtils;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.TickType;
@@ -31,7 +32,6 @@ import oshi.util.Util;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * 服务器相关信息
@@ -126,24 +126,24 @@ public class Server {
 	 * 设置服务器信息
 	 */
 	private void setSysInfo() {
-		Properties props = System.getProperties();
 		sys.setComputerName(ServletUtils.getHostName());
 		sys.setComputerIp(ServletUtils.getHostIp());
-		sys.setOsName(props.getProperty("os.name"));
-		sys.setOsArch(props.getProperty("os.arch"));
-		sys.setUserDir(props.getProperty("user.dir"));
+
+		sys.setOsName(SystemUtils.OS_NAME);
+		sys.setOsArch(SystemUtils.OS_ARCH);
+		sys.setUserDir(SystemUtils.USER_DIR);
 	}
 
 	/**
 	 * 设置Java虚拟机
 	 */
 	private void setJvmInfo() {
-		Properties props = System.getProperties();
 		jvm.setTotal(Runtime.getRuntime().totalMemory());
 		jvm.setMax(Runtime.getRuntime().maxMemory());
 		jvm.setFree(Runtime.getRuntime().freeMemory());
-		jvm.setVersion(props.getProperty("java.version"));
-		jvm.setHome(props.getProperty("java.home"));
+
+		jvm.setVersion(SystemUtils.JAVA_VERSION);
+		jvm.setHome(SystemUtils.JAVA_HOME);
 	}
 
 	/**

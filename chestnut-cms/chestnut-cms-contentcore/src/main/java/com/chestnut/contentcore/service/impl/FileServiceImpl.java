@@ -182,9 +182,7 @@ public class FileServiceImpl implements IFileService {
     	if (dir.startsWith("/")) {
     		dir = dir.substring(1);
     	}
-    	if (!dir.endsWith("/")) {
-    		dir += "/";
-    	}
+		dir = StringUtils.appendIfMissing(dir, "/");
     	this.checkSiteDirectory(site, dir);
     	if (!dto.getIsDirectory()) {
     		this.checkFileType(dto.getFileName());
@@ -260,9 +258,7 @@ public class FileServiceImpl implements IFileService {
 		if (dir.startsWith("/")) {
 			dir = dir.substring(1);
 		}
-		if (!dir.endsWith("/")) {
-			dir += "/";
-		}
+		dir = StringUtils.appendIfMissing(dir, "/");
 		this.checkSiteDirectory(site, dir);
 		this.checkFileType(file.getOriginalFilename());
 		

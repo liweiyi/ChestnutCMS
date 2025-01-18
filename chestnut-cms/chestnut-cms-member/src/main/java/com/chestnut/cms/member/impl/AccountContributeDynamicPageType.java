@@ -59,7 +59,7 @@ public class AccountContributeDynamicPageType implements IDynamicPageType {
             REQUEST_ARG_SITE_ID,
             REQUEST_ARG_PUBLISHPIPE_CODE,
             REQUEST_ARG_PREVIEW,
-            new RequestArg("cid", "内容ID", RequestArgType.Parameter, false, null)
+            new RequestArg("cid", "{DYNAMIC_PAGE_TYPE." + TYPE + ".ARG.cid}", RequestArgType.Parameter, false)
     );
 
     private final IMemberStatDataService memberStatDataService;
@@ -77,7 +77,7 @@ public class AccountContributeDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
+        return "{DYNAMIC_PAGE_TYPE." + TYPE + ".NAME}";
     }
 
     @Override

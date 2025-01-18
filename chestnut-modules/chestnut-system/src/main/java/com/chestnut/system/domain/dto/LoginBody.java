@@ -16,6 +16,7 @@
 package com.chestnut.system.domain.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 /**
  * 用户登录对象
@@ -29,6 +30,7 @@ public class LoginBody {
 	 * 用户名
 	 */
 	@NotBlank
+	@Pattern(regexp = "^[A-Za-z0-9_]+$", message = "用户名只能使用大小写字母、数字、下划线组合")
 	private String username;
 
 	/**

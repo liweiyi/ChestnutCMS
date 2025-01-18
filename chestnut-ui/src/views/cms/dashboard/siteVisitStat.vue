@@ -38,29 +38,6 @@
       </div>
       <line-chart :chart-data="lineChartData" />
     </el-card>
-    <el-card shadow="hover">
-      <div slot="header" class="clearfix">
-        <span>{{ $t("Stat.Site.VisitLocation") }}</span>
-      </div>
-      <el-table v-loading="loadingDistrict" :data="districtList" height="274" size="mini">
-        <el-table-column 
-          :label="$t('Stat.Site.Location')"
-          align="center"
-          prop="name" />
-        <el-table-column 
-          label="PV"
-          align="center"
-          prop="pv_count" />
-        <el-table-column 
-          :label="$t('Stat.Site.Ratio')"
-          align="center"
-          prop="ratio">
-          <template slot-scope="scope">
-            {{ scope.row.ratio }} %
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
   </div>
 </template>
 <style scoped>
@@ -152,7 +129,6 @@ export default {
         if (this.siteOptions.length > 0) {
           this.queryParams.bdSiteId = this.siteOptions[0].site_id;
           this.loadSiteTrendOverviewDatas();
-          this.loadSiteDistrictOverviewDatas();
         }
       });
     },

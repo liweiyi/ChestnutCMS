@@ -21,6 +21,7 @@ import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
@@ -264,6 +265,7 @@ public class SiteController extends BaseRestController {
      * @param siteId  站点ID
      * @param configs 扩展配置数据
      */
+    @XssIgnore
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
     @Log(title = "站点扩展", businessType = BusinessType.UPDATE, isSaveRequestData = false)
     @PostMapping("/extends/{siteId}")

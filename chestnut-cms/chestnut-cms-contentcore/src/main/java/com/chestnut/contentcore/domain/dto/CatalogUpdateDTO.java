@@ -21,7 +21,6 @@ import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
@@ -91,6 +90,11 @@ public class CatalogUpdateDTO extends BaseDTO {
      * 标题栏目跳转地址
      */
     private String redirectUrl;
+
+    /*
+     * 内容路径规则
+     */
+    private String detailNameRule;
 
     /*
      * SEO关键词

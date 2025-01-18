@@ -170,25 +170,35 @@ public interface ICatalogService extends IService<CmsCatalog> {
 	/**
 	 * 保存栏目扩展配置
 	 * 
-	 * @param catalogId
-	 * @param configs
-	 * @param operator
+	 * @param catalogId 栏目ID
+	 * @param configs 配置信息
+	 * @param operator 操作人
 	 */
 	void saveCatalogExtends(Long catalogId, Map<String, String> configs, String operator);
 	
 	/**
 	 * 栏目排序
 	 * 
-	 * @param catalogId
-	 * @param sort
+	 * @param catalogId 栏目ID
+	 * @param sort 排序值
 	 */
 	void sortCatalog(Long catalogId, Integer sort);
 
 	/**
 	 * 栏目内容数变更
 	 *
-	 * @param catalogId
-	 * @param delta
+	 * @param catalogId 栏目ID
+	 * @param delta 变更数量
 	 */
 	void changeContentCount(Long catalogId, int delta);
+
+	/**
+	 * 清空栏目
+	 */
+	AsyncTask clearCatalog(ClearCatalogDTO dto);
+
+	/**
+	 * 合并栏目
+	 */
+    AsyncTask mergeCatalogs(MergeCatalogDTO dto);
 }

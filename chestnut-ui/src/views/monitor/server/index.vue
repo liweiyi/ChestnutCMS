@@ -13,7 +13,7 @@
                   <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('Monitor.Server.AppName') }}</div></td>
                   <td class="el-table__cell is-leaf"><div class="cell" v-if="server.sys">{{ server.app.name }} [ {{ server.app.alias }} ]</div></td>
                   <td class="el-table__cell is-leaf"><div class="cell attrname">{{ $t('Monitor.Server.AppVersion') }}</div></td>
-                  <td class="el-table__cell is-leaf"><div class="cell" v-if="server.sys">{{ server.app.version }}</div></td>
+                  <td class="el-table__cell is-leaf"><div class="cell" v-if="server.sys">{{ server.app.version }}<span v-if="hasNewVersion"> [ {{ $t('Monitor.Server.LatestVersion') }}: {{ latestVersion }} ]</span></div></td>
                 </tr>
               </tbody>
             </table>
@@ -233,7 +233,11 @@ export default {
   data() {
     return {
       // 服务器信息
-      server: []
+      server: {
+        dataSources: { list: []}
+      },
+      hasNewVersion: false,
+      latestVersion: ""
     };
   },
   created() {
@@ -246,11 +250,23 @@ export default {
       getServer().then(response => {
         this.server = response.data;
         this.$modal.closeLoading();
+        this.checkLatestVersion();
       });
     },
     // 打开加载层
     openLoading() {
       this.$modal.loading(this.$t('Monitor.Server.Loading'));
+    },
+    async checkLatestVersion() {
+      try {
+        const version = await this.jsonpRequest(this.$cache.officialLink(), 'checkLatestVersionCallback');
+        if (version && version.length > 0 && version != this.server.app.version) {
+          this.latestVersion = version;
+          this.hasNewVersion = true;
+        }
+      } catch (error) {
+        // error
+      }
     }
   }
 };

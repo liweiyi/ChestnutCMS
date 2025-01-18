@@ -21,10 +21,7 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.storage.IFileStorageType;
 import com.chestnut.common.storage.StorageReadArgs;
 import com.chestnut.common.storage.StorageReadArgs.StorageReadArgsBuilder;
-import com.chestnut.common.storage.StorageWriteArgs;
-import com.chestnut.common.storage.StorageWriteArgs.StorageWriteArgsBuilder;
 import com.chestnut.common.storage.exception.StorageErrorCode;
-import com.chestnut.common.storage.local.LocalFileStorageType;
 import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.IResourceStat;
@@ -41,10 +38,7 @@ import com.chestnut.contentcore.properties.FileStorageArgsProperty.FileStorageAr
 import com.chestnut.contentcore.properties.FileStorageTypeProperty;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
-import com.chestnut.contentcore.util.ContentCoreUtils;
-import com.chestnut.contentcore.util.InternalUrlUtils;
-import com.chestnut.contentcore.util.ResourceUtils;
-import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.contentcore.util.*;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +46,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -236,26 +229,17 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 	private void processResource(CmsResource resource, IResourceType resourceType, CmsSite site, byte[] bytes) throws IOException {
 		// 处理资源，图片属性读取、水印等
 		bytes = resourceType.process(resource, bytes);
-		// 写入磁盘/OSS
+		// 读取存储配置
 		String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
-		IFileStorageType fst = this.getFileStorageType(fileStorageType);
-		FileStorageArgs fileStorageArgs = FileStorageArgsProperty.getValue(site.getConfigProps());
-		// 写入参数设置
-		StorageWriteArgsBuilder builder = StorageWriteArgs.builder();
-		builder.bucket(fileStorageArgs.getBucket());
-		if (LocalFileStorageType.TYPE.equals(fst.getType())) {
-			builder.bucket(SiteUtils.getSiteResourceRoot(site));
-		} else {
-			builder.accessKey(fileStorageArgs.getAccessKey());
-			builder.accessSecret(fileStorageArgs.getAccessSecret());
-			builder.endpoint(fileStorageArgs.getEndpoint());
-		}
-		builder.path(resource.getPath());
-		builder.inputStream(new ByteArrayInputStream(bytes));
-		fst.write(builder.build());
-		resource.setStorageType(fst.getType());
-		// 内部链接
+		IFileStorageType fst = getFileStorageType(fileStorageType);
+		FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
+		// 写入磁盘/OSS
+		fileStorageHelper.write(resource.getPath(), bytes);
+		// 设置资源参数
+		resource.setStorageType(fileStorageType);
 		resource.setInternalUrl(InternalDataType_Resource.getInternalUrl(resource));
+		// 默认缩略图处理
+		resourceType.afterProcess(resource);
 	}
 
 	@Override

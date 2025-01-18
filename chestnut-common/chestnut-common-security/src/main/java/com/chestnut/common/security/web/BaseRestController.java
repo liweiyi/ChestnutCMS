@@ -33,8 +33,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 
 @Validated
 public class BaseRestController {
@@ -108,4 +110,13 @@ public class BaseRestController {
 		}
 		response.setStatus(HttpStatus.OK.value());
 	}
+
+	public record SelectOption(String value, String label) {}
+	protected <T> R<List<SelectOption>> bindSelectOptions(Collection<T> list, Function<T, String> valueGetter, Function<T, String> labelGetter) {
+		List<SelectOption> options = list.stream().map(item -> {
+			return new SelectOption(valueGetter.apply(item), labelGetter.apply(item));
+		}).toList();
+		return R.ok(options);
+	}
+
 }

@@ -16,6 +16,7 @@
 package com.chestnut.cms.member.domain.vo;
 
 import com.chestnut.article.domain.CmsArticleDetail;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,7 +54,9 @@ public class ContributeArticleVO {
         vo.setTitle(content.getTitle());
         vo.setSummary(content.getSummary());
         vo.setTags(content.getTags());
-        vo.setLogo(content.getLogo());
+        if (StringUtils.isNotEmpty(content.getImages())) {
+            vo.setLogo(content.getImages().get(0));
+        }
         vo.setContentHtml(articleDetail.getContentHtml());
         return vo;
     }

@@ -38,7 +38,13 @@ public class CustomDynamicPageLinkFunction extends AbstractFunc  {
 
 	static final String FUNC_NAME = "customDynamicPageLink";
 
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
+
+	private static final String ARG3_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg3.Name}";
 
 	private final DynamicPageHelper dynamicPageHelper;
 
@@ -87,9 +93,9 @@ public class CustomDynamicPageLinkFunction extends AbstractFunc  {
 	@Override
 	public List<FuncArg> getFuncArgs() {
 		return List.of(
-				new FuncArg("动态页面编码", FuncArgType.String, true, null),
-				new FuncArg("自定义参数", FuncArgType.String, false, null),
-				new FuncArg("忽略sid/pp参数", FuncArgType.String, false, "默认：true")
+				new FuncArg(ARG1_NAME, FuncArgType.String, true),
+				new FuncArg(ARG2_NAME, FuncArgType.String, false),
+				new FuncArg(ARG3_NAME, FuncArgType.String, false, null, Boolean.TRUE.toString())
 		);
 	}
 }

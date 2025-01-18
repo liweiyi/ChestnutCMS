@@ -144,3 +144,33 @@ export function generateAliasAndPath(data) {
   })
 }
 
+export function getCatalogTree(params) {
+  return request({
+    url: '/cms/catalog/tree',
+    method: 'get',
+    params: params
+  })
+}
+
+export function clearCatalog(data) {
+  return request({
+    url: '/cms/catalog/clear',
+    method: 'post',
+    data: data
+  })
+}
+
+export function mergeCatalogs(data) {
+  return request({
+    url: '/cms/catalog/merge',
+    method: 'post',
+    data: data
+  })
+}
+
+export function getContentPathRules() {
+  return request({
+    url: '/cms/contentPathRules',
+    method: 'get',
+  })
+}

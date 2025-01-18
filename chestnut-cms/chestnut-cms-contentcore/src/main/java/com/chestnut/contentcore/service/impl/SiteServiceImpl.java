@@ -18,11 +18,11 @@ package com.chestnut.contentcore.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
+import com.chestnut.contentcore.cache.SiteMonitoredCache;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IProperty;
 import com.chestnut.contentcore.core.IPublishPipeProp;
@@ -69,27 +69,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> implements ISiteService {
 
-	/**
-	 * 缓存key前缀
-	 */
-	private static final String CACHE_PREFIX = CMSConfig.CachePrefix + "site:";
-
 	private final ApplicationContext applicationContext;
 
 	private final ISysPermissionService permissionService;
 
 	private final Map<String, IPublishPipeProp> publishPipeProps;
 
-	private final RedisCache redisCache;
+	private final SiteMonitoredCache siteCache;
 
 	@Override
 	public CmsSite getSite(Long siteId) {
-		CmsSite site = this.redisCache.getCacheObject(CACHE_PREFIX + siteId);
-		if (Objects.isNull(site)) {
-			site = this.getById(siteId);
-			Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
-			this.redisCache.setCacheObject(CACHE_PREFIX + siteId, site);
-		}
+		CmsSite site = siteCache.getCache(siteId, () -> this.getById(siteId));
+		Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 		return site;
 	}
 
@@ -128,9 +119,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		CmsSite site = new CmsSite();
 		site.setSiteId(IdUtils.getSnowflakeId());
 		BeanUtils.copyProperties(dto, site, "siteId");
-		if (StringUtils.isNotEmpty(site.getResourceUrl()) && !site.getResourceUrl().endsWith("/")) {
-			site.setResourceUrl(site.getResourceUrl() + "/");
-		}
+        site.setResourceUrl(StringUtils.appendIfMissing(site.getResourceUrl(), "/"));
 		site.setSortFlag(SortUtils.getDefaultSortValue());
 		site.createBy(dto.getOperator().getUsername());
 		this.save(site);
@@ -154,9 +143,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		CmsSite site = this.getById(dto.getSiteId());
 
 		BeanUtils.copyProperties(dto, site, "path");
-		if (StringUtils.isNotEmpty(site.getResourceUrl()) && !site.getResourceUrl().endsWith("/")) {
-			site.setResourceUrl(site.getResourceUrl() + "/");
-		}
+        site.setResourceUrl(StringUtils.appendIfMissing(site.getResourceUrl(), "/"));
 		// 发布通道数据处理
         dto.getPublishPipeDatas().forEach(prop -> {
             prop.getProps().entrySet().removeIf(e -> !publishPipeProps.containsKey(IPublishPipeProp.BEAN_PREFIX + e.getKey()));
@@ -246,6 +233,6 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 
 	@Override
 	public void clearCache(long siteId) {
-		this.redisCache.deleteObject(CACHE_PREFIX + siteId);
+		this.siteCache.clear(siteId);
 	}
 }

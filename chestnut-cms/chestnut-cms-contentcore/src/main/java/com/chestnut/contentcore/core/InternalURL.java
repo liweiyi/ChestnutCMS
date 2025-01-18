@@ -15,16 +15,15 @@
  */
 package com.chestnut.contentcore.core;
 
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.exception.InternalUrlParseException;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.web.util.HtmlUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import org.springframework.web.util.HtmlUtils;
-
-import com.chestnut.common.utils.StringUtils;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * 内部数据自定义URL<br/>
@@ -107,6 +106,9 @@ public class InternalURL {
 		url = HtmlUtils.htmlUnescape(url);
 		String content = url.substring(IURLProtocol.length());
 		int i = content.lastIndexOf("?");
+		if (i < 0) {
+			throw new InternalUrlParseException("Invalid iurl: missing parameters.");
+		}
 		// 默认iurl的路径部分就是内部数据类型，如果参数中含有type则使用参数type，路径部分作为path
 		String type = content.substring(0, i);
 		iurl.setType(type);

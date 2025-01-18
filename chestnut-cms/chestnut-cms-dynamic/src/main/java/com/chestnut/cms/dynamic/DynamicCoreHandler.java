@@ -18,8 +18,6 @@ package com.chestnut.cms.dynamic;
 import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
 import com.chestnut.common.async.AsyncTaskManager;
-import com.chestnut.common.exception.GlobalException;
-import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.contentcore.core.ICoreDataHandler;
@@ -64,12 +62,13 @@ public class DynamicCoreHandler implements ICoreDataHandler {
             List<CmsDynamicPage> list = JacksonUtils.fromList(f, CmsDynamicPage.class);
             for (CmsDynamicPage data : list) {
                 try {
-                    Long count = dynamicPageService.lambdaQuery().eq(CmsDynamicPage::getPath, data.getPath()).count();
-                    Assert.isTrue(count == 0, () -> new GlobalException("自定义动态模板路径重复：" + data.getPath()));
-
                     data.setPageId(IdUtils.getSnowflakeId());
                     data.setSiteId(context.getSite().getSiteId());
                     data.createBy(context.getOperator());
+                    Long count = dynamicPageService.lambdaQuery().eq(CmsDynamicPage::getPath, data.getPath()).count();
+                    if (count > 0) {
+                        data.setPath(data.getPath() + "_" + data.getPageId());
+                    }
                     dynamicPageService.save(data);
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入自定义动态模板页面失败：" + data.getName() + "[" + data.getCode() + "]");

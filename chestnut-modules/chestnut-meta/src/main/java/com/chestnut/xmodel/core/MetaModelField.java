@@ -45,17 +45,20 @@ public class MetaModelField {
 
     private String controlType;
 
+    private String fieldType;
+
     private FieldOptions options;
 
     private List<Map<String, Object>> validations;
 
     public MetaModelField(String name, String code, String fieldName,
-                          boolean primaryKey, String controlType) {
+                          boolean primaryKey, String controlType, String fieldType) {
         this.name = name;
         this.code = code;
         this.fieldName = fieldName;
         this.primaryKey = primaryKey;
         this.controlType = controlType;
+        this.fieldType = fieldType;
     }
 
     public MetaModelField(XModelField field) {
@@ -63,6 +66,7 @@ public class MetaModelField {
         this.code = field.getCode();
         this.fieldName = field.getFieldName();
         this.controlType = field.getControlType();
+        this.fieldType = field.getFieldType();
         this.defaultValue = field.getDefaultValue();
         this.options = field.getOptions();
         this.validations = field.getValidations();

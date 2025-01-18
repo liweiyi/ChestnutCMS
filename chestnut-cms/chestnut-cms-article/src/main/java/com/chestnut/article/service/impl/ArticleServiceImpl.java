@@ -15,11 +15,14 @@
  */
 package com.chestnut.article.service.impl;
 
+import com.chestnut.article.IArticleBodyFormat;
 import com.chestnut.article.dao.CmsArticleDetailDAO;
 import com.chestnut.article.service.IArticleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -28,8 +31,17 @@ public class ArticleServiceImpl implements IArticleService {
 
 	private final CmsArticleDetailDAO dao;
 
+
+	private final Map<String, IArticleBodyFormat> articleBodyFormatMap;
+
 	@Override
 	public CmsArticleDetailDAO dao() {
 		return this.dao;
 	}
+
+	@Override
+	public IArticleBodyFormat getArticleBodyFormat(String format) {
+		return articleBodyFormatMap.get(IArticleBodyFormat.BEAN_PREFIX + format);
+	}
+
 }

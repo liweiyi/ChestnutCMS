@@ -42,8 +42,6 @@ public class DFAModel<T> {
 		return this.root;
 	}
 
-
-
 	protected void addWord(String word, T data) {
 		this.addWords(Set.of(word), data);
 	}
@@ -115,7 +113,7 @@ public class DFAModel<T> {
 	                	this.root.remove(node.key);
 	                } else {
 	                	pathNodeList.get(j - 1).children.remove(node.key);
-	                	if (pathNodeList.get(j - 1).children.size() == 0) {
+	                	if (pathNodeList.get(j - 1).children.isEmpty()) {
 	                		pathNodeList.get(j - 1).children = null; // 释放空的子节点集合
 	                	}
 	                }
@@ -130,7 +128,7 @@ public class DFAModel<T> {
 	                	this.root.remove(node.key);
 	                } else {
 	                	pathNodeList.get(j - 1).children.remove(node.key);
-	                	if (pathNodeList.get(j - 1).children.size() == 0) {
+	                	if (pathNodeList.get(j - 1).children.isEmpty()) {
 	                		pathNodeList.get(j - 1).children = null; // 释放空的子节点集合
 	                	}
 	                }

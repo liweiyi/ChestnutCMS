@@ -113,27 +113,24 @@ public class ArticleApiController extends BaseRestController {
             return R.ok(List.of());
         }
         List<Long> contentIds = pageResult.getRecords().stream().map(CmsContent::getContentId).toList();
-        Map<Long, CmsArticleDetail> articleDetails = this.articleService.dao().listByIds(contentIds)
-                .stream().collect(Collectors.toMap(CmsArticleDetail::getContentId, c -> c));
+        Map<Long, CmsArticleDetail> articleDetails = new HashMap<>();
+        if (text) {
+            articleDetails.putAll(this.articleService.dao().listByIds(contentIds)
+                    .stream().collect(Collectors.toMap(CmsArticleDetail::getContentId, c -> c)));
+        }
 
-        Map<Long, CmsCatalog> loadedCatalogs = new HashMap<>();
         List<ArticleApiVO> list = new ArrayList<>();
         pageResult.getRecords().forEach(c -> {
-            ArticleApiVO dto = ArticleApiVO.newInstance(c);
-            CmsCatalog catalog = loadedCatalogs.get(c.getCatalogId());
-            if (Objects.isNull(catalog)) {
-                catalog = this.catalogService.getCatalog(c.getCatalogId());
-                loadedCatalogs.put(catalog.getCatalogId(), catalog);
+            ArticleApiVO vo = ArticleApiVO.newInstance(c, null);
+            CmsCatalog catalog = this.catalogService.getCatalog(c.getCatalogId());
+            vo.setCatalogName(catalog.getName());
+            vo.setCatalogLink(catalogService.getCatalogLink(catalog, 1, publishPipeCode, preview));
+            vo.setLink(this.contentService.getContentLink(c, 1, publishPipeCode, preview));
+            vo.setLogoSrc(InternalUrlUtils.getActualUrl(c.getLogo(), publishPipeCode, preview));
+            if (text && articleDetails.containsKey(c.getContentId())) {
+                vo.setContentHtml(articleDetails.get(c.getContentId()).getContentHtml());
             }
-            dto.setCatalogName(catalog.getName());
-            dto.setCatalogLink(catalogService.getCatalogLink(catalog, 1, publishPipeCode, preview));
-            dto.setLink(this.contentService.getContentLink(c, 1, publishPipeCode, preview));
-            dto.setLogoSrc(InternalUrlUtils.getActualUrl(c.getLogo(), publishPipeCode, preview));
-            CmsArticleDetail articleDetail = articleDetails.get(c.getContentId());
-            if (Objects.nonNull(articleDetail)) {
-                 dto.setContentHtml(articleDetail.getContentHtml());
-            }
-            list.add(dto);
+            list.add(vo);
         });
         return R.ok(list);
     }

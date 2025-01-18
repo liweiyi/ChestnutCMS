@@ -15,20 +15,18 @@
  */
 package com.chestnut.contentcore.template.func;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
-
 import freemarker.core.Environment;
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * Freemarker模板自定义函数：处理Html文本内容中的内部链接
@@ -39,7 +37,9 @@ public class HtmlInternalUrlFunction extends AbstractFunc  {
 
 	static final String FUNC_NAME = "htmlInternalUrl";
 	
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
 
 	@Override
 	public String getFuncName() {
@@ -63,6 +63,6 @@ public class HtmlInternalUrlFunction extends AbstractFunc  {
 
 	@Override
 	public List<FuncArg> getFuncArgs() {
-		return List.of(new FuncArg("HTML文本内容", FuncArgType.String, true, null));
+		return List.of(new FuncArg(ARG1_NAME, FuncArgType.String, true));
 	}
 }

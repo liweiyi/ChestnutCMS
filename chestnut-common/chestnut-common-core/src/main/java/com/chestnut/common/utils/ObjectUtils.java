@@ -16,6 +16,8 @@
 package com.chestnut.common.utils;
 
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ObjectUtils {
 
@@ -60,4 +62,8 @@ public class ObjectUtils {
     public static boolean isNullOrEmptyStr(Object obj) {
 		return Objects.isNull(obj) || StringUtils.isEmpty(obj.toString());
     }
+
+	public static <T, R> R ifNullOrElse(T obj, Supplier<R> nullSupplier, Function<T, R> nonNullFunc) {
+		return Objects.isNull(obj) ? nullSupplier.get() : nonNullFunc.apply(obj);
+	}
 }

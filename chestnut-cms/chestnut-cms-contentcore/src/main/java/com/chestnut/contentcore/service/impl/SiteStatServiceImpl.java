@@ -68,7 +68,7 @@ public class SiteStatServiceImpl implements ISiteStatService {
         // 内容分类统计
         Map<String, Long> countContentMap = this.contentMapper.countContentGroupByType(site.getSiteId()).stream()
                 .collect(Collectors.toMap(SiteStatData::getDataKey, SiteStatData::getDataValue));
-        ContentCoreUtils.getContentTypes().values().forEach(ct -> {
+        ContentCoreUtils.getContentTypeMap().values().forEach(ct -> {
             if (!countContentMap.containsKey(ct.getId())) {
                 countContentMap.put(ct.getId(), 0L);
             }

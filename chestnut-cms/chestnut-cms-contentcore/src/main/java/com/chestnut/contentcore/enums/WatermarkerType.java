@@ -15,6 +15,12 @@
  */
 package com.chestnut.contentcore.enums;
 
+/**
+ * 水印类型
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 public enum WatermarkerType {
 
 	/**
@@ -23,7 +29,7 @@ public enum WatermarkerType {
 	NONE, 
 	
 	/**
-	 * 图片谁赢
+	 * 图片水印
 	 */
 	IMAGE, 
 	

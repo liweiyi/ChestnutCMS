@@ -15,15 +15,16 @@
  */
 package com.chestnut.contentcore.util;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.contentcore.core.*;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.publish.IContentPathRule;
 import com.chestnut.contentcore.template.ITemplateType;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public class ContentCoreUtils {
 
@@ -63,9 +64,23 @@ public class ContentCoreUtils {
 	 */
 	private static final Map<String, IDynamicPageType> DynamicPageTypes = SpringUtils.getBeanMap(IDynamicPageType.class);
 
+	/**
+	 * 动态模板类型
+	 */
+	private static final Map<String, IContentPathRule> ContentPathRules = SpringUtils.getBeanMap(IContentPathRule.class);
+
+
+	public static IContentPathRule getContentPathRule(String typeId) {
+        return ContentPathRules.get(IContentPathRule.BEAN_PREFIX + typeId);
+	}
+
+	public static Collection<IContentPathRule> getContentPathRules() {
+		return ContentPathRules.values();
+	}
+
 
 	public static IDynamicPageType getDynamicPageType(String typeId) {
-		IDynamicPageType dpt = DynamicPageTypes.get(IResourceType.BEAN_NAME_PREFIX + typeId);
+		IDynamicPageType dpt = DynamicPageTypes.get(IDynamicPageType.BEAN_PREFIX + typeId);
 		Assert.notNull(dpt, () -> ContentCoreErrorCode.UNSUPPORTED_DYNAMIC_PAGE_TYPE.exception(typeId));
 		return dpt;
 	}
@@ -100,7 +115,7 @@ public class ContentCoreUtils {
 		return ct;
 	}
 
-	public static Map<String, ICatalogType> getCatalogTypes() {
+	public static Map<String, ICatalogType> getCatalogTypeMap() {
 		return CatalogTypes;
 	}
 
@@ -110,7 +125,7 @@ public class ContentCoreUtils {
 		return ct;
 	}
 
-	public static Map<String, IContentType> getContentTypes() {
+	public static Map<String, IContentType> getContentTypeMap() {
 		return ContentTypes;
 	}
 
@@ -120,7 +135,7 @@ public class ContentCoreUtils {
 		return idt;
 	}
 
-	public static Map<String, IInternalDataType> getInternalDataTypes() {
+	public static Map<String, IInternalDataType> getInternalDataTypeMap() {
 		return InternalDataTypes;
 	}
 }

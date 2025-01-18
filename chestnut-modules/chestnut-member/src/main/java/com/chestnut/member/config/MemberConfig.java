@@ -44,10 +44,7 @@ public class MemberConfig implements WebMvcConfigurer {
 		if (StringUtils.isEmpty(UPLOAD_DIRECTORY)) {
 			UPLOAD_DIRECTORY = SpringUtils.getAppParentDirectory() + "/_xy_member/";
 		}
-		UPLOAD_DIRECTORY = FileExUtils.normalizePath(UPLOAD_DIRECTORY);
-		if (!UPLOAD_DIRECTORY.endsWith("/")) {
-			UPLOAD_DIRECTORY += "/";
-		}
+		UPLOAD_DIRECTORY = StringUtils.appendIfMissing(FileExUtils.normalizePath(UPLOAD_DIRECTORY), "/");
 		FileExUtils.mkdirs(UPLOAD_DIRECTORY);
 		properties.setUploadPath(UPLOAD_DIRECTORY);
 		log.info("Member upload directory: " + UPLOAD_DIRECTORY);

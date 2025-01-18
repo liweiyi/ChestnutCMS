@@ -17,10 +17,13 @@ package com.chestnut.article.template.tag;
 
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.mapper.CmsArticleDetailMapper;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.StaticizeConstants;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
+import com.chestnut.common.staticize.exception.DuplicatePageFlagException;
+import com.chestnut.common.staticize.exception.PageIndexOutOfBoundsException;
 import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.StringUtils;
@@ -30,34 +33,35 @@ import com.chestnut.contentcore.mapper.CmsContentMapper;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 public class CmsArticleTag extends AbstractTag {
 
 	public static final String TAG_NAME = "cms_article";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_CONTENT_ID = "{FREEMARKER.TAG." + TAG_NAME + ".contentId}";
+	public final static String ATTR_USAGE_PAGE = "{FREEMARKER.TAG." + TAG_NAME + ".page}";
 
-	public static final String TagAttr_ContentId = "contentId";
-
-	public static final String TagAttr_Page = "page";
+	public static final String ATTR_CONTENT_ID = "contentId";
+	public static final String ATTR_PAGE = "page";
 
 	public static final String TemplateVariable_ArticleContent = "ArticleContent";
 
-	// CKEditor5: <div class="page-break" style="page-break-after:always;"><span style="display:none;">&nbsp;</span></div>
 //	private static final String PAGE_BREAK_SPLITER = "<div[^>]+class=['\"]page-break['\"].*?</div>";
 	private static final String PAGE_BREAK_SPLITER = "__XY_UEDITOR_PAGE_BREAK__";
-
 
 	private final CmsContentMapper contentMapper;
 
@@ -66,16 +70,16 @@ public class CmsArticleTag extends AbstractTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = new ArrayList<>();
-		tagAttrs.add(new TagAttr(TagAttr_ContentId, true, TagAttrDataType.INTEGER, "文章内容ID"));
-		tagAttrs.add(new TagAttr(TagAttr_Page, false, TagAttrDataType.BOOLEAN, "是否分页，默认false"));
+		tagAttrs.add(new TagAttr(ATTR_CONTENT_ID, true, TagAttrDataType.INTEGER, ATTR_USAGE_CONTENT_ID));
+		tagAttrs.add(new TagAttr(ATTR_PAGE, false, TagAttrDataType.BOOLEAN, ATTR_USAGE_PAGE, Boolean.FALSE.toString()));
 		return tagAttrs;
 	}
 
 	@Override
 	public Map<String, TemplateModel> execute0(Environment env, Map<String, String> attrs)
-			throws TemplateException, IOException {
-		String contentHtml = null;
-		long contentId = MapUtils.getLongValue(attrs, TagAttr_ContentId, 0);
+			throws TemplateException {
+		String contentHtml;
+		long contentId = MapUtils.getLongValue(attrs, ATTR_CONTENT_ID, 0);
 		if (contentId <= 0) {
 			throw new TemplateException("Invalid contentId: " + contentId, env);
 		}
@@ -92,24 +96,32 @@ public class CmsArticleTag extends AbstractTag {
 		}
 		contentHtml = articleDetail.getContentHtml();
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
-		boolean page = MapUtils.getBooleanValue(attrs, TagAttr_Page, false);
+		boolean page = MapUtils.getBooleanValue(attrs, ATTR_PAGE, false);
 		if (page) {
 			if (context.isPaged()) {
-				throw new TemplateException("分页标识已被其他标签激活", env);
+				throw new DuplicatePageFlagException(env);
 			}
 			context.setPaged(true);
 
 			String[] pageContents = contentHtml.split(PAGE_BREAK_SPLITER);
 			if (context.getPageIndex() > pageContents.length) {
-				throw new TemplateException(StringUtils.messageFormat("文章内容分页越界：{0}, 最大页码：{1}。", context.getPageIndex(),
-						pageContents.length), env);
+				throw new PageIndexOutOfBoundsException(context.getPageIndex(), pageContents.length, env);
 			}
 			context.setPageTotal(pageContents.length);
 			env.setGlobalVariable(StaticizeConstants.TemplateVariable_PageTotal,
 					this.wrap(env, context.getPageTotal()));
 			contentHtml = pageContents[context.getPageIndex() - 1];
 		}
-		return Map.of(TemplateVariable_ArticleContent, this.wrap(env, contentHtml));
+		ArticleTagData data = new ArticleTagData(articleDetail.getFormat(), contentHtml);
+		return Map.of(
+				TemplateVariable_ArticleContent, this.wrap(env, contentHtml), // 兼容历史版本保留ArticleContent
+				StaticizeConstants.TemplateVariable_Data, this.wrap(env, data)
+		);
+	}
+
+	@Override
+	public Class<ArticleTagData> getDataClass() {
+		return ArticleTagData.class;
 	}
 
 	@Override
@@ -125,5 +137,22 @@ public class CmsArticleTag extends AbstractTag {
 	@Override
 	public String getDescription() {
 		return DESC;
+	}
+
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	public static class ArticleTagData {
+
+		@XComment("文章正文格式")
+		private String Format;
+
+		@XComment("文章正文")
+		private String ArticleContent;
+
+		public ArticleTagData(String format, String articleContent) {
+			this.Format = format;
+			this.ArticleContent = articleContent;
+		}
 	}
 }

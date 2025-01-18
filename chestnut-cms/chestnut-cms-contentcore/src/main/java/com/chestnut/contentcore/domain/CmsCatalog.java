@@ -15,9 +15,6 @@
  */
 package com.chestnut.contentcore.domain;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -28,9 +25,11 @@ import com.chestnut.contentcore.core.impl.PublishPipeProp_IndexTemplate;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_ListTemplate;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.fixed.dict.YesOrNo;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 栏目表对象 [cms_catalog]
@@ -230,12 +229,7 @@ public class CmsCatalog extends BaseEntity {
 		if (this.publishPipeProps == null) {
 			this.publishPipeProps = new HashMap<>();
 		}
-		Map<String, Object> map = this.publishPipeProps.get(publishPipeCode);
-		if (map == null) {
-			map = new HashMap<>();
-			this.publishPipeProps.put(publishPipeCode, map);
-		}
-		return map;
+        return this.publishPipeProps.computeIfAbsent(publishPipeCode, k -> new HashMap<>());
 	}
 
 	public String getIndexTemplate(String publishPipeCode) {

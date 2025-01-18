@@ -195,9 +195,7 @@ public class BaiduSitemapService {
      */
     public void generateSitemapIndexXml(CmsSite site, String publishPipeCode) throws IOException {
         String siteUrl = site.getUrl(publishPipeCode);
-        if(!siteUrl.endsWith("/")) {
-            siteUrl += "/";
-        }
+        siteUrl = StringUtils.appendIfMissing(siteUrl, "/");
         String siteRoot = SiteUtils.getSiteRoot(site, publishPipeCode);
         File[] files = new File(siteRoot).listFiles(f -> f.getName().startsWith(SitemapFileNamePrefix));
         if (files != null)  {

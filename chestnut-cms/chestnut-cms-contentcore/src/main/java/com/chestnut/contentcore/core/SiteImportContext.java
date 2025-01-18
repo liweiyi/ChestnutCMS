@@ -112,7 +112,7 @@ public class SiteImportContext implements ISiteThemeContext {
             if (IdUtils.validate(id)) {
                 internalURL.setId(id);
                 if (InternalDataType_Resource.ID.equals(internalURL.getType())) {
-                    internalURL.setParams(Map.of("sid", site.getSiteId().toString()));
+                    internalURL.getParams().put("sid", site.getSiteId().toString());
                 }
                 return internalURL.toIUrl();
             }

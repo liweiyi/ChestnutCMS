@@ -42,15 +42,12 @@ public class SystemConfig implements WebMvcConfigurer {
 	
 	private final SysProperties properties;
 	
-	public SystemConfig(SysProperties properties) throws FileNotFoundException {
+	public SystemConfig(SysProperties properties) {
 		UPLOAD_DIRECTORY = properties.getUploadPath();
 		if (StringUtils.isEmpty(UPLOAD_DIRECTORY)) {
 			UPLOAD_DIRECTORY = SpringUtils.getAppParentDirectory() + "/profile/";
 		}
-		UPLOAD_DIRECTORY = FileExUtils.normalizePath(UPLOAD_DIRECTORY);
-		if (!UPLOAD_DIRECTORY.endsWith("/")) {
-			UPLOAD_DIRECTORY += "/";
-		}
+		UPLOAD_DIRECTORY = StringUtils.appendIfMissing(FileExUtils.normalizePath(UPLOAD_DIRECTORY), "/");
 		FileExUtils.mkdirs(UPLOAD_DIRECTORY);
 		properties.setUploadPath(UPLOAD_DIRECTORY);
 		log.info("System upload directory: " + UPLOAD_DIRECTORY);

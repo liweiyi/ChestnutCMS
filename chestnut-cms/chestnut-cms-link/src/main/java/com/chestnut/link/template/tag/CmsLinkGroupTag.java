@@ -38,21 +38,24 @@ import java.util.Map;
 public class CmsLinkGroupTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_link_group";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_CODE = "{FREEMARKER.TAG." + TAG_NAME + ".code}";
+
+	private static final String ATTR_CODE = "code";
 
 	private final ILinkGroupService linkGroupService;
 	
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr("code", false, TagAttrDataType.STRING, "友链分组编码") );
+		tagAttrs.add(new TagAttr(ATTR_CODE, false, TagAttrDataType.STRING, ATTR_USAGE_CODE));
 		return tagAttrs;
 	}
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		String code = MapUtils.getString(attrs, "code");
+		String code = MapUtils.getString(attrs, ATTR_CODE);
 		Long siteId = TemplateUtils.evalSiteId(env);
 		LambdaQueryWrapper<CmsLinkGroup> q = new LambdaQueryWrapper<CmsLinkGroup>()
 				.eq(siteId != null && siteId > 0, CmsLinkGroup::getSiteId, siteId)
@@ -64,6 +67,11 @@ public class CmsLinkGroupTag extends AbstractListTag {
 
 		 Page<CmsLinkGroup> pageResult = this.linkGroupService.page(new Page<>(pageIndex, size, page), q);
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+	}
+
+	@Override
+	public Class<CmsLinkGroup> getDataClass() {
+		return CmsLinkGroup.class;
 	}
 
 	@Override

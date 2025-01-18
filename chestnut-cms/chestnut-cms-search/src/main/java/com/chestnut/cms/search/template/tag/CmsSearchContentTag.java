@@ -52,8 +52,17 @@ public class CmsSearchContentTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_search_content";
 
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_QUERY = "{FREEMARKER.TAG." + TAG_NAME + ".query}";
+	public final static String ATTR_USAGE_CATALOG_ID = "{FREEMARKER.TAG." + TAG_NAME + ".catalogId}";
+	public final static String ATTR_USAGE_CONTENT_TYPE = "{FREEMARKER.TAG." + TAG_NAME + ".contentType}";
+	public final static String ATTR_USAGE_MODE = "{FREEMARKER.TAG." + TAG_NAME + ".mode}";
+	public final static String ATTR_OPTION_MODE_FULL_TEXT = "{FREEMARKER.TAG." + TAG_NAME + ".mode.FullText}";
+	public final static String ATTR_OPTION_MODE_TAG = "{FREEMARKER.TAG." + TAG_NAME + ".mode.Tag}";
+	public final static String ATTR_OPTION_MODE_TAG_AND = "{FREEMARKER.TAG." + TAG_NAME + ".mode.TagAnd}";
+
+
 	private final static String ATTR_QUERY = "query";
 	private final static String ATTR_CATALOG_ID = "catalogid";
 	private final static String ATTR_CONTENT_TYPE = "contenttype";
@@ -64,10 +73,10 @@ public class CmsSearchContentTag extends AbstractListTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr(ATTR_QUERY, false, TagAttrDataType.STRING, "检索词"));
-		tagAttrs.add(new TagAttr(ATTR_CATALOG_ID, false, TagAttrDataType.STRING, "栏目ID"));
-		tagAttrs.add(new TagAttr(ATTR_CONTENT_TYPE, false, TagAttrDataType.STRING, "内容类型"));
-		tagAttrs.add(new TagAttr(ATTR_MODE, false, TagAttrDataType.STRING, "检索方式",
+		tagAttrs.add(new TagAttr(ATTR_QUERY, false, TagAttrDataType.STRING, ATTR_USAGE_QUERY));
+		tagAttrs.add(new TagAttr(ATTR_CATALOG_ID, false, TagAttrDataType.STRING, ATTR_USAGE_CATALOG_ID));
+		tagAttrs.add(new TagAttr(ATTR_CONTENT_TYPE, false, TagAttrDataType.STRING, ATTR_USAGE_CONTENT_TYPE));
+		tagAttrs.add(new TagAttr(ATTR_MODE, false, TagAttrDataType.STRING, ATTR_USAGE_MODE,
 				SearchMode.toTagAttrOptions(), SearchMode.FullText.name()));
 		return tagAttrs;
 	}
@@ -179,6 +188,11 @@ public class CmsSearchContentTag extends AbstractListTag {
 	}
 
 	@Override
+	public Class<ESContentVO> getDataClass() {
+		return ESContentVO.class;
+	}
+
+	@Override
 	public String getTagName() {
 		return TAG_NAME;
 	}
@@ -195,11 +209,11 @@ public class CmsSearchContentTag extends AbstractListTag {
 
 	private enum SearchMode {
 		// 所有站点
-		FullText("全文检索"),
+		FullText(ATTR_OPTION_MODE_FULL_TEXT),
 		// 当前站点
-		Tag("标签检索，多个标签英文逗号隔开"),
+		Tag(ATTR_OPTION_MODE_TAG),
 		// 当前站点
-		TagAnd("标签检索，多个标签英文逗号隔开");
+		TagAnd(ATTR_OPTION_MODE_TAG_AND);
 
 		private final String desc;
 

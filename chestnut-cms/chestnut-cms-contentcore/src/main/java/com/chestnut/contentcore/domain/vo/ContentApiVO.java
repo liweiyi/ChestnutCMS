@@ -16,15 +16,15 @@
 package com.chestnut.contentcore.domain.vo;
 
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.fixed.dict.ContentAttribute;
+import com.chestnut.contentcore.domain.InitByContent;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.ZoneOffset;
+import java.util.List;
 
 @Getter 
 @Setter
-public class ContentApiVO {
+public class ContentApiVO implements InitByContent {
 
     /**
      * 内容ID
@@ -72,14 +72,24 @@ public class ContentApiVO {
     private String titleStyle;
 
     /**
-     * 引导图
+     * 封面图
      */
     private String logo;
 
     /**
-     * 引导图预览路径
+     * 封面图预览路径
      */
     private String logoSrc;
+
+    /**
+     * 其他图片
+     */
+    private List<String> images = List.of();
+
+    /**
+     * 其他图片预览路径
+     */
+    private List<String> imagesSrc = List.of();
     
     /**
      * 发布链接
@@ -161,35 +171,9 @@ public class ContentApiVO {
      */
     private Long viewCount;
 
-    protected void copyProperties(CmsContent content) {
-        this.setAuthor(content.getAuthor());
-        this.setCatalogId(content.getCatalogId());
-        this.setContentId(content.getContentId());
-        this.setContentType(content.getContentType());
-        this.setEditor(content.getEditor());
-        this.setKeywords(content.getKeywords());
-        this.setLogo(content.getLogo());
-        this.setOriginal(content.getOriginal());
-        this.setPublishDate(content.getPublishDate().toInstant(ZoneOffset.UTC).toEpochMilli());
-        this.setShortTitle(content.getShortTitle());
-        this.setSubTitle(content.getSubTitle());
-        this.setTitle(content.getTitle());
-        this.setSource(content.getSource());
-        this.setSourceUrl(content.getSourceUrl());
-        this.setSummary(content.getSummary());
-        this.setTags(content.getTags());
-        this.setTitleStyle(content.getTitleStyle());
-        this.setTopFlag(content.getTopFlag());
-        this.setAttributes(ContentAttribute.convertStr(content.getAttributes()));
-        this.setViewCount(content.getViewCount());
-        this.setLikeCount(content.getLikeCount());
-        this.setCommentCount(content.getCommentCount());
-        this.setFavoriteCount(content.getFavoriteCount());
-    }
-
     public static ContentApiVO newInstance(CmsContent content) {
         ContentApiVO vo = new ContentApiVO();
-        vo.copyProperties(content);
+        vo.initByContent(content, false);
         return vo;
     }
 }

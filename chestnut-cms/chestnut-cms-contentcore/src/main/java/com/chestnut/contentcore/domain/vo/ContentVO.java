@@ -15,26 +15,20 @@
  */
 package com.chestnut.contentcore.domain.vo;
 
+import com.chestnut.contentcore.domain.InitByContent;
+import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.BeanUtils;
-
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.dto.PublishPipeProp;
-import com.chestnut.contentcore.fixed.dict.ContentAttribute;
-import com.chestnut.contentcore.util.InternalUrlUtils;
-
-import lombok.Getter;
-import lombok.Setter;
-
 @Getter 
 @Setter
-public class ContentVO {
+public class ContentVO implements InitByContent {
 
 	/**
 	 * 内容ID
@@ -82,14 +76,24 @@ public class ContentVO {
 	private String showSubTitle;
 
     /**
-     * 引导图
+     * 封面图
      */
     private String logo;
 
     /**
-     * 引导图预览路径
+     * 封面图预览路径
      */
     private String logoSrc;
+
+    /**
+     * 新多图封面字段
+     */
+    private List<String> images = List.of();
+
+    /**
+     * 新多图封面预览路径
+     */
+    private List<String> imagesSrc = List.of();
     
     /**
      * 发布链接
@@ -265,14 +269,4 @@ public class ContentVO {
 	 * 自定义参数
 	 */
 	private Map<String, Object> params;
-	
-	public static ContentVO newInstance(CmsContent cmsContent) {
-		ContentVO dto = new ContentVO();
-		BeanUtils.copyProperties(cmsContent, dto);
-		dto.setAttributes(ContentAttribute.convertStr(cmsContent.getAttributes()));
-		if (StringUtils.isNotEmpty(dto.getLogo())) {
-			dto.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(dto.getLogo()));
-		}
-		return dto;
-	}
 }

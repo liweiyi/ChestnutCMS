@@ -17,8 +17,14 @@ package com.chestnut.common.utils;
 
 import org.apache.commons.codec.binary.Hex;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 /**
  * 加解密工具类
@@ -35,6 +41,80 @@ public class EncryptUtils {
             return Hex.encodeHexString(digest);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-1 algorithm not found");
+        }
+    }
+
+
+    /**
+     * AES加密(可逆)
+     *
+     * @param plainText  明文
+     * @param privateKey 密钥
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public static String encryptAES(String plainText, String privateKey) {
+        try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+
+            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+            random.setSeed(privateKey.getBytes());
+            keyGen.init(128, random);
+
+            SecretKey secretKey = keyGen.generateKey();
+            byte[] enCodeFormat = secretKey.getEncoded();
+            SecretKeySpec secretKeySpec = new SecretKeySpec(enCodeFormat, "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            byte[] byteContent = plainText.getBytes(StandardCharsets.UTF_8);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+            byte[] byteResult = cipher.doFinal(byteContent);
+            StringBuilder sb = new StringBuilder();
+
+            for (byte b : byteResult) {
+                String hex = Integer.toHexString(b & 0xFF);
+                if (hex.length() == 1) {
+                    hex = '0' + hex;
+                }
+                sb.append(hex.toUpperCase());
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * AES解密
+     *
+     * @param cipherText 密文
+     * @param privateKey 密钥
+     * @return
+     * @throws Exception
+     */
+    public static String decryptAES(String cipherText, String privateKey) {
+        try {
+            if (StringUtils.isEmpty(cipherText)) {
+                return null;
+            }
+            byte[] byteResult = new byte[cipherText.length() / 2];
+            for (int i = 0; i < cipherText.length() / 2; i++) {
+                int high = Integer.parseInt(cipherText.substring(i * 2, i * 2 + 1), 16);
+                int low = Integer.parseInt(cipherText.substring(i * 2 + 1, i * 2 + 2), 16);
+                byteResult[i] = (byte) (high * 16 + low);
+            }
+            KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+            random.setSeed(privateKey.getBytes());
+            keyGen.init(128, random);
+            SecretKey secretKey = keyGen.generateKey();
+            byte[] enCodeFormat = secretKey.getEncoded();
+            SecretKeySpec secretKeySpec = new SecretKeySpec(enCodeFormat, "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
+            byte[] result = cipher.doFinal(byteResult);
+            return new String(result, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return null;
         }
     }
 }

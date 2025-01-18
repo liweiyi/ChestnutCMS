@@ -47,7 +47,7 @@ public class AccountForgetPasswordDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
+        return "{DYNAMIC_PAGE_TYPE." + TYPE + ".NAME}";
     }
 
     @Override

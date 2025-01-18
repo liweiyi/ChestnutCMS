@@ -73,15 +73,15 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<CmsLinkGroup> list = JacksonUtils.fromList(f, CmsLinkGroup.class);
             for (CmsLinkGroup data : list) {
+                Long oldLinkGroupId = data.getLinkGroupId();
                 try {
-                    Long oldLinkGroupId = data.getLinkGroupId();
                     data.setLinkGroupId(IdUtils.getSnowflakeId());
                     data.setSiteId(context.getSite().getSiteId());
                     data.createBy(context.getOperator());
                     linkGroupService.save(data);
                     linkGroupIdMap.put(oldLinkGroupId, data.getLinkGroupId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入友链分组数据失败：" + data.getName() + "[" + data.getCode() + "]");
+                    AsyncTaskManager.addErrMessage("导入友链分组数据`" + oldLinkGroupId + "`失败：" + e.getMessage());
                     log.error("Import friend link group failed: {}", data.getCode(), e);
                 }
             }
@@ -91,6 +91,7 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<CmsLink> list = JacksonUtils.fromList(f, CmsLink.class);
             for (CmsLink data : list) {
+                Long oldLinkId = data.getLinkId();
                 try {
                     data.setLinkId(IdUtils.getSnowflakeId());
                     data.setSiteId(context.getSite().getSiteId());
@@ -99,7 +100,7 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
                     data.setLogo(context.dealInternalUrl(data.getLogo()));
                     linkService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入友链数据失败：" + data.getName());
+                    AsyncTaskManager.addErrMessage("导入友链数据`" + oldLinkId + "`失败：" + e.getMessage());
                     log.error("Import friend link failed: {}", data.getUrl(), e);
                 }
             }

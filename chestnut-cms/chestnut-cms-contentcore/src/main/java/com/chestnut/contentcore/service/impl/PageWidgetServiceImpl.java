@@ -19,10 +19,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.contentcore.config.CMSConfig;
+import com.chestnut.contentcore.cache.PageWidgetMonitoredCache;
 import com.chestnut.contentcore.core.IPageWidget;
 import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsCatalog;
@@ -42,39 +41,37 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsPageWidget>
         implements IPageWidgetService {
 
-    private static final String CACHE_KEY = CMSConfig.CachePrefix + "pagewidget:";
-
     private final Map<String, IPageWidgetType> pageWidgetTypes;
 
-    private final RedisCache redisCache;
+    private final PageWidgetMonitoredCache pageWidgetCache;
 
     private final ISysPermissionService permissionService;
 
     @Override
     public CmsPageWidget getPageWidget(Long siteId, String code) {
-        return this.redisCache.getCacheObject(CACHE_KEY + code,
+        return this.pageWidgetCache.getCache(siteId, code,
                 () -> this.lambdaQuery().eq(CmsPageWidget::getSiteId, siteId).eq(CmsPageWidget::getCode, code).one());
     }
 
     @Override
     public IPageWidgetType getPageWidgetType(String type) {
         IPageWidgetType pwt = this.pageWidgetTypes.get(IPageWidgetType.BEAN_NAME_PREFIX + type);
-        Assert.notNull(pwt, () -> ContentCoreErrorCode.UNSUPPORTED_PAGE_WIDGET_TYPE.exception());
+        Assert.notNull(pwt, ContentCoreErrorCode.UNSUPPORTED_PAGE_WIDGET_TYPE::exception);
         return pwt;
     }
 
     @Override
     public List<IPageWidgetType> getPageWidgetTypes() {
-        return this.pageWidgetTypes.values().stream().collect(Collectors.toList());
+        return new ArrayList<>(this.pageWidgetTypes.values());
     }
 
     @Override
@@ -119,7 +116,7 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
 
         pw.save();
 
-        this.redisCache.deleteObject(CACHE_KEY + pageWidget.getCode());
+        this.pageWidgetCache.clear(pageWidget);
     }
 
     @Override
@@ -131,7 +128,7 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
             IPageWidgetType pwt = this.getPageWidgetType(pageWidget.getType());
             IPageWidget pw = pwt.loadPageWidget(pageWidget);
             pw.delete();
-            this.redisCache.deleteObject(CACHE_KEY + pageWidget.getCode());
+            this.pageWidgetCache.clear(pageWidget);
         }
     }
 
@@ -144,7 +141,7 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
             IPageWidgetType pwt = this.getPageWidgetType(pageWidget.getType());
             IPageWidget pw = pwt.loadPageWidget(pageWidget);
             pw.delete();
-            this.redisCache.deleteObject(CACHE_KEY + pageWidget.getCode());
+            this.pageWidgetCache.clear(pageWidget);
         }
     }
 

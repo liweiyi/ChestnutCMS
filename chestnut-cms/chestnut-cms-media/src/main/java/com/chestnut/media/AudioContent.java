@@ -21,7 +21,6 @@ import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
-import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.media.domain.CmsAudio;
@@ -41,12 +40,9 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 	}
 
 	@Override
-	public Long add() {
-		super.add();
-		this.getContentService().dao().save(this.getContentEntity());
-
+	protected void add0() {
 		if (!this.hasExtendEntity()) {
-			return this.getContentEntity().getContentId();
+			return;
 		}
 		List<CmsAudio> audioList = this.getExtendEntity();
 		if (StringUtils.isNotEmpty(audioList)) {
@@ -63,18 +59,15 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 			}
 			this.getAudioService().dao().saveBatch(audioList);
 		}
-		return this.getContentEntity().getContentId();
 	}
 
 	@Override
-	public Long save() {
-		super.save();
-		this.getContentService().dao().updateById(this.getContentEntity());
+	protected void save0() {
 		// 链接或映射内容直接删除所有音频数据
 		if (!this.hasExtendEntity()) {
 			this.getAudioService().dao().remove(new LambdaQueryWrapper<CmsAudio>().eq(CmsAudio::getContentId,
 					this.getContentEntity().getContentId()));
-			return this.getContentEntity().getContentId();
+			return;
 		}
 		// 音频数处理
 		List<CmsAudio> audioList = this.getExtendEntity();
@@ -118,12 +111,10 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 				this.getAudioService().dao().save(audio);
 			}
 		}
-		return this.getContentEntity().getContentId();
 	}
 
 	@Override
-	public void delete() {
-		super.delete();
+	protected void delete0() {
 		if (this.hasExtendEntity()) {
 			this.getAudioService().dao().deleteByContentIdAndBackup(
 					this.getContentEntity().getContentId(),
@@ -133,21 +124,16 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 	}
 
 	@Override
-	public CmsContent copyTo(CmsCatalog toCatalog, Integer copyType) {
-		CmsContent copyContent = super.copyTo(toCatalog, copyType);
-
+	public void copyTo0(CmsContent newContent, Integer copyType) {
 		if (this.hasExtendEntity() && ContentCopyType.isIndependency(copyType)) {
-			Long newContentId = (Long) this.getParams().get("NewContentId");
 			List<CmsAudio> audioList = this.getAudioService().getAlbumAudioList(this.getContentEntity().getContentId());
 			for (CmsAudio audio : audioList) {
 				audio.createBy(this.getOperatorUName());
 				audio.setAudioId(IdUtils.getSnowflakeId());
-				audio.setContentId(newContentId);
-				audio.setSiteId(toCatalog.getSiteId());
+				audio.setContentId(newContent.getContentId());
 				this.getAudioService().dao().save(audio);
 			}
 		}
-        return copyContent;
     }
 
 	private IAudioService getAudioService() {

@@ -25,6 +25,7 @@ import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.domain.vo.TagCatalogVO;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.template.exception.CatalogNotFoundException;
 import com.chestnut.contentcore.util.TemplateUtils;
@@ -44,21 +45,29 @@ import java.util.Objects;
 public class CmsCatalogTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_catalog";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_ID = "{FREEMARKER.TAG." + TAG_NAME + ".id}";
+	public final static String ATTR_USAGE_ALIAS = "{FREEMARKER.TAG." + TAG_NAME + ".alias}";
+	public final static String ATTR_USAGE_LEVEL = "{FREEMARKER.TAG." + TAG_NAME + ".level}";
+	public final static String ATTR_OPTION_LEVEL_ROOT = "{FREEMARKER.TAG." + TAG_NAME + ".level.Root}";
+	public final static String ATTR_OPTION_LEVEL_CURRENT = "{FREEMARKER.TAG." + TAG_NAME + ".level.Current}";
+	public final static String ATTR_OPTION_LEVEL_CHILD = "{FREEMARKER.TAG." + TAG_NAME + ".level.Child}";
+	public final static String ATTR_OPTION_LEVEL_CURRENT_AND_CHILD = "{FREEMARKER.TAG." + TAG_NAME + ".level.CurrentAndChild}";
+	public final static String ATTR_OPTION_LEVEL_SELF = "{FREEMARKER.TAG." + TAG_NAME + ".level.Self}";
 
-	private static final String TAG_ATTR_ID = "id";
-	private static final String TAG_ATTR_ALIAS = "alias";
-	private static final String TAG_ATTR_LEVEL = "level";
+	private static final String ATTR_ID = "id";
+	private static final String ATTR_ALIAS = "alias";
+	private static final String ATTR_LEVEL = "level";
 
 	private final ICatalogService catalogService;
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr(TAG_ATTR_ID, false, TagAttrDataType.INTEGER, "栏目ID"));
-		tagAttrs.add(new TagAttr(TAG_ATTR_ALIAS, false, TagAttrDataType.STRING, "栏目别名"));
-		tagAttrs.add(new TagAttr(TAG_ATTR_LEVEL, false, TagAttrDataType.STRING, "数据获取范围，值为`Root`时忽略属性id、alias",
+		tagAttrs.add(new TagAttr(ATTR_ID, false, TagAttrDataType.INTEGER, ATTR_USAGE_ID));
+		tagAttrs.add(new TagAttr(ATTR_ALIAS, false, TagAttrDataType.STRING, ATTR_USAGE_ALIAS));
+		tagAttrs.add(new TagAttr(ATTR_LEVEL, false, TagAttrDataType.STRING, ATTR_USAGE_LEVEL,
 				CatalogTagLevel.toTagAttrOptions(), CatalogTagLevel.Current.name()));
 		return tagAttrs;
 	}
@@ -66,15 +75,15 @@ public class CmsCatalogTag extends AbstractListTag {
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex)
 			throws TemplateException {
-		long catalogId = MapUtils.getLongValue(attrs, TAG_ATTR_ID);
+		long catalogId = MapUtils.getLongValue(attrs, ATTR_ID);
 		CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
 
 		Long siteId = TemplateUtils.evalSiteId(env);
-		String alias = MapUtils.getString(attrs, TAG_ATTR_ALIAS);
+		String alias = MapUtils.getString(attrs, ATTR_ALIAS);
 		if (Objects.isNull(catalog) && StringUtils.isNotEmpty(alias)) {
 			catalog = this.catalogService.getCatalogByAlias(siteId, alias);
 		}
-		String level = MapUtils.getString(attrs, TAG_ATTR_LEVEL);
+		String level = MapUtils.getString(attrs, ATTR_LEVEL);
 		if (!CatalogTagLevel.isRoot(level) && Objects.isNull(catalog)) {
 			throw new CatalogNotFoundException(getTagName(), catalogId, alias, env);
 		}
@@ -96,11 +105,21 @@ public class CmsCatalogTag extends AbstractListTag {
 
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		Page<CmsCatalog> pageResult = this.catalogService.page(new Page<>(pageIndex, size, page), q);
-		pageResult.getRecords().forEach(c -> {
-			c.setLink(catalogService.getCatalogLink(c, 1, context.getPublishPipeCode(), context.isPreview()));
-			c.setListLink(catalogService.getCatalogListLink(c, 1, context.getPublishPipeCode(), context.isPreview()));
-		});
-		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+		List<TagCatalogVO> dataList = pageResult.getRecords().stream().map(c -> {
+			TagCatalogVO vo = TagCatalogVO.newInstance(c, context.getPublishPipeCode(), context.isPreview());
+			vo.setLink(catalogService.getCatalogLink(c, 1, context.getPublishPipeCode(), context.isPreview()));
+			if (StringUtils.isNotEmpty(c.getIndexTemplate(context.getPublishPipeCode()))
+					&& StringUtils.isNotEmpty(c.getListTemplate(context.getPublishPipeCode()))) {
+				vo.setListLink(catalogService.getCatalogListLink(c, 1, context.getPublishPipeCode(), context.isPreview()));
+			}
+			return vo;
+		}).toList();
+		return TagPageData.of(dataList, pageResult.getTotal());
+	}
+
+	@Override
+	public Class<TagCatalogVO> getDataClass() {
+		return TagCatalogVO.class;
 	}
 
 	@Override
@@ -119,7 +138,11 @@ public class CmsCatalogTag extends AbstractListTag {
 	}
 
 	private enum CatalogTagLevel {
-		Root("所有栏目"), Current("同级栏目"), Child("子栏目"), CurrentAndChild("当前栏目及子栏目"), Self("当前栏目");
+		Root(ATTR_OPTION_LEVEL_ROOT),
+		Current(ATTR_OPTION_LEVEL_CURRENT),
+		Child(ATTR_OPTION_LEVEL_CHILD),
+		CurrentAndChild(ATTR_OPTION_LEVEL_CURRENT_AND_CHILD),
+		Self(ATTR_OPTION_LEVEL_SELF);
 
 		private final String desc;
 

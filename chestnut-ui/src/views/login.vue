@@ -59,7 +59,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-login-footer">
-      <span>Copyright © 2022-2024 ChestnutCMS (1000mz.com) All Rights Reserved.</span>
+      <span>{{ appInfo.copyright }}</span>
     </div>
   </div>
 </template>
@@ -77,6 +77,7 @@ export default {
   },
   data() {
     return {
+      appInfo: process.env.VUE_APP_INFO,
       codeUrl: "",
       loginForm: {
         username: "",
@@ -111,6 +112,7 @@ export default {
     }
   },
   created() {
+    this.appInfo = process.env.VUE_APP_INFO;
     this.getCode();
     this.getCookie();
   },

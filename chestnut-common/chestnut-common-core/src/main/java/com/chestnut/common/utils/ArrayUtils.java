@@ -77,4 +77,11 @@ public class ArrayUtils {
 		}
 		return null;
 	}
+
+	public static <T> T firstOrElse(Collection<T> list, T defaultV) {
+		if (StringUtils.isNotEmpty(list)) {
+			return list.iterator().next();
+		}
+		return defaultV;
+	}
 }

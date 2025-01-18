@@ -7,3 +7,10 @@ export function getUEditorCSS(params) {
     params: params
   })
 }
+
+export function getArticleBodyFormats() {
+  return request({
+    url: '/cms/article/formats',
+    method: 'get'
+  })
+}

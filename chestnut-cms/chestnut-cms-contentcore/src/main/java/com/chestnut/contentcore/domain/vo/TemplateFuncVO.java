@@ -15,13 +15,12 @@
  */
 package com.chestnut.contentcore.domain.vo;
 
-import java.util.List;
-
 import com.chestnut.common.staticize.func.IFunction.FuncArg;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -35,4 +34,6 @@ public class TemplateFuncVO {
 	private String desc;
 	
 	private List<FuncArg> funcArgs;
+
+	private String demoLink;
 }

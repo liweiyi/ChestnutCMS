@@ -24,6 +24,8 @@ package com.chestnut.system.permission;
 public interface SysMenuPriv {
 	
 	String MonitorCacheList = "monitor:cache:view";
+
+	String MonitorCacheClear = "monitor:cache:clear";
 	
 	String MonitorServerList = "monitor:server:view";
 	

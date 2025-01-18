@@ -18,6 +18,7 @@ package com.chestnut.contentcore.template.impl;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.ConvertUtils;
 import com.chestnut.common.utils.ReflectASMUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -52,6 +53,9 @@ public class ContentTemplateType implements ITemplateType {
 	@Override
 	public void initTemplateData(Object dataId, TemplateContext context) {
 		CmsContent content = this.contentService.dao().getById(ConvertUtils.toLong(dataId));
+		if (StringUtils.isNotEmpty(content.getImages())) {
+			content.setLogo(content.getImages().get(0));
+		}
 		Map<String, Object> contentMap = ReflectASMUtils.beanToMap(content);
 		String link = this.contentService.getContentLink(content, 1,
 				context.getPublishPipeCode(), context.isPreview());

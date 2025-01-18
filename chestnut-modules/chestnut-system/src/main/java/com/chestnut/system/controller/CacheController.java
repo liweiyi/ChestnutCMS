@@ -15,33 +15,27 @@
  */
 package com.chestnut.system.controller;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.chestnut.common.domain.R;
+import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.redis.IMonitoredCache;
 import com.chestnut.common.security.anno.Priv;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysCache;
+import com.chestnut.system.domain.dto.ClearCacheDTO;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 缓存监控
@@ -54,9 +48,9 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/monitor/cache")
 public class CacheController {
 
-	private final RedisTemplate<String, String> redisTemplate;
+	private final RedisTemplate<String, Object> redisTemplate;
 	
-	private final List<IMonitoredCache> monitoredCaches;
+	private final Map<String, IMonitoredCache<?>> monitoredCaches;
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
 	@GetMapping
@@ -71,7 +65,7 @@ public class CacheController {
 		result.put("dbSize", dbSize);
 
 		List<Map<String, String>> pieList = new ArrayList<>();
-		commandStats.stringPropertyNames().forEach(key -> {
+		Objects.requireNonNull(commandStats).stringPropertyNames().forEach(key -> {
 			Map<String, String> data = new HashMap<>(2);
 			String property = commandStats.getProperty(key);
 			data.put("name", StringUtils.removeStart(key, "cmdstat_"));
@@ -85,48 +79,69 @@ public class CacheController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
 	@GetMapping("/getNames")
 	public R<?> cache() {
-		List<SysCache> list = this.monitoredCaches.stream().map(mc -> {
-			return new SysCache(mc.getCacheKey(), mc.getCacheName());
+		List<SysCache> list = this.monitoredCaches.values().stream().map(mc -> {
+			return new SysCache(mc.getId(), I18nUtils.get(mc.getCacheName()), mc.getCacheKey());
 		}).collect(Collectors.toList());
 		return R.ok(list);
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
-	@GetMapping("/getKeys/{cacheName}")
-	public R<?> getCacheKeys(@PathVariable String cacheName) {
-		Set<String> cacheKeys = redisTemplate.keys(cacheName + "*");
-		return R.ok(cacheKeys);
+	@GetMapping("/getKeys/{monitoredId}")
+	public R<?> getCacheKeys(@PathVariable String monitoredId) {
+		IMonitoredCache<?> iMonitoredCache = this.monitoredCaches.get(IMonitoredCache.BEAN_PREFIX + monitoredId);
+		Assert.notNull(iMonitoredCache, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(monitoredId));
+
+		if (iMonitoredCache.getCacheKey().endsWith(":")) {
+			Set<String> cacheKeys = redisTemplate.keys(iMonitoredCache.getCacheKey() + "*");
+			return R.ok(cacheKeys);
+		} else {
+			return R.ok(Set.of(iMonitoredCache.getCacheKey()));
+		}
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
-	@GetMapping("/getValue/{cacheName}/{cacheKey}")
-	public R<?> getCacheValue(@PathVariable String cacheName, @PathVariable String cacheKey) {
-		String cacheValue = redisTemplate.opsForValue().get(cacheKey);
-		SysCache sysCache = new SysCache(cacheName, cacheKey, cacheValue);
+	@GetMapping("/getValue")
+	public R<?> getCacheValue(@RequestParam @NotBlank String monitoredId, @RequestParam @NotBlank String cacheKey) {
+		IMonitoredCache<?> iMonitoredCache = this.monitoredCaches.get(IMonitoredCache.BEAN_PREFIX + monitoredId);
+		Assert.notNull(iMonitoredCache, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(monitoredId));
+
+		boolean validate = cacheKey.startsWith(iMonitoredCache.getCacheKey());
+		Assert.isTrue(validate, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("cacheKey"));
+
+		Object cacheValue = iMonitoredCache.getCache(cacheKey);
+		SysCache sysCache = new SysCache();
+		sysCache.setCacheKey(cacheKey);
+		sysCache.setCacheValue(Objects.isNull(cacheValue) ? "" : JacksonUtils.to(cacheValue));
 		sysCache.setExpireTime(redisTemplate.getExpire(cacheKey, TimeUnit.SECONDS));
 		return R.ok(sysCache);
 	}
 
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
-	@DeleteMapping("/clearCacheName/{cacheName}")
-	public R<?> clearCacheName(@PathVariable String cacheName) {
-		Collection<String> cacheKeys = redisTemplate.keys(cacheName + "*");
-		redisTemplate.delete(cacheKeys);
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
+	@DeleteMapping("/clearCacheName/{monitoredId}")
+	public R<?> clearCacheName(@PathVariable String monitoredId) {
+		IMonitoredCache<?> iMonitoredCache = this.monitoredCaches.get(IMonitoredCache.BEAN_PREFIX + monitoredId);
+		Assert.notNull(iMonitoredCache, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(monitoredId));
+		Collection<String> cacheKeys = redisTemplate.keys(iMonitoredCache.getCacheKey() + "*");
+		if (Objects.nonNull(cacheKeys)) {
+			redisTemplate.delete(cacheKeys);
+		}
 		return R.ok();
 	}
 
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
-	@DeleteMapping("/clearCacheKey/{cacheKey}")
-	public R<?> clearCacheKey(@PathVariable String cacheKey) {
-		redisTemplate.delete(cacheKey);
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
+	@DeleteMapping("/clearCacheKey")
+	public R<?> clearCacheKey(@RequestBody ClearCacheDTO dto) {
+		redisTemplate.delete(dto.getCacheKey());
 		return R.ok();
 	}
 
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
 	@DeleteMapping("/clearCacheAll")
 	public R<?> clearCacheAll() {
 		Collection<String> cacheKeys = redisTemplate.keys("*");
-		redisTemplate.delete(cacheKeys);
+		if (Objects.nonNull(cacheKeys)) {
+			redisTemplate.delete(cacheKeys);
+		}
 		return R.ok();
 	}
 }

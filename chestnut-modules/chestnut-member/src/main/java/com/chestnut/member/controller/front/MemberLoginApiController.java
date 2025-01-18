@@ -116,7 +116,7 @@ public class MemberLoginApiController extends BaseRestController {
 	@PostMapping("/register")
 	public R<?> resgiter(@RequestBody MemberRegisterDTO dto, HttpServletRequest request) {
 		String uuid = ServletUtils.getHeader(request, "uuid");
-		String authCode = this.redisCache.getCacheObject(SMS_CODE_CACHE_PREFIX + uuid);
+		String authCode = this.redisCache.getCacheObject(SMS_CODE_CACHE_PREFIX + uuid, String.class);
 		if (StringUtils.isEmpty(authCode) || !dto.getAuthCode().equals(authCode)) {
 			return R.fail("验证码错误");
 		}
@@ -142,7 +142,6 @@ public class MemberLoginApiController extends BaseRestController {
 		return R.ok();
 	}
 
-	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@PutMapping("/reset_pwd")
 	public R<?> resetMemberPassword(@RequestBody @Validated ResetMemberPasswordDTO dto) {
@@ -184,7 +183,8 @@ public class MemberLoginApiController extends BaseRestController {
 			redisCache.setCacheObject(SMS_CODE_CACHE_PREFIX + uuid, code, 600, TimeUnit.SECONDS);
 			return R.ok(uuid);
 		} catch (Exception e) {
-			return R.fail("发送失败，请联系管理员！");
+			log.error("邮件发送失败", e);
+			return R.fail("发送错误，请联系管理员！");
 		}
 	}
 
@@ -213,11 +213,10 @@ public class MemberLoginApiController extends BaseRestController {
 		}
 	}
 
-	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@PutMapping("/change_email")
 	public R<?> changeMemberEmail(@RequestBody @Validated ChangeMemberEmailDTO dto) {
-		String authCode = this.redisCache.getCacheObject(SMS_CODE_CACHE_PREFIX + StpMemberUtil.getLoginIdAsLong());
+		String authCode = this.redisCache.getCacheObject(SMS_CODE_CACHE_PREFIX + StpMemberUtil.getLoginIdAsLong(), String.class);
 		if (StringUtils.isEmpty(authCode) || !dto.getAuthCode().equals(authCode)) {
 			return R.fail("验证码错误");
 		}

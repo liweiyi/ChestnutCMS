@@ -16,7 +16,6 @@
 package com.chestnut.exmodel.service;
 
 import com.chestnut.common.utils.NumberUtils;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.service.ICatalogService;
@@ -28,7 +27,6 @@ import com.chestnut.xmodel.core.MetaModel;
 import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 import com.chestnut.xmodel.service.IModelDataService;
 import com.chestnut.xmodel.service.IModelService;
-import com.chestnut.xmodel.util.XModelUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -84,16 +82,10 @@ public class ExModelService {
             if(Objects.isNull(fv) || fv.toString().isEmpty()) {
                 fv = f.getDefaultValue();
             }
-            XModelFieldDataDTO dto = new XModelFieldDataDTO();
-            dto.setLabel(f.getName());
-            dto.setFieldName(CmsExtendMetaModelType.DATA_FIELD_PREFIX + f.getCode());
-            dto.setControlType(f.getControlType());
-            dto.setValue(Objects.requireNonNullElse(fv, StringUtils.EMPTY));
-            dto.setOptions(XModelUtils.getOptions(f.getOptions()));
-            dto.setValidations(f.getValidations());
-
+            XModelFieldDataDTO dto = XModelFieldDataDTO.newInstance(f, fv);
             IMetaControlType controlType = controlTypeMap.get(IMetaControlType.BEAN_PREFIX + f.getControlType());
-            controlType.parseFieldValue(dto);
+            Object objectV = controlType.stringAsValue(Objects.isNull(dto.getValue()) ? "" : dto.getValue().toString());
+            dto.setValue(objectV);
             list.add(dto);
         });
         return list;

@@ -15,8 +15,6 @@
  */
 package com.chestnut.contentcore.util;
 
-import java.util.Objects;
-
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.IInternalDataType;
@@ -25,6 +23,8 @@ import com.chestnut.contentcore.core.impl.InternalDataType_Catalog;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.system.fixed.config.BackendContext;
+
+import java.util.Objects;
 
 public class CatalogUtils {
 	
@@ -35,11 +35,7 @@ public class CatalogUtils {
 
 	public static String formatCatalogPath(String path) {
 		path = FileExUtils.normalizePath(path);
-
-		if (!path.endsWith("/")) {
-			path += "/";
-		}
-		return path;
+		return StringUtils.appendIfMissing(path, "/");
 	}
 	
 	/**

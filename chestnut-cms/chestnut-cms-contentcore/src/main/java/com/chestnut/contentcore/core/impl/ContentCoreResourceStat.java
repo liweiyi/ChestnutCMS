@@ -64,10 +64,12 @@ public class ContentCoreResourceStat implements IResourceStat {
      */
     private Set<Long> contentLogo() {
         Set<Long> resourceIds = new HashSet<>();
-        this.contentService.dao().lambdaQuery().select(List.of(CmsContent::getLogo)).list().forEach(content -> {
-            InternalURL internalURL = InternalUrlUtils.parseInternalUrl(content.getLogo());
-            if (Objects.nonNull(internalURL)) {
-                resourceIds.add(internalURL.getId());
+        this.contentService.dao().lambdaQuery().select(List.of(CmsContent::getImages)).list().forEach(content -> {
+            if (Objects.nonNull(content.getImages())) {
+                InternalURL internalURL = InternalUrlUtils.parseInternalUrl(content.getLogo());
+                if (Objects.nonNull(internalURL)) {
+                    resourceIds.add(internalURL.getId());
+                }
             }
         });
         return resourceIds;

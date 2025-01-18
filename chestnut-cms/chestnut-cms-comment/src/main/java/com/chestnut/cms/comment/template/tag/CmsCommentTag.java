@@ -42,8 +42,14 @@ import java.util.stream.Collectors;
 public class CmsCommentTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_comment";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_UID = "{FREEMARKER.TAG." + TAG_NAME + ".uid}";
+	public final static String ATTR_USAGE_TYPE = "{FREEMARKER.TAG." + TAG_NAME + ".type}";
+
+	public final static String ATTR_UID = "uid";
+	public final static String ATTR_TYPE = "type";
+
 
 	private final ICommentService commentService;
 
@@ -52,15 +58,15 @@ public class CmsCommentTag extends AbstractListTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr("uid", true, TagAttrDataType.INTEGER, "用户ID"));
-		tagAttrs.add(new TagAttr("type", false, TagAttrDataType.STRING, "来源类型", CommentConsts.COMMENT_SOURCE_TYPE));
+		tagAttrs.add(new TagAttr(ATTR_UID, true, TagAttrDataType.INTEGER, ATTR_USAGE_UID));
+		tagAttrs.add(new TagAttr(ATTR_TYPE, false, TagAttrDataType.STRING, ATTR_USAGE_TYPE, CommentConsts.COMMENT_SOURCE_TYPE));
 		return tagAttrs;
 	}
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		long uid = MapUtils.getLongValue(attrs, "uid");
-		String sourceType = attrs.get("type");
+		long uid = MapUtils.getLongValue(attrs, ATTR_UID);
+		String sourceType = attrs.get(ATTR_TYPE);
 
 		Page<Comment> pageResult = this.commentService.lambdaQuery()
 				.eq(Comment::getSourceType, sourceType)
@@ -85,6 +91,11 @@ public class CmsCommentTag extends AbstractListTag {
 			}
 		});
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+	}
+
+	@Override
+	public Class<Comment> getDataClass() {
+		return Comment.class;
 	}
 
 	@Override

@@ -13,6 +13,7 @@
           <el-tree
             class="tree-menu" 
             :data="menuTreeData"
+            :check-strictly="true"
             default-expand-all
             show-checkbox
             ref="menu"
@@ -111,12 +112,19 @@ export default {
       if (node.perms && node.perms.length > 0) {
         if (checked) {
             this.perms.push(node.perms);
+            if (node.parentId > 0) {
+              this.$refs.menu.setChecked(node.parentId, true);
+            }
         } else {
           for(let i = 0; i < this.perms.length; i++) {
             if(this.perms[i] == node.perms) {
               this.perms.splice(i, 1);
               break;
             }
+          }
+          console.log(node)
+          if (node.children && node.children.length > 0) {
+            node.children.forEach(child => this.$refs.menu.setChecked(child.menuId, false))
           }
         }
       }

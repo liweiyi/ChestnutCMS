@@ -20,7 +20,9 @@
         @row-click="handleRowClick">
         <el-table-column type="expand">
           <template slot-scope="scope">
-            <el-row v-if="scope.row.description!=''" style="padding:0 20px;">
+            <el-row style="padding:0 20px;">
+              <el-alert v-if="scope.row.deprecated" :title="$t('CMS.Staticize.DeprecatedTip', [ scope.row.deprecatedSince, scope.row.deprecatedForRemoval])"
+                type="error" :closable="false" style="margin-bottom: 10px;"></el-alert>
               <el-descriptions :title="$t('CMS.Staticize.UsageDesc')" :colon="false">
                 <el-descriptions-item :contentStyle="{width:'100%'}">{{ scope.row.description }}</el-descriptions-item>
               </el-descriptions>
@@ -34,21 +36,36 @@
                         <dict-tag :options="dict.type.YesOrNo" :value="scope.row.mandatory?'Y':'N'"/>
                       </template>
                     </el-table-column>
-                    <el-table-column :label="$t('CMS.Staticize.TagAttrOptions')" align="center" prop="options">
+                    <el-table-column :label="$t('CMS.Staticize.TagAttrOptions')" align="left" prop="options">
                       <template slot-scope="scope" v-if="scope.row.options!=null">
-                        <span v-for="(item, index) in Object.keys(scope.row.options)" :key="item">
-                          <span v-if="index>0">，</span><span style="color:#1890ff">{{ item }}：</span>{{ scope.row.options[item] }} 
-                        </span>
+                        <div v-for="item in scope.row.options" :key="item.value">{{ item.value }} = {{ item.desc }}</div>
                       </template>
                     </el-table-column>
                     <el-table-column :label="$t('CMS.Staticize.TagAttrDesc')" align="left" prop="usage" />
+                    <el-table-column :label="$t('CMS.Staticize.DefaultValue')" align="left" prop="defaultValue" />
                   </el-table>
                 </el-descriptions-item>
+              </el-descriptions>
+              <el-descriptions :title="$t('CMS.Staticize.DataField')" :colon="false" v-if="scope.row.dataFields && scope.row.dataFields.length > 0">
+                <el-descriptions-item :contentStyle="{width:'100%'}">
+                  <el-table :data="scope.row.dataFields" border>
+                    <el-table-column :label="$t('CMS.Staticize.TagAttrName')" align="left" width="300" prop="name" />
+                    <el-table-column :label="$t('CMS.Staticize.TagAttrName')" align="left" prop="comment" />
+                    <el-table-column :label="$t('CMS.Staticize.TagAttrDataType')" align="left" prop="dataType" />
+                  </el-table>
+                </el-descriptions-item>
+              </el-descriptions>
+              <el-descriptions :title="$t('CMS.Staticize.Demo')" :colon="false">
+                <el-descriptions-item><el-link type="primary" target="_blank" :href="scope.row.demoLink">{{ $t('CMS.Staticize.ClickToShowDemo') }}</el-link></el-descriptions-item>
               </el-descriptions>
             </el-row>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('CMS.Staticize.TagName')" align="left" width="255" prop="name" />
+        <el-table-column :label="$t('CMS.Staticize.TagName')" align="left" width="255" prop="name">
+          <template slot-scope="scope">
+            <el-tag v-if="scope.row.deprecated" size="mini" type="danger">{{ $t("CMS.Staticize.DeprecatedTag") }}</el-tag> {{ scope.row.name }}
+          </template>
+        </el-table-column>
         <el-table-column :label="$t('CMS.Staticize.TagDirective')" width="255" prop="tagName">
           <template slot-scope="scope">
             <el-link type="primary">
@@ -109,7 +126,7 @@ export default {
     },
     handleRowClick(row) {
       this.$refs.tagListTable.toggleRowExpansion(row);
-    }
+    },
   }
 };
 </script>

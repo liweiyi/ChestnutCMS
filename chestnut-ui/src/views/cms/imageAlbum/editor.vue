@@ -236,6 +236,7 @@ export default {
 }
 .cms-image-editor .r-container .el-main {
   padding: 0px;
+  overflow: hidden;
 }
 .cms-image-editor .r-container .el-main .el-form-item {
   margin-bottom: 12px;

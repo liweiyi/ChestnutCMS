@@ -59,7 +59,7 @@ public class ThumbnailWidthProperty implements IProperty {
 	
 	@Override
 	public Integer defaultValue() {
-		return 0;
+		return 218;
 	}
 	
 	@Override

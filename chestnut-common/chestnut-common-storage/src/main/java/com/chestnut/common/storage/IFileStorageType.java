@@ -16,25 +16,26 @@
 package com.chestnut.common.storage;
 
 import java.io.InputStream;
+import java.util.List;
 
 public interface IFileStorageType {
 	
-	public static final String BEAN_NAME_PREIFX = "FileStorageType_";
+	String BEAN_NAME_PREIFX = "FileStorageType_";
 
 	/**
 	 * 文件存储方式唯一标识
 	 */
-	public String getType();
+	String getType();
 	
 	/**
 	 * 存储方式名称
 	 */
-	public String getName();
+	String getName();
 	
 	/**
 	 * 测试连接
 	 */
-	default public boolean testConnection(String endpoint, String accessKey, String accessSecret) {
+	default boolean testConnection(String endpoint, String accessKey, String accessSecret) {
 		return true;
 	}
 
@@ -65,17 +66,19 @@ public interface IFileStorageType {
 	/**
 	 * 读取文件
 	 */
-	public InputStream read(StorageReadArgs args);
-	
+	InputStream read(StorageReadArgs args);
+
+	List<String> list(StorageListArgs args);
+
 	/**
 	 * 写入文件
 	 */
-	public void write(StorageWriteArgs args);
+	void write(StorageWriteArgs args);
 	
 	/**
 	 * 删除文件
 	 */
-	public void remove(StorageRemoveArgs args);
+	void remove(StorageRemoveArgs args);
 
 	/**
 	 * 复制文件

@@ -32,7 +32,6 @@ import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
-import com.chestnut.contentcore.core.impl.InternalDataType_Content;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -50,7 +49,6 @@ import com.chestnut.contentcore.user.preference.IncludeChildContentPreference;
 import com.chestnut.contentcore.user.preference.ShowContentSubTitlePreference;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ContentCoreUtils;
-import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -59,7 +57,6 @@ import freemarker.template.TemplateException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.validation.annotation.Validated;
@@ -67,7 +64,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -137,15 +133,7 @@ public class ContentController extends BaseRestController {
 			q.orderByDesc(CmsContent::getTopFlag).orderByDesc(CmsContent::getSortFlag);
 		}
 		Page<CmsContent> page = q.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
-		List<ListContentVO> list = new ArrayList<>();
-		page.getRecords().forEach(content -> {
-			ListContentVO vo = new ListContentVO();
-			BeanUtils.copyProperties(content, vo);
-			vo.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(content.getLogo()));
-			vo.setAttributes(ContentAttribute.convertStr(content.getAttributes()));
-			vo.setInternalUrl(InternalUrlUtils.getInternalUrl(InternalDataType_Content.ID, content.getContentId()));
-			list.add(vo);
-		});
+		List<ListContentVO> list = page.getRecords().stream().map(ListContentVO::newInstance).toList();
 		return this.bindDataTable(list, (int) page.getTotal());
 	}
 
@@ -171,7 +159,7 @@ public class ContentController extends BaseRestController {
 			throws IOException {
 		IContentType ct = ContentCoreUtils.getContentType(contentType);
 
-		IContent<?> content = ct.readRequest(request);
+		IContent<?> content = ct.readFrom(request.getInputStream());
 		content.setOperator(StpAdminUtil.getLoginUser());
 		PermissionUtils.checkPermission(CatalogPrivItem.AddContent.getPermissionKey(content.getCatalogId()),
 				content.getOperator());
@@ -187,7 +175,7 @@ public class ContentController extends BaseRestController {
 			throws IOException {
 		IContentType ct = ContentCoreUtils.getContentType(contentType);
 
-		IContent<?> content = ct.readRequest(request);
+		IContent<?> content = ct.readFrom(request.getInputStream());
 		content.setOperator(StpAdminUtil.getLoginUser());
 		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(content.getCatalogId()),
 				content.getOperator());

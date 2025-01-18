@@ -15,22 +15,20 @@
  */
 package com.chestnut.contentcore.template.func;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.SiteUtils;
-
 import freemarker.core.Environment;
 import freemarker.template.SimpleNumber;
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * Freemarker模板自定义函数：处理发布通道站点URL
@@ -41,7 +39,11 @@ public class SiteUrlFunction extends AbstractFunc {
 
 	private static final String FUNC_NAME = "siteUrl";
 	
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
 
 	private final ISiteService siteService;
 
@@ -68,7 +70,7 @@ public class SiteUrlFunction extends AbstractFunc {
 
 	@Override
 	public List<FuncArg> getFuncArgs() {
-		return List.of(new FuncArg("站点ID", FuncArgType.Long, true, null),
-				new FuncArg("发布通道编码", FuncArgType.String, true, null));
+		return List.of(new FuncArg(ARG1_NAME, FuncArgType.Long, true),
+				new FuncArg(ARG2_NAME, FuncArgType.String, true));
 	}
 }

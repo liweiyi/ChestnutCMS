@@ -28,14 +28,26 @@
               <el-button plain type="primary" size="mini" icon="el-icon-files" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handlePushToBaidu">{{ $t('CMS.Content.PushToBaidu') }}</el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="400" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
-                <el-row style="margin-bottom:20px;text-align:right;">
+              <el-button plain type="primary" size="mini" icon="el-icon-takeaway-box" @click="handleOpLogs">{{ $t('CMS.Content.OpLog') }}</el-button>
+            </el-col>
+            <el-col :span="1.5">
+              <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="420" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
+                <el-row style="margin-bottom:20px;">
+                  <el-divider content-position="left">{{ $t('CMS.Content.ContentType') }}</el-divider>
                   <el-radio-group v-model="addContentType">
                     <el-radio-button 
                       v-for="ct in contentTypeOptions"
                       :key="ct.id"
                       :label="ct.id"
-                    >{{ct.name}}</el-radio-button>
+                    >{{ ct.name }}</el-radio-button>
+                  </el-radio-group>
+                  <el-divider v-if="addContentType=='article'" content-position="left">{{ $t('CMS.Article.Format') }}</el-divider>
+                  <el-radio-group v-if="addContentType=='article'" v-model="addArticleBodyFormat">
+                    <el-radio-button 
+                      v-for="item in articleBodyFormatOptions"
+                      :key="item.id"
+                      :label="item.id"
+                    >{{ item.name }}</el-radio-button>
                   </el-radio-group>
                 </el-row>
                 <el-row style="text-align:right;">
@@ -131,7 +143,7 @@
           </el-row>
           <el-row v-if="this.form.linkFlag !== 'Y' && this.contentType === 'article'">
             <el-col class="pr10">
-              <el-card shadow="always" class="card-editor">
+              <el-card v-if="articleFormat=='RichText'" shadow="always" class="card-editor">
                 <el-row>
                   <el-col :span="12">
                     <el-form-item :label="$t('CMS.Content.DownloadImage')" prop="downloadRemoteImage" style="margin-bottom:0;">
@@ -191,8 +203,7 @@
                     </el-button-group>
                   </el-form-item>
                   <el-form-item :label="$t('CMS.Content.Logo')" prop="logo">
-                    <cms-logo-view v-model="form.logo" :src="form.logoSrc"
-                                   :width="210" :height="150"></cms-logo-view>
+                    <cms-image-group v-model="form.images" :src="form.imagesSrc" :limit="6"></cms-image-group>
                   </el-form-item>
                   <el-form-item :label="$t('CMS.Content.Author')" prop="author">
                     <el-input v-model="form.author" />
@@ -294,6 +305,7 @@
       @ok="handleContentSelectorOk"
       @close="handleContentSelectorClose"></cms-content-selector>
     <cms-content-rela-dialog :cid="contentId" :open="openRelaContentDialog" @close="handleRelaContentClose"></cms-content-rela-dialog>
+    <cms-content-oplog-dialog :cid="contentId" :open="openContentOpLogDialog" @close="handleOpLogsClose"></cms-content-oplog-dialog>
     <!-- 进度条 -->
     <cms-progress :title="progressTitle" :open.sync="openProgress" :taskId="taskId" @close="handleProgressClose"></cms-progress>
   </div>
@@ -301,7 +313,7 @@
 <script>
 import { getContentTypes } from "@/api/contentcore/catalog";
 import { getInitContentEditorData, addContent, saveContent, toPublishContent, publishContent, lockContent, unLockContent, moveContent } from "@/api/contentcore/content";
-import { getUEditorCSS } from "@/api/contentcore/article"
+import { getUEditorCSS, getArticleBodyFormats } from "@/api/contentcore/article"
 import { pushToBaidu } from "@/api/seo/baidupush";
 import Sticky from '@/components/Sticky'
 // import CKEditor5 from '@/components/CKEditor5';
@@ -311,10 +323,12 @@ import CMSImageEditor from '@/views/cms/imageAlbum/editor';
 import CMSAudioEditor from '@/views/cms/media/audioEditor';
 import CMSVideoEditor from '@/views/cms/media/videoEditor';
 import CMSLogoView from '@/views/cms/components/LogoView';
+import CMSImageGroup from '@/views/cms/components/ImageGroup';
 import CMSResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
 import CMSContentSelector from "@/views/cms/contentcore/contentSelector";
-import CMSContrentRelaDialog from '@/views/cms/contentcore/contentRelaDialog';
+import CMSContentRelaDialog from '@/views/cms/contentcore/contentRelaDialog';
+import CMSContentOpLogDialog from '@/views/cms/contentcore/contentOpLogDialog';
 import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
 import CMSEXModelEditor from '@/views/cms/components/EXModelEditor';
 import CMSTagEditor from '@/views/cms/components/TagEditor';
@@ -324,7 +338,7 @@ import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 
 export default {
   name: "CMSContentEditor",
-  dicts: ['CMSContentAttribute', 'CMSContentStatus'],
+  dicts: ['CMSContentAttribute'],
   components: {
     Treeselect, 
     Sticky,
@@ -336,12 +350,13 @@ export default {
     "cms-video-editor": CMSVideoEditor,
     "cms-resource-dialog": CMSResourceDialog,
     "cms-logo-view": CMSLogoView,
+    "cms-image-group": CMSImageGroup,
     'cms-catalog-selector': CMSCatalogSelector,
     'cms-content-selector': CMSContentSelector,
-    'cms-content-rela-dialog': CMSContrentRelaDialog,
+    'cms-content-rela-dialog': CMSContentRelaDialog,
+    "cms-content-oplog-dialog": CMSContentOpLogDialog,
     "cms-exmodel-editor": CMSEXModelEditor,
-    "cms-tag-editor": CMSTagEditor,
-    // "ckeditor": CKEditor5
+    "cms-tag-editor": CMSTagEditor
   },
   computed: {
     isLock () {
@@ -372,6 +387,9 @@ export default {
       openContentSelector: false,
       contentTypeOptions: [],
       addContentType: "",
+      articleBodyFormatOptions: [],
+      addArticleBodyFormat: "RichText",
+      articleFormat: '',
       addPopoverVisible: false,
       // 表单参数
       form: {
@@ -398,33 +416,26 @@ export default {
       publishAfterSave: false,
       toPublishAfterSave: false,
       openRelaContentDialog: false,
+      openContentOpLogDialog: false,
       ueditorImportCss: ""
     };
   },
   created() {
-    this.initData();
     this.loadUEditorCSS();
+    this.loadArticleBodyFormats();
     getContentTypes().then(response => {
       this.contentTypeOptions = response.data;
       this.addContentType = this.contentTypeOptions[0].id;
     });
+  },
+  mounted() {
+    this.initData();
   },
   methods: {
     handleTabClick(tab, event) {
     },
     toggleOtherTitle() {
       this.showOtherTitle = !this.showOtherTitle;
-    },
-    onEditorReady( editor )  {
-      // console.log("ckeditor", "onready");
-      // 设置下编辑器最小高度
-      editor.editing.view.change(writer => {
-        writer.setStyle('min-height', '800px', editor.editing.view.document.getRoot());
-      });
-      // 图片上传
-      editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
-        return new ImageUploadAdapter(loader, process.env.VUE_APP_BASE_API + "/cms/resource/upload")
-      }
     },
     initData() {
       this.loading = true;
@@ -433,27 +444,34 @@ export default {
         response.data.attributes = response.data.attributes || [];
         response.data.tags = response.data.tags || [];
         response.data.keywords = response.data.keywords || [];
-        this.form = response.data;
-        this.catalogId = this.form.catalogId;
-        this.contentId = this.form.contentId;
-        this.contentType = this.form.contentType;
-        this.publishPipeProps = this.form.publishPipeProps;
-        this.showOtherTitle = 'Y' === this.form.showSubTitle || (this.form.shortTitle && this.form.shortTitle.length > 0) 
-          || (this.form.subTitle && this.form.subTitle.length > 0);
-        this.publishPipeProps.forEach(pp => {
-          if (pp.props.template && pp.props.template.length > 0) {
-            this.showTemplate = true;
+        this.isUpdateOperate = this.$tools.isNotEmpty(response.data.createTime)
+        if (response.data.contentType == "article") {
+          this.articleFormat = this.isUpdateOperate ? response.data.format : this.$route.query.format;
+        }
+        this.$nextTick(() => {
+          this.form = response.data;
+          this.catalogId = this.form.catalogId;
+          this.contentId = this.form.contentId;
+          this.contentType = this.form.contentType;
+          this.publishPipeProps = this.form.publishPipeProps;
+          this.showOtherTitle = 'Y' === this.form.showSubTitle || (this.form.shortTitle && this.form.shortTitle.length > 0) 
+            || (this.form.subTitle && this.form.subTitle.length > 0);
+          this.publishPipeProps.forEach(pp => {
+            if (pp.props.template && pp.props.template.length > 0) {
+              this.showTemplate = true;
+            }
+          });
+          if (response.data.contentType == "article") {
+            this.form.format = this.articleFormat;
           }
-        });
-        this.initDataStr = JSON.stringify(this.form);
-        this.isUpdateOperate = (this.form.createTime && this.form.createTime.length > 0) == true
+          this.initDataStr = JSON.stringify(this.form);
+        })
       });
     },
     handleShowOtherTitle() {
       this.showOtherTitle = !this.showOtherTitle;
     },
     isFormChanged() {
-      console.log(this.initDataStr, JSON.stringify(this.form))
       return JSON.stringify(this.form) != this.initDataStr;
     },
     handleClose() {
@@ -474,8 +492,10 @@ export default {
       if (this.$route.path.endsWith('editorW')) {
         window.close();
       } else {
-        const obj = { path: "/configs/content" };
-        this.$tab.closeOpenPage(obj);
+        const obj = { path: "/configs/content", name: "CMSContentList" };
+        this.$tab.closeOpenPage(obj).then(() => {
+          this.$tab.refreshPage(obj);
+        });
       }
     },
     // 表单重置
@@ -513,9 +533,9 @@ export default {
       this.openTemplateSelector = false;
     },
     handleSetLogo(path, src) {
-      console.log(path, src)
-      this.$set(this.form, "logoSrc", src);
-      this.form.logo = path;
+      this.form.images.push(path);
+      this.form.imagesSrc.push(src);
+      // this.$set(this.form, "logoSrc", src);
     },
     /** 提交 */
     handleSave: function() {
@@ -528,8 +548,8 @@ export default {
           if (this.xmodelVisible) {
             this.form.params = this.$refs.EXModelEditor.getDatas();
           }
-          console.log(this.isUpdateOperate, this.form)
           if (this.isUpdateOperate) {
+            this.form.opType = "UPDATE"
             saveContent(this.form).then(response => {
               this.taskId = response.data.taskId;
               this.openProgress = true;
@@ -658,9 +678,9 @@ export default {
     handleContentSelectorOk(contents) {
       if (contents && contents.length > 0) {
         this.form.redirectUrl = contents[0].internalUrl;
-        if (!this.form.logo || this.form.logo.length == 0) {
-          this.form.logo = contents[0].logo;
-          this.form.logoSrc = contents[0].logoSrc;
+        if (!this.form.images || this.form.images.length == 0) {
+          this.form.images = contents[0].images;
+          this.form.imagesSrc = contents[0].imagesSrc;
         }
         if (!this.form.title || this.form.title.length == 0) {
           this.form.title = contents[0].title;
@@ -701,6 +721,12 @@ export default {
     },
     handleRelaContentClose() {
       this.openRelaContentDialog = false;
+    },
+    handleOpLogs() {
+      this.openContentOpLogDialog = true;
+    },
+    handleOpLogsClose() {
+      this.openContentOpLogDialog = false;
     },
     handlePushToBaidu() {
       pushToBaidu([ this.form.contentId ]).then(response => {
@@ -747,6 +773,11 @@ export default {
           iframe.contentDocument.head.appendChild(link);
         }
       }
+    },
+    loadArticleBodyFormats() {
+      getArticleBodyFormats().then(response => {
+        this.articleBodyFormatOptions = response.data;
+      })
     },
     handleAdd () {
       if (this.isFormChanged()) {

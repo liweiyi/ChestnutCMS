@@ -67,16 +67,27 @@ public interface IFunction {
 		private boolean required;
 		
 		private String desc;
+
+		private String defaultValue;
+
+		public FuncArg(String name, FuncArgType type, boolean required) {
+			this(name, type, required, "", "");
+		}
 		
 		public FuncArg(String name, FuncArgType type, boolean required, String desc) {
+			this(name, type, required, desc, "");
+		}
+
+		public FuncArg(String name, FuncArgType type, boolean required, String desc, String defaultValue) {
 			this.name = name;
 			this.type = type;
 			this.required = required;
 			this.desc = desc;
+			this.defaultValue = defaultValue;
 		}
 	}
 	
 	enum FuncArgType {
-		String, Int, Long, Float, Double, DateTime, Boolean
+		String, Int, Long, Float, Double, DateTime, Boolean, Array
 	}
 }

@@ -34,7 +34,7 @@ public class URLParametersFunction extends AbstractFunc  {
 
 	static final String FUNC_NAME = "urlParameters";
 
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
 
 	@Override
 	public String getFuncName() {

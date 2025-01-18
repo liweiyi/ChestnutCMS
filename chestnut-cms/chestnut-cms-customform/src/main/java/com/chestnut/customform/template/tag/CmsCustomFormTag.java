@@ -32,12 +32,14 @@ import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.customform.CustomFormConsts;
 import com.chestnut.customform.domain.CmsCustomForm;
+import com.chestnut.customform.fixed.dict.CustomFormStatus;
 import com.chestnut.customform.mapper.CustomFormMapper;
 import com.chestnut.customform.publishpipe.PublishPipeProp_CustomFormTemplate;
 import freemarker.core.Environment;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
+import freemarker.template.TemplateNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -58,27 +60,14 @@ import java.util.Objects;
 public class CmsCustomFormTag extends AbstractTag {
 
 	public final static String TAG_NAME = "cms_custom_form";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_CODE = "{FREEMARKER.TAG." + TAG_NAME + ".code}";
+	public final static String ATTR_USAGE_SSI = "{FREEMARKER.TAG." + TAG_NAME + ".ssi}";
 
-	@Override
-	public String getTagName() {
-		return TAG_NAME;
-	}
+	final static String ATTR_CODE = "code";
 
-	@Override
-	public String getName() {
-		return NAME;
-	}
-
-	@Override
-	public String getDescription() {
-		return DESC;
-	}
-
-	final static String TagAttr_Code = "code";
-
-	final static String TagAttr_SSI = "ssi";
+	final static String ATTR_SSI = "ssi";
 
 	private final ISiteService siteService;
 
@@ -89,8 +78,8 @@ public class CmsCustomFormTag extends AbstractTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = new ArrayList<>();
-		tagAttrs.add(new TagAttr(TagAttr_Code, true, TagAttrDataType.STRING, "自定义表单编码"));
-		tagAttrs.add(new TagAttr(TagAttr_SSI, false, TagAttrDataType.BOOLEAN, "是否启用SSI", "true"));
+		tagAttrs.add(new TagAttr(ATTR_CODE, true, TagAttrDataType.STRING, ATTR_USAGE_CODE));
+		tagAttrs.add(new TagAttr(ATTR_SSI, false, TagAttrDataType.BOOLEAN, ATTR_USAGE_SSI, Boolean.TRUE.toString()));
 		return tagAttrs;
 	}
 
@@ -99,23 +88,25 @@ public class CmsCustomFormTag extends AbstractTag {
 			throws TemplateException, IOException {
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 
-		String code = attrs.get(TagAttr_Code);
-		Assert.notEmpty(code, () -> new TemplateException("参数[code]不能为空", env));
+		String code = attrs.get(ATTR_CODE);
 
 		Long siteId = TemplateUtils.evalSiteId(env);
 
 		CmsCustomForm form = new LambdaQueryChainWrapper<>(this.customFormMapper)
 				.eq(CmsCustomForm::getSiteId, siteId)
 				.eq(CmsCustomForm::getCode, code).one();
-		Assert.notNull(form, () -> new TemplateException(StringUtils.messageFormat("自定义表单[{0}]不存在", code), env));
+		Assert.notNull(form, () -> new TemplateException(StringUtils.messageFormat("Custom form no exists, code = {0}.", code), env));
+		if (CustomFormStatus.PUBLISHED != form.getStatus()) {
+			return null;
+		}
 
 		CmsSite site = this.siteService.getSite(siteId);
 		String template = form.getTemplates().getOrDefault(context.getPublishPipeCode(),
 				PublishPipeProp_CustomFormTemplate.getValue(context.getPublishPipeCode(), site.getPublishPipeProps()));
 		File templateFile = this.templateService.findTemplateFile(site, template, context.getPublishPipeCode());
-		Assert.notNull(templateFile, () -> new TemplateException(StringUtils.messageFormat("自定义表单[{0}]模板[{1}]不存在", code, template), env));
+		Assert.notNull(templateFile, () -> new TemplateNotFoundException(template, null, null));
 
-		boolean ssi = MapUtils.getBoolean(attrs, TagAttr_SSI, EnableSSIProperty.getValue(site.getConfigProps()));
+		boolean ssi = MapUtils.getBoolean(attrs, ATTR_SSI, EnableSSIProperty.getValue(site.getConfigProps()));
 		String templateKey = SiteUtils.getTemplateKey(site, context.getPublishPipeCode(), template);
 		if (context.isPreview()) {
 			env.getOut().write(this.processTemplate(env, form, site, context.getPublishPipeCode(), templateKey));
@@ -156,5 +147,20 @@ public class CmsCustomFormTag extends AbstractTag {
 		} finally {
 			env.setOut(out);
 		}
+	}
+
+	@Override
+	public String getTagName() {
+		return TAG_NAME;
+	}
+
+	@Override
+	public String getName() {
+		return NAME;
+	}
+
+	@Override
+	public String getDescription() {
+		return DESC;
 	}
 }

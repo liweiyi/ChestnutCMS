@@ -50,7 +50,7 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 
 	@Override
 	public SysPost getPost(String postCode) {
-		SysPost post = redisCache.getCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + postCode);
+		SysPost post = redisCache.getCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + postCode, SysPost.class);
 		if (Objects.nonNull(post)) {
 			return post;
 		}

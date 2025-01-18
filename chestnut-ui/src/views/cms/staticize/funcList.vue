@@ -31,7 +31,7 @@
                 <el-descriptions-item :contentStyle="{width:'100%'}">
                   <el-table :data="scope.row.funcArgs" border>
                     <el-table-column :label="$t('CMS.Staticize.FuncAttr')" align="center" width="150" type="index" />
-                    <el-table-column :label="$t('CMS.Staticize.FuncAttrName')" align="center" width="150" prop="name" />
+                    <el-table-column :label="$t('CMS.Staticize.FuncAttrName')" align="center" prop="name" />
                     <el-table-column :label="$t('CMS.Staticize.FuncAttrType')" align="center" width="100" prop="type" />
                     <el-table-column :label="$t('CMS.Staticize.FuncAttrRequired')" align="center" width="80">
                       <template slot-scope="scope">
@@ -40,8 +40,12 @@
                     </el-table-column>
                     <el-table-column :label="$t('CMS.Staticize.FuncAttrDesc')" align="left" prop="desc">
                     </el-table-column>
+                    <el-table-column :label="$t('CMS.Staticize.DefaultValue')" align="left" width="200" prop="defaultValue" />
                   </el-table>
                 </el-descriptions-item>
+              </el-descriptions>
+              <el-descriptions :title="$t('CMS.Staticize.Demo')" :colon="false">
+                <el-descriptions-item><el-link type="primary" target="_blank" :href="scope.row.demoLink">{{ $t('CMS.Staticize.ClickToShowDemo') }}</el-link></el-descriptions-item>
               </el-descriptions>
             </el-row>
           </template>
@@ -104,7 +108,7 @@ export default {
         return ""
       }
       return aliases.map(alias => "[ "+alias+" ]").join(", ")
-    }
+    },
   }
 };
 </script>

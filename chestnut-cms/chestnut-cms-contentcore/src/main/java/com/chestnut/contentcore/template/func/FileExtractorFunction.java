@@ -40,7 +40,11 @@ public class FileExtractorFunction extends AbstractFunc  {
 
 	static final String FUNC_NAME = "fileExtractor";
 	
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
 
 	public static final Pattern FileATagPattern = Pattern.compile("<a\\s[^>]*class\\s*=\\s*['\"]art-body-file['\"][^>]*>.*?</a>",
 			Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
@@ -95,8 +99,8 @@ public class FileExtractorFunction extends AbstractFunc  {
 	@Override
 	public List<FuncArg> getFuncArgs() {
 		return List.of(
-				new FuncArg("{FREEMARKER.FUNC."+FUNC_NAME+".Arg1.Name}", FuncArgType.String, true, null),
-				new FuncArg("{FREEMARKER.FUNC."+FUNC_NAME+".Arg1.FileType}", FuncArgType.String, false, null)
+				new FuncArg(ARG1_NAME, FuncArgType.String, true, null),
+				new FuncArg(ARG2_NAME, FuncArgType.String, false, null)
 		);
 	}
 }

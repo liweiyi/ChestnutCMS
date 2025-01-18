@@ -38,7 +38,13 @@ public class DictFunction extends AbstractFunc {
 
 	private static final String FUNC_NAME = "dict";
 
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
+
+	private static final String ARG3_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg3.Name}";
 
 	private final ISysDictTypeService dictTypeService;
 
@@ -82,8 +88,10 @@ public class DictFunction extends AbstractFunc {
 
 	@Override
 	public List<FuncArg> getFuncArgs() {
-		return List.of(new FuncArg("字典类型", FuncArgType.String, true, null),
-				new FuncArg("字典数据值", FuncArgType.String, false, null),
-				new FuncArg("国际化标识", FuncArgType.String, false, null));
+		return List.of(
+				new FuncArg(ARG1_NAME, FuncArgType.String, true, null),
+				new FuncArg(ARG2_NAME, FuncArgType.String, false, null),
+				new FuncArg(ARG3_NAME, FuncArgType.String, false, null)
+		);
 	}
 }

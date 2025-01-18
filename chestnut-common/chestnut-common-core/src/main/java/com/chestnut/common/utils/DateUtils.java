@@ -39,6 +39,8 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 
 	public static String YYYY_MM_DD = "yyyy-MM-dd";
 
+	public static String YYYYMMDD = "yyyyMMdd";
+
 	public static String YYYYMMDDHH = "yyyyMMddHH";
 
 	public static String YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
@@ -54,6 +56,8 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	public static DateTimeFormatter FORMAT_YYYY_MM_DD = DateTimeFormatter.ofPattern(YYYY_MM_DD);
 
 	public static DateTimeFormatter FORMAT_YYYYMMDDHH = DateTimeFormatter.ofPattern(YYYYMMDDHH);
+
+	public static DateTimeFormatter FORMAT_YYYYMMDD = DateTimeFormatter.ofPattern(YYYYMMDD);
 
 	/**
 	 * 获取当前Date型日期

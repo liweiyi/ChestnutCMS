@@ -24,7 +24,9 @@ import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
+import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.properties.PublishedContentEditProperty;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
@@ -32,6 +34,7 @@ import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.ContentCoreUtils;
+import com.chestnut.contentcore.util.ContentLogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.Setter;
@@ -141,6 +144,8 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
 		}
 		checkRedirectUrl();
+
+		SpringUtils.publishEvent(new BeforeContentSaveEvent(this, this, true));
 		content.setSiteId(catalog.getSiteId());
 		content.setCatalogAncestors(catalog.getAncestors());
 		content.setTopCatalog(CatalogUtils.getTopCatalog(catalog));
@@ -150,12 +155,23 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		content.setStatus(ContentStatus.DRAFT);
 		content.setSortFlag(SortUtils.getDefaultSortValue());
 		content.setIsLock(YesOrNo.NO);
+		if (StringUtils.isEmpty(content.getLinkFlag())) {
+			content.setLinkFlag(YesOrNo.NO);
+		}
+		if (Objects.isNull(content.getCopyType())) {
+			content.setCopyType(ContentCopyType.NONE);
+		}
 		content.createBy(this.getOperatorUName());
-
+		this.getContentService().dao().save(this.getContentEntity());
+		this.add0();
 		// 栏目内容数+1
 		this.getCatalogService().changeContentCount(catalog.getCatalogId(), 1);
+		ContentLogUtils.addLog(ContentOpType.ADD, this.getContentEntity(), this.getOperator());
+		SpringUtils.publishEvent(new AfterContentSaveEvent(this, this, true));
 		return this.getContentEntity().getContentId();
 	}
+
+	protected abstract void add0();
 
 	void checkLock() {
 		boolean lockContent = content.isLock() && StringUtils.isNotEmpty(content.getLockUser())
@@ -190,25 +206,38 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			}
 		}
 		checkRedirectUrl();
+		SpringUtils.publishEvent(new BeforeContentSaveEvent(this, this, false));
 		if (ContentStatus.isToPublishOrPublished(content.getStatus())) {
 			content.setStatus(ContentStatus.EDITING);
 		}
 		content.updateBy(this.getOperatorUName());
+		contentService.dao().updateById(this.getContentEntity());
+		this.save0();
+		ContentLogUtils.addLog(ContentOpType.UPDATE, this.getContentEntity(), this.getOperator());
+		SpringUtils.publishEvent(new AfterContentSaveEvent(this, this, false));
 		return this.getContentEntity().getContentId();
 	}
+
+	protected abstract void save0();
 
 	@Override
 	public void delete() {
 		this.checkLock();
 		// 删除到备份表
 		this.getContentService().dao().deleteByIdAndBackup(this.getContentEntity(), getOperatorUName());
+		this.delete0();
 		// 直接删除站内映射内容
 		this.getContentService().dao().remove(new LambdaQueryWrapper<CmsContent>()
 				.eq(CmsContent::getCopyType, ContentCopyType.Mapping)
 				.eq(CmsContent::getCopyId, this.getContentEntity().getContentId()));
 		// 栏目内容数-1
 		this.getCatalogService().changeContentCount(getCatalogId(), -1);
+		ContentLogUtils.addLog(ContentOpType.DELETE, this.getContentEntity(), this.getOperator());
+
+		SpringUtils.publishEvent(new AfterContentDeleteEvent(this, this));
 	}
+
+	protected abstract void delete0();
 
 	@Override
 	public boolean publish() {
@@ -227,6 +256,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		}
 		if (update) {
 			this.getContentService().dao().updateById(content);
+			ContentLogUtils.addLog(ContentOpType.PUBLISH, this.getContentEntity(), this.getOperator());
 		}
 		// 静态化
 		this.getPublishService().asyncPublishContent(this);
@@ -263,11 +293,15 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			newContent.setOfflineDate(null);
 		}
 		this.getContentService().dao().save(newContent);
-		this.getParams().put("NewContentId", newContent.getContentId());
+		copyTo0(newContent, copyType);
 		// 栏目内容数+1
 		this.getCatalogService().changeContentCount(toCatalog.getCatalogId(), 1);
+
+		SpringUtils.publishEvent(new AfterContentCopyEvent(this, this.getContentEntity(), newContent));
 		return newContent;
 	}
+
+	protected abstract void copyTo0(CmsContent newContent, Integer copyType);
 
 	@Override
 	public void moveTo(CmsCatalog toCatalog) {
@@ -308,24 +342,26 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		if (ContentStatus.isPublished(this.getContentEntity().getStatus())) {
 			this.getPublishService().publishContent(List.of(content.getContentId()), getOperator());
 		}
+		ContentLogUtils.addLog(ContentOpType.TOP, this.getContentEntity(), this.getOperator());
 	}
 
 	@Override
 	public void cancelTop() {
-		content.setTopFlag(0L);
-		content.setTopDate(null);
-		content.updateBy(this.getOperatorUName());
+		if (content.getTopFlag() > 0L) {
+			return;
+		}
 		this.getContentService().dao().updateById(content);
 		// 重新发布内容
 		if (ContentStatus.isPublished(this.getContentEntity().getStatus())) {
 			this.getPublishService().publishContent(List.of(content.getContentId()), getOperator());
 		}
+		ContentLogUtils.addLog(ContentOpType.CANCEL_TOP, this.getContentEntity(), this.getOperator());
 	}
 
 	@Override
 	public void sort(Long targetContentId) {
 		if (targetContentId.equals(this.getContentEntity().getContentId())) {
-			return; // 排序目标是自己直接返回
+			return;
 		}
 		checkLock();
 		CmsContent next = this.getContentService().dao().getById(targetContentId);
@@ -346,33 +382,41 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		}
 		this.getContentEntity().updateBy(this.getOperatorUName());
 		this.getContentService().dao().updateById(content);
+		ContentLogUtils.addLog(ContentOpType.SORT, this.getContentEntity(), this.getOperator());
 	}
 
 	@Override
 	public void offline() {
 		String status = this.getContentEntity().getStatus();
-		this.getContentEntity().setStatus(ContentStatus.OFFLINE);
-		this.getContentEntity().updateBy(this.getOperatorUName());
-		this.getContentService().dao().updateById(this.getContentEntity());
-
-		if (ContentStatus.isPublished(status)) {
-				// 已发布内容删除静态页面
-				this.getContentService().deleteStaticFiles(this.getContentEntity());
-				// 重新发布内容所在栏目和父级栏目
-				String[] catalogIds = this.getContentEntity().getCatalogAncestors()
-						.split(CatalogUtils.ANCESTORS_SPLITER);
-				for (String catalogId : catalogIds) {
-					this.getPublishService().publishCatalog(this.getCatalogService().getCatalog(Long.valueOf(catalogId)),
-							false, false, null, this.getOperator());
-				}
+		if (!ContentStatus.isOffline(status)) {
+			this.getContentEntity().setStatus(ContentStatus.OFFLINE);
+			this.getContentEntity().updateBy(this.getOperatorUName());
+			this.getContentService().dao().updateById(this.getContentEntity());
 		}
+		if (ContentStatus.isPublished(status)) {
+			// 已发布内容删除静态页面
+			this.getContentService().deleteStaticFiles(this.getContentEntity());
+			// 重新发布内容所在栏目和父级栏目
+			String[] catalogIds = this.getContentEntity().getCatalogAncestors()
+					.split(CatalogUtils.ANCESTORS_SPLITER);
+			for (String catalogId : catalogIds) {
+				this.getPublishService().publishCatalog(this.getCatalogService().getCatalog(Long.valueOf(catalogId)),
+						false, false, null, this.getOperator());
+			}
+		}
+		ContentLogUtils.addLog(ContentOpType.OFFLINE, this.getContentEntity(), this.getOperator());
+		SpringUtils.publishEvent(new AfterContentOfflineEvent(this, this));
 	}
 
 	@Override
 	public void toPublish() {
-		this.getContentEntity().setStatus(ContentStatus.TO_PUBLISHED);
-		this.getContentEntity().updateBy(this.getOperatorUName());
-		this.getContentService().dao().updateById(this.getContentEntity());
+		if (!ContentStatus.isToPublish(this.getContentEntity().getStatus())) {
+			this.getContentEntity().setStatus(ContentStatus.TO_PUBLISHED);
+			this.getContentEntity().updateBy(this.getOperatorUName());
+			this.getContentService().dao().updateById(this.getContentEntity());
+		}
+		ContentLogUtils.addLog(ContentOpType.TO_PUBLISH, this.getContentEntity(), this.getOperator());
+		SpringUtils.publishEvent(new AfterContentToPublishEvent(this, this));
 	}
 
 	@Override

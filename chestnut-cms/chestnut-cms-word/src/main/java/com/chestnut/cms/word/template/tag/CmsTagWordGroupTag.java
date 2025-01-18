@@ -40,27 +40,31 @@ import java.util.Optional;
 public class CmsTagWordGroupTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_tag_word_group";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_CODE = "{FREEMARKER.TAG." + TAG_NAME + ".code}";
+	public final static String ATTR_USAGE_LEVEL = "{FREEMARKER.TAG." + TAG_NAME + ".level}";
+	public final static String ATTR_OPTION_LEVEL_ROOT = "{FREEMARKER.TAG." + TAG_NAME + ".level.Root}";
+	public final static String ATTR_OPTION_LEVEL_CURRENT = "{FREEMARKER.TAG." + TAG_NAME + ".level.Current}";
+	public final static String ATTR_OPTION_LEVEL_CHILD = "{FREEMARKER.TAG." + TAG_NAME + ".level.Child}";
 
-	private static final String TAG_ATTR_CODE = "code";
-
-	private static final String TAG_ATTR_LEVEL = "level";
+	private static final String ATTR_CODE = "code";
+	private static final String ATTR_LEVEL = "level";
 
 	private final ITagWordGroupService tagWordGroupService;
 	
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr(TAG_ATTR_CODE, true, TagAttrDataType.STRING, "TAG词分组编码") );
-		tagAttrs.add(new TagAttr(TAG_ATTR_LEVEL, false, TagAttrDataType.STRING, "数据获取范围，值为`Root`时忽略属性code",
+		tagAttrs.add(new TagAttr(ATTR_CODE, true, TagAttrDataType.STRING, ATTR_USAGE_CODE) );
+		tagAttrs.add(new TagAttr(ATTR_LEVEL, false, TagAttrDataType.STRING, ATTR_USAGE_LEVEL,
 				TagWordGroupTagLevel.toTagAttrOptions(), TagWordGroupTagLevel.Current.name()));
 		return tagAttrs;
 	}
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
-		String group = MapUtils.getString(attrs, TAG_ATTR_CODE);
+		String group = MapUtils.getString(attrs, ATTR_CODE);
 		Long siteId = TemplateUtils.evalSiteId(env);
 		Optional<TagWordGroup> opt = tagWordGroupService.lambdaQuery()
 				.eq(TagWordGroup::getOwner, siteId)
@@ -68,7 +72,7 @@ public class CmsTagWordGroupTag extends AbstractListTag {
 		if (opt.isEmpty()) {
 			throw new TemplateException("Tag word group not found: " + group, env);
 		}
-		String level = MapUtils.getString(attrs, TAG_ATTR_LEVEL);
+		String level = MapUtils.getString(attrs, ATTR_LEVEL);
 
 		TagWordGroup parent = opt.get();
 		LambdaQueryWrapper<TagWordGroup> q = new LambdaQueryWrapper<>();
@@ -87,6 +91,11 @@ public class CmsTagWordGroupTag extends AbstractListTag {
 	}
 
 	@Override
+	public Class<TagWordGroup> getDataClass() {
+		return TagWordGroup.class;
+	}
+
+	@Override
 	public String getTagName() {
 		return TAG_NAME;
 	}
@@ -102,7 +111,9 @@ public class CmsTagWordGroupTag extends AbstractListTag {
 	}
 
 	private enum TagWordGroupTagLevel {
-		Root("所有分组"), Current("同级分组"), Child("子分组");
+		Root(ATTR_OPTION_LEVEL_ROOT),
+		Current(ATTR_OPTION_LEVEL_CURRENT),
+		Child(ATTR_OPTION_LEVEL_CHILD);
 
 		private final String desc;
 

@@ -4,9 +4,6 @@ ALTER TABLE cms_image DROP COLUMN deleted;
 ALTER TABLE cms_audio DROP COLUMN deleted;
 ALTER TABLE cms_video DROP COLUMN deleted;
 
--- ----------------------------
--- Table structure for b_cms_content
--- ----------------------------
 CREATE TABLE `b_cms_content` (
   `content_id` bigint NOT NULL COMMENT '主键ID',
   `site_id` bigint NOT NULL COMMENT '所属站点ID',
@@ -69,9 +66,7 @@ CREATE TABLE `b_cms_content` (
   `backup_remark` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`backup_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
--- ----------------------------
--- Table structure for b_cms_article_detail
--- ----------------------------
+
 CREATE TABLE `b_cms_article_detail` (
   `content_id` bigint NOT NULL COMMENT 'ID',
   `site_id` bigint NOT NULL,
@@ -85,9 +80,7 @@ CREATE TABLE `b_cms_article_detail` (
   `backup_remark` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`backup_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
--- ----------------------------
--- Table structure for b_cms_image
--- ----------------------------
+
 CREATE TABLE `b_cms_image` (
   `image_id` bigint NOT NULL COMMENT '主键ID',
   `site_id` bigint DEFAULT NULL,
@@ -114,9 +107,7 @@ CREATE TABLE `b_cms_image` (
   `backup_remark` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`backup_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
--- ----------------------------
--- Table structure for b_cms_audio
--- ----------------------------
+
 CREATE TABLE `b_cms_audio` (
   `audio_id` bigint NOT NULL COMMENT 'ID',
   `content_id` bigint NOT NULL COMMENT '所属内容ID',
@@ -145,9 +136,7 @@ CREATE TABLE `b_cms_audio` (
   `backup_remark` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`backup_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
--- ----------------------------
--- Table structure for b_cms_video
--- ----------------------------
+
 CREATE TABLE `b_cms_video` (
   `video_id` bigint NOT NULL,
   `content_id` bigint NOT NULL COMMENT '所属内容ID',
@@ -179,9 +168,6 @@ CREATE TABLE `b_cms_video` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
 
 -- __CC_IGNORE__
--- ----------------------------
--- Table structure for cms_book
--- ----------------------------
 CREATE TABLE `cms_book` (
   `content_id` bigint NOT NULL COMMENT 'ID',
   `site_id` bigint NOT NULL COMMENT '所属站点ID',
@@ -199,9 +185,7 @@ CREATE TABLE `cms_book` (
   `completed` varchar(1) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '是否完结',
   PRIMARY KEY (`content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
--- ----------------------------
--- Table structure for b_cms_book
--- ----------------------------
+
 CREATE TABLE `b_cms_book` (
   `content_id` bigint NOT NULL COMMENT 'ID',
   `site_id` bigint NOT NULL COMMENT '所属站点ID',
@@ -223,9 +207,7 @@ CREATE TABLE `b_cms_book` (
   `backup_remark` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`backup_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
--- ----------------------------
--- Table structure for cms_book_chapter
--- ----------------------------
+
 CREATE TABLE `cms_book_chapter` (
   `chapter_id` bigint NOT NULL COMMENT 'ID',
   `site_id` bigint NOT NULL COMMENT '所属站点ID',
@@ -243,9 +225,7 @@ CREATE TABLE `cms_book_chapter` (
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`chapter_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
--- ----------------------------
--- Table structure for b_cms_book_chapter
--- ----------------------------
+
 CREATE TABLE `b_cms_book_chapter` (
   `chapter_id` bigint NOT NULL COMMENT 'ID',
   `site_id` bigint NOT NULL COMMENT '所属站点ID',

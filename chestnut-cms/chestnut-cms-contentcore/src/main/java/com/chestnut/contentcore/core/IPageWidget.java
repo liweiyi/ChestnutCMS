@@ -15,12 +15,8 @@
  */
 package com.chestnut.contentcore.core;
 
-import java.io.IOException;
-
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.domain.CmsPageWidget;
-
-import freemarker.template.TemplateException;
 
 /**
  * 页面部件
@@ -59,5 +55,5 @@ public interface IPageWidget {
 
 	void delete();
 
-	void publish() throws TemplateException, IOException;
+	void publish();
 }

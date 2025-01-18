@@ -25,6 +25,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.vo.ContentPathRuleVO;
 import com.chestnut.contentcore.domain.vo.DynamicPageTypeVO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.service.ISiteService;
@@ -126,7 +127,6 @@ public class CoreController extends BaseRestController {
 									 @RequestParam(value = "pi", required = false, defaultValue = "1") Integer pageIndex,
 									 @RequestParam Map<String, Object> params) {
 		try {
-			// TODO 缓存
 			long s = System.currentTimeMillis();
 			CmsSite site = this.siteService.getSite(siteId);
 			// 模板ID = 通道:站点目录:模板文件名
@@ -164,9 +164,25 @@ public class CoreController extends BaseRestController {
 	public R<?> getDynamicPageTypes() {
 		List<DynamicPageTypeVO> list = ContentCoreUtils.getDynamicPageTypes().stream()
 				.map(DynamicPageTypeVO::newInstance).toList();
-		list.forEach( vo ->
-			vo.setName(I18nUtils.get(vo.getName()))
-		);
+		list.forEach( vo -> {
+			vo.setName(I18nUtils.get(vo.getName()));
+			vo.setDesc(I18nUtils.get(vo.getDesc()));
+			vo.getRequestArgs().forEach(requestArg -> {
+				requestArg.setName(I18nUtils.get(requestArg.getName()));
+				requestArg.setDesc(I18nUtils.get(requestArg.getDesc()));
+			});
+		});
+		return R.ok(list);
+	}
+
+	@Priv(type = AdminUserType.TYPE)
+	@GetMapping("/cms/contentPathRules")
+	public R<?> getContentPathRules() {
+		List<ContentPathRuleVO> list = ContentCoreUtils.getContentPathRules().stream()
+				.map(ContentPathRuleVO::newInstance).toList();
+		list.forEach( vo -> {
+			vo.setName(I18nUtils.get(vo.getName()));
+		});
 		return R.ok(list);
 	}
 }

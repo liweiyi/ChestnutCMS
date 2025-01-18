@@ -66,10 +66,11 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 
 	@Override
 	public List<SysDictData> selectDictDatasByType(String dictType) {
-		List<SysDictData> dictDatas = this.redisCache.getCacheObject(SysConstants.CACHE_SYS_DICT_KEY + dictType, () -> {
-			return new LambdaQueryChainWrapper<>(this.dictDataMapper).eq(SysDictData::getDictType, dictType).orderByAsc(SysDictData::getDictSort).list();
-		});
-		return dictDatas;
+        Map<String, SysDictData> map = this.redisCache.getCacheMap(SysConstants.CACHE_SYS_DICT_KEY + dictType, SysDictData.class,
+				() -> new LambdaQueryChainWrapper<>(this.dictDataMapper).eq(SysDictData::getDictType, dictType)
+						.orderByAsc(SysDictData::getDictSort).list()
+						.stream().collect(Collectors.toMap(SysDictData::getDictValue, d -> d)));
+		return map.values().stream().toList();
 	}
 
 	@Override
@@ -162,7 +163,7 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 
 	@Override
 	public void clearDictCache() {
-		this.redisCache.deleteObject(this.redisCache.keys(SysConstants.CACHE_SYS_DICT_KEY + "*"));
+		this.redisCache.deleteObjects(this.redisCache.keys(SysConstants.CACHE_SYS_DICT_KEY + "*"));
 	}
 
 	private void deleteCache(String dictType) {
@@ -170,17 +171,12 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 	}
 
 	private void setCache(String dictType, List<SysDictData> list) {
-		this.redisCache.setCacheObject(SysConstants.CACHE_SYS_DICT_KEY + dictType, list);
+		Map<String, SysDictData> collect = list.stream().collect(Collectors.toMap(SysDictData::getDictValue, d -> d));
+		this.redisCache.setCacheMap(SysConstants.CACHE_SYS_DICT_KEY + dictType, collect);
 	}
 
 	/**
 	 * 将列表指定字段getter值通过字典数据映射字典名称到指定字段setter
-	 *
-	 * @param <T>
-	 * @param dictType
-	 * @param list
-	 * @param getter
-	 * @param setter
 	 */
 	@Override
 	public <T> void decode(String dictType, List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {

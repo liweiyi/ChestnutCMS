@@ -46,11 +46,6 @@ public class CmsArticleDetail implements IBackupable<BCmsArticleDetail> {
      * 站点ID
      */
     private Long siteId;
-    
-    /**
-     * 正文详情（json）
-     */
-    private String contentJson;
 
     /**
      * 正文详情（html）
@@ -66,6 +61,11 @@ public class CmsArticleDetail implements IBackupable<BCmsArticleDetail> {
      * 是否下载远程图片
      */
     private String downloadRemoteImage;
+
+    /**
+     * 正文格式（图文混排，MARKDOWN）
+     */
+    private String format;
 
     @Override
     public BCmsArticleDetail toBackupEntity() {

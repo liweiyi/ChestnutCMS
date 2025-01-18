@@ -42,6 +42,9 @@ public class ResourceUtils {
     private static final Pattern TagAttrHrefPattern = Pattern.compile("href\\s*=\\s*['\"]([^'\"]+)['\"]",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
 
+    private static final Pattern TagAttrPosterPattern = Pattern.compile("poster\\s*=\\s*['\"]([^'\"]+)['\"]",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
+
     private static final Pattern TagAttrIUrlPattern = Pattern.compile("iurl\\s*=\\s*['\"]([^'\"]+)['\"]",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
 
@@ -66,11 +69,7 @@ public class ResourceUtils {
         }
         FileStorageArgsProperty.FileStorageArgs fileStorageArgs = FileStorageArgsProperty.getValue(site.getConfigProps());
         if (fileStorageArgs != null && StringUtils.isNotEmpty(fileStorageArgs.getDomain())) {
-            String domain = fileStorageArgs.getDomain();
-            if (!domain.endsWith("/")) {
-                domain += "/";
-            }
-            return domain;
+            return StringUtils.appendIfMissing(fileStorageArgs.getDomain(), "/");
         }
         // 无法获取到对象存储访问地址时默认使用站点资源域名
         return site.getResourceUrl();
@@ -96,19 +95,7 @@ public class ResourceUtils {
             try {
                 // 移除iurl属性
                 tagStr = TagAttrIUrlPattern.matcher(tagStr).replaceAll("");
-                // 查找src属性，替换成iurl
-                Matcher matcherSrc = TagAttrSrcPattern.matcher(tagStr);
-                if (matcherSrc.find()) {
-                    tagStr = tagStr.substring(0, matcherSrc.start()) + "src=\"" + iurl + "\""
-                            + tagStr.substring(matcherSrc.end());
-                } else {
-                    // 无src属性则继续查找href属性
-                    Matcher matcherHref = TagAttrHrefPattern.matcher(tagStr);
-                    if (matcherHref.find()) {
-                        tagStr = tagStr.substring(0, matcherHref.start()) + "href=\"" + iurl + "\""
-                                + tagStr.substring(matcherHref.end());
-                    }
-                }
+                tagStr = matchAttrForIUrl(tagStr, iurl);
             } catch (Exception e) {
                 log.warn("InternalUrl parse failed: " + iurl, e);
             }
@@ -119,5 +106,28 @@ public class ResourceUtils {
         }
         sb.append(content.substring(lastEndIndex));
         return sb.toString();
+    }
+
+    private static String matchAttrForIUrl(String tagStr, String iurl) {
+        if (tagStr.startsWith("<video ")) {
+            Matcher matcherPoster = TagAttrPosterPattern.matcher(tagStr);
+            if (matcherPoster.find()) {
+                tagStr = tagStr.substring(0, matcherPoster.start()) + "poster=\"" + iurl + "\""
+                        + tagStr.substring(matcherPoster.end());
+            }
+        } else if(tagStr.startsWith("<a ")) {
+            Matcher matcherHref = TagAttrHrefPattern.matcher(tagStr);
+            if (matcherHref.find()) {
+                tagStr = tagStr.substring(0, matcherHref.start()) + "href=\"" + iurl + "\""
+                        + tagStr.substring(matcherHref.end());
+            }
+        } else {
+            Matcher matcherSrc = TagAttrSrcPattern.matcher(tagStr);
+            if (matcherSrc.find()) {
+                tagStr = tagStr.substring(0, matcherSrc.start()) + "src=\"" + iurl + "\""
+                        + tagStr.substring(matcherSrc.end());
+            }
+        }
+        return tagStr;
     }
 }

@@ -5,7 +5,7 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.5.0
+  version: 1.5.1
   # 版权年份
   copyrightYear: 2022-2024
   system:
@@ -191,10 +191,8 @@ spring:
 
 # Actuator 监控端点的配置项
 management:
-  trace:
-    http:
-      enabled: true
   endpoints:
+    enabled-by-default: false
     web:
       exposure:
         include: '*'
@@ -203,6 +201,9 @@ management:
       show-details: ALWAYS
     logfile:
       external-file: ./logs/client.log
+  httpexchanges:
+    recording:
+      enabled: true
 
 sa-token: 
     # token名称 (同时也是cookie名称)
@@ -237,6 +238,9 @@ mybatis-plus:
 xss: 
   # 过滤开关
   enabled: true
+  # 过滤链接
+  urlPatterns: 
+    - /*
 
 xxl:
   job:

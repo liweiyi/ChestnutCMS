@@ -57,7 +57,7 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	/**
 	 * 删除指定栏目内容
 	 */
-	void deleteContentsByCatalog(CmsCatalog catalog, LoginUser operator);
+	void deleteContentsByCatalog(CmsCatalog catalog, boolean includeChild, LoginUser operator);
 
 	/**
 	 * 获取内容链接
@@ -94,6 +94,8 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	 */
 	void move(MoveContentDTO dto);
 
+	void moveContent(CmsContent cmsContent, CmsCatalog toCatalog, LoginUser operator);
+
 	/**
 	 * 校验重复标题，存在重复标题返回true
 	 *
@@ -105,7 +107,7 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	 */
 	boolean checkSameTitle(Long siteId, Long catalogId, Long contentId, String title);
 
-	/**
+    /**
 	 * 置顶
 	 */
 	void setTop(SetTopContentDTO dto);

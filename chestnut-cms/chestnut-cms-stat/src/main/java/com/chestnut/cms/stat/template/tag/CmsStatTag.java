@@ -32,8 +32,8 @@ import java.util.Objects;
 public class CmsStatTag extends AbstractTag {
 
 	public final static String TAG_NAME = "cms_stat";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
 
 	@Override
 	public String getTagName() {

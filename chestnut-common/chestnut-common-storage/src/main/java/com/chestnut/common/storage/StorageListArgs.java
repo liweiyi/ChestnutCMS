@@ -43,16 +43,16 @@ public class StorageListArgs {
 	 * 存储空间名
 	 */
 	private String bucket;
-
-	/**
-	 * 路径
-	 */
-	private String path;
 	
 	/**
 	 * 列举文件的continuationToken
 	 */
 	private String continuationToken;
+
+	/**
+	 * 列举文件前缀
+	 */
+	private String prefix;
 	
 	/**
 	 * 列举文件的最大个数

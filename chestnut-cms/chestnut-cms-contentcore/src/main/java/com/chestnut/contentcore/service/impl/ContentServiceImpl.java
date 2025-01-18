@@ -36,25 +36,28 @@ import com.chestnut.contentcore.domain.dto.MoveContentDTO;
 import com.chestnut.contentcore.domain.dto.SetTopContentDTO;
 import com.chestnut.contentcore.domain.dto.SortContentDTO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
-import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.properties.RepeatTitleCheckProperty;
+import com.chestnut.contentcore.publish.IContentPathRule;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
+import com.chestnut.contentcore.util.ContentLogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.fixed.config.BackendContext;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.PermissionUtils;
+import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,13 +68,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ContentServiceImpl implements IContentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ContentServiceImpl.class);
-
-	private final ApplicationContext applicationContext;
 
 	private final ISiteService siteService;
 
@@ -103,8 +105,6 @@ public class ContentServiceImpl implements IContentService {
 			IContent<?> content = contentType.loadContent(xContent);
 			content.setOperator(operator);
 			content.delete();
-
-			applicationContext.publishEvent(new AfterContentDeleteEvent(this, content));
 		}
 	}
 
@@ -139,14 +139,19 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public void deleteContentsByCatalog(CmsCatalog catalog, LoginUser operator) {
+	public void deleteContentsByCatalog(CmsCatalog catalog, boolean includeChild, LoginUser operator) {
 		long pageSize = 100;
-		long total = this.dao().lambdaQuery().likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors()).count();
+		long total = this.dao().lambdaQuery()
+				.eq(!includeChild, CmsContent::getCatalogId, catalog.getCatalogId())
+				.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors())
+				.count();
 
 		for (int i = 0; i * pageSize < total; i++) {
 			AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize / total),
 					"正在栏目删除内容：" + (i * pageSize) + " / " + total);
-			this.dao().lambdaQuery().likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors())
+			this.dao().lambdaQuery()
+					.eq(!includeChild, CmsContent::getCatalogId, catalog.getCatalogId())
+					.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors())
 					.page(new Page<>(i, pageSize, false)).getRecords().forEach(content -> {
 						IContentType contentType = ContentCoreUtils.getContentType(content.getContentType());
 						IContent<?> icontent = contentType.loadContent(content);
@@ -171,7 +176,9 @@ public class ContentServiceImpl implements IContentService {
 		if (catalog.isStaticize()) {
 			String contentPath = content.getStaticPath();
 			if (StringUtils.isEmpty(contentPath)) {
-				contentPath = catalog.getPath() + content.getContentId() + "." + site.getStaticSuffix(publishPipeCode);
+				IContentPathRule rule = ContentCoreUtils.getContentPathRule(catalog.getDetailNameRule());
+				String path = Objects.isNull(rule) ? catalog.getPath() : rule.getDirectory(site, catalog, content);
+				contentPath = path + content.getContentId() + "." + site.getStaticSuffix(publishPipeCode);
 			}
 			return site.getUrl(publishPipeCode) + contentPath;
 		} else {
@@ -193,6 +200,7 @@ public class ContentServiceImpl implements IContentService {
 		content.setLockUser(operator);
 		content.updateBy(operator);
 		this.dao().updateById(content);
+		ContentLogUtils.addLog(ContentOpType.LOCK, content, AdminUserType.TYPE, operator);
 	}
 
 	@Override
@@ -209,6 +217,7 @@ public class ContentServiceImpl implements IContentService {
 		content.setLockUser(StringUtils.EMPTY);
 		content.updateBy(operator);
 		this.dao().updateById(content);
+		ContentLogUtils.addLog(ContentOpType.UNLOCK, content, AdminUserType.TYPE, operator);
 	}
 
 	@Override
@@ -228,9 +237,7 @@ public class ContentServiceImpl implements IContentService {
 
 	@Transactional(rollbackFor = Exception.class)
 	public void addContent0(IContent<?> content) {
-		applicationContext.publishEvent(new BeforeContentSaveEvent(this, content, true));
 		content.add();
-		applicationContext.publishEvent(new AfterContentSaveEvent(this, content, true));
 		AsyncTaskManager.setTaskPercent(100);
 	}
 
@@ -250,9 +257,7 @@ public class ContentServiceImpl implements IContentService {
 
 	@Transactional(rollbackFor = Exception.class)
 	public void saveContent0(IContent<?> content) {
-		applicationContext.publishEvent(new BeforeContentSaveEvent(this, content, false));
 		content.save();
-		applicationContext.publishEvent(new AfterContentSaveEvent(this, content, false));
 		AsyncTaskManager.setTaskPercent(100);
 	}
 
@@ -277,8 +282,7 @@ public class ContentServiceImpl implements IContentService {
 				IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 				IContent<?> content = ct.loadContent(cmsContent);
 				content.setOperator(dto.getOperator());
-				CmsContent newContent = content.copyTo(catalog, dto.getCopyType());
-				this.applicationContext.publishEvent(new AfterContentCopyEvent(this, content.getContentEntity(), newContent));
+				content.copyTo(catalog, dto.getCopyType());
 			}
 		}
 	}
@@ -291,21 +295,28 @@ public class ContentServiceImpl implements IContentService {
 			CmsContent cmsContent = this.dao().getById(contentId);
 			Assert.notNull(cmsContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 
-			if (cmsContent.getCatalogId().equals(dto.getCatalogId())) {
-				continue;
-			}
 			CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
 			Assert.notNull(catalog,
 					() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", dto.getCatalogId()));
 
-			if (!catalog.getCatalogType().equals(CatalogType_Common.ID)) {
-				continue;
-			}
-			IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
-			IContent<?> content = ct.loadContent(cmsContent);
-			content.setOperator(dto.getOperator());
-			content.moveTo(catalog);
+			moveContent(cmsContent, catalog, dto.getOperator());
 		}
+	}
+
+	@Override
+	public void moveContent(CmsContent cmsContent, CmsCatalog toCatalog, LoginUser operator) {
+		if (cmsContent.getCatalogId().equals(toCatalog.getCatalogId())) {
+			log.warn("Cannot move content to source catalog!");
+			return;
+		}
+		if (!toCatalog.getCatalogType().equals(CatalogType_Common.ID)) {
+			log.warn("Cannot move content to catalog which type is not common!");
+			return;
+		}
+		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
+		IContent<?> content = ct.loadContent(cmsContent);
+		content.setOperator(operator);
+		content.moveTo(toCatalog);
 	}
 
 	@Override
@@ -341,8 +352,6 @@ public class ContentServiceImpl implements IContentService {
 			IContent<?> content = ct.loadContent(c);
 			content.setOperator(operator);
 			content.offline();
-
-			this.applicationContext.publishEvent(new AfterContentOfflineEvent(this, content));
 		}
 	}
 
@@ -365,7 +374,6 @@ public class ContentServiceImpl implements IContentService {
 			IContent<?> content = ct.loadContent(c);
 			content.setOperator(operator);
 			content.toPublish();
-			this.applicationContext.publishEvent(new AfterContentToPublishEvent(this, content));
 		}
 	}
 

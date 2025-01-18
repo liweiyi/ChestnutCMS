@@ -15,25 +15,10 @@
  */
 package com.chestnut.system.controller.common;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.Base64;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.imageio.ImageIO;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.util.FastByteArrayOutputStream;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.google.code.kaptcha.Producer;
 import com.chestnut.common.captcha.CaptchaType;
 import com.chestnut.common.config.CaptchaConfig;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.GlobalException;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.system.SysConstants;
@@ -41,8 +26,20 @@ import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.domain.vo.ImageCaptchaVO;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.config.SysCaptchaEnable;
-
+import com.chestnut.system.monitor.CaptchaMonitoredCache;
+import com.google.code.kaptcha.Producer;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.FastByteArrayOutputStream;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Base64;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 验证码操作处理
@@ -53,7 +50,7 @@ public class CaptchaController {
 
 	private final Map<String, Producer> captchaProducers;
 
-	private final RedisCache redisCache;
+	private final CaptchaMonitoredCache captchaCache;
 
 	private final SysProperties properties;
 
@@ -90,7 +87,7 @@ public class CaptchaController {
 			throw new GlobalException("Unkown captcha type: " + captchaType);
 		}
 
-		redisCache.setCacheObject(verifyKey, code, SysConstants.CAPTCHA_EXPIRATION, TimeUnit.MINUTES);
+		captchaCache.setCache(verifyKey, code, SysConstants.CAPTCHA_EXPIRATION, TimeUnit.MINUTES);
 		// 转换流信息写出
 		FastByteArrayOutputStream os = new FastByteArrayOutputStream();
 		try {

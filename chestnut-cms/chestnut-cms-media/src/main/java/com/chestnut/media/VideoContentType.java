@@ -32,8 +32,6 @@ import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.enums.ContentCopyType;
-import com.chestnut.contentcore.enums.ContentOpType;
-import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishPipeService;
@@ -45,16 +43,12 @@ import com.chestnut.media.domain.vo.VideoAlbumVO;
 import com.chestnut.media.mapper.BCmsVideoMapper;
 import com.chestnut.media.service.IVideoService;
 import com.chestnut.system.fixed.dict.YesOrNo;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 @Component(IContentType.BEAN_NAME_PREFIX + VideoContentType.ID)
 @RequiredArgsConstructor
@@ -105,28 +99,15 @@ public class VideoContentType implements IContentType {
 	}
 
 	@Override
-	public IContent<?> readRequest(HttpServletRequest request) throws IOException {
-		VideoAlbumDTO dto = JacksonUtils.from(request.getInputStream(), VideoAlbumDTO.class);
+	public IContent<?> readFrom(InputStream is) {
+		VideoAlbumDTO dto = JacksonUtils.from(is, VideoAlbumDTO.class);
+		return readFrom0(dto);
+	}
 
-		CmsContent contentEntity;
-		if (dto.getOpType() == ContentOpType.UPDATE) {
-			contentEntity = this.contentService.dao().getById(dto.getContentId());
-			Assert.notNull(contentEntity,
-					() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", dto.getContentId()));
-		} else {
-			contentEntity = new CmsContent();
-		}
-		BeanUtils.copyProperties(dto, contentEntity);
-		CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
-		contentEntity.setSiteId(catalog.getSiteId());
-		contentEntity.setAttributes(ContentAttribute.convertInt(dto.getAttributes()));
-		// 发布通道配置
-		Map<String, Map<String, Object>> publishPipProps = new HashMap<>();
-		dto.getPublishPipeProps().forEach(prop -> {
-			publishPipProps.put(prop.getPipeCode(), prop.getProps());
-		});
-		contentEntity.setPublishPipeProps(publishPipProps);
-
+	private VideoContent readFrom0(VideoAlbumDTO dto) {
+		// 内容基础信息
+		CmsContent contentEntity = dto.convertToContentEntity(this.catalogService, this.contentService);
+		// 视频扩展信息
 		List<CmsVideo> videoList = dto.getVideoList();
 
 		VideoContent content = new VideoContent();
@@ -156,9 +137,6 @@ public class VideoContentType implements IContentType {
 				}
 			});
 			vo = VideoAlbumVO.newInstance(contentEntity, list);
-			if (StringUtils.isNotEmpty(vo.getLogo())) {
-				vo.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(vo.getLogo()));
-			}
 			// 发布通道模板数据
 			List<PublishPipeProp> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
 					PublishPipePropUseType.Content, contentEntity.getPublishPipeProps());

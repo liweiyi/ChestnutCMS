@@ -38,20 +38,22 @@ import java.util.Map;
 public class CmsSitePropertyTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_site_property";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_SITE_ID = "{FREEMARKER.TAG." + TAG_NAME + ".siteid}";
+	public final static String ATTR_USAGE_CODE = "{FREEMARKER.TAG." + TAG_NAME + ".code}";
 
-	public final static String TagAttr_SiteId = "siteid";
+	public final static String ATTR_SITE_ID = "siteid";
 
-	public final static String TagAttr_Code = "code";
+	public final static String ATTR_CODE = "code";
 
 	private final ISitePropertyService sitePropertyService;
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr(TagAttr_SiteId, false, TagAttrDataType.INTEGER, "站点ID，默认从模板变量中获取${Site.siteId}"));
-		tagAttrs.add(new TagAttr(TagAttr_Code, false, TagAttrDataType.STRING, "属性编码"));
+		tagAttrs.add(new TagAttr(ATTR_SITE_ID, false, TagAttrDataType.INTEGER, ATTR_USAGE_SITE_ID));
+		tagAttrs.add(new TagAttr(ATTR_CODE, false, TagAttrDataType.STRING, ATTR_USAGE_CODE));
 		return tagAttrs;
 	}
 
@@ -59,7 +61,7 @@ public class CmsSitePropertyTag extends AbstractListTag {
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex)
 			throws TemplateException {
 		long siteId = TemplateUtils.evalSiteId(env);
-		String code = MapUtils.getString(attrs, TagAttr_Code);
+		String code = MapUtils.getString(attrs, ATTR_CODE);
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 
 		LambdaQueryWrapper<CmsSiteProperty> q = new LambdaQueryWrapper<CmsSiteProperty>()
@@ -67,10 +69,12 @@ public class CmsSitePropertyTag extends AbstractListTag {
 				.eq(StringUtils.isNotEmpty(code), CmsSiteProperty::getPropCode, code);
 		q.apply(StringUtils.isNotEmpty(condition), condition);
 		Page<CmsSiteProperty> pageResult = this.sitePropertyService.page(new Page<>(pageIndex, size, page), q);
-		if (pageIndex > 1 & pageResult.getRecords().isEmpty()) {
-			throw new TemplateException("站点自定义属性数据列表页码超出上限：" + pageIndex, env);
-		}
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+	}
+
+	@Override
+	public Class<CmsSiteProperty> getDataClass() {
+		return CmsSiteProperty.class;
 	}
 
 	@Override

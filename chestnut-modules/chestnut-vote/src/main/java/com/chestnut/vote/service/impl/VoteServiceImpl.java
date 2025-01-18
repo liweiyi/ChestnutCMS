@@ -23,6 +23,7 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.vote.core.IVoteItemType;
 import com.chestnut.vote.core.IVoteUserType;
 import com.chestnut.vote.domain.Vote;
@@ -79,8 +80,7 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 	/**
 	 * 获取问卷调查参与用户类型
 	 * 
-	 * @param type
-	 * @return
+	 * @param type 类型ID
 	 */
 	@Override
 	public IVoteUserType getVoteUserType(String type) {
@@ -92,8 +92,7 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 	/**
 	 * 获取问卷调查选项类型
 	 * 
-	 * @param type
-	 * @return
+	 * @param type 类型ID
 	 */
 	@Override
 	public IVoteItemType getVoteItemType(String type) {
@@ -105,12 +104,11 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 	/**
 	 * 获取问卷调查详情
 	 * 
-	 * @param voteId
-	 * @return
+	 * @param voteId 问卷调查ID
 	 */
 	@Override
 	public VoteVO getVote(Long voteId) {
-		return this.redisCache.getCacheObject(CACHE_PREFIX + voteId, () -> loadVoteDetail(voteId));
+		return this.redisCache.getCacheObject(CACHE_PREFIX + voteId, VoteVO.class, () -> loadVoteDetail(voteId));
 	}
 
 	private VoteVO loadVoteDetail(Long voteId) {
@@ -139,7 +137,7 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 					vo.setContent(item.getContent());
 					vo.setDescription(item.getDescription());
 					vo.setSortFlag(item.getSortFlag());
-					vo.setVoteTotal(item.getVoteTotal().longValue());
+					vo.setVoteTotal(ObjectUtils.ifNullOrElse(item.getTotal(), () -> 0L, Integer::longValue));
 					return vo;
 				}).collect(Collectors.groupingBy(VoteSubjectItemVO::getSubjectId));
 
@@ -161,7 +159,7 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 	/**
 	 * 删除指定问卷调查缓存
 	 * 
-	 * @param voteId
+	 * @param voteId 问卷调查ID
 	 */
 	@Override
 	public void clearVoteCache(Long voteId) {

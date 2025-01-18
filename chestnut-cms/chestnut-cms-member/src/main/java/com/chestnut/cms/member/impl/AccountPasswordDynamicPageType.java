@@ -60,12 +60,12 @@ public class AccountPasswordDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getType() {
-        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
+        return TYPE;
     }
 
     @Override
     public String getName() {
-        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
+        return "{DYNAMIC_PAGE_TYPE." + TYPE + ".NAME}";
     }
 
     @Override

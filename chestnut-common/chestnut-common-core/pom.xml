@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>chestnut-common</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.0</version>
+		<version>1.5.1</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -116,6 +116,17 @@
 		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib-nodep</artifactId>
+		</dependency>
+
+		<!-- 图像处理 -->
+		<dependency>
+			<groupId>org.im4java</groupId>
+			<artifactId>im4java</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.usefulness</groupId>
+			<artifactId>webp-imageio</artifactId>
+			<version>0.8.0</version>
 		</dependency>
 	</dependencies>
 

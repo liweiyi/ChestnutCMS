@@ -49,7 +49,7 @@ public class AccountCentreDynamicPageType implements IDynamicPageType {
             REQUEST_ARG_SITE_ID,
             REQUEST_ARG_PUBLISHPIPE_CODE,
             REQUEST_ARG_PREVIEW,
-            new RequestArg("memberId", "会员ID", RequestArgType.Path, true, null)
+            new RequestArg("memberId", "{DYNAMIC_PAGE_TYPE." + TYPE + ".ARG.memberId}", RequestArgType.Path, true)
     );
 
     private final IMemberStatDataService memberStatDataService;
@@ -61,7 +61,7 @@ public class AccountCentreDynamicPageType implements IDynamicPageType {
 
     @Override
     public String getName() {
-        return "{DYNAMIC_PAGE_TYPE.NAME." + TYPE + "}";
+        return "{DYNAMIC_PAGE_TYPE." + TYPE + ".NAME}";
     }
 
     @Override

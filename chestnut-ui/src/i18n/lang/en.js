@@ -100,7 +100,8 @@ export default {
     GoHome: "Back Home",
     Err404: "404 Error!",
     Err404Tip: "Sorry, the page you are looking for does not exist. Try checking for errors in the URL, then press the refresh button on the browser or try to find other content in our application.",
-    PageNotFound: "Page not found!"
+    PageNotFound: "Page not found!",
+    Unkonwn: 'Unknown system error, please notify then administrator!'
   },
   Router: {
     Home: 'Home',
@@ -716,6 +717,7 @@ export default {
       ApplicationInfo: "Application Infomation",
       AppName: "Name",
       AppVersion: "Version",
+      LatestVersion: "Latest",
       CPU: "CPU",
       CPUCoreNum: "Core Number",
       CPUUserUsage: "User Usage",
@@ -775,6 +777,7 @@ export default {
       MemoryCost: "Memory Cost",
       CacheList: "Cache List",
       CacheName: "Cache Name",
+      CachePrefix: "Cache Key(Prefix)",
       CacheKeyList: "Cache Keys",
       CacheKey: "Cache Key",
       CacheValue: "Cache Value",
@@ -856,6 +859,24 @@ export default {
           Code: "Cannot be empty.",
           IframeSrc: "The video code <iframe>  attribtue `src` is missing!"
         }
+      },
+      VideoModifier: {
+        DialogTitle: "Video Infomation",
+        Cover: "Cover",
+        UploadCover: "Upload",
+        FrameCover: "Frame Screenshot",
+        FrameCoverSeconds: "Screenshot Seconds",
+        Screenshot: "Screenshot",
+        Controls: "Controls",
+        Loop: "Loop",
+        AutoPlay: "Auto Play",
+        Preload: "Preload Mode",
+        PreloadNone: "None",
+        PreloadMeta: "Meta",
+        PreloadAuto: "Auto",
+        Muted: "Muted",
+        Width: "Width",
+        Height: "Height",
       },
       InsertBaiduMap: "Baidu Map",
       BaiduMap: {
@@ -1062,7 +1083,11 @@ export default {
       MappingContentTip: "Mapping: only basic content, the extend content is from source.",
       SortUp: "MoveUp",
       SortDown: "MoveDown",
+      Merge: "Merge",
+      Clear: "Clear",
+      ExportCatalogTree: "Catalog Tree",
       NoSitePermissions: "No site permissions.",
+      ContentPathRule: "Content Path Rule",
       RuleTips: {
         Name: "Cannot be empty",
         Alias: "Cannot be empty and only [A-Za-z0-9_]+",
@@ -1073,6 +1098,9 @@ export default {
       PublishProgressTitle: "Publish catalog task",
       DeleteProgressTitle: "Delete catalog task",
       MoveProgressTitle: "Move catalog task",
+      MergeProgressTitle: "Merge catalog task",
+      ClearProgressTitle: "Clear catalog task",
+      ClearTip: "Are you sure to clear all contents in this catalog?",
       TemplateConfig: "Template Configuration",
       OtherConfig: "Other Configuration",
       Extend: {
@@ -1171,6 +1199,27 @@ export default {
       PushToBaidu: "Push To Baidu",
       PushToBaiduResult: "[ {0} ] Success: {1}, remain: {2}.<br/>",
       ImportCSSTip: "Import site/catalog publish-pipe prop 'UEditor CSS'.",
+      OpLog: "Logs"
+    },
+    ContentOpLog: {
+      Type: "Type",
+      OperatorType: "User Type",
+      Operator: "User",
+      Details: "Details",
+      LogTime: "Log Time",
+    },
+    Article: {
+      Format: "Article Format",
+      Markdown: {
+        Placeholder: "Input...",
+        AddImageLink: "Image Link",
+        UploadImage: "Upload Image",
+        UploadVideo: "Upload Video",
+        UploadAudio: "Upload Audio",
+        UploadFile: "Upload File",
+        ImageText: "Image Alt",
+        ImageLink: "Image Link",
+      }
     },
     Image: {
       Title: "Title",
@@ -1404,9 +1453,14 @@ export default {
       TagAttrMandatory: "Required",
       TagAttrOptions: "Options",
       TagAttrDesc: "Description",
+      DataField: "Data Fields",
+      DeprecatedTag: "Deprecated",
+      DeprecatedTip: "Deprecated (since: {0}, forRemoval: {1})",
       Func: "Template Function",
       InputFuncName: "Input function name",
       UsageDesc: "Usage: ",
+      Demo: "Demo",
+      ClickToShowDemo: "Click to view examples.",
       FuncAlias: "Alias: ",
       FuncArgs: "Arguments: ",
       FuncName: "Function Name",
@@ -1601,6 +1655,17 @@ export default {
       NoSite: "No site!",
       UnitSecond: "(s)",
       TrendCharts: "Trend Charts",
+      SourceSite: "Source Site",
+      Top10SourceSite: "Top10 Source Site",
+      Top10VisitPage: "Top10 Visit Page",
+      NewOldVisitor: "Visitor",
+      Metrics: "Metrics",
+      NewVisitor: "New Visitor",
+      OldVisitor: "Old Visitor",
+      VisitSource: "Visit Source",
+      EngineSource: "Search Engine Source",
+      SearchWordSource: "Search Word Source",
+      SearchWord: "Search Word",
     },
     Adv: {
       AdName: "Ad Name",
@@ -1820,6 +1885,31 @@ export default {
       Placeholder: {
         ModelKey: "Input model key",
         ModelName: "Input model name"
+      }
+    }
+  },
+  Deploy: {
+    Cert: {
+      Domain: "Domain",
+      Issuer: "Authority",
+      IssueTime: "Issue Time",
+      ExpireTime: "Expire Time",
+      Apply: "Apply",
+      Auth: "Authorizate",
+      DownloadCrt: "Download",
+      Country: "Country",
+      State: "State",
+      Locality: "Locality",
+      Organization: "Organization",
+      AuthChallenge: "Http-01 Challenge",
+      DownloadHttp01File: "Dwonload http-01 challenge file.",
+      AddDomain: "Add domain",
+      EditDomain: "Edit domain",
+      ConfirmApply: "Are you sure to apply for the certificate?",
+      Applying: "Waiting for certificate application...",
+      Authroizating: "Authorizating...",
+      Placeholder: {
+        Domain: "Input domain..."
       }
     }
   }

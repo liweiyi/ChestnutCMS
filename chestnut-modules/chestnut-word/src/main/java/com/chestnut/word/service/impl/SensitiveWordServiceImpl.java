@@ -15,20 +15,13 @@
  */
 package com.chestnut.word.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.word.WordConstants;
+import com.chestnut.word.cache.SensitiveWordMonitoredCache;
 import com.chestnut.word.domain.SensitiveWord;
 import com.chestnut.word.mapper.SensitiveWordMapper;
 import com.chestnut.word.sensitive.SensitiveWordProcessor;
@@ -36,8 +29,14 @@ import com.chestnut.word.sensitive.SensitiveWordProcessor.MatchType;
 import com.chestnut.word.sensitive.SensitiveWordProcessor.ReplaceType;
 import com.chestnut.word.sensitive.SensitiveWordType;
 import com.chestnut.word.service.ISensitiveWordService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +44,8 @@ public class SensitiveWordServiceImpl extends ServiceImpl<SensitiveWordMapper, S
 		implements ISensitiveWordService, CommandLineRunner {
 
 	private final SensitiveWordProcessor processor;
+
+	private final SensitiveWordMonitoredCache wordCache;
 
 	@Override
 	public Set<String> check(String text) {
@@ -105,12 +106,23 @@ public class SensitiveWordServiceImpl extends ServiceImpl<SensitiveWordMapper, S
 	@Override
 	public void run(String... args) throws Exception {
 		// 敏感词黑名单
-		List<SensitiveWord> blackList = this.lambdaQuery()
-				.eq(SensitiveWord::getType, SensitiveWordType.BLACK.name()).list();
+		Set<String> blackList = getSensitiveWords(SensitiveWordType.BLACK);
 		// 敏感词白名单
-		List<SensitiveWord> whiteList = this.lambdaQuery()
-				.eq(SensitiveWord::getType, SensitiveWordType.WHITE.name()).list();
-		this.processor.init(blackList.stream().map(SensitiveWord::getWord).collect(Collectors.toSet()),
-				whiteList.stream().map(SensitiveWord::getWord).collect(Collectors.toSet()));
+		Set<String> whiteList = getSensitiveWords(SensitiveWordType.WHITE);
+		this.processor.init(blackList, whiteList);
+	}
+
+	private Set<String> getSensitiveWords(SensitiveWordType type) {
+		return wordCache.get(type, () -> this.lambdaQuery()
+				.eq(SensitiveWord::getType, type.name())
+				.list()
+				.stream().map(SensitiveWord::getWord).collect(Collectors.toSet()));
+	}
+
+	@Override
+	public void sync() {
+		Set<String> blackWords = getSensitiveWords(SensitiveWordType.BLACK);
+		Set<String> whiteWords = getSensitiveWords(SensitiveWordType.WHITE);
+		this.processor.reset(blackWords, whiteWords);
 	}
 }

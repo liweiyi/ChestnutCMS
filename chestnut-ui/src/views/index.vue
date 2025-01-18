@@ -8,11 +8,11 @@
     <el-row :gutter="10">
       <el-col :span="12">
         <cms-site-visit-stat></cms-site-visit-stat>
+        <server-info></server-info>
       </el-col>
       <el-col :span="12">
         <shortcut></shortcut>
         <cms-site-data-stat></cms-site-data-stat>
-        <server-info></server-info>
       </el-col>
     </el-row>
   </div>

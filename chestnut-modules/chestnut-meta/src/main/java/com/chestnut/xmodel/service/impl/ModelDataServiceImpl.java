@@ -18,12 +18,10 @@ package com.chestnut.xmodel.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.chestnut.common.db.util.SqlBuilder;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.xmodel.core.IMetaFieldValidation;
-import com.chestnut.xmodel.core.IMetaModelType;
-import com.chestnut.xmodel.core.MetaModel;
-import com.chestnut.xmodel.core.MetaModelField;
+import com.chestnut.xmodel.core.*;
 import com.chestnut.xmodel.domain.XModel;
 import com.chestnut.xmodel.exception.MetaXValidationException;
 import com.chestnut.xmodel.service.IModelDataService;
@@ -33,10 +31,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -44,9 +39,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelDataServiceImpl implements IModelDataService {
 
+	private final Map<String, IMetaControlType> controlTypeMap;
+
 	private final Map<String, IMetaFieldValidation> fieldValidationMap;
 
 	private final IModelService modelService;
+
+	private IMetaControlType getControlType(String type) {
+		return controlTypeMap.get(IMetaControlType.BEAN_PREFIX + type);
+	}
 
 	private IMetaFieldValidation getFieldValidation(String type) {
 		return fieldValidationMap.get(IMetaFieldValidation.BEAN_PREFIX + type);
@@ -134,13 +135,10 @@ public class ModelDataServiceImpl implements IModelDataService {
 		// 自定义字段
 		model.getFields().forEach(field -> {
 			Object fieldValue = data.get(field.getCode());
+			// Long, Double, Date, String, String[], Object[]
+			IMetaControlType controlType = getControlType(field.getControlType());
 			if (Objects.nonNull(fieldValue)) {
-				if (fieldValue.getClass().isArray()) {
-					Object[] arr = (Object[]) fieldValue;
-					fieldValue = StringUtils.join(arr, StringUtils.COMMA);
-				} else if (fieldValue instanceof List<?> list) {
-					fieldValue = StringUtils.join(list, StringUtils.COMMA);
-				}
+				fieldValue = controlType.valueAsString(fieldValue);
 			}
 			if (Objects.isNull(fieldValue) || fieldValue.toString().isBlank()) {
 				fieldValue = StringUtils.isBlank(field.getDefaultValue()) ? null : field.getDefaultValue();

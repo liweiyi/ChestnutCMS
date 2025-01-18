@@ -16,8 +16,7 @@
             <cms-catalog-info 
               v-if="this.activeName=='basicInfo'" 
               :cid="selectedCatalogId"
-              @update="handleCatalogUpdate"
-              @remove="handleCatalogDelete"
+              @reload="handleCatalogReload"
             ></cms-catalog-info>
           </el-tab-pane>
           <el-tab-pane :label="$t('CMS.Catalog.Tab.Extend')" name="extend" :disabled="!selectedCatalog">
@@ -59,10 +58,7 @@ export default {
   methods: {
     handleTabClick (tab, event) {
     },
-    handleCatalogUpdate() {
-      this.$refs.catalogTree.loadCatalogTreeData();
-    },
-    handleCatalogDelete() {
+    handleCatalogReload() {
       this.$refs.catalogTree.loadCatalogTreeData();
     },
     handleTreeNodeClick(data) {

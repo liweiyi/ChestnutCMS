@@ -15,42 +15,25 @@
  */
 package com.chestnut.common.storage.oss;
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
-
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
-import com.aliyun.oss.model.CannedAccessControlList;
-import com.aliyun.oss.model.CopyObjectResult;
-import com.aliyun.oss.model.CreateBucketRequest;
-import com.aliyun.oss.model.ListObjectsV2Request;
-import com.aliyun.oss.model.ListObjectsV2Result;
-import com.aliyun.oss.model.OSSObject;
-import com.aliyun.oss.model.OSSObjectSummary;
-import com.aliyun.oss.model.PutObjectRequest;
+import com.aliyun.oss.model.*;
 import com.chestnut.common.i18n.I18nUtils;
-import com.chestnut.common.storage.IFileStorageType;
-import com.chestnut.common.storage.OSSClient;
-import com.chestnut.common.storage.StorageCopyArgs;
-import com.chestnut.common.storage.StorageCreateBucketArgs;
-import com.chestnut.common.storage.StorageExistArgs;
-import com.chestnut.common.storage.StorageListArgs;
-import com.chestnut.common.storage.StorageListResult;
-import com.chestnut.common.storage.StorageMoveArgs;
-import com.chestnut.common.storage.StorageReadArgs;
-import com.chestnut.common.storage.StorageRemoveArgs;
-import com.chestnut.common.storage.StorageWriteArgs;
+import com.chestnut.common.storage.*;
 import com.chestnut.common.storage.exception.FileStorageException;
+import org.springframework.stereotype.Component;
+
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component(IFileStorageType.BEAN_NAME_PREIFX + AliyunFileStorageType.TYPE)
 public class AliyunFileStorageType implements IFileStorageType {
 
 	public final static String TYPE = "AliyunOSS";
 
-	private Map<String, OSSClient<OSS>> clients = new HashMap<>();
+	private final Map<String, OSSClient<OSS>> clients = new HashMap<>();
 
 	@Override
 	public String getType() {
@@ -74,19 +57,17 @@ public class AliyunFileStorageType implements IFileStorageType {
 	}
 
 	@Override
-	public void reloadClient(String endPoint, String accessKey, String accessSecret) {
-		OSSClient<OSS> client = this.getClient(endPoint, accessKey, accessSecret);
+	public void reloadClient(String endpoint, String accessKey, String accessSecret) {
+		OSSClient<OSS> client = this.clients.get(endpoint);
 		if (client != null) {
 			client.getClient().shutdown();
-			this.clients.remove(endPoint);
+			this.clients.remove(endpoint);
 		}
-		this.getClient(endPoint, accessKey, accessSecret);
+		this.getClient(endpoint, accessKey, accessSecret);
 	}
 	
 	/**
 	 * 创建存储桶
-	 * 
-	 * @param bucketName
 	 */
 	@Override
 	public void createBucket(StorageCreateBucketArgs args) {
@@ -111,19 +92,18 @@ public class AliyunFileStorageType implements IFileStorageType {
 		OSSObject object = client.getClient().getObject(args.getBucket(), args.getPath());
 		return object.getObjectContent();
 	}
-	
-	public StorageListResult<OSSObjectSummary> list(StorageListArgs args) {
+
+	@Override
+	public List<String> list(StorageListArgs args) {
 		OSSClient<OSS> client = this.getClient(args.getEndpoint(), args.getAccessKey(), args.getAccessSecret());
 		
 		ListObjectsV2Request listObjectsV2Request = new ListObjectsV2Request()
 				.withBucketName(args.getBucket())
 				.withContinuationToken(args.getContinuationToken())
+				.withPrefix(args.getPrefix())
 				.withMaxKeys(args.getMaxKeys());
 		ListObjectsV2Result listObjectsV2 = client.getClient().listObjectsV2(listObjectsV2Request);
-		StorageListResult<OSSObjectSummary> storageListResult = new StorageListResult<>();
-		storageListResult.setNextContinuationToken(listObjectsV2.getNextContinuationToken());
-		storageListResult.setObjects(listObjectsV2.getObjectSummaries());
-		return storageListResult;
+        return listObjectsV2.getObjectSummaries().stream().map(OSSObjectSummary::getKey).toList();
 	}
 
 	@Override

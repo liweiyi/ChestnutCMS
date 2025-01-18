@@ -98,8 +98,8 @@ public class WordContentCoreHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<TagWordGroup> list = JacksonUtils.fromList(f, TagWordGroup.class);
             for (TagWordGroup data : list) {
+                Long oldGroupId = data.getGroupId();
                 try {
-                    Long oldGroupId = data.getGroupId();
                     data.setGroupId(IdUtils.getSnowflakeId());
                     data.setOwner(context.getSite().getSiteId().toString());
                     tagWordGroupService.checkUnique(data.getOwner(), data.getGroupId(), data.getCode());
@@ -108,7 +108,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     tagWordGroupService.save(data);
                     tagGroupIdMap.put(oldGroupId, data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入TAG词分组数据失败：" + data.getName() + "[" + data.getCode() + "]");
+                    AsyncTaskManager.addErrMessage("导入TAG词分组数据`" + oldGroupId + "`失败：" + e.getMessage());
                     log.error("Import tag word group failed", e);
                 }
             }
@@ -126,6 +126,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<TagWord> list = JacksonUtils.fromList(f, TagWord.class);
             for (TagWord data : list) {
+                Long oldTagId = data.getWordId();
                 try {
                     data.setWordId(IdUtils.getSnowflakeId());
                     data.setGroupId(tagGroupIdMap.get(data.getGroupId()).getGroupId());
@@ -133,7 +134,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     tagWordService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入TAG词数据失败：" + data.getWord());
+                    AsyncTaskManager.addErrMessage("导入TAG词数据`" + oldTagId + "`失败：" + e.getMessage());
                     log.error("Import tag word failed", e);
                 }
             }
@@ -145,8 +146,8 @@ public class WordContentCoreHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<HotWordGroup> list = JacksonUtils.fromList(f, HotWordGroup.class);
             for (HotWordGroup data : list) {
+                Long oldGroupId = data.getGroupId();
                 try {
-                    Long oldGroupId = data.getGroupId();
                     data.setGroupId(IdUtils.getSnowflakeId());
                     data.setOwner(context.getSite().getSiteId().toString());
                     hotWordGroupService.checkUnique(data.getOwner(), data.getGroupId(), data.getCode());
@@ -155,7 +156,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     hotWordGroupService.save(data);
                     hotGroupIdMap.put(oldGroupId, data.getGroupId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入热词分组数据失败：" + data.getName() + "[" + data.getCode() + "]");
+                    AsyncTaskManager.addErrMessage("导入热词分组数据`" + oldGroupId + "`失败：" + e.getMessage());
                     log.error("Import hot word group failed", e);
                 }
             }
@@ -166,6 +167,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<HotWord> list = JacksonUtils.fromList(f, HotWord.class);
             for (HotWord data : list) {
+                Long oldWordId = data.getWordId();
                 try {
                     data.setWordId(IdUtils.getSnowflakeId());
                     data.setGroupId(hotGroupIdMap.get(data.getGroupId()));
@@ -173,7 +175,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     hotWordService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入热词数据失败：" + data.getWord());
+                    AsyncTaskManager.addErrMessage("导入热词数据`" + oldWordId + "`失败：" + e.getMessage());
                     log.error("Import hot word failed", e);
                 }
             }

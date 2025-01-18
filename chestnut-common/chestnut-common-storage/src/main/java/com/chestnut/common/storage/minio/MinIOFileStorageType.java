@@ -15,37 +15,21 @@
  */
 package com.chestnut.common.storage.minio;
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
-
 import com.aliyun.oss.internal.Mimetypes;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
-import com.chestnut.common.storage.IFileStorageType;
-import com.chestnut.common.storage.OSSClient;
-import com.chestnut.common.storage.StorageCopyArgs;
-import com.chestnut.common.storage.StorageCreateBucketArgs;
-import com.chestnut.common.storage.StorageMoveArgs;
-import com.chestnut.common.storage.StorageReadArgs;
-import com.chestnut.common.storage.StorageRemoveArgs;
-import com.chestnut.common.storage.StorageWriteArgs;
+import com.chestnut.common.storage.*;
 import com.chestnut.common.storage.exception.FileStorageException;
 import com.chestnut.common.utils.StringUtils;
+import io.minio.*;
+import io.minio.messages.Item;
+import org.springframework.stereotype.Component;
 
-import io.minio.BucketExistsArgs;
-import io.minio.ComposeObjectArgs;
-import io.minio.ComposeSource;
-import io.minio.CopyObjectArgs;
-import io.minio.CopySource;
-import io.minio.GetObjectArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.PutObjectArgs;
-import io.minio.RemoveObjectArgs;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component(IFileStorageType.BEAN_NAME_PREIFX + MinIOFileStorageType.TYPE)
 public class MinIOFileStorageType implements IFileStorageType {
@@ -78,9 +62,6 @@ public class MinIOFileStorageType implements IFileStorageType {
 	@Override
 	public boolean testConnection(String endpoint, String accessKey, String accessSecret) {
 		OSSClient<MinioClient> client = this.getClient(endpoint, accessKey, accessSecret);
-		if (client == null) {
-			throw new FileStorageException("OSSClient cannot be empty: " + TYPE);
-		}
 		try {
 			client.getClient().listBuckets();
 			return true;
@@ -91,9 +72,6 @@ public class MinIOFileStorageType implements IFileStorageType {
 
 	/**
 	 * 创建存储桶
-	 * 
-	 * @param minioClientKey
-	 * @param bucketName
 	 */
 	@Override
 	public void createBucket(StorageCreateBucketArgs args) {
@@ -134,6 +112,29 @@ public class MinIOFileStorageType implements IFileStorageType {
 		} catch (Exception e) {
 			throw new FileStorageException(e);
 		}
+	}
+
+	@Override
+	public List<String> list(StorageListArgs args) {
+		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(),
+				args.getAccessSecret());
+
+		ListObjectsArgs listObjectsArgs = new ListObjectsArgs.Builder()
+				.bucket(args.getBucket())
+				.continuationToken(args.getContinuationToken())
+				.prefix(args.getPrefix())
+				.maxKeys(args.getMaxKeys())
+				.build();
+		Iterable<Result<Item>> results = client.getClient().listObjects(listObjectsArgs);
+		List<String> listObjects = new ArrayList<>();
+        for (Result<Item> result : results) {
+            try {
+                listObjects.add(result.get().objectName());
+            } catch (Exception e) {
+                throw new FileStorageException(e);
+            }
+        }
+		return listObjects;
 	}
 
 	@Override

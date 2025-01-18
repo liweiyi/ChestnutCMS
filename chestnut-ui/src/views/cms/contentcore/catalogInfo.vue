@@ -61,6 +61,16 @@
           @click="handleMoveCatalog">{{ $t('Common.Move') }}</el-button>
       </el-col>
       <el-col :span="1.5">
+        <el-button 
+          type="primary"
+          icon="el-icon-document-copy"
+          size="mini"
+          plain
+          :disabled="!this.catalogId"
+          v-hasPermi="[ $p('Catalog:Edit:{0}', [ catalogId ]) ]"
+          @click="handleMergeCatalogs">{{ $t('CMS.Catalog.Merge') }}</el-button>
+      </el-col>
+      <el-col :span="1.5">
         <el-popover
           width="226"
           :disabled="!this.catalogId"
@@ -81,6 +91,7 @@
             plain
             type="primary"
             icon="el-icon-sort"
+            :disabled="!this.catalogId"
           >{{ $t('Common.Sort') }}</el-button>
         </el-popover>
       </el-col>
@@ -92,8 +103,29 @@
             size="mini"
             plain
             :disabled="!this.catalogId"
-            slot="reference">{{ $t("Common.Delete") }}</el-button>
+            slot="reference"
+          >{{ $t("Common.Delete") }}</el-button>
         </el-popconfirm>
+      </el-col>
+      <el-col :span="1.5">
+        <el-popconfirm :title="$t('CMS.Catalog.ClearTip')" @confirm="handleClearCatalog" class="btn-permi" v-hasPermi="[ $p('Catalog:Edit:{0}', [ catalogId ]) ]">
+          <el-button 
+            type="danger"
+            icon="el-icon-delete-solid"
+            size="mini"
+            plain
+            :disabled="!this.catalogId"
+            slot="reference"
+          >{{ $t('CMS.Catalog.Clear') }}</el-button>
+        </el-popconfirm>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button 
+          type="primary"
+          icon="el-icon-rank"
+          size="mini"
+          plain
+          @click="handleExportCatalogTree">{{ $t('CMS.Catalog.ExportCatalogTree') }}</el-button>
       </el-col>
     </el-row>
     <el-form 
@@ -146,6 +178,15 @@
         </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.Desc')" prop="description">
           <el-input v-model="form_info.description" type="textarea" maxlength="100" />
+        </el-form-item>
+        <el-form-item :label="$t('CMS.Catalog.ContentPathRule')" prop="detailNameRule">
+          <el-select v-model="form_info.detailNameRule" :placeholder="$t('CMS.Catalog.ContentPathRule')">
+            <el-option 
+              v-for="ct in contentPathRuleOptions"
+              :key="ct.id"
+              :label="ct.name"
+              :value="ct.id" />
+          </el-select>
         </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.StaticFlag')" prop="staticFlag">
           <el-switch
@@ -293,6 +334,20 @@
         <el-button type="primary" @click="handleDoPublish">{{ $t("Common.Confirm") }}</el-button>
       </span>
     </el-dialog>
+    <!-- 导出栏目树 -->
+    <el-dialog 
+      :title="$t('CMS.Catalog.ExportCatalogTree')"
+      :visible.sync="catalogTreeDialogVisible"
+      width="500px"
+      class="catalog-tree-dialog">
+      <div>
+        <el-input type="textarea" :rows="10" v-model="catalogTree" readonly style="width:100%;"></el-input>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" v-clipboard:copy="catalogTree" v-clipboard:success="clipboardSuccess">{{ $t("Common.Copy") }}</el-button>
+        <el-button @click="catalogTreeDialogVisible = false">{{ $t("Common.Close") }}</el-button>
+      </span>
+    </el-dialog>
     <!-- 模板选择组件 -->
     <cms-template-selector 
       :open="openTemplateSelector" 
@@ -304,6 +359,7 @@
       :open="openCatalogSelector"
       :showRootNode="showCatalogSelectorRootNode"
       :disableLink="disableLinkCatalog"
+      :multiple="multipleCatalogSeletor"
       @ok="handleCatalogSelectorOk"
       @close="handleCatalogSelectorClose"></cms-catalog-selector>
     <!-- 内容选择组件 -->
@@ -362,6 +418,7 @@ export default {
       openCatalogSelector: false,
       catalogSelectorFor: undefined,
       showCatalogSelectorRootNode: false,
+      multipleCatalogSeletor: false,
       disableLinkCatalog: false,
       openContentSelector: false,
       openTemplateSelector: false, // 是否显示模板选择弹窗
@@ -382,6 +439,7 @@ export default {
       form_info: {
         siteId: ""
       },
+      contentPathRuleOptions: [],
       catalogTypeOptions: [],
       publishPipes: [], // 栏目发布通道数据
       // 表单校验
@@ -400,12 +458,15 @@ export default {
         ]
       },
       openFileSelector: false,
+      catalogTreeDialogVisible: false,
+      catalogTree: ""
     };
   },
   created() {
     this.loadCatalogTypes();
     this.loadContentTypes();
     this.loadCatalogInfo();
+    this.loadContentPathRules();
   },
   watch: {
     cid(newVal) {
@@ -420,6 +481,11 @@ export default {
     }
   },
   methods: {
+    loadContentPathRules() {
+      catalogApi.getContentPathRules().then(response => {
+        this.contentPathRuleOptions = response.data;
+      });
+    },
     loadContentTypes() {
       catalogApi.getContentTypes().then(response => {
         this.contentTypes = response.data;
@@ -452,7 +518,7 @@ export default {
           }
           catalogApi.updateCatalog(this.form_info).then(response => {
             this.$modal.msgSuccess(this.$t('Common.SaveSuccess'));
-            this.$emit("update", response.data);
+            this.$emit("reload");
           });
         }
       });
@@ -494,7 +560,7 @@ export default {
     },
     handleDelete () {
       if (!this.catalogId) {
-        this.msgError(this.$t('CMS.Catalog.SelectCatalogFirst'));
+        this.$modal.msgWarning(this.$t('CMS.Catalog.SelectCatalogFirst'));
         retrun;
       }
       catalogApi.delCatalog(this.catalogId).then(response => {
@@ -514,11 +580,12 @@ export default {
       this.openCatalogSelector = true;
       this.showCatalogSelectorRootNode = true;
       this.disableLinkCatalog = false;
+      this.multipleCatalogSeletor = false;
     },
     handleCloseProgress() {
-      if (this.progressType == 'Delete' || this.progressType == 'Move') {
+      if (this.progressType == 'Delete' || this.progressType == 'Move' || this.progressType == 'Merge') {
           this.resetForm("form_info");
-          this.$emit("remove", this.catalogId); 
+          this.$emit("reload"); 
       }
     },
     handleSelectTemplate (propKey) {
@@ -553,6 +620,7 @@ export default {
         this.openCatalogSelector = true;
         this.showCatalogSelectorRootNode = false;
         this.disableLinkCatalog = true;
+        this.multipleCatalogSeletor = false;
         this.catalogSelectorFor = "";
       }
     },
@@ -570,6 +638,8 @@ export default {
             this.openProgress = true;
           }
         })
+      } if (this.catalogSelectorFor == 'MergeCatalog') {
+        this.doMergeCatalogs(catalogs)
       } else {
         if (catalogs && catalogs.length > 0) {
           this.form_info.redirectUrl = catalogs[0].props.internalUrl;
@@ -600,7 +670,7 @@ export default {
           this.$modal.msgSuccess(response.msg);
           this.showSortPop = false;
           this.sortValue = 0;
-          this.$emit("update"); 
+          this.$emit("reload"); 
       });
     },
     handleSortCatalogCancel() {
@@ -619,6 +689,50 @@ export default {
         });
       }
       this.openFileSelector = false;
+    },
+    handleMergeCatalogs() {
+      this.catalogSelectorFor = "MergeCatalog";
+      this.openCatalogSelector = true;
+      this.showCatalogSelectorRootNode = false;
+      this.disableLinkCatalog = true;
+      this.multipleCatalogSeletor = true;
+    },
+    doMergeCatalogs(catalogs) {
+      if (!catalogs || catalogs.length == 0) {
+        this.$modal.msgWarning(this.$t('CMS.Catalog.SelectCatalogFirst'));
+        return;
+      }
+      const mergeCatalogIds = catalogs.map(c => c.id);
+      const data = { catalogId: this.catalogId, mergeCatalogIds: mergeCatalogIds }
+      catalogApi.mergeCatalogs(data).then(response => {
+        if (response.data && response.data != "") {
+          this.taskId = response.data;
+          this.progressTitle = this.$t('CMS.Catalog.MergeProgressTitle');;
+          this.progressType = "Merge";
+          this.openProgress = true;
+        }
+      })
+    },
+    handleClearCatalog() {
+      const data = { catalogId: this.catalogId }
+      catalogApi.clearCatalog(data).then(response => {
+        if (response.data && response.data != "") {
+          this.taskId = response.data;
+          this.progressTitle = this.$t('CMS.Catalog.ClearProgressTitle');;
+          this.progressType = "Clear";
+          this.openProgress = true;
+        }
+      });
+    },
+    handleExportCatalogTree() {
+      this.catalogTreeDialogVisible = true;
+      const params = { catalogId: this.catalogId || 0 }
+      catalogApi.getCatalogTree(params).then(response => {
+        this.catalogTree = response.data;
+      });
+    },
+    clipboardSuccess() {
+      this.$modal.msgSuccess(this.$t('Common.CopySuccess'));
     }
   }
 };

@@ -123,6 +123,13 @@ public class TemplateContext {
 		return false;
 	}
 
+	public int getPageCount() {
+		if (this.getPageTotal() == 0 || this.getPageSize() == 0) {
+			return 1;
+		}
+		return (int) ((this.getPageTotal() + this.getPageSize() - 1) / this.getPageSize());
+	}
+
 	public void setPageIndex(int pageIndex) {
 		this.pageIndex = Math.max(pageIndex, 1);
 		this.paged = false; // 变更页码时重置分页激活标记

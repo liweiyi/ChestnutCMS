@@ -42,9 +42,6 @@ public class SiteApiUrl extends FixedConfig {
 		if (StringUtils.isBlank(configValue)) {
 			configValue = DEFAULT_VALUE;
 		}
-		if (!configValue.endsWith("/")) {
-			configValue += "/";
-		}
-		return configValue;
+		return StringUtils.appendIfMissing(configValue, "/");
 	}
 }

@@ -17,7 +17,6 @@ package com.chestnut.contentcore.service.impl;
 
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.core.IDynamicPageType;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.IPublishPipeService;
@@ -25,7 +24,6 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

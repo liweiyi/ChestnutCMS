@@ -55,7 +55,7 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 	
 	@Override
 	public SysSecurityConfig getSecurityConfig() {
-		return this.redisCache.getCacheObject(CACHE_KEY_CONFIG, () ->
+		return this.redisCache.getCacheObject(CACHE_KEY_CONFIG, SysSecurityConfig.class, () ->
 			lambdaQuery().eq(SysSecurityConfig::getStatus, EnableOrDisable.ENABLE).one()
 		);
 	}

@@ -19,6 +19,7 @@ import com.chestnut.exmodel.domain.CmsExtendModelData;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.core.impl.MetaControlType_Input;
+import com.chestnut.xmodel.fixed.dict.MetaFieldType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -57,11 +58,11 @@ public class CmsExtendMetaModelType implements IMetaModelType {
      * 数据表必须包含的字段
      */
     public static final MetaModelField FIELD_MODEL_ID = new MetaModelField("模型ID", "modelId",
-            MODEL_ID_FIELD_NAME, true, MetaControlType_Input.TYPE);
+            MODEL_ID_FIELD_NAME, true, MetaControlType_Input.TYPE, MetaFieldType.LONG);
 
     public static final MetaModelField FIELD_DATA_ID = new MetaModelField("数据ID", "dataId",
-            "data_id", true, MetaControlType_Input.TYPE);
+            "data_id", true, MetaControlType_Input.TYPE, MetaFieldType.LONG);
 
     public static final MetaModelField FIELD_DATA_TYPE = new MetaModelField("数据类型", "dataType",
-            "data_type", true, MetaControlType_Input.TYPE);
+            "data_type", true, MetaControlType_Input.TYPE, MetaFieldType.SHORT_TEXT);
 }

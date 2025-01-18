@@ -53,7 +53,7 @@ public class InternalDataType_Catalog implements IInternalDataType {
 	public String getPageData(RequestData requestData) throws IOException, TemplateException {
 		CmsCatalog catalog = catalogService.getCatalog(requestData.getDataId());
 		boolean listFlag = YesOrNo.isYes(requestData.getParams().get("list"));
-		return this.publishService.getCatalogPageData(catalog, requestData.getPageIndex(), listFlag, requestData.getPublishPipeCode(), requestData.isPreview());
+		return this.publishService.getCatalogPageData(catalog, requestData, listFlag);
 	}
 
 	@Override

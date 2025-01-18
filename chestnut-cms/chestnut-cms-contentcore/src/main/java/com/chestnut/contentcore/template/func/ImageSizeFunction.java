@@ -15,39 +15,37 @@
  */
 package com.chestnut.contentcore.template.func;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
-
-import com.chestnut.common.utils.ObjectUtils;
-import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
-import freemarker.template.TemplateBooleanModel;
-import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.geometry.Positions;
-import org.apache.commons.io.FileUtils;
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.storage.local.LocalFileStorageType;
+import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.file.FileExUtils;
+import com.chestnut.common.utils.image.ImageHelper;
 import com.chestnut.contentcore.core.InternalURL;
+import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
-
 import freemarker.core.Environment;
 import freemarker.template.SimpleNumber;
 import freemarker.template.SimpleScalar;
+import freemarker.template.TemplateBooleanModel;
 import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
-import net.coobird.thumbnailator.Thumbnails;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Freemarker模板自定义函数：生成图片缩略图
@@ -59,7 +57,17 @@ public class ImageSizeFunction extends AbstractFunc {
 
 	private static final String FUNC_NAME = "imageSize";
 
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG1_DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Desc}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
+
+	private static final String ARG3_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg3.Name}";
+
+	private static final String ARG4_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg4.Name}";
 
 	private final ISiteService siteService;
 
@@ -110,16 +118,24 @@ public class ImageSizeFunction extends AbstractFunc {
 		try {
 			CmsResource resource = this.resourceService.getById(internalUrl.getId());
 			if (Objects.nonNull(resource) && LocalFileStorageType.TYPE.equals(resource.getStorageType())) {
-				Thumbnails.Builder<File> builder = Thumbnails.of(siteResourceRoot + resource.getPath())
-						.size(width, height);
 				if (crop) {
-					builder.crop(Positions.CENTER);
+					String ext = FileExUtils.getExtension(resource.getPath());
+					File file = new File(siteResourceRoot + resource.getPath());
+					try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+						try (FileInputStream is = new FileInputStream(file)) {
+							ImageHelper.of(is).format(ext).centerCropAndResize(width, height).to(os);
+						}
+						Files.write(file.toPath(), os.toByteArray());
+					}
+				} else {
+					ImageHelper.of(new File(siteResourceRoot + resource.getPath()))
+							.resize(width, height)
+							.toFile(new File(siteResourceRoot + destPath));
 				}
-				builder.toFile(siteResourceRoot + destPath);
 				actualUrl = StringUtils.substringBeforeLast(actualUrl, ".") + "_" + width + "x" + height + "."
 						+ StringUtils.substringAfterLast(actualUrl, ".");
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.warn("Generate thumbnail failed: " + actualUrl, e);
 		}
 		return actualUrl;
@@ -128,10 +144,10 @@ public class ImageSizeFunction extends AbstractFunc {
 	@Override
 	public List<FuncArg> getFuncArgs() {
 		return List.of(
-				new FuncArg("图片资源内部路径", FuncArgType.String, true, "仅支持处理内部资源图片(iurl://)"),
-				new FuncArg("宽度", FuncArgType.Int, true, null),
-				new FuncArg("高度", FuncArgType.Int, true, null),
-				new FuncArg("是否居中裁剪", FuncArgType.Boolean, false, null)
+				new FuncArg(ARG1_NAME, FuncArgType.String, true, ARG1_DESC),
+				new FuncArg(ARG2_NAME, FuncArgType.Int, true),
+				new FuncArg(ARG3_NAME, FuncArgType.Int, true),
+				new FuncArg(ARG4_NAME, FuncArgType.Boolean, false)
 		);
 	}
 }

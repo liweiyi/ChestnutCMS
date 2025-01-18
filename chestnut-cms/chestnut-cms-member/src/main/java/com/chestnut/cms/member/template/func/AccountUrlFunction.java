@@ -16,8 +16,7 @@
 package com.chestnut.cms.member.template.func;
 
 import com.chestnut.cms.member.utils.CmsMemberUtils;
-import com.chestnut.common.staticize.FreeMarkerUtils;
-import com.chestnut.common.staticize.core.TemplateContext;
+import com.chestnut.common.staticize.exception.InvalidFunctionArgumentException;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ObjectUtils;
@@ -40,7 +39,13 @@ public class AccountUrlFunction extends AbstractFunc  {
 
 	private static final String FUNC_NAME = "accountUrl";
 
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
+
+	private static final String ARG3_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg3.Name}";
 
 	@Override
 	public String getFuncName() {
@@ -69,15 +74,15 @@ public class AccountUrlFunction extends AbstractFunc  {
 		}
 		String type = args[1].toString();
 		if (!IdUtils.validate(memberId)) {
-			throw  new TemplateModelException("Can't use `accountUrl` function without Member.memberId.");
+			throw  new InvalidFunctionArgumentException(FUNC_NAME, 0, String.valueOf(memberId));
 		}
 		return CmsMemberUtils.getAccountUrl(memberId, type, Environment.getCurrentEnvironment(), includeBaseArgs);
 	}
 
 	@Override
 	public List<FuncArg> getFuncArgs() {
-		return List.of(new FuncArg("会员ID", FuncArgType.Long, true, null),
-				new FuncArg("类型", FuncArgType.String, true, "用于处理会员主页展示数据，可在模板中根据类型显示会员评论、收藏等数据。"),
-				new FuncArg("是否带站点ID和发布通道参数", FuncArgType.String, false, "默认：true"));
+		return List.of(new FuncArg(ARG1_NAME, FuncArgType.Long, true),
+				new FuncArg(ARG2_NAME, FuncArgType.String, true),
+				new FuncArg(ARG3_NAME, FuncArgType.String, false, null, Boolean.TRUE.toString()));
 	}
 }

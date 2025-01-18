@@ -113,11 +113,11 @@ export default {
       if (e) {
         this.center = e.target.getCenter();
         this.zoom = e.target.getZoom();
+        this.position = e.target.getCenter();
       }
     },
     handleSearch () {
       this.center = this.formData.city;
-      this.position = this.formData.city;
     },
     markerPosition (e) {
       this.position = { lng: e.point.lng, lat: e.point.lat };

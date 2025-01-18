@@ -16,7 +16,6 @@
 package com.chestnut.system.security;
 
 import cn.dev33.satoken.session.SaSession;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.enums.DeviceType;
@@ -31,6 +30,7 @@ import com.chestnut.system.fixed.config.SysCaptchaEnable;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
 import com.chestnut.system.fixed.dict.UserStatus;
+import com.chestnut.system.monitor.CaptchaMonitoredCache;
 import com.chestnut.system.service.*;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class SysLoginService {
 
-	private final RedisCache redisCache;
+	private final CaptchaMonitoredCache captchaCache;
 
 	private final ISysDeptService deptService;
 
@@ -146,8 +146,8 @@ public class SysLoginService {
 	public void validateCaptcha(String username, String code, String uuid) {
 		Assert.notEmpty(uuid, SysErrorCode.CAPTCHA_ERR::exception);
 
-		String verifyKey = SysConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, StringUtils.EMPTY);
-		String captcha = redisCache.getCacheObject(verifyKey);
+		String cacheKey = SysConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, StringUtils.EMPTY);
+		String captcha = captchaCache.getCache(cacheKey);
 		// 过期判断
 		Assert.notNull(captcha, () -> {
 			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,
@@ -155,7 +155,7 @@ public class SysLoginService {
 			return SysErrorCode.CAPTCHA_EXPIRED.exception();
 		});
 		// 未过期移除缓存
-		redisCache.deleteObject(verifyKey);
+		captchaCache.deleteCache(cacheKey);
 		// 判断是否与输入验证码一致
 		Assert.isTrue(StringUtils.equals(code, captcha), () -> {
 			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,

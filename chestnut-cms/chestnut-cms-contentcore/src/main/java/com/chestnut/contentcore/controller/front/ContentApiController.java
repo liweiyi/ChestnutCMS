@@ -39,7 +39,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -128,15 +131,10 @@ public class ContentApiController extends BaseRestController {
 		if (pageResult.getRecords().isEmpty()) {
 			return R.ok(List.of());
 		}
-		Map<Long, CmsCatalog> loadedCatalogs = new HashMap<>();
 		List<ContentApiVO> list = new ArrayList<>();
 		pageResult.getRecords().forEach(c -> {
 			ContentApiVO dto = ContentApiVO.newInstance(c);
-			CmsCatalog catalog = loadedCatalogs.get(c.getCatalogId());
-			if (catalog == null) {
-				catalog = this.catalogService.getCatalog(c.getCatalogId());
-				loadedCatalogs.put(catalog.getCatalogId(), catalog);
-			}
+			CmsCatalog catalog = this.catalogService.getCatalog(c.getCatalogId());
 			dto.setCatalogName(catalog.getName());
 			dto.setCatalogLink(catalogService.getCatalogLink(catalog, 1, publishPipeCode, preview));
 			dto.setLink(this.contentService.getContentLink(c, 1, publishPipeCode, preview));

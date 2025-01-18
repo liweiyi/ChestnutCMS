@@ -21,6 +21,7 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.Objects;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.support.AbstractMessageSource;
 
@@ -55,7 +56,7 @@ public class I18nMessageSource extends AbstractMessageSource implements Initiali
 	}
 
 	@Override
-	protected MessageFormat resolveCode(String code, Locale locale) {
+	protected MessageFormat resolveCode(@NotNull String code, Locale locale) {
 		Object value = this.redisCache.getCacheMapValue(CACHE_PREFIX + locale.toLanguageTag(), code);
 		if (Objects.nonNull(value)) {
 			return new MessageFormat(value.toString(), locale);
@@ -64,13 +65,13 @@ public class I18nMessageSource extends AbstractMessageSource implements Initiali
 	}
 	
 	@Override
-	protected String resolveCodeWithoutArguments(String code, Locale locale) {
+	protected String resolveCodeWithoutArguments(@NotNull String code, Locale locale) {
 		Object value = this.redisCache.getCacheMapValue(CACHE_PREFIX + locale.toLanguageTag(), code);
 		return ConvertUtils.toStr(value);
 	}
 
 	@Override
-	protected String getDefaultMessage(String code) {
+	protected String getDefaultMessage(@NotNull String code) {
 		Object value = this.redisCache.getCacheMapValue(CACHE_PREFIX + this.getDefaultLocale().toLanguageTag(), code);
 		return ConvertUtils.toStr(value, isUseCodeAsDefaultMessage() ? code : StringUtils.EMPTY);
 	}

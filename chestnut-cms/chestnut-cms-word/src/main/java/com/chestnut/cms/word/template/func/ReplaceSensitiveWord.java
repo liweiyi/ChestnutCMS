@@ -15,20 +15,18 @@
  */
 package com.chestnut.cms.word.template.func;
 
-import java.util.List;
-import java.util.Objects;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.ConvertUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.word.WordConstants;
 import com.chestnut.word.service.ISensitiveWordService;
-
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Freemarker模板自定义函数，替换敏感词
@@ -44,7 +42,11 @@ public class ReplaceSensitiveWord extends AbstractFunc {
 
 	static final String FUNC_NAME = "replaceSensitiveWord";
 	
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
 
 	@Override
 	public String getFuncName() {
@@ -71,7 +73,7 @@ public class ReplaceSensitiveWord extends AbstractFunc {
 
 	@Override
 	public List<FuncArg> getFuncArgs() {
-		return List.of(new FuncArg("待处理字符串", FuncArgType.String, true, null),
-				new FuncArg("替换后的字符串", FuncArgType.String, false, "默认：" + WordConstants.SENSITIVE_WORD_REPLACEMENT));
+		return List.of(new FuncArg(ARG1_NAME, FuncArgType.String, true, null),
+				new FuncArg(ARG2_NAME, FuncArgType.String, false, null, WordConstants.SENSITIVE_WORD_REPLACEMENT));
 	}
 }

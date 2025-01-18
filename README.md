@@ -1,4 +1,4 @@
-# ChestnutCMS v1.5.0
+# ChestnutCMS v1.5.1
 
 ### 系统简介
 
@@ -10,9 +10,9 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 
 账号：demo / a123456
 
-企业站演示地址：<http://swikoon.1000mz.com>
+企业站演示地址：<https://swikoon.1000mz.com>
 
-资讯站演示地址：<http://news.1000mz.com>（会员演示账号：xxx333@126.com / a123456）
+资讯站演示地址：<https://news.1000mz.com>（会员演示账号：xxx333@126.com / a123456）
 
 图片站演示地址：PC端：<http://tpz.1000mz.com> 移动端：<http://mtpz.1000mz.com>
 

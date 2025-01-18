@@ -26,10 +26,12 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.publish.IContentPathRule;
 import com.chestnut.contentcore.publish.IStaticizeType;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.template.ITemplateType;
 import com.chestnut.contentcore.template.impl.ContentTemplateType;
+import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.ContentUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
@@ -140,17 +142,25 @@ public class ContentStaticizeType implements IStaticizeType {
         if (StringUtils.isNotBlank(content.getStaticPath())) {
             String dir = "";
             String filename = content.getStaticPath();
-            if (filename.indexOf("/") > 0) {
-                dir = filename.substring(0, filename.lastIndexOf("/") + 1);
-                filename = filename.substring(filename.lastIndexOf("/") + 1);
+            if (filename.contains("/")) {
+                int index = filename.lastIndexOf("/");
+                dir = filename.substring(0, index + 1);
+                filename = filename.substring(index + 1);
             }
             context.setDirectory(siteRoot + dir);
             context.setFirstFileName(filename);
-            String name = filename.substring(0, filename.lastIndexOf("."));
-            String suffix = filename.substring(filename.lastIndexOf("."));
+            String name = filename;
+            String suffix = "";
+            if (filename.contains(".")) {
+                int index = filename.lastIndexOf(".");
+                name = filename.substring(0, index);
+                suffix = filename.substring(index);
+            }
             context.setOtherFileName(name + "_" + TemplateContext.PlaceHolder_PageNo + suffix);
         } else {
-            context.setDirectory(siteRoot + catalog.getPath());
+            IContentPathRule rule = ContentCoreUtils.getContentPathRule(catalog.getDetailNameRule());
+            String path = Objects.isNull(rule) ? catalog.getPath() : rule.getDirectory(site, catalog, content);
+            context.setDirectory(siteRoot + path);
             String suffix = site.getStaticSuffix(context.getPublishPipeCode());
             context.setFirstFileName(content.getContentId() + StringUtils.DOT + suffix);
             context.setOtherFileName(
@@ -190,7 +200,9 @@ public class ContentStaticizeType implements IStaticizeType {
             templateType.initTemplateData(content.getContentId(), templateContext);
             // 静态化文件地址
             String siteRoot = SiteUtils.getSiteRoot(site, publishPipeCode);
-            templateContext.setDirectory(siteRoot + catalog.getPath());
+            IContentPathRule rule = ContentCoreUtils.getContentPathRule(catalog.getDetailNameRule());
+            String dir = rule.getDirectory(site, catalog, content);
+            templateContext.setDirectory(siteRoot + dir);
             String fileName = ContentUtils.getContextExFileName(content.getContentId(), site.getStaticSuffix(publishPipeCode));
             templateContext.setFirstFileName(fileName);
             // 静态化

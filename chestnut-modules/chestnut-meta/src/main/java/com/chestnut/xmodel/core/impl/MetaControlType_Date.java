@@ -16,11 +16,13 @@
 package com.chestnut.xmodel.core.impl;
 
 import com.chestnut.common.utils.DateUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.xmodel.core.IMetaControlType;
-import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -45,10 +47,27 @@ public class MetaControlType_Date implements IMetaControlType {
     }
 
     @Override
-    public void parseFieldValue(XModelFieldDataDTO fieldData) {
-        Object value = fieldData.getValue();
-        if (Objects.nonNull(value) && value instanceof LocalDateTime ldt) {
-            fieldData.setValue(ldt.format(DateUtils.FORMAT_YYYY_MM_DD));
+    public String valueAsString(Object obj) {
+        if (Objects.isNull(obj)) {
+            return null;
+        }
+        if (obj instanceof LocalDateTime ldt) {
+            ldt.format(DateUtils.FORMAT_YYYY_MM_DD);
+        } else if(obj instanceof LocalDate ldt) {
+            ldt.format(DateUtils.FORMAT_YYYY_MM_DD);
+        } else if (obj instanceof Date date) {
+            return DateUtils.parseDateToStr(DateUtils.YYYY_MM_DD_HH_MM_SS, date);
+        }
+        return IMetaControlType.super.valueAsString(obj);
+    }
+
+    @Override
+    public Object stringAsValue(String valueStr) {
+        try {
+            Date date = DateUtils.parseDate(valueStr);
+            return DateUtils.parseDateToStr(DateUtils.YYYY_MM_DD_HH_MM_SS, date);
+        } catch (Exception e) {
+            return StringUtils.EMPTY;
         }
     }
 }

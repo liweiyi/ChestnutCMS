@@ -28,7 +28,10 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -36,7 +39,6 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 客户端工具类
@@ -190,21 +192,30 @@ public class ServletUtils {
 	 * @return
 	 */
 	public static String getCookieValue(HttpServletRequest request, String key) {
-		Cookie cookie = getCookie(request, key);
-		if (cookie != null) {
-			return cookie.getValue();
+		Cookie[] cookies = request.getCookies();
+		if (Objects.isNull(cookies)) {
+			return null;
 		}
-		return null;
+		return Arrays.stream(cookies).filter(cookie -> cookie.getName().equals(key))
+				.map(Cookie::getValue).collect(Collectors.joining(","));
 	}
 
 	public static Map<String, String> getCookieValues(HttpServletRequest request) {
-		Cookie[] arr_cookie = request.getCookies();
-		if (arr_cookie == null) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null) {
 			return Map.of();
 		}
-		return Stream.of(arr_cookie)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toMap(c -> c.getName(), c -> c.getValue()));
+		Map<String, String> map = new HashMap<>();
+		for (Cookie cookie: cookies) {
+			if (Objects.nonNull(cookie)) {
+				String v = cookie.getValue();
+				if (map.containsKey(cookie.getName())) {
+					v = map.get(cookie.getName())  + "," + v;
+				}
+				map.put(cookie.getName(), v);
+			}
+		}
+		return map;
 	}
 
 	/**
@@ -213,16 +224,12 @@ public class ServletUtils {
 	 * @param request
 	 * @param key
 	 */
-	private static Cookie getCookie(HttpServletRequest request, String key) {
-		Cookie[] arr_cookie = request.getCookies();
-		if (arr_cookie != null && arr_cookie.length > 0) {
-			for (Cookie cookie : arr_cookie) {
-				if (cookie.getName().equals(key)) {
-					return cookie;
-				}
-			}
+	private static Cookie[] getCookie(HttpServletRequest request, String key) {
+		Cookie[] cookies = request.getCookies();
+		if (Objects.isNull(cookies)) {
+			return null;
 		}
-		return null;
+		return Arrays.stream(cookies).filter(cookie -> cookie.getName().equals(key)).toArray(Cookie[]::new);
 	}
 
 
@@ -234,9 +241,14 @@ public class ServletUtils {
 	 * @param key
 	 */
 	public static void remove(HttpServletRequest request, HttpServletResponse response, String key) {
-		Cookie cookie = getCookie(request, key);
-		if (cookie != null) {
-			setCookie(response, key, "", null, COOKIE_PATH, 0, true);
+		Cookie[] cookies = request.getCookies();
+		if (Objects.isNull(cookies)) {
+			return;
+		}
+		for (Cookie cookie : cookies) {
+			if (cookie.getName().equals(key)) {
+				setCookie(response, key, "", null, COOKIE_PATH, 0, true);
+			}
 		}
 	}
 
@@ -444,12 +456,8 @@ public class ServletUtils {
 	 * @return 编码后的内容
 	 */
 	public static String urlEncode(String str) {
-		try {
-			return URLEncoder.encode(str, StandardCharsets.UTF_8.name());
-		} catch (UnsupportedEncodingException e) {
-			return StringUtils.EMPTY;
-		}
-	}
+        return URLEncoder.encode(str, StandardCharsets.UTF_8);
+    }
 
 	/**
 	 * 内容解码
@@ -458,12 +466,8 @@ public class ServletUtils {
 	 * @return 解码后的内容
 	 */
 	public static String urlDecode(String str) {
-		try {
-			return URLDecoder.decode(str, StandardCharsets.UTF_8.name());
-		} catch (UnsupportedEncodingException e) {
-			return StringUtils.EMPTY;
-		}
-	}
+        return URLDecoder.decode(str, StandardCharsets.UTF_8);
+    }
 
 	/**
 	 * 获取客户端IP
@@ -502,7 +506,7 @@ public class ServletUtils {
 	public static String getHostIp() {
 		try {
 			return InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e) {
+		} catch (UnknownHostException ignored) {
 		}
 		return "127.0.0.1";
 	}
@@ -515,7 +519,7 @@ public class ServletUtils {
 	public static String getHostName() {
 		try {
 			return InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
+		} catch (UnknownHostException ignored) {
 		}
 		return UNKNOWN;
 	}
@@ -531,7 +535,7 @@ public class ServletUtils {
 		if (ip != null && ip.indexOf(",") > 0) {
 			final String[] ips = ip.trim().split(",");
 			for (String subIp : ips) {
-				if (false == isUnknown(subIp)) {
+				if (!isUnknown(subIp)) {
 					ip = subIp;
 					break;
 				}
@@ -590,10 +594,9 @@ public class ServletUtils {
 					return true;
 				}
 			case SECTION_5:
-				switch (b1) {
-					case SECTION_6:
-						return true;
-				}
+                if (b1 == SECTION_6) {
+                    return true;
+                }
 			default:
 				return false;
 		}
@@ -606,7 +609,7 @@ public class ServletUtils {
 	 * @return byte 字节
 	 */
 	public static byte[] textToNumericFormatV4(String text) {
-		if (text.length() == 0) {
+		if (text.isEmpty()) {
 			return null;
 		}
 

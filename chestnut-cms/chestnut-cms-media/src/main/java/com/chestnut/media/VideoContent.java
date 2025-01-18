@@ -21,7 +21,6 @@ import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
-import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.media.domain.CmsVideo;
@@ -46,14 +45,10 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 	}
 
 	@Override
-	public Long add() {
-		super.add();
-		this.getContentService().dao().save(this.getContentEntity());
-
+	protected void add0() {
 		if (!this.hasExtendEntity()) {
-			return this.getContentEntity().getContentId();
+			return;
 		}
-
 		List<CmsVideo> videoList = this.getExtendEntity();
 		if (StringUtils.isNotEmpty(videoList)) {
 			for (int i = 0; i < videoList.size(); i++) {
@@ -71,18 +66,15 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 			}
 			this.getVideoService().dao().saveBatch(videoList);
 		}
-		return this.getContentEntity().getContentId();
 	}
 
 	@Override
-	public Long save() {
-		super.save();
-		this.getContentService().dao().updateById(this.getContentEntity());
+	protected void save0() {
 		// 链接或映射内容直接删除所有视频数据
 		if (!this.hasExtendEntity()) {
 			this.getVideoService().dao().remove(new LambdaQueryWrapper<CmsVideo>().eq(CmsVideo::getContentId,
 					this.getContentEntity().getContentId()));
-			return this.getContentEntity().getContentId();
+			return;
 		}
 		// 视频数处理
 		List<CmsVideo> videoList = this.getExtendEntity();
@@ -131,12 +123,10 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 				this.getVideoService().dao().save(video);
 			}
 		}
-		return this.getContentEntity().getContentId();
 	}
 
 	@Override
-	public void delete() {
-		super.delete();
+	protected void delete0() {
 		if (this.hasExtendEntity()) {
 			this.getVideoService().dao().deleteByContentIdAndBackup(
 					this.getContentEntity().getContentId(),
@@ -146,21 +136,16 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 	}
 
 	@Override
-	public CmsContent copyTo(CmsCatalog toCatalog, Integer copyType) {
-		CmsContent copyContent = super.copyTo(toCatalog, copyType);
-
+	public void copyTo0(CmsContent newContent, Integer copyType) {
 		if (this.hasExtendEntity() && ContentCopyType.isIndependency(copyType)) {
-			Long newContentId = (Long) this.getParams().get("NewContentId");
 			List<CmsVideo> videoList = this.getVideoService().getAlbumVideoList(this.getContentEntity().getContentId());
 			for (CmsVideo video : videoList) {
 				video.createBy(this.getOperatorUName());
 				video.setVideoId(IdUtils.getSnowflakeId());
-				video.setContentId(newContentId);
-				video.setSiteId(toCatalog.getSiteId());
+				video.setContentId(newContent.getContentId());
 				this.getVideoService().dao().save(video);
 			}
 		}
-        return copyContent;
     }
 
 	private IVideoService getVideoService() {

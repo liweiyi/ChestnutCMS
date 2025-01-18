@@ -37,8 +37,8 @@ import java.util.Map;
 public class CmsVoteTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_vote";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
 
 	private final IVoteService voteService;
 
@@ -56,6 +56,11 @@ public class CmsVoteTag extends AbstractListTag {
 
 		Page<Vote> pageResult = this.voteService.page(new Page<>(pageIndex, size, page), q);
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+	}
+
+	@Override
+	public Class<Vote> getDataClass() {
+		return Vote.class;
 	}
 
 	@Override

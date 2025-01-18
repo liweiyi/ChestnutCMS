@@ -15,18 +15,18 @@
  */
 package com.chestnut.xmodel.fixed.dict;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import org.apache.commons.lang3.math.NumberUtils;
-import org.springframework.stereotype.Component;
-
+import com.chestnut.common.utils.ArrayUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.fixed.FixedDictType;
 import com.chestnut.system.service.ISysDictTypeService;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * 元数据字段类型
@@ -50,6 +50,7 @@ public class MetaFieldType extends FixedDictType {
 
 	public static final String DATETIME = "datetime";
 
+	private static final String[] STRING_FIELD = { SHORT_TEXT, MEDIUM_TEXT, LARGE_TEXT, CLOB_TEXT };
 	
 	private static final ISysDictTypeService dictTypeService = SpringUtils.getBean(ISysDictTypeService.class);
 
@@ -77,11 +78,24 @@ public class MetaFieldType extends FixedDictType {
 	 */
     public static int getFieldTypeLimit(String fieldType) {
     	Optional<SysDictData> findFirst = dictTypeService.selectDictDatasByType(TYPE).stream().filter(d -> d.getDictValue().equals(fieldType)).findFirst();
-    	if(findFirst.isPresent()) {
-        	return NumberUtils.toInt(findFirst.get().getRemark());
-    	}
-    	return 0;
+        return findFirst.map(sysDictData -> NumberUtils.toInt(sysDictData.getRemark())).orElse(0);
     }
+
+	public static boolean isLongField(String fieldType) {
+		return LONG.equalsIgnoreCase(fieldType);
+	}
+
+	public static boolean isDoubleField(String fieldType) {
+		return DOUBLE.equalsIgnoreCase(fieldType);
+	}
+
+	public static boolean isDateField(String fieldType) {
+		return DATETIME.equalsIgnoreCase(fieldType);
+	}
+
+	public static boolean isStringField(String fieldType) {
+		return ArrayUtils.contains(fieldType, STRING_FIELD);
+	}
 
 	public static <T> void decode(List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {
 		dictTypeService.decode(TYPE, list, getter, setter);

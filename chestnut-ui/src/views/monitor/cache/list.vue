@@ -25,21 +25,18 @@
               width="60"
               type="index"
             ></el-table-column>
-
             <el-table-column
               :label="$t('Monitor.Cache.CacheName')"
               align="center"
               prop="cacheName"
               :show-overflow-tooltip="true"
-              :formatter="nameFormatter"
-            ></el-table-column>
-
-            <el-table-column
-              :label="$t('Common.Remark')"
-              align="center"
-              prop="remark"
-              :show-overflow-tooltip="true"
             />
+            <el-table-column
+              :label="$t('Monitor.Cache.CachePrefix')"
+              align="center"
+              prop="cacheKey"
+              :show-overflow-tooltip="true"
+            ></el-table-column>
             <el-table-column
               :label="$t('Common.Operation')"
               width="90"
@@ -85,7 +82,6 @@
             ></el-table-column>
             <el-table-column
               :label="$t('Monitor.Cache.CacheKey')"
-              align="center"
               :show-overflow-tooltip="true"
               :formatter="keyFormatter"
             >
@@ -123,11 +119,6 @@
           </div>
           <el-form :model="cacheForm">
             <el-row :gutter="32">
-              <el-col :offset="1" :span="22">
-                <el-form-item :label="$t('Monitor.Cache.CacheName')" prop="cacheName">
-                  <el-input v-model="cacheForm.cacheName" :readOnly="true" />
-                </el-form-item>
-              </el-col>
               <el-col :offset="1" :span="22">
                 <el-form-item :label="$t('Monitor.Cache.CacheKey')" prop="cacheKey">
                   <el-input v-model="cacheForm.cacheKey" :readOnly="true" />
@@ -168,7 +159,7 @@ export default {
       cacheForm: {},
       loading: true,
       subLoading: false,
-      nowCacheName: "",
+      selectedCache: {},
       tableHeight: window.innerHeight - 200
     };
   },
@@ -191,47 +182,57 @@ export default {
     },
     /** 清理指定名称缓存 */
     handleClearCacheName(row) {
-      clearCacheName(row.cacheName).then(response => {
-        this.$modal.msgSuccess(this.$t('Monitor.Cache.ClearSuccess', [ this.nowCacheName ]));
+      clearCacheName(row.monitoredId).then(response => {
+        this.$modal.msgSuccess(this.$t('Monitor.Cache.ClearSuccess', [ this.selectedCache.cacheName ]));
         this.getCacheKeys();
       });
     },
     /** 查询缓存键名列表 */
     getCacheKeys(row) {
-      const cacheName = row !== undefined ? row.cacheName : this.nowCacheName;
-      if (cacheName === "") {
+      if (!row) {
+        return;
+      }
+      this.selectedCache = row;
+      this.refreshCacheKeys();
+    },
+    /** 刷新缓存键名列表 */
+    refreshCacheKeys(func) {
+      if (!this.selectedCache.monitoredId) {
         return;
       }
       this.subLoading = true;
-      listCacheKey(cacheName).then(response => {
-        this.cacheKeys = response.data;
+      listCacheKey(this.selectedCache.monitoredId).then(response => {
         this.subLoading = false;
-        this.nowCacheName = cacheName;
+        if (func) {
+          func(response)
+        }
+        this.cacheKeys = response.data;
+        this.cacheForm = {};
       });
-    },
-    /** 刷新缓存键名列表 */
-    refreshCacheKeys() {
-      this.getCacheKeys();
-      this.$modal.msgSuccess(this.$t('Common.Success'));
     },
     /** 清理指定键名缓存 */
     handleClearCacheKey(cacheKey) {
-      clearCacheKey(cacheKey).then(response => {
+      if (!this.selectedCache.monitoredId) {
+        return;
+      }
+      clearCacheKey(this.selectedCache.monitoredId, cacheKey).then(response => {
         this.$modal.msgSuccess(this.$t('Common.Success'));
-        this.getCacheKeys();
+        this.refreshCacheKeys();
       });
-    },
-    /** 列表前缀去除 */
-    nameFormatter(row) {
-      return row.cacheName.replace(":", "");
     },
     /** 键名前缀去除 */
     keyFormatter(cacheKey) {
-      return cacheKey.replace(this.nowCacheName, "");
+      if (cacheKey == this.selectedCache.cacheKey) {
+        return cacheKey;
+      }
+      return cacheKey.replace(this.selectedCache.cacheKey, "");
     },
     /** 查询缓存内容详细 */
     handleCacheValue(cacheKey) {
-      getCacheValue(this.nowCacheName, cacheKey).then(response => {
+      if (!this.selectedCache.monitoredId) {
+        return;
+      }
+      getCacheValue(this.selectedCache.monitoredId, cacheKey).then(response => {
         this.cacheForm = response.data;
       });
     },
@@ -239,6 +240,9 @@ export default {
     handleClearCacheAll() {
       clearCacheAll().then(response => {
         this.$modal.msgSuccess(this.$t('Common.Success'));
+        this.selectedCache = {};
+        this.cacheForm = {};
+        this.cacheKeys = [];
       });
     }
   },

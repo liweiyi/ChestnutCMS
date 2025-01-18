@@ -15,12 +15,11 @@
  */
 package com.chestnut.system.fixed.config;
 
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.fixed.FixedConfig;
 import com.chestnut.system.service.ISysConfigService;
+import org.springframework.stereotype.Component;
 
 /**
  * 后台访问地址
@@ -43,9 +42,6 @@ public class BackendContext extends FixedConfig {
 		if (StringUtils.isBlank(configValue)) {
 			configValue = DEFAULT_VALUE;
 		}
-		if (!configValue.endsWith("/")) {
-			configValue += "/";
-		}
-		return configValue;
+		return StringUtils.appendIfMissing(configValue, "/");
 	}
 }

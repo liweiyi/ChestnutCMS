@@ -25,6 +25,9 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @Component(IFileStorageType.BEAN_NAME_PREIFX + LocalFileStorageType.TYPE)
 public class LocalFileStorageType implements IFileStorageType {
@@ -43,10 +46,8 @@ public class LocalFileStorageType implements IFileStorageType {
 
 	@Override
 	public boolean exists(StorageExistArgs args) {
-		String bucket = args.getBucket() == null ? StringUtils.EMPTY : args.getBucket();
-		if (!bucket.endsWith("/")) {
-			bucket += "/";
-		}
+		String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
+		bucket = StringUtils.appendIfMissing(bucket, "/");
 		String filePath = bucket + args.getPath();
 		File file = new File(filePath);
 		return file.exists() && file.isFile();
@@ -55,10 +56,8 @@ public class LocalFileStorageType implements IFileStorageType {
 	@Override
 	public void copy(StorageCopyArgs args) {
 		try {
-			String bucket = args.getBucket() == null ? StringUtils.EMPTY : args.getBucket();
-			if (!bucket.endsWith("/")) {
-				bucket += "/";
-			}
+			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
+			bucket = StringUtils.appendIfMissing(bucket, "/");
 			FileUtils.copyDirectory(new File(bucket + args.getSourcePath()), new File(bucket + args.getDestPath()));
 		} catch (IOException e) {
 			throw new FileStorageException(e);
@@ -68,10 +67,8 @@ public class LocalFileStorageType implements IFileStorageType {
 	@Override
 	public void move(StorageMoveArgs args) {
 		try {
-			String bucket = args.getBucket() == null ? StringUtils.EMPTY : args.getBucket();
-			if (!bucket.endsWith("/")) {
-				bucket += "/";
-			}
+			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
+			bucket = StringUtils.appendIfMissing(bucket, "/");
 			FileUtils.moveDirectory(new File(bucket + args.getSourcePath()), new File(bucket + args.getDestPath()));
 		} catch (IOException e) {
 			throw new FileStorageException(e);
@@ -81,16 +78,14 @@ public class LocalFileStorageType implements IFileStorageType {
 	@Override
 	public InputStream read(StorageReadArgs args) {
 		try {
-			String bucket = args.getBucket() == null ? StringUtils.EMPTY : args.getBucket();
-			if (!bucket.endsWith("/")) {
-				bucket += "/";
-			}
+			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
+			bucket = StringUtils.appendIfMissing(bucket, "/");
 			String filePath = bucket + args.getPath();
 			File file = new File(filePath);
 			if (!file.exists()) {
 				throw new FileNotFoundException();
 			}
-			return new FileInputStream(new File(filePath));
+			return new FileInputStream(filePath);
 		} catch (IOException e) {
 			throw new FileStorageException(e);
 		}
@@ -99,10 +94,8 @@ public class LocalFileStorageType implements IFileStorageType {
 	@Override
 	public void write(StorageWriteArgs args) {
 		try {
-			String bucket = args.getBucket() == null ? StringUtils.EMPTY : args.getBucket();
-			if (!bucket.endsWith("/")) {
-				bucket += "/";
-			}
+			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
+			bucket = StringUtils.appendIfMissing(bucket, "/");
 			String filePath = bucket + args.getPath();
 			File file = new File(filePath);
 			FileExUtils.mkdirs(file.getParentFile().getAbsolutePath());
@@ -115,12 +108,48 @@ public class LocalFileStorageType implements IFileStorageType {
 	@Override
 	public void remove(StorageRemoveArgs args) {
 		try {
-			String bucket = args.getBucket() == null ? StringUtils.EMPTY : args.getBucket();
-			if (!bucket.endsWith("/")) {
-				bucket += "/";
-			}
+			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
+			bucket = StringUtils.appendIfMissing(bucket, "/");
 			String filePath = bucket + args.getPath();
 			FileUtils.delete(new File(filePath));
+		} catch (Exception e) {
+			throw new FileStorageException(e);
+		}
+	}
+
+	@Override
+	public List<String> list(StorageListArgs args) {
+		try {
+			String bucket = StringUtils.appendIfMissing(
+					Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY), "/");
+			String dirPath = bucket;
+			String prefix;
+			if (args.getPrefix().indexOf("/") > 0) {
+				dirPath += StringUtils.substringBeforeLast(args.getPrefix(), "/");
+				prefix = StringUtils.substringAfterLast(args.getPrefix(), "/");
+			} else {
+				prefix = args.getPrefix();
+			}
+			File directory = new File(dirPath);
+			if (!directory.isDirectory()) {
+				return List.of();
+			}
+			if (StringUtils.isNotEmpty(prefix)) {
+				File[] files = directory.listFiles(f -> f.getName().startsWith(prefix));
+				if (Objects.nonNull(files)) {
+					return Stream.of(files).map(f -> {
+						return FileExUtils.normalizePath(f.getAbsolutePath()).substring(bucket.length());
+					}).toList();
+				}
+			} else {
+				File[] files = directory.listFiles();
+				if (Objects.nonNull(files)) {
+					return Stream.of(files).map(f -> {
+						return FileExUtils.normalizePath(f.getAbsolutePath()).substring(bucket.length());
+					}).toList();
+				}
+			}
+			return List.of();
 		} catch (Exception e) {
 			throw new FileStorageException(e);
 		}

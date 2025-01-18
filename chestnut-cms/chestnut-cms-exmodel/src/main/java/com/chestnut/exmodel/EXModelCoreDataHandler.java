@@ -123,8 +123,8 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<XModel> list = JacksonUtils.fromList(f, XModel.class);
             for (XModel data : list) {
+                Long oldModelId = data.getModelId();
                 try {
-                    Long oldModelId = data.getModelId();
                     data.setModelId(IdUtils.getSnowflakeId());
                     Long count = modelService.lambdaQuery().eq(XModel::getCode, data.getCode()).count();
                     if (count > 0) {
@@ -135,8 +135,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     modelService.save(data);
                     modelIdMapping.put(oldModelId, data.getModelId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入扩展模型失败：" + data.getName()
-                            + "[" + data.getModelId() + "]");
+                    AsyncTaskManager.addErrMessage("导入扩展模型`" + oldModelId + "`失败：" + e.getMessage());
                     log.error("Import xmodel failed: {}", data.getCode(), e);
                 }
             }
@@ -147,14 +146,14 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<XModelField> list = JacksonUtils.fromList(f, XModelField.class);
             for (XModelField data : list) {
+                Long oldFieldId = data.getFieldId();
                 try {
                     data.setFieldId(IdUtils.getSnowflakeId());
                     data.setModelId(modelIdMapping.get(data.getModelId()));
                     data.createBy(context.getOperator());
                     modelFieldService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入扩展模型字段失败：" + data.getName()
-                            + "[" + data.getFieldId() + "]");
+                    AsyncTaskManager.addErrMessage("导入扩展模型字段`" + oldFieldId + "`失败：" + e.getMessage());
                     log.error("Import xmodel field failed: {}", data.getCode(), e);
                 }
             }
@@ -165,12 +164,18 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<CmsExtendModelData> list = JacksonUtils.fromList(f, CmsExtendModelData.class);
             for (CmsExtendModelData data : list) {
+                String oldKey = data.getModelId() + "-" + data.getDataType() + "-" + data.getDataId();
                 try {
-                    switch (data.getDataType()) {
-                        case ExtendModelDataType.SITE -> data.setDataId(context.getSite().getSiteId());
-                        case ExtendModelDataType.CATALOG -> data.setDataId(context.getCatalogIdMap().get(data.getDataId()));
-                        case ExtendModelDataType.CONTENT -> data.setDataId(context.getContentIdMap().get(data.getDataId()));
+                    Long dataId = switch (data.getDataType()) {
+                        case ExtendModelDataType.SITE -> context.getSite().getSiteId();
+                        case ExtendModelDataType.CATALOG -> context.getCatalogIdMap().get(data.getDataId());
+                        case ExtendModelDataType.CONTENT -> context.getContentIdMap().get(data.getDataId());
+                        default -> null;
+                    };
+                    if (Objects.isNull(dataId)) {
+                        throw new RuntimeException("Old `data_id` linked data is missing.");
                     }
+                    data.setDataId(dataId);
                     data.setModelId(modelIdMapping.get(data.getModelId()));
                     // 处理图片和富文本内部链接
                     MetaModel model = modelService.getMetaModel(data.getModelId());
@@ -200,9 +205,8 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     });
                     modelDataMapper.insert(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入扩展模型数据失败：" + data.getModelId()
-                            + data.getDataType() + "-" + data.getDataId());
-                    log.error("Import xmodel data failed: {} - {}", data.getModelId(), data.getDataId(), e);
+                    AsyncTaskManager.addErrMessage("导入扩展模型数据`" + oldKey + "`失败：" + e.getMessage());
+                    log.error("Import xmodel data failed: {}", oldKey, e);
                 }
             }
         });

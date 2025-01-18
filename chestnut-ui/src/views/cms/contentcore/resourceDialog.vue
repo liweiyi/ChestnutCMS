@@ -39,9 +39,11 @@
                 :on-change="handleFileChange"
                 :auto-upload="false">
                 <i slot="default" class="el-icon-plus"></i>
-                <div slot="file" slot-scope="{file}">
-                  <img v-if="isImageResource(file.name)" class="el-upload-list__item-thumbnail" :src="file.url" />
-                  <svg-icon v-else :icon-class="getResourceFileIconClass(file.name)" />
+                <div class="preview-wrap" slot="file" slot-scope="{file}">
+                  <div class="image-wrap">
+                    <img v-if="isImageResource(file.name)" :src="file.url" />
+                    <svg-icon v-else :icon-class="getResourceFileIconClass(file.name)" />
+                  </div>
                   <span class="el-upload-list__item-actions">
                     <span class="el-upload-list__item-delete" @click="handleRemoveFile(file)">
                       <i class="el-icon-delete"></i>
@@ -349,22 +351,25 @@ export default {
       this.onFileUploaded(false, fileList, "Upload failed.");
     },
     onFileUploaded(isSuccess, fileList, result) {
-      if (isSuccess) {
-        this.uploadedCount++;
-        this.results.push({ 
-          path: result.internalUrl, 
-          name: result.name, 
-          src: result.src, 
-          width: result.width, 
-          height: result.height, 
-          fileSize: result.fileSize,
-          fileSizeName: result.fileSizeName,
-          resourceType: result.resourceType
-        });
-      } else {
+      if (!isSuccess) {
         this.$modal.msgError(result);
+        this.upload.isUploading = false;
+        return;
       }
+      this.uploadedCount++;
       if (this.uploadedCount == fileList.length) {
+        this.results = this.upload.fileList.map(f => {
+          return { 
+            path: f.response.data.internalUrl, 
+            name: f.response.data.name, 
+            src: f.response.data.src, 
+            width: f.response.data.width, 
+            height: f.response.data.height, 
+            fileSize: f.response.data.fileSize,
+            fileSizeName: f.response.data.fileSizeName,
+            resourceType: f.response.data.resourceType
+          }
+        })
         this.noticeOk();
         this.upload.isUploading = false;
       }
@@ -452,7 +457,7 @@ export default {
   }
 };
 </script>
-<style>
+<style scoped>
 .resource-dialog .el-upload-list__item .svg-icon {
   width: 66px;
   height: 66px;
@@ -510,11 +515,25 @@ export default {
   width: 120px;
   vertical-align: bottom;
 }
-.resource-dialog .el-upload-list--picture-card .el-upload-list__item {
+::v-deep.resource-dialog .el-upload-list--picture-card .el-upload-list__item {
   width: 68px;
   height: 68px;
 }
-.resource-dialog .el-upload--picture-card {
+::v-deep.resource-dialog .el-upload-list--picture-card .el-upload-list__item .preview-wrap {
+  /* line-height: normal;     */
+}
+::v-deep.resource-dialog .el-upload-list--picture-card .el-upload-list__item .preview-wrap .image-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 66px;
+  width: 66px;
+}
+::v-deep.resource-dialog .el-upload-list--picture-card .el-upload-list__item .preview-wrap .image-wrap img {
+  max-width: 66px;
+  max-height: 66px;
+}
+::v-deep.resource-dialog .el-upload--picture-card {
   line-height: 78px;
   width: 68px;
   height: 68px;

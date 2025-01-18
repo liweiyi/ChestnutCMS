@@ -134,11 +134,10 @@ div.edui-box {
     cursor: default;
 }
 
-.edui-default span.edui-popup-action-item {
-  margin-right: 5px;
-}
-.edui-default span.edui-popup-action-item:last-child {
-  margin-right: 0;
+.edui-default span.edui-popup-action-item:not(:last-child)::after {
+    content: "|";
+    padding: .5rem;
+    color: #CCC;
 }
 
 /* 工具栏 */

@@ -15,13 +15,11 @@
  */
 package com.chestnut.common.staticize.tag;
 
-import java.util.List;
-import java.util.Map;
-
 import com.chestnut.common.staticize.enums.TagAttrDataType;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 /**
  * 标签属性描述类
@@ -84,8 +82,8 @@ public class TagAttr {
 	 * 布尔值可选项
 	 */
 	public static List<TagAttrOption> BOOL_OPTIONS = List.of(
-			new TagAttrOption("true", "是"),
-			new TagAttrOption("false", "否")
+			new TagAttrOption("true", "{FREEMARKER.TAG_ATTR_OPTIONS.BOOLEAN.TRUE}"),
+			new TagAttrOption("false", "{FREEMARKER.TAG_ATTR_OPTIONS.BOOLEAN.FALSE}")
 	);
 
 	public TagAttr(String name, boolean mandatory, TagAttrDataType dataType, String usage) {

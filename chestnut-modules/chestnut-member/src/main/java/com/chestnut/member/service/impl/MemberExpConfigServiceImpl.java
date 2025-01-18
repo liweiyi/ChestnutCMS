@@ -16,12 +16,11 @@
 package com.chestnut.member.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.member.cache.MemberExpOpMonitoredCache;
 import com.chestnut.member.domain.MemberExpConfig;
 import com.chestnut.member.domain.MemberLevel;
 import com.chestnut.member.domain.MemberLevelExpLog;
@@ -48,9 +47,7 @@ import java.util.Map;
 public class MemberExpConfigServiceImpl extends ServiceImpl<MemberExpConfigMapper, MemberExpConfig>
 		implements IMemberExpConfigService {
 
-	private static final String CACHE_PREFIX = "member_exp_op:";
-
-	private final RedisCache redisCache;
+	private final MemberExpOpMonitoredCache expOpCache;
 
 	private final Map<String, IExpOperation> expOperations;
 
@@ -60,8 +57,6 @@ public class MemberExpConfigServiceImpl extends ServiceImpl<MemberExpConfigMappe
 
 	private final IMemberLevelExpLogService expLogService;
 
-	private final AsyncTaskManager taskManager;
-	
 	private final RedissonClient redissonClient;
 
 	@Override
@@ -78,10 +73,9 @@ public class MemberExpConfigServiceImpl extends ServiceImpl<MemberExpConfigMappe
 
 	@Override
 	public MemberExpConfig getMemberExpOperation(String opType, String levelType) {
-		return this.redisCache.getCacheObject(CACHE_PREFIX + opType + ":" + levelType, () -> {
-			return this.lambdaQuery().eq(MemberExpConfig::getOpType, opType)
-					.eq(MemberExpConfig::getLevelType, levelType).one();
-		});
+		return this.expOpCache.get(opType, levelType,
+				() -> this.lambdaQuery().eq(MemberExpConfig::getOpType, opType)
+                        .eq(MemberExpConfig::getLevelType, levelType).one());
 	}
 
 	@Override
@@ -108,11 +102,15 @@ public class MemberExpConfigServiceImpl extends ServiceImpl<MemberExpConfigMappe
 		db.setTotalLimit(expOp.getTotalLimit());
 		db.updateBy(expOp.getUpdateBy());
 		this.updateById(db);
+		this.expOpCache.clear(db);
 	}
 
 	@Override
+	@Transactional(rollbackFor = Throwable.class)
 	public void deleteExpOperations(List<Long> expOperationIds) {
-		this.removeByIds(expOperationIds);
+		List<MemberExpConfig> memberExpConfigs = this.listByIds(expOperationIds);
+		this.removeBatchByIds(memberExpConfigs);
+		expOpCache.clearAll(memberExpConfigs);
 	}
 
 	@Override

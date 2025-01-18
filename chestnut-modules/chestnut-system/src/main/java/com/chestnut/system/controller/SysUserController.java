@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
@@ -265,6 +266,7 @@ public class SysUserController extends BaseRestController {
 		return R.ok(value);
 	}
 
+	@XssIgnore
 	@Priv(type = AdminUserType.TYPE)
 	@PutMapping("/savePreferences")
 	public R<?> saveUserPreferences(@RequestBody @NotNull Map<String, Object> userPreferences) {

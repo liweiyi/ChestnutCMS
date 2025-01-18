@@ -89,9 +89,7 @@ public class FreeMarkerConfig {
 			templateLoaderPath = SpringUtils.getAppParentDirectory() + "/statics/";
 		}
 		templateLoaderPath = FileExUtils.normalizePath(templateLoaderPath);
-		if (!templateLoaderPath.endsWith("/")) {
-			templateLoaderPath += "/";
-		}
+		templateLoaderPath = StringUtils.appendIfMissing(templateLoaderPath, "/");
 		FileExUtils.mkdirs(templateLoaderPath);
 		properties.setTemplateLoaderPath(templateLoaderPath);
 		return new FileTemplateLoader(new File(templateLoaderPath));

@@ -21,9 +21,6 @@
         <el-tooltip class="item" effect="dark" :content="$t('Common.Remove')" placement="top">
           <i class="el-icon-delete" @click="handleRemove" />
         </el-tooltip>
-        <!-- <el-tooltip class="item" effect="dark" :content="$t('CMS.Resource.Cut')" placement="top">
-          <i class="el-icon-crop" @click="handleCut" />
-        </el-tooltip> -->
       </div>
     </div>
     <div v-show="showText" class="no-picture" :style="{'width':noWidth,'height':noHeight,'font-size':svgSize}">
@@ -38,6 +35,7 @@
   </div>
 </template>
 <script>
+import { setUrlParameter } from "@/utils/chestnut";
 import CMSResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import ElImageViewer from "element-ui/packages/image/src/image-viewer"
 
@@ -45,7 +43,7 @@ export default {
   name: "CMSLogoView",
   components: {
     "cms-resource-dialog": CMSResourceDialog,
-    "el-image-viewer": ElImageViewer
+    "el-image-viewer": ElImageViewer,
   },
   model: {
     prop: 'path',
@@ -94,6 +92,17 @@ export default {
     },
     showText() {
       return this.imagePath == undefined || this.imagePath == null || this.imagePath.length == 0;
+    },
+    isResourceImage() {
+      return this.path && this.path.startsWith("iurl://");
+    },
+    resourceId() {
+      if (this.path && this.path.startsWith("iurl://")) {
+        let queryString = this.path.substring(this.path.indexOf('?') + 1)
+        let idParam = queryString.split("&").find(item => item.startsWith("id="));
+        return idParam.substring(idParam.indexOf('=') + 1);
+      }
+      return '';
     }
   },
   watch: {
@@ -120,7 +129,7 @@ export default {
       imageSrc: this.src,
       openResourceDialog: false,
       showImageViewer: false,
-      imageViewerList: []
+      imageViewerList: [],
     };
   },
   methods: {
@@ -129,6 +138,10 @@ export default {
         const r = results[0];
         this.imagePath = r.path;
         this.imageSrc = r.src;
+        this.$emit("update", {
+          path: r.path,
+          src: r.src
+        });
       }
     },
     handleView () {
@@ -142,10 +155,11 @@ export default {
     },
     handleRemove () {
       this.imagePath = "";
+      this.$emit("update", {
+        path: "",
+        src: ""
+      });
     }, 
-    handleCut () {
-      this.$modal.alert("没整呢~");
-    }
   }
 };
 </script>
@@ -171,7 +185,7 @@ export default {
   text-align: center;
   width: 100%;
   height: 30px;
-  top: 120px;
+  bottom: 0;
   z-index: 100;
   color: #eee;
   background-color: rgba(0,0,0,.5);

@@ -15,11 +15,13 @@
  */
 package com.chestnut.xmodel.core.impl;
 
-import com.chestnut.common.utils.ObjectUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.xmodel.core.IMetaFieldValidation;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 非空判断
@@ -39,6 +41,15 @@ public class MetaFieldValidation_NotEmpty implements IMetaFieldValidation {
 
     @Override
     public boolean validate(Object fieldValue, Map<String, Object> args) {
-        return !ObjectUtils.isNullOrEmptyStr(fieldValue);
+        if (Objects.isNull(fieldValue)) {
+            return false;
+        }
+        if (fieldValue.getClass().isArray()) {
+            Object[] arr = (Object[]) fieldValue;
+            return arr.length > 0;
+        } else if (fieldValue instanceof Collection<?> list) {
+            return !list.isEmpty();
+        }
+        return  StringUtils.isNotEmpty(fieldValue.toString());
     }
 }

@@ -15,11 +15,15 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.enums.ContentOpType;
+import com.chestnut.contentcore.domain.InitByContent;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
-import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.contentcore.fixed.dict.ContentOpType;
+import com.chestnut.contentcore.service.ICatalogService;
+import com.chestnut.contentcore.service.IContentService;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.BeanUtils;
@@ -31,12 +35,12 @@ import java.util.Map;
 
 @Getter 
 @Setter
-public class ContentDTO {
+public class ContentDTO implements InitByContent {
 	
 	/**
 	 * 操作类型
 	 */
-	private ContentOpType opType;
+	private String opType;
 
 	/**
 	 * 内容ID
@@ -74,14 +78,24 @@ public class ContentDTO {
     private String titleStyle;
 
     /**
-     * 引导图
+     * 封面图
      */
     private String logo;
 
     /**
-     * 引导图预览路径
+     * 封面图预览路径
      */
     private String logoSrc;
+
+	/**
+	 * 其他图片
+	 */
+	private List<String> images = List.of();
+
+	/**
+	 * 其他图片预览路径
+	 */
+	private List<String> imagesSrc = List.of();
     
     /**
      * 发布链接
@@ -257,14 +271,33 @@ public class ContentDTO {
 	 * 备用字段4
 	 */
 	private String prop4;
+
+	public CmsContent convertToContentEntity(ICatalogService catalogService, IContentService contentService) {
+		CmsContent contentEntity;
+		if (ContentOpType.UPDATE.equals(this.getOpType())) {
+			contentEntity = contentService.dao().getById(this.getContentId());
+			Assert.notNull(contentEntity,
+					() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", this.getContentId()));
+		} else {
+			contentEntity = new CmsContent();
+		}
+		BeanUtils.copyProperties(this, contentEntity);
+		// 所属站点
+		CmsCatalog catalog = catalogService.getCatalog(this.getCatalogId());
+		contentEntity.setSiteId(catalog.getSiteId());
+		contentEntity.setAttributes(ContentAttribute.convertInt(this.getAttributes()));
+		// 发布通道配置
+		Map<String, Map<String, Object>> publishPipProps = new HashMap<>();
+		this.getPublishPipeProps().forEach(prop -> {
+			publishPipProps.put(prop.getPipeCode(), prop.getProps());
+		});
+		contentEntity.setPublishPipeProps(publishPipProps);
+		return contentEntity;
+	}
 	
 	public static ContentDTO newInstance(CmsContent cmsContent) {
 		ContentDTO dto = new ContentDTO();
-		BeanUtils.copyProperties(cmsContent, dto);
-		dto.setAttributes(ContentAttribute.convertStr(cmsContent.getAttributes()));
-		if (StringUtils.isNotEmpty(dto.getLogo())) {
-			dto.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(dto.getLogo()));
-		}
+		dto.initByContent(cmsContent, false);
 		return dto;
 	}
 }

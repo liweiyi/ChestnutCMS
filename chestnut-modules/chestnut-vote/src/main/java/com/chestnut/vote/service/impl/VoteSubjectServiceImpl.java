@@ -15,14 +15,6 @@
  */
 package com.chestnut.vote.service.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -38,9 +30,15 @@ import com.chestnut.vote.mapper.VoteSubjectItemMapper;
 import com.chestnut.vote.mapper.VoteSubjectMapper;
 import com.chestnut.vote.service.IVoteService;
 import com.chestnut.vote.service.IVoteSubjectService;
-
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -119,6 +117,7 @@ public class VoteSubjectServiceImpl extends ServiceImpl<VoteSubjectMapper, VoteS
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void deleteVoteSubjects(@NotEmpty List<Long> subjectIds) {
 		List<VoteSubject> subjects = this.listByIds(subjectIds);
 		this.removeByIds(subjects);
@@ -127,7 +126,7 @@ public class VoteSubjectServiceImpl extends ServiceImpl<VoteSubjectMapper, VoteS
 				.delete(new LambdaQueryWrapper<VoteSubjectItem>().in(VoteSubjectItem::getSubjectId, subjectIds));
 		// 更新缓存
 		subjects.stream().map(VoteSubject::getVoteId).distinct()
-				.forEach(voteId -> this.voteService.clearVoteCache(voteId));
+				.forEach(this.voteService::clearVoteCache);
 	}
 
 	@Override
@@ -139,12 +138,12 @@ public class VoteSubjectServiceImpl extends ServiceImpl<VoteSubjectMapper, VoteS
 		List<VoteSubjectItem> dbItems = new LambdaQueryChainWrapper<>(this.voteSubjectItemMapper)
 				.eq(VoteSubjectItem::getSubjectId, subject.getSubjectId()).list();
 
-		List<Long> updateItemIds = dto.getItemList().stream().filter(item -> IdUtils.validate(item.getItemId()))
-				.map(VoteSubjectItem::getItemId).toList();
-		List<Long> remmoveItemIds = dbItems.stream().filter(item -> !updateItemIds.contains(item.getItemId()))
-				.map(VoteSubjectItem::getItemId).toList();
-		if (remmoveItemIds.size() > 0) {
-			this.voteSubjectItemMapper.deleteBatchIds(remmoveItemIds);
+		List<Long> updateItemIds = dto.getItemList().stream().map(VoteSubjectItem::getItemId)
+				.filter(IdUtils::validate).toList();
+		List<Long> removeItemIds = dbItems.stream().map(VoteSubjectItem::getItemId)
+				.filter(itemId -> !updateItemIds.contains(itemId)).toList();
+		if (!removeItemIds.isEmpty()) {
+			this.voteSubjectItemMapper.deleteBatchIds(removeItemIds);
 		}
 
 		Map<Long, VoteSubjectItem> updateMap = dbItems.stream().filter(item -> updateItemIds.contains(item.getItemId()))

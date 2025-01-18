@@ -37,7 +37,11 @@ public class ContentPageLinkFunction extends AbstractFunc {
 
 	private static final String FUNC_NAME = "contentPageLink";
 	
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
 
 	private final ICatalogService catalogService;
 
@@ -76,7 +80,9 @@ public class ContentPageLinkFunction extends AbstractFunc {
 
 	@Override
 	public List<FuncArg> getFuncArgs() {
-		return List.of(new FuncArg("内容链接", FuncArgType.String, true, null),
-				new FuncArg("页码", FuncArgType.Int, true, null));
+		return List.of(
+				new FuncArg(ARG1_NAME, FuncArgType.String, true),
+				new FuncArg(ARG2_NAME, FuncArgType.Int, true)
+		);
 	}
 }

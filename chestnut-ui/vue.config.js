@@ -7,7 +7,7 @@ function resolve(dir) {
 
 const CompressionPlugin = require('compression-webpack-plugin')
 
-const name = process.env.VUE_APP_TITLE || '后台管理系统' // 网页标题
+const name = process.env.VUE_APP_INFO?.name || '后台管理系统' // 网页标题
 
 const port = process.env.port || process.env.npm_config_port || 80 // 端口
 
@@ -89,6 +89,19 @@ module.exports = {
         symbolId: 'icon-[name]'
       })
       .end()
+
+    config.plugin('define').tap(args => {
+        const packageJson = require('./package.json');
+        args[0]['process.env']['VUE_APP_INFO'] = JSON.stringify({
+            name: packageJson.name,
+            version: packageJson.version,
+            description: packageJson.description,
+            author: packageJson.author,
+            license: packageJson.license,
+            copyright: packageJson.copyright
+        });
+        return args;
+    })
 
     config
       .when(process.env.NODE_ENV !== 'development',

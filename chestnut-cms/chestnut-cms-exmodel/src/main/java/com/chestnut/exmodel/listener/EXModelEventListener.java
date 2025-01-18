@@ -25,13 +25,11 @@ import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.exmodel.CmsExtendMetaModelType;
-import com.chestnut.exmodel.domain.CmsExtendModelData;
 import com.chestnut.exmodel.fixed.dict.ExtendModelDataType;
 import com.chestnut.exmodel.properties.CatalogExtendModelProperty;
 import com.chestnut.exmodel.properties.ContentExtendModelProperty;
 import com.chestnut.exmodel.properties.SiteExtendModelProperty;
 import com.chestnut.xmodel.service.IModelDataService;
-import com.chestnut.xmodel.util.XModelUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -92,9 +90,13 @@ public class EXModelEventListener {
 
 	@EventListener
 	public void afterCatalogDelete(AfterCatalogDeleteEvent event) {
-		String modelId = CatalogExtendModelProperty.getValue(event.getCatalog().getConfigProps());
+		this.removeModelDataByCatalog(event.getCatalog());
+	}
+
+	private void removeModelDataByCatalog(CmsCatalog catalog) {
+		String modelId = CatalogExtendModelProperty.getValue(catalog.getConfigProps());
 		if (NumberUtils.isDigits(modelId)) {
-			String dataId = event.getCatalog().getCatalogId().toString();
+			String dataId = catalog.getCatalogId().toString();
 			this.modelDataService.deleteModelDataByPkValue(Long.valueOf(modelId),
 					List.of(Map.of(
 							CmsExtendMetaModelType.FIELD_MODEL_ID.getCode(), modelId,
@@ -102,6 +104,11 @@ public class EXModelEventListener {
 							CmsExtendMetaModelType.FIELD_DATA_ID.getCode(), dataId
 					)));
 		}
+	}
+
+	@EventListener
+	public void onCatalogClear(OnCatalogClearEvent event) {
+		this.removeModelDataByCatalog(event.getCatalog());
 	}
 
 	@EventListener
@@ -154,13 +161,12 @@ public class EXModelEventListener {
 
 	private void saveModelData(Long modelId, String dataType, String dataId, Map<String, Object> params) {
 		Map<String, Object> dataMap = new HashMap<>();
-		params.entrySet().forEach(e -> {
-			String fieldCode = e.getKey();
-			if (fieldCode.startsWith(CmsExtendMetaModelType.DATA_FIELD_PREFIX)) {
-				fieldCode = StringUtils.substringAfter(e.getKey(), CmsExtendMetaModelType.DATA_FIELD_PREFIX);
-			}
-			dataMap.put(fieldCode, e.getValue());
-		});
+		params.forEach((fieldCode, value) -> {
+            if (fieldCode.startsWith(CmsExtendMetaModelType.DATA_FIELD_PREFIX)) {
+                fieldCode = StringUtils.substringAfter(fieldCode, CmsExtendMetaModelType.DATA_FIELD_PREFIX);
+            }
+            dataMap.put(fieldCode, value);
+        });
 		dataMap.put(CmsExtendMetaModelType.FIELD_MODEL_ID.getCode(), modelId);
 		dataMap.put(CmsExtendMetaModelType.FIELD_DATA_TYPE.getCode(), dataType);
 		dataMap.put(CmsExtendMetaModelType.FIELD_DATA_ID.getCode(), dataId);

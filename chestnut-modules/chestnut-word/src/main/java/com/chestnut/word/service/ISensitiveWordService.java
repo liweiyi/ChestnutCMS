@@ -63,4 +63,6 @@ public interface ISensitiveWordService extends IService<SensitiveWord> {
 	 * @return
 	 */
 	Set<String> check(String text);
+
+    void sync();
 }

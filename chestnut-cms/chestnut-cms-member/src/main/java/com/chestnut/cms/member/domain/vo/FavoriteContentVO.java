@@ -15,11 +15,14 @@
  */
 package com.chestnut.cms.member.domain.vo;
 
+import com.chestnut.common.utils.ArrayUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 会员收藏内容数据VO
@@ -46,6 +49,8 @@ public class FavoriteContentVO {
     private String subTitle;
 
     private String logo;
+
+    private List<String> images;
 
     private String summary;
 
@@ -78,7 +83,8 @@ public class FavoriteContentVO {
         vo.setTitle(content.getTitle());
         vo.setShortTitle(content.getShortTitle());
         vo.setSubTitle(content.getSubTitle());
-        vo.setLogo(content.getLogo());
+        vo.setImages(content.getImages());
+        vo.setLogo(ArrayUtils.firstOrElse(content.getImages(), StringUtils.EMPTY));
         vo.setSummary(content.getSummary());
         vo.setPublishDate(content.getPublishDate());
         vo.setTopFlag(content.getTopFlag());

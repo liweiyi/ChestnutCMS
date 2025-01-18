@@ -16,6 +16,7 @@
 package com.chestnut.article.listener;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.article.IArticleBodyFormat;
 import com.chestnut.article.domain.BCmsArticleDetail;
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.domain.vo.ArticleVO;
@@ -24,13 +25,13 @@ import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.listener.event.AfterContentEditorInitEvent;
 import com.chestnut.contentcore.listener.event.BeforeSiteDeleteEvent;
-import com.chestnut.contentcore.util.InternalUrlUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -81,7 +82,12 @@ public class ArticleListener {
 	@EventListener
 	public void afterContentEditorInit(AfterContentEditorInitEvent event) {
 		if (event.getContentVO() instanceof ArticleVO vo) {
-			vo.setContentHtml(InternalUrlUtils.dealResourceInternalUrl(vo.getContentHtml()));
+			IArticleBodyFormat articleBodyFormat = articleService.getArticleBodyFormat(vo.getFormat());
+			if (Objects.nonNull(articleBodyFormat)) {
+				vo.setContentHtml(articleBodyFormat.initEditor(vo.getContentHtml()));
+			} else {
+				log.warn("Unsupported article body format: " + vo.getFormat());
+			}
 		}
 	}
 }

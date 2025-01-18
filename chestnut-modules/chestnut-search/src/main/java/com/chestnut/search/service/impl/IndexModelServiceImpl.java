@@ -66,7 +66,7 @@ public class IndexModelServiceImpl extends ServiceImpl<IndexModelMapper, IndexMo
 
 	@Override
 	public SearchModelDTO getIndexModel(String modelCode) {
-		SearchModelDTO si = this.redisCache.getCacheObject(CACHE_PREFIX + modelCode);
+		SearchModelDTO si = this.redisCache.getCacheObject(CACHE_PREFIX + modelCode, SearchModelDTO.class);
 		if (Objects.isNull(si)) {
 			IndexModel one = this.lambdaQuery().eq(IndexModel::getCode, modelCode).one();
 			Assert.notNull(one, () -> SearchErrorCode.MODEL_NOT_EXISTS.exception(modelCode));

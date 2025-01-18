@@ -23,10 +23,10 @@ import com.chestnut.common.db.domain.DBTable;
 import com.chestnut.common.db.domain.DBTableColumn;
 import com.chestnut.common.db.util.SqlBuilder;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.xmodel.cache.XModelMonitoredCache;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModel;
 import com.chestnut.xmodel.core.MetaModelField;
@@ -53,40 +53,38 @@ import java.util.List;
 public class ModelServiceImpl extends ServiceImpl<XModelMapper, XModel>
 		implements IModelService, CommandLineRunner {
 
-	private static final String CACHE_PREFIX = "xmodel:";
-
 	private final XModelFieldMapper modelFieldMapper;
 
 	private final DBService dbService;
 
-	private final RedisCache redisCache;
+	private final XModelMonitoredCache modelCache;
 
 	@Override
 	public MetaModel getMetaModel(Long modelId) {
-		MetaModel model = this.redisCache.getCacheObject(CACHE_PREFIX + modelId, () -> {
-			XModel xmodel = getById(modelId);
-			if (xmodel == null) {
-				return null;
-			}
+		MetaModel model = modelCache.get(modelId, () -> {
+					XModel xmodel = getById(modelId);
+					if (xmodel == null) {
+						return null;
+					}
 
-			List<MetaModelField> fields = new LambdaQueryChainWrapper<>(modelFieldMapper)
-					.eq(XModelField::getModelId, modelId)
-					.orderByAsc(XModelField::getSortFlag).orderByAsc(XModelField::getFieldId)
-					.list()
-					.stream().map(MetaModelField::new)
-					.toList();
-			MetaModel metaModel = new MetaModel();
-			metaModel.setModel(xmodel);
-			metaModel.setFields(fields);
-			return metaModel;
-		});
+					List<MetaModelField> fields = new LambdaQueryChainWrapper<>(modelFieldMapper)
+							.eq(XModelField::getModelId, modelId)
+							.orderByAsc(XModelField::getSortFlag).orderByAsc(XModelField::getFieldId)
+							.list()
+							.stream().map(MetaModelField::new)
+							.toList();
+					MetaModel metaModel = new MetaModel();
+					metaModel.setModel(xmodel);
+					metaModel.setFields(fields);
+					return metaModel;
+				});
 		Assert.notNull(model, () -> MetaErrorCode.META_MODEL_NOT_FOUND.exception(modelId));
 		return model;
 	}
 
 	@Override
 	public void clearMetaModelCache(Long modelId) {
-		this.redisCache.deleteObject(CACHE_PREFIX + modelId);
+		this.modelCache.clear(modelId);
 	}
 
 	@Override

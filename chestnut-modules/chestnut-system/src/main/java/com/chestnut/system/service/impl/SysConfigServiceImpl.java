@@ -61,18 +61,16 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 	 */
 	@Override
 	public String selectConfigByKey(String configKey) {
-		String configValue = redisCache.getCacheObject(getCacheKey(configKey), () -> {
+        return redisCache.getCacheObject(getCacheKey(configKey), String.class, () -> {
 			SysConfig one = this.lambdaQuery().eq(SysConfig::getConfigKey, configKey).one();
 			return Objects.nonNull(one) ? one.getConfigValue() : null;
 		});
-		return configValue;
 	}
 
 	/**
 	 * 新增参数配置
 	 * 
 	 * @param config 参数配置信息
-	 * @return 结果
 	 */
 	@Override
 	@Transactional(rollbackFor = Throwable.class)
@@ -97,7 +95,6 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 	 * 修改参数配置
 	 * 
 	 * @param config 参数配置信息
-	 * @return 结果
 	 */
 	@Override
 	public void updateConfig(SysConfig config) {
@@ -154,7 +151,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 	@Override
 	public void clearConfigCache() {
 		Collection<String> keys = redisCache.keys(SysConstants.CACHE_SYS_CONFIG_KEY + "*");
-		redisCache.deleteObject(keys);
+		redisCache.deleteObjects(keys);
 	}
 
 	/**

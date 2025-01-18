@@ -15,8 +15,6 @@
  */
 package com.chestnut.system.domain;
 
-import com.chestnut.common.utils.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,14 +27,22 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SysCache {
-	
-	/** 缓存名称 */
+
+	private String monitoredId;
+
+	/**
+	 * 缓存名称
+	 */
 	private String cacheName = "";
 
-	/** 缓存键名 */
+	/**
+	 * 缓存键名
+	 */
 	private String cacheKey = "";
 
-	/** 缓存内容 */
+	/**
+	 * 缓存内容
+	 */
 	private String cacheValue = "";
 	
 	/**
@@ -44,21 +50,20 @@ public class SysCache {
 	 */
 	private Long expireTime = -1L;
 
-	/** 备注 */
-	private String remark = "";
-
 	public SysCache() {
 
 	}
 
-	public SysCache(String cacheName, String remark) {
+	public SysCache(String monitoredId, String cacheName, String cacheKey) {
+		this.monitoredId = monitoredId;
 		this.cacheName = cacheName;
-		this.remark = remark;
+		this.cacheKey = cacheKey;
 	}
 
-	public SysCache(String cacheName, String cacheKey, String cacheValue) {
-		this.cacheName = StringUtils.replace(cacheName, ":", "");
-		this.cacheKey = StringUtils.replace(cacheKey, cacheName, "");
+	public SysCache(String monitoredId, String cacheName, String cacheKey, String cacheValue) {
+		this.monitoredId = monitoredId;
+		this.cacheName = cacheName;
+		this.cacheKey = cacheKey;
 		this.cacheValue = cacheValue;
 	}
 }

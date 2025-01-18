@@ -94,13 +94,14 @@ export default {
     }
   },
   Error: {
-    Err401: "401错误!",
+    Err401: "【401】认证失败，无法访问系统资源！",
     NoPermission: "您没有访问权限！",
     NoPermissionTip: "对不起，您没有访问权限，请不要进行非法操作！您可以返回主页面",
     GoHome: "回首页",
-    Err404: "404错误!",
+    Err404: "【404】访问资源不存在！",
     Err404Tip: "对不起，您正在寻找的页面不存在。尝试检查URL的错误，然后按浏览器上的刷新按钮或尝试在我们的应用程序中找到其他内容。",
-    PageNotFound: "找不到网页！"
+    PageNotFound: "找不到网页！",
+    Unkonwn: '系统未知错误，请反馈给管理员'
   },
   Router: {
     Home: '首页',
@@ -716,6 +717,7 @@ export default {
       ApplicationInfo: "应用信息",
       AppName: "应用名称",
       AppVersion: "应用版本号",
+      LatestVersion: "最新版本",
       CPU: "CPU",
       CPUCoreNum: "核心数",
       CPUUserUsage: "用户使用率",
@@ -775,6 +777,7 @@ export default {
       MemoryCost: "内存消耗",
       CacheList: "缓存列表",
       CacheName: "缓存名称",
+      CachePrefix: "缓存键名（前缀）",
       CacheKeyList: "键名列表",
       CacheKey: "缓存键名",
       CacheValue: "缓存内容",
@@ -856,6 +859,24 @@ export default {
           Code: "不能为空",
           IframeSrc: "嵌入代码的<iframe>标签缺少src属性！"
         }
+      },
+      VideoModifier: {
+        DialogTitle: "视频信息",
+        Cover: "封面",
+        UploadCover: "上传",
+        FrameCover: "帧截图",
+        FrameCoverSeconds: "视频截图时间点（单位：秒）",
+        Screenshot: "截图",
+        Controls: "显示控制条",
+        Loop: "循环播放",
+        AutoPlay: "自动播放",
+        Preload: "预加载方式",
+        PreloadNone: "不缓存",
+        PreloadMeta: "元数据",
+        PreloadAuto: "自动",
+        Muted: "静音",
+        Width: "宽度",
+        Height: "高度",
       },
       InsertBaiduMap: "插入百度地图",
       BaiduMap: {
@@ -1034,7 +1055,7 @@ export default {
       Basic: "基础属性",
       Content: "内容",
       SortTip: "正数下移，负数上移",
-      DeleteTip: "删除栏目会删除包括子栏目下所有数据确定删除吗？",
+      DeleteTip: "删除栏目会删除包括子栏目下所有数据，确定删除吗？",
       CatalogId: "栏目ID",
       Name: "栏目名称",
       Alias: "栏目别名",
@@ -1062,7 +1083,11 @@ export default {
       MappingContentTip: "映射内容：仅生成基础信息，独立页面，扩展内容共享自源内容。",
       SortUp: "上移",
       SortDown: "下移",
+      Merge: "合并",
+      Clear: "清空",
+      ExportCatalogTree: "导出栏目结构",
       NoSitePermissions: "无任何站点权限",
+      ContentPathRule: "内容路径规则",
       RuleTips: {
         Name: "栏目名称不能为空",
         Alias: "不能为空且只能使用字母、数字和下划线",
@@ -1073,6 +1098,9 @@ export default {
       PublishProgressTitle: "发布栏目",
       DeleteProgressTitle: "删除栏目",
       MoveProgressTitle: "转移栏目",
+      MergeProgressTitle: "合并栏目",
+      ClearProgressTitle: "清空栏目",
+      ClearTip: "清空栏目会删除栏目下所有内容数据，确认清空吗？",
       TemplateConfig: "模板配置",
       OtherConfig: "其他配置",
       Extend: {
@@ -1171,6 +1199,27 @@ export default {
       PushToBaidu: "推送到百度",
       PushToBaiduResult: "【{0}】成功 {1} 条，剩余 {2} 条。<br/>",
       ImportCSSTip: "应用站点/栏目发布通道设置的文章编辑器CSS",
+      OpLog: "操作记录"
+    },
+    ContentOpLog: {
+      Type: "操作类型",
+      OperatorType: "操作人类型",
+      Operator: "操作人",
+      Details: "操作明细",
+      LogTime: "操作时间",
+    },
+    Article: {
+      Format: "文档格式",
+      Markdown: {
+        Placeholder: "输入内容...",
+        AddImageLink: "添加图片链接",
+        UploadImage: "上传图片",
+        UploadVideo: "上传视频",
+        UploadAudio: "上传音频",
+        UploadFile: "上传文件",
+        ImageText: "图片描述",
+        ImageLink: "图片链接",
+      }
     },
     Image: {
       Title: "标题",
@@ -1404,9 +1453,14 @@ export default {
       TagAttrMandatory: "是否必填",
       TagAttrOptions: "可用值",
       TagAttrDesc: "描述",
+      DataField: "数据字段",
+      DeprecatedTag: "已弃用",
+      DeprecatedTip: "已弃用（弃用版本：{0}, 未来是否删除：{1}）",
       Func: "模板函数",
       InputFuncName: "输入模板函数名称",
       UsageDesc: "用法描述：",
+      Demo: "示例",
+      ClickToShowDemo: "点击查看示例。",
       FuncAlias: "函数别名：",
       FuncArgs: "函数参数：",
       FuncName: "函数方法名",
@@ -1601,6 +1655,17 @@ export default {
       NoSite: "无可用站点数据",
       UnitSecond: "秒",
       TrendCharts: "趋势分析",
+      SourceSite: "来源网站",
+      Top10SourceSite: "Top10来源网站",
+      Top10VisitPage: "Top10受访页面",
+      NewOldVisitor: "新老访客",
+      Metrics: "指标",
+      NewVisitor: "新访客",
+      OldVisitor: "老访客",
+      VisitSource: "访问来源",
+      EngineSource: "搜索引擎来源",
+      SearchWordSource: "搜索词来源",
+      SearchWord: "搜索词",
     },
     Adv: {
       AdName: "广告名称",
@@ -1823,6 +1888,31 @@ export default {
       Placeholder: {
         ModelKey: "输入模型标识",
         ModelName: "输入模型名称"
+      }
+    }
+  },
+  Deploy: {
+    Cert: {
+      Domain: "域名",
+      Issuer: "证书颁发机构",
+      IssueTime: "签发时间",
+      ExpireTime: "过期时间",
+      Apply: "申请",
+      Auth: "验证",
+      DownloadCrt: "下载证书",
+      Country: "国家",
+      State: "省份",
+      Locality: "地区",
+      Organization: "组织机构",
+      AuthChallenge: "证书申请验证",
+      DownloadHttp01File: "下载HTTP01验证文件",
+      AddDomain: "新增域名",
+      EditDomain: "修改域名信息",
+      ConfirmApply: "确认发起证书申请吗？",
+      Applying: "正在提交证书申请，请稍等...",
+      Authroizating: "正在验证，请稍等...",
+      Placeholder: {
+        Domain: "输入域名查询"
       }
     }
   }

@@ -79,6 +79,7 @@ public class ImageCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<CmsImage> list = JacksonUtils.fromList(f, CmsImage.class);
             for (CmsImage data : list) {
+                Long oldImageId = data.getImageId();
                 try {
                     data.setImageId(IdUtils.getSnowflakeId());
                     data.setSiteId(context.getSite().getSiteId());
@@ -87,8 +88,7 @@ public class ImageCoreDataHandler implements ICoreDataHandler {
                     data.setPath(context.dealInternalUrl(data.getPath()));
                     imageService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入图集内容数据失败：" + data.getTitle()
-                            + "[" + data.getImageId() + "]");
+                    AsyncTaskManager.addErrMessage("导入图集内容数据`" + oldImageId + "`失败：" + e.getMessage());
                     log.error("Import cms_image failed: {}", data.getImageId(), e);
                 }
             }

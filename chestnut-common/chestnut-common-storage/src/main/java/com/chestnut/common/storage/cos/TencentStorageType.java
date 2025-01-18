@@ -15,38 +15,29 @@
  */
 package com.chestnut.common.storage.cos;
 
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
-
+import com.chestnut.common.i18n.I18nUtils;
+import com.chestnut.common.storage.*;
+import com.chestnut.common.utils.StringUtils;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.ClientConfig;
 import com.qcloud.cos.auth.BasicCOSCredentials;
 import com.qcloud.cos.auth.COSCredentials;
-import com.qcloud.cos.model.COSObject;
-import com.qcloud.cos.model.CreateBucketRequest;
-import com.qcloud.cos.model.ObjectMetadata;
-import com.qcloud.cos.model.PutObjectRequest;
+import com.qcloud.cos.model.*;
 import com.qcloud.cos.region.Region;
-import com.chestnut.common.i18n.I18nUtils;
-import com.chestnut.common.storage.IFileStorageType;
-import com.chestnut.common.storage.OSSClient;
-import com.chestnut.common.storage.StorageCopyArgs;
-import com.chestnut.common.storage.StorageCreateBucketArgs;
-import com.chestnut.common.storage.StorageExistArgs;
-import com.chestnut.common.storage.StorageMoveArgs;
-import com.chestnut.common.storage.StorageReadArgs;
-import com.chestnut.common.storage.StorageRemoveArgs;
-import com.chestnut.common.storage.StorageWriteArgs;
+import org.springframework.stereotype.Component;
+
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Component(IFileStorageType.BEAN_NAME_PREIFX + TencentStorageType.TYPE)
 public class TencentStorageType implements IFileStorageType {
 
 	public final static String TYPE = "TencentCOS";
 
-	private Map<String, OSSClient<COSClient>> clients = new HashMap<>();
+	private final Map<String, OSSClient<COSClient>> clients = new HashMap<>();
 
 	@Override
 	public String getType() {
@@ -71,7 +62,7 @@ public class TencentStorageType implements IFileStorageType {
 
 	@Override
 	public void reloadClient(String endpoint, String accessKey, String accessSecret) {
-		OSSClient<COSClient> client = this.getClient(endpoint, accessKey, accessSecret);
+		OSSClient<COSClient> client = this.clients.get(endpoint);
 		if (client != null) {
 			client.getClient().shutdown();
 			this.clients.remove(endpoint);
@@ -81,8 +72,6 @@ public class TencentStorageType implements IFileStorageType {
 	
 	/**
 	 * 创建存储桶
-	 * 
-	 * @param bucketName
 	 */
 	@Override
 	public void createBucket(StorageCreateBucketArgs args) {
@@ -108,10 +97,22 @@ public class TencentStorageType implements IFileStorageType {
 	}
 
 	@Override
+	public List<String> list(StorageListArgs args) {
+		OSSClient<COSClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(), args.getAccessSecret());
+
+		ListObjectsRequest listObjectsRequest = new ListObjectsRequest();
+		listObjectsRequest.setBucketName(args.getBucket());
+		listObjectsRequest.setMaxKeys(args.getMaxKeys());
+		listObjectsRequest.setPrefix(args.getPrefix());
+		ObjectListing objectListing = client.getClient().listObjects(listObjectsRequest);
+		return objectListing.getObjectSummaries().stream().map(COSObjectSummary::getKey).toList();
+	}
+
+	@Override
 	public void write(StorageWriteArgs args) {
 		OSSClient<COSClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(), args.getAccessSecret());
 		ObjectMetadata objectMetadata = new ObjectMetadata();
-		if (args.getLength() > 0) {
+		if (Objects.nonNull(args.getLength()) && args.getLength() > 0) {
 			objectMetadata.setContentLength(args.getLength());
 		}
 		PutObjectRequest putObjectRequest = new PutObjectRequest(args.getBucket(), args.getPath(), args.getInputStream(), objectMetadata);
@@ -143,7 +144,9 @@ public class TencentStorageType implements IFileStorageType {
 		if (client == null) {
 			client = new OSSClient<>();
 			COSCredentials credentials = new BasicCOSCredentials(accessKey, accessSecret);
-			client.setClient(new COSClient(credentials, new ClientConfig(new Region(endpoint))));
+			String region = StringUtils.substringAfterLast(
+					StringUtils.substringBefore(endpoint, ".myqcloud.com"), ".");
+			client.setClient(new COSClient(credentials, new ClientConfig(new Region(region))));
 			this.clients.put(endpoint, client);
 		}
 		client.setLastActiveTime(System.currentTimeMillis());

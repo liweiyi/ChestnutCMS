@@ -23,6 +23,10 @@ package com.chestnut.contentcore.exception;
  */
 public class InternalUrlParseException extends RuntimeException {
 
+    public InternalUrlParseException(String message) {
+        super("Parse iurl failed: " + message);
+    }
+
     public InternalUrlParseException(String message, Exception e) {
         super("Parse iurl failed: " + message, e);
     }

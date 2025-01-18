@@ -15,16 +15,14 @@
  */
 package com.chestnut.common.security;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.springframework.stereotype.Component;
-
-import com.chestnut.common.redis.RedisCache;
-
 import cn.dev33.satoken.dao.SaTokenDao;
 import cn.dev33.satoken.util.SaFoxUtil;
+import com.chestnut.common.redis.RedisCache;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
@@ -34,7 +32,7 @@ public class SaTokenDaoRedisImpl implements SaTokenDao {
 
 	@Override
 	public String get(String key) {
-		return this.redisCache.getCacheObject(key);
+		return this.redisCache.getCacheObject(key, String.class);
 	}
 
 	@Override
@@ -82,7 +80,7 @@ public class SaTokenDaoRedisImpl implements SaTokenDao {
 
 	@Override
 	public Object getObject(String key) {
-		return this.redisCache.getCacheObject(key);
+		return this.redisCache.getCacheObject(key, Object.class);
 	}
 
 	@Override

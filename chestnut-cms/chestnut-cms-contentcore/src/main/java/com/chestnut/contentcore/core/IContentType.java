@@ -18,9 +18,8 @@ package com.chestnut.contentcore.core;
 import com.chestnut.contentcore.domain.BCmsContent;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.vo.ContentVO;
-import jakarta.servlet.http.HttpServletRequest;
 
-import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * 内容类型
@@ -79,11 +78,11 @@ public interface IContentType extends Comparable<IContentType> {
 	IContent<?> loadContent(CmsContent xContent);
 
     /**
-     * 从请求读取内容数据
+     * 从输入流读取内容数据
      * 
-     * @param request
+     * @param is 输入流
      */
-    IContent<?> readRequest(HttpServletRequest request) throws IOException;
+    IContent<?> readFrom(InputStream is);
     
     /**
      * 初始化内容编辑页面数据

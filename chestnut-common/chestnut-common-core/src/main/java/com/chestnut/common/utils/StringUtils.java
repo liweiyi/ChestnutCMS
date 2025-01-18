@@ -20,6 +20,7 @@ import org.springframework.util.AntPathMatcher;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -165,6 +166,12 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	 */
 	public static boolean isNotEmpty(String str) {
 		return !isEmpty(str);
+	}
+
+	public static void ifNotEmpty(String str, Consumer<String> consumer) {
+		if (!isEmpty(str)) {
+			consumer.accept(str);
+		}
 	}
 
 	/**
@@ -747,4 +754,33 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 		String str = substringAfter(path, "?");
 		return splitToMap(str, "&", "=");
     }
+
+	/**
+	 * 转二进制字符串
+	 *
+	 * @param str 字符串
+	 * @param leftPad 高位补零
+	 */
+	public static String toBinary(String str, boolean leftPad) {
+		StringBuilder binary = new StringBuilder();
+		for (char ch : str.toCharArray()) {
+			String binaryString = Integer.toBinaryString(ch);
+			if (leftPad) {
+				binaryString = leftPad(binaryString, 8, '0');
+			}
+			binary.append(binaryString);
+		}
+		return binary.toString();
+	}
+
+	public static String toBinary(String str) {
+		return toBinary(str, true);
+	}
+
+	public static String appendIfNotEmpty(String str, String value, String appendStr) {
+		if (isNotEmpty(value)) {
+			str += appendStr;
+		}
+		return str;
+	}
 }

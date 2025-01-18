@@ -89,7 +89,7 @@ public class SearchWordStatJobHandler extends IJobHandler implements IScheduledH
 				.stream()
 				.collect(Collectors.toMap(SearchWord::getWordId, SearchWord::getWord));
 		Set<Long> insertIds = new HashSet<>();
-		Map<String, Integer> cacheMap = this.redisCache.getCacheMap(cacheKey);
+		Map<String, Integer> cacheMap = this.redisCache.getCacheMap(cacheKey, Integer.class);
 		cacheMap.forEach((wordId, count) -> {
 			Long wordIdLongV = Long.valueOf(wordId);
 			if (searchWords.containsKey(wordIdLongV)) {

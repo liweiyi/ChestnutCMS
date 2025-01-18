@@ -16,7 +16,8 @@
 package com.chestnut.xmodel.dto;
 
 import com.chestnut.xmodel.core.IMetaModelType;
-import com.chestnut.xmodel.domain.XModelField;
+import com.chestnut.xmodel.core.MetaModelField;
+import com.chestnut.xmodel.util.XModelUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,6 +31,8 @@ public class XModelFieldDataDTO {
     private String label;
     
     private String fieldName;
+
+	private String fieldType;
     	
     private String controlType;
 
@@ -41,12 +44,14 @@ public class XModelFieldDataDTO {
 
 	private Object valueObj;
 
-	public static XModelFieldDataDTO newInstance(XModelField field, String value) {
+	public static XModelFieldDataDTO newInstance(MetaModelField field, Object value) {
 		XModelFieldDataDTO dto = new XModelFieldDataDTO();
 		dto.setLabel(field.getName());
 		dto.setFieldName(IMetaModelType.DATA_FIELD_PREFIX + field.getCode());
 		dto.setControlType(field.getControlType());
+		dto.setFieldType(field.getFieldType());
 		dto.setValidations(field.getValidations());
+		dto.setOptions(XModelUtils.getOptions(field.getOptions()));
 		dto.setValue(value);
 		return dto;
 	}

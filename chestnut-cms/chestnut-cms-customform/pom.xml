@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.chestnut</groupId>
         <artifactId>chestnut-cms</artifactId>
-        <version>1.5.0</version>
+        <version>1.5.1</version>
     </parent>
 
     <artifactId>chestnut-cms-customform</artifactId>

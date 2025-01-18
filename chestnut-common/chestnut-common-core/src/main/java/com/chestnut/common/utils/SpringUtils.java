@@ -15,11 +15,7 @@
  */
 package com.chestnut.common.utils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.URISyntaxException;
-import java.util.Map;
-
+import com.chestnut.common.utils.file.FileExUtils;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -28,9 +24,12 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
 
-import com.chestnut.common.utils.file.FileExUtils;
+import java.io.File;
+import java.util.Map;
 
 /**
  * spring工具类 方便在非spring管理环境中获取bean
@@ -54,6 +53,10 @@ public final class SpringUtils implements BeanFactoryPostProcessor, ApplicationC
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		SpringUtils.applicationContext = applicationContext;
+	}
+
+	public static void publishEvent(ApplicationEvent event) {
+		applicationContext.publishEvent(event);
 	}
 
 	/**
@@ -174,23 +177,27 @@ public final class SpringUtils implements BeanFactoryPostProcessor, ApplicationC
 
 	/**
 	 * 获取应用当前所在目录
-	 * 
-	 * @return
-	 * @throws FileNotFoundException
-	 * @throws URISyntaxException
 	 */
 	public static String getAppParentDirectory() {
 		ApplicationHome applicationHome = new ApplicationHome(SpringUtils.class);
 		File applicationDir = applicationHome.getSource();
-		String[] activeProfiles = applicationContext.getEnvironment().getActiveProfiles();
+		String[] activeProfiles = getActiveProfiles();
 		if (ArrayUtils.indexOf("dev", activeProfiles) > -1) {
 			String dirPath = FileExUtils.normalizePath(applicationHome.getSource().getAbsolutePath());
 			applicationDir = new File(StringUtils.substringBefore(dirPath, "/chestnut-common/"));
 		}
 		String dir = FileExUtils.normalizePath(applicationDir.getParentFile().getAbsolutePath());
-		if (dir.indexOf("/BOOT-INF/lib") > -1) {
+		if (dir.contains("/BOOT-INF/lib")) {
 			dir = StringUtils.substringBefore(dir, "/BOOT-INF/lib"); 
 		}
 		return dir;
+	}
+
+	public static boolean isDevelopment() {
+		return applicationContext.getEnvironment().acceptsProfiles(Profiles.of("dev"));
+	}
+
+	public static boolean isProduction() {
+		return applicationContext.getEnvironment().acceptsProfiles(Profiles.of("prod"));
 	}
 }

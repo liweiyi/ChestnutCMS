@@ -2,8 +2,10 @@
 
 /**
  * 通用js方法封装处理
+ * 
  * Copyright (c) 2023 chestnut
  */
+import i18n from '@/i18n'
 
 // 日期格式化
 export function parseTime(time, pattern) {
@@ -317,4 +319,50 @@ export function getFileSvgIconClass(path) {
     }
   }
   return "file-unknown";
+}
+
+export function setUrlParameter(url, name, value) {
+  let index = url.indexOf("?");
+  if (index < 0) {
+    return url + "?" + name + "=" + value;
+  }
+  if (url.length == index + 1) {
+    return url + name + "=" + value;
+  }
+  let seted = false;
+  let queryString = url.substring(index + 1);
+  let arr = queryString.split("&");
+  for (let i = 0; i < arr.length; i++) {
+    let param = arr[i].split("=");
+    let paramName = param[0];
+    if (name == paramName) {
+      arr[i] = name + "=" + value;
+      seted = true;
+      break;
+    }
+  }
+  if (seted) {
+    return url.substring(0, index) + "?" + arr.join("&");
+  }
+  return url + "&" + name + "=" + value;
+}
+
+export function isEmpty(value) {
+  return !isNotEmpty(value);
+}
+
+export function isNotEmpty(value) {
+  return value !== null && value !== undefined && value !== '' && !(value instanceof Array && value.length === 0);
+}
+
+export function getResponseCodeErrMsg(code, defaultMsg) {
+  let errMsg = defaultMsg || i18n.t("Error.Unknown")
+  if (code == 401) { 
+    errMsg = i18n.t("Error.Err401") 
+  } else if (code == 403) {
+    errMsg = i18n.t("Error.Err403") 
+  } else if (code == 404) {
+    errMsg = i18n.t("Error.Err404") 
+  }
+  return errMsg;
 }

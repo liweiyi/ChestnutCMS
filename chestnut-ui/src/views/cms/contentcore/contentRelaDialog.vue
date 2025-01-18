@@ -128,7 +128,7 @@ export default {
       }
     },
     cid () {
-      this.queryParams.catalogId = this.cid;
+      this.queryParams.contentId = this.cid;
     }
   },
   data () {

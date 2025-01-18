@@ -46,12 +46,7 @@
         type="datetime"
         value-format="yyyy-MM-dd HH:mm:ss">
       </el-date-picker>
-      <cms-logo-view v-if="field.controlType==='CMSImage'" 
-        v-model="field.value" 
-        :src="field.valueObj" 
-        :width="210" 
-        :height="150">
-      </cms-logo-view>
+      <cms-resource-uploader v-if="field.controlType==='CMSImage'" v-model="field.value" type="image"></cms-resource-uploader>
       <ueditor v-if="field.controlType==='UEditor'" 
         :editorId="'ex-'+field.fieldName" 
         :height="200" 
@@ -62,21 +57,22 @@
         v-model="field.value" 
         :selected="field.valueObj">
       </cms-content-selector>
+      <cms-resource-uploader v-if="field.controlType==='CMSResource'" v-model="field.value"></cms-resource-uploader>
     </el-form-item>
   </div>
 </template>
 <script>
-import CMSLogoView from '@/views/cms/components/LogoView';
 import CMSContentSelector from '@/views/cms/components/ContentSelector';
+import CMSResourceUploder from '@/views/cms/components/ResourceUploder';
 import UEditor from '@/views/cms/components/UEditorPlus'
 import { getXModelFieldData } from "@/api/contentcore/exmodel";
 
 export default {
   name: "CMSEXModelEditor",
   components: {
-    "cms-logo-view": CMSLogoView,
     "cms-content-selector": CMSContentSelector,
-    'ueditor': UEditor,
+    "cms-resource-uploader": CMSResourceUploder,
+    "ueditor": UEditor
   },
   props: {
     xmodel: {
@@ -151,7 +147,17 @@ export default {
       getXModelFieldData(this.modelId, this.dataType, this.dataId).then(response => {
         response.data.forEach(item => {
           let field = {};
-          Object.keys(item).forEach(key => field[key] = (key === 'value' || key === 'valueObj') ? '' : item[key])
+          Object.keys(item).forEach(key => {
+            if (key != 'value' && key != 'valueObj') {
+              field[key] = item[key];
+            } else {
+              if (item.value instanceof Array) {
+                field[key] = []
+              } else {
+                field[key] = ""
+              }
+            }
+          })
           this.fieldList.push(field);
         })
         this.$nextTick(() => {

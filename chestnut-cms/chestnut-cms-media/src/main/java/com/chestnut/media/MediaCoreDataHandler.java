@@ -104,6 +104,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<CmsAudio> list = JacksonUtils.fromList(f, CmsAudio.class);
             for (CmsAudio data : list) {
+                Long oldAudioId = data.getAudioId();
                 try {
                     data.setAudioId(IdUtils.getSnowflakeId());
                     data.setSiteId(context.getSite().getSiteId());
@@ -112,8 +113,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     data.setPath(context.dealInternalUrl(data.getPath()));
                     audioService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入音频内容数据失败：" + data.getTitle()
-                            + "[" + data.getAudioId() + "]");
+                    AsyncTaskManager.addErrMessage("导入音频内容数据`" + oldAudioId + "`失败：" + e.getMessage());
                     log.error("Import cms_audio failed: {}", data.getAudioId(), e);
                 }
             }
@@ -124,6 +124,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
         files.forEach(f -> {
             List<CmsVideo> list = JacksonUtils.fromList(f, CmsVideo.class);
             for (CmsVideo data : list) {
+                Long oldVideoId = data.getVideoId();
                 try {
                     data.setVideoId(IdUtils.getSnowflakeId());
                     data.setCover(context.dealInternalUrl(data.getCover()));
@@ -133,8 +134,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     data.setPath(context.dealInternalUrl(data.getPath()));
                     videoService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入视频内容数据失败：" + data.getTitle()
-                            + "[" + data.getVideoId() + "]");
+                    AsyncTaskManager.addErrMessage("导入视频内容数据`" + oldVideoId + "`失败：" + e.getMessage());
                     log.error("Import cms_video failed: {}", data.getVideoId(), e);
                 }
             }

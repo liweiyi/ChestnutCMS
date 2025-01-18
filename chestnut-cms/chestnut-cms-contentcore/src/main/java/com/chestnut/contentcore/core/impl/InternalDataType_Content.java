@@ -55,7 +55,7 @@ public class InternalDataType_Content implements IInternalDataType {
         CmsContent content = contentService.dao().getById(requestData.getDataId());
         Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", requestData.getDataId()));
 
-        return this.publishService.getContentPageData(content, requestData.getPageIndex(), requestData.getPublishPipeCode(), requestData.isPreview());
+        return this.publishService.getContentPageData(content, requestData);
     }
 
     @Override

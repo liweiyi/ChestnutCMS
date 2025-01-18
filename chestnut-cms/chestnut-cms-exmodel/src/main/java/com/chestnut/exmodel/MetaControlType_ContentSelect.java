@@ -15,12 +15,17 @@
  */
 package com.chestnut.exmodel;
 
+import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.common.utils.NumberUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.xmodel.core.IMetaControlType;
 import com.chestnut.xmodel.dto.XModelFieldDataDTO;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -53,23 +58,41 @@ public class MetaControlType_ContentSelect implements IMetaControlType {
     }
 
     @Override
-    public void parseFieldValue(XModelFieldDataDTO fieldData) {
-        Object value = fieldData.getValue();
-        if (Objects.isNull(value) || StringUtils.isEmpty(value.toString())) {
-            fieldData.setValueObj(Map.of());
-            return;
+    public String valueAsString(Object obj) {
+        return JacksonUtils.to(obj);
+    }
+
+    @Override
+    public Object stringAsValue(String valueStr) {
+        if (StringUtils.isBlank(valueStr)) {
+            return new ContentSelectMetaValue();
         }
-        Optional<CmsContent> content = contentService.dao().lambdaQuery()
-                .select(List.of(CmsContent::getContentId, CmsContent::getTitle))
-                .eq(CmsContent::getContentId, value).oneOpt();
-        if (content.isEmpty()) {
-            fieldData.setValue(StringUtils.EMPTY);
-            fieldData.setValueObj(Map.of());
-            return;
+        ContentSelectMetaValue v;
+        if (NumberUtils.isDigits(valueStr)) {
+            v = new ContentSelectMetaValue();
+            v.setContentId(Long.valueOf(valueStr));
+        } else {
+            v = JacksonUtils.from(valueStr, ContentSelectMetaValue.class);
         }
-        fieldData.setValueObj(Map.of(
-                "contentId", content.get().getContentId(),
-                "title", content.get().getTitle()
-        ));
+        if (IdUtils.validate(v.getContentId())) {
+            Optional<CmsContent> content = contentService.dao().lambdaQuery()
+                    .select(List.of(CmsContent::getContentId, CmsContent::getTitle))
+                    .eq(CmsContent::getContentId, v.getContentId()).oneOpt();
+            if (content.isEmpty()) {
+                v.setContentId(0L);
+            } else {
+                v.setTitle(content.get().getTitle());
+            }
+        }
+        return v;
+    }
+
+    @Getter
+    @Setter
+    public static class ContentSelectMetaValue {
+
+        private Long contentId = 0L;
+
+        private String title;
     }
 }

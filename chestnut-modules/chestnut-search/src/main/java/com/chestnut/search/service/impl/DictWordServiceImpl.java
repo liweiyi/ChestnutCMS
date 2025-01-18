@@ -15,15 +15,6 @@
  */
 package com.chestnut.search.service.impl;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
@@ -34,8 +25,15 @@ import com.chestnut.search.domain.dto.DictWordDTO;
 import com.chestnut.search.exception.SearchErrorCode;
 import com.chestnut.search.mapper.DictWordMapper;
 import com.chestnut.search.service.IDictWordService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -82,6 +80,6 @@ public class DictWordServiceImpl extends ServiceImpl<DictWordMapper, DictWord> i
 
 	@Override
 	public String getLastModified(String wordType) {
-		return this.redisCache.getCacheObject(MODIFY_CACHE_KEY + wordType);
+		return this.redisCache.getCacheObject(MODIFY_CACHE_KEY + wordType, String.class);
 	}
 }

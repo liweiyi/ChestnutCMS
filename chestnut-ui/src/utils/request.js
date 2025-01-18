@@ -2,8 +2,7 @@ import axios from 'axios'
 import { Notification, MessageBox, Message, Loading } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
-import errorCode from '@/utils/errorCode'
-import { tansParams, blobValidate } from "@/utils/chestnut";
+import { tansParams, blobValidate, getResponseCodeErrMsg } from "@/utils/chestnut";
 import cache from '@/plugins/cache'
 import { saveAs } from 'file-saver'
 import i18n from '@/i18n'
@@ -77,7 +76,7 @@ service.interceptors.response.use(res => {
     // 未设置状态码则默认成功状态
     const code = res.data.code || 200;
     // 获取错误信息
-    const msg = errorCode[code] || res.data.msg || errorCode['default']
+    const msg = getResponseCodeErrMsg(res.data.code, res.data.msg)
     // 二进制数据则直接返回
     if(res.request.responseType ===  'blob' || res.request.responseType ===  'arraybuffer'){
       return res.data
@@ -103,7 +102,6 @@ service.interceptors.response.use(res => {
       Message({ message: msg, type: 'warning' })
       return Promise.reject('error')
     } else if (code !== 200) {
-      console.log(res.data)
       Notification.error({ title: msg })
       return Promise.reject('error')
     } else {
@@ -152,7 +150,7 @@ function download0(url, params, filename, headers, config) {
     } else {
       const resText = await data.text();
       const rspObj = JSON.parse(resText);
-      const errMsg = errorCode[rspObj.code] || rspObj.msg || errorCode['default']
+      const errMsg = getResponseCodeErrMsg(rspObj.code, rspObj.msg)
       Message.error(errMsg);
     }
     downloadLoadingInstance.close();
@@ -161,6 +159,24 @@ function download0(url, params, filename, headers, config) {
     Message.error(i18n.t('Common.DownloadFailed'))
     downloadLoadingInstance.close();
   })
+}
+
+export function jsonpRequest(url, callbackName) {
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = `${url}?callback=${callbackName}`;
+    window[callbackName] = (data) => {
+      resolve(data);
+      document.body.removeChild(script);
+    };
+
+    script.onerror = () => {
+      reject(new Error('JSONP request failed'));
+      document.body.removeChild(script);
+    };
+    document.body.appendChild(script);
+  });
 }
 
 export default service

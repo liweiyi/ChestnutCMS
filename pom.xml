@@ -4,14 +4,14 @@
 
 	<groupId>com.chestnut</groupId>
 	<artifactId>chestnut</artifactId>
-	<version>1.5.0</version>
+	<version>1.5.1</version>
 	<packaging>pom</packaging>
 
 	<name>ChestnutCMS</name>
 	<description>栗子内容管理系统</description>
 
 	<properties>
-		<chestnut.version>1.5.0</chestnut.version>
+		<chestnut.version>1.5.1</chestnut.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
@@ -24,7 +24,7 @@
 		<dynamic-datasource.version>4.3.0</dynamic-datasource.version>
 		<redisson.version>3.25.2</redisson.version>
 		<commons.io.version>2.15.1</commons.io.version>
-		<commons.text.version>1.11.0</commons.text.version>
+		<commons.text.version>1.13.0</commons.text.version>
 		<kaptcha.version>2.3.2</kaptcha.version>
 		<bitwalker.version>1.21</bitwalker.version>
 		<oshi.version>6.4.10</oshi.version>
@@ -38,7 +38,8 @@
 		<easyexcel.version>3.3.3</easyexcel.version>
 		<sa-token.verison>1.37.0</sa-token.verison>
 		<jsoup.version>1.17.2</jsoup.version>
-		<thumbnailator.version>0.4.20</thumbnailator.version>
+		<im4java.version>1.4.0</im4java.version>
+		<webp-imageio.version>0.8.0</webp-imageio.version>
 		<jave.version>3.4.0</jave.version>
 		<cglib-nodep.version>3.3.0</cglib-nodep.version>
 		<jakarta-servlet.version>6.0.0</jakarta-servlet.version>
@@ -46,7 +47,6 @@
 		<xxl-job-core.version>2.4.0</xxl-job-core.version>
 		<flyway.version>9.22.3</flyway.version>
 		<ali-opensearch.version>1.0.2</ali-opensearch.version>
-		<flowable.version>7.0.1</flowable.version>
 	</properties>
 
 	<!-- 依赖声明 -->
@@ -180,11 +180,16 @@
 
 			<!-- 图片处理工具库 -->
 			<dependency>
-				<groupId>net.coobird</groupId>
-				<artifactId>thumbnailator</artifactId>
-				<version>${thumbnailator.version}</version>
+				<groupId>org.im4java</groupId>
+				<artifactId>im4java</artifactId>
+				<version>${im4java.version}</version>
 			</dependency>
-			
+			<dependency>
+				<groupId>com.github.usefulness</groupId>
+				<artifactId>webp-imageio</artifactId>
+				<version>${webp-imageio.version}</version>
+			</dependency>
+
 			<!-- 音视频处理工具库 -->
 			<dependency>
 			    <groupId>ws.schild</groupId>
@@ -405,7 +410,6 @@
 				<artifactId>chestnut-comment</artifactId>
 				<version>${chestnut.version}</version>
 			</dependency>
-
 
 			<!-- CMS Modules Start -->
 			<!-- 内容核心 -->

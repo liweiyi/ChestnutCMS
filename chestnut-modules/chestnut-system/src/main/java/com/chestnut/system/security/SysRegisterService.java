@@ -15,12 +15,6 @@
  */
 package com.chestnut.system.security;
 
-import java.util.Objects;
-
-import org.springframework.stereotype.Component;
-
-import com.chestnut.common.async.AsyncTaskManager;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
@@ -31,10 +25,13 @@ import com.chestnut.system.fixed.config.SysCaptchaEnable;
 import com.chestnut.system.fixed.config.SysRegistEnable;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
+import com.chestnut.system.monitor.CaptchaMonitoredCache;
 import com.chestnut.system.service.ISysLogininforService;
 import com.chestnut.system.service.ISysUserService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 /**
  * 注册校验方法
@@ -48,11 +45,9 @@ public class SysRegisterService {
 
 	private final ISysUserService userService;
 
-	private final RedisCache redisCache;
+	private final CaptchaMonitoredCache captchaCache;
 
 	private final ISysLogininforService logininfoService;
-
-	private final AsyncTaskManager asyncTaskManager;
 
 	/**
 	 * 注册
@@ -86,7 +81,7 @@ public class SysRegisterService {
 		}
 		String verifyKey = SysConstants.CAPTCHA_CODE_KEY + uuid;
 		try {
-			String captcha = redisCache.getCacheObject(verifyKey);
+			String captcha = captchaCache.getCache(verifyKey);
 			if (Objects.isNull(captcha)) {
 				throw SysErrorCode.CAPTCHA_EXPIRED.exception();
 			}
@@ -94,7 +89,7 @@ public class SysRegisterService {
 				throw SysErrorCode.CAPTCHA_ERR.exception();
 			}
 		} finally {
-			redisCache.deleteObject(verifyKey);
+			captchaCache.deleteCache(verifyKey);
 		}
 	}
 }

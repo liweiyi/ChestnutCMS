@@ -200,7 +200,7 @@ public class ContentCoreListener {
 	public void beforeCatalogDelete(BeforeCatalogDeleteEvent event) {
 		CmsCatalog catalog = event.getCatalog();
 		// 删除栏目内容
-		this.contentService.deleteContentsByCatalog(catalog, event.getOperator());
+		this.contentService.deleteContentsByCatalog(catalog, true, event.getOperator());
 		// 删除页面部件
 		this.pageWidgetService.deletePageWidgetsByCatalog(catalog);
 	}
@@ -233,5 +233,49 @@ public class ContentCoreListener {
 			mappingList.addAll(linkList);
 			contentService.dao().updateBatchById(mappingList);
 		});
+	}
+
+	@EventListener
+	public void onCatalogClear(OnCatalogClearEvent event) {
+		CmsCatalog catalog = event.getCatalog();
+		// 删除栏目内容
+		this.contentService.deleteContentsByCatalog(catalog, false, event.getOperator());
+		// 删除页面部件
+		this.pageWidgetService.deletePageWidgetsByCatalog(catalog);
+	}
+
+	@EventListener
+	public void onCatalogMergeEvent(OnCatalogMergeEvent event) {
+		CmsCatalog targetCatalog = event.getTargetCatalog();
+		int pageSize = 200;
+		for (CmsCatalog mergeCatalog : event.getMergeCatalogs()) {
+			long lastContentId = 0;
+			long count = 0;
+			long total = contentService.dao().lambdaQuery()
+					.eq(CmsContent::getCatalogId, mergeCatalog.getCatalogId())
+					.count();
+			if (total == 0) {
+				continue;
+			}
+			while (true) {
+				LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
+						.eq(CmsContent::getCatalogId, mergeCatalog.getCatalogId())
+						.gt(CmsContent::getContentId, lastContentId)
+						.orderByAsc(CmsContent::getContentId);
+				Page<CmsContent> page = contentService.dao().page(new Page<>(0, pageSize, false), q);
+				if (!page.getRecords().isEmpty()) {
+					for (CmsContent content : page.getRecords()) {
+						AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
+								"正在合并内容：" + mergeCatalog.getName() + "[" + count + " / " + total + "]");
+						this.contentService.moveContent(content, targetCatalog, event.getOperator());
+						count++;
+					}
+					lastContentId = page.getRecords().get(page.getRecords().size() - 1).getContentId();
+				}
+				if (page.getRecords().size() < pageSize) {
+					break;
+				}
+			}
+		}
 	}
 }

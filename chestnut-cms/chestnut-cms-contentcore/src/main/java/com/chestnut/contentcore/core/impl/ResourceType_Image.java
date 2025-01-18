@@ -15,38 +15,31 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.Objects;
-
-import javax.imageio.ImageIO;
-
-import com.chestnut.common.utils.file.ImageUtils;
-import com.chestnut.contentcore.properties.ThumbnailHeightProperty;
-import com.chestnut.contentcore.properties.ThumbnailWidthProperty;
-import lombok.extern.slf4j.Slf4j;
-import net.coobird.thumbnailator.Thumbnailator;
-import net.coobird.thumbnailator.util.ThumbnailatorUtils;
-import org.apache.commons.compress.utils.FileNameUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.stereotype.Component;
-
+import com.chestnut.common.storage.IFileStorageType;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.image.ImageHelper;
+import com.chestnut.common.utils.image.ImageUtils;
+import com.chestnut.common.utils.image.WatermarkPosition;
 import com.chestnut.contentcore.core.IResourceType;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.enums.WatermarkerPosition;
-import com.chestnut.contentcore.properties.ImageWatermarkArgsProperty;
+import com.chestnut.contentcore.properties.*;
 import com.chestnut.contentcore.properties.ImageWatermarkArgsProperty.ImageWatermarkArgs;
-import com.chestnut.contentcore.properties.ImageWatermarkProperty;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.FileStorageHelper;
 import com.chestnut.contentcore.util.SiteUtils;
-
 import lombok.RequiredArgsConstructor;
-import net.coobird.thumbnailator.Thumbnails;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.stereotype.Component;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 资源类型：图片
@@ -66,6 +59,8 @@ public class ResourceType_Image implements IResourceType {
 	public final static String[] SuffixArray = { "jpg", "jpeg", "gif", "png", "ico", "webp", "svg" };
 
 	private final ISiteService siteService;
+
+	private final Map<String, IFileStorageType> fileStorageTypeMap;
 
 	@Override
 	public String getId() {
@@ -90,49 +85,71 @@ public class ResourceType_Image implements IResourceType {
 	@Override
 	public byte[] process(CmsResource resource, byte[] bytes) throws IOException {
 		CmsSite site = siteService.getSite(resource.getSiteId());
-		// 提取图片宽高属性
 		try (ByteArrayInputStream is = new ByteArrayInputStream(bytes)) {
+			// 提取图片宽高属性
 			BufferedImage bi = ImageIO.read(is);
 			resource.setWidth(bi.getWidth());
 			resource.setHeight(bi.getHeight());
-			// 默认缩略图处理
-			int w = ThumbnailWidthProperty.getValue(site.getConfigProps());
-			int h = ThumbnailHeightProperty.getValue(site.getConfigProps());
-			if (w > 0 && h > 0) {
-				String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
-				Thumbnails.of(bi).size(w, h).toFile(siteResourceRoot + ImageUtils.getThumbnailFileName(resource.getPath(), w, h));
-			}
 			// 添加水印
-			if (ImageWatermarkProperty.getValue(site.getConfigProps())
-					&& !"webp".equalsIgnoreCase(resource.getSuffix())) {
-				// TODO webp水印支持
+			if (ImageWatermarkProperty.getValue(site.getConfigProps())) {
 				ImageWatermarkArgs args = ImageWatermarkArgsProperty.getValue(site.getConfigProps());
 				if (StringUtils.isNotEmpty(args.getImage())) {
-					// 水印图片占比大小调整
 					String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
 					File file = new File(siteResourceRoot + args.getImage());
 					if (file.exists()) {
-						float waterremakImageWidth = bi.getWidth() * args.getRatio() * 0.01f;
 						BufferedImage biWatermarkImage = ImageIO.read(file);
-						biWatermarkImage = Thumbnails.of(biWatermarkImage)
-								.scale(waterremakImageWidth / biWatermarkImage.getWidth()).asBufferedImage();
 						try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-							// 添加水印
-							Thumbnails.of(bi)
-									.watermark(WatermarkerPosition.valueOf(args.getPosition()).position(),
-											biWatermarkImage, args.getOpacity())
-									.scale(1f).outputFormat(resource.getSuffix()).toOutputStream(os);
+							String ext = FilenameUtils.getExtension(resource.getFileName());
+							ImageHelper.of(bi).format(ext).watermark(
+									biWatermarkImage,
+									args.getRatio() * 0.01f,
+									args.getOpacity(),
+									WatermarkPosition.str2Position(args.getPosition())
+							).to(os);
 							bytes = os.toByteArray();
 						}
 					}
 				}
 			}
-		} catch (Exception e) {
-			log.error("图片处理失败：", e);
+		} catch (IOException e) {
+			log.error("Read image failed: " + resource.getPath(), e);
 			resource.setWidth(0);
 			resource.setHeight(0);
 		}
 		resource.setFileSize((long) bytes.length);
 		return bytes;
+	}
+
+	@Override
+	public void afterProcess(CmsResource resource) {
+		CmsSite site = siteService.getSite(resource.getSiteId());
+		int w = ThumbnailWidthProperty.getValue(site.getConfigProps());
+		int h = ThumbnailHeightProperty.getValue(site.getConfigProps());
+		if (w > 0 && h > 0) {
+			// 读取存储配置
+			String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
+			IFileStorageType fst = fileStorageTypeMap.get(IFileStorageType.BEAN_NAME_PREIFX + fileStorageType);
+			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
+			// 生成默认缩略图
+			String ext = FilenameUtils.getExtension(resource.getFileName());
+			String thumbnailPath = ImageUtils.getThumbnailFileName(resource.getPath(), w, h);
+			InputStream read = fileStorageHelper.read(resource.getPath());
+			try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+				ImageHelper.of(read).format(ext).resize(w, h).to(bos);
+				fileStorageHelper.write(thumbnailPath, bos.toByteArray());
+			} catch (IOException e) {
+                log.warn("Generate default thumbnail image failed: " + resource.getPath(), e);
+				// 生成缩略图失败直接使用源图作为缩略图
+				fileStorageHelper.write(thumbnailPath, read);
+            } finally {
+				try {
+					if (Objects.nonNull(read)) {
+						read.close();
+                    }
+				} catch (IOException e) {
+                    log.warn("Input stream close err!", e);
+                }
+            }
+        }
 	}
 }

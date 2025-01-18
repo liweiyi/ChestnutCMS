@@ -1,6 +1,6 @@
 <template>
   <div class="ueditor">
-    <vue-ueditor-wrap 
+    <vue-ueditor-wrap
       v-model="contentHtml"
       :editor-id="editorId"
       :config="editorConfig"
@@ -9,9 +9,9 @@
       @ready="handleReady"
       :style="styles" />
     <!-- 素材库 -->
-    <cms-resource-dialog 
+    <cms-resource-dialog
       :open.sync="openResourceDialog"
-      :upload-limit="100" 
+      :upload-limit="100"
       :rtype="resourceType"
       @ok="handleResourceDialogOk">
     </cms-resource-dialog>
@@ -30,6 +30,8 @@
     <cms-third-video :open.sync="openThirdVideoDialog" @ok="handleThirdVideoDialogOk"></cms-third-video>
     <!-- 百度地图 -->
     <cms-baidu-map :open.sync="openBaiduMapDialog" @ok="handleBaiduMapDialogOk"></cms-baidu-map>
+    <!-- 视频信息修改 -->
+    <cms-video-modifier :open.sync="openVideoModifierDialog" :data="videoModifierData" @ok="handleVideoModifierDialogOk"></cms-video-modifier>
   </div>
 </template>
 
@@ -39,6 +41,7 @@ import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
 import CMSContentSelector from "@/views/cms/contentcore/contentSelector";
 import CMSResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import CMSUeditorThirdVideo from "./thrid-video";
+import CMSVideoModifier from "./videomodifier";
 import CMSUeditorBaiduMap from "./baidu-map";
 import { checkSensitiveWords } from "@/api/word/sensitiveWord";
 import { checkFallibleWords } from "@/api/word/errorProneWord"
@@ -72,6 +75,7 @@ export default {
     'cms-catalog-selector': CMSCatalogSelector,
     'cms-content-selector': CMSContentSelector,
     "cms-resource-dialog": CMSResourceDialog,
+    "cms-video-modifier": CMSVideoModifier,
     "cms-third-video": CMSUeditorThirdVideo,
     "cms-baidu-map": CMSUeditorBaiduMap
   },
@@ -241,6 +245,10 @@ export default {
       },
       openResourceDialog: false,
       resourceType: 'image',
+      resourceDialogTargetEl: undefined,
+      openVideoModifierDialog: false,
+      videoModifierEl: undefined,
+      videoModifierData: {},
       openThirdVideoDialog: false,
       openCatalogSelector: false,
       openContentSelector: false,
@@ -263,6 +271,7 @@ export default {
       this.addThirdVideoButton(editorId)
       this.addXyWordCheckButton(editorId)
       this.addBaiduMapButton(editorId)
+      this.addXyVideo(editorId)
     },
     handleReady(editorInstance) {
       // console.log('ueditor-plus.ready: ' + editorInstance.key, editorInstance)
@@ -280,6 +289,9 @@ export default {
       editorInstance.onXyWordReplace2 = this.handleXyWordReplace2
       // addBaiduMapButton
       editorInstance.onBaiduMapButtonClick = this.handleBaiduMapButtonClick
+      // addXyVideo
+      this.addXyVideoPopup(editorInstance)
+      editorInstance.onXyVideoButtonClick = this.handleXyVideoButtonClick
     },
     addPopup(editor) {
       var domUtils = baidu.editor.dom.domUtils;
@@ -426,8 +438,7 @@ export default {
           if (img.getAttribute('data-formula-image') !== null) {
             actions.push("<span onclick=\"$$._onImgEditButtonClick('formulaDialog');\" class='edui-clickable edui-popup-action-item'>" +
                 editor.getLang("formulaedit") + "</span>");
-          }
-          if (img.getAttribute("data-word-image")) {
+          } else if (img.getAttribute("data-word-image")) {
             actions.push("<span onclick=\"$$._onImgEditButtonClick('wordimageDialog');\" class='edui-clickable edui-popup-action-item'>" +
               editor.getLang("save") +
               "</span>");
@@ -440,7 +451,7 @@ export default {
 
           !html && (html = popup.formatHtml(actions.join("")));
         }
-        if (editor.ui._dialogs.linkDialog) {
+        if (html.length == 0 && editor.ui._dialogs.linkDialog) {
           var link = editor.queryCommandValue("link");
           var url;
           if (
@@ -477,10 +488,8 @@ export default {
 
         if (html) {
           popup.getDom("content").innerHTML = html;
-          popup.anchorEl = img || link;
+          popup.anchorEl = img;
           popup.showAnchor(popup.anchorEl);
-        } else {
-          popup.hide();
         }
       });
     },
@@ -573,9 +582,9 @@ export default {
     addXyResourceButton(editorId) {
       const that = this
       window.UE.registerUI('xy-resource', function (editor, uiName) {
-        editor.registerCommand(uiName,{
-          execCommand:function(cmdName,value){
-            editor.onXyResourceButtonClick(cmdName, value);
+        editor.registerCommand(uiName, {
+          execCommand:function(cmdName,value,targetEl){
+            editor.onXyResourceButtonClick(cmdName, value, targetEl);
           }
         });
         const _onMenuClick = function() {
@@ -619,28 +628,215 @@ export default {
         return ui;
       });
     },
-    handleXyResourceButtonClick(cmd, value) {
+    handleXyResourceButtonClick(cmd, value, targetEl) {
       if (value) {
         this.resourceType = value
       }
+      this.resourceDialogTargetEl = targetEl;
       this.openResourceDialog = true
     },
     handleResourceDialogOk (results) {
       if (results && results.length > 0) {
-        const r = results[0];
+        var domUtils = baidu.editor.dom.domUtils;
         var html = '';
-        results.forEach(r => {
-          if (r.resourceType == 'image') {
-            html += '<p><img src="' + r.src + '" iurl="' + r.path + '" class="art-body-img" /></p>'
-          } else {
-            html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank" class="art-body-' + r.resourceType + '">' + r.name + '</a></p>'
+        if (this.resourceDialogTargetEl) {
+          const r = results[0];
+          var clone = this.resourceDialogTargetEl.cloneNode(true)
+          clone.removeAttribute("poster");
+          clone.removeAttribute("iurl");
+          if (r.resourceType == 'video') {
+            var ext = r.src.substr(r.src.lastIndexOf(".") + 1);
+            if (ext == "ogv") ext = "ogg";
+            clone.childNodes.forEach(child => {
+              if (child.nodeType == 1 && child.tagName == 'SOURCE') {
+                child.setAttribute("src", r.src);
+                child.setAttribute("iurl", r.path);
+                child.setAttribute("type", "video/" + ext);
+              }
+            })
+          } else if (r.resourceType == 'audio') {
+            clone.childNodes.forEach(child => {
+              if (child.nodeType == 1 && child.tagName == 'SOURCE') {
+                child.setAttribute("src", r.src);
+                child.setAttribute("iurl", r.path);
+              }
+            })
           }
-        });
-        if (html && html.length > 0) {
-          var editor = window.UE.getEditor(this.editorId)
-          editor.execCommand("insertHTML",html);
+          var parent = this.resourceDialogTargetEl.parentNode;
+          this.resourceDialogTargetEl.remove();
+          parent.appendChild(clone);
+          this.resourceDialogTargetEl = undefined;
+        } else {
+          results.forEach(r => {
+            if (r.resourceType == 'image') {
+              html += '<p style="text-align:center;"><img src="' + r.src + '" iurl="' + r.path + '" class="art-body-img" /></p>'
+            } else if(r.resourceType == 'video') {
+              var ext = r.src.substr(r.src.lastIndexOf(".") + 1);
+              if (ext == "ogv") ext = "ogg";
+              html += '<p class="cc-video-wrap" style="text-align:center;">' +
+                '<video class="art-body-video edui-video-video" controls="true">' +
+                '<source src="' + r.src + '" type="video/' + ext + '" iurl="' + r.path + '" />' +
+                'Sorry, your browser unsupport embedded videos.' +
+                '</video></p>';
+            } else if (r.resourceType == 'audio') {
+              html += '<p class="cc-audio-wrap" style="text-align:center;">' +
+                '<audio class="edui-audio-audio" controls="true">' +
+                '<source src="' + r.src + '" type="audio/mpeg" iurl="' + r.path + '" />' +
+                'Sorry, your browser unsupport embedded audios.' +
+                '</audio></p>';
+            } else {
+              html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank" class="art-body-' + r.resourceType + '">' + r.name + '</a></p>'
+            }
+          });
+          if (html && html.length > 0) {
+            var editor = window.UE.getEditor(this.editorId)
+            editor.execCommand("insertHTML",html);
+          }
         }
       }
+    },
+    addXyVideo(editorId) {
+      window.UE.commands['xy-video-modifier'] = {
+        execCommand: function(cmdName, targetEl){
+          var editor = window.UE.getEditor(editorId)
+          editor.onXyVideoButtonClick(cmdName, targetEl);
+        }
+      };
+    },
+    addXyVideoPopup(editor) {
+      var domUtils = baidu.editor.dom.domUtils;
+      var popup = new baidu.editor.ui.Popup({
+        editor: editor,
+        content: "",
+        className: "edui-bubble",
+        _onVideoSetAlign: function (value) {
+          this.hide();
+          domUtils.setStyles(popup.anchorEl.parentNode, { "text-align": value });
+        },
+        _onVideoPosterButtonClick: function (name) {
+          this.hide();
+          editor.execCommand("xy-video-modifier", popup.anchorEl);
+        },
+        _onVideoEditButtonClick: function (name) {
+          this.hide();
+          editor.execCommand("xy-resource", 'video', popup.anchorEl);
+        },
+        _onVideoRemoveButtonClick: function () {
+          this.hide();
+          domUtils.remove(popup.anchorEl.parentNode);
+        },
+        queryAutoHide: function (el) {
+          if (el && el.ownerDocument == editor.document) {
+            if (
+              el.tagName.toLowerCase() == "img" ||
+              domUtils.findParentByTagName(el, "a", true)
+            ) {
+              return el !== popup.anchorEl;
+            }
+          }
+          return baidu.editor.ui.Popup.prototype.queryAutoHide.call(this, el);
+        }
+      });
+      popup.render();
+      editor.addListener("mouseup", function (t, evt) {
+        evt = evt || window.event;
+        var el = evt.target || evt.srcElement;
+        if (/video/gi.test(el.tagName)) {
+          var actions = [];
+          actions.push('<nobr />');
+          actions.push('<span onclick=$$._onVideoSetAlign("left") class="edui-clickable edui-popup-action-item">' +
+            editor.getLang("justifyleft") +
+            "</span>");
+          actions.push('<span onclick=$$._onVideoSetAlign("right") class="edui-clickable edui-popup-action-item">' +
+            editor.getLang("justifyright") +
+            "</span>");
+          actions.push('<span onclick=$$._onVideoSetAlign("center") class="edui-clickable edui-popup-action-item">' +
+            editor.getLang("justifycenter") +
+            "</span>");
+          actions.push('<span onclick=\"$$._onVideoPosterButtonClick();" class="edui-clickable edui-popup-action-item">' +
+            editor.getLang("property") +
+            "</span>");
+          actions.push('<span onclick=\"$$._onVideoEditButtonClick();" class="edui-clickable edui-popup-action-item">' +
+            editor.getLang("modify") +
+            "</span>");
+          actions.push("<span onclick=\"$$._onVideoRemoveButtonClick();\"  class=\"edui-clickable edui-popup-action-item\">" +
+            editor.getLang("delete") +
+            "</span>");
+          actions.push("</nobr>");
+          var html = popup.formatHtml(actions.join(""));
+          popup.getDom("content").innerHTML = html;
+          popup.anchorEl = el;
+          popup.showAnchor(popup.anchorEl);
+        }
+      });
+    },
+    handleXyVideoButtonClick(cmd, targetEl) {
+      this.videoModifierEl = targetEl;
+      this.videoModifierData = this.parseVideoModifierInfo(targetEl);
+      this.openVideoModifierDialog = true;
+    },
+    parseVideoModifierInfo(el) {
+      var domUtils = UE.dom.domUtils;
+      var data = {}
+      if (el.getAttribute("controls") || el.hasAttribute("controls")) data.controls = true;
+      if (el.getAttribute("loop") || el.hasAttribute("loop")) data.loop = true;
+      if (el.getAttribute("autoplay") || el.hasAttribute("autoplay")) data.autoplay = true;
+      if (el.getAttribute("muted") || el.hasAttribute("muted")) data.muted = true;
+      if (!data.autoplay && el.hasAttribute("preload")) {
+        data.preload = el.getAttribute("preload");
+      }
+      data.width = el.getAttribute('width') || 'auto';
+      data.height = el.getAttribute('height') || 'auto';
+      data.posterSrc = el.getAttribute('poster') || '';
+      data.poster = el.getAttribute('iurl') || '';
+      el.childNodes.forEach(item => {
+        if (item.nodeType == 1 && item.hasAttribute('iurl')) {
+          data.videoIUrl = item.getAttribute('iurl');
+        }
+      })
+      return data;
+    },
+    // 视频信息修改
+    handleVideoModifierDialogOk(data) {
+      console.log('videomodifier', data)
+      if (!this.videoModifierEl) {
+        return;
+      }
+      var parent = this.videoModifierEl.parentNode;
+
+      var domUtils = UE.dom.domUtils;
+      var videoOptions = { 'class': 'art-body-video edui-video-video' }
+      if (data.controls) {
+        videoOptions['controls'] = true; // 显示控制组件
+      }
+      if (data.loop) {
+        videoOptions['loop'] = true; // 循环播放
+      }
+      if (data.muted) {
+        videoOptions['muted'] = true; // 静音
+      }
+      if (data.autoplay) {
+        videoOptions['autoplay'] = true; // 自动播放
+      } else if (data.preload && data.preload.length > 0) {
+        videoOptions['preload'] = data.preload; // 预加载
+      }
+      if (data.width && data.width.length > 0 && data.width != 'auto') {
+        videoOptions['width'] = data.width;
+      }
+      if (data.height && data.height.length > 0 && data.height != 'auto') {
+        videoOptions['height'] = data.height;
+      }
+      if (data.poster && data.poster.length > 0) {
+        videoOptions['poster'] = data.posterSrc;
+        videoOptions['iurl'] = data.poster;
+      }
+      console.log('videoOptions', videoOptions)
+      var newVideo = document.createElement('video');
+      domUtils.setAttributes(newVideo, videoOptions);
+      newVideo.innerHTML = this.videoModifierEl.innerHTML;
+      this.videoModifierEl.remove()
+      parent.appendChild(newVideo);
+      this.videoModifierEl = undefined;
     },
     // 插入第三方视频分享
     addThirdVideoButton(editorId) {
@@ -762,7 +958,7 @@ export default {
               distinguishCancelAndClose: true
             }).then(() => {
               editor.execCommand('xy-replace-word', response.data)
-            }).catch(() => {  
+            }).catch(() => {
               editor.execCommand('xy-highlight-word', response.data.map(item => item.w))
             });
           }
@@ -831,21 +1027,21 @@ export default {
   },
 };
 </script>
-<style>
-.edui-for-xy-resource .edui-menubutton-body .edui-icon {
+<style scoped>
+::v-deep .edui-for-xy-resource .edui-menubutton-body .edui-icon {
   background-image: url('./images/image.png') !important;
   /* background-size: contain; */
 }
-.edui-for-xy-third-video .edui-button-body .edui-icon {
+::v-deep .edui-for-xy-third-video .edui-button-body .edui-icon {
   background-image: url('./images/video.png') !important;
 }
-.edui-for-xy-content .edui-menubutton-body .edui-icon {
+::v-deep .edui-for-xy-content .edui-menubutton-body .edui-icon {
   background-image: url('./images/content.png') !important;
 }
-.edui-for-xy-check-word .edui-menubutton-body .edui-icon {
+::v-deep .edui-for-xy-check-word .edui-menubutton-body .edui-icon {
   background-image: url('./images/word.png') !important;
 }
-.edui-for-xy-baidu-map .edui-button-body .edui-icon {
+::v-deep .edui-for-xy-baidu-map .edui-button-body .edui-icon {
   background-image: url('./images/map.png') !important;
 }
 </style>

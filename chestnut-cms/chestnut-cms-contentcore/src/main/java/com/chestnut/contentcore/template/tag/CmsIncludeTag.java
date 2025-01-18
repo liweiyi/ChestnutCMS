@@ -18,6 +18,7 @@ package com.chestnut.contentcore.template.tag;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
+import com.chestnut.common.staticize.exception.MissionTagAttributeException;
 import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.Assert;
@@ -52,8 +53,12 @@ import java.util.Objects;
 public class CmsIncludeTag extends AbstractTag {
 
 	public static final String TAG_NAME = "cms_include";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_FILE = "{FREEMARKER.TAG." + TAG_NAME + ".file}";
+	public final static String ATTR_USAGE_SSI = "{FREEMARKER.TAG." + TAG_NAME + ".ssi}";
+	public final static String ATTR_USAGE_VIRTUAL = "{FREEMARKER.TAG." + TAG_NAME + ".virtual}";
+	public final static String ATTR_USAGE_CACHE = "{FREEMARKER.TAG." + TAG_NAME + ".cache}";
 
 	@Override
 	public String getTagName() {
@@ -70,13 +75,13 @@ public class CmsIncludeTag extends AbstractTag {
 		return DESC;
 	}
 
-	private static final String TagAttr_FILE = "file";
+	private static final String ATTR_FILE = "file";
 
-	private static final String TagAttr_SSI = "ssi";
+	private static final String ATTR_SSI = "ssi";
 
-	private static final String TagAttr_VIRTUAL = "virtual";
+	private static final String ATTR_VIRTUAL = "virtual";
 
-	private static final String TagAttr_CACHE = "cache";
+	private static final String ATTR_CACHE = "cache";
 
 	/**
 	 * <@cms_include file="footer.template.html"></@cms_include>
@@ -98,10 +103,10 @@ public class CmsIncludeTag extends AbstractTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = new ArrayList<>();
-		tagAttrs.add(new TagAttr(TagAttr_FILE, true, TagAttrDataType.STRING, "引用模板文件路径（相对模板目录template/）"));
-		tagAttrs.add(new TagAttr(TagAttr_SSI, false, TagAttrDataType.BOOLEAN, "是否启用SSI"));
-		tagAttrs.add(new TagAttr(TagAttr_VIRTUAL, false, TagAttrDataType.BOOLEAN, "是否启用virtual，此模式下区块无法继承当前页面上限文变量，需要通过参数传入需要的变量", "false"));
-		tagAttrs.add(new TagAttr(TagAttr_CACHE, false, TagAttrDataType.BOOLEAN, "是否启用缓存", "true"));
+		tagAttrs.add(new TagAttr(ATTR_FILE, true, TagAttrDataType.STRING, ATTR_USAGE_FILE));
+		tagAttrs.add(new TagAttr(ATTR_SSI, false, TagAttrDataType.BOOLEAN, ATTR_USAGE_SSI, Boolean.TRUE.toString()));
+		tagAttrs.add(new TagAttr(ATTR_VIRTUAL, false, TagAttrDataType.BOOLEAN, ATTR_USAGE_VIRTUAL, Boolean.FALSE.toString()));
+		tagAttrs.add(new TagAttr(ATTR_CACHE, false, TagAttrDataType.BOOLEAN, ATTR_USAGE_CACHE, Boolean.TRUE.toString()));
 
 		return tagAttrs;
 	}
@@ -111,15 +116,15 @@ public class CmsIncludeTag extends AbstractTag {
 			throws TemplateException, IOException {
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 
-		String file = attrs.get(TagAttr_FILE);
-		Assert.notEmpty(file, () -> new TemplateException("参数[file]不能为空", env));
+		String file = attrs.get(ATTR_FILE);
+		Assert.notEmpty(file, () -> new MissionTagAttributeException(TAG_NAME, ATTR_FILE, env));
 
 		Long siteId = TemplateUtils.evalSiteId(env);
 		CmsSite site = this.siteService.getSite(siteId);
 
-		boolean ssi = MapUtils.getBoolean(attrs, TagAttr_SSI, EnableSSIProperty.getValue(site.getConfigProps()));
-		boolean virtual = Boolean.parseBoolean(attrs.get(TagAttr_VIRTUAL));
-		boolean cache = Boolean.parseBoolean(attrs.get(TagAttr_CACHE));
+		boolean ssi = MapUtils.getBoolean(attrs, ATTR_SSI, EnableSSIProperty.getValue(site.getConfigProps()));
+		boolean virtual = Boolean.parseBoolean(attrs.get(ATTR_VIRTUAL));
+		boolean cache = Boolean.parseBoolean(attrs.get(ATTR_CACHE));
 
 		String templateFile = StringUtils.substringBefore(file, "?");
 		String params = StringUtils.substringAfter(file, "?");
@@ -131,7 +136,7 @@ public class CmsIncludeTag extends AbstractTag {
 			Map<String, String> paramsMap = StringUtils.splitToMap(params, "&", "=");
 			Map<String, String> mergeParams = mergeRequestVariable(env, paramsMap);
 			env.setVariable(TemplateUtils.TemplateVariable_Request, wrap(env, mergeParams));
-			// TODO 兼容历史版本，下个大版本移除IncludeRequest模板变量
+			// TODO 兼容历史版本，1.6.0移除IncludeRequest模板变量
 			env.setVariable("IncludeRequest", wrap(env, mergeParams));
 			env.include(includeTemplate);
 		} else if (virtual) {
@@ -192,7 +197,7 @@ public class CmsIncludeTag extends AbstractTag {
 					StandardCharsets.UTF_8.displayName(), true);
 			Map<String, String> mergeParams = mergeRequestVariable(env, params);
 			env.setVariable(TemplateUtils.TemplateVariable_Request, wrap(env, mergeParams));
-			// TODO 兼容历史版本，下个大版本移除IncludeRequest模板变量
+			// TODO 兼容历史版本，1.6.0版本移除IncludeRequest模板变量
 			env.setVariable("IncludeRequest", wrap(env, mergeParams));
 			env.include(includeTemplate);
 			return writer.getBuffer().toString();

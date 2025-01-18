@@ -15,19 +15,17 @@
  */
 package com.chestnut.contentcore.properties;
 
-import java.util.Map;
-
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.image.WatermarkPosition;
 import com.chestnut.contentcore.core.IProperty;
-import com.chestnut.contentcore.enums.WatermarkerPosition;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * 图片水印参数配置
@@ -83,7 +81,7 @@ public class ImageWatermarkArgsProperty implements IProperty {
 		
 		private String image = StringUtils.EMPTY;
 		
-		private String position = WatermarkerPosition.TOP_RIGHT.name();
+		private String position = WatermarkPosition.TOP_RIGHT.name();
 		
 		private float opacity = 1f;
 

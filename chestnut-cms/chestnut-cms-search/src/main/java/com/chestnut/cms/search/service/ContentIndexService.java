@@ -30,7 +30,9 @@ import com.chestnut.cms.search.fixed.config.SearchAnalyzeType;
 import com.chestnut.cms.search.properties.EnableIndexProperty;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.utils.ArrayUtils;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
@@ -324,7 +326,7 @@ public class ContentIndexService implements CommandLineRunner {
 		data.put("keywords", content.getContentEntity().getKeywords());
 		data.put("tags", content.getContentEntity().getTags());
 		data.put("createTime", content.getContentEntity().getCreateTime().toEpochSecond(ZoneOffset.UTC));
-		data.put("logo", content.getContentEntity().getLogo());
+		data.put("logo", ArrayUtils.firstOrElse(content.getContentEntity().getImages(), StringUtils.EMPTY));
 		data.put("status", content.getContentEntity().getStatus());
 		data.put("publishDate", content.getContentEntity().getPublishDate().toEpochSecond(ZoneOffset.UTC));
 		data.put("link", InternalUrlUtils.getInternalUrl(InternalDataType_Content.ID, content.getContentEntity().getContentId()));

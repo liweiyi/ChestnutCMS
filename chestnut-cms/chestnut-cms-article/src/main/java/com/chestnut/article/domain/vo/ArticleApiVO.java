@@ -15,10 +15,13 @@
  */
 package com.chestnut.article.domain.vo;
 
+import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.vo.ContentApiVO;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Objects;
 
 /**
  * <TODO description class purpose>
@@ -32,9 +35,12 @@ public class ArticleApiVO extends ContentApiVO {
 
     private String contentHtml;
 
-    public static ArticleApiVO newInstance(CmsContent cmsContent) {
+    public static ArticleApiVO newInstance(CmsContent cmsContent, CmsArticleDetail articleDetail) {
         ArticleApiVO vo = new ArticleApiVO();
-        vo.copyProperties(cmsContent);
+        vo.initByContent(cmsContent, false);
+        if (Objects.nonNull(articleDetail)) {
+            vo.setContentHtml(articleDetail.getContentHtml());
+        }
         return vo;
     }
 }

@@ -15,29 +15,23 @@
  */
 package com.chestnut.word.service.impl;
 
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.word.domain.SensitiveWord;
-import com.chestnut.word.sensitive.ErrorProneWordProcessor;
-import com.chestnut.word.sensitive.SensitiveWordProcessor;
-import com.chestnut.word.sensitive.SensitiveWordType;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.word.cache.ErrorProneWordMonitoredCache;
 import com.chestnut.word.domain.ErrorProneWord;
 import com.chestnut.word.exception.WordErrorCode;
 import com.chestnut.word.mapper.ErrorProneWordMapper;
+import com.chestnut.word.sensitive.ErrorProneWordProcessor;
 import com.chestnut.word.service.IErrorProneWordService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,21 +40,7 @@ public class ErrorProneWordServiceImpl extends ServiceImpl<ErrorProneWordMapper,
 
 	private final ErrorProneWordProcessor processor;
 
-	private static final String CACHE_KEY = "err_prone_word:";
-
-	private final RedisCache redisCache;
-
-	/**
-	 * 查找置顶文本中的易错词
-	 *
-	 * @param text
-	 * @return
-	 */
-	@Override
-	public Map<String, String> findErrorProneWords(String text) {
-		return this.getErrorProneWords().entrySet().stream().filter(e -> text.indexOf(e.getKey()) > -1)
-				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-	}
+	private final ErrorProneWordMonitoredCache wordMonitoredCache;
 
 	@Override
 	public Map<String, String> check(String text) {
@@ -73,13 +53,6 @@ public class ErrorProneWordServiceImpl extends ServiceImpl<ErrorProneWordMapper,
 	}
 
 	@Override
-	public Map<String, String> getErrorProneWords() {
-		Map<String, String> cacheMap = this.redisCache.getCacheObject(CACHE_KEY, () -> this.list().stream()
-				.collect(Collectors.toMap(ErrorProneWord::getWord, ErrorProneWord::getReplaceWord)));
-		return cacheMap;
-	}
-
-	@Override
 	public void addErrorProneWord(ErrorProneWord word) {
 		Long count = this.lambdaQuery().eq(ErrorProneWord::getWord, word.getWord()).count();
 		Assert.isTrue(count == 0, () -> WordErrorCode.CONFLIECT_ERROR_PRONE_WORD.exception(word.getWord()));
@@ -87,6 +60,7 @@ public class ErrorProneWordServiceImpl extends ServiceImpl<ErrorProneWordMapper,
 		word.setWordId(IdUtils.getSnowflakeId());
 		this.save(word);
 		this.processor.addWord(word.getWord(), word.getReplaceWord());
+		this.wordMonitoredCache.clear();
 	}
 
 	@Override
@@ -107,13 +81,28 @@ public class ErrorProneWordServiceImpl extends ServiceImpl<ErrorProneWordMapper,
 		this.updateById(db);
 		this.processor.removeWord(oldWord);
 		this.processor.addWord(db.getWord(), db.getReplaceWord());
+		this.wordMonitoredCache.clear();
 	}
 
 	@Override
 	public void run(String... args) {
-		List<ErrorProneWord> wordList = this.lambdaQuery()
-				.select(List.of(ErrorProneWord::getWord, ErrorProneWord::getReplaceWord)).list();
-		this.processor.addWords(wordList.stream().collect(Collectors
-				.toMap(ErrorProneWord::getWord, ErrorProneWord::getReplaceWord)));
+		Map<String, String> errorProneWords = getErrorProneWords();
+		this.processor.addWords(errorProneWords);
+	}
+
+	@Override
+	public void sync() {
+		Map<String, String> errorProneWords = getErrorProneWords();
+		this.processor.reset(errorProneWords);
+	}
+
+	private Map<String, String> getErrorProneWords() {
+		return this.wordMonitoredCache.get(() ->
+			this.lambdaQuery()
+				.select(List.of(ErrorProneWord::getWord, ErrorProneWord::getReplaceWord))
+				.list()
+				.stream()
+				.collect(Collectors.toMap(ErrorProneWord::getWord, ErrorProneWord::getReplaceWord))
+		);
 	}
 }

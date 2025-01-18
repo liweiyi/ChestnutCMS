@@ -27,7 +27,6 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
@@ -38,23 +37,17 @@ import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.dto.PublishPipeProp;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.enums.ContentCopyType;
-import com.chestnut.contentcore.enums.ContentOpType;
-import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 @Component(IContentType.BEAN_NAME_PREFIX + ImageContentType.ID)
 @RequiredArgsConstructor
@@ -105,28 +98,15 @@ public class ImageContentType implements IContentType {
 	}
 
 	@Override
-	public IContent<?> readRequest(HttpServletRequest request) throws IOException {
-		ImageAlbumDTO dto = JacksonUtils.from(request.getInputStream(), ImageAlbumDTO.class);
+	public IContent<?> readFrom(InputStream is) {
+		ImageAlbumDTO dto = JacksonUtils.from(is, ImageAlbumDTO.class);
+		return readFrom0(dto);
+	}
 
-		CmsContent contentEntity;
-		if (dto.getOpType() == ContentOpType.UPDATE) {
-			contentEntity = this.contentService.dao().getById(dto.getContentId());
-			Assert.notNull(contentEntity,
-					() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", dto.getContentId()));
-		} else {
-			contentEntity = new CmsContent();
-		}
-		BeanUtils.copyProperties(dto, contentEntity);
-		CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
-		contentEntity.setSiteId(catalog.getSiteId());
-		contentEntity.setAttributes(ContentAttribute.convertInt(dto.getAttributes()));
-		// 发布通道配置
-		Map<String, Map<String, Object>> publishPipProps = new HashMap<>();
-		dto.getPublishPipeProps().forEach(prop -> {
-			publishPipProps.put(prop.getPipeCode(), prop.getProps());
-		});
-		contentEntity.setPublishPipeProps(publishPipProps);
-
+	private ImageContent readFrom0(ImageAlbumDTO dto) {
+		// 内容基础信息
+		CmsContent contentEntity = dto.convertToContentEntity(this.catalogService, this.contentService);
+		// 图集扩展信息
 		List<CmsImage> imageList = dto.getImageList();
 
 		ImageContent content = new ImageContent();
@@ -154,9 +134,6 @@ public class ImageContentType implements IContentType {
 				img.setFileSizeName(FileUtils.byteCountToDisplaySize(img.getFileSize()));
 			});
 			vo = ImageAlbumVO.newInstance(contentEntity, list);
-			if (StringUtils.isNotEmpty(vo.getLogo())) {
-				vo.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(vo.getLogo()));
-			}
 			// 发布通道模板数据
 			List<PublishPipeProp> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
 					PublishPipePropUseType.Content, contentEntity.getPublishPipeProps());

@@ -59,7 +59,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 
 	@Override
 	public Optional<SysDept> getDept(Long deptId) {
-		SysDept dept = redisCache.getCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + deptId);
+		SysDept dept = redisCache.getCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + deptId, SysDept.class);
 		if (Objects.isNull(dept)) {
 			dept = this.getById(deptId);
 			if (Objects.nonNull(dept)) {

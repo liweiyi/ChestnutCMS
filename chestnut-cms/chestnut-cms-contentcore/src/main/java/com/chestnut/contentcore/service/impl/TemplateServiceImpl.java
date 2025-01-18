@@ -16,12 +16,11 @@
 package com.chestnut.contentcore.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
-import com.chestnut.contentcore.config.CMSConfig;
+import com.chestnut.contentcore.cache.TemplateMonitoredCache;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.CmsTemplate;
 import com.chestnut.contentcore.domain.dto.TemplateAddDTO;
@@ -53,30 +52,27 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTemplate> implements ITemplateService {
 
-	private final static String TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX = CMSConfig.CachePrefix + "template:";
-
 	private final Map<String, ITemplateType> templateTypes;
 
 	private final IPublishPipeService publishPipeService;
 
-	private final RedisCache redisCache;
+	private final TemplateMonitoredCache templateCache;
 
 	private final ISiteService siteService;
 
 	@Override
 	public String getTemplateStaticContentCache(String templateKey) {
-		return this.redisCache.getCacheObject(TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX + templateKey);
+		return this.templateCache.getCache(templateKey);
 	}
 
 	@Override
 	public void setTemplateStaticContentCache(String templateKey, String staticContent) {
-		this.redisCache.setCacheObject(TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX + templateKey, staticContent, 24,
-				TimeUnit.HOURS);
+		this.templateCache.setCache(templateKey, staticContent, 24, TimeUnit.HOURS);
 	}
 
 	@Override
 	public void clearTemplateStaticContentCache(String templateKey) {
-		this.redisCache.deleteObject(TEMPLATE_STATIC_CONTENT_CACHE_KEY_PREFIX + templateKey);
+		this.templateCache.clear(templateKey);
 	}
 
 	@Override

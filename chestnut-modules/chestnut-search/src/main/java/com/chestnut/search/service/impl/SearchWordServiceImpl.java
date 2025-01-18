@@ -129,7 +129,7 @@ public class SearchWordServiceImpl extends ServiceImpl<SearchWordMapper, SearchW
 		RLock lock = redissonClient.getLock("SyncSearchWordStat");
 		lock.lock();
 		try {
-			Set<String> cacheMap = redisCache.getZset(CACHE_KEY, 0, -1);
+			Set<String> cacheMap = redisCache.getZset(CACHE_KEY, 0, -1, String.class);
 			cacheMap.forEach(wordId -> {
 				SearchWord searchWord = this.getById(wordId);
 				if (Objects.nonNull(searchWord)) {

@@ -34,7 +34,6 @@ import com.chestnut.contentcore.core.IResourceType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.dto.ImageCropDTO;
 import com.chestnut.contentcore.domain.dto.ResourceUploadDTO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.config.ResourceUploadAcceptSize;
@@ -52,7 +51,6 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -197,12 +195,5 @@ public class ResourceController extends BaseRestController {
 		CmsResource resource = this.resourceService.getById(resourceId);
 		Assert.notNull(resource, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("resourceId", resourceId));
 		this.resourceService.downloadResource(resource, response);
-	}
-
-	@Log(title = "图片裁剪", businessType = BusinessType.UPDATE)
-	@PostMapping("/image/cut")
-	public R<?> cutImage(@RequestBody @Validated ImageCropDTO imageCutDTO) {
-		// TODO 
-		return R.fail("TODO");
 	}
 }

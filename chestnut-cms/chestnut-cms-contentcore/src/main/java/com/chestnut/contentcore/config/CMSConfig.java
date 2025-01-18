@@ -69,10 +69,7 @@ public class CMSConfig implements WebMvcConfigurer {
 		if (StringUtils.isEmpty(RESOURCE_ROOT)) {
 			RESOURCE_ROOT = SpringUtils.getAppParentDirectory() + "/wwwroot_release/";
 		}
-		RESOURCE_ROOT = FileExUtils.normalizePath(RESOURCE_ROOT);
-		if (!RESOURCE_ROOT.endsWith("/")) {
-			RESOURCE_ROOT += "/";
-		}
+		RESOURCE_ROOT = StringUtils.appendIfMissing(FileExUtils.normalizePath(RESOURCE_ROOT), "/");
 		FileExUtils.mkdirs(RESOURCE_ROOT);
 		properties.setResourceRoot(RESOURCE_ROOT);
 		log.info("ResourceRoot: " + RESOURCE_ROOT);
@@ -116,7 +113,7 @@ public class CMSConfig implements WebMvcConfigurer {
 	public void resetCache() {
 		if (this.properties.getResetCache()) {
 			Collection<String> keys = this.redisCache.keys(this.properties.getCacheName() + "*");
-			this.redisCache.deleteObject(keys);
+			this.redisCache.deleteObjects(keys);
 			log.info("Clear redis caches with prefix `{}`", this.properties.getCacheName());
 		}
 	}

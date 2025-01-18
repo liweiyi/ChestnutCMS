@@ -440,8 +440,8 @@ export default {
       });
     },
     handleFileStorageTypeChange() {
-      if (this.form_extend.FileStorageType === 'local') {
-        // this.form_extend.FileStorageArgs = {};
+      if (this.form_extend.FileStorageType === 'Local') {
+        this.form_extend.FileStorageArgs = {};
       }
     },
     handleSaveExtend () {

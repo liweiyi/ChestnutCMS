@@ -20,8 +20,12 @@ import java.util.Objects;
 /**
  * 内容复制方式
  *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 public class ContentCopyType {
+
+	public static final int NONE = 0;
 
 	/**
 	 * 独立复制，完整拷贝内容所有信息，拷贝的内容变更与源内容无关，仅仅记录来源

@@ -33,6 +33,12 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 
+/**
+ * 模板静态化服务类
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 @Service
 public class StaticizeService {

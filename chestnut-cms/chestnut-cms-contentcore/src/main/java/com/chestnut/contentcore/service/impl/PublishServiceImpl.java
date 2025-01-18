@@ -25,10 +25,7 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
-import com.chestnut.contentcore.core.IContent;
-import com.chestnut.contentcore.core.IContentType;
-import com.chestnut.contentcore.core.IPageWidget;
-import com.chestnut.contentcore.core.IPublishPipeProp;
+import com.chestnut.contentcore.core.*;
 import com.chestnut.contentcore.core.impl.CatalogType_Link;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_ContentTemplate;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_DefaultListTemplate;
@@ -87,18 +84,19 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	private ApplicationContext applicationContext;
 
 	@Override
-	public String getSitePageData(CmsSite site, String publishPipeCode, boolean isPreview)
+	public String getSitePageData(CmsSite site, IInternalDataType.RequestData requestData)
 			throws IOException, TemplateException {
-		String indexTemplate = site.getIndexTemplate(publishPipeCode);
-		File templateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);
+		String indexTemplate = site.getIndexTemplate(requestData.getPublishPipeCode());
+		File templateFile = this.templateService.findTemplateFile(site, indexTemplate, requestData.getPublishPipeCode());
 		if (Objects.isNull(templateFile)) {
-			throw ContentCoreErrorCode.TEMPLATE_EMPTY.exception(publishPipeCode, indexTemplate);
+			throw ContentCoreErrorCode.TEMPLATE_EMPTY.exception(requestData.getPublishPipeCode(), indexTemplate);
 		}
 		// 模板ID = 通道:站点目录:模板文件名
-		String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, indexTemplate);
-		TemplateContext context = new TemplateContext(templateKey, isPreview, publishPipeCode);
+		String templateKey = SiteUtils.getTemplateKey(site, requestData.getPublishPipeCode(), indexTemplate);
+		TemplateContext context = new TemplateContext(templateKey, requestData.isPreview(), requestData.getPublishPipeCode());
 		// init template datamode
 		TemplateUtils.initGlobalVariables(site, context);
+		context.getVariables().put(TemplateUtils.TemplateVariable_Request, Objects.requireNonNullElse(requestData.getParams(), Map.of()));
 		// init templateType data to datamode
 		ITemplateType templateType = templateService.getTemplateType(SiteTemplateType.TypeId);
 		templateType.initTemplateData(site.getSiteId(), context);
@@ -108,7 +106,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			this.staticizeService.process(context, writer);
 			return writer.toString();
 		} finally {
-			logger.debug("[{}]首页模板解析：{}\t耗时：{}ms", publishPipeCode, site.getName(), System.currentTimeMillis() - s);
+			logger.debug("[{}]首页模板解析：{}\t耗时：{}ms", requestData.getPublishPipeCode(), site.getName(), System.currentTimeMillis() - s);
 		}
 	}
 
@@ -191,15 +189,15 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	}
 
 	@Override
-	public String getCatalogPageData(CmsCatalog catalog, int pageIndex, boolean listFlag, String publishPipeCode, boolean isPreview)
+	public String getCatalogPageData(CmsCatalog catalog, IInternalDataType.RequestData requestData, boolean listFlag)
 			throws IOException, TemplateException {
 		if (CatalogType_Link.ID.equals(catalog.getCatalogType())) {
 			throw new RuntimeException("链接类型栏目无独立页面：" + catalog.getName());
 		}
-		String templateFilename = catalog.getListTemplate(publishPipeCode);
-		if (!listFlag && pageIndex == 1) {
+		String templateFilename = catalog.getListTemplate(requestData.getPublishPipeCode());
+		if (!listFlag && requestData.getPageIndex() == 1) {
 			// 获取首页模板
-			String indexTemplate = catalog.getIndexTemplate(publishPipeCode);
+			String indexTemplate = catalog.getIndexTemplate(requestData.getPublishPipeCode());
 			if (StringUtils.isNotEmpty(indexTemplate)) {
 				templateFilename = indexTemplate;
 			} else {
@@ -209,26 +207,27 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		CmsSite site = this.siteService.getById(catalog.getSiteId());
 		if (StringUtils.isEmpty(templateFilename)) {
 			// 站点默认模板
-			templateFilename = PublishPipeProp_DefaultListTemplate.getValue(publishPipeCode,
+			templateFilename = PublishPipeProp_DefaultListTemplate.getValue(requestData.getPublishPipeCode(),
 					site.getPublishPipeProps());
 		}
 		final String template = templateFilename;
-		File templateFile = this.templateService.findTemplateFile(site, template, publishPipeCode);
-		Assert.notNull(templateFile, () -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(publishPipeCode, template));
+		File templateFile = this.templateService.findTemplateFile(site, template, requestData.getPublishPipeCode());
+		Assert.notNull(templateFile, () -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(requestData.getPublishPipeCode(), template));
 
 		long s = System.currentTimeMillis();
 		// 生成静态页面
-		String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, template);
-		TemplateContext templateContext = new TemplateContext(templateKey, isPreview, publishPipeCode);
-		templateContext.setPageIndex(pageIndex);
+		String templateKey = SiteUtils.getTemplateKey(site, requestData.getPublishPipeCode(), template);
+		TemplateContext templateContext = new TemplateContext(templateKey, requestData.isPreview(), requestData.getPublishPipeCode());
+		templateContext.setPageIndex(requestData.getPageIndex());
 		// init template variables
 		TemplateUtils.initGlobalVariables(site, templateContext);
+		templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, Objects.requireNonNullElse(requestData.getParams(), Map.of()));
 		// init templateType variables
 		ITemplateType templateType = templateService.getTemplateType(CatalogTemplateType.TypeId);
 		templateType.initTemplateData(catalog.getCatalogId(), templateContext);
 		// 分页链接
 		if (listFlag) {
-			String catalogLink = this.catalogService.getCatalogListLink(catalog, 1, publishPipeCode, isPreview);
+			String catalogLink = this.catalogService.getCatalogListLink(catalog, 1, requestData.getPublishPipeCode(), requestData.isPreview());
 			templateContext.setFirstFileName(catalogLink);
 			templateContext.setOtherFileName(catalogLink + "&pi=" + TemplateContext.PlaceHolder_PageNo);
 		}
@@ -236,7 +235,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			this.staticizeService.process(templateContext, writer);
 			return writer.toString();
 		} finally {
-			logger.debug("[{}]栏目页模板解析：{}，耗时：{}ms", publishPipeCode, catalog.getName(),
+			logger.debug("[{}]栏目页模板解析：{}，耗时：{}ms", requestData.getPublishPipeCode(), catalog.getName(),
 					(System.currentTimeMillis() - s));
 		}
 	}
@@ -343,7 +342,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	}
 
 	@Override
-	public String getContentPageData(CmsContent content, int pageIndex, String publishPipeCode, boolean isPreview)
+	public String getContentPageData(CmsContent content, IInternalDataType.RequestData requestData)
 			throws IOException, TemplateException {
 		CmsSite site = this.siteService.getById(content.getSiteId());
 		CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());
@@ -351,31 +350,32 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			throw new RuntimeException("标题内容：" + content.getTitle() + "，跳转链接：" + content.getRedirectUrl());
 		}
 		// 查找模板
-		final String detailTemplate = getDetailTemplate(site, catalog, content, publishPipeCode);
-		File templateFile = this.templateService.findTemplateFile(site, detailTemplate, publishPipeCode);
+		final String detailTemplate = getDetailTemplate(site, catalog, content, requestData.getPublishPipeCode());
+		File templateFile = this.templateService.findTemplateFile(site, detailTemplate, requestData.getPublishPipeCode());
 		Assert.notNull(templateFile,
-				() -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(publishPipeCode, detailTemplate));
+				() -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(requestData.getPublishPipeCode(), detailTemplate));
 
 		long s = System.currentTimeMillis();
 		// 生成静态页面
 		try (StringWriter writer = new StringWriter()) {
 			IContentType contentType = ContentCoreUtils.getContentType(content.getContentType());
 			// 模板ID = 通道:站点目录:模板文件名
-			String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, detailTemplate);
-			TemplateContext templateContext = new TemplateContext(templateKey, isPreview, publishPipeCode);
-			templateContext.setPageIndex(pageIndex);
+			String templateKey = SiteUtils.getTemplateKey(site, requestData.getPublishPipeCode(), detailTemplate);
+			TemplateContext templateContext = new TemplateContext(templateKey, requestData.isPreview(), requestData.getPublishPipeCode());
+			templateContext.setPageIndex(requestData.getPageIndex());
+			templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, Objects.requireNonNullElse(requestData.getParams(), Map.of()));
 			// init template datamode
 			TemplateUtils.initGlobalVariables(site, templateContext);
 			// init templateType data to datamode
 			ITemplateType templateType = this.templateService.getTemplateType(ContentTemplateType.TypeId);
 			templateType.initTemplateData(content.getContentId(), templateContext);
 			// 分页链接
-			String contentLink = this.contentService.getContentLink(content, 1, publishPipeCode, isPreview);
+			String contentLink = this.contentService.getContentLink(content, 1, requestData.getPublishPipeCode(), requestData.isPreview());
 			templateContext.setFirstFileName(contentLink);
 			templateContext.setOtherFileName(contentLink + "&pi=" + TemplateContext.PlaceHolder_PageNo);
 			// staticize
 			this.staticizeService.process(templateContext, writer);
-			logger.debug("[{}][{}]内容模板解析：{}，耗时：{}", publishPipeCode, contentType.getName(), content.getTitle(),
+			logger.debug("[{}][{}]内容模板解析：{}，耗时：{}", requestData.getPublishPipeCode(), contentType.getName(), content.getTitle(),
 					System.currentTimeMillis() - s);
 			return writer.toString();
 		}

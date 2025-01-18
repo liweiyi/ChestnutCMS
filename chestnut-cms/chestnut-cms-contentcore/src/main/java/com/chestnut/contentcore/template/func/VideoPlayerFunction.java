@@ -34,7 +34,15 @@ public class VideoPlayerFunction extends AbstractFunc  {
 
 	static final String FUNC_NAME = "videoPlayer";
 	
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
+
+	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
+
+	private static final String ARG2_DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Desc}";
+
+	private static final String ARG3_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg3.Name}";
 
 	public static final Pattern VideoATagPattern = Pattern.compile("<a\\s[^>]*class\\s*=\\s*['\"]art-body-video['\"][^>]*>.*?</a>",
 			Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
@@ -91,9 +99,9 @@ public class VideoPlayerFunction extends AbstractFunc  {
 	@Override
 	public List<FuncArg> getFuncArgs() {
 		return List.of(
-				new FuncArg("{FREEMARKER.FUNC."+FUNC_NAME+".Arg1.Name}", FuncArgType.String, true, null),
-				new FuncArg("{FREEMARKER.FUNC."+FUNC_NAME+".Arg2.Name}", FuncArgType.String, false, "{FREEMARKER.FUNC."+FUNC_NAME+".Arg2.Desc}"),
-				new FuncArg("{FREEMARKER.FUNC."+FUNC_NAME+".Arg3.Name}", FuncArgType.String, false, null)
+				new FuncArg(ARG1_NAME, FuncArgType.String, true),
+				new FuncArg(ARG2_NAME, FuncArgType.String, false, null, "100%"),
+				new FuncArg(ARG3_NAME, FuncArgType.String, false)
 		);
 	}
 }

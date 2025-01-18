@@ -34,7 +34,7 @@ export default {
   },
   props: {
     value: {
-      type: String,
+      type: Object,
       default: "",
       required: true,
     },
@@ -50,14 +50,11 @@ export default {
     }
   },
   watch: {  
-    selected(newVal) {  
-      if (typeof newVal === String) {
-        this.selectedContent = newVal == '' ? {} : JSON.parse(newVal)
-      }
+    value(newVal) {  
       this.selectedContent = newVal;  
     },
     selectedContent(newVal) {
-      this.$emit("change", this.selectedContent.contentId);
+      this.$emit("change", this.selectedContent);
     }
   },
   data () {

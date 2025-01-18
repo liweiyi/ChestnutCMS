@@ -97,7 +97,14 @@
     
     <el-row :gutter="10" class="mb8">
       <el-col :span="12">
-        <el-card v-loading="loading" shadow="hover">
+      </el-col>
+      <el-col :span="12">
+      </el-col>
+    </el-row>
+    
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="12">
+        <el-card v-loading="loading" shadow="hover" class="mb8">
           <div slot="header" class="clearfix">
             <span>{{ $t('Stat.Site.Top10EntryPage') }}</span>
           </div>
@@ -105,16 +112,66 @@
             <el-table-column 
               :label="$t('Stat.Site.URL')"
               align="left"
-              prop="name" />
+              prop="label" />
             <el-table-column 
               label="PV"
-              align="right"
-              width="70"
+              align="center"
+              width="100"
               prop="pv_count" />
             <el-table-column 
               :label="$t('Stat.Site.Ratio')"
               align="right"
-              width="70"
+              width="80"
+              prop="ratio">
+              <template slot-scope="scope">
+                {{ scope.row.ratio }} %
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+        <el-card v-loading="loading" shadow="hover" class="mb8">
+          <div slot="header" class="clearfix">
+            <span>{{ $t('Stat.Site.Top10SourceSite') }}</span>
+          </div>
+          <el-table v-loading="loadingOther" :data="top10SourceSite" height="405" size="mini">
+            <el-table-column 
+              :label="$t('Stat.Site.SourceSite')"
+              align="left"
+              prop="label" />
+            <el-table-column 
+              label="PV"
+              align="center"
+              width="100"
+              prop="pv_count" />
+            <el-table-column 
+              :label="$t('Stat.Site.Ratio')"
+              align="right"
+              width="80"
+              prop="ratio">
+              <template slot-scope="scope">
+                {{ scope.row.ratio }} %
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+        <el-card v-loading="loading" shadow="hover">
+          <div slot="header" class="clearfix">
+            <span>{{ $t('Stat.Site.Top10VisitPage') }}</span>
+          </div>
+          <el-table v-loading="loadingDistrict" :data="top10VisitPage" height="405" size="mini">
+            <el-table-column 
+              label="URL"
+              align="left"
+              prop="label" />
+            <el-table-column 
+              label="PV"
+              align="center"
+              width="100"
+              prop="pv_count" />
+            <el-table-column 
+              :label="$t('Stat.Site.Ratio')"
+              align="center"
+              width="80"
               prop="ratio">
               <template slot-scope="scope">
                 {{ scope.row.ratio }} %
@@ -124,11 +181,31 @@
         </el-card>
       </el-col>
       <el-col :span="12">
+        <el-card shadow="hover" class="mb8">
+          <div slot="header" class="clearfix">
+            <span>{{ $t('Stat.Site.NewOldVisitor') }}</span>
+          </div>
+          <el-table v-loading="loadingOther" :data="newOldVisitor" height="260" size="mini">
+            <el-table-column 
+              :label="$t('Stat.Site.Metrics')"
+              align="left"
+              prop="label" />
+            <el-table-column 
+              :label="$t('Stat.Site.NewVisitor')"
+              align="left"
+              prop="newVisitorData" />
+            <el-table-column 
+              :label="$t('Stat.Site.OldVisitor')"
+              align="left"
+              prop="oldVisitorData">
+            </el-table-column>
+          </el-table>
+        </el-card>
         <el-card shadow="hover">
           <div slot="header" class="clearfix">
             <span>{{ $t('Stat.Site.VisitLocation') }}</span>
           </div>
-          <el-table v-loading="loadingDistrict" :data="districtList" height="405" size="mini">
+          <el-table v-loading="loadingDistrict" :data="districtList" size="mini">
             <el-table-column 
               :label="$t('Stat.Site.Location')"
               align="center"
@@ -212,7 +289,10 @@ export default {
       loadingDistrict: false,
       districtList: [],
       loadingOther: false,
-      top10LandingPage: []
+      top10LandingPage: [],
+      top10SourceSite: [],
+      top10VisitPage: [],
+      newOldVisitor: []
     };
   },
   created() {
@@ -260,7 +340,18 @@ export default {
       this.queryParams.startDate = this.dateRange[0];
       this.queryParams.endDate = this.dateRange[1];
       baiduTongjiApi.getSiteDistrictOverviewDatas(this.queryParams).then(response => {
-          this.districtList = response.data;
+           let rows = response.data.xaxisList.map(item => {
+            let row = { name: item.xaxis }
+            item.yaxisDataList.forEach(y => {
+              row[y.yaxis] = y.value
+            })
+            return row;
+          })
+          rows.sort((a, b) => {
+            let c = b.pv_count - a.pv_count
+            return c > 0 ? 1 : (c < 0 ? -1 : 0);
+          });
+          this.districtList = rows;
           this.loadingDistrict = false;
       });
     },
@@ -273,7 +364,17 @@ export default {
       this.queryParams.startDate = this.dateRange[0];
       this.queryParams.endDate = this.dateRange[1];
       baiduTongjiApi.getSiteOtherOverviewDatas(this.queryParams).then(response => {
-          this.top10LandingPage = response.data.landingPage;
+          this.top10LandingPage = response.data.landingPageRatioList;
+          this.top10SourceSite = response.data.sourceSiteRatioList;
+          this.top10VisitPage = response.data.visitPageRatioList;
+          response.data.visitorData.newVisitor.forEach(item => {
+            let oldData = response.data.visitorData.oldVisitor.find(oldItem => oldItem.name == item.name)
+            this.newOldVisitor.push({
+              label: item.label,
+              newVisitorData: item.value,
+              oldVisitorData: oldData.value
+            });
+          })
           this.loadingOther = false;
       });
     },

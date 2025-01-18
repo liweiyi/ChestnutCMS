@@ -15,6 +15,7 @@
  */
 package com.chestnut.article.service;
 
+import com.chestnut.article.IArticleBodyFormat;
 import com.chestnut.article.dao.CmsArticleDetailDAO;
 import com.chestnut.common.db.mybatisplus.HasDAO;
 
@@ -25,4 +26,5 @@ import com.chestnut.common.db.mybatisplus.HasDAO;
  * @email 190785909@qq.com
  */
 public interface IArticleService extends HasDAO<CmsArticleDetailDAO> {
+    IArticleBodyFormat getArticleBodyFormat(String format);
 }

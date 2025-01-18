@@ -15,15 +15,15 @@
  */
 package com.chestnut.advertisement.pojo.vo;
 
-import java.time.LocalDateTime;
-
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.chestnut.advertisement.domain.CmsAdvertisement;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.contentcore.util.InternalUrlUtils;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 /**
  * 广告数据VO
@@ -36,79 +36,49 @@ import lombok.Setter;
 @NoArgsConstructor
 public class AdvertisementVO {
 
-	/**
-	 * 广告ID
-	 */
+    @XComment("广告ID")
     private Long advertisementId;
 	
-    /**
-     * 所属广告位ID
-     */
+    @XComment("所属广告版本（页面部件）ID")
 	private Long adSpaceId;
 	
-	/**
-	 * 类型
-	 */
+    @XComment("类型")
     private String type;
 
-    /**
-     * 名称
-     */
+    @XComment("名称")
     private String name;
 
-    /**
-     * 权重
-     */
+    @XComment("权重")
     private Integer weight;
 
-    /**
-     * 关键词
-     */
+    @XComment("关键词")
     private String keywords;
 
-    /**
-     * 状态
-     */
+    @XComment("状态")
     private String state;
     
-    /**
-     * 上线时间
-     */
+    @XComment("上线时间")
     private LocalDateTime onlineDate;
 
-    /**
-     * 下线时间
-     */
+    @XComment("下线时间")
     private LocalDateTime offlineDate;
 
-    /**
-     * 跳转链接
-     */
+    @XComment("原始跳转链接")
     private String redirectUrl;
 
-    /**
-     * 跳转链接（可设置为中转地址）
-     */
+    @XComment("实际跳转链接（可设置为中转地址）")
     private String link;
     
-    /**
-     * 素材链接
-     */
+    @XComment("素材路径")
     private String resourcePath;
     
-    /**
-     * 素材真实地址
-     */
+    @XComment("素材访问链接")
     private String resourceSrc;
     
-    /**
-     * 创建人
-     */
+    @XComment("创建人")
     private String createBy;
     
-    /**
-     * 创建时间
-     */
+    @XComment("创建时间")
     private LocalDateTime createTime;
     
     public AdvertisementVO(CmsAdvertisement ad) {

@@ -15,17 +15,20 @@
  */
 package com.chestnut.cms.stat.controller;
 
-import com.chestnut.cms.stat.baidu.BaiduTongjiUtils;
+import com.chestnut.cms.stat.baidu.BaiduTjMetrics;
+import com.chestnut.cms.stat.baidu.BaiduTongjiConfig;
+import com.chestnut.cms.stat.baidu.api.*;
+import com.chestnut.cms.stat.baidu.dto.BaiduSourceAllDTO;
+import com.chestnut.cms.stat.baidu.dto.BaiduSourceEngineDTO;
+import com.chestnut.cms.stat.baidu.dto.BaiduSourceSearchWordDTO;
 import com.chestnut.cms.stat.baidu.dto.BaiduTimeTrendDTO;
-import com.chestnut.cms.stat.baidu.vo.BaiduOverviewReportVO;
-import com.chestnut.cms.stat.baidu.vo.BaiduSiteVO;
-import com.chestnut.cms.stat.baidu.vo.BaiduTimeTrendVO;
 import com.chestnut.cms.stat.properties.BaiduTjAccessTokenProperty;
 import com.chestnut.cms.stat.properties.BaiduTjDomainProperty;
 import com.chestnut.cms.stat.service.ICmsStatService;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -38,8 +41,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 百度统计数据
@@ -67,22 +68,25 @@ public class BaiduTongjiController extends BaseRestController {
 	@GetMapping("/sites")
 	public R<?> getSiteList() {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
-		R<List<BaiduSiteVO>> r = this.cmsStatService.getBaiduSiteList(site);
-		if (r.isSuccess()) {
-			String[] domains = BaiduTjDomainProperty.getValue(site.getConfigProps());
-			List<BaiduSiteVO> list = r.getData().stream().filter(vo -> ArrayUtils.contains(domains, vo.getDomain())).toList();
-			return R.ok(list);
+		BaiduTongjiConfig config = BaiduTongjiConfig.read(site.getConfigProps());
+		if (StringUtils.isEmpty(config.getAccessToken())) {
+			return R.ok(List.of());
 		}
-		return R.ok(); // 不返回错误了，直接返回空数组
+		SiteListApi siteListApi = SiteListApi.builder()
+				.access_token(config.getAccessToken())
+				.build();
+		SiteListResponse siteListResponse = siteListApi.get();
+		if (!siteListResponse.isSuccess()) {
+			return R.ok(List.of()); // 不返回错误了，直接返回空数组
+		}
+		String[] domains = BaiduTjDomainProperty.getValue(site.getConfigProps());
+		List<SiteListResponse.BaiduSite> list = siteListResponse.getList().stream()
+				.filter(vo -> ArrayUtils.contains(domains, vo.getDomain())).toList();
+		return R.ok(list);
 	}
 
 	/**
 	 * 趋势概览数据
-	 *
-	 * @param bdSiteId
-	 * @param startDate
-	 * @param endDate
-	 * @return
 	 */
 	@GetMapping("/trendOverview")
 	public R<?> getSiteOverviewTrendReport(@RequestParam Long bdSiteId, @RequestParam LocalDateTime startDate,
@@ -92,18 +96,23 @@ public class BaiduTongjiController extends BaseRestController {
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();
 		}
-		BaiduOverviewReportVO report = BaiduTongjiUtils.getSiteOverviewTimeTrend(accessToken, bdSiteId, startDate,
-				endDate);
-		return R.ok(report);
+		List<BaiduTjMetrics> metrics = List.of(BaiduTjMetrics.pv_count, BaiduTjMetrics.visitor_count, BaiduTjMetrics.ip_count, BaiduTjMetrics.avg_visit_time);
+		OverviewGetTimeTrendRptApi request = OverviewGetTimeTrendRptApi.builder()
+				.access_token(accessToken)
+				.site_id(bdSiteId.toString())
+				.start_date(startDate.format(DateUtils.FORMAT_YYYYMMDD))
+				.end_date(endDate.format(DateUtils.FORMAT_YYYYMMDD))
+				.metrics(metrics)
+				.build();
+		OverviewGetTimeTrendRptResponse response = request.request();
+		if (!response.isSuccess()) {
+			return R.fail(response.getError_msg());
+		}
+		return R.ok(response);
 	}
 
 	/**
 	 * 区域分布概览数据
-	 *
-	 * @param bdSiteId
-	 * @param startDate
-	 * @param endDate
-	 * @return
 	 */
 	@GetMapping("/districtOverview")
 	public R<?> getSiteOverviewDistrctReport(@RequestParam Long bdSiteId, @RequestParam LocalDateTime startDate,
@@ -113,18 +122,21 @@ public class BaiduTongjiController extends BaseRestController {
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();
 		}
-		BaiduOverviewReportVO report = BaiduTongjiUtils.getSiteOverviewDistrict(accessToken, bdSiteId, startDate,
-				endDate);
-		return R.ok(BaiduTongjiUtils.parseOverviewReportToTableData(report));
+		OverviewGetDistrictRptApi api = OverviewGetDistrictRptApi.builder()
+				.access_token(accessToken)
+				.site_id(bdSiteId.toString())
+				.start_date(startDate.format(DateUtils.FORMAT_YYYYMMDD))
+				.end_date(endDate.format(DateUtils.FORMAT_YYYYMMDD))
+				.build();
+		OverviewGetDistrictRptResponse response = api.request();
+		if (!response.isSuccess()) {
+			return R.fail(response.getError_msg());
+		}
+		return R.ok(response);
 	}
 
 	/**
 	 * 其他概览数据
-	 *
-	 * @param bdSiteId
-	 * @param startDate
-	 * @param endDate
-	 * @return
 	 */
 	@GetMapping("/otherOverview")
 	public R<?> getSiteOtherOverviewDatas(@RequestParam Long bdSiteId, @RequestParam LocalDateTime startDate,
@@ -134,14 +146,25 @@ public class BaiduTongjiController extends BaseRestController {
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();
 		}
-		Map<String, BaiduOverviewReportVO> siteOverviewOthers = BaiduTongjiUtils.getSiteOverviewOthers(accessToken,
-				bdSiteId, startDate, endDate);
-		Map<String, List<Map<String, Object>>> datas = siteOverviewOthers.entrySet().stream().map(e -> {
-			Map<String, List<Map<String, Object>>> map = Map.of(e.getKey(),
-					BaiduTongjiUtils.parseOverviewReportToTableData(e.getValue()));
-			return map.entrySet().iterator().next();
-		}).collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
-		return R.ok(datas);
+		OverviewGetCommonTrackRptApi api = OverviewGetCommonTrackRptApi.builder()
+				.access_token(accessToken)
+				.site_id(bdSiteId.toString())
+				.start_date(startDate.format(DateUtils.FORMAT_YYYYMMDD))
+				.end_date(endDate.format(DateUtils.FORMAT_YYYYMMDD))
+				.build();
+		OverviewGetCommonTrackRptResponse request = api.request();
+		if (!request.isSuccess()) {
+			return R.fail(request.getError_msg());
+		}
+		return R.ok(request);
+//		Map<String, BaiduOverviewReportVO> siteOverviewOthers = BaiduTongjiUtils.getSiteOverviewOthers(accessToken,
+//				bdSiteId, startDate, endDate);
+//		Map<String, List<Map<String, Object>>> datas = siteOverviewOthers.entrySet().stream().map(e -> {
+//			Map<String, List<Map<String, Object>>> map = Map.of(e.getKey(),
+//					BaiduTongjiUtils.parseOverviewReportToTableData(e.getValue()));
+//			return map.entrySet().iterator().next();
+//		}).collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+//		return R.ok(datas);
 	}
 
 	@GetMapping("/timeTrend")
@@ -154,9 +177,131 @@ public class BaiduTongjiController extends BaseRestController {
 		if (StringUtils.isEmpty(dto.getGran())) {
 			dto.setGran("day");
 		}
-		dto.setMetrics(List.of("pv_count", "visitor_count", "ip_count", "visit_count"));
-		BaiduTimeTrendVO siteTimeTrend = BaiduTongjiUtils.getSiteTimeTrend(accessToken, dto);
-		return R.ok(siteTimeTrend);
+		List<BaiduTjMetrics> metrics = List.of(
+				BaiduTjMetrics.pv_count,
+				BaiduTjMetrics.ip_count,
+				BaiduTjMetrics.visitor_count,
+				BaiduTjMetrics.visit_count
+		);
+		TrendTimeAApi request = TrendTimeAApi.builder()
+				.access_token(accessToken)
+				.site_id(dto.getSiteId().toString())
+				.start_date(dto.getStartDate().format(DateUtils.FORMAT_YYYYMMDD))
+				.end_date(dto.getEndDate().format(DateUtils.FORMAT_YYYYMMDD))
+				.metrics(metrics)
+				.gran(dto.getGran())
+				.area(dto.getArea())
+				.clientDevice(dto.getDeviceType())
+				.source(dto.getSource())
+				.visitor(dto.getVisitor())
+				.build();
+		TrendTimeAResponse response = request.request();
+		if (!response.isSuccess()) {
+			return R.fail(response.getError_msg());
+		}
+		return R.ok(response);
+	}
+
+	/**
+	 * 来源统计
+	 */
+	@GetMapping("/sourceAll")
+	public R<?> getSiteSourceAll(@Validated BaiduSourceAllDTO dto) {
+		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
+		if (StringUtils.isBlank(accessToken)) {
+			return R.ok();
+		}
+		List<BaiduTjMetrics> metrics = List.of(
+				BaiduTjMetrics.pv_count,
+				BaiduTjMetrics.pv_ratio,
+				BaiduTjMetrics.visitor_count,
+				BaiduTjMetrics.new_visitor_count,
+				BaiduTjMetrics.new_visitor_ratio,
+				BaiduTjMetrics.ip_count,
+				BaiduTjMetrics.bounce_ratio,
+				BaiduTjMetrics.avg_visit_time,
+				BaiduTjMetrics.avg_visit_pages
+		);
+		SourceAllAApi request = SourceAllAApi.builder()
+				.access_token(accessToken)
+				.site_id(dto.getSiteId().toString())
+				.start_date(dto.getStartDate().format(DateUtils.FORMAT_YYYYMMDD))
+				.end_date(dto.getEndDate().format(DateUtils.FORMAT_YYYYMMDD))
+				.metrics(metrics)
+				.viewType(dto.getViewType())
+				.clientDevice(dto.getClientDevice())
+				.visitor(dto.getVisitor())
+				.build();
+		SourceAllAResponse response = request.request();
+		if (!response.isSuccess()) {
+			return R.fail(response.getError_msg());
+		}
+		return R.ok(response);
+	}
+
+	/**
+	 * 搜索引擎来源统计
+	 */
+	@GetMapping("/sourceEngine")
+	public R<?> getSiteSourceEngine(@Validated BaiduSourceEngineDTO dto) {
+		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
+		if (StringUtils.isBlank(accessToken)) {
+			return R.ok();
+		}
+		List<BaiduTjMetrics> metrics = List.of(
+				BaiduTjMetrics.pv_count,
+				BaiduTjMetrics.pv_ratio,
+				BaiduTjMetrics.visitor_count,
+				BaiduTjMetrics.new_visitor_count,
+				BaiduTjMetrics.new_visitor_ratio,
+				BaiduTjMetrics.ip_count,
+				BaiduTjMetrics.bounce_ratio,
+				BaiduTjMetrics.avg_visit_time,
+				BaiduTjMetrics.avg_visit_pages
+		);
+		SourceEngineAApi request = SourceEngineAApi.builder()
+				.access_token(accessToken)
+				.site_id(dto.getSiteId().toString())
+				.start_date(dto.getStartDate().format(DateUtils.FORMAT_YYYYMMDD))
+				.end_date(dto.getEndDate().format(DateUtils.FORMAT_YYYYMMDD))
+				.metrics(metrics)
+				.area(dto.getArea())
+				.clientDevice(dto.getClientDevice())
+				.visitor(dto.getVisitor())
+				.build();
+		SourceEngineAResponse response = request.request();
+		if (!response.isSuccess()) {
+			return R.fail(response.getError_msg());
+		}
+		return R.ok(response);
+	}
+
+	/**
+	 * 搜索词来源统计
+	 */
+	@GetMapping("/sourceSearchWord")
+	public R<?> getSiteSourceSearchWord(@Validated BaiduSourceSearchWordDTO dto) {
+		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
+		if (StringUtils.isBlank(accessToken)) {
+			return R.ok();
+		}
+		SourceSearchWordAApi request = SourceSearchWordAApi.builder()
+				.access_token(accessToken)
+				.site_id(dto.getSiteId().toString())
+				.start_date(dto.getStartDate().format(DateUtils.FORMAT_YYYYMMDD))
+				.end_date(dto.getEndDate().format(DateUtils.FORMAT_YYYYMMDD))
+				.source(dto.getSource())
+				.clientDevice(dto.getClientDevice())
+				.visitor(dto.getVisitor())
+				.build();
+		SourceSearchWordAResponse response = request.request();
+		if (!response.isSuccess()) {
+			return R.fail(response.getError_msg());
+		}
+		return R.ok(response);
 	}
 }
 

@@ -44,4 +44,8 @@ public interface ITag {
     default List<TagAttr> getTagAttrs() {
     	return List.of();
     }
+
+    default Class<?> getDataClass() {
+        return null;
+    }
 }

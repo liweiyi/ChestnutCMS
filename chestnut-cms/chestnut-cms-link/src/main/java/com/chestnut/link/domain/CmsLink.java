@@ -19,8 +19,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,42 +39,29 @@ public class CmsLink extends BaseEntity {
 
 	public static final String TABLE_NAME = "cms_link";
 
+    @XComment("友链ID")
     @TableId(value = "link_id", type = IdType.INPUT)
     private Long linkId;
 
-    /**
-     * 所属站点ID
-     */
+    @XComment("所属站点ID")
     private Long siteId;
 
-    /**
-     * 所属分组ID
-     */
+    @XComment("所属分组ID")
     private Long groupId;
 
-    /**
-     * 链接名称
-     */
+    @XComment("链接名称")
     private String name;
 
-    /**
-     * 链接URL
-     */
+    @XComment("链接URL")
     private String url;
 
-    /**
-     * 图片路径
-     */
+    @XComment("图片路径")
     private String logo;
 
-    /**
-     * 图片预览路径
-     */
     @TableField(exist = false)
+    @XComment(value = "图片访问地址", deprecated = true, forRemoval = "1.6.0")
     private String src;
     
-    /**
-     * 排序标识
-     */
+    @XComment("排序值")
     private Long sortFlag;
 }

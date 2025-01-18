@@ -103,7 +103,7 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
                     data.setContentHtml(html.toString());
                     articleService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入文章数据失败：" + oldContentId);
+                    AsyncTaskManager.addErrMessage("导入文章数据`" + oldContentId + "`失败：" + e.getMessage());
                     log.error("Import article detail failed: {}", oldContentId, e);
                 }
             }

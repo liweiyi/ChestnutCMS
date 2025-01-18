@@ -17,34 +17,38 @@ export function listCacheName() {
 }
 
 // 查询缓存键名列表
-export function listCacheKey(cacheName) {
+export function listCacheKey(monitoredId) {
   return request({
-    url: '/monitor/cache/getKeys/' + cacheName,
+    url: '/monitor/cache/getKeys/' + monitoredId,
     method: 'get'
   })
 }
 
 // 查询缓存内容
-export function getCacheValue(cacheName, cacheKey) {
+export function getCacheValue(monitoredId, cacheKey) {
   return request({
-    url: '/monitor/cache/getValue/' + cacheName + '/' + cacheKey,
+    url: '/monitor/cache/getValue?monitoredId=' + monitoredId + '&cacheKey=' + encodeURIComponent(cacheKey),
     method: 'get'
   })
 }
 
 // 清理指定名称缓存
-export function clearCacheName(cacheName) {
+export function clearCacheName(monitoredId) {
   return request({
-    url: '/monitor/cache/clearCacheName/' + cacheName,
+    url: '/monitor/cache/clearCacheName/' + monitoredId,
     method: 'delete'
   })
 }
 
 // 清理指定键名缓存
-export function clearCacheKey(cacheKey) {
+export function clearCacheKey(monitoredId, cacheKey) {
   return request({
-    url: '/monitor/cache/clearCacheKey/' + cacheKey,
-    method: 'delete'
+    url: '/monitor/cache/clearCacheKey',
+    method: 'delete',
+    data: {
+      monitoredId: monitoredId,
+      cacheKey: cacheKey
+    }
   })
 }
 

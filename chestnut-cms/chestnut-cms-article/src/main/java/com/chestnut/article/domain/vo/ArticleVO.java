@@ -15,19 +15,13 @@
  */
 package com.chestnut.article.domain.vo;
 
-import java.util.Objects;
-
-import org.springframework.beans.BeanUtils;
-
 import com.chestnut.article.domain.CmsArticleDetail;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.vo.ContentVO;
-import com.chestnut.contentcore.fixed.dict.ContentAttribute;
-import com.chestnut.contentcore.util.InternalUrlUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Objects;
 
 @Getter 
 @Setter
@@ -48,16 +42,20 @@ public class ArticleVO extends ContentVO {
      */
     private String pageTitles;
 
+	/**
+	 * 文档格式
+	 */
+	private String format;
+
 	public static ArticleVO newInstance(CmsContent content, CmsArticleDetail articleDetail) {
-		ArticleVO dto = new ArticleVO();
-		BeanUtils.copyProperties(content, dto);
-		dto.setAttributes(ContentAttribute.convertStr(content.getAttributes()));
-		if (StringUtils.isNotEmpty(dto.getLogo())) {
-			dto.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(dto.getLogo()));
-		}
+		ArticleVO vo = new ArticleVO();
+		vo.initByContent(content, true);
 		if (Objects.nonNull(articleDetail)) {
-			BeanUtils.copyProperties(articleDetail, dto);
+			vo.setContentHtml(articleDetail.getContentHtml());
+			vo.setDownloadRemoteImage(articleDetail.getDownloadRemoteImage());
+			vo.setPageTitles(articleDetail.getPageTitles());
+			vo.setFormat(articleDetail.getFormat());
 		}
-		return dto;
+		return vo;
 	}
 }

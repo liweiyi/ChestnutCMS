@@ -57,7 +57,7 @@ public class PageViewStatEventHandler implements IStatEventHandler {
     public void handle(StatEvent event) {
         CmsSiteVisitLog log = parseSiteVisitLog(event);
         // 更新Redis数据
-        this.redisCache.incrLongCounter(CACHE_PREFIX + log.getUri());
+        this.redisCache.incrCacheValue(CACHE_PREFIX + log.getUri());
         // 更新内容浏览量
         if (IdUtils.validate(log.getContentId())) {
             contentDynamicDataService.increaseViewCount(log.getContentId());

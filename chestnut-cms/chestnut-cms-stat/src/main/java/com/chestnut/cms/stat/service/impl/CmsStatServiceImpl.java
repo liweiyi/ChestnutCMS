@@ -17,7 +17,7 @@ package com.chestnut.cms.stat.service.impl;
 
 import com.chestnut.cms.stat.baidu.BaiduTongjiConfig;
 import com.chestnut.cms.stat.baidu.BaiduTongjiUtils;
-import com.chestnut.cms.stat.baidu.vo.BaiduSiteVO;
+import com.chestnut.cms.stat.baidu.api.SiteListResponse;
 import com.chestnut.cms.stat.exception.CmsStatErrorCode;
 import com.chestnut.cms.stat.properties.BaiduTjAccessTokenProperty;
 import com.chestnut.cms.stat.properties.BaiduTjRefreshTokenProperty;
@@ -30,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -38,19 +37,6 @@ import java.util.Map;
 public class CmsStatServiceImpl implements ICmsStatService {
 
 	private final ISiteService siteService;
-
-	@Override
-	public R<List<BaiduSiteVO>> getBaiduSiteList(CmsSite site) {
-		BaiduTongjiConfig config = BaiduTongjiConfig.read(site.getConfigProps());
-		R<List<BaiduSiteVO>> result = BaiduTongjiUtils.getSiteList(config);
-		if (!result.isSuccess()) {
-			if (result.getMsg().equalsIgnoreCase("Access token expired")) {
-				refreshBaiduAccessToken(site);
-				return BaiduTongjiUtils.getSiteList(config);
-			}
-		}
-		return result;
-	}
 
 	/**
 	 * 刷新百度统计AccessToken

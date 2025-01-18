@@ -2,14 +2,23 @@
   <div class="cms-content-list">
     <el-row :gutter="10" class="mb12">
       <el-col :span="1.5">
-        <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="400" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
-          <el-row style="margin-bottom:20px;text-align:right;">
+        <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="420" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
+          <el-row style="margin-bottom:20px;">
+            <el-divider content-position="left">{{ $t('CMS.Content.ContentType') }}</el-divider>
             <el-radio-group v-model="addContentType">
               <el-radio-button 
                 v-for="ct in contentTypeOptions"
                 :key="ct.id"
                 :label="ct.id"
               >{{ct.name}}</el-radio-button>
+            </el-radio-group>
+            <el-divider v-if="addContentType=='article'" content-position="left">{{ $t('CMS.Article.Format') }}</el-divider>
+            <el-radio-group v-if="addContentType=='article'" v-model="addArticleBodyFormat">
+              <el-radio-button 
+                v-for="item in articleBodyFormatOptions"
+                :key="item.id"
+                :label="item.id"
+              >{{ item.name }}</el-radio-button>
             </el-radio-group>
           </el-row>
           <el-row style="text-align:right;">
@@ -125,7 +134,7 @@
     </el-row>
     <el-row>
       <el-form :model="queryParams" ref="queryForm" size="small" class="el-form-search" style="text-align:left;" :inline="true">
-        <div class="mb12">
+        <div>
           <el-form-item prop="title">
             <el-input 
               v-model="queryParams.title"
@@ -179,7 +188,7 @@
             <el-button icon="el-icon-plus" @click="showSearch=!showSearch">{{ $t("Common.More") }}</el-button>
           </el-form-item>
         </div>
-        <div class="mb12" v-show="showSearch">
+        <div v-show="showSearch">
           <el-form-item :label="$t('Common.CreateTime')">
             <el-date-picker 
               v-model="dateRange"
@@ -327,6 +336,7 @@
 <script>
 import { getUserPreference } from "@/api/system/user";
 import { getContentTypes } from "@/api/contentcore/catalog";
+import { getArticleBodyFormats } from "@/api/contentcore/article"
 import { 
   getContentList, delContent, publishContent, createIndexes, 
   copyContent, moveContent, setTopContent, cancelTopContent, sortContent, 
@@ -343,7 +353,7 @@ export default {
     'cms-content-sort': CMSContentSort,
     'cms-progress': CMSProgress
   },
-  dicts: ['CMSContentStatus', 'CMSContentAttribute'],
+  dicts: [ 'CMSContentStatus', 'CMSContentAttribute' ],
   props: {
     cid: {
       type: String,
@@ -388,6 +398,8 @@ export default {
       openProgress: false,
       taskId: "",
       addContentType: "",
+      articleBodyFormatOptions: [],
+      addArticleBodyFormat: "RichText",
       openCatalogSelector: false, // 栏目选择弹窗
       isCopy: false,
       openContentSortDialog: false, // 内容选择弹窗
@@ -408,6 +420,7 @@ export default {
       this.contentTypeOptions = response.data;
       this.addContentType = this.contentTypeOptions[0].id;
     });
+    this.loadArticleBodyFormats();
     if (this.catalogId && this.catalogId > 0) {
       this.loadContentList();
     }
@@ -416,6 +429,12 @@ export default {
     })
   },
   methods: {
+    loadArticleBodyFormats() {
+      getArticleBodyFormats().then(response => {
+        this.articleBodyFormatOptions = response.data;
+        this.addArticleBodyFormat = this.articleBodyFormatOptions[0].id;
+      })
+    },
     loadContentList () {
       this.loading = true;
       this.queryParams.catalogId = this.catalogId;
@@ -469,16 +488,20 @@ export default {
         return;
       }
       this.addPopoverVisible = false;
-      this.openEditor(this.catalogId, 0, this.addContentType);
+      this.openEditor(this.catalogId, 0, this.addContentType, this.addArticleBodyFormat);
     },
     handleEdit (row) {
       this.openEditor(row.catalogId, row.contentId, row.contentType);
     },
-    openEditor(catalogId, contentId, contentType) {
+    openEditor(catalogId, contentId, contentType, articleBodyFormat = "") {
+      let queryParams = { type: contentType, catalogId: catalogId, id: contentId }
+      if (articleBodyFormat.length > 0) {
+        queryParams.format = articleBodyFormat;
+      }
       if (this.openEditorW) {
         let routeData = this.$router.resolve({
           path: "/cms/content/editorW",
-          query: { type: contentType, catalogId: catalogId, id: contentId },
+          query: queryParams,
         });
         let winEditor = window.open(routeData.href, '_blank');
         let that = this;
@@ -486,7 +509,7 @@ export default {
           that.loadContentList();
         }
       } else {
-        this.$router.push({ path: "/cms/content/editor", query: { type: contentType, catalogId: catalogId, id: contentId, w: this.openEditorW } });
+        this.$router.push({ path: "/cms/content/editor", query: queryParams });
       }
     },
     handleDelete (row) {

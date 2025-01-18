@@ -17,6 +17,7 @@ package com.chestnut.cms.stat;
 
 import com.chestnut.cms.stat.domain.CmsCatalogContentStat;
 import com.chestnut.cms.stat.mapper.CmsCatalogContentStatMapper;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
@@ -58,7 +59,9 @@ public class CatalogContentCountByStatus implements CommandLineRunner {
     private static final Set<Long> changeCatalogIds = new HashSet<>();
 
     public synchronized void triggerChange(Long catalogId) {
-        changeCatalogIds.add(catalogId);
+        if (IdUtils.validate(catalogId)) {
+            changeCatalogIds.add(catalogId);
+        }
     }
 
     private synchronized Long[] getChangeCatalogIdsAndClear() {
@@ -83,6 +86,7 @@ public class CatalogContentCountByStatus implements CommandLineRunner {
                 CmsCatalogContentStat stat = this.catalogContentStatMapper.selectById(catalogId);
                 if (Objects.isNull(stat)) {
                     stat = new CmsCatalogContentStat();
+                    stat.setCatalogId(catalogId);
                     stat.setSiteId(catalog.getSiteId());
                     insert = true;
                 }

@@ -15,17 +15,20 @@
  */
 package com.chestnut.contentcore.domain.vo;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.chestnut.contentcore.core.impl.InternalDataType_Content;
+import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.InitByContent;
+import com.chestnut.contentcore.util.InternalUrlUtils;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
+
 @Getter
 @Setter
-public class ListContentVO {
+public class ListContentVO implements InitByContent {
 
 	/*
 	 * 内容ID
@@ -71,6 +74,16 @@ public class ListContentVO {
 	 * 引导图预览路径
 	 */
     private String logoSrc;
+
+	/*
+	 * 引导图
+	 */
+	private List<String> images;
+
+	/*
+	 * 引导图预览路径
+	 */
+	private List<String> imagesSrc;
 
 	/*
 	 * 内部链接
@@ -166,4 +179,11 @@ public class ListContentVO {
 	 * 创建时间
 	 */
 	private LocalDateTime createTime;
+
+	public static ListContentVO newInstance(CmsContent content) {
+		ListContentVO vo = new ListContentVO();
+		vo.initByContent(content, true);
+		vo.setInternalUrl(InternalUrlUtils.getInternalUrl(InternalDataType_Content.ID, content.getContentId()));
+		return vo;
+	}
 }

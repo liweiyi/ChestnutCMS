@@ -61,7 +61,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-register-footer">
-      <span>Copyright © 2022-2023 1000mz.com All Rights Reserved.</span>
+      <span>{{ appInfo.copyright }}</span>
     </div>
   </div>
 </template>
@@ -80,6 +80,7 @@ export default {
       }
     };
     return {
+      appInfo: process.env.VUE_APP_INFO,
       codeUrl: "",
       registerForm: {
         username: "",

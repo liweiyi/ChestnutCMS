@@ -23,27 +23,24 @@ import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.*;
 import com.chestnut.contentcore.ContentCoreConsts;
-import com.chestnut.contentcore.config.CMSConfig;
+import com.chestnut.contentcore.cache.CatalogMonitoredCache;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.IProperty;
 import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.core.impl.CatalogType_Common;
 import com.chestnut.contentcore.core.impl.CatalogType_Link;
 import com.chestnut.contentcore.core.impl.InternalDataType_Catalog;
+import com.chestnut.contentcore.dao.CmsContentDAO;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.*;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
-import com.chestnut.contentcore.listener.event.AfterCatalogDeleteEvent;
-import com.chestnut.contentcore.listener.event.AfterCatalogMoveEvent;
-import com.chestnut.contentcore.listener.event.AfterCatalogSaveEvent;
-import com.chestnut.contentcore.listener.event.BeforeCatalogDeleteEvent;
+import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.mapper.CmsCatalogMapper;
 import com.chestnut.contentcore.mapper.CmsContentMapper;
 import com.chestnut.contentcore.perms.CatalogPermissionType;
@@ -53,6 +50,7 @@ import com.chestnut.contentcore.util.*;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.service.ISysPermissionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -64,19 +62,16 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog> implements ICatalogService {
-
-	public static final String CACHE_PREFIX_ID = CMSConfig.CachePrefix + "catalog:id:";
-
-	public static final String CACHE_PREFIX_ALIAS = CMSConfig.CachePrefix + "catalog:alias:";
 
 	private final ApplicationContext applicationContext;
 
 	private final ISiteService siteService;
 
-	private final RedisCache redisCache;
+	private final CatalogMonitoredCache catalogCache;
 
 	private final RedissonClient redissonClient;
 
@@ -86,35 +81,23 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 
 	private final AsyncTaskManager asyncTaskManager;
 
+	private final CmsContentDAO contentDao;
+
 	@Override
 	public CmsCatalog getCatalog(Long catalogId) {
 		if (!IdUtils.validate(catalogId)) {
 			return null;
 		}
-		CmsCatalog catalog = this.redisCache.getCacheObject(CACHE_PREFIX_ID + catalogId);
-		if (Objects.isNull(catalog)) {
-			catalog = this.getById(catalogId);
-			if (Objects.nonNull(catalog)) {
-				this.setCatalogCache(catalog);
-			}
-		}
-		return catalog;
+		return this.catalogCache.getCacheById(catalogId, () -> this.getById(catalogId));
 	}
 
 	@Override
 	public CmsCatalog getCatalogByAlias(Long siteId, String catalogAlias) {
-		if (!IdUtils.validate(siteId) || StringUtils.isEmpty(catalogAlias)) {
+		if (!IdUtils.validate(siteId) || StringUtils.isBlank(catalogAlias)) {
 			return null;
 		}
-		Assert.notNull(catalogAlias, () -> CommonErrorCode.NOT_EMPTY.exception("CatalogAlias: " + catalogAlias));
-		CmsCatalog catalog = this.redisCache.getCacheObject(CACHE_PREFIX_ALIAS + siteId + ":" + catalogAlias);
-		if (Objects.isNull(catalog)) {
-			catalog = this.lambdaQuery().eq(CmsCatalog::getSiteId, siteId).eq(CmsCatalog::getAlias, catalogAlias).one();
-			if (Objects.nonNull(catalog)) {
-				this.setCatalogCache(catalog);
-			}
-		}
-		return catalog;
+		return this.catalogCache.getCacheByAlias(siteId, catalogAlias,
+				() -> this.lambdaQuery().eq(CmsCatalog::getSiteId, siteId).eq(CmsCatalog::getAlias, catalogAlias).one());
 	}
 
 	@Override
@@ -422,13 +405,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 
 	@Override
 	public void clearCache(CmsCatalog catalog) {
-		this.redisCache.deleteObject(CACHE_PREFIX_ID + catalog.getCatalogId());
-		this.redisCache.deleteObject(CACHE_PREFIX_ALIAS + catalog.getSiteId() + ":" + catalog.getAlias());
-	}
-
-	private void setCatalogCache(CmsCatalog catalog) {
-		this.redisCache.setCacheObject(CACHE_PREFIX_ID + catalog.getCatalogId(), catalog);
-		this.redisCache.setCacheObject(CACHE_PREFIX_ALIAS + catalog.getSiteId() + ":" + catalog.getAlias(), catalog);
+		this.catalogCache.clear(catalog);
 	}
 
 	@Override
@@ -632,5 +609,57 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	@Override
+	public AsyncTask clearCatalog(ClearCatalogDTO dto) {
+		CmsCatalog catalog = getCatalog(dto.getCatalogId());
+		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(dto.getCatalogId()));
+
+		AsyncTask task = new AsyncTask("Catalog-" + catalog.getCatalogId()) {
+
+			@Override
+			public void run0() {
+				applicationContext.publishEvent(new OnCatalogClearEvent(this, catalog, dto.getOperator()));
+			}
+		};
+		this.asyncTaskManager.execute(task);
+		return task;
+	}
+
+	@Override
+	public AsyncTask mergeCatalogs(MergeCatalogDTO dto) {
+		CmsCatalog catalog = getCatalog(dto.getCatalogId());
+		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(dto.getCatalogId()));
+
+		List<CmsCatalog> mergeCatalogs = dto.getMergeCatalogIds().stream()
+				.filter(cid -> !Objects.equals(cid, dto.getCatalogId())) // 过滤掉自己
+				.map(this::getCatalog).filter(Objects::nonNull).toList();
+		Assert.notEmpty(mergeCatalogs, ContentCoreErrorCode.MERGE_CATALOG_IS_EMPTY::exception);
+
+		Long count = this.lambdaQuery().in(CmsCatalog::getParentId, dto.getMergeCatalogIds()).count();
+		Assert.isTrue(count == 0, ContentCoreErrorCode.MERGE_CATALOG_NOT_LEAF::exception);
+
+		AsyncTask task = new AsyncTask("MergeCatalog") {
+
+			@Override
+			public void run0() {
+				applicationContext.publishEvent(new OnCatalogMergeEvent(this, catalog,
+						mergeCatalogs, dto.getOperator()));
+				// 删除被合并栏目
+				for (CmsCatalog mergeCatalog: mergeCatalogs) {
+					if (mergeCatalog.getParentId() > 0) {
+						CmsCatalog parentCatalog = getById(mergeCatalog.getParentId());
+						parentCatalog.setChildCount(parentCatalog.getChildCount() - 1);
+						updateById(parentCatalog);
+					}
+					removeById(mergeCatalog);
+					clearCache(mergeCatalog);
+				}
+				AsyncTaskManager.completed();
+			}
+		};
+		this.asyncTaskManager.execute(task);
+		return task;
 	}
 }

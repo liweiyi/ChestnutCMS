@@ -105,7 +105,7 @@ public abstract class AbstractPageWidget implements IPageWidget {
 	}
 
 	@Override
-	public void publish() throws TemplateException, IOException {
+	public void publish() {
 		CmsPageWidget pageWidgetEntity = this.getPageWidgetEntity();
 		pageWidgetEntity.setState(PageWidgetStatus.PUBLISHED);
 		pageWidgetEntity.updateBy(this.getOperator().getUsername());

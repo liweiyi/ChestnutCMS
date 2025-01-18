@@ -41,8 +41,11 @@ import java.util.Optional;
 public class CmsTagWordTag extends AbstractListTag {
 
 	public final static String TAG_NAME = "cms_tag_word";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_CODE = "{FREEMARKER.TAG." + TAG_NAME + ".code}";
+
+	private static final String ATTR_GROUP = "group";
 
 	private final ITagWordGroupService tagWordGroupService;
 
@@ -51,7 +54,7 @@ public class CmsTagWordTag extends AbstractListTag {
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr("group", true, TagAttrDataType.STRING, "TAG词分组编码") );
+		tagAttrs.add(new TagAttr(ATTR_GROUP, true, TagAttrDataType.STRING, ATTR_USAGE_CODE));
 		return tagAttrs;
 	}
 
@@ -75,6 +78,11 @@ public class CmsTagWordTag extends AbstractListTag {
 
 		 Page<TagWord> pageResult = this.tagWordService.page(new Page<>(pageIndex, size, page), q);
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+	}
+
+	@Override
+	public Class<TagWord> getDataClass() {
+		return TagWord.class;
 	}
 
 	@Override

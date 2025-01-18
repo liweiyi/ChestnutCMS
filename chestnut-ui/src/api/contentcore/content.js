@@ -155,3 +155,11 @@ export function removeContentAttribute(data) {
     data: data
   })
 }
+
+export function getContentOpLogList(query) {
+  return request({
+    url: '/cms/content/log',
+    method: 'get',
+    params: query
+  })
+}

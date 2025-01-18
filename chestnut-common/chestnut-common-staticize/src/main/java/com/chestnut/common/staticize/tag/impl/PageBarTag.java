@@ -15,6 +15,7 @@
  */
 package com.chestnut.common.staticize.tag.impl;
 
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.StaticizeConstants;
 import com.chestnut.common.staticize.core.TemplateContext;
@@ -38,8 +39,18 @@ import java.util.Map;
 public class PageBarTag extends AbstractTag {
 
 	public final static String TAG_NAME = "page_bar";
-	public final static String NAME = "{FREEMARKER.TAG.NAME." + TAG_NAME + "}";
-	public final static String DESC = "{FREEMARKER.TAG.DESC." + TAG_NAME + "}";
+	public final static String NAME = "{FREEMARKER.TAG." + TAG_NAME + ".NAME}";
+	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
+	public final static String ATTR_USAGE_TYPE = "{FREEMARKER.TAG." + TAG_NAME + ".type}";
+	public final static String ATTR_USAGE_TARGET = "{FREEMARKER.TAG." + TAG_NAME + ".target}";
+	public final static String ATTR_USAGE_FIRST = "{FREEMARKER.TAG." + TAG_NAME + ".first}";
+	public final static String ATTR_USAGE_LAST = "{FREEMARKER.TAG." + TAG_NAME + ".last}";
+	public final static String ATTR_DEFAULT_FIRST = "{FREEMARKER.TAG." + TAG_NAME + ".first.defaultValue}";
+	public final static String ATTR_DEFAULT_LAST = "{FREEMARKER.TAG." + TAG_NAME + ".last.defaultValue}";
+	public final static String ATTR_OPTIONS_TYPE_MINI = "{FREEMARKER.TAG." + TAG_NAME + ".type.mini}";
+	public final static String ATTR_OPTIONS_TYPE_SIMPLE = "{FREEMARKER.TAG." + TAG_NAME + ".type.simple}";
+	public final static String ATTR_OPTIONS_TARGET_BLANK = "{FREEMARKER.TAG." + TAG_NAME + ".target._blank}";
+	public final static String ATTR_OPTIONS_TARGET_SELF = "{FREEMARKER.TAG." + TAG_NAME + ".target._self}";
 
 	@Override
 	public String getTagName() {
@@ -56,30 +67,30 @@ public class PageBarTag extends AbstractTag {
 		return DESC;
 	}
 
-	final static String TagAttr_Type = "type";
-	final static String TagAttr_Target = "target";
-	final static String TagAttr_First = "first";
-	final static String TagAttr_Last = "last";
+	final static String ATTR_TYPE = "type";
+	final static String ATTR_TARGET = "target";
+	final static String ATTR_FIRST = "first";
+	final static String ATTR_LAST = "last";
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = new ArrayList<>();
-		tagAttrs.add(new TagAttr(TagAttr_Type, false, TagAttrDataType.STRING, "类型",
+		tagAttrs.add(new TagAttr(ATTR_TYPE, false, TagAttrDataType.STRING, ATTR_USAGE_TYPE,
 				PageBarType.toTagAttrOptions(), PageBarType.Simple.name()));
-		tagAttrs.add(new TagAttr(TagAttr_Target, false, TagAttrDataType.STRING, "链接打开方式",
+		tagAttrs.add(new TagAttr(ATTR_TARGET, false, TagAttrDataType.STRING, ATTR_USAGE_TARGET,
 				LinkTarget.toTagAttrOptions(), LinkTarget._self.name()));
-		tagAttrs.add(new TagAttr(TagAttr_First, false, TagAttrDataType.STRING, "首页链接名称", "首页"));
-		tagAttrs.add(new TagAttr(TagAttr_Last, false, TagAttrDataType.STRING, "末页链接名称", "末页"));
+		tagAttrs.add(new TagAttr(ATTR_FIRST, false, TagAttrDataType.STRING, ATTR_USAGE_FIRST, ATTR_DEFAULT_FIRST));
+		tagAttrs.add(new TagAttr(ATTR_LAST, false, TagAttrDataType.STRING, ATTR_USAGE_LAST, ATTR_DEFAULT_LAST));
 		return tagAttrs;
 	}
 
 	@Override
 	public Map<String, TemplateModel> execute0(Environment env, Map<String, String> attrs)
 			throws TemplateException, IOException {
-		String type = MapUtils.getString(attrs, TagAttr_Type, PageBarType.Simple.name());
-		String target = MapUtils.getString(attrs, TagAttr_Target, LinkTarget._self.name());
-		String firstPage = MapUtils.getString(attrs, TagAttr_First, "首页");
-		String lastPage = MapUtils.getString(attrs, TagAttr_Last, "末页");
+		String type = MapUtils.getString(attrs, ATTR_TYPE, PageBarType.Simple.name());
+		String target = MapUtils.getString(attrs, ATTR_TARGET, LinkTarget._self.name());
+		String firstPage = MapUtils.getString(attrs, ATTR_FIRST, I18nUtils.get(ATTR_DEFAULT_FIRST));
+		String lastPage = MapUtils.getString(attrs, ATTR_LAST, I18nUtils.get(ATTR_DEFAULT_LAST));
 
 		env.getOut().write(switch (PageBarType.valueOf(type)) {
 			case Mini -> generateMinPageBar(target, firstPage, lastPage, env);
@@ -144,8 +155,8 @@ public class PageBarTag extends AbstractTag {
 
 	private enum PageBarType {
 
-		Mini("极简（页码）"),
-		Simple("简单（页码+首末页）");
+		Mini(ATTR_OPTIONS_TYPE_MINI),
+		Simple(ATTR_OPTIONS_TYPE_SIMPLE);
 
 		private final String desc;
 
@@ -155,16 +166,16 @@ public class PageBarTag extends AbstractTag {
 
 		static List<TagAttrOption> toTagAttrOptions() {
 			return List.of(
-					new TagAttrOption(Mini.name(), Mini.desc),
-					new TagAttrOption(Simple.name(), Simple.desc)
+					new TagAttrOption(Mini.name(), I18nUtils.get(Mini.desc)),
+					new TagAttrOption(Simple.name(), I18nUtils.get(Simple.desc))
 			);
 		}
 	}
 
 	private enum LinkTarget {
 
-		_blank("新标签页打开"),
-		_self("当前页打开");
+		_blank(ATTR_OPTIONS_TARGET_BLANK),
+		_self(ATTR_OPTIONS_TARGET_SELF);
 
 		private final String desc;
 
@@ -174,8 +185,8 @@ public class PageBarTag extends AbstractTag {
 
 		static List<TagAttrOption> toTagAttrOptions() {
 			return List.of(
-					new TagAttrOption(_blank.name(), _blank.desc),
-					new TagAttrOption(_self.name(), _self.desc)
+					new TagAttrOption(_blank.name(), I18nUtils.get(_blank.desc)),
+					new TagAttrOption(_self.name(), I18nUtils.get(_self.desc))
 			);
 		}
 	}

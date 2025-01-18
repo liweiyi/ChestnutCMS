@@ -15,9 +15,12 @@
  */
 package com.chestnut.common.extend.aspectj;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
+import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.extend.annotation.RateLimiter;
+import com.chestnut.common.extend.enums.LimitType;
+import com.chestnut.common.extend.exception.RateLimiterErrorCode;
+import com.chestnut.common.utils.ServletUtils;
+import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -27,13 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;
 
-import com.chestnut.common.exception.GlobalException;
-import com.chestnut.common.extend.annotation.RateLimiter;
-import com.chestnut.common.extend.enums.LimitType;
-import com.chestnut.common.extend.exception.RateLimiterErrorCode;
-import com.chestnut.common.utils.ServletUtils;
-
-import lombok.RequiredArgsConstructor;
+import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * 限流处理
@@ -49,14 +47,14 @@ public class RateLimiterAspect {
 	private final RedisScript<Boolean> limitScript;
 
 	@Before("@annotation(rateLimiter)")
-	public void doBefore(JoinPoint point, RateLimiter rateLimiter) throws Throwable {
+	public void doBefore(JoinPoint point, RateLimiter rateLimiter) {
 		int limit = rateLimiter.limit();
 		int expire = rateLimiter.expire();
 
 		try {
 			String combineKey = this.getCombineKey(rateLimiter, point);
 			List<String> keys = List.of(combineKey);
-			if (!redisTemplate.execute(this.limitScript, keys, limit, expire)) {
+			if (Boolean.FALSE.equals(redisTemplate.execute(this.limitScript, keys, limit, expire))) {
 				log.warn("限制请求'{}',缓存key'{}'", limit, combineKey);
 				throw RateLimiterErrorCode.RATE_LIMIT.exception();
 			}
@@ -68,7 +66,7 @@ public class RateLimiterAspect {
 	}
 
 	public String getCombineKey(RateLimiter rateLimiter, JoinPoint point) {
-		StringBuffer stringBuffer = new StringBuffer(rateLimiter.prefix());
+		StringBuilder stringBuffer = new StringBuilder(rateLimiter.prefix());
 		if (rateLimiter.limitType() == LimitType.IP) {
 			stringBuffer.append(ServletUtils.getIpAddr(ServletUtils.getRequest())).append(".");
 		}

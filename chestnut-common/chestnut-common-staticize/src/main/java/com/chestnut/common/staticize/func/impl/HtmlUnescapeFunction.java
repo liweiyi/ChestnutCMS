@@ -18,12 +18,10 @@ package com.chestnut.common.staticize.func.impl;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.HtmlUtils;
 import com.chestnut.common.utils.StringUtils;
-import freemarker.ext.beans.BooleanModel;
-import freemarker.template.*;
+import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,7 +33,9 @@ public class HtmlUnescapeFunction extends AbstractFunc  {
 
 	static final String FUNC_NAME = "htmlUnescape";
 
-	private static final String DESC = "{FREEMARKER.FUNC.DESC." + FUNC_NAME + "}";
+	private static final String DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".DESC}";
+
+	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
 
 	@Override
 	public String getFuncName() {
@@ -59,7 +59,7 @@ public class HtmlUnescapeFunction extends AbstractFunc  {
 	@Override
 	public List<FuncArg> getFuncArgs() {
 		return List.of(
-				new FuncArg("Text", FuncArgType.String, true, null)
+				new FuncArg(ARG1_NAME, FuncArgType.String, true)
 		);
 	}
 }

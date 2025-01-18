@@ -16,8 +16,10 @@
 package com.chestnut.article.controller;
 
 
+import com.chestnut.article.IArticleBodyFormat;
 import com.chestnut.article.PublishPipeProp_UEditorCss;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.StringUtils;
@@ -28,13 +30,16 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.security.AdminUserType;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -57,6 +62,8 @@ public class ArticleController extends BaseRestController {
 
     private final IPublishPipeService publishPipeService;
 
+    private final List<IArticleBodyFormat> articleBodyFormatList;
+
     @GetMapping("/ueditor_css")
     public R<?> getUEditorCss(@RequestParam Long catalogId) {
         CmsCatalog catalog = catalogService.getCatalog(catalogId);
@@ -72,6 +79,25 @@ public class ArticleController extends BaseRestController {
             data.put(pp.getCode(), value);
         });
         return R.ok(data);
+    }
+
+    @GetMapping("/formats")
+    public R<?> getArticleBodyFormats() {
+        List<ArticleBodyFormat> list = this.articleBodyFormatList.stream().map(item -> {
+            ArticleBodyFormat format = new ArticleBodyFormat();
+            format.setId(item.getId());
+            format.setName(I18nUtils.get(item.getName()));
+            return format;
+        }).toList();
+        I18nUtils.replaceI18nFields(list);
+        return R.ok(list);
+    }
+
+    @Getter
+    @Setter
+    static class ArticleBodyFormat {
+        private String id;
+        private String name;
     }
 }
 

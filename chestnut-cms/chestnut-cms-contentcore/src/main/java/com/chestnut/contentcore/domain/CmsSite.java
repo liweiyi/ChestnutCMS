@@ -140,12 +140,7 @@ public class CmsSite extends BaseEntity {
     	if (this.publishPipeProps == null) {
     		this.publishPipeProps = new HashMap<>();
     	}
-    	Map<String, Object> map = this.publishPipeProps.get(publishPipeCode);
-    	if (map == null) {
-    		map = new HashMap<>();
-    		this.publishPipeProps.put(publishPipeCode, map);
-    	}
-    	return map;
+        return this.publishPipeProps.computeIfAbsent(publishPipeCode, k -> new HashMap<>());
     }
     
     public String getIndexTemplate(String publishPipeCode) {
@@ -158,9 +153,7 @@ public class CmsSite extends BaseEntity {
     
     public String getUrl(String publishPipeCode) {
 		String ppUrl = PublishPipeProp_SiteUrl.getValue(publishPipeCode, this.publishPipeProps);
-		if (ppUrl != null && !ppUrl.endsWith("/")) {
-			ppUrl += "/";
-		}
+        ppUrl = StringUtils.appendIfMissing(ppUrl, "/");
 		return Objects.requireNonNullElse(ppUrl, StringUtils.EMPTY);
     }
 }

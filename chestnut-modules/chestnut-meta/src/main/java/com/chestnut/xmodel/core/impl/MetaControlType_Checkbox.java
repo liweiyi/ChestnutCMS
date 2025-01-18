@@ -15,11 +15,13 @@
  */
 package com.chestnut.xmodel.core.impl;
 
+import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.xmodel.core.IMetaControlType;
 import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -44,13 +46,18 @@ public class MetaControlType_Checkbox implements IMetaControlType {
     }
 
     @Override
-    public void parseFieldValue(XModelFieldDataDTO fieldData) {
-        Object value = fieldData.getValue();
-        if (Objects.isNull(value) || StringUtils.isBlank(value.toString())) {
-            fieldData.setValue(new String[0]);
-            return;
+    public String valueAsString(Object obj) {
+        return JacksonUtils.to(obj);
+    }
+
+    @Override
+    public Object stringAsValue(String valueStr) {
+        if (StringUtils.isEmpty(valueStr)) {
+            return List.of();
         }
-        String[] arr = StringUtils.split(value.toString(), StringUtils.COMMA);
-        fieldData.setValue(arr);
+        if (!JacksonUtils.isJson(valueStr)) {
+            return StringUtils.split(valueStr, StringUtils.COMMA);
+        }
+        return JacksonUtils.fromList(valueStr, String.class);
     }
 }
