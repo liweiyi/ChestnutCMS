@@ -104,13 +104,16 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 | GroovyScript | 支持Groovy脚本在线执行                         |
 
 ### QQ交流群
-群①：568506424（满）
 
-群②：643215654（满）
+- [一群：568506424（满）](https://qm.qq.com/q/rOw3kwePg)
 
-群③：831211032（满）
+- [二群：643215654（满）](https://qm.qq.com/q/BEC38NokKY)
 
-群④：451876950
+- [三群：831211032（满）](https://qm.qq.com/q/dIB5uyN9ao)
+
+- [四群：451876950（满）](https://qm.qq.com/q/TJooOccjOW)
+
+- [五群：1022939737](https://qm.qq.com/q/CDrFdmqa1G)
 
 统一入群口令：举个栗子
 
