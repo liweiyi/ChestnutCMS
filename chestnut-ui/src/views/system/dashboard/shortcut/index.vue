@@ -38,7 +38,7 @@ export default {
       })
     },
     handleShortcutRedirect(router) {
-      this.$router.push({ name: router })
+      this.$router.push({ path: router })
     }
   }
 };

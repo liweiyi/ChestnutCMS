@@ -67,7 +67,7 @@ public class CmsImageTag extends AbstractListTag {
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex)
 			throws TemplateException {
 		long contentId = MapUtils.getLongValue(attrs, ATTR_CONTENT_ID, 0);
-		if (IdUtils.validate(contentId)) {
+		if (!IdUtils.validate(contentId)) {
 			throw new InvalidTagAttrValueException(getTagName(), ATTR_CONTENT_ID, String.valueOf(contentId), env);
 		}
 		CmsContent c = this.contentService.dao().getById(contentId);

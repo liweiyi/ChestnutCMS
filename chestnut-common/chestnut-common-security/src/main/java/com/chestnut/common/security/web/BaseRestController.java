@@ -20,6 +20,7 @@ import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.StringUtils;
 import jakarta.servlet.http.HttpServletResponse;
@@ -114,7 +115,7 @@ public class BaseRestController {
 	public record SelectOption(String value, String label) {}
 	protected <T> R<List<SelectOption>> bindSelectOptions(Collection<T> list, Function<T, String> valueGetter, Function<T, String> labelGetter) {
 		List<SelectOption> options = list.stream().map(item -> {
-			return new SelectOption(valueGetter.apply(item), labelGetter.apply(item));
+			return new SelectOption(valueGetter.apply(item), I18nUtils.get(labelGetter.apply(item)));
 		}).toList();
 		return R.ok(options);
 	}

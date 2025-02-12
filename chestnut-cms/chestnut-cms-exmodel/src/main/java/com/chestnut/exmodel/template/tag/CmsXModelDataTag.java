@@ -68,7 +68,7 @@ public class CmsXModelDataTag extends AbstractTag {
 	public Map<String, TemplateModel> execute0(Environment env, Map<String, String> attrs)
 			throws TemplateException {
 		long modelId = MapUtils.getLongValue(attrs, ATTR_MODEL_ID);
-		if (IdUtils.validate(modelId)) {
+		if (!IdUtils.validate(modelId)) {
 			throw new InvalidTagAttrValueException(getTagName(), ATTR_MODEL_ID, String.valueOf(modelId), env);
 		}
 		String dataType = MapUtils.getString(attrs, ATTR_DATA_TYPE);

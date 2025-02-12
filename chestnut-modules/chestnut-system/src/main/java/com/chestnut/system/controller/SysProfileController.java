@@ -27,6 +27,7 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IP2RegionUtils;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.config.SystemConfig;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -173,19 +175,36 @@ public class SysProfileController extends BaseRestController {
 	public R<?> getHomeShortcuts() {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
 		List<Long> menuIds = ShortcutUserPreference.getValue(user.getPreferences());
-		List<SysMenu> menus = this.menuService.lambdaQuery().eq(SysMenu::getMenuType, MenuType.Menu.value())
-				.in(menuIds.size() > 0, SysMenu::getMenuId, menuIds).last("limit 8").list();
+		List<SysMenu> allMenus = this.menuService.lambdaQuery().list();
 
+		List<SysMenu> shortcuts = allMenus.stream().filter(m -> menuIds.contains(m.getMenuId())).toList();
 		List<String> menuPerms = StpAdminUtil.getLoginUser().getPermissions();
 		if (!menuPerms.contains(ISysPermissionService.ALL_PERMISSION)) {
-			menus = menus.stream().filter(m -> {
+			shortcuts = shortcuts.stream().filter(m -> {
 				return StringUtils.isEmpty(m.getPerms()) || menuPerms.contains(m.getPerms());
 			}).toList();
 		}
-		I18nUtils.replaceI18nFields(menus, LocaleContextHolder.getLocale());
-		List<ShortcutVO> result = menus.stream()
+		shortcuts.forEach(shortcut -> {
+			List<String> paths = new ArrayList<>();
+			generateMenuRoute(shortcut, allMenus, paths);
+			shortcut.setPath(String.join("/", paths));
+		});
+
+		I18nUtils.replaceI18nFields(shortcuts, LocaleContextHolder.getLocale());
+		List<ShortcutVO> result = shortcuts.stream()
 				.sorted(Comparator.comparingInt(m -> menuIds.indexOf(m.getMenuId())))
-				.map(m -> new ShortcutVO(m.getMenuName(), m.getIcon(), StringUtils.capitalize(m.getPath()))).toList();
+				.map(m -> new ShortcutVO(m.getMenuName(), m.getIcon(), m.getPath())).toList();
 		return R.ok(result);
+	}
+
+	private void generateMenuRoute(SysMenu menu, List<SysMenu> menus, List<String> paths) {
+		paths.add(0, menu.getPath());
+		if (IdUtils.validate(menu.getParentId())) {
+			menus.forEach(m -> {
+				if (m.getMenuId().equals(menu.getParentId())) {
+					generateMenuRoute(m, menus, paths);
+				}
+			});
+		}
 	}
 }

@@ -85,7 +85,12 @@ public enum CommonErrorCode implements ErrorCode {
 	/**
 	 * 任务“{0}”正在运行中
 	 */
-	ASYNC_TASK_RUNNING;
+	ASYNC_TASK_RUNNING,
+
+	/**
+	 * 上传文件不能为空
+	 */
+	UPLOAD_FILE_EMPTY;
 	
 	@Override
 	public String value() {

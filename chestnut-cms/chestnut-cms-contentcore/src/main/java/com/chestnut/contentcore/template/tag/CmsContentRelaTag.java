@@ -63,7 +63,7 @@ public class CmsContentRelaTag extends AbstractListTag {
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex)
 			throws TemplateException {
 		long contentId = MapUtils.getLongValue(attrs, ATTR_CONTENT_ID);
-		if (IdUtils.validate(contentId)) {
+		if (!IdUtils.validate(contentId)) {
 			throw new TemplateException("Invalid content id: " + contentId, env);
 		}
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);

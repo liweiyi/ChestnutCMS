@@ -15,27 +15,26 @@
  */
 package com.chestnut.common.staticize.config;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-
+import com.chestnut.common.staticize.config.properties.FreeMarkerProperties;
+import com.chestnut.common.utils.SpringUtils;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.file.FileExUtils;
+import freemarker.cache.FileTemplateLoader;
+import freemarker.cache.MruCacheStorage;
+import freemarker.cache.MultiTemplateLoader;
+import freemarker.cache.TemplateLoader;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.chestnut.common.staticize.config.properties.FreeMarkerProperties;
-import com.chestnut.common.utils.SpringUtils;
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.common.utils.file.FileExUtils;
-
-import freemarker.cache.FileTemplateLoader;
-import freemarker.cache.MruCacheStorage;
-import freemarker.cache.MultiTemplateLoader;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 @Configuration
 @EnableConfigurationProperties(FreeMarkerProperties.class)
@@ -51,19 +50,18 @@ public class FreeMarkerConfig {
 	 * @param properties
 	 * @param fileTemplateLoader
 	 * @return
-	 * @throws IOException
 	 * @throws TemplateException
 	 */
 	@Bean("staticizeConfiguration")
 	@ConditionalOnMissingBean(freemarker.template.Configuration.class)
 	freemarker.template.Configuration staticizeFreeMarkerConfiguration(final FreeMarkerProperties properties,
-			final List<FileTemplateLoader> fileTemplateLoaders) throws IOException, TemplateException {
+			final List<TemplateLoader> templateLoaders) throws TemplateException {
 		freemarker.template.Configuration cfg = new freemarker.template.Configuration(
 				freemarker.template.Configuration.VERSION_2_3_31);
 		cfg.setDefaultEncoding(properties.getDefaultEncoding());
 		// 模板加载路径
 		MultiTemplateLoader multiTemplateLoader = new MultiTemplateLoader(
-				fileTemplateLoaders.toArray(FileTemplateLoader[]::new));
+				templateLoaders.toArray(TemplateLoader[]::new));
 		cfg.setTemplateLoader(multiTemplateLoader);
 		cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
 		// 默认模板缓存策略：Most recently use cache.

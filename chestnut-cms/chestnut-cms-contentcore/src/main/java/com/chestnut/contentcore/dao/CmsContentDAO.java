@@ -52,7 +52,7 @@ public class CmsContentDAO extends BackupServiceImpl<CmsContentMapper, CmsConten
     }
 
     public long countBySiteId(Long siteId) {
-        if (IdUtils.validate(siteId)) {
+        if (!IdUtils.validate(siteId)) {
             return 0;
         }
         return this.count(new LambdaQueryWrapper<CmsContent>()
@@ -60,7 +60,7 @@ public class CmsContentDAO extends BackupServiceImpl<CmsContentMapper, CmsConten
     }
 
     public Page<CmsContent> pageBySiteId(Page<CmsContent> page, Long siteId, List<SFunction<CmsContent, ?>> columns) {
-        if (IdUtils.validate(siteId)) {
+        if (!IdUtils.validate(siteId)) {
             return page;
         }
         LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
@@ -70,7 +70,7 @@ public class CmsContentDAO extends BackupServiceImpl<CmsContentMapper, CmsConten
     }
 
     public long countBackupBySiteId(Long siteId) {
-        if (IdUtils.validate(siteId)) {
+        if (!IdUtils.validate(siteId)) {
             return 0;
         }
         return this.getBackupMapper().selectCount(new LambdaQueryWrapper<BCmsContent>()
@@ -78,7 +78,7 @@ public class CmsContentDAO extends BackupServiceImpl<CmsContentMapper, CmsConten
     }
 
     public Page<BCmsContent> pageBackupBySiteId(Page<BCmsContent> page, Long siteId, List<SFunction<BCmsContent, ?>> columns) {
-        if (IdUtils.validate(siteId)) {
+        if (!IdUtils.validate(siteId)) {
             return page;
         }
         return this.getBackupMapper().selectPage(page, new LambdaQueryWrapper<BCmsContent>()

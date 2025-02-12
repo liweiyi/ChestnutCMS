@@ -39,7 +39,7 @@ import java.util.List;
 public class CmsArticleDetailDAO extends BackupServiceImpl<CmsArticleDetailMapper, CmsArticleDetail, BCmsArticleDetailMapper, BCmsArticleDetail> {
 
     public long countBySiteId(Long siteId) {
-        if (IdUtils.validate(siteId)) {
+        if (!IdUtils.validate(siteId)) {
             return 0;
         }
         return this.count(new LambdaQueryWrapper<CmsArticleDetail>()
@@ -47,7 +47,7 @@ public class CmsArticleDetailDAO extends BackupServiceImpl<CmsArticleDetailMappe
     }
 
     public Page<CmsArticleDetail> pageBySiteId(Page<CmsArticleDetail> page, Long siteId, List<SFunction<CmsArticleDetail, ?>> columns) {
-        if (IdUtils.validate(siteId)) {
+        if (!IdUtils.validate(siteId)) {
             return page;
         }
         LambdaQueryWrapper<CmsArticleDetail> q = new LambdaQueryWrapper<CmsArticleDetail>()
@@ -57,7 +57,7 @@ public class CmsArticleDetailDAO extends BackupServiceImpl<CmsArticleDetailMappe
     }
 
     public long countBackupBySiteId(Long siteId) {
-        if (IdUtils.validate(siteId)) {
+        if (!IdUtils.validate(siteId)) {
             return 0;
         }
         return this.getBackupMapper().selectCount(new LambdaQueryWrapper<BCmsArticleDetail>()
@@ -65,7 +65,7 @@ public class CmsArticleDetailDAO extends BackupServiceImpl<CmsArticleDetailMappe
     }
 
     public Page<BCmsArticleDetail> pageBackupBySiteId(Page<BCmsArticleDetail> page, Long siteId, List<SFunction<BCmsArticleDetail, ?>> columns) {
-        if (IdUtils.validate(siteId)) {
+        if (!IdUtils.validate(siteId)) {
             return page;
         }
         return this.getBackupMapper().selectPage(page, new LambdaQueryWrapper<BCmsArticleDetail>()

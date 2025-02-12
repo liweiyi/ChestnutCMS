@@ -63,7 +63,7 @@ public class CmsXModelFieldTag extends AbstractListTag {
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
 		long modelId = MapUtils.getLongValue(attrs, ATTR_MODEL_ID);
-		if (IdUtils.validate(modelId)) {
+		if (!IdUtils.validate(modelId)) {
 			throw new InvalidTagAttrValueException(getTagName(), ATTR_MODEL_ID, String.valueOf(modelId), env);
 		}
 		XModel xmodel = this.modelService.getById(modelId);

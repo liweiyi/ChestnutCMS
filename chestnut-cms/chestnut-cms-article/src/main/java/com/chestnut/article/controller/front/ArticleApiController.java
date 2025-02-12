@@ -30,6 +30,8 @@ import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
+import com.chestnut.contentcore.template.tag.CmsCatalogTag;
+import com.chestnut.contentcore.template.tag.CmsContentTag;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import lombok.RequiredArgsConstructor;
@@ -72,21 +74,21 @@ public class ArticleApiController extends BaseRestController {
             @RequestParam(value = "preview", required = false, defaultValue = "false") Boolean preview,
             @RequestParam(value = "text", required = false, defaultValue = "false") Boolean text
     ) {
-        if (!"Root".equalsIgnoreCase(level) && !IdUtils.validate(catalogId)) {
+        if (!CmsCatalogTag.CatalogTagLevel.isRoot(level) && !IdUtils.validate(catalogId)) {
             return R.fail("The parameter cid is required where lv is `Root`.");
         }
         LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<>();
         q.eq(CmsContent::getSiteId, siteId).eq(CmsContent::getStatus, ContentStatus.PUBLISHED);
-        if (!"Root".equalsIgnoreCase(level)) {
+        if (!CmsCatalogTag.CatalogTagLevel.isRoot(level)) {
             CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
             if (Objects.isNull(catalog)) {
                 return R.fail("Catalog not found: " + catalogId);
             }
-            if ("Current".equalsIgnoreCase(level)) {
+            if (CmsCatalogTag.CatalogTagLevel.isCurrent(level)) {
                 q.eq(CmsContent::getCatalogId, catalog.getCatalogId());
-            } else if ("Child".equalsIgnoreCase(level)) {
+            } else if (CmsCatalogTag.CatalogTagLevel.isChild(level)) {
                 q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors() + CatalogUtils.ANCESTORS_SPLITER);
-            } else if ("CurrentAndChild".equalsIgnoreCase(level)) {
+            } else if (CmsCatalogTag.CatalogTagLevel.isCurrentAndChild(level)) {
                 q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors());
             }
         }
@@ -102,7 +104,7 @@ public class ArticleApiController extends BaseRestController {
                 q.apply(bit > 0, "attributes&{0}<>{1}", attrTotal, bit);
             }
         }
-        if ("Recent".equalsIgnoreCase(sortType)) {
+        if (CmsContentTag.SortTagAttr.isRecent(sortType)) {
             q.orderByDesc(CmsContent::getPublishDate);
         } else {
             q.orderByDesc(Arrays.asList(CmsContent::getTopFlag, CmsContent::getSortFlag));

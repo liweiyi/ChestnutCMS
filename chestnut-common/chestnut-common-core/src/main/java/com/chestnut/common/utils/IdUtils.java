@@ -83,7 +83,7 @@ public class IdUtils {
 	 * @return
 	 */
 	public static boolean validate(List<Long> ids, boolean removeInvalidId) {
-		if (ids == null || ids.size() == 0) {
+		if (ids == null || ids.isEmpty()) {
 			return false;
 		}
 		for (Iterator<Long> iterator = ids.iterator(); iterator.hasNext();) {
@@ -96,7 +96,7 @@ public class IdUtils {
 				}
 			}
 		}
-		return ids.size() > 0;
+		return !ids.isEmpty();
 	}
 
 	public static boolean validate(List<Long> ids) {

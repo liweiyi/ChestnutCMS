@@ -220,7 +220,7 @@ public class CmsContentTag extends AbstractListTag {
 		}
 	}
 
-	enum SortTagAttr {
+	public enum SortTagAttr {
 		Recent(ATTR_OPTION_SORT_RECENT),
 		Views(ATTR_OPTION_SORT_VIEWS),
 		Default(ATTR_OPTION_SORT_DEFAULT);

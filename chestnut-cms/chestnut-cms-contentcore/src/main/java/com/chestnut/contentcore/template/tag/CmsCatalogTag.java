@@ -137,7 +137,7 @@ public class CmsCatalogTag extends AbstractListTag {
 		return DESC;
 	}
 
-	private enum CatalogTagLevel {
+	public enum CatalogTagLevel {
 		Root(ATTR_OPTION_LEVEL_ROOT),
 		Current(ATTR_OPTION_LEVEL_CURRENT),
 		Child(ATTR_OPTION_LEVEL_CHILD),
@@ -150,27 +150,27 @@ public class CmsCatalogTag extends AbstractListTag {
 			this.desc = desc;
 		}
 
-		static boolean isRoot(String level) {
+		public static boolean isRoot(String level) {
 			return Root.name().equalsIgnoreCase(level);
 		}
 
-		static boolean isCurrent(String level) {
+		public static boolean isCurrent(String level) {
 			return Current.name().equalsIgnoreCase(level);
 		}
 
-		static boolean isChild(String level) {
+		public static boolean isChild(String level) {
 			return Child.name().equalsIgnoreCase(level);
 		}
 
-		static boolean isCurrentAndChild(String level) {
+		public static boolean isCurrentAndChild(String level) {
 			return CurrentAndChild.name().equalsIgnoreCase(level);
 		}
 
-		static boolean isSelf(String level) {
+		public static boolean isSelf(String level) {
 			return Self.name().equalsIgnoreCase(level);
 		}
 
-		static List<TagAttrOption> toTagAttrOptions() {
+		public static List<TagAttrOption> toTagAttrOptions() {
 			return List.of(
 					new TagAttrOption(Root.name(), Root.desc),
 					new TagAttrOption(Current.name(), Current.desc),
