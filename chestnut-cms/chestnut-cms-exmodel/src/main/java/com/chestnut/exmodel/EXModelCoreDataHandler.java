@@ -180,9 +180,20 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     // 处理图片和富文本内部链接
                     MetaModel model = modelService.getMetaModel(data.getModelId());
                     model.getFields().forEach(field -> {
-                        if (MetaControlType_CmsImage.TYPE.equals(field.getControlType())) {
+                        if (MetaControlType_CmsImage.TYPE.equals(field.getControlType())
+                                || MetaControlType_CmsResource.TYPE.equals(field.getControlType())) {
                             String fieldValue = data.getStringFieldValue(field.getFieldName());
-                            data.setFieldValue(field.getFieldName(), context.dealInternalUrl(fieldValue));
+                            if (StringUtils.isNotBlank(fieldValue)) {
+                                List<MetaControlType_CmsResource.CmsResourceMetaValue> resources = JacksonUtils
+                                        .fromList(fieldValue, MetaControlType_CmsResource.CmsResourceMetaValue.class);
+                                if (Objects.nonNull(resources)) {
+                                    resources.forEach(resource -> {
+                                        String iurl = context.dealInternalUrl(resource.getPath());
+                                        resource.setPath(iurl);
+                                    });
+                                    data.setFieldValue(field.getFieldName(), JacksonUtils.to(resources));
+                                }
+                            }
                         } else if (MetaControlType_UEditor.TYPE.equals(field.getControlType())) {
                             String fieldValue = data.getStringFieldValue(field.getFieldName());
                             if (StringUtils.isNotEmpty(fieldValue)) {
