@@ -39,7 +39,7 @@ public class MemberConfig implements WebMvcConfigurer {
 
 	private final MemberProperties properties;
 
-	public MemberConfig(MemberProperties properties) throws FileNotFoundException {
+	public MemberConfig(MemberProperties properties) {
 		UPLOAD_DIRECTORY = properties.getUploadPath();
 		if (StringUtils.isEmpty(UPLOAD_DIRECTORY)) {
 			UPLOAD_DIRECTORY = SpringUtils.getAppParentDirectory() + "/_xy_member/";
@@ -47,7 +47,7 @@ public class MemberConfig implements WebMvcConfigurer {
 		UPLOAD_DIRECTORY = StringUtils.appendIfMissing(FileExUtils.normalizePath(UPLOAD_DIRECTORY), "/");
 		FileExUtils.mkdirs(UPLOAD_DIRECTORY);
 		properties.setUploadPath(UPLOAD_DIRECTORY);
-		log.info("Member upload directory: " + UPLOAD_DIRECTORY);
+        log.info("Member upload directory: {}", UPLOAD_DIRECTORY);
 		this.properties = properties;
 	}
 	

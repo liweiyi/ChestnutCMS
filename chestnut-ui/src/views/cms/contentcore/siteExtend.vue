@@ -85,6 +85,9 @@
         <el-form-item :label="$t('CMS.Site.Extend.SiteApiUrl')" prop="SiteApiUrl">
           <el-input v-model="form_extend.SiteApiUrl" placeholder="http(s)://"></el-input>
         </el-form-item>
+        <el-form-item :label="$t('CMS.Site.Extend.MemberResourceUrl')" prop="MemberResourceUrl">
+          <el-input v-model="form_extend.MemberResourceUrl" placeholder="http(s)://"></el-input>
+        </el-form-item>
       </el-card>
       <el-card shadow="hover">
         <div slot="header" class="clearfix">

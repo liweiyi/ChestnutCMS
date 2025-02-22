@@ -19,6 +19,7 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
+import com.chestnut.common.staticize.exception.IncludeTemplateNotFoundException;
 import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.Assert;
@@ -39,7 +40,6 @@ import freemarker.core.Environment;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
-import freemarker.template.TemplateNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -104,7 +104,7 @@ public class CmsCustomFormTag extends AbstractTag {
 		String template = form.getTemplates().getOrDefault(context.getPublishPipeCode(),
 				PublishPipeProp_CustomFormTemplate.getValue(context.getPublishPipeCode(), site.getPublishPipeProps()));
 		File templateFile = this.templateService.findTemplateFile(site, template, context.getPublishPipeCode());
-		Assert.notNull(templateFile, () -> new TemplateNotFoundException(template, null, null));
+		Assert.notNull(templateFile, () -> new IncludeTemplateNotFoundException(template, env));
 
 		boolean ssi = MapUtils.getBoolean(attrs, ATTR_SSI, EnableSSIProperty.getValue(site.getConfigProps()));
 		String templateKey = SiteUtils.getTemplateKey(site, context.getPublishPipeCode(), template);

@@ -153,7 +153,9 @@ public class CmsSite extends BaseEntity {
     
     public String getUrl(String publishPipeCode) {
 		String ppUrl = PublishPipeProp_SiteUrl.getValue(publishPipeCode, this.publishPipeProps);
-        ppUrl = StringUtils.appendIfMissing(ppUrl, "/");
+        if (StringUtils.isNotBlank(ppUrl)) {
+            ppUrl = StringUtils.appendIfMissing(ppUrl, "/");
+        }
 		return Objects.requireNonNullElse(ppUrl, StringUtils.EMPTY);
     }
 }

@@ -80,7 +80,7 @@
             <el-col class="pr10">
               <el-card shadow="always" class="card-title">
                 <div class="art-title bg-purple-white">
-                  <el-form-item :label="$t('CMS.Content.Title')" prop="title">
+                  <el-form-item :label="$t('CMS.Content.Title')" prop="title" style="margin-bottom: 18px;">
                     <el-input
                       v-model="form.title"
                       maxlength="360"

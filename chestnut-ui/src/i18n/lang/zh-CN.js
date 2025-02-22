@@ -935,6 +935,9 @@ export default {
       SitemapProgressTitle: "生成Sitemap任务",
       Domain: "站点域名",
       UEditorCss: "文章编辑器CSS",
+      PrefixMode: "路径模式",
+      PrefixMode_Absolute: "绝对路径",
+      PrefixMode_Relative: "相对路径",
       Tab: {
         Basic: "基础信息",
         Extend: "扩展配置",
@@ -1003,7 +1006,8 @@ export default {
         SEO: "搜索引擎优化配置",
         BaiduPushAccessSecret: "百度收录API秘钥",
         DownloadRemoteImage: "开启文章远程图片下载",
-        EnableSiteDeleteBackup: "开启站点删除备份"
+        EnableSiteDeleteBackup: "开启站点删除备份",
+        MemberResourceUrl: "会员资源访问域名",
       },
       Property: {
         QueryPlaceholder: "输入名称/编码查询",
@@ -1911,9 +1915,36 @@ export default {
       ConfirmApply: "确认发起证书申请吗？",
       Applying: "正在提交证书申请，请稍等...",
       Authroizating: "正在验证，请稍等...",
+      Servers: "同步服务器",
       Placeholder: {
         Domain: "输入域名查询"
       }
+    },
+    ServerMachine: {
+      Name: "服务器名称",
+      RemoteAddress: "服务器地址",
+      Host: "域名/IP地址",
+      Port: "端口",
+      UserName: "登录用户名",
+      KeyFile: "登录秘钥",
+      Passphrase: "秘钥密码",
+      AddTitle: "添加服务器信息",
+      EditTitle: "编辑服务器信息",
+      TestConnection: "测试连接",
+      ConnectionSuccess: "连接成功",
+      TestConnectionLoading: "正在尝试链接..."
+    },
+    NginxConfig: {
+      Name: "名称",
+      Code: "编码",
+      Type: "类型",
+      ConfigText: "自定义配置",
+      Status: "状态",
+      Sync: "同步配置",
+      ConfirmSync: "确认将配置`{0}`同步到关联服务器节点吗？",
+      NginxNode: "部署节点",
+      AddTitle: "添加配置",
+      EditTitle: "编辑配置信息",
     }
   }
 };

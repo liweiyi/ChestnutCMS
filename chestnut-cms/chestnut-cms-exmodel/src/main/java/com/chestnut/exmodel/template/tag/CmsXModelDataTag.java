@@ -21,9 +21,13 @@ import com.chestnut.common.staticize.exception.InvalidTagAttrValueException;
 import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.staticize.tag.TagAttrOption;
+import com.chestnut.common.utils.ConvertUtils;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.exmodel.CmsExtendMetaModelType;
+import com.chestnut.xmodel.core.IMetaControlType;
+import com.chestnut.xmodel.core.MetaModel;
 import com.chestnut.xmodel.service.IModelDataService;
+import com.chestnut.xmodel.service.IModelService;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
@@ -53,7 +57,9 @@ public class CmsXModelDataTag extends AbstractTag {
 	public final static String ATTR_DATA_TYPE = "dataType";
 	public final static String ATTR_DATA_ID = "dataId";
 
+	private final IModelService modelService;
 	private final IModelDataService modelDataService;
+	private final Map<String, IMetaControlType> controlTypeMap;
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
@@ -79,6 +85,17 @@ public class CmsXModelDataTag extends AbstractTag {
 						CmsExtendMetaModelType.FIELD_DATA_TYPE.getCode(), dataType,
 						CmsExtendMetaModelType.FIELD_DATA_ID.getCode(), dataId
 				));
+		MetaModel model = this.modelService.getMetaModel(modelId);
+		modelData.entrySet().forEach(entry -> {
+			model.getFields().stream().filter(field -> field.getCode().equals(entry.getKey()))
+					.findFirst().ifPresent(field -> {
+						IMetaControlType controlType = controlTypeMap.get(IMetaControlType.BEAN_PREFIX + field.getControlType());
+						if (controlType != null) {
+							Object v = controlType.stringAsValue(ConvertUtils.toStr(entry.getValue()));
+							entry.setValue(v);
+						}
+					});
+		});
 		return Map.of(StaticizeConstants.TemplateVariable_Data, this.wrap(env, modelData));
 	}
 

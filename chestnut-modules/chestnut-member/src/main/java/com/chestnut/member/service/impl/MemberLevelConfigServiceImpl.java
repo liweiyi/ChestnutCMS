@@ -15,14 +15,6 @@
  */
 package com.chestnut.member.service.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
@@ -34,8 +26,15 @@ import com.chestnut.member.level.ILevelType;
 import com.chestnut.member.level.LevelManager;
 import com.chestnut.member.mapper.MemberLevelConfigMapper;
 import com.chestnut.member.service.IMemberLevelConfigService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -44,7 +43,7 @@ public class MemberLevelConfigServiceImpl extends ServiceImpl<MemberLevelConfigM
 
 	private final Map<String, ILevelType> levelTypes;
 
-	private Map<String, LevelManager> levelManagerMap = new HashMap<>();
+	private static final Map<String, LevelManager> levelManagerMap = new HashMap<>();
 
 	@Override
 	public void addLevelConfig(LevelConfigDTO dto) {
@@ -87,9 +86,10 @@ public class MemberLevelConfigServiceImpl extends ServiceImpl<MemberLevelConfigM
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void deleteLevelConfig(List<Long> configIds) {
 		List<MemberLevelConfig> list = this.listByIds(configIds);
-		if (list.size() > 0) {
+		if (!list.isEmpty()) {
 			this.removeByIds(list);
 
 			ILevelType levelType = this.getLevelType(list.get(0).getLevelType());
@@ -101,7 +101,7 @@ public class MemberLevelConfigServiceImpl extends ServiceImpl<MemberLevelConfigM
 		List<MemberLevelConfig> list = this.lambdaQuery().eq(MemberLevelConfig::getLevelType, levelType.getId())
 				.orderByAsc(MemberLevelConfig::getLevel).list();
 		LevelManager levelManager = this.getLevelManager(levelType);
-		if (list.size() > 0) {
+		if (!list.isEmpty()) {
 			levelManager.resetLevelConfigs(
 					list.stream().collect(Collectors.toMap(MemberLevelConfig::getLevel, conf -> conf)));
 		}
@@ -114,11 +114,11 @@ public class MemberLevelConfigServiceImpl extends ServiceImpl<MemberLevelConfigM
 	}
 	
 	private LevelManager getLevelManager(ILevelType levelType) {
-		LevelManager levelManager = this.levelManagerMap.get(levelType.getId());
+		LevelManager levelManager = levelManagerMap.get(levelType.getId());
 		if (levelManager == null) {
 			levelManager = new LevelManager();
 			levelManager.setLevelType(levelType);
-			this.levelManagerMap.put(levelType.getId(), levelManager);
+			levelManagerMap.put(levelType.getId(), levelManager);
 		}
 		return levelManager;
 	}
@@ -137,6 +137,6 @@ public class MemberLevelConfigServiceImpl extends ServiceImpl<MemberLevelConfigM
 
 	@Override
 	public void run(String... args) throws Exception {
-		levelTypes.values().forEach(levelType -> onLevelConfigChange(levelType));
+		levelTypes.values().forEach(this::onLevelConfigChange);
 	}
 }

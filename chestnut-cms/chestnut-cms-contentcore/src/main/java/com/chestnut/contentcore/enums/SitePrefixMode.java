@@ -13,12 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.contentcore.service;
+package com.chestnut.contentcore.enums;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.chestnut.contentcore.domain.CmsContentRela;
+/**
+ * 站点路径模式，决定模板上下文${Prefix}取值
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
+public class SitePrefixMode {
 
-public interface IContentRelaService extends IService<CmsContentRela> {
+	/**
+	 * 相对路径，Prefix = "/"
+	 */
+	public static final String Relative = "relative";
 
-    void onContentDelete(Long contentId);
+	/**
+	 * 绝对路径， Prefix = "SiteUrl"
+	 */
+	public static final String Absolute = "absolute";
+
+	public static boolean isRelative(String v) {
+		return Relative.equals(v);
+	}
+	
+	public static boolean isAbsolute(String v) {
+		return Absolute.equals(v);
+	}
 }

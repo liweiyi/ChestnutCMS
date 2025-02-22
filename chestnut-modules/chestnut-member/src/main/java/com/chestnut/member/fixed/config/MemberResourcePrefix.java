@@ -39,6 +39,9 @@ public class MemberResourcePrefix extends FixedConfig {
 		if (StringUtils.isEmpty(configValue)) {
 			return BackendContext.getValue() + MemberConfig.getResourcePrefix();
 		}
-		return StringUtils.appendIfMissing(configValue, "/");
+		if (StringUtils.isEmpty(configValue)) {
+			configValue = StringUtils.appendIfMissing(configValue, "/");
+		}
+		return configValue;
 	}
 }

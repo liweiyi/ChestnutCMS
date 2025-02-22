@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.contentcore.domain.CmsContentRela;
 import com.chestnut.contentcore.mapper.CmsContentRelaMapper;
@@ -26,4 +27,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ContentRelaServiceImpl extends ServiceImpl<CmsContentRelaMapper, CmsContentRela>
         implements IContentRelaService {
+
+    @Override
+    public void onContentDelete(Long contentId) {
+        this.remove(new LambdaQueryWrapper<CmsContentRela>()
+                .eq(CmsContentRela::getContentId, contentId).or().eq(CmsContentRela::getRelaContentId, contentId));
+    }
 }

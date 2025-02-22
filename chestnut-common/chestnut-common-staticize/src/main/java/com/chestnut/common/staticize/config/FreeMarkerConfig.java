@@ -48,7 +48,7 @@ public class FreeMarkerConfig {
 	 * </p>
 	 * 
 	 * @param properties
-	 * @param fileTemplateLoader
+	 * @param templateLoaders
 	 * @return
 	 * @throws TemplateException
 	 */

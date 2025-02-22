@@ -15,8 +15,8 @@
  */
 package com.chestnut.common.utils;
 
-import java.util.Collection;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class ArrayUtils {
@@ -83,5 +83,33 @@ public class ArrayUtils {
 			return list.iterator().next();
 		}
 		return defaultV;
+	}
+
+	public static Map<String, List<Map<String, ?>>> groupBy(List<Map<String, ?>> list, String groupBy) {
+		Map<String, List<Map<String, ?>>> map = new HashMap<>();
+		list.forEach(obj -> {
+			String key = obj.get(groupBy).toString();
+			List<Map<String, ?>> groupList = map.get(key);
+			if (Objects.isNull(groupList)) {
+				groupList = new ArrayList<>();
+				map.put(key, groupList);
+			}
+			groupList.add(obj);
+		});
+		return map;
+	}
+
+	public static <T> Map<String, List<T>> groupBy(List<T> list, Function<T, String> getter) {
+		Map<String, List<T>> map = new HashMap<>();
+		list.forEach(obj -> {
+			String key = getter.apply(obj);
+			List<T> groupList = map.get(key);
+			if (Objects.isNull(groupList)) {
+				groupList = new ArrayList<>();
+				map.put(key, groupList);
+			}
+			groupList.add(obj);
+		});
+		return map;
 	}
 }

@@ -177,6 +177,12 @@
                 >{{ $t("Common.Select") }}</el-button>
               </el-input>
             </el-form-item>
+            <el-form-item :label="$t('CMS.Site.PrefixMode')">
+              <el-radio-group v-model="pp.props.PrefixMode">
+                <el-radio-button label="absolute">{{ $t('CMS.Site.PrefixMode_Absolute') }}</el-radio-button>
+                <el-radio-button label="relative">{{ $t('CMS.Site.PrefixMode_Relative') }}</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
           </el-tab-pane>
         </el-tabs>
         <div v-else style="background-color: #f4f4f5;color: #909399;font-size:12px;line-height: 30px;padding-left:10px;">

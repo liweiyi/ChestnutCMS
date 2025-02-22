@@ -35,7 +35,7 @@
                 @row-dblclick="handleRowDblclick"
                 style="width:100%;line-height: normal;">
         <el-table-column type="index" :label="$t('Common.RowNo')" width="50" />
-        <el-table-column :label="$t('CMS.Site.Name')" align="center" prop="name">
+        <el-table-column :label="$t('CMS.Site.Name')" prop="name">
           <template slot-scope="scope">
             <div slot="reference" class="name-wrapper">
               <el-tag v-if="scope.row.siteId==currentSite" size="medium">{{ scope.row.name }}</el-tag>
@@ -43,7 +43,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="URL" align="center" width="300" prop="url" />
+        <el-table-column :label="$t('CMS.Site.Path')" width="260" prop="path" />
       </el-table>
       <pagination 
         v-show="total>0"

@@ -935,6 +935,9 @@ export default {
       SitemapProgressTitle: "Generate sitemap task",
       Domain: "URL",
       UEditorCss: "UEditor CSS",
+      PrefixMode: "Prefix Mode",
+      PrefixMode_Absolute: "Absolute",
+      PrefixMode_Relative: "Relative",
       Tab: {
         Basic: "Basic Information",
         Extend: "Extend Config",
@@ -1003,7 +1006,8 @@ export default {
         SEO: "SEO Configuration",
         BaiduPushAccessSecret: "Baidu Push API Secret",
         DownloadRemoteImage: "Enable Download Remote Image",
-        EnableSiteDeleteBackup: "Enable Site Delete Backup"
+        EnableSiteDeleteBackup: "Enable Site Delete Backup",
+        MemberResourceUrl: "Member Resource Domain",
       },
       Property: {
         QueryPlaceholder: "Input name/code",
@@ -1826,7 +1830,10 @@ export default {
       Location: "Location",
       Source: "Source",
       ClientType: "Client Type",
-      LogTime: "Time"
+      LogTime: "Time",
+      Placeholder: {
+        Word: "Input search word"
+      }
     },
     WordStat: {
       TabName: "Query Statistics",
@@ -1908,9 +1915,36 @@ export default {
       ConfirmApply: "Are you sure to apply for the certificate?",
       Applying: "Waiting for certificate application...",
       Authroizating: "Authorizating...",
+      Servers: "Synchronize to server",
       Placeholder: {
         Domain: "Input domain..."
       }
+    },
+    ServerMachine: {
+      Name: "Server Name",
+      RemoteAddress: "Remote Addr.",
+      Host: "Host",
+      Port: "Port",
+      UserName: "Username",
+      KeyFile: "Login Key",
+      Passphrase: "Passphrase",
+      AddTitle: "Add Server",
+      EditTitle: "Eidt Server",
+      TestConnection: "Test Connection",
+      ConnectionSuccess: "Connect Success",
+      TestConnectionLoading: "Connecting...",
+    },
+    NginxConfig: {
+      Name: "Name",
+      Code: "Code",
+      Type: "Type",
+      ConfigText: "Configure",
+      Status: "Status",
+      Sync: "Synchronize to server",
+      ConfirmSync: "Are you sure to sync the config `{0}` to deploy servers?",
+      NginxNode: "Deploy Servers",
+      AddTitle: "Add nginx config",
+      EditTitle: "Edit nginx config",
     }
   }
 };

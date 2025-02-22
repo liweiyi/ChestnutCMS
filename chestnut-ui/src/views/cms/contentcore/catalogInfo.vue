@@ -177,7 +177,7 @@
           </el-input>
         </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.Desc')" prop="description">
-          <el-input v-model="form_info.description" type="textarea" maxlength="100" />
+          <el-input v-model="form_info.description" type="textarea" maxlength="250" />
         </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.ContentPathRule')" prop="detailNameRule">
           <el-select v-model="form_info.detailNameRule" :placeholder="$t('CMS.Catalog.ContentPathRule')">

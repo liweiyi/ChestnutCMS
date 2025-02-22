@@ -100,7 +100,7 @@
       <el-table-column  
         :label="$t('Common.Operation')"
         align="right"
-        width="350" 
+        width="380" 
         class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -167,7 +167,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item :label="$t('CMS.CustomForm.NeedCaptcha')" prop="needCaptcha">
+        <!-- <el-form-item :label="$t('CMS.CustomForm.NeedCaptcha')" prop="needCaptcha">
           <el-switch
             v-model="form.needCaptcha"
             active-value="Y"
@@ -180,7 +180,7 @@
             active-value="Y"
             inactive-value="N"
           ></el-switch>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item v-if="form.needLogin=='N'" :label="$t('CMS.CustomForm.RuleLimit')" prop="ruleLimit">
           <el-select v-model="form.ruleLimit">
             <el-option 

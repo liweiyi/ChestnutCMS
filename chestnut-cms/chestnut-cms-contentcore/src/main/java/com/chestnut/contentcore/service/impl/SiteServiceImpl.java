@@ -119,7 +119,9 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		CmsSite site = new CmsSite();
 		site.setSiteId(IdUtils.getSnowflakeId());
 		BeanUtils.copyProperties(dto, site, "siteId");
-        site.setResourceUrl(StringUtils.appendIfMissing(site.getResourceUrl(), "/"));
+		if (StringUtils.isNotBlank(site.getResourceUrl())) {
+        	site.setResourceUrl(StringUtils.appendIfMissing(site.getResourceUrl(), "/"));
+		}
 		site.setSortFlag(SortUtils.getDefaultSortValue());
 		site.createBy(dto.getOperator().getUsername());
 		this.save(site);
@@ -143,7 +145,9 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		CmsSite site = this.getById(dto.getSiteId());
 
 		BeanUtils.copyProperties(dto, site, "path");
-        site.setResourceUrl(StringUtils.appendIfMissing(site.getResourceUrl(), "/"));
+		if (StringUtils.isNotBlank(site.getResourceUrl())) {
+			site.setResourceUrl(StringUtils.appendIfMissing(site.getResourceUrl(), "/"));
+		}
 		// 发布通道数据处理
         dto.getPublishPipeDatas().forEach(prop -> {
             prop.getProps().entrySet().removeIf(e -> !publishPipeProps.containsKey(IPublishPipeProp.BEAN_PREFIX + e.getKey()));

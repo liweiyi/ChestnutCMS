@@ -13,28 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.contentcore.properties;
+package com.chestnut.cms.member.properties;
 
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IProperty;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.fixed.config.SiteApiUrl;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 /**
- * 站点API域名地址
+ * 会员资源访问域名
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Component(IProperty.BEAN_NAME_PREFIX + SiteApiUrlProperty.ID)
-public class SiteApiUrlProperty implements IProperty {
+@Component(IProperty.BEAN_NAME_PREFIX + MemberResourceUrlProperty.ID)
+public class MemberResourceUrlProperty implements IProperty {
 
-	public final static String ID = "SiteApiUrl";
+	public final static String ID = "MemberResourceUrl";
 	
 	static UseType[] UseTypes = new UseType[] { UseType.Site };
 	
@@ -50,34 +46,14 @@ public class SiteApiUrlProperty implements IProperty {
 
 	@Override
 	public String getName() {
-		return "站点API域名地址";
+		return "会员资源访问域名";
 	}
-	
-	@Override
-	public String defaultValue() {
-		return SiteApiUrl.getValue();
-	}
-	
-	@Override
-	public String getPropValue(Map<String, String> configProps) {
-		String propValue = MapUtils.getString(configProps, getId());
-		if (StringUtils.isNotEmpty(propValue)) {
-			return propValue;
+
+	public static String getValue(CmsSite site) {
+		String value = ConfigPropertyUtils.getStringValue(ID, site.getConfigProps());
+		if (StringUtils.isNotEmpty(value)) {
+			return StringUtils.appendIfMissing(value, "/");
 		}
-		return defaultValue();
-	}
-	
-	public static String getValue(CmsSite site, String publishPipeCode) {
-		String apiUrl = ConfigPropertyUtils.getStringValue(ID, site.getConfigProps());
-		if (StringUtils.isEmpty(apiUrl)) {
-			apiUrl = SiteApiUrl.getValue();
-		}
-		if (StringUtils.isEmpty(apiUrl)) {
-			apiUrl = site.getUrl(publishPipeCode);
-		}
-		if (StringUtils.isNotEmpty(apiUrl)) {
-			apiUrl = StringUtils.appendIfMissing(apiUrl, "/");
-		}
-		return apiUrl;
+		return StringUtils.EMPTY;
 	}
 }

@@ -16,10 +16,7 @@
 package com.chestnut.common.staticize.func.impl;
 
 import com.chestnut.common.staticize.func.AbstractFunc;
-import com.chestnut.common.utils.ConvertUtils;
-import com.chestnut.common.utils.DateUtils;
-import com.chestnut.common.utils.NumberUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.*;
 import freemarker.ext.beans.BeanModel;
 import freemarker.template.SimpleNumber;
 import freemarker.template.SimpleScalar;
@@ -30,11 +27,11 @@ import org.springframework.stereotype.Component;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -52,8 +49,7 @@ public class DateFormatFunction extends AbstractFunc {
 
 	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
 
-	private static final SimpleDateFormat DEFAULT_SIMPLE_DATE_FORMAT = new SimpleDateFormat(
-			DateUtils.YYYY_MM_DD_HH_MM_SS);
+	private static final String ARG3_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg3.Name}";
 
 	@Override
 	public String getFuncName() {
@@ -70,35 +66,35 @@ public class DateFormatFunction extends AbstractFunc {
 		if (args.length < 1 || Objects.isNull(args[0])) {
 			return StringUtils.EMPTY;
 		}
+		Locale locale = args.length == 3 ? Locale.forLanguageTag(args[2].toString()) : Locale.getDefault();
 		if (args[0] instanceof BeanModel model) {
 			Object obj = model.getWrappedObject();
-
 			if (obj instanceof TemporalAccessor t) {
 				if (args.length > 1) {
-					return DateTimeFormatter.ofPattern(args[1].toString()).format(t);
+					return DateTimeFormatter.ofPattern(args[1].toString(), locale).format(t);
 				} else {
-					return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(t);
+					return DateTimeFormatter.ofPattern(DateUtils.YYYY_MM_DD_HH_MM_SS, locale).format(t);
 				}
 			} else if (obj instanceof Date d) {
 				if (args.length > 1) {
 					String formatStr = ConvertUtils.toStr(args[1], DateUtils.YYYY_MM_DD_HH_MM_SS);
-					return DateUtils.parseDateToStr(formatStr, d);
+					SimpleDateFormat format = new SimpleDateFormat(formatStr, locale);
+					return format.format(d);
 				} else {
-					return DEFAULT_SIMPLE_DATE_FORMAT.format(d);
+					SimpleDateFormat format = new SimpleDateFormat(DateUtils.YYYY_MM_DD_HH_MM_SS, locale);
+					return format.format(d);
 				}
 			}
 		} else if (args[0] instanceof SimpleScalar s) {
 			String value = s.getAsString();
 			if (NumberUtils.isCreatable(value)) {
-				LocalDateTime dateTime = Instant.ofEpochMilli(ConvertUtils.toLong(value))
-						.atZone(ZoneId.systemDefault()).toLocalDateTime();
-				return DateTimeFormatter.ofPattern(args[1].toString()).format(dateTime);
+				LocalDateTime dateTime = TimeUtils.toLocalDateTime(Instant.ofEpochMilli(ConvertUtils.toLong(value)));
+				return DateTimeFormatter.ofPattern(args[1].toString(), locale).format(dateTime);
 			}
 		} else if (args[0] instanceof SimpleNumber s) {
 			long value = s.getAsNumber().longValue();
-			LocalDateTime dateTime = Instant.ofEpochMilli(value)
-					.atZone(ZoneId.systemDefault()).toLocalDateTime();
-			return DateTimeFormatter.ofPattern(args[1].toString()).format(dateTime);
+			LocalDateTime dateTime = TimeUtils.toLocalDateTime(Instant.ofEpochMilli(value));
+			return DateTimeFormatter.ofPattern(args[1].toString(), locale).format(dateTime);
 		}
 		return args[0].toString();
 	}
@@ -106,6 +102,7 @@ public class DateFormatFunction extends AbstractFunc {
 	@Override
 	public List<FuncArg> getFuncArgs() {
 		return List.of(new FuncArg(ARG1_NAME, FuncArgType.DateTime, true),
-				new FuncArg(ARG2_NAME, FuncArgType.String, false, null, "yyyy-MM-dd HH:mm:ss"));
+				new FuncArg(ARG2_NAME, FuncArgType.String, false, null, "yyyy-MM-dd HH:mm:ss"),
+				new FuncArg(ARG3_NAME, FuncArgType.String, false, null, Locale.getDefault().toLanguageTag()));
 	}
 }

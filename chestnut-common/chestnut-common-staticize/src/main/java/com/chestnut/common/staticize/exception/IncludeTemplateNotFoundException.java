@@ -13,12 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.contentcore.service;
+package com.chestnut.common.staticize.exception;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.chestnut.contentcore.domain.CmsContentRela;
+import com.chestnut.common.i18n.I18nUtils;
+import freemarker.core.Environment;
+import freemarker.template.TemplateException;
 
-public interface IContentRelaService extends IService<CmsContentRela> {
+/**
+ * IncludeTemplateNotFoundException
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
+public class IncludeTemplateNotFoundException extends TemplateException {
 
-    void onContentDelete(Long contentId);
+    public IncludeTemplateNotFoundException(String templateKey, Environment env) {
+        super(I18nUtils.get("{FREEMARKER.ERR.IncludeTemplateNotFound}", templateKey), env);
+    }
 }

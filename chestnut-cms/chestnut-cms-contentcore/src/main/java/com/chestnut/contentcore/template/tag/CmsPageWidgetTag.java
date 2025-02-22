@@ -18,6 +18,7 @@ package com.chestnut.contentcore.template.tag;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
+import com.chestnut.common.staticize.exception.IncludeTemplateNotFoundException;
 import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.Assert;
@@ -36,7 +37,6 @@ import freemarker.core.Environment;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
-import freemarker.template.TemplateNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
@@ -113,7 +113,7 @@ public class CmsPageWidgetTag extends AbstractTag {
 		}
 		CmsSite site = this.siteService.getSite(siteId);
 		File templateFile = this.templateService.findTemplateFile(site, pw.getTemplate(), context.getPublishPipeCode());
-		Assert.notNull(templateFile, () -> new TemplateNotFoundException(pw.getTemplate(), null, null));
+		Assert.notNull(templateFile, () -> new IncludeTemplateNotFoundException(pw.getTemplate(), env));
 
 		boolean ssi = MapUtils.getBoolean(attrs, ATTR_SSI, EnableSSIProperty.getValue(site.getConfigProps()));
 		String templateKey = SiteUtils.getTemplateKey(site, pw.getPublishPipeCode(), pw.getTemplate());

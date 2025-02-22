@@ -20,7 +20,9 @@ import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Site;
+import com.chestnut.contentcore.core.impl.PublishPipeProp_PrefixMode;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.enums.SitePrefixMode;
 import com.chestnut.system.fixed.config.BackendContext;
 
 public class SiteUtils {
@@ -43,6 +45,10 @@ public class SiteUtils {
         if (isPreview) {
             return CMSConfig.getResourcePreviewPrefix()
                     + getSitePublishPipePath(site.getPath(), publishPipeCode);
+        }
+        String pathMode = PublishPipeProp_PrefixMode.getValue(publishPipeCode, site.getPublishPipeProps());
+        if (SitePrefixMode.isRelative(pathMode)) {
+            return "/";
         }
         return site.getUrl(publishPipeCode);
     }

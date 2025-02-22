@@ -236,6 +236,11 @@ public class ContentCoreListener {
 	}
 
 	@EventListener
+	public void afterContentDelete(AfterContentDeleteEvent event) {
+		contentRelaService.onContentDelete(event.getContent().getContentEntity().getContentId());
+	}
+
+	@EventListener
 	public void onCatalogClear(OnCatalogClearEvent event) {
 		CmsCatalog catalog = event.getCatalog();
 		// 删除栏目内容
