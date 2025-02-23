@@ -41,6 +41,8 @@ import com.chestnut.contentcore.domain.vo.ListContentVO;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.listener.event.AfterContentEditorInitEvent;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
+import com.chestnut.contentcore.properties.ShortTitleLabelProperty;
+import com.chestnut.contentcore.properties.SubTitleLabelProperty;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishService;
@@ -147,6 +149,12 @@ public class ContentController extends BaseRestController {
 		// 获取初始化数据
 		ContentVO vo = ct.initEditor(catalogId, contentId);
 		vo.setShowSubTitle(ShowContentSubTitlePreference.getValue(StpAdminUtil.getLoginUser()));
+		CmsCatalog catalog = catalogService.getCatalog(catalogId);
+		CmsSite site = siteService.getSite(catalog.getSiteId());
+		String shortTitleLabel = ShortTitleLabelProperty.getValue(catalog.getConfigProps(), site.getConfigProps());
+		String subTitleLabel = SubTitleLabelProperty.getValue(catalog.getConfigProps(), site.getConfigProps());
+		vo.setShortTitleLabel(shortTitleLabel);
+		vo.setSubTitleLabel(subTitleLabel);
 		// 事件扩展
 		this.applicationContext.publishEvent(new AfterContentEditorInitEvent(this, vo));
 		return R.ok(vo);

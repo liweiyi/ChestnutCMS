@@ -1008,6 +1008,8 @@ export default {
         DownloadRemoteImage: "开启文章远程图片下载",
         EnableSiteDeleteBackup: "开启站点删除备份",
         MemberResourceUrl: "会员资源访问域名",
+        ShortTitleLabel: "短标题自定义表单名",
+        SubTitleLabel: "副标题自定义表单名",
       },
       Property: {
         QueryPlaceholder: "输入名称/编码查询",

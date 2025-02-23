@@ -93,13 +93,13 @@
                     </el-input>
                   </el-form-item>
                   <el-form-item
-                    :label="$t('CMS.Content.ShortTitle')"
+                    :label="shortTitleLabel"
                     v-if="showOtherTitle"
                     prop="shortTitle">
                     <el-input v-model="form.shortTitle" maxlength="120" show-word-limit />
                   </el-form-item>
                   <el-form-item
-                    :label="$t('CMS.Content.SubTitle')"
+                    :label="subTitleLabel"
                     v-if="showOtherTitle"
                     prop="subTitle">
                     <el-input v-model="form.subTitle" maxlength="120" show-word-limit />
@@ -417,7 +417,9 @@ export default {
       toPublishAfterSave: false,
       openRelaContentDialog: false,
       openContentOpLogDialog: false,
-      ueditorImportCss: ""
+      ueditorImportCss: "",
+      shortTitleLabel: this.$t('CMS.Content.ShortTitle'),
+      subTitleLabel: this.$t('CMS.Content.SubTitle')
     };
   },
   created() {
@@ -447,6 +449,12 @@ export default {
         this.isUpdateOperate = this.$tools.isNotEmpty(response.data.createTime)
         if (response.data.contentType == "article") {
           this.articleFormat = this.isUpdateOperate ? response.data.format : this.$route.query.format;
+        }
+        if (!this.$tools.isEmpty(response.data.shortTitleLabel)) {
+          this.shortTitleLabel = response.data.shortTitleLabel;
+        }
+        if (!this.$tools.isEmpty(response.data.subTitleLabel)) {
+          this.subTitleLabel = response.data.subTitleLabel;
         }
         this.$nextTick(() => {
           this.form = response.data;

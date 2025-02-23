@@ -60,10 +60,14 @@ public class ContentVO implements InitByContent {
 	 */
     private String subTitle;
 
+    private String subTitleLabel;
+
     /**
      * 短标题
      */
     private String shortTitle;
+
+    private String shortTitleLabel;
 
     /**
      * 标题样式

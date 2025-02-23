@@ -39,11 +39,7 @@ public class GroupByFunction extends AbstractFunc  {
 
 	private static final String ARG1_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Name}";
 
-	private static final String ARG1_DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg1.Desc}";
-
 	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
-
-	private static final String ARG2_DESC = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Desc}";
 
 	@Override
 	public String getFuncName() {
@@ -87,8 +83,8 @@ public class GroupByFunction extends AbstractFunc  {
 	@Override
 	public List<FuncArg> getFuncArgs() {
 		return List.of(
-				new FuncArg(ARG1_NAME, FuncArgType.Array, true, ARG1_DESC),
-				new FuncArg(ARG2_NAME, FuncArgType.String, true, ARG2_DESC)
+				new FuncArg(ARG1_NAME, FuncArgType.Array, true),
+				new FuncArg(ARG2_NAME, FuncArgType.String, true)
 		);
 	}
 }

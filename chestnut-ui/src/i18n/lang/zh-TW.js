@@ -1008,6 +1008,8 @@ export default {
         DownloadRemoteImage: "開啟文章遠程圖片下載",
         EnableSiteDeleteBackup: "開啟站點刪除備份",
         MemberResourceUrl: "會員資源訪問域名",
+        ShortTitleLabel: "短標題自定義表單名",
+        SubTitleLabel: "副標題自定義表單名",
       },
       Property: {
         QueryPlaceholder: "輸入名稱/編碼查詢",

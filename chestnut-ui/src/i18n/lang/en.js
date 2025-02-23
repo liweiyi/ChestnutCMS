@@ -1008,6 +1008,8 @@ export default {
         DownloadRemoteImage: "Enable Download Remote Image",
         EnableSiteDeleteBackup: "Enable Site Delete Backup",
         MemberResourceUrl: "Member Resource Domain",
+        ShortTitleLabel: "Short Title Label",
+        SubTitleLabel: "Sub Title Label",
       },
       Property: {
         QueryPlaceholder: "Input name/code",

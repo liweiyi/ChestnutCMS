@@ -107,6 +107,24 @@
             inactive-value="N">
           </el-switch>
         </el-form-item>
+        <el-form-item :label="$t('CMS.Site.Extend.ShortTitleLabel')" prop="ShortTitleLabel">
+          <el-input class="mr5" v-model="form_extend.ShortTitleLabel"></el-input>
+          <el-button 
+            class="btn-apply-child"
+            icon="el-icon-finished" 
+            type="primary" 
+            plain 
+            @click="handleApplyToChildren('ShortTitleLabel')">{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
+        </el-form-item>
+        <el-form-item :label="$t('CMS.Site.Extend.SubTitleLabel')" prop="SubTitleLabel">
+          <el-input class="mr5" v-model="form_extend.SubTitleLabel"></el-input>
+          <el-button 
+            class="btn-apply-child"
+            icon="el-icon-finished" 
+            type="primary" 
+            plain 
+            @click="handleApplyToChildren('SubTitleLabel')">{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
+        </el-form-item>
       </el-card>
       <el-card shadow="hover">
         <div slot="header" class="clearfix">
@@ -245,6 +263,15 @@ export default {
     handleCatalogSelectorClose() {
       this.applyConfigPropKey = "";
       this.openCatalogSelector = false;
+    },
+    handleApplyToChildren(propKey) {
+      const data = { 
+        catalogId: this.catalogId,
+        configPropKeys: [ propKey ]
+      }
+      applyConfigPropsToChildren(data).then(res => {
+        this.$modal.msgSuccess(res.msg);
+      });
     }
   }
 };
