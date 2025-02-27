@@ -130,16 +130,26 @@ public class ContentIndexService implements CommandLineRunner {
 	/**
 	 * 删除站点索引库
 	 */
-	public void deleteIndex(CmsSite site) {
+	public void deleteIndex(CmsSite site) throws IOException {
 		String indexName = CmsSearchConstants.indexName(site.getSiteId().toString());
-		try {
-			boolean exists = esClient.indices().exists(fn -> fn.index(indexName)).value();
+		deleteIndex(indexName);
+	}
+
+	public void deleteIndex(String indexName) throws IOException {
+		boolean exists = esClient.indices().exists(fn -> fn.index(indexName)).value();
+		if (!exists) {
+			return;
+		}
+		esClient.indices().delete(fn -> fn.index(indexName));
+		while(exists) {
+			exists = esClient.indices().exists(fn -> fn.index(indexName)).value();
 			if (exists) {
-				return;
-			}
-			esClient.indices().delete(fn -> fn.index(indexName));
-		} catch (IOException e) {
-			log.error("Delete elasticsearch index failed: " + indexName, e);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+					log.warn(e.getMessage(), e);
+                }
+            }
 		}
 	}
 
@@ -267,14 +277,7 @@ public class ContentIndexService implements CommandLineRunner {
 					if (exists) {
 						// 先删除内容索引文档
 						deleteContentIndices(site);
-
-						esClient.indices().delete(fn ->fn.index(indexName));
-						while(exists) {
-							exists = esClient.indices().exists(fn -> fn.index(indexName)).value();
-							if (exists) {
-								Thread.sleep(2000);
-							}
-						}
+						deleteIndex(indexName);
 					}
 					createIndex(site);
 

@@ -106,6 +106,9 @@ public class TagContentVO extends TagBaseVO {
     @XComment("内容属性标识列表")
     private String[] attributes;
 
+    @XComment("内容状态")
+    private String status;
+
     @XComment("是否链接内容")
     private String linkFlag;
 

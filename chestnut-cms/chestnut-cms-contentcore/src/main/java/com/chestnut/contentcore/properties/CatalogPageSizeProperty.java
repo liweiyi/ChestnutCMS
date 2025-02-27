@@ -54,7 +54,7 @@ public class CatalogPageSizeProperty implements IProperty {
 	
 	@Override
 	public boolean validate(String value) {
-		return StringUtils.isEmpty(value) || NumberUtils.isCreatable(value.toString());
+		return StringUtils.isEmpty(value) || NumberUtils.isCreatable(value);
 	}
 	
 	@Override

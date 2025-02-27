@@ -147,6 +147,9 @@ export default {
     getResourceFileIconClass(index) {
       return getFileSvgIconClass(this.fileList[index].src)
     },
+    isImageResource (index) {
+      return isImage(this.fileList[index].src);
+    },
   }
 };
 </script>

@@ -37,13 +37,13 @@ public class ESSearchListener {
 	private final ContentIndexService contentIndexService;
 
 	@EventListener
-	public void afterSiteDelete(AfterSiteDeleteEvent event) {
+	public void afterSiteDelete(AfterSiteDeleteEvent event) throws IOException {
 		if (!contentIndexService.isElasticSearchAvailable()) {
 			return;
 		}
 		CmsSite site = event.getSite();
 		contentIndexService.deleteIndex(site);
-	}
+    }
 
 	@EventListener
 	public void afterSiteAdd(AfterSiteAddEvent event) {
