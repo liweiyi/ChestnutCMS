@@ -16,6 +16,7 @@
 package com.chestnut.exmodel.service;
 
 import com.chestnut.common.utils.NumberUtils;
+import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.service.ICatalogService;
@@ -79,8 +80,8 @@ public class ExModelService {
         List<XModelFieldDataDTO> list = new ArrayList<>();
         metaModel.getFields().forEach(f -> {
             Object fv = data.get(f.getCode());
-            if(Objects.isNull(fv) || fv.toString().isEmpty()) {
-                fv = f.getDefaultValue();
+            if(Objects.isNull(fv)) {
+                fv = ObjectUtils.nonNullOrElseAsString(f.getDefaultValue(), Object::toString);
             }
             XModelFieldDataDTO dto = XModelFieldDataDTO.newInstance(f, fv);
             list.add(dto);

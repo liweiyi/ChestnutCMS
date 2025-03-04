@@ -209,10 +209,13 @@ public class ModelDataServiceImpl implements IModelDataService {
 			sqlBuilder.eq(pkField.getFieldName(), pkValues.get(pkField.getCode()));
 		}
 		Map<String, Object> map = sqlBuilder.selectOne();
-		if (map == null) {
-			return Map.of();
-		}
 		Map<String, Object> dataMap = new HashMap<>();
+		if (map == null) {
+			model.getFields().forEach(f -> {
+				dataMap.put(f.getCode(), getControlType(f.getControlType()).stringAsValue(StringUtils.EMPTY));
+			});
+			return dataMap;
+		}
 		// 固定字段
 		mmt.getFixedFields().forEach(f -> {
 			Object v = map.get(f.getFieldName());
