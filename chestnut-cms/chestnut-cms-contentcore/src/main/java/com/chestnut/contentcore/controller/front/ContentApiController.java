@@ -25,12 +25,12 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.vo.ContentApiVO;
 import com.chestnut.contentcore.domain.vo.ContentDynamicDataVO;
-import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.impl.ContentDynamicDataService;
+import com.chestnut.contentcore.template.tag.CmsContentTag;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import lombok.RequiredArgsConstructor;
@@ -91,21 +91,22 @@ public class ContentApiController extends BaseRestController {
 			@RequestParam(value = "pp") String publishPipeCode,
 			@RequestParam(value = "preview", required = false, defaultValue = "false") Boolean preview
 	) {
-		if (!"Root".equalsIgnoreCase(level) && !IdUtils.validate(catalogId)) {
+		if (!CmsContentTag.LevelTagAttr.isRoot(level) && !IdUtils.validate(catalogId)) {
 			return R.fail("The parameter cid is required where lv is `Root`.");
 		}
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<>();
 		q.eq(CmsContent::getSiteId, siteId).eq(CmsContent::getStatus, ContentStatus.PUBLISHED);
-		if (!"Root".equalsIgnoreCase(level)) {
+
+		if (!CmsContentTag.LevelTagAttr.isRoot(level)) {
 			CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
 			if (Objects.isNull(catalog)) {
 				return R.fail("Catalog not found: " + catalogId);
 			}
-			if ("Current".equalsIgnoreCase(level)) {
+			if (CmsContentTag.LevelTagAttr.isCurrent(level)) {
 				q.eq(CmsContent::getCatalogId, catalog.getCatalogId());
-			} else if ("Child".equalsIgnoreCase(level)) {
+			} else if (CmsContentTag.LevelTagAttr.isChild(level)) {
 				q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors() + CatalogUtils.ANCESTORS_SPLITER);
-			} else if ("CurrentAndChild".equalsIgnoreCase(level)) {
+			} else if (CmsContentTag.LevelTagAttr.isCurrentAndChild(level)) {
 				q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors());
 			}
 		}
@@ -121,8 +122,10 @@ public class ContentApiController extends BaseRestController {
 				q.apply(bit > 0, "attributes&{0}<>{1}", attrTotal, bit);
 			}
 		}
-		if ("Recent".equalsIgnoreCase(sortType)) {
+		if (CmsContentTag.SortTagAttr.isRecent(sortType)) {
 			q.orderByDesc(CmsContent::getPublishDate);
+		} else if (CmsContentTag.SortTagAttr.isViews(sortType)) {
+			q.orderByDesc(CmsContent::getViewCount);
 		} else {
 			q.orderByDesc(Arrays.asList(CmsContent::getTopFlag, CmsContent::getSortFlag));
 		}
@@ -142,13 +145,5 @@ public class ContentApiController extends BaseRestController {
 			list.add(dto);
 		});
 		return R.ok(list);
-	}
-
-	/**
-	 * TODO 按浏览量排序获取数据
-	 */
-	public R<ContentVO> getHotContentList() {
-
-		return R.ok();
 	}
 }

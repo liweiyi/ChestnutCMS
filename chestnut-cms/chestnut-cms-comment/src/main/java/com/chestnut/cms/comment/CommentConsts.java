@@ -16,7 +16,7 @@
 package com.chestnut.cms.comment;
 
 /**
- * <TODO description class purpose>
+ * 评论模块静态变量
  *
  * @author 兮玥
  * @email 190785909@qq.com

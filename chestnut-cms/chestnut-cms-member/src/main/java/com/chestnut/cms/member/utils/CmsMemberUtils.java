@@ -23,7 +23,7 @@ import freemarker.core.Environment;
 import freemarker.template.TemplateModelException;
 
 /**
- * <TODO description class purpose>
+ * CMS会员工具类
  *
  * @author 兮玥
  * @email 190785909@qq.com
@@ -35,7 +35,7 @@ public class CmsMemberUtils {
         Long siteId = TemplateUtils.evalSiteId(env);
         TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
         if (context.isPreview()) {
-            url = FreeMarkerUtils.evalStringVariable(env, "ApiPrefix")
+            url = FreeMarkerUtils.evalStringVariable(env, TemplateUtils.TemplateVariable_ApiPrefix)
                     + "account/" + memberId + "?sid=" + siteId + "&pp=" + context.getPublishPipeCode() + "&preview=true";
         } else {
             url = FreeMarkerUtils.evalStringVariable(env, "Prefix") + "account/" + memberId;

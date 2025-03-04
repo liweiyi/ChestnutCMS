@@ -85,6 +85,9 @@ export default {
     SelectFirst: '請先選擇至少一條記錄',
     Width: "寬度",
     Height: "高度",
+    Downloading: "正在下載...",
+    Downloaded: "下載完成",
+    DownloadTimeout: "下載超時",
     RuleTips: {
       NotEmpty: "不能為空",
       Email: "Email格式錯誤",
@@ -101,7 +104,7 @@ export default {
     Err404: "【404】访问资源不存在！",
     Err404Tip: "對不起，您正在尋找的頁面不存在。嘗試檢查URL的錯誤，然後按瀏覽器上的刷新按鈕或嘗試在我們的應用程序中找到其他內容。",
     PageNotFound: "找不到網頁！",
-    Unkonwn: '系統未知錯誤，請反饋給管理員！'
+    Unknown: '系統未知錯誤，請反饋給管理員！'
   },
   Router: {
     Home: '首頁',
@@ -938,6 +941,7 @@ export default {
       PrefixMode: "路徑模式",
       PrefixMode_Absolute: "絕對路徑",
       PrefixMode_Relative: "相對路徑",
+      ErrPageLink: "錯誤頁面",
       Tab: {
         Basic: "基礎資訊",
         Extend: "擴展配置",
@@ -1896,6 +1900,11 @@ export default {
         ModelName: "輸入模型名稱"
       }
     }
+  },
+  GroovyScript: {
+    Exec: "執行",
+    SaveScript: "保存腳本",
+    Name: "名稱"
   },
   Deploy: {
     Cert: {

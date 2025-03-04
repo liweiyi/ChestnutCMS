@@ -183,6 +183,9 @@
                 <el-radio-button label="relative">{{ $t('CMS.Site.PrefixMode_Relative') }}</el-radio-button>
               </el-radio-group>
             </el-form-item>
+            <el-form-item :label="$t('CMS.Site.ErrPageLink')">
+              <el-input v-model="pp.props.errPageLink" placeholder="/err.html" />
+            </el-form-item>
           </el-tab-pane>
         </el-tabs>
         <div v-else style="background-color: #f4f4f5;color: #909399;font-size:12px;line-height: 30px;padding-left:10px;">
@@ -261,9 +264,12 @@
     <cms-file-selector :open.sync="openFileSelector" :path="fileSelectorPath" suffix="css" @ok="handleSetUEditorStyle" @close="openFileSelector=false"></cms-file-selector>
     <!-- 进度条 -->
     <cms-progress :title="progressTitle" :open.sync="openProgress" :taskId.sync="taskId" @close="handleProgressClose"></cms-progress>
+    <!-- 下载进度条 -->
+    <download-progress :open.sync="openDownloadThemeProgress" :url.sync="siteThemeDownloadUrl" fileName="SiteTheme.zip"></download-progress>
   </div>
 </template>
 <script>
+import axios from "axios";
 import { getToken } from "@/utils/auth";
 import { getSite, publishSite, updateSite, exportSiteTheme  } from "@/api/contentcore/site";
 import { genSitemap  } from "@/api/seo/sitemap";
@@ -272,6 +278,7 @@ import CMSProgress from '@/views/components/Progress';
 import CMSLogoView from '@/views/cms/components/LogoView';
 import CMSEXModelEditor from '@/views/cms/components/EXModelEditor';
 import CMSFileSelector from '@/views/cms/components/FileSelector';
+import DownloadProgress from '@/views/components/DownloadProgress';
 
 export default {
   name: "CMSSiteInfo",
@@ -280,7 +287,8 @@ export default {
     'cms-progress': CMSProgress,
     "cms-logo-view": CMSLogoView,
     "cms-exmodel-editor": CMSEXModelEditor,
-    "cms-file-selector": CMSFileSelector
+    "cms-file-selector": CMSFileSelector,
+    "download-progress": DownloadProgress
   },
   dicts: ['CMSStaticSuffix','CMSSitemapPageType'],
   computed: {
@@ -337,7 +345,9 @@ export default {
         path: [
           { required: true, pattern: "^[A-Za-z0-9]+$", message: this.$t("CMS.Site.RuleTips.Path"), trigger: "blur" }
         ]
-      }
+      },
+      openDownloadThemeProgress: false,
+      siteThemeDownloadUrl: ""
     };
   },
   watch: {
@@ -482,7 +492,7 @@ export default {
       exportSiteTheme(data).then(response => {
         if (response.code == 200) {
             this.taskId = response.data;
-        this.progressTitle = this.$t('CMS.Site.ExportTheme');
+            this.progressTitle = this.$t('CMS.Site.ExportTheme');
             this.openProgress = true;
         } else {
           this.$modal.msgError(response.msg);
@@ -491,9 +501,7 @@ export default {
     },
     handleProgressClose(resultStatus) {
       if (this.progressTitle == this.$t('CMS.Site.ExportTheme')) {
-        this.download('cms/site/theme_download', {
-          ...{ siteId: this.siteId }
-        }, `SiteTheme.zip`)
+        this.downloadTheme()
       } else if (this.progressTitle == this.$t('CMS.Site.ImportTheme')) {
         const { fullPath } = this.$route
         this.$nextTick(() => {
@@ -502,6 +510,10 @@ export default {
           })
         })
       }
+    },
+    downloadTheme() {
+      this.siteThemeDownloadUrl = `${process.env.VUE_APP_BASE_API}/cms/site/downloadTheme/${this.siteId}`;
+      this.openDownloadThemeProgress = true;
     },
     handleSelectFile() {
       this.openFileSelector = true;

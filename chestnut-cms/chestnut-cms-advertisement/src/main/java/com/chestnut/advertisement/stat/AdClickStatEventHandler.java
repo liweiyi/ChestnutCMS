@@ -16,12 +16,17 @@
 package com.chestnut.advertisement.stat;
 
 import com.chestnut.advertisement.domain.CmsAdClickLog;
+import com.chestnut.advertisement.service.IAdvertisementService;
 import com.chestnut.advertisement.service.IAdvertisementStatService;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.stat.core.IStatEventHandler;
 import com.chestnut.stat.core.StatEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 广告点击事件
@@ -29,11 +34,14 @@ import org.springframework.stereotype.Component;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Slf4j
 @RequiredArgsConstructor
 @Component(IStatEventHandler.BEAN_PREFIX + AdClickStatEventHandler.TYPE)
 public class AdClickStatEventHandler implements IStatEventHandler {
 
     public static final String TYPE = "adclick";
+
+    private final IAdvertisementService adService;
 
     private final IAdvertisementStatService advertisementStatService;
 
@@ -44,15 +52,23 @@ public class AdClickStatEventHandler implements IStatEventHandler {
 
     @Override
     public void handle(StatEvent event) {
-        CmsAdClickLog log = parseLog(event);
+        String aid = event.getData().get("aid").asText();
+        Map<String, String> map = this.adService.getAdvertisementMap();
+        String adName = map.get(aid);
+        if (Objects.isNull(adName)) {
+            log.warn("Invalid aid: {}", aid);
+            return;
+        }
+        CmsAdClickLog log = parseLog(Long.parseLong(aid), adName, event);
         advertisementStatService.adClick(log);
     }
 
-    private CmsAdClickLog parseLog(StatEvent event) {
+    private CmsAdClickLog parseLog(long advertiseId, String adName, StatEvent event) {
         CmsAdClickLog log = new CmsAdClickLog();
         log.setLogId(IdUtils.getSnowflakeId());
         log.setSiteId(event.getData().get("sid").asLong());
-        log.setAdId(event.getData().get("aid").asLong());
+        log.setAdId(advertiseId);
+        log.setAdName(adName);
 
         log.setHost(event.getRequestData().getHost());
         log.setIp(event.getRequestData().getIp());

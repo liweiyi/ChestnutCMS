@@ -38,7 +38,6 @@ public class DynamicListener {
 		CmsSite site = event.getSite();
 		int pageSize = 500;
 		try {
-			// 删除友链数据
 			long total = this.dynamicPageService
 					.count(new LambdaQueryWrapper<CmsDynamicPage>().eq(CmsDynamicPage::getSiteId, site.getSiteId()));
 			for (long i = 0; i * pageSize < total; i++) {

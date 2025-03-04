@@ -112,4 +112,11 @@ public class ArrayUtils {
 		});
 		return map;
 	}
+
+	public static <T, R> List<R> mapNotNull(List<T> list, Function<T, R> mapper) {
+		if (Objects.isNull(list)) {
+			return List.of();
+		}
+		return list.stream().map(mapper).filter(Objects::nonNull).toList();
+	}
 }

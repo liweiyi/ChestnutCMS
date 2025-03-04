@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * <TODO description class purpose>
+ * 会员内容发布信息VO
  *
  * @author 兮玥
  * @email 190785909@qq.com

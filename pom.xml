@@ -4,14 +4,14 @@
 
 	<groupId>com.chestnut</groupId>
 	<artifactId>chestnut</artifactId>
-	<version>1.5.2</version>
+	<version>1.5.3</version>
 	<packaging>pom</packaging>
 
 	<name>ChestnutCMS</name>
 	<description>栗子内容管理系统</description>
 
 	<properties>
-		<chestnut.version>1.5.2</chestnut.version>
+		<chestnut.version>1.5.3</chestnut.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>

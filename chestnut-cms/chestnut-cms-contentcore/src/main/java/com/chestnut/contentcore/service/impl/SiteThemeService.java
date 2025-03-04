@@ -76,7 +76,6 @@ public class SiteThemeService {
     private final List<ICoreDataHandler> contentCoreHandlers;
 
     public AsyncTask importSiteTheme(CmsSite site, final File zipFile, LoginUser operator) {
-        // TODO 校验数据，必须无栏目、内容、页面部件等数据的站点才能导入
         AsyncTask asyncTask = new AsyncTask() {
 
             @Override

@@ -96,7 +96,7 @@ public class ManualPageWidgetType implements IPageWidgetType {
 			list = List.of();
 		}
 		list.forEach(rd -> rd.getItems().forEach(item -> {
-			item.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(item.logo));
+			item.setLogoSrc(InternalUrlUtils.getActualUrl(item.logo, publishPipeCode, isPreview));
 			item.setLink(item.getUrl());
 		}));
 		return list;

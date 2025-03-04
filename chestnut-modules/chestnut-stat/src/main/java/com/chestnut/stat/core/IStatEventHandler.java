@@ -20,7 +20,7 @@ package com.chestnut.stat.core;
  */
 public interface IStatEventHandler {
 
-    static final String BEAN_PREFIX = "StatEventHandler_";
+    String BEAN_PREFIX = "StatEventHandler_";
 
     /**
      * 事件类型，唯一标识

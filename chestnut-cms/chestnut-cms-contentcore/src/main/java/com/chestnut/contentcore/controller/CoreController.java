@@ -146,8 +146,8 @@ public class CoreController extends BaseRestController {
 			templateType.initTemplateData(siteId, templateContext);
 			templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, params);
 			// TODO 兼容历史版本，下个大版本移除IncludeRequest模板变量
-			templateContext.getVariables().put("IncludeRequest", params);
-			templateContext.getVariables().put("ClientType", ServletUtils.getDeviceType());
+			templateContext.getVariables().put(TemplateUtils.TemplateVariable_IncludeRequest, params);
+			templateContext.getVariables().put(TemplateUtils.TemplateVariable_ClientType, ServletUtils.getDeviceType());
 			// staticize
 			HttpServletResponse response = ServletUtils.getResponse();
 			response.setCharacterEncoding(Charset.defaultCharset().displayName());

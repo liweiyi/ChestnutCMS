@@ -66,4 +66,8 @@ public class ObjectUtils {
 	public static <T, R> R ifNullOrElse(T obj, Supplier<R> nullSupplier, Function<T, R> nonNullFunc) {
 		return Objects.isNull(obj) ? nullSupplier.get() : nonNullFunc.apply(obj);
 	}
+
+	public static <T> String nonNullOrElseAsString(T obj, Function<T, String> nonNullFunc) {
+		return Objects.isNull(obj) ? StringUtils.EMPTY : nonNullFunc.apply(obj);
+	}
 }

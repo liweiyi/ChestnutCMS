@@ -25,8 +25,15 @@ import java.util.Map;
  */
 public interface IResourceStat {
 
+    String BEAN_PREFIX = "ResourceStat_";
+
     /**
-     * 查找资源引用次数
+     * 引用分类
      */
-    Map<Long, Integer> findQuotedResource();
+    String getType();
+
+    /**
+     * 统计资源引用次数
+     */
+    void statQuotedResource(Long siteId, Map<Long, Long> quotedResources) throws InterruptedException;
 }

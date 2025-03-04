@@ -29,6 +29,7 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SpringUtils;
+import com.chestnut.contentcore.core.impl.PublishPipeProp_ErrPageLink;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
@@ -182,17 +183,16 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
             this.catchException("/", response, new RuntimeException("Site not found: " + siteId));
             return;
         }
+        String errPageLink = PublishPipeProp_ErrPageLink.getValue(publishPipeCode, site.getPublishPipeProps());
         CmsDynamicPage dynamicPage = dynamicPageHelper.getDynamicPageByPath(siteId, requestURI);
         String template = dynamicPage.getTemplates().get(publishPipeCode);
         File templateFile = this.templateService.findTemplateFile(site, template, publishPipeCode);
-        if (Objects.isNull(templateFile) || !templateFile.exists()) {
-            this.catchException(SiteUtils.getSiteLink(site, publishPipeCode, preview), response, new RuntimeException("Template not found: " + template));
+        if (Objects.isNull(templateFile)) {
+            this.catchException(errPageLink, response, new RuntimeException("Template not found: " + template));
             return;
         }
         long s = System.currentTimeMillis();
         try {
-            // TODO 校验输入参数
-
             // 生成静态页面
             // 模板ID = 通道:站点目录:模板文件名
             String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, template);
@@ -203,18 +203,17 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
             templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, parameters);
             // 动态页面自定义数据
             if (Objects.nonNull(dynamicPage.getInitDataTypes())) {
-                dynamicPage.getInitDataTypes().forEach(initDataType -> {
+                for (String initDataType : dynamicPage.getInitDataTypes()) {
                     IDynamicPageInitData initData = dynamicPageHelper.getDynamicPageInitData(initDataType);
                     if (Objects.nonNull(initData)) {
                         initData.initTemplateData(templateContext, parameters);
                     }
-                });
+                }
             }
-            // staticize
             this.staticizeService.process(templateContext, response.getWriter());
             log.debug("动态模板解析，耗时：{} ms", System.currentTimeMillis() - s);
         } catch (Exception e) {
-            this.catchException(SiteUtils.getSiteLink(site, publishPipeCode, preview), response, e);
+            this.catchException(errPageLink, response, e);
         }
     }
 
@@ -222,7 +221,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
         if (log.isDebugEnabled()) {
             e.printStackTrace(response.getWriter());
         } else {
-            response.sendRedirect(redirectLink); // TODO 通过发布通道属性配置错误页面
+            response.sendRedirect(redirectLink);
         }
     }
 }

@@ -19,19 +19,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
-import org.springframework.util.PropertyPlaceholderHelper;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
 
 /**
- * <TODO description class purpose>
+ * 国际化字符串占位符处理器
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
 public class I18nPlaceholderHelper {
-    private static final Log logger = LogFactory.getLog(PropertyPlaceholderHelper.class);
+    private static final Log logger = LogFactory.getLog(I18nPlaceholderHelper.class);
     private static final Map<String, String> wellKnownSimplePrefixes = new HashMap<>(4);
     private final String placeholderPrefix;
     private final String placeholderSuffix;

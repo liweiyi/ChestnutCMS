@@ -44,8 +44,9 @@ public class TemplateUtils {
 	public final static String TemplateVariable_Request = "Request";
 
 	/**
-	 * 模板变量：<@cms_include>标签file属性请求参数
+	 * 模板变量：<@cms_include>标签file属性请求参数，下个大版本移除
 	 */
+	@Deprecated(forRemoval = true)
 	public final static String TemplateVariable_IncludeRequest = "IncludeRequest";
 
 	/**
@@ -112,6 +113,11 @@ public class TemplateUtils {
 	 * 模板变量：访问地址
 	 */
 	public final static String TemplateVariable_OBJ_Link = "link";
+
+	/**
+	 * 模板变量：客户端类型，适用动态模板访问
+	 */
+	public final static String TemplateVariable_ClientType = "ClientType";
 
 	public static Long evalSiteId(Environment env) throws TemplateModelException {
 		return FreeMarkerUtils.evalLongVariable(env, "Site.siteId");

@@ -27,6 +27,7 @@ import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.*;
+import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.properties.PublishedContentEditProperty;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
@@ -37,6 +38,7 @@ import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.ContentLogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
+import com.chestnut.system.permission.PermissionUtils;
 import lombok.Setter;
 import org.springframework.beans.BeanUtils;
 
@@ -270,7 +272,9 @@ public abstract class AbstractContent<T> implements IContent<T> {
 				this.getContentEntity().getTitle())) {
 			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
 		}
-		// TODO 校验权限，需要同时拥有目标栏目的新建权限和源栏目的复制权限
+		// 校验权限
+		PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.AddContent.getPermissionKey(toCatalog.getCatalogId()), this.getOperator());
+
 		CmsContent newContent = new CmsContent();
 		BeanUtils.copyProperties(this.getContentEntity(), newContent, "contentId", "template", "staticPath", "topFlag",
 				"topDate", "isLock", "lockUser");
@@ -310,7 +314,9 @@ public abstract class AbstractContent<T> implements IContent<T> {
 				this.getContentEntity().getTitle())) {
 			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
 		}
-		// TODO 校验权限，需要同时拥有目标栏目的新建权限和源栏目的转移权限
+		// 校验权限
+		PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.AddContent.getPermissionKey(toCatalog.getCatalogId()), this.getOperator());
+
 		CmsCatalog fromCatalog = this.getCatalogService().getCatalog(content.getCatalogId());
 		// 重置内容信息
 		content.setSiteId(toCatalog.getSiteId());

@@ -137,7 +137,7 @@ public class CmsIncludeTag extends AbstractTag {
 			Map<String, String> mergeParams = mergeRequestVariable(env, paramsMap);
 			env.setVariable(TemplateUtils.TemplateVariable_Request, wrap(env, mergeParams));
 			// TODO 兼容历史版本，1.6.0移除IncludeRequest模板变量
-			env.setVariable("IncludeRequest", wrap(env, mergeParams));
+			env.setVariable(TemplateUtils.TemplateVariable_IncludeRequest, wrap(env, mergeParams));
 			env.include(includeTemplate);
 		} else if (virtual) {
 			// 动态模板
@@ -198,7 +198,7 @@ public class CmsIncludeTag extends AbstractTag {
 			Map<String, String> mergeParams = mergeRequestVariable(env, params);
 			env.setVariable(TemplateUtils.TemplateVariable_Request, wrap(env, mergeParams));
 			// TODO 兼容历史版本，1.6.0版本移除IncludeRequest模板变量
-			env.setVariable("IncludeRequest", wrap(env, mergeParams));
+			env.setVariable(TemplateUtils.TemplateVariable_IncludeRequest, wrap(env, mergeParams));
 			env.include(includeTemplate);
 			return writer.getBuffer().toString();
 		} finally {

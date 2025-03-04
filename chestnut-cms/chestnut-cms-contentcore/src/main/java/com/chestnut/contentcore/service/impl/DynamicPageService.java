@@ -18,6 +18,7 @@ package com.chestnut.contentcore.service.impl;
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.contentcore.core.IDynamicPageType;
+import com.chestnut.contentcore.core.impl.PublishPipeProp_ErrPageLink;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
@@ -61,8 +62,7 @@ public class DynamicPageService {
     }
 
     public void generateDynamicPage(String dynamicPageType, Long siteId, String publishPipeCode, Boolean preview,
-                                    Map<String, String> parameters, HttpServletResponse response)
-            throws IOException {
+                                    Map<String, String> parameters, HttpServletResponse response) throws IOException {
         response.setCharacterEncoding(Charset.defaultCharset().displayName());
         response.setContentType("text/html; charset=" + Charset.defaultCharset().displayName());
 
@@ -71,11 +71,12 @@ public class DynamicPageService {
             this.catchException("/", response, new RuntimeException("Site not found: " + siteId));
             return;
         }
+        String errPageLink = PublishPipeProp_ErrPageLink.getValue(publishPipeCode, site.getPublishPipeProps());
         IDynamicPageType dpt = this.getDynamicPageType(dynamicPageType);
         String template = this.publishPipeService.getPublishPipePropValue(dpt.getPublishPipeKey(), publishPipeCode, site.getPublishPipeProps());
         File templateFile = this.templateService.findTemplateFile(site, template, publishPipeCode);
         if (Objects.isNull(templateFile) || !templateFile.exists()) {
-            this.catchException(SiteUtils.getSiteLink(site, publishPipeCode, preview), response, new RuntimeException("Template not found: " + template));
+            this.catchException(errPageLink, response, new RuntimeException("Template not found: " + template));
             return;
         }
         long s = System.currentTimeMillis();
@@ -95,7 +96,7 @@ public class DynamicPageService {
             this.staticizeService.process(templateContext, response.getWriter());
             log.debug("动态模板解析，耗时：{} ms", System.currentTimeMillis() - s);
         } catch (Exception e) {
-            this.catchException(SiteUtils.getSiteLink(site, publishPipeCode, preview), response, e);
+            this.catchException(errPageLink, response, e);
         }
     }
 
@@ -103,7 +104,7 @@ public class DynamicPageService {
         if (log.isDebugEnabled()) {
             e.printStackTrace(response.getWriter());
         } else {
-            response.sendRedirect(redirectLink); // TODO 通过发布通道属性配置错误页面
+            response.sendRedirect(redirectLink);
         }
     }
 }

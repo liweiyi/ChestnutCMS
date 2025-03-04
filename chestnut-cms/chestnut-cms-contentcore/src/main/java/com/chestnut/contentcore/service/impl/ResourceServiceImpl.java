@@ -60,6 +60,8 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 
 	private final Map<String, IFileStorageType> fileStorageTypes;
 
+	private final List<IResourceStat> resourceStats;
+
 	private final ISiteService siteService;
 
 	@Override
@@ -353,28 +355,13 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		return sb.toString();
 	}
 
-	private final List<IResourceStat> resourceStats;
-
 	/**
-	 * TODO 统计资源引用
+	 * 统计资源引用
 	 */
-	public void statResourceUsage() {
-		Map<Long, Integer> resourceIds = new HashMap<>();
-		this.resourceStats.forEach(rs -> {
-			Map<Long, Integer> quotedResource = rs.findQuotedResource();
-		});
-		// 站点Logo，栏目Logo，内容Logo
-
-		// 页面部件区块Logo
-
-		// 页面部件广告图
-
-		// 文章内容
-
-		// 图集内容
-
-		// 音频内容
-
-		// 视频内容
+	public void statResourceUsage(Long siteId) throws InterruptedException {
+		Map<Long, Long> quotedResources = new HashMap<>();
+		for (IResourceStat resourceStat : this.resourceStats) {
+				resourceStat.statQuotedResource(siteId, quotedResources);
+		}
 	}
 }

@@ -64,9 +64,6 @@ const localCache = {
     localStorage.removeItem(key);
   }
 }
-function officialLink() {
-  return Buffer.from("aHR0cHM6Ly93d3cuMTAwMG16LmNvbS9sYXRlc3RWZXJzaW9u", 'base64').toString('utf8');
-}
 
 export default {
   /**
@@ -76,6 +73,5 @@ export default {
   /**
    * 本地缓存
    */
-  local: localCache,
-  officialLink
+  local: localCache
 }

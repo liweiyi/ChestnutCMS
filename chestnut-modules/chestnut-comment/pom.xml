@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>chestnut-modules</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.2</version>
+		<version>1.5.3</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -15,6 +15,11 @@
 		<dependency>
 			<groupId>com.chestnut</groupId>
 			<artifactId>chestnut-member</artifactId>
+		</dependency>
+		<!-- 词汇模块 -->
+		<dependency>
+			<groupId>com.chestnut</groupId>
+			<artifactId>chestnut-word</artifactId>
 		</dependency>
 	</dependencies>
 </project>

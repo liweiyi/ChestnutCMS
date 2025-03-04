@@ -17,7 +17,6 @@ package com.chestnut.cms.exmodel;
 
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.xmodel.core.BaseModelData;
-import jakarta.validation.constraints.NotNull;
 
 import java.lang.reflect.Field;
 import java.time.LocalDateTime;
@@ -26,7 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * <TODO description class purpose>
+ * 生成元数据模型类通用方法
  *
  * @author 兮玥
  * @email 190785909@qq.com

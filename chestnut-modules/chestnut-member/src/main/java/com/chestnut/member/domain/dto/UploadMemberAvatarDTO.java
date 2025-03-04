@@ -20,7 +20,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * <TODO description class purpose>
+ * 会员头像上传DTO
  *
  * @author 兮玥
  * @email 190785909@qq.com

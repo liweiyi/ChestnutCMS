@@ -15,7 +15,7 @@
         </el-card>
       </div>
     </el-card>
-    
+
   </div>
 </template>
 <script>
@@ -39,7 +39,8 @@ export default {
     },
     handleShortcutRedirect(router) {
       this.$router.push({ path: router })
-    }
+    },
+    
   }
 };
 </script>

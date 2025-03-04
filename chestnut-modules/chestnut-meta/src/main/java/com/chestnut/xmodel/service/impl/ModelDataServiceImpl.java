@@ -18,7 +18,6 @@ package com.chestnut.xmodel.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.chestnut.common.db.util.SqlBuilder;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.xmodel.core.*;
@@ -31,7 +30,10 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -213,11 +215,15 @@ public class ModelDataServiceImpl implements IModelDataService {
 		Map<String, Object> dataMap = new HashMap<>();
 		// 固定字段
 		mmt.getFixedFields().forEach(f -> {
-			dataMap.put(f.getCode(), map.get(f.getFieldName()));
+			Object v = map.get(f.getFieldName());
+			dataMap.put(f.getCode(), v);
 		});
 		// 自定义字段
 		model.getFields().forEach(f -> {
-			dataMap.put(f.getCode(), map.get(f.getFieldName()));
+			Object v = map.get(f.getFieldName());
+			IMetaControlType controlType = getControlType(f.getControlType());
+			Object objectV = controlType.stringAsValue(ObjectUtils.nonNullOrElseAsString(v, Object::toString));
+			dataMap.put(f.getCode(), objectV);
 		});
 		return dataMap;
 	}

@@ -40,6 +40,7 @@ import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.service.IMemberExpConfigService;
 import com.chestnut.member.service.IMemberStatDataService;
+import com.chestnut.word.service.ISensitiveWordService;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.redisson.api.RLock;
@@ -71,6 +72,8 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 	private final IMemberStatDataService memberStatDataService;
 
 	private final IMemberExpConfigService memberExpConfigService;
+
+	private final ISensitiveWordService sensitiveWordService;
 
 	private ApplicationContext applicationContext;
 
@@ -144,7 +147,9 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 		comment.setSourceType(dto.getSourceType());
 		comment.setSourceId(dto.getSourceId());
 		comment.setUid(dto.getOperator().getUserId());
-		comment.setContent(dto.getContent()); // TODO 敏感词过滤
+		// 敏感词过滤
+		String content = sensitiveWordService.replaceSensitiveWords(dto.getContent(), null);
+		comment.setContent(content);
 		comment.setCommentTime(LocalDateTime.now());
 		comment.setAuditStatus(CommentAuditStatus.TO_AUDIT);
 		comment.setLikeCount(0);
@@ -160,7 +165,7 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 			if (!comment.getSourceType().equals(parent.getSourceType())
 					|| !comment.getSourceId().equals(parent.getSourceId())
 					|| parent.getParentId() != 0) {
-				throw new RuntimeException("评论数据源异常！");
+				throw new RuntimeException("Reply comment not found: " + dto.getCommentId());
 			}
 			comment.setReplyUid(dto.getReplyUid());
 			comment.setParentId(dto.getCommentId());

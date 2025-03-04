@@ -16,7 +16,7 @@
 package com.chestnut.member.core;
 
 /**
- * <TODO description class purpose>
+ * 会员注册方式
  *
  * @author 兮玥
  * @email 190785909@qq.com

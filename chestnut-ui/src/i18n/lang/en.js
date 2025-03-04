@@ -85,6 +85,9 @@ export default {
     SelectFirst: 'Please select first.',
     Width: "Width",
     Height: "Height",
+    Downloading: "Downloading...",
+    Downloaded: "Download completed.",
+    DownloadTimeout: "Download timeout.",
     RuleTips: {
       NotEmpty: "Cannot be empty.",
       Email: "Invalid email.",
@@ -101,7 +104,7 @@ export default {
     Err404: "404 Error!",
     Err404Tip: "Sorry, the page you are looking for does not exist. Try checking for errors in the URL, then press the refresh button on the browser or try to find other content in our application.",
     PageNotFound: "Page not found!",
-    Unkonwn: 'Unknown system error, please notify then administrator!'
+    Unknown: 'Unknown system error, please notify then administrator!'
   },
   Router: {
     Home: 'Home',
@@ -938,6 +941,7 @@ export default {
       PrefixMode: "Prefix Mode",
       PrefixMode_Absolute: "Absolute",
       PrefixMode_Relative: "Relative",
+      ErrPageLink: "Error Page Link",
       Tab: {
         Basic: "Basic Information",
         Extend: "Extend Config",
@@ -1896,6 +1900,11 @@ export default {
         ModelName: "Input model name"
       }
     }
+  },
+  GroovyScript: {
+    Exec: "Execute",
+    SaveScript: "Save Script",
+    Name: "Name"
   },
   Deploy: {
     Cert: {

@@ -52,7 +52,6 @@ public class CmsAdViewLog implements Serializable {
 	/**
 	 * 广告名称
 	 */
-	@TableField(exist = false)
 	private String adName;
 
 	/**

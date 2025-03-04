@@ -24,7 +24,7 @@ import lombok.Setter;
 import java.util.Objects;
 
 /**
- * <TODO description class purpose>
+ * 文章内容API接口VO
  *
  * @author 兮玥
  * @email 190785909@qq.com

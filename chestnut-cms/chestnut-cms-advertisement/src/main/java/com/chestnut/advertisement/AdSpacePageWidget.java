@@ -37,6 +37,5 @@ public class AdSpacePageWidget extends AbstractPageWidget {
 		// 删除广告版位相关的广告
 		this.advertisementService.remove(new LambdaQueryWrapper<CmsAdvertisement>()
 				.eq(CmsAdvertisement::getAdSpaceId, this.getPageWidgetEntity().getPageWidgetId()));
-		// TODO 删除广告统计数据
 	}
 }

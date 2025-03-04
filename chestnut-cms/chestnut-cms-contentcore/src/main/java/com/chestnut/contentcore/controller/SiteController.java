@@ -55,13 +55,19 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -388,30 +394,31 @@ public class SiteController extends BaseRestController {
     }
 
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
-    @PostMapping("/theme_download")
-    public void export(@RequestParam Long siteId, HttpServletResponse response) throws IOException {
+    @GetMapping("/downloadTheme/{siteId}")
+    public ResponseEntity<StreamingResponseBody> downloadTheme(@PathVariable @LongId Long siteId) {
         CmsSite site = this.siteService.getSite(siteId);
         File file = new File(SiteUtils.getSiteResourceRoot(site) + SiteThemeService.ThemeZipPath);
         if (!file.exists()) {
-            response.getWriter().write("站点主题文件不存在");
-            return;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        response.setContentType("application/octet-stream");
-        response.setCharacterEncoding(StandardCharsets.UTF_8.displayName());
-        response.setHeader("Content-disposition", "attachment;filename="
-                + StringUtils.substringAfterLast(SiteThemeService.ThemeZipPath, "/"));
-        response.addHeader("Content-Length", "" + file.length());
-        try(BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
-            byte[] buff = new byte[1024];
-            OutputStream os  = response.getOutputStream();
-            int i;
-            while ((i = bis.read(buff)) != -1) {
-                os.write(buff, 0, i);
-                os.flush();
-            }
-        } catch (IOException e) {
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            response.getWriter().write("Export site theme file failed: " + e.getMessage());
-        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .contentLength(file.length())
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(outputStream -> {
+                    long timeout = 600_000;
+                    Instant startTime = Instant.now();
+                    try (InputStream is = new FileInputStream(file)) {
+                        byte[] data = new byte[8192];
+                        int bytesRead;
+                        while ((bytesRead = is.read(data)) != -1) {
+                            outputStream.write(data, 0, bytesRead);
+                            outputStream.flush();
+                            if (Duration.between(startTime, Instant.now()).toMillis() > timeout) {
+                                throw new RuntimeException("Timed out");
+                            }
+                        }
+                    }
+                });
     }
 }

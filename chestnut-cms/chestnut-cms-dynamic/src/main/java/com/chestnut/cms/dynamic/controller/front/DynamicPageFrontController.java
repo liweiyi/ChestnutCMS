@@ -18,7 +18,6 @@ package com.chestnut.cms.dynamic.controller.front;
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.ServletUtils;
-import com.chestnut.contentcore.service.ISiteService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -43,8 +41,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/dynamic/page")
 public class DynamicPageFrontController extends BaseRestController {
-
-	private final ISiteService siteService;
 
 	private final IDynamicPageService dynamicPageService;
 

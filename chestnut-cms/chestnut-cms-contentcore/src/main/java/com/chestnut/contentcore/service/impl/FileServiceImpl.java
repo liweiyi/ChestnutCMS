@@ -175,8 +175,6 @@ public class FileServiceImpl implements IFileService {
 
 	@Override
 	public void addFile(CmsSite site, FileAddDTO dto) throws IOException {
-		this.checkFileType(dto.getFileName());
-
 		String dir = dto.getDir();
     	dir = FileExUtils.normalizePath(dir);
     	if (dir.startsWith("/")) {

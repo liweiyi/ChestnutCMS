@@ -83,9 +83,6 @@ public class ExModelService {
                 fv = f.getDefaultValue();
             }
             XModelFieldDataDTO dto = XModelFieldDataDTO.newInstance(f, fv);
-            IMetaControlType controlType = controlTypeMap.get(IMetaControlType.BEAN_PREFIX + f.getControlType());
-            Object objectV = controlType.stringAsValue(Objects.isNull(dto.getValue()) ? "" : dto.getValue().toString());
-            dto.setValue(objectV);
             list.add(dto);
         });
         return list;

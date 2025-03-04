@@ -18,6 +18,7 @@ package com.chestnut.advertisement.controller.front;
 import com.chestnut.advertisement.stat.AdClickStatEventHandler;
 import com.chestnut.advertisement.stat.AdViewStatEventHandler;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.stat.core.StatEvent;
@@ -61,6 +62,10 @@ public class AdApiController extends BaseRestController {
 
 	@GetMapping("/click")
 	public void adClick(@RequestParam("sid") Long siteId, @RequestParam("aid") Long advertisementId) {
+		if (!IdUtils.validate(siteId) || !IdUtils.validate(advertisementId)) {
+			log.warn("Invalid sid/aid: sid = {}, aid = {}", siteId, advertisementId);
+			return;
+		}
 		StatEvent evt = new StatEvent();
 		evt.setType(AdClickStatEventHandler.TYPE);
 		ObjectNode objectNode = JacksonUtils.objectNode();
@@ -74,6 +79,10 @@ public class AdApiController extends BaseRestController {
 
 	@GetMapping("/view")
 	public void adView(@RequestParam("sid") Long siteId, @RequestParam("aid") Long advertisementId) {
+		if (!IdUtils.validate(siteId) || !IdUtils.validate(advertisementId)) {
+			log.warn("Invalid sid/aid: sid = {}, aid = {}", siteId, advertisementId);
+			return;
+		}
 		StatEvent evt = new StatEvent();
 		evt.setType(AdViewStatEventHandler.TYPE);
 		ObjectNode objectNode = JacksonUtils.objectNode();

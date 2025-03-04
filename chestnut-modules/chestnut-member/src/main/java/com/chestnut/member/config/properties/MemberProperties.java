@@ -20,7 +20,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * <TODO description class purpose>
+ * 会员配置
  *
  * @author 兮玥
  * @email 190785909@qq.com

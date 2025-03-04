@@ -269,9 +269,7 @@ public class ContentServiceImpl implements IContentService {
 			CmsContent cmsContent = this.dao().getById(contentId);
 			Assert.notNull(cmsContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 
-			Long[] catalogIds = dto.getCatalogIds().stream().filter(id -> !Objects.equals(id, cmsContent.getCatalogId()))
-					.toArray(Long[]::new);
-			for (Long catalogId : catalogIds) {
+			for (Long catalogId : dto.getCatalogIds()) {
 				CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
 				if (catalog == null) {
 					continue; // 目标栏目错误直接跳过

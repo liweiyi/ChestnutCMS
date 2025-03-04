@@ -259,7 +259,7 @@ export default {
     },
     async checkLatestVersion() {
       try {
-        const version = await this.jsonpRequest(this.$cache.officialLink(), 'checkLatestVersionCallback');
+        const version = await this.jsonpRequest(Buffer.from("aHR0cHM6Ly93d3cuMTAwMG16LmNvbS9sYXRlc3RWZXJzaW9u", 'base64').toString('utf8'), 'checkLatestVersionCallback');
         if (version && version.length > 0 && version != this.server.app.version) {
           this.latestVersion = version;
           this.hasNewVersion = true;

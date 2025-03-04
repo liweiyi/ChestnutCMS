@@ -182,7 +182,7 @@ public class CmsContentTag extends AbstractListTag {
 		return DESC;
 	}
 
-	enum LevelTagAttr {
+	public enum LevelTagAttr {
 		Root(ATTR_OPTION_LEVEL_ROOT),
 		Current(ATTR_OPTION_LEVEL_CURRENT),
 		Child(ATTR_OPTION_LEVEL_CHILD),

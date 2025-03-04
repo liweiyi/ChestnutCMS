@@ -27,7 +27,7 @@ public interface ISensitiveWordService extends IService<SensitiveWord> {
 	 * 替换敏感词
 	 * 
 	 * @param text
-	 * @param replaceStr
+	 * @param replacement
 	 * @return
 	 */
 	String replaceSensitiveWords(String text, String replacement);

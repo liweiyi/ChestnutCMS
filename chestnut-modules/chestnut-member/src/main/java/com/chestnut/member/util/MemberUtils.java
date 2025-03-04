@@ -20,13 +20,18 @@ import com.chestnut.member.fixed.config.MemberResourcePrefix;
 import com.chestnut.system.fixed.config.BackendContext;
 
 /**
- * <TODO description class purpose>
+ * 会员工具类
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
 public class MemberUtils {
 
+    /**
+     * 获取会员资源文件访问前缀
+     *
+     * @param isPreview 是否预览模式
+     */
     public static String getMemberResourcePrefix(boolean isPreview) {
         if (isPreview) {
             return BackendContext.getValue() + MemberConfig.getResourcePrefix();
