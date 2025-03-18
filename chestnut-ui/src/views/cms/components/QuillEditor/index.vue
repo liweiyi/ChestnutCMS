@@ -8,6 +8,7 @@
       :open.sync="openResourceDialog"
       rtype="image"
       :upload-limit="uploadLimit"
+      :single="uploadLimit==1"
       @ok="handleResourceDialogOk">
     </cms-resource-dialog>
   </div>
@@ -81,7 +82,7 @@
   export default {
     name: 'cms-quill-editor',
     components: {
-      'cms-resource-dialog': CMSResourceDialog
+      'cms-resource-dialog': CMSResourceDialog,
     },
     data() {
       return {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serial;
 
 /**
  * 资源表对象 [cms_resource]
@@ -36,7 +37,8 @@ import lombok.Setter;
 @TableName(CmsResource.TABLE_NAME)
 public class CmsResource extends BaseEntity {
 
-    private static final long serialVersionUID=1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     
     public static final String TABLE_NAME = "cms_resource";
 
@@ -119,6 +121,11 @@ public class CmsResource extends BaseEntity {
      * 引用关系
      */
     private String usageInfo;
+
+    /**
+     * 唯一标识，md5字符串
+     */
+    private String identifier;
     
     @TableField(exist = false)
     private String src;

@@ -30,6 +30,7 @@
       :open.sync="openResourceDialog"
       :rtype="type"
       :upload-limit="1" 
+      :single="true"
       @ok="handleResourceDialogOk">
     </cms-resource-dialog>
   </div>
@@ -37,7 +38,6 @@
 <script>
 import { isImage, getFileSvgIconClass, setUrlParameter } from "@/utils/chestnut";
 import CMSResourceDialog from "@/views/cms/contentcore/resourceDialog";
-import ElImageViewer from "element-ui/packages/image/src/image-viewer"
 
 export default {
   name: "CMSResourceUploder",

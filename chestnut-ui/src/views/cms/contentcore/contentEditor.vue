@@ -324,7 +324,6 @@ import CMSAudioEditor from '@/views/cms/media/audioEditor';
 import CMSVideoEditor from '@/views/cms/media/videoEditor';
 import CMSLogoView from '@/views/cms/components/LogoView';
 import CMSImageGroup from '@/views/cms/components/ImageGroup';
-import CMSResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
 import CMSContentSelector from "@/views/cms/contentcore/contentSelector";
 import CMSContentRelaDialog from '@/views/cms/contentcore/contentRelaDialog';
@@ -348,7 +347,6 @@ export default {
     "cms-image-editor": CMSImageEditor,
     "cms-audio-editor": CMSAudioEditor,
     "cms-video-editor": CMSVideoEditor,
-    "cms-resource-dialog": CMSResourceDialog,
     "cms-logo-view": CMSLogoView,
     "cms-image-group": CMSImageGroup,
     'cms-catalog-selector': CMSCatalogSelector,

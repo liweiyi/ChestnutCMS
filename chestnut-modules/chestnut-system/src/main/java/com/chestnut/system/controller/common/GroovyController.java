@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,33 @@
  */
 package com.chestnut.system.controller.common;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
+import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.IdUtils;
+import com.chestnut.system.domain.SysGroovyScript;
+import com.chestnut.system.domain.dto.ExecGroovyScriptDTO;
+import com.chestnut.system.domain.dto.SaveGroovyScriptDTO;
 import com.chestnut.system.groovy.BaseGroovyScript;
 import com.chestnut.system.groovy.GroovyScriptFactory;
+import com.chestnut.system.mapper.SysGroovyScriptMapper;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-
+import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.List;
 
 /**
  * Groovy脚本执行控制器
@@ -44,19 +49,21 @@ import lombok.Setter;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.GroovyExec)
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/groovy")
-public class GroovyController {
+public class GroovyController extends BaseRestController {
+
+	private final SysGroovyScriptMapper groovyScriptMapper;
 
 	@Log(title = "执行Groovy脚本", businessType = BusinessType.UPDATE)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.GroovyExec)
 	@PostMapping("/exec")
-	public R<?> execGroovyScript(@RequestBody @Validated ScriptBody scriptBody) throws Exception {
+	public R<?> execGroovyScript(@RequestBody @Validated ExecGroovyScriptDTO dto) {
 		StringWriter writer = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(writer);
 		try {
-			BaseGroovyScript script = GroovyScriptFactory.getInstance().loadNewInstance(scriptBody.getScriptText());
+			BaseGroovyScript script = GroovyScriptFactory.getInstance().loadNewInstance(dto.getScriptText());
 			script.setPrintWriter(printWriter);
 			script.run();
 		} catch (Exception e) {
@@ -64,12 +71,37 @@ public class GroovyController {
 		}
 		return R.ok(writer.toString());
 	}
-	
-	@Getter
-	@Setter
-	static class ScriptBody {
-		
-		@NotEmpty
-		private String scriptText;
+
+	@GetMapping("/list")
+	public R<?> getGroovyScripts() {
+		List<SysGroovyScript> groovyScripts = groovyScriptMapper.selectList(new LambdaQueryWrapper<>());
+		return bindDataTable(groovyScripts);
+	}
+
+	@Log(title = "保存Groovy脚本", businessType = BusinessType.INSERT)
+	@PostMapping("/save")
+	public R<?> saveGroovyScript(@RequestBody @Validated SaveGroovyScriptDTO dto) {
+		SysGroovyScript groovyScript = new SysGroovyScript();
+		groovyScript.setScriptId(IdUtils.getSnowflakeId());
+		groovyScript.setName(dto.getName());
+		groovyScript.setScriptText(dto.getScriptText());
+		groovyScript.setRemark(dto.getRemark());
+		groovyScript.createBy(StpAdminUtil.getLoginUser().getUsername());
+		groovyScriptMapper.insert(groovyScript);
+		return R.ok();
+	}
+
+	@Log(title = "刪除Groovy脚本", businessType = BusinessType.DELETE)
+	@DeleteMapping("/delete")
+	public R<?> deleteGroovyScript(@RequestBody @NotEmpty List<Long> scriptIds) {
+		this.groovyScriptMapper.deleteBatchIds(scriptIds);
+		return R.ok();
+	}
+
+	@GetMapping("/{scriptId}")
+	public R<?> getGroovyScript(@PathVariable @LongId Long scriptId) {
+		SysGroovyScript groovyScript = this.groovyScriptMapper.selectById(scriptId);
+		Assert.notNull(groovyScript, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("scriptId", scriptId));
+		return R.ok(groovyScript);
 	}
 }

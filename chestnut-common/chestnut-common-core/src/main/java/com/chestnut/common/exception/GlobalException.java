@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,40 +15,40 @@
  */
 package com.chestnut.common.exception;
 
+import com.chestnut.common.i18n.I18nUtils;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
 
-import com.chestnut.common.i18n.I18nUtils;
-
-import lombok.NoArgsConstructor;
+import java.io.Serial;
 
 /**
  * 自定义全局异常
  */
+@Getter
 @NoArgsConstructor
 public class GlobalException extends RuntimeException {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	private ErrorCode errorCode = CommonErrorCode.UNKNOWN_ERROR;
 
 	private Object[] errArgs;
 	
-
 	public GlobalException(ErrorCode errCode, Object... errArgs) {
 		super(I18nUtils.get(errCode.value(), LocaleContextHolder.getLocale(), errArgs));
 		this.errorCode = errCode;
 		this.errArgs = errArgs;
 	}
 
+	public GlobalException(Throwable cause, ErrorCode errCode, Object... errArgs) {
+		super(I18nUtils.get(errCode.value(), LocaleContextHolder.getLocale(), errArgs), cause);
+		this.errorCode = errCode;
+		this.errArgs = errArgs;
+	}
+
 	public GlobalException(String message) {
 		super(message);
-	}
-
-	public ErrorCode getErrorCode() {
-		return this.errorCode;
-	}
-
-	public Object[] getErrArgs() {
-		return this.errArgs;
 	}
 }

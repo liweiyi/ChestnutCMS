@@ -63,6 +63,7 @@
       :open.sync="openResourceDialog"
       rtype="image"
       :upload-limit="uploadLimit"
+      :single="uploadLimit==1"
       @ok="handleResourceDialogOk">
     </cms-resource-dialog>
     <el-image-viewer 
@@ -81,7 +82,7 @@ export default {
   name: "CMSImageList",
   components: {
     "el-image-viewer": ElImageViewer,
-    "cms-resource-dialog": CMSResourceDialog
+    "cms-resource-dialog": CMSResourceDialog,
   },
   model: {
     prop: 'imageList',

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -228,9 +228,11 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		return resource;
 	}
 
-	private void processResource(CmsResource resource, IResourceType resourceType, CmsSite site, byte[] bytes) throws IOException {
-		// 处理资源，图片属性读取、水印等
-		bytes = resourceType.process(resource, bytes);
+	@Override
+	public void processResource(CmsResource resource, IResourceType resourceType, CmsSite site, byte[] bytes) throws IOException {
+		resource.setWidth(0);
+		resource.setHeight(0);
+		resource.setFileSize((long) bytes.length);
 		// 读取存储配置
 		String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
 		IFileStorageType fst = getFileStorageType(fileStorageType);
@@ -241,7 +243,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		resource.setStorageType(fileStorageType);
 		resource.setInternalUrl(InternalDataType_Resource.getInternalUrl(resource));
 		// 默认缩略图处理
-		resourceType.afterProcess(resource);
+		resourceType.asyncProcess(resource);
 	}
 
 	@Override
@@ -302,7 +304,8 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		}
 	}
 
-	private IFileStorageType getFileStorageType(String type) {
+	@Override
+	public IFileStorageType getFileStorageType(String type) {
 		IFileStorageType fileStorageType = fileStorageTypes.get(IFileStorageType.BEAN_NAME_PREIFX + type);
 		Assert.notNull(fileStorageType, () -> StorageErrorCode.UNSUPPORTED_STORAGE_TYPE.exception(type));
 		return fileStorageType;

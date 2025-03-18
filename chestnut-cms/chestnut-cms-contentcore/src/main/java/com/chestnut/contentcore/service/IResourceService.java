@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package com.chestnut.contentcore.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.chestnut.common.storage.IFileStorageType;
+import com.chestnut.contentcore.core.IResourceType;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.ResourceUploadDTO;
@@ -26,6 +28,11 @@ import java.io.IOException;
 import java.util.List;
 
 public interface IResourceService extends IService<CmsResource> {
+
+	/**
+	 * 获取存储方式
+	 */
+	IFileStorageType getFileStorageType(String type);
 
 	/**
 	 * 上传资源
@@ -54,6 +61,8 @@ public interface IResourceService extends IService<CmsResource> {
 	 * @param imageFile 图片文件
 	 */
 	CmsResource addImageFromFile(CmsSite site, String operator, File imageFile) throws IOException;
+
+	void processResource(CmsResource resource, IResourceType resourceType, CmsSite site, byte[] bytes) throws IOException;
 
 	/**
 	 * 删除资源

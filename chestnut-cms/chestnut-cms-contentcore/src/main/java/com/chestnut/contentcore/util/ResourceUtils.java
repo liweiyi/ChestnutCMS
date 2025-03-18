@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,12 @@ public class ResourceUtils {
 
     private static final Pattern TagAttrIUrlPattern = Pattern.compile("iurl\\s*=\\s*['\"]([^'\"]+)['\"]",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
+
+    private static final String TEMP_DIRECTORY_RELATIVE_PATH = ".temp/";
+
+    public static String getResourceTempDirectory(CmsSite site) {
+        return SiteUtils.getSiteResourceRoot(site) + TEMP_DIRECTORY_RELATIVE_PATH;
+    }
 
     /**
      * 通过文件后缀名获取对应资源类型，由于文件资源包含所有文件类型，再获取到超过1个资源类型时将文件资源类型移除再获取。

@@ -109,7 +109,7 @@
           <cms-logo-view v-model="form_info.logo" :src="form_info.logoSrc" :width="218" :height="150"></cms-logo-view>
         </el-form-item>
         <el-form-item :label="$t('CMS.Site.Desc')" prop="description">
-          <el-input v-model="form_info.description" type="textarea" :maxlength="300" />
+          <el-input v-model="form_info.description" type="textarea" :rows="5" :maxlength="300" />
         </el-form-item>
       </el-card>
       <el-card shadow="hover">
@@ -269,7 +269,6 @@
   </div>
 </template>
 <script>
-import axios from "axios";
 import { getToken } from "@/utils/auth";
 import { getSite, publishSite, updateSite, exportSiteTheme  } from "@/api/contentcore/site";
 import { genSitemap  } from "@/api/seo/sitemap";

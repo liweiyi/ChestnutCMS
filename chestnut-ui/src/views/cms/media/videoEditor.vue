@@ -133,6 +133,7 @@
       :open.sync="openResourceDialog"
       :upload-limit="uploadLimit"
       :rtype="resourceType"
+      :single="uploadLimit==1"
       @ok="handleResourceDialogOk">
     </cms-resource-dialog>
     <!-- 添加/修改第三方视频对话框 -->
@@ -177,7 +178,7 @@ import { videoScreenshot } from "@/api/contentcore/video";
 export default {
   name: "CMSVideoList",
   components: {
-    "cms-resource-dialog": CMSResourceDialog
+    "cms-resource-dialog": CMSResourceDialog,
   },
   model: {
     prop: 'itemList',

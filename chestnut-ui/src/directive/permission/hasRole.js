@@ -1,6 +1,6 @@
  /**
  * v-hasRole 角色权限处理
- * Copyright (c) 2023 兮玥（190785909@qq.com）
+ * Copyright © 2022-2025 兮玥（190785909@qq.com）
  */
  
 import store from '@/store'

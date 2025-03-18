@@ -75,6 +75,7 @@
       :open.sync="openResourceDialog"
       :upload-limit="uploadLimit"
       rtype="audio"
+      :single="uploadLimit==1"
       @ok="handleResourceDialogOk">
     </cms-resource-dialog>
   </div>
@@ -235,5 +236,8 @@ export default {
 .cms-audio-editor .r-opr-row {
   text-align: right;
   margin-top: 10px;
+}
+.cms-audio-editor .aplayer-pic {
+      background-image: url('~@/assets/logo/logo.svg');
 }
 </style>

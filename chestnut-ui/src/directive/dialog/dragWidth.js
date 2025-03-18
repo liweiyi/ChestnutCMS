@@ -1,7 +1,7 @@
 /**
-* v-dialogDragWidth 可拖动弹窗宽度（右侧边）
- * Copyright (c) 2023 兮玥（190785909@qq.com）
-*/
+ * v-dialogDragWidth 可拖动弹窗宽度（右侧边）
+ * Copyright © 2022-2025 兮玥（190785909@qq.com）
+ */
 
 export default {
     bind(el) {

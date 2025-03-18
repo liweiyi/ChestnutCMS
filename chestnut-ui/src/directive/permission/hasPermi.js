@@ -1,6 +1,6 @@
  /**
  * v-hasPermi 操作权限处理
- * Copyright (c) 2023 兮玥（190785909@qq.com）
+ * Copyright © 2022-2025 兮玥（190785909@qq.com）
  * 
  * 1、非el-button标签的按钮权限需要给对应控件添加class="btn-permi"
  * 2、表格操作列的多个按钮需要给按钮添加一个<span class="btn-cell-wrap"></span>包裹住用来占位，否则会影响按钮位置

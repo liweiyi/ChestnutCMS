@@ -78,7 +78,6 @@ export default {
     ServerConnectFailed: 'Server connection failed.',
     ServerConnectTimeout: 'Server connection timeout.',
     ServerApiError: 'Server api error: {0}',
-    Downloading: 'Downloading...',
     Loading: 'Loading...',
     DownloadFailed: 'Download failed, please contact the administrator.',
     InvalidFileSuffix: 'Unsupport file format, only "{0}" is supported.',
@@ -88,6 +87,14 @@ export default {
     Downloading: "Downloading...",
     Downloaded: "Download completed.",
     DownloadTimeout: "Download timeout.",
+    Unit: {
+      Year: "yr",
+      Month: "mo",
+      Day: "d",
+      Hour: "h",
+      Minute: "min",
+      Second: "s"
+    },
     RuleTips: {
       NotEmpty: "Cannot be empty.",
       Email: "Invalid email.",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public interface IResourceType {
 		return bytes;
 	}
 
-	default void afterProcess(CmsResource resource) {
+	default void asyncProcess(CmsResource resource) {
 
 	}
 }

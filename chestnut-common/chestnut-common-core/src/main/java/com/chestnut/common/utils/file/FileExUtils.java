@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.util.HtmlUtils;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -247,6 +245,26 @@ public class FileExUtils {
             } catch (IOException e) {
                 throw new RuntimeException("Create directory failed: " + path, e);
             }
+		}
+	}
+
+	/**
+	 * 读取输入流写入指定路径文件
+	 *
+	 * @param inputStream 输入流
+	 * @param output 输出文件
+	 * @throws IOException e
+	 */
+	public static void transfer(InputStream inputStream, File output) throws IOException {
+		try (BufferedInputStream bis = new BufferedInputStream(inputStream);
+			 FileOutputStream fos = new FileOutputStream(output);
+			 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+			byte[] buffer = new byte[8192];
+			int bytesRead;
+			while ((bytesRead = bis.read(buffer)) != -1) {
+				bos.write(buffer, 0, bytesRead);
+			}
+			bos.flush();
 		}
 	}
 }

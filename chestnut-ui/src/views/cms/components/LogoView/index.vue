@@ -30,6 +30,7 @@
       :open.sync="openResourceDialog"
       rtype="image"
       :upload-limit="1" 
+      :single="true"
       @ok="handleResourceDialogOk">
     </cms-resource-dialog>
   </div>

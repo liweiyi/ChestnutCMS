@@ -78,7 +78,6 @@ export default {
     ServerConnectFailed: '後端介面連接異常',
     ServerConnectTimeout: '系統介面請求超時',
     ServerApiError: '系統介面{0}異常',
-    Downloading: '正在下載數據，請稍候',
     Loading: '正在載入，請稍後',
     DownloadFailed: '下載檔案出現錯誤，請聯繫管理員！',
     InvalidFileSuffix: '檔案格式錯誤，僅支援：{0}',
@@ -88,6 +87,14 @@ export default {
     Downloading: "正在下載...",
     Downloaded: "下載完成",
     DownloadTimeout: "下載超時",
+    Unit: {
+      Year: "年",
+      Month: "月",
+      Day: "天",
+      Hour: "時",
+      Minute: "分",
+      Second: "秒"
+    },
     RuleTips: {
       NotEmpty: "不能為空",
       Email: "Email格式錯誤",

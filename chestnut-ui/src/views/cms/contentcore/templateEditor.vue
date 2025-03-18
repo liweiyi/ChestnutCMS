@@ -17,13 +17,13 @@
       </el-row>
     </el-card>
     <el-row>
-      <codemirror 
+      <code-mirror 
         class="template-editor"
         ref="cmEditor"
         v-model="form.content" 
         :options="cmOptions"
         @ready="handleCMReady"
-        @input="handleCMChange"></codemirror>
+        @input="handleCMChange"/>
     </el-row>
   </div>
 </template>
@@ -38,7 +38,7 @@
 }
 </style>
 <script>
-import { codemirror } from 'vue-codemirror'
+import CodeMirror from '@/components/CodeMirror'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/keymap/sublime' //sublime编辑器效果
@@ -59,7 +59,7 @@ import { getTemplateDetail, editTemplate } from "@/api/contentcore/template";
 
 export default {
   name: "CmsTemplateEditor",
-  components: { codemirror },
+  components: { CodeMirror },
   data () {
     return {
       loading: false,
@@ -81,22 +81,12 @@ export default {
     };
   },
   mounted() {
-    let that = this;
-    that.clientHeight = `${document.documentElement.clientHeight}`;//获取浏览器可视区域高度
-    // // 设置codemirror高度
-    that.$refs['cmEditor'].codemirror.setSize('auto', this.clientHeight - 220);
     
-    // 监听屏幕
-    window.onresize = function () {
-      that.clientHeight = `${document.documentElement.clientHeight}`;
-      // 设置代码区域高度
-      if (that.$refs['cmEditor'] && that.$refs['cmEditor'].codemirror) {
-        that.$refs['cmEditor'].codemirror.setSize('auto', parseFloat(that.clientHeight) - 220);
-      }
-    }
+    
   },
   created() {
     this.loadTemplateDetail();
+    this.clientHeight = document.documentElement.clientHeight;//获取浏览器可视区域高度
   },
   methods: {
     loadTemplateDetail () {
@@ -112,7 +102,18 @@ export default {
       });
     },
     handleCMReady () {
+      const that = this;
+      // 设置codemirror高度
+      that.$refs['cmEditor'].codemirror.setSize('auto', this.clientHeight - 220);
       
+      // 监听屏幕
+      window.onresize = function () {
+        that.clientHeight = document.documentElement.clientHeight;
+        // 设置代码区域高度
+        if (that.$refs['cmEditor'] && that.$refs['cmEditor'].codemirror) {
+          that.$refs['cmEditor'].codemirror.setSize('auto', parseFloat(that.clientHeight) - 220);
+        }
+      }
     },
     handleCMChange () {
       

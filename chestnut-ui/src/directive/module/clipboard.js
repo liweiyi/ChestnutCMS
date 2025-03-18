@@ -1,7 +1,7 @@
 /**
-* v-clipboard 文字复制剪贴
- * Copyright (c) 2023 兮玥（190785909@qq.com）
-*/
+ * v-clipboard 文字复制剪贴
+ * Copyright © 2022-2025 兮玥（190785909@qq.com）
+ */
 
 import Clipboard from 'clipboard'
 export default {

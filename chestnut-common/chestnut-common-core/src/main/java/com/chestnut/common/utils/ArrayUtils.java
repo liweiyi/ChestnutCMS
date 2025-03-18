@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.chestnut.common.utils;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class ArrayUtils {
 
@@ -113,10 +114,32 @@ public class ArrayUtils {
 		return map;
 	}
 
+	public static <T, R> List<R> map(T[] array, Function<T, R> mapper) {
+		if (Objects.isNull(array)) {
+			return List.of();
+		}
+		return Stream.of(array).map(mapper).toList();
+	}
+
+	public static <T, R> List<R> mapNotNull(T[] array, Function<T, R> mapper) {
+		if (Objects.isNull(array)) {
+			return List.of();
+		}
+		return Stream.of(array).map(mapper).filter(Objects::nonNull).toList();
+	}
+
 	public static <T, R> List<R> mapNotNull(List<T> list, Function<T, R> mapper) {
 		if (Objects.isNull(list)) {
 			return List.of();
 		}
 		return list.stream().map(mapper).filter(Objects::nonNull).toList();
+	}
+
+    public static <T> boolean isEmpty(T[] arr) {
+		return Objects.isNull(arr) || arr.length == 0;
+    }
+
+	public static <T> boolean isNotEmpty(T[] arr) {
+		return !isEmpty(arr);
 	}
 }

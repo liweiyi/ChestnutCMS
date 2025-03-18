@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,5 +33,9 @@ public interface ErrorCode {
 
 	default GlobalException exception(Object... args) {
 		return new GlobalException(this, args);
+	}
+
+	default GlobalException exception(Throwable cause, Object... args) {
+		return new GlobalException(cause, this, args);
 	}
 }

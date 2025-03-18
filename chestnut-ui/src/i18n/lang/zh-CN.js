@@ -78,7 +78,6 @@ export default {
     ServerConnectFailed: '后端接口连接异常',
     ServerConnectTimeout: '系统接口请求超时',
     ServerApiError: '系统接口{0}异常',
-    Downloading: '正在下载数据，请稍候',
     Loading: '正在加载，请稍后',
     DownloadFailed: '下载文件出现错误，请联系管理员！',
     InvalidFileSuffix: '文件格式错误，仅支持：{0}',
@@ -88,6 +87,14 @@ export default {
     Downloading: "正在下载...",
     Downloaded: "下载完成",
     DownloadTimeout: "下载超时",
+    Unit: {
+      Year: "年",
+      Month: "月",
+      Day: "天",
+      Hour: "时",
+      Minute: "分",
+      Second: "秒"
+    },
     RuleTips: {
       NotEmpty: "不能为空",
       Email: "Email格式错误",
@@ -1404,7 +1411,13 @@ export default {
       Cut: "裁剪",
       UploadLimit: "上传文件数量不能超过：{0}",
       UploadFileSizeLimit: "上传文件大小不能超过：{0}",
-      RemoteLinkErr: "资源外链不能为空且必须是http://或https://开头的网络地址"
+      RemoteLinkErr: "资源外链不能为空且必须是http://或https://开头的网络地址",
+      UploadSuccess: "上传成功",
+      UploadFail: "上传失败",
+      Uploading: "上传中...",
+      Md5ing: "计算MD5中...",
+      Paused: "暂停中...",
+      Waiting: "等待中..."
     },
     PublishPipe: {
       Name: "名称",

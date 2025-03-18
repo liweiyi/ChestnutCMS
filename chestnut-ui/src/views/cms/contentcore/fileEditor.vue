@@ -15,19 +15,19 @@
       </el-row>
     </el-card>
     <el-row>
-      <codemirror 
+      <code-mirror 
         class="file-editor"
         ref="cmEditor"
         v-model="form.fileContent" 
         :options="cmOptions"
         @ready="handleCMReady"
         @input="handleCMChange"
-      ></codemirror>
+      />
     </el-row>
   </div>
 </template>
 <script>
-import { codemirror } from 'vue-codemirror'
+import CodeMirror from '@/components/CodeMirror'
 import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/keymap/sublime' //sublime编辑器效果
@@ -48,7 +48,7 @@ import { readFile, editFile } from "@/api/contentcore/file";
 
 export default {
   name: "CmsFileEditor",
-  components: { codemirror },
+  components: { CodeMirror },
   data () {
     return {
       loading: false,

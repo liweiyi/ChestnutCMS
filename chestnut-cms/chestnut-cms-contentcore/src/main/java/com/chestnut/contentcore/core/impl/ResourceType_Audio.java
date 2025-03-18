@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,13 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import java.io.IOException;
-import java.util.Objects;
-
+import com.chestnut.contentcore.core.IResourceType;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
-import com.chestnut.contentcore.core.IResourceType;
-import com.chestnut.contentcore.domain.CmsResource;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Objects;
 
 /**
  * 资源类型：音频
@@ -61,10 +57,5 @@ public class ResourceType_Audio implements IResourceType {
 	public static boolean isAudio(String path) {
 		String ext = FileNameUtils.getExtension(path);
 		return Objects.nonNull(path) && ArrayUtils.contains(SuffixArray, ext);
-	}
-	
-	@Override
-	public byte[] process(CmsResource resource, byte[] bytes) throws IOException {
-		return IResourceType.super.process(resource, bytes);
 	}
 }

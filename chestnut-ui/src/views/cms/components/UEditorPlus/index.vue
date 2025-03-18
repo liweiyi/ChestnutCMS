@@ -46,7 +46,7 @@ import CMSUeditorBaiduMap from "./baidu-map";
 import { checkSensitiveWords } from "@/api/word/sensitiveWord";
 import { checkFallibleWords } from "@/api/word/errorProneWord"
 
-const UE_HOME = '/UEditorPlus/';
+const UE_HOME = process.env.VUE_APP_PATH + 'UEditorPlus/';
 
 export default {
   name: "UEditorPlus",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -353,9 +353,11 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	@Override
 	public void cancelTop() {
-		if (content.getTopFlag() > 0L) {
+		if (content.getTopFlag() <= 0L) {
 			return;
 		}
+		content.setTopFlag(0L);
+		content.setTopDate(null);
 		this.getContentService().dao().updateById(content);
 		// 重新发布内容
 		if (ContentStatus.isPublished(this.getContentEntity().getStatus())) {

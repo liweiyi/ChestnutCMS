@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2024 兮玥(190785909@qq.com)
+ * Copyright 2022-2025 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
 import freemarker.template.TemplateException;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -64,8 +63,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -344,13 +345,12 @@ public class SiteController extends BaseRestController {
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
     @Log(title = "上传水印图", businessType = BusinessType.UPDATE)
     @PostMapping("/upload_watermarkimage")
-    public R<?> uploadFile(@RequestParam("siteId") @LongId Long siteId,
-                           @RequestParam("file") @NotNull MultipartFile multipartFile) throws Exception {
+    public R<?> uploadFile(@RequestParam("siteId") @LongId Long siteId, @RequestParam("file") @NotNull MultipartFile multipartFile) {
         try {
             CmsSite site = this.siteService.getSite(siteId);
             Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
-            String dir = SiteUtils.getSiteResourceRoot(site.getPath()) + "resources";
+            String dir = SiteUtils.getSiteResourceRoot(site.getPath());
             String suffix = FileExUtils.getExtension(Objects.requireNonNull(multipartFile.getOriginalFilename()));
             String path = "watermaker" + StringUtils.DOT + suffix;
             File file = new File(dir + path);
