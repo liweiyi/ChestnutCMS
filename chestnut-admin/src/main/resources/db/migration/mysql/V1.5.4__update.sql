@@ -9,3 +9,5 @@ CREATE TABLE `sys_groovy_script` (
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`script_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+ALTER TABLE cms_resource ADD COLUMN `identifier` varchar(50);
