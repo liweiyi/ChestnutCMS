@@ -15,12 +15,16 @@
  */
 package com.chestnut.advertisement.controller.front;
 
+import com.chestnut.advertisement.cache.AdNameMonitoredCache;
+import com.chestnut.advertisement.service.IAdvertisementService;
 import com.chestnut.advertisement.stat.AdClickStatEventHandler;
 import com.chestnut.advertisement.stat.AdViewStatEventHandler;
+import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.stat.core.StatEvent;
 import com.chestnut.stat.service.impl.StatEventService;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -33,8 +37,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 /**
@@ -51,13 +53,28 @@ public class AdApiController extends BaseRestController {
 
 	private final StatEventService statEventService;
 
+	private final IAdvertisementService advertisementService;
+
+	private final AdNameMonitoredCache adNameMonitoredCache;
+
+	private final RedisCache redisCache;
+
 	@GetMapping("/redirect")
 	public void statAndRedirect(@RequestParam("sid") Long siteId,
 								@RequestParam("aid") Long advertisementId,
-								@RequestParam("url") String redirectUrl,
 								HttpServletResponse response) throws IOException {
-		this.adClick(siteId, advertisementId);
-		response.sendRedirect(URLDecoder.decode(redirectUrl, StandardCharsets.UTF_8));
+		if (!IdUtils.validate(siteId) || !IdUtils.validate(advertisementId)) {
+			log.warn("Invalid sid/aid: sid = {}, aid = {}", siteId, advertisementId);
+			return;
+		}
+		String redirectUrl = advertisementService.getRedirectUrlByAdId(siteId, advertisementId);
+		if (StringUtils.isEmpty(redirectUrl)) {
+			// TODO 跳转公共错误页面
+			response.getWriter().write("Invalid advertisement.");
+			return;
+		}
+		dealAdClick(siteId, advertisementId);
+		response.sendRedirect(redirectUrl);
 	}
 
 	@GetMapping("/click")
@@ -66,6 +83,15 @@ public class AdApiController extends BaseRestController {
 			log.warn("Invalid sid/aid: sid = {}, aid = {}", siteId, advertisementId);
 			return;
 		}
+		boolean hasAd = redisCache.hasMapKey(adNameMonitoredCache.getCacheKey(), advertisementId.toString());
+		if (!hasAd) {
+			log.warn("Invalid advertisement id: {}", advertisementId);
+			return;
+		}
+		dealAdClick(siteId, advertisementId);
+	}
+
+	private void dealAdClick(Long siteId, Long advertisementId) {
 		StatEvent evt = new StatEvent();
 		evt.setType(AdClickStatEventHandler.TYPE);
 		ObjectNode objectNode = JacksonUtils.objectNode();
@@ -81,6 +107,11 @@ public class AdApiController extends BaseRestController {
 	public void adView(@RequestParam("sid") Long siteId, @RequestParam("aid") Long advertisementId) {
 		if (!IdUtils.validate(siteId) || !IdUtils.validate(advertisementId)) {
 			log.warn("Invalid sid/aid: sid = {}, aid = {}", siteId, advertisementId);
+			return;
+		}
+		boolean hasAd = redisCache.hasMapKey(adNameMonitoredCache.getCacheKey(), advertisementId.toString());
+		if (!hasAd) {
+			log.warn("Invalid advertisement id: {}", advertisementId);
 			return;
 		}
 		StatEvent evt = new StatEvent();

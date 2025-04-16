@@ -129,4 +129,20 @@ public class I18nUtils {
 		}
 		return PlaceholderHelper.replacePlaceholders(str, langKey -> messageSource.getMessage(langKey, args, locale));
 	}
+
+	public static boolean isLanguageTag(String s) {
+		int len = s.length();
+		return (len >= 2) && (len <= 8) && isAlphaString(s);
+	}
+
+	static boolean isAlphaString(String s) {
+		int len = s.length();
+		for (int i = 0; i < len; i++) {
+			char c = s.charAt(i);
+			if (c != '-' && !((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

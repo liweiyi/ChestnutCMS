@@ -498,7 +498,7 @@ export default {
       if (this.$route.path.endsWith('editorW')) {
         window.close();
       } else {
-        const obj = { path: "/configs/content", name: "CMSContentList" };
+        const obj = { path: "/configs/content", name: "CmsContentcoreContent" };
         this.$tab.closeOpenPage(obj).then(() => {
           this.$tab.refreshPage(obj);
         });

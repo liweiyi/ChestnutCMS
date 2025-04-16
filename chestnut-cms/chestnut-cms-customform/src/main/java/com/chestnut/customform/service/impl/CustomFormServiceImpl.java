@@ -22,11 +22,9 @@ import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ReflectASMUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.fixed.config.SiteApiUrl;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
@@ -42,6 +40,7 @@ import com.chestnut.customform.domain.dto.CustomFormEditDTO;
 import com.chestnut.customform.fixed.dict.CustomFormStatus;
 import com.chestnut.customform.mapper.CustomFormMapper;
 import com.chestnut.customform.publishpipe.PublishPipeProp_CustomFormTemplate;
+import com.chestnut.customform.rule.ICustomFormLimitRule;
 import com.chestnut.customform.service.ICustomFormService;
 import com.chestnut.xmodel.domain.XModel;
 import com.chestnut.xmodel.service.IModelService;
@@ -73,6 +72,13 @@ public class CustomFormServiceImpl extends ServiceImpl<CustomFormMapper, CmsCust
 	private final IPublishPipeService publishPipeService;
 
 	private final StaticizeService staticizeService;
+
+	private final Map<String, ICustomFormLimitRule> limitRuleMap;
+
+	@Override
+	public ICustomFormLimitRule getLimitRule(String ruleId) {
+		return this.limitRuleMap.get(ICustomFormLimitRule.BEAN_PREFIX + ruleId);
+	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)

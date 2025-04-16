@@ -265,7 +265,7 @@ export default {
       })
     },
     handleBeforeInit(editorId) {
-      console.log('ueditor-plus.before-init', editorId)
+      // console.log('ueditor-plus.before-init', editorId)
       this.addXyContentButton(editorId)
       this.addXyResourceButton(editorId)
       this.addThirdVideoButton(editorId)
@@ -798,7 +798,6 @@ export default {
     },
     // 视频信息修改
     handleVideoModifierDialogOk(data) {
-      console.log('videomodifier', data)
       if (!this.videoModifierEl) {
         return;
       }
@@ -830,7 +829,6 @@ export default {
         videoOptions['poster'] = data.posterSrc;
         videoOptions['iurl'] = data.poster;
       }
-      console.log('videoOptions', videoOptions)
       var newVideo = document.createElement('video');
       domUtils.setAttributes(newVideo, videoOptions);
       newVideo.innerHTML = this.videoModifierEl.innerHTML;

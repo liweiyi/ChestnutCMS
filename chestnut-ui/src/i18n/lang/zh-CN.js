@@ -66,6 +66,8 @@ export default {
     CheckInverse: '全不选',
     TreeLinkage: '父子联动',
     ConfirmDelete: '是否确认删除？',
+    Today: '今天',
+    Yesterday: '昨天',
     LastWeek: '最近一周',
     LastMonth: '最近一个月',
     LastThreeMonth: '最近三个月',
@@ -87,9 +89,12 @@ export default {
     Downloading: "正在下载...",
     Downloaded: "下载完成",
     DownloadTimeout: "下载超时",
+    Others: "其他",
+    Unknown: "未知",
     Unit: {
       Year: "年",
       Month: "月",
+      Week: "周",
       Day: "天",
       Hour: "时",
       Minute: "分",
@@ -1021,6 +1026,9 @@ export default {
         MemberResourceUrl: "会员资源访问域名",
         ShortTitleLabel: "短标题自定义表单名",
         SubTitleLabel: "副标题自定义表单名",
+        EnableStat: "开启站点访问统计",
+        EnableDynamicStatScript: "启用动态统计脚本",
+        EnableHyperLogLog: "启用HyperLogLog",
       },
       Property: {
         QueryPlaceholder: "输入名称/编码查询",
@@ -1590,7 +1598,57 @@ export default {
       AddDataTitle: "添加表单数据",
       EditDataTitle: "编辑表单数据",
       DataList: "表单数据"
-    }
+    },
+    StatPro: {
+      PV: "浏览量（PV）",
+      UV: "访客量（UV）",
+      IP: "IP数",
+      AvgVisitTime: "平均访问时长",
+      Rate: "占比",
+      Hour: "小时",
+      Day: "按天",
+      Week: "按周",
+      Month: "按月",
+      OS: "操作系统",
+      Browser: "浏览器",
+      DisplaySize: "屏幕分辨率",
+      ColorDepth: "屏幕色深",
+      NetworkOp: "网络运营商",
+      Lang: "语言",
+      SupportedCookie: "是否支持Cookie",
+      SupportedJava: "是否支持Java",
+      VisitorType: "访客类型",
+      NewVisitor: "新访客",
+      OldVisitor: "老访客",
+      Date: "日期",
+      Time: "时间",
+      EventType: "事件类型",
+      UUID: "访客标识",
+      VisitTrend: "访问趋势",
+      NewVisitorNum: "新访客数",
+      NewVisitorPV: "新访客PV",
+      NewVisitorVT: "新访客平均访问时长",
+      OldVisitorNum: "老访客数",
+      OldVisitorPV: "老访客PV",
+      OldVisitorVT: "老访客平均访问时长",
+      Placeholder: {
+        IP: "输入IP查询",
+        UUID: "输入用户标识查询",
+      },
+      Region: {
+        Name: "地域",
+        Country: "国家",
+        Province: "省份",
+        ByProvince: "按省",
+        ByCountry: "按国家",
+        MapChart: "地域分布图",
+        District: "地区"
+      },
+      Source: {
+        Type: "来源类型",
+        Flag: "来源标识",
+      }
+    },
   },
   WordMgr: {
     TAG: {
@@ -1655,7 +1713,7 @@ export default {
       Placeholder: {
         InputWord: "输入易错词查询"
       }
-    }
+    },
   },
   Stat: {
     Site: {

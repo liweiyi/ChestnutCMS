@@ -217,7 +217,6 @@ export default {
       });
     },
     handleSaveExtends () {
-      console.log("handleSaveExtends", 1)
       this.$refs["form_extend"].validate(valid => {
         if (valid) {
           const data = {};

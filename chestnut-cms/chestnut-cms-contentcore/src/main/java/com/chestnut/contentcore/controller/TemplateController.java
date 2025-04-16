@@ -45,6 +45,7 @@ import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -83,9 +84,11 @@ public class TemplateController extends BaseRestController {
 	)
 	@GetMapping
 	public R<?> getTemplateList(@RequestParam(value = "publishPipeCode", required = false) String publishPipeCode,
-								@RequestParam(value = "filename", required = false) String filename) {
+								@RequestParam(value = "siteId", required = false, defaultValue = "0") Long siteId,
+								@RequestParam(value = "filename", required = false) String filename,
+								HttpServletRequest request) {
 		PageRequest pr = this.getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = siteService.getSiteOrCurrent(siteId, request);
 		this.templateService.scanTemplates(site);
 		Page<CmsTemplate> page = this.templateService.lambdaQuery().eq(CmsTemplate::getSiteId, site.getSiteId())
 				.eq(StringUtils.isNotEmpty(publishPipeCode), CmsTemplate::getPublishPipeCode, publishPipeCode)

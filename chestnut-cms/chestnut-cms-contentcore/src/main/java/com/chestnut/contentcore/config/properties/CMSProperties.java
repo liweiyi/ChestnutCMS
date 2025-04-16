@@ -15,10 +15,9 @@
  */
 package com.chestnut.contentcore.config.properties;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
  * CMS配置属性
@@ -44,5 +43,10 @@ public class CMSProperties {
 	/**
 	 * 系统启动时是否清空cacheName前缀的所有缓存
 	 */
-	private Boolean resetCache = true;
+	private Boolean resetCache = false;
+
+	/**
+	 * 资源分片文件过期时间，默认：24小时，单位：秒
+	 */
+	private long resourceChunkExpireSeconds = 24 * 60 * 60;
 }

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="log.app.name" value="ChestnutCMS" />
+    <!-- 日志存放路径 -->
+	<property name="log.path" value="logs" />
+    <!-- 日志输出格式 -->
+	<property name="log.pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t][%C#%method,%L]: %msg%n" />
+
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 设置队列的最大容量，默认：256 -->
+        <queueSize>262144</queueSize>
+        <!-- 在队列快满时（还剩20%容量），丢弃日志的水平，配置为 0 就是都不丢弃 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 设置是否在异步线程中包含调用者数据，默认：false，其实就是是否可以输出代码位置 -->
+        <includeCallerData>true</includeCallerData>
+        <appender-ref ref="out" />
+    </appender>
+
+	<!-- 控制台输出 -->
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>${log.pattern}</pattern>
+		</encoder>
+	</appender>
+    <appender name="CC_CONSOLE" class="com.chestnut.system.logs.CcConsoleAppender">
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+	<!-- 系统日志输出 -->
+	<appender name="out" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	    <file>${log.path}/out.log</file>
+        <!-- 循环政策：基于时间创建日志文件 -->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志文件名格式 -->
+			<fileNamePattern>${log.path}/out-%d{yyyy-MM-dd}-${LOCAL_IP}.log</fileNamePattern>
+			<!-- 日志最大的历史 5天 -->
+			<maxHistory>5</maxHistory>
+		</rollingPolicy>
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>${log.pattern}</pattern>
+		</encoder>
+        <!-- 默认：true，日志直接写入磁盘，设置为false先写入内存，buffer满后批量刷盘 -->
+        <immediateFlush>false</immediateFlush>
+        <!-- 日志写入内存容量上限 -->
+        <bufferSize>8192</bufferSize>
+	</appender>
+	
+	<!-- 定时任务输出  -->
+    <appender name="cron" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${log.path}/cron.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 按天回滚 daily -->
+            <fileNamePattern>${log.path}/cron-%d{yyyy-MM-dd}-${LOCAL_IP}.log</fileNamePattern>
+            <!-- 日志最大的历史 60天 -->
+            <maxHistory>5</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 发布日志输出  -->
+    <appender name="publish" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/publish.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 按天回滚 daily -->
+            <fileNamePattern>${log.path}/publish-%d{yyyy-MM-dd}-${LOCAL_IP}.log</fileNamePattern>
+            <!-- 日志最大的历史 60天 -->
+            <maxHistory>5</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
+
+	<!--默认-->
+	<root level="info">
+		<appender-ref ref="console" />
+        <appender-ref ref="CC_CONSOLE" />
+        <appender-ref ref="ASYNC_FILE" />
+	</root>
+    <!-- Spring日志  -->
+    <logger name="org.springframework" level="warn" />
+    <!-- 系统模块日志  -->
+    <logger name="com.chestnut" level="debug" />
+	<!-- 系统定时任务日志-->
+    <logger name="cron" level="debug">
+        <appender-ref ref="cron"/>
+    </logger>
+    <!--系统发布日志-->
+    <logger name="publish" level="debug">
+        <appender-ref ref="publish"/>
+    </logger>
+</configuration> 

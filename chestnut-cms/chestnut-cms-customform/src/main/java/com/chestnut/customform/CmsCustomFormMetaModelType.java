@@ -16,7 +16,6 @@
 package com.chestnut.customform;
 
 import com.chestnut.customform.domain.CmsCustomFormData;
-import com.chestnut.exmodel.domain.CmsExtendModelData;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.core.impl.MetaControlType_Input;
@@ -68,8 +67,12 @@ public class CmsCustomFormMetaModelType implements IMetaModelType {
             "site_id", false, MetaControlType_Input.TYPE, MetaFieldType.LONG);
     public static final MetaModelField FIELD_CLIENT_IP = new MetaModelField("IP", "clientIp",
             "client_ip", false, MetaControlType_Input.TYPE, MetaFieldType.SHORT_TEXT);
+    // 用户唯一标识（未登录）
     public static final MetaModelField FIELD_UUID = new MetaModelField("UUID", "uuid",
             "uuid", false, MetaControlType_Input.TYPE, MetaFieldType.MEDIUM_TEXT);
+    // 会员ID（已登录）
+    public static final MetaModelField FIELD_UID = new MetaModelField("UID", "uid",
+            "uid", false, MetaControlType_Input.TYPE, MetaFieldType.LONG);
     public static final MetaModelField FIELD_CREATE_TIME = new MetaModelField("创建时间", "createTime",
             "create_time", false, MetaControlType_Input.TYPE, MetaFieldType.DATETIME);
 }

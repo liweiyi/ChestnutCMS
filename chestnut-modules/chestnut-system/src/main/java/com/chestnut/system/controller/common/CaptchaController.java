@@ -68,8 +68,9 @@ public class CaptchaController {
 		String uuid = IdUtils.simpleUUID();
 		String verifyKey = SysConstants.CAPTCHA_CODE_KEY + uuid;
 
-		String capStr = null, code = null;
-		BufferedImage image = null;
+		String capStr;
+		String code;
+		BufferedImage image;
 
 		Producer captchaProducer = captchaProducers.get(CaptchaConfig.BEAN_PREFIX + this.properties.getCaptchaType());
 		Assert.notNull(captchaProducer, () -> SysErrorCode.CAPTCHA_CONFIG_ERR.exception(this.properties.getCaptchaType()));
@@ -89,14 +90,13 @@ public class CaptchaController {
 
 		captchaCache.setCache(verifyKey, code, SysConstants.CAPTCHA_EXPIRATION, TimeUnit.MINUTES);
 		// 转换流信息写出
-		FastByteArrayOutputStream os = new FastByteArrayOutputStream();
-		try {
+		try(FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
 			ImageIO.write(image, "jpg", os);
+			ImageCaptchaVO vo = ImageCaptchaVO.builder().captchaEnabled(true).uuid(uuid)
+					.img(Base64.getEncoder().encodeToString(os.toByteArray())).build();
+			return R.ok(vo);
 		} catch (IOException e) {
 			return R.fail(e.getMessage());
 		}
-		ImageCaptchaVO vo = ImageCaptchaVO.builder().captchaEnabled(captchaEnabled).uuid(uuid)
-				.img(Base64.getEncoder().encodeToString(os.toByteArray())).build();
-		return R.ok(vo);
 	}
 }

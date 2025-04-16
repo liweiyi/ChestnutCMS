@@ -51,7 +51,7 @@ public class HttpUtils {
 		return USER_AGENTS[index];
 	}
 
-	private static SSLContext trustAllSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
+	public static SSLContext trustAllSSLContext() throws NoSuchAlgorithmException, KeyManagementException {
 		TrustManager[] trustAllCerts = new TrustManager[] {
 				new X509TrustManager() {
 					public void checkClientTrusted(X509Certificate[] certs, String authType) {}
@@ -94,20 +94,23 @@ public class HttpUtils {
 	 * @param uri
 	 * @return
 	 */
-	public static String get(URI uri) {
+	public static String get(URI uri, Map<String, String> headers) {
 		try {
 			HttpClient httpClient = HttpClient.newBuilder()
 					.connectTimeout(Duration.ofSeconds(30))
 					.followRedirects(Redirect.ALWAYS)
 					.build();
-			HttpRequest httpRequest = HttpRequest.newBuilder(uri)
-					.header("User-Agent", USER_AGENTS[0])
-					.GET()
-					.build();
+			HttpRequest.Builder builder = HttpRequest.newBuilder(uri);
+			headers.forEach(builder::setHeader);
+			HttpRequest httpRequest = builder.GET().build();
 			return httpClient.send(httpRequest, BodyHandlers.ofString()).body();
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public static String get(URI uri) {
+		return get(uri, Map.of("User-Agent", USER_AGENTS[0]));
 	}
 
 	public static String post(URI uri, String body, Map<String, String> headers) throws Exception {

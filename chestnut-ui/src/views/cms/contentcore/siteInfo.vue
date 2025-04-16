@@ -106,7 +106,7 @@
           <el-input v-model="form_info.resourceUrl" placeholder="http(s)://" />
         </el-form-item>
         <el-form-item :label="$t('CMS.Site.Logo')" prop="logo">
-          <cms-logo-view v-model="form_info.logo" :src="form_info.logoSrc" :width="218" :height="150"></cms-logo-view>
+          <cms-logo-view v-model="form_info.logo" :src="form_info.logoSrc" :siteId="form_info.siteId" :width="218" :height="150"></cms-logo-view>
         </el-form-item>
         <el-form-item :label="$t('CMS.Site.Desc')" prop="description">
           <el-input v-model="form_info.description" type="textarea" :rows="5" :maxlength="300" />
@@ -258,6 +258,7 @@
     <cms-template-selector 
       :open="openTemplateSelector" 
       :publishPipeCode="publishPipeActiveName" 
+      :siteId="form_info.siteId"
       @ok="handleTemplateSelected"
       @cancel="handleTemplateSelectorCancel" />
     <!-- 站点文件选择组件 -->

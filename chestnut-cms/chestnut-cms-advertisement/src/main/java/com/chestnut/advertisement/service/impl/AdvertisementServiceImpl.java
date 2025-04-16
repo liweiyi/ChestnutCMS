@@ -18,7 +18,8 @@ package com.chestnut.advertisement.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.advertisement.AdSpacePageWidgetType;
 import com.chestnut.advertisement.IAdvertisementType;
-import com.chestnut.advertisement.cache.AdMonitoredCache;
+import com.chestnut.advertisement.cache.AdNameMonitoredCache;
+import com.chestnut.advertisement.cache.AdRedirectUrlMonitoredCache;
 import com.chestnut.advertisement.domain.CmsAdvertisement;
 import com.chestnut.advertisement.mapper.CmsAdvertisementMapper;
 import com.chestnut.advertisement.pojo.dto.AdvertisementDTO;
@@ -32,20 +33,16 @@ import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.properties.SiteApiUrlProperty;
-import com.chestnut.contentcore.publish.IStaticizeType;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.security.StpAdminUtil;
-import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,9 +58,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper, CmsAdvertisement>
-		implements IAdvertisementService {
+		implements IAdvertisementService, CommandLineRunner {
 
-	private final AdMonitoredCache adCache;
+	private final AdNameMonitoredCache adNameCache;
+
+	private final AdRedirectUrlMonitoredCache adRedirectUrlCache;
 
 	private final Map<String, IAdvertisementType> advertisementTypes;
 
@@ -85,12 +84,17 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 
 	@Override
 	public Map<String, String> getAdvertisementMap() {
-		return adCache.getCache(() -> {
+		return adNameCache.getCache(() -> {
 			return this.lambdaQuery()
 					.select(List.of(CmsAdvertisement::getAdvertisementId, CmsAdvertisement::getName))
 					.list().stream()
 					.collect(Collectors.toMap(ad -> ad.getAdvertisementId().toString(), CmsAdvertisement::getName));
 		});
+	}
+
+	@Override
+	public String getRedirectUrlByAdId(Long siteId, Long advertisementId) {
+		return adRedirectUrlCache.getCacheValue(siteId, advertisementId);
 	}
 
 	@Override
@@ -106,8 +110,8 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 		advertisement.setState(EnableOrDisable.ENABLE);
 		advertisement.createBy(dto.getOperator().getUsername());
 		this.save(advertisement);
-
-		this.adCache.clear();
+		// 更新缓存
+		this.updateCache(advertisement);
 		return advertisement;
 	}
 
@@ -120,14 +124,20 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 		BeanUtils.copyProperties(dto, advertisement, "adSpaceId");
 		advertisement.updateBy(dto.getOperator().getUsername());
 		this.updateById(advertisement);
+		// 更新缓存
+		this.updateCache(advertisement);
 		return advertisement;
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteAdvertisement(List<Long> advertisementIds) {
-		this.removeByIds(advertisementIds);
-		this.adCache.clear();
+		List<CmsAdvertisement> advertisements = this.listByIds(advertisementIds);
+		this.removeByIds(advertisements);
+		// 更新缓存
+		for (CmsAdvertisement advertisement : advertisements) {
+			this.deleteCache(advertisement.getSiteId(), advertisement.getAdvertisementId());
+		}
 	}
 
 	@Override
@@ -168,7 +178,21 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 	public String getAdvertisementStatLink(CmsAdvertisement adv, String publishPipeCode) {
 		CmsSite site = this.siteService.getSite(adv.getSiteId());
 		String apiUrl = SiteApiUrlProperty.getValue(site, publishPipeCode);
-		return apiUrl + "api/adv/redirect?sid=" + adv.getSiteId() + "&aid=" + adv.getAdvertisementId()
-				+ "&url=" + URLEncoder.encode(adv.getRedirectUrl(), StandardCharsets.UTF_8);
+		return apiUrl + "api/adv/redirect?sid=" + adv.getSiteId() + "&aid=" + adv.getAdvertisementId();
+	}
+
+	private void updateCache(CmsAdvertisement advertisement) {
+		this.adNameCache.update(advertisement.getAdvertisementId(), advertisement.getName());
+		this.adRedirectUrlCache.update(advertisement.getSiteId(), advertisement.getAdvertisementId(), advertisement.getRedirectUrl());
+	}
+
+	private void deleteCache(Long siteId, Long advertisementId) {
+		this.adNameCache.delete(advertisementId);
+		this.adRedirectUrlCache.delete(siteId, advertisementId);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		this.list().forEach(this::updateCache);
 	}
 }

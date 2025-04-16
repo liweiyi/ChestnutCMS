@@ -89,10 +89,14 @@ public class CoreController extends BaseRestController {
 		IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(dataType);
 		Assert.notNull(internalDataType, () -> ContentCoreErrorCode.UNSUPPORTED_INTERNAL_DATA_TYPE.exception(dataType));
 
-		IInternalDataType.RequestData data = new IInternalDataType.RequestData(dataId, pageIndex, publishPipe,
-				true, ServletUtils.getParamMap(ServletUtils.getRequest()));
-		String pageData = internalDataType.getPageData(data);
-		response.getWriter().write(pageData);
+		try {
+			IInternalDataType.RequestData data = new IInternalDataType.RequestData(dataId, pageIndex, publishPipe,
+					true, ServletUtils.getParamMap(ServletUtils.getRequest()));
+			String pageData = internalDataType.getPageData(data);
+			response.getWriter().write(pageData);
+		} catch (Exception e) {
+			e.printStackTrace(response.getWriter());
+		}
 	}
 
 	/**
@@ -107,7 +111,7 @@ public class CoreController extends BaseRestController {
 	public void browse(@PathVariable("dataType") String dataType, @PathVariable("dataId") Long dataId,
 					   @RequestParam(value = "pp") String publishPipe,
 					   @RequestParam(value = "pi", required = false, defaultValue = "1") Integer pageIndex)
-			throws IOException, TemplateException {
+			throws IOException {
 		HttpServletResponse response = ServletUtils.getResponse();
 
 		response.setCharacterEncoding(Charset.defaultCharset().displayName());
@@ -115,10 +119,14 @@ public class CoreController extends BaseRestController {
 		IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(dataType);
 		Assert.notNull(internalDataType, () -> ContentCoreErrorCode.UNSUPPORTED_INTERNAL_DATA_TYPE.exception(dataType));
 
-		IInternalDataType.RequestData data = new IInternalDataType.RequestData(dataId, pageIndex, publishPipe,
-				false, ServletUtils.getParamMap(ServletUtils.getRequest()));
-		String pageData = internalDataType.getPageData(data);
-		response.getWriter().write(pageData);
+		try {
+			IInternalDataType.RequestData data = new IInternalDataType.RequestData(dataId, pageIndex, publishPipe,
+					false, ServletUtils.getParamMap(ServletUtils.getRequest()));
+			String pageData = internalDataType.getPageData(data);
+			response.getWriter().write(pageData);
+		} catch (Exception e) {
+			e.printStackTrace(response.getWriter());
+		}
 	}
 
 	@GetMapping("/cms/ssi/virtual/")

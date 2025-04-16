@@ -43,8 +43,24 @@ public class TimeUtils {
         return LocalDateTime.ofInstant(instant, ZONE_OFFSET);
     }
 
+    public static LocalDateTime epochSecondToLocalDateTime(long epochSecond) {
+        return toLocalDateTime(Instant.ofEpochSecond(epochSecond));
+    }
+
+    public static long epochSecond(LocalDateTime localDateTime) {
+        return localDateTime.toEpochSecond(ZONE_OFFSET);
+    }
+
+    public static String epochSecondFormat(long epochSecond, DateTimeFormatter formatter) {
+        return formatter.format(toLocalDateTime(Instant.ofEpochSecond(epochSecond)));
+    }
+
     public static String localDateTimeFormat(long epochMilli) {
         return YYYY_MM_DD_HH_MM_SS.format(toLocalDateTime(Instant.ofEpochMilli(epochMilli)));
+    }
+
+    public static String localDateTimeFormat(long epochMilli, DateTimeFormatter formatter) {
+        return formatter.format(toLocalDateTime(Instant.ofEpochMilli(epochMilli)));
     }
 
     public static String localDateFormat(long epochMilli) {

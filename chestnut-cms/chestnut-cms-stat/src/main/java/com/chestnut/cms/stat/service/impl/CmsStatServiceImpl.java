@@ -17,12 +17,10 @@ package com.chestnut.cms.stat.service.impl;
 
 import com.chestnut.cms.stat.baidu.BaiduTongjiConfig;
 import com.chestnut.cms.stat.baidu.BaiduTongjiUtils;
-import com.chestnut.cms.stat.baidu.api.SiteListResponse;
 import com.chestnut.cms.stat.exception.CmsStatErrorCode;
 import com.chestnut.cms.stat.properties.BaiduTjAccessTokenProperty;
 import com.chestnut.cms.stat.properties.BaiduTjRefreshTokenProperty;
 import com.chestnut.cms.stat.service.ICmsStatService;
-import com.chestnut.common.domain.R;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;

@@ -153,4 +153,19 @@ public class ImageUtils {
         }
         throw new ImageException("Unsupported image format: " + imageFormat);
     }
+
+    public static boolean isBase64Image(String base64) {
+        if (!StringUtils.startsWithIgnoreCase(base64, "data:image/")) {
+            return false;
+        }
+        String encode = StringUtils.substringAfter(StringUtils.substringBefore(base64, ","), ";");
+        return "base64".equalsIgnoreCase(encode);
+    }
+
+    public static boolean isBase64Image(Object v) {
+        if (Objects.isNull(v)) {
+            return false;
+        }
+        return isBase64Image(v.toString());
+    }
 }

@@ -15,11 +15,10 @@
  */
 package com.chestnut.common.log;
 
-import java.time.LocalDateTime;
-
+import com.chestnut.common.log.annotation.Log;
 import org.aspectj.lang.ProceedingJoinPoint;
 
-import com.chestnut.common.log.annotation.Log;
+import java.time.LocalDateTime;
 
 /**
  * 日志类型接口，收集日志相关信息交给LogHandler处理。
@@ -43,7 +42,7 @@ public interface ILogType {
 	 * @param log
 	 * @param logTime
 	 */
-	default public void beforeProceed(ProceedingJoinPoint joinPoint, Log log, LocalDateTime logTime) {
+	default void beforeProceed(ProceedingJoinPoint joinPoint, Log log, LocalDateTime logTime) {
 		
 	}
 	
@@ -56,7 +55,7 @@ public interface ILogType {
 	 * @param result
 	 * @param e
 	 */
-	default public void afterProceed(ProceedingJoinPoint joinPoint, Log log, LocalDateTime logTime, Object result, Throwable e) {
+	default void afterProceed(ProceedingJoinPoint joinPoint, Log log, LocalDateTime logTime, Object result, Throwable e) {
 		
 	}
 }

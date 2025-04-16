@@ -16,11 +16,13 @@
 package com.chestnut.customform;
 
 import com.chestnut.common.utils.ReflectASMUtils;
+import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.fixed.config.SiteApiUrl;
 import com.chestnut.contentcore.properties.SiteApiUrlProperty;
-import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.customform.domain.CmsCustomForm;
+import com.chestnut.member.security.StpMemberUtil;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Map;
 
@@ -36,6 +38,11 @@ public class CustomFormConsts {
 
     public static final String TemplateVariable_CustomForm = "CustomForm";
 
+    /**
+     * uuid请求参数/header参数
+     */
+    public static final String PARAMETER_UUID = "_cc_uuid";
+
     public static String getCustomFormActionUrl(CmsSite site, String publishPipeCode) {
         return SiteApiUrlProperty.getValue(site, publishPipeCode) + "api/customform/submit";
     }
@@ -44,5 +51,27 @@ public class CustomFormConsts {
         Map<String, Object> map = ReflectASMUtils.beanToMap(form);
         map.put("action", getCustomFormActionUrl(site, publishPipeCode));
         return map;
+    }
+
+    /**
+     * 尝试获取uuid
+     * 已登录用户取登录用户ID
+     * 未登录用户尝试从请求参数/header参数/cookie参数获取
+     */
+    public static String tryToGetUUID(HttpServletRequest request) {
+        if (StpMemberUtil.isLogin()) {
+            return StpMemberUtil.getLoginUser().getUserId().toString();
+        }
+        String uuid = request.getParameter("uuid"); // 兼容老版本
+        if (StringUtils.isEmpty(uuid)) {
+            uuid = request.getParameter(PARAMETER_UUID);
+            if (StringUtils.isEmpty(uuid)) {
+                uuid = request.getHeader(PARAMETER_UUID);
+                if (StringUtils.isEmpty(uuid)) {
+                    ServletUtils.getCookieValue(request, PARAMETER_UUID);
+                }
+            }
+        }
+        return uuid;
     }
 }

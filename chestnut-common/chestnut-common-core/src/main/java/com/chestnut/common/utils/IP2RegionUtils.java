@@ -15,13 +15,13 @@
  */
 package com.chestnut.common.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.lionsoul.ip2region.xdb.Searcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.FileCopyUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * IP2Region工具类，内存查询
@@ -40,24 +40,38 @@ public class IP2RegionUtils {
              cBuff = FileCopyUtils.copyToByteArray(is);
              searcher = Searcher.newWithBuffer(cBuff);
         } catch (IOException e1) {
-         	logger.error("Load ip2region.xdb failed: {}", e1);
+         	logger.error("Load ip2region.xdb failed.", e1);
 		}
     }
-	
+
+	/**
+	 * ip转区域，格式：
+	 *
+	 * @param ip IPv4/IPv6
+	 * @return 国家|0|省份|城市|运营商
+	 */
 	public static String ip2Region(String ip) {
 		try {
 			if (ServletUtils.isUnknown(ip)) {
 				return ServletUtils.UNKNOWN;
 			}
-			if (ServletUtils.internalIp(ip)) {
-				return "内网";
+			if (ServletUtils.isInternalIp(ip)) {
+				return ServletUtils.INTERNAL_IP;
 			}
 			return searcher.search(ip);
         } catch (Exception e) {
         	if (logger.isDebugEnabled()) {
-        		logger.error("Ip2region failed: {}", e);
+        		logger.error("Ip2region failed: {}", ip, e);
         	}
         	return ServletUtils.UNKNOWN;
         }
 	}
+
+	public static void close() {
+        try {
+            searcher.close();
+        } catch (IOException e) {
+            logger.error("Close ip2region searcher failed.", e);
+        }
+    }
 }

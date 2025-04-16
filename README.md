@@ -1,4 +1,4 @@
-# ChestnutCMS v1.5.4
+# ChestnutCMS v1.5.5
 
 ### 系统简介
 
@@ -105,7 +105,7 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 
 ### QQ交流群
 
-- [一群：568506424（满）](https://qm.qq.com/q/rOw3kwePg)
+- [一群：568506424](https://qm.qq.com/q/rOw3kwePg)
 
 - [二群：643215654（满）](https://qm.qq.com/q/BEC38NokKY)
 

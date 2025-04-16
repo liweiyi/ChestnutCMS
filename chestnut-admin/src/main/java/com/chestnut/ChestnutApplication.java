@@ -17,7 +17,8 @@ package com.chestnut;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+
+import java.net.InetAddress;
 
 /**
  * 启动程序
@@ -28,9 +29,10 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 @SpringBootApplication
 public class ChestnutApplication {
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		long s = System.currentTimeMillis();
 		System.setProperty("spring.devtools.restart.enabled", "false");
+		System.setProperty("LOCAL_IP", InetAddress.getLocalHost().getHostAddress());
 		SpringApplication.run(ChestnutApplication.class, args);
 		System.out.println("ChestnutApplication startup, cost: " + (System.currentTimeMillis() - s) + "ms");
 	}

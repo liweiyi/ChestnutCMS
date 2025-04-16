@@ -46,6 +46,7 @@ import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -94,10 +95,12 @@ public class ResourceController extends BaseRestController {
 	public R<?> listData(@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "resourceType", required = false) String resourceType,
 			@RequestParam(value = "owner", required = false, defaultValue = "false") boolean owner,
+		    @RequestParam(value = "siteId", required = false, defaultValue = "0") Long siteId,
 			@RequestParam(value = "beginTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date beginTime,
-			@RequestParam(value = "endTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endTime) {
+			@RequestParam(value = "endTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endTime,
+			HttpServletRequest request) {
 		PageRequest pr = this.getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = siteService.getSiteOrCurrent(siteId, request);
 		LambdaQueryWrapper<CmsResource> q = new LambdaQueryWrapper<CmsResource>()
 				.eq(CmsResource::getSiteId, site.getSiteId())
 				.like(StringUtils.isNotEmpty(name), CmsResource::getFileName, name)

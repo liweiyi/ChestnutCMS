@@ -18,6 +18,7 @@ package com.chestnut.article;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.article.domain.CmsArticleDetail;
+import com.chestnut.article.format.ArticleBodyFormat_RichText;
 import com.chestnut.article.service.IArticleService;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.JacksonUtils;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 /**
@@ -46,6 +48,8 @@ import java.util.regex.Matcher;
 public class ArticleCoreDataHandler implements ICoreDataHandler {
 
     private final IArticleService articleService;
+
+    private final Map<String, IArticleBodyFormat> articleBodyFormatMap;
 
     @Override
     public void onSiteExport(SiteExportContext context) {
@@ -101,6 +105,9 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
                     }
                     html.append(contentHtml.substring(index));
                     data.setContentHtml(html.toString());
+                    if (!articleBodyFormatMap.containsKey(IArticleBodyFormat.BEAN_PREFIX + data.getFormat())) {
+                        data.setFormat(ArticleBodyFormat_RichText.ID); // 不支持的文章格式一律设置为富文本格式
+                    }
                     articleService.dao().save(data);
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入文章数据`" + oldContentId + "`失败：" + e.getMessage());

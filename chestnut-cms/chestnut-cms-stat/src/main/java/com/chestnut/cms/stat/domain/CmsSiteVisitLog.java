@@ -100,6 +100,41 @@ public class CmsSiteVisitLog implements Serializable {
 	private String locale;
 
 	/**
+	 * 屏幕分辨率：宽
+	 */
+	private Integer screenWidth;
+
+	/**
+	 * 屏幕分辨率：高
+	 */
+	private Integer screenHeight;
+
+	/**
+	 * 色彩深度
+	 */
+	private Integer colorDepth;
+
+	/**
+	 * 是否允许cookie
+	 */
+	private Integer cookieEnabled;
+
+	/**
+	 * 是否允许java
+	 */
+	private Integer javaEnabled;
+
+	/**
+	 * 访问时长，单位：秒
+	 */
+	private Integer visitTime;
+
+	/**
+	 * 访客唯一标识
+	 */
+	private String uuid;
+
+	/**
 	 * 发生时间
 	 */
 	private LocalDateTime evtTime;

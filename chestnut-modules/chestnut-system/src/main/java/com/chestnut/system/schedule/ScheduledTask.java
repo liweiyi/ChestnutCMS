@@ -19,10 +19,13 @@ import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.system.service.ISysScheduledTaskService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
@@ -31,8 +34,9 @@ import java.util.function.Consumer;
 /**
  * 异步任务构造器
  */
-@Slf4j
 public abstract class ScheduledTask implements Runnable {
+
+	private final Logger logger = LoggerFactory.getLogger("cron");
 
 	/**
 	 * 任务ID
@@ -116,7 +120,7 @@ public abstract class ScheduledTask implements Runnable {
 				this.addErrorMessage(err);
 			}
 			this.setPercent(100);
-			log.error("Scheduled task run failed.", e);
+			logger.error("Job failed.", e);
 		} finally {
 			this.onTaskEnded();
 		}
@@ -130,7 +134,7 @@ public abstract class ScheduledTask implements Runnable {
 	 * 提交到线程池时执行
 	 */
 	public void ready() {
-		log.debug("[{}]ScheduledTask ready: {}[{}]", Thread.currentThread().getName(), this.getType(), this.getTaskId());
+		logger.info("Job ready: {}[{}]", this.getType(), this.getTaskId());
 		this.status = ScheduledTaskStatus.READY;
 		this.readyTime = LocalDateTime.now();
 	}
@@ -139,7 +143,7 @@ public abstract class ScheduledTask implements Runnable {
 	 * 任务开始执行
 	 */
 	void start() {
-		log.debug("[{}]ScheduledTask start: {}[{}]", Thread.currentThread().getName(), this.getType(), this.getTaskId());
+		logger.info("Job start: {}[{}]", this.getType(), this.getTaskId());
 		this.status = ScheduledTaskStatus.RUNNING;
 		this.startTime = LocalDateTime.now();
 	}
@@ -152,7 +156,7 @@ public abstract class ScheduledTask implements Runnable {
 			return;
 		}
 		long cost = LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli() - this.getStartTime().toInstant(ZoneOffset.UTC).toEpochMilli();
-		log.debug("[{}]ScheduledTask completed: {}[{}], cost: {}ms", Thread.currentThread().getName(), this.getType(), this.getTaskId(), cost);
+		logger.info("Job completed: {}[{}], cost: {}ms", this.getType(), this.getTaskId(), cost);
 		this.setStatus(ScheduledTaskStatus.SUCCESS);
 		this.setEndTime(LocalDateTime.now());
 		this.setPercent(100);
@@ -162,7 +166,7 @@ public abstract class ScheduledTask implements Runnable {
 	 * 执行中断，设置中断标识
 	 */
 	public void interrupt() {
-		log.debug("[{}]ScheduledTask interrupted: {}[{}]", Thread.currentThread().getName(), this.getType(), this.getTaskId());
+		logger.info("Job interrupted: {}[{}]", this.getType(), this.getTaskId());
 		if (this.interrupt) {
 			return;
 		}

@@ -375,7 +375,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			templateContext.setOtherFileName(contentLink + "&pi=" + TemplateContext.PlaceHolder_PageNo);
 			// staticize
 			this.staticizeService.process(templateContext, writer);
-			logger.debug("[{}][{}]内容模板解析：{}，耗时：{}", requestData.getPublishPipeCode(), contentType.getName(), content.getTitle(),
+			logger.debug("[{}][{}]内容模板解析：{}，耗时：{}", requestData.getPublishPipeCode(), contentType.getId(), content.getTitle(),
 					System.currentTimeMillis() - s);
 			return writer.toString();
 		}
@@ -477,7 +477,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			templateType.initTemplateData(content.getContentId(), templateContext);
 			// staticize
 			this.staticizeService.process(templateContext, writer);
-			logger.debug("[{}][{}]内容扩展模板解析：{}，耗时：{}", publishPipeCode, contentType.getName(), content.getTitle(),
+			logger.debug("[{}][{}]内容扩展模板解析：{}，耗时：{}", publishPipeCode, contentType.getId(), content.getTitle(),
 					System.currentTimeMillis() - s);
 			return writer.toString();
 		}

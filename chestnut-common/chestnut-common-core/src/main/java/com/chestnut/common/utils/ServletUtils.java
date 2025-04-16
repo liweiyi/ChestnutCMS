@@ -84,13 +84,15 @@ public class ServletUtils {
 	 */
 	public static final String HEADER_ACCEPT_LANGUAGE = "Accept-Language";
 
-	public static final String UNKNOWN = "unknown";
+	public static final String UNKNOWN = "0";
+
+	public static final String INTERNAL_IP = "InternalIP";
 
 	public static boolean isHttpUrl(String url) {
 		return StringUtils.startsWithIgnoreCase(url, HTTP) || StringUtils.startsWithIgnoreCase(url, HTTPS);
 	}
 
-	public static String getAcceptLanaguage(HttpServletRequest request) {
+	public static String getAcceptLanguage(HttpServletRequest request) {
 		return getHeader(request, HEADER_ACCEPT_LANGUAGE);
 	}
 
@@ -560,9 +562,9 @@ public class ServletUtils {
 	 * @param ip IP地址
 	 * @return 结果
 	 */
-	public static boolean internalIp(String ip) {
+	public static boolean isInternalIp(String ip) {
 		byte[] addr = textToNumericFormatV4(ip);
-		return internalIp(addr) || "127.0.0.1".equals(ip);
+		return isInternalIp(addr) || "127.0.0.1".equals(ip);
 	}
 
 	/**
@@ -571,7 +573,7 @@ public class ServletUtils {
 	 * @param addr byte地址
 	 * @return 结果
 	 */
-	private static boolean internalIp(byte[] addr) {
+	private static boolean isInternalIp(byte[] addr) {
 		if (Objects.isNull(addr) || addr.length < 2) {
 			return true;
 		}

@@ -324,6 +324,41 @@
             <i class="el-icon-info mr5"></i>{{ $t('CMS.Site.Extend.BaiduDomainTip') }}
           </div>
         </el-form-item>
+        <el-form-item 
+          :label="$t('CMS.Site.Extend.EnableStat')"
+          prop="EnableStat">
+          <el-switch
+            v-model="form_extend.EnableStat"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+        </el-form-item>
+        <el-form-item 
+          v-if="form_extend.EnableStat=='Y'"
+          :label="$t('CMS.Site.Extend.EnableDynamicStatScript')"
+          prop="EnableDynamicStatScript">
+          <el-switch
+            v-model="form_extend.EnableDynamicStatScript"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+        </el-form-item>
+        <el-form-item 
+          v-if="form_extend.EnableStat=='Y'"
+          :label="$t('CMS.Site.Extend.EnableHyperLogLog')"
+          prop="EnableHyperLogLog">
+          <el-switch
+            v-model="form_extend.EnableHyperLogLog"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+        </el-form-item>
       </el-card>
       
       <el-card shadow="hover">

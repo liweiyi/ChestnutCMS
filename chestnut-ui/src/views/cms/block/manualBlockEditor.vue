@@ -410,7 +410,7 @@ export default {
       } else {
         this.$modal.msgWarning(this.$t('Common.SelectFirst'));
       }
-      console.log(this.form_item)
+      // console.log(this.form_item)
     },
     handleContentSelectorClose() {
       this.openContentSelector = false;
@@ -426,14 +426,14 @@ export default {
           summary: catalogs[0].props.description || ''
         }
       }
-      console.log(this.form_item)
+      // console.log(this.form_item)
       this.openCatalogSelector = false;
     },
     handleCatalogSelectorClose() {
       this.openCatalogSelector = false;
     },
     handleGoBack() {
-      const obj = { name: "Content", params: { tab: "pageWdiget" } };
+      const obj = { name: "CmsContentcoreContent", params: { tab: "pageWdiget" } };
       this.$tab.closeOpenPage(obj);
     },
   }

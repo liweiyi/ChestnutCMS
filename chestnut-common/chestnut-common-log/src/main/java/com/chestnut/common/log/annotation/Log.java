@@ -26,8 +26,12 @@ import com.chestnut.common.log.restful.RestfulLogType;
 
 /**
  * 日志记录注解
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ * @
  */
-@Target({ ElementType.PARAMETER, ElementType.METHOD })
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Log {
@@ -35,25 +39,25 @@ public @interface Log {
 	/**
 	 * 日志标题，一般使用功能模块名称
 	 */
-	public String title() default "";
+	String title() default "";
 
 	/**
 	 * 日志类型
 	 */
-	public String type() default RestfulLogType.TYPE;
+	String type() default RestfulLogType.TYPE;
 
 	/**
 	 * 功能类型
 	 */
-	public BusinessType businessType() default BusinessType.OTHER;
+	BusinessType businessType() default BusinessType.OTHER;
 
 	/**
 	 * 是否保存请求的参数
 	 */
-	public boolean isSaveRequestData() default true;
+	boolean isSaveRequestData() default true;
 
 	/**
 	 * 是否保存响应的参数
 	 */
-	public boolean isSaveResponseData() default true;
+	boolean isSaveResponseData() default true;
 }

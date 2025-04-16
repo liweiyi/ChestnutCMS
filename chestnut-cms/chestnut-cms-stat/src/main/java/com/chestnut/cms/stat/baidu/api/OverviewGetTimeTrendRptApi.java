@@ -19,7 +19,6 @@ import com.chestnut.cms.stat.baidu.BaiduTjMetrics;
 import com.chestnut.common.utils.HttpUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;

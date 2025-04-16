@@ -85,6 +85,18 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 	}
 
 	@Override
+	public CmsSite getSiteOrCurrent(Long siteId, HttpServletRequest request) {
+		CmsSite site = null;
+		if (IdUtils.validate(siteId)) {
+			site = getSite(siteId);
+		}
+		if (Objects.isNull(site)) {
+			site = getCurrentSite(request);
+		}
+		return site;
+	}
+
+	@Override
 	public CmsSite getCurrentSite(HttpServletRequest request) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		CmsSite site = null;

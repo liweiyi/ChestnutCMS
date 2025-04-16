@@ -527,7 +527,6 @@ export default {
         this.$modal.msgWarning(this.$t('CMS.Content.SelectRowFirst'));
         return;
       }
-      console.log(contentIds)
       this.$modal.loading("Loading...");
       publishContent(contentIds).then(response => {
         this.$modal.closeLoading();

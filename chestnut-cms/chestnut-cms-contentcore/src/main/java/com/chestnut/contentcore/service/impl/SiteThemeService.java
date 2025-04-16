@@ -39,10 +39,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 站点导入导出
@@ -74,6 +71,8 @@ public class SiteThemeService {
     private final IContentRelaService contentRelaService;
 
     private final List<ICoreDataHandler> contentCoreHandlers;
+
+    private final Map<String, IContentType> contentTypes;
 
     public AsyncTask importSiteTheme(CmsSite site, final File zipFile, LoginUser operator) {
         AsyncTask asyncTask = new AsyncTask() {
@@ -232,6 +231,9 @@ public class SiteThemeService {
                         list.forEach(content -> {
                             Long sourceContentId = content.getContentId();
                             try {
+                                if (!contentTypes.containsKey(IContentType.BEAN_NAME_PREFIX + content.getContentType())) {
+                                    throw new RuntimeException("Unsupported content type: " + content.getContentType());
+                                }
                                 CmsCatalog catalog = catalogService.getCatalog(context.getCatalogIdMap().get(content.getCatalogId()));
                                 if (Objects.isNull(catalog)) {
                                     throw new RuntimeException("Catalog is missing.");

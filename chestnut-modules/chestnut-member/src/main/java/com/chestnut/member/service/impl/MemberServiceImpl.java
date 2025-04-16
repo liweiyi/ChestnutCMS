@@ -15,29 +15,18 @@
  */
 package com.chestnut.member.service.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import com.chestnut.common.utils.*;
-import com.chestnut.member.config.MemberConfig;
-import com.chestnut.member.core.IMemberStatData;
-import com.chestnut.member.domain.*;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.SecurityUtils;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.CDKeyUtil;
+import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.image.ImageUtils;
+import com.chestnut.member.config.MemberConfig;
+import com.chestnut.member.core.IMemberStatData;
+import com.chestnut.member.domain.*;
 import com.chestnut.member.domain.dto.MemberDTO;
 import com.chestnut.member.exception.MemberErrorCode;
 import com.chestnut.member.mapper.MemberLevelExpLogMapper;
@@ -46,8 +35,20 @@ import com.chestnut.member.mapper.MemberMapper;
 import com.chestnut.member.mapper.MemberSignInLogMapper;
 import com.chestnut.member.service.IMemberService;
 import com.chestnut.system.service.ISecurityConfigService;
-
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -158,7 +159,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 
 	@Override
 	public String uploadAvatarByBase64(Long memberId, String base64Data) throws IOException {
-		if (!base64Data.startsWith("data:image/")) {
+		if (!ImageUtils.isBase64Image(base64Data)) {
 			return null;
 		}
 		String base64Str = StringUtils.substringAfter(base64Data, ",");

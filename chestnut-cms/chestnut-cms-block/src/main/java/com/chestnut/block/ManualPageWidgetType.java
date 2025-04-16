@@ -16,6 +16,7 @@
 package com.chestnut.block;
 
 import com.chestnut.block.domain.vo.ManualPageWidgetVO;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IPageWidget;
@@ -120,13 +121,15 @@ public class ManualPageWidgetType implements IPageWidgetType {
 		
 		private String summary;
 
-		@Deprecated
 		private String url;
 
+		@XComment("与url字段同值，仅为习惯添加")
 		private String link;
 		
 		private String logo;
-		
+
+		// TODO 下个大版本移除，在模板使用${iurl(logo)}
+		@Deprecated(forRemoval = true)
 		private String logoSrc;
 		
 		private LocalDateTime publishDate;

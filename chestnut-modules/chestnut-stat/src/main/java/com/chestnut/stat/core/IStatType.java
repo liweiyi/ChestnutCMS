@@ -15,8 +15,6 @@
  */
 package com.chestnut.stat.core;
 
-import com.chestnut.stat.core.StatMenu;
-
 import java.util.List;
 
 /**

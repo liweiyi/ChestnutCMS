@@ -570,7 +570,6 @@ export default {
           this.progressType = "Delete";
           this.openProgress = true;
           
-          console.log("parentId", this.form_info.parentId)
           this.$cache.local.set("LastSelectedCatalogId", this.form_info.parentId);
         }
       });

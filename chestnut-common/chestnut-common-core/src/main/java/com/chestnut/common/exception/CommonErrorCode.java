@@ -90,10 +90,20 @@ public enum CommonErrorCode implements ErrorCode {
 	/**
 	 * 上传文件不能为空
 	 */
-	UPLOAD_FILE_EMPTY;
+	UPLOAD_FILE_EMPTY,
+
+	/**
+	 * 验证码错误
+	 */
+	INVALID_CAPTCHA,
+
+	/**
+	 * 验证码过期
+	 */
+	CAPTCHA_EXPIRED;
 	
 	@Override
 	public String value() {
-		return "{ERRCODE.COMMON." + this.name() + "}";
+		return "{ERR.COMMON." + this.name() + "}";
 	}
 }

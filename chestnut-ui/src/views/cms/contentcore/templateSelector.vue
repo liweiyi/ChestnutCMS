@@ -80,6 +80,11 @@ export default {
       type: Boolean,
       default: false,
       required: true
+    },
+    siteId: {
+      type: String,
+      default: "0",
+      required: false,
     }
   },
   watch: {
@@ -95,7 +100,10 @@ export default {
     },
     publishPipeCode () {
       this.queryParams.publishPipeCode = this.publishPipeCode;
-    }
+    },
+    siteId(newVal) {
+      this.queryParams.siteId = newVal;
+    },
   },
   computed: {
     okBtnDisabled() {
@@ -116,6 +124,7 @@ export default {
       queryParams: {
         publishPipeCode: this.publishPipeCode,
         filename: undefined,
+        siteId: '0',
         pageSize: 8
       }
     };
@@ -141,7 +150,6 @@ export default {
           }
           return item;
         });
-        console.log(this.templateList)
         this.total = parseInt(response.data.total);
         this.selectedTemplate = undefined;
         this.loading = false;

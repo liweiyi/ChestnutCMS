@@ -148,7 +148,6 @@ export default {
           this.lineChartData.datas.visitor_count.forEach(v => this.sum.uv+=v);
           this.lineChartData.datas.avg_visit_time.forEach(v => this.sum.avgVisitTime+=v);
           this.sum.avgVisitTime = Math.round(this.sum.avgVisitTime / this.lineChartData.datas.avg_visit_time.length);
-          console.log(this.lineChartData)
           this.loading = false;
       });
     },

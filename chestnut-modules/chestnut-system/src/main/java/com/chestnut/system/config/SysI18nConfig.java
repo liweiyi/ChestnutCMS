@@ -53,12 +53,8 @@ public class SysI18nConfig {
 	@Bean("messageSource")
 	public MessageSource messageSource(MessageSourceProperties properties) {
 		I18nMessageSource messageSource = new I18nMessageSource(this.redisCache);
-		if (StringUtils.isNotBlank(properties.getBasename())) {
-			messageSource.setBasename(properties.getBasename());
-		}
-		if (properties.getEncoding() != null) {
-			messageSource.setEncoding(properties.getEncoding());
-		}
+		messageSource.setBasename(properties.getBasename());
+		messageSource.setEncoding(properties.getEncoding());
 //		messageSource.setFallbackToSystemLocale(properties.isFallbackToSystemLocale());
 		Duration cacheDuration = properties.getCacheDuration();
 		if (cacheDuration != null) {

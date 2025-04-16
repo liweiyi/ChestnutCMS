@@ -381,10 +381,10 @@ export default {
     },
     handleGoBack() {
       if (this.$route.query.from == 'pagewidget') {
-        const obj = { name: "Content", params: { tab: "pageWdiget" } };
+        const obj = { name: "CmsContentcoreContent", params: { tab: "pageWdiget" } };
         this.$tab.closeOpenPage(obj);
       } else {
-        const obj = { name: "Advertisement" };
+        const obj = { name: "CmsAdAdSpace" };
         this.$tab.closeOpenPage(obj);
       }
     },

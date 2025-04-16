@@ -24,6 +24,7 @@ import com.chestnut.common.storage.StorageReadArgs.StorageReadArgsBuilder;
 import com.chestnut.common.storage.exception.StorageErrorCode;
 import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
+import com.chestnut.common.utils.image.ImageUtils;
 import com.chestnut.contentcore.core.IResourceStat;
 import com.chestnut.contentcore.core.IResourceType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
@@ -43,7 +44,7 @@ import com.chestnut.system.fixed.dict.EnableOrDisable;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -162,7 +163,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 
 	@Override
 	public CmsResource addBase64Image(CmsSite site, String operator, String base64Data) throws IOException {
-		if (!base64Data.startsWith("data:image/")) {
+		if (!ImageUtils.isBase64Image(base64Data)) {
 			return null;
 		}
 		String suffix = base64Data.substring(11, base64Data.indexOf(";"));
@@ -333,7 +334,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 			String imgTag = matcher.group();
 			String src = matcher.group(1);
 			try {
-				if (StringUtils.startsWithIgnoreCase(src, "data:image/")) {
+				if (ImageUtils.isBase64Image(src)) {
 					// base64图片保存到资源库
 					CmsResource resource = addBase64Image(site, operator, src);
 					if (Objects.nonNull(resource)) {
@@ -347,7 +348,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 					}
 				}
 			} catch (Exception e1) {
-				String imgSrc = (src.startsWith("data:image/") ? src.substring(0, 20) : src);
+				String imgSrc = (src.startsWith("data:image/") ? "base64Img" : src);
 				log.warn("Save image failed: " + imgSrc);
 				AsyncTaskManager.addErrMessage("Download remote image failed: " + imgSrc);
 			}

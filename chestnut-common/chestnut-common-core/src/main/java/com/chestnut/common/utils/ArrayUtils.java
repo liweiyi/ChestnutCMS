@@ -51,6 +51,28 @@ public class ArrayUtils {
 		return indexOf(searchStr, arr) > -1;
 	}
 
+	public static int indexOf(Integer searchStr, Integer... arr) {
+		if (Objects.isNull(arr) || arr.length == 0) {
+			return -1;
+		}
+		for (int i = 0; i < arr.length; i++) {
+			if (searchStr == null) {
+				if (arr[i] == null) {
+					return i;
+				}
+			} else {
+				if (searchStr.equals(arr[i])) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+	public static boolean contains(Integer searchStr, Integer... arr) {
+		return indexOf(searchStr, arr) > -1;
+	}
+
 	/**
 	 * 查找指定列表中符合条件的第一个元素并返回，如果没有符合条件的元素直接抛出异常
 	 */
@@ -141,5 +163,31 @@ public class ArrayUtils {
 
 	public static <T> boolean isNotEmpty(T[] arr) {
 		return !isEmpty(arr);
+	}
+
+	public static <T> long sumLongValue(List<T> list, Function<T, Long> getter) {
+		if (Objects.isNull(list)) {
+			return 0;
+		}
+		long sum = 0L;
+		for (T t : list) {
+			Long v = getter.apply(t);
+			if (Objects.nonNull(v)) {
+				sum += v;
+			}
+		}
+		return sum;
+	}
+
+	public static <T> int sumIntValue(List<T> list, Function<T, Integer> getter) {
+		if (Objects.isNull(list)) {
+			return 0;
+		}
+		int sum = 0;
+		for (T t : list) {
+			Integer v = getter.apply(t);
+			sum += Objects.requireNonNullElse(v, 0);
+		}
+		return sum;
 	}
 }

@@ -63,20 +63,8 @@ export default {
       echarts.registerMap("china", chinaJson);
       this.setOptions(this.chartData)
     },
-    setOptions({ xAxisDatas, datas } = {}) {
+    setOptions({ dataList, min, max } = {}) {
       this.chart.setOption({
-        geo: {
-          type: "map",
-          map: "china", //使用 registerMap 注册的地图名称
-          label: {
-            normal: {
-              show: false, //显示省份名称
-            },
-          },
-        },
-        title: {
-          text: '访问来源'
-        },
         toolbox: {
           show: true,
           //orient: 'vertical',
@@ -88,50 +76,93 @@ export default {
           }
         },
         tooltip: {
-          trigger: 'item',
+          show: true,
           formatter: function (params) {
-            var value = (params.value + "").split(".");
-            value =
-              value[0].replace(/(\d{1,3})(?=(?:\d{3})+(?!\d))/g, "$1,") +
-              "." +
-              value[1];
-            return params.seriesName + "<br/>" + params.name + " : " + value;
+            if (params.value.length > 1) {
+              return params.name + "：" + params.value[2];
+            } else {
+              return params.name + "：" + (params.value || 0);
+            }
           },
-          showDelay: 0,
-          transitionDuration: 0.2
+        },
+        geo: {
+          type: "map",
+          zoom: 1.2,
+          show: true,
+          roam: false, // 是否允许缩放拖动
+          map: "china", //使用 registerMap 注册的地图名称
+          label: { show: false }, // 显示地区名称
+          emphasis: {
+            label: {
+              show: false,
+            },
+          },
+          layoutSize: "100%",
+          itemStyle: {
+            areaColor: '#efefef', // 默认背景色（无数据时的颜色）
+            borderColor: "#666",
+            borderWidth: 1,
+            shadowColor: "rgba(10,76,139,1)",
+            shadowOffsetY: 0,
+            shadowBlur: 0, // 阴影大小
+          },
         },
         series: [
           {
-            name: 'China',
+            name: 'china',
             type: 'map',
-            roam: true,
-            itemStyle: {
+            aspectScale: 0.75,
+            zoom: 1.2,
+            geoIndex: 0,
+            label: {
               normal: {
-                areaColor: '#6FA7CE', //地图颜色
-                borderColor: '#fff', //地图边线颜色
+                show: true,
+                color: "#4dccff",
               },
               emphasis: {
-                label: {
-                  show: true,
-                  color: '#FFFFFF',
-                  fontSize: 15,
-                  fontWeight: 600
-                },
-                itemStyle: {
-                  areaColor: 'rgba(102, 182, 255, 0.7)',
-                  borderColor: '#FFFFFF',
-                  borderWidth: 2
-                }
-              }
+                show: false,
+              },
             },
-            data: [
-              { name: '湖南', value: 123 },
-              { name: '湖北', value: 2354 },
-              { name: '广东', value: 567 },
-              { name: '北京', value: 8768 }
-            ]
+            itemStyle: {
+              normal: {
+                areaColor: {
+                  x: 0,
+                  y: 0,
+                  x2: 1,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: "#A5DCF4", // 0% 处的颜色
+                    },
+                    {
+                      offset: 1,
+                      color: "#006EDD", // 100% 处的颜色
+                    },
+                  ],
+                },
+                borderColor: "#215495",
+                borderWidth: 1,
+              },
+              emphasis: {
+                areaColor: "#061E3D",
+              },
+            },
+            data: dataList
           }
-        ]
+        ],
+        visualMap: {
+          type: "continuous",
+          min: min,
+          max: max == min ? max + 100 : max,
+          show: true,
+          seriesIndex: [0],  // 关联的数据系列索引
+          inRange: {
+            color: ["#A5DCF4", "#006edd"], // 颜色渐变范围（浅到深）
+          },
+          textStyle: { color: '#666' },
+          left: 'right' // 位置调整
+        },
       })
     }
   }

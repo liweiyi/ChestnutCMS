@@ -15,6 +15,7 @@
  */
 package com.chestnut.common.log.restful;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 
@@ -24,6 +25,7 @@ import com.chestnut.common.utils.StringUtils;
 
 public class RestfulLogData extends LinkedHashMap<String, Object> implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	/**

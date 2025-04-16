@@ -171,26 +171,31 @@ export default {
       type: Number,
       default: 1,
       required: false
+    },
+    siteId: {
+      type: String,
+      default: "0",
+      required: false,
     }
   },
   data () {
     return {
       visible: false,
       activeName: 'local',
-      siteId: this.$cache.local.get("CurrentSite"),
       form_upload: {
         source: 'local',
         tags: []
       },
       tagInputVisible: false,
       tagInputValue: '',
+      currentSiteId: this.$cache.local.get("CurrentSite"),
       // 上传参数
       upload: {
         isUploading: false, // 上传按钮loading
         accept: "", // 文件类型限制
         acceptSize: 0,
         limit: this.uploadLimit, // 文件数限制
-        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get("CurrentSite") },
+        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.currentSiteId },
         url: process.env.VUE_APP_BASE_API + "/cms/resource/upload", // 上传的地址
         fileList: [], // 上传的文件列表
         data : {} // 附带参数
@@ -207,7 +212,8 @@ export default {
         pageSize: 10,
         resourceType: this.rtype,
         owner: false,
-        name: undefined
+        name: undefined,
+        siteId: '0'
       },
       dateRange: [],
     };
@@ -241,7 +247,13 @@ export default {
     },
     rtype (newVal) {
       this.loadResourceTypes();
-    }
+    },
+    siteId(newVal) {
+      this.filterQuery.siteId = newVal;
+      if (newVal != '0') {
+        this.currentSiteId = newVal;
+      }
+    },
   },
   created() {
     this.loadResourceTypes();

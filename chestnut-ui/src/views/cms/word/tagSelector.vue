@@ -83,9 +83,9 @@ export default {
         this.loadWordList();
       }
     },
-    tags (newVal) {
-      console.log("tags", newVal)
-    }
+    // tags (newVal) {
+    //   console.log("tags", newVal)
+    // }
   },
   data () {
     return {
@@ -104,7 +104,6 @@ export default {
   },
   methods: {
     tagType(tag) {
-      console.log(this.selectedTags, tag)
       return this.selectedTags.indexOf(tag.word) > -1 ? "info" : "success" 
     },
     handleTreeNodeClick(data) {

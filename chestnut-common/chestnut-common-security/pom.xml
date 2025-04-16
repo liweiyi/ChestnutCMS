@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>chestnut-common</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.4</version>
+		<version>1.5.5</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -18,6 +18,16 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-tomcat</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
 		<!-- SpringBoot 拦截器 -->
 		<dependency>

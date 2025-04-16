@@ -34,6 +34,7 @@ import com.chestnut.customform.domain.dto.CustomFormAddDTO;
 import com.chestnut.customform.domain.dto.CustomFormEditDTO;
 import com.chestnut.customform.domain.vo.CustomFormVO;
 import com.chestnut.customform.permission.CustomFormPriv;
+import com.chestnut.customform.rule.ICustomFormLimitRule;
 import com.chestnut.customform.service.ICustomFormService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -65,6 +66,14 @@ public class CustomFormController extends BaseRestController {
     private final IPublishPipeService publishPipeService;
 
     private final ICustomFormService customFormService;
+
+    private final List<ICustomFormLimitRule> limitRules;
+
+    @Priv(type = AdminUserType.TYPE)
+    @GetMapping("/limit_rules")
+    public R<?> getLimitRules() {
+        return bindSelectOptions(this.limitRules, ICustomFormLimitRule::getId, ICustomFormLimitRule::getName);
+    }
 
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.View)
     @GetMapping

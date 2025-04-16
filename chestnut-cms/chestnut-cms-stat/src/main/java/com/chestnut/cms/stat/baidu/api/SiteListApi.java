@@ -17,7 +17,6 @@ package com.chestnut.cms.stat.baidu.api;
 
 import com.chestnut.common.utils.HttpUtils;
 import com.chestnut.common.utils.JacksonUtils;
-import lombok.Builder;
 import lombok.experimental.SuperBuilder;
 
 import java.net.URI;

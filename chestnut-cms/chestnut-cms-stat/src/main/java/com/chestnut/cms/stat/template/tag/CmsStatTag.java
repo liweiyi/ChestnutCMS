@@ -19,9 +19,11 @@ import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
+import com.ulisesbocchio.jasyptspringboot.annotation.ConditionalOnMissingBean;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -29,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
+@ConditionalOnMissingClass("com.chestnut.cms.statpro.template.tag.CmsStatTag")
 public class CmsStatTag extends AbstractTag {
 
 	public final static String TAG_NAME = "cms_stat";

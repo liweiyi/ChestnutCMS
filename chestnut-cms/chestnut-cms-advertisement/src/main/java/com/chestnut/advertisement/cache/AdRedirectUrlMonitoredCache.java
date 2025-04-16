@@ -21,22 +21,21 @@ import com.chestnut.contentcore.config.CMSConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.function.Supplier;
-
 /**
- * AdMonitoredCache
+ * AdRedirectUrlMonitoredCache
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Component(IMonitoredCache.BEAN_PREFIX + AdMonitoredCache.ID)
+@Component(IMonitoredCache.BEAN_PREFIX + AdRedirectUrlMonitoredCache.ID)
 @RequiredArgsConstructor
-public class AdMonitoredCache implements IMonitoredCache<Map<String, String>> {
+public class AdRedirectUrlMonitoredCache implements IMonitoredCache<String> {
 
-    public static final String ID = "AD";
+    public static final String ID = "AD_ID2URL";
 
-    private static final String CACHE_PREFIX = CMSConfig.CachePrefix + "adv-ids";
+    static final String NAME = "{MONITORED.CACHE." + ID + "}";
+
+    private static final String CACHE_PREFIX = CMSConfig.CachePrefix + "adv-id2url:";
 
     private final RedisCache redisCache;
 
@@ -47,7 +46,7 @@ public class AdMonitoredCache implements IMonitoredCache<Map<String, String>> {
 
     @Override
     public String getCacheName() {
-        return "{MONITORED.CACHE.AD}";
+        return NAME;
     }
 
     @Override
@@ -56,15 +55,19 @@ public class AdMonitoredCache implements IMonitoredCache<Map<String, String>> {
     }
 
     @Override
-    public Map<String, String> getCache(String cacheKey) {
-        return redisCache.getCacheMap(cacheKey, String.class);
+    public String getCache(String cacheKey) {
+        return redisCache.getCacheObject(cacheKey, String.class);
     }
 
-    public Map<String, String> getCache(Supplier<Map<String, String>> supplier) {
-        return redisCache.getCacheMap(CACHE_PREFIX, String.class, supplier);
+    public String getCacheValue(Long siteId, Long advertisementId) {
+        return redisCache.getCacheObject(CACHE_PREFIX + siteId + ":" + advertisementId.toString(), String.class);
     }
 
-    public void clear() {
-        this.redisCache.deleteObject(CACHE_PREFIX);
+    public void update(Long siteId, Long advertisementId, String redirectUrl) {
+        this.redisCache.setCacheObject(CACHE_PREFIX + siteId + ":" + advertisementId.toString(), redirectUrl);
+    }
+
+    public void delete(Long siteId, Long advertisementId) {
+        this.redisCache.deleteObject(CACHE_PREFIX + siteId + ":" + advertisementId.toString());
     }
 }

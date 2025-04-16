@@ -207,10 +207,15 @@ public enum SysErrorCode implements ErrorCode {
 	/**
 	 * 不支持的定时任务触发器类型：{0}
 	 */
-	SCHEDULED_TASK_UNSUPPORTED_TRIGGER;
+	SCHEDULED_TASK_UNSUPPORTED_TRIGGER,
+
+	/**
+	 * 未配置日志输出器
+	 */
+	MISSING_CONSOLE_APPENDER;
 	
 	@Override
 	public String value() {
-		return "{ERRCODE.SYS." + this.name() + "}";
+		return "{ERR.SYS." + this.name() + "}";
 	}
 }

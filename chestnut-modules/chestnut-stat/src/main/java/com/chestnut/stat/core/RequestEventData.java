@@ -101,7 +101,7 @@ public class RequestEventData {
         this.setIp(ServletUtils.getIpAddr(request));
         this.setAddress(IP2RegionUtils.ip2Region(this.getIp()));
         this.setReferer(ServletUtils.getReferer(request));
-        this.setLocale(StringUtils.substringBefore(ServletUtils.getAcceptLanaguage(request), ","));
+        this.setLocale(StringUtils.substringBefore(ServletUtils.getAcceptLanguage(request), ","));
 
         this.setUserAgent(ServletUtils.getUserAgent(request));
         UserAgent ua = ServletUtils.parseUserAgent(request);

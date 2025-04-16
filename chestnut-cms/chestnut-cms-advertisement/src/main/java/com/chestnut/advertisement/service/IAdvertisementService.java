@@ -15,14 +15,13 @@
  */
 package com.chestnut.advertisement.service;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.advertisement.IAdvertisementType;
 import com.chestnut.advertisement.domain.CmsAdvertisement;
 import com.chestnut.advertisement.pojo.dto.AdvertisementDTO;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 广告数据管理Service
@@ -35,7 +34,16 @@ public interface IAdvertisementService extends IService<CmsAdvertisement> {
 	 * @return Map
 	 */
 	Map<String, String> getAdvertisementMap();
-	
+
+	/**
+	 * 获取广告跳转地址
+	 *
+	 * @param siteId
+	 * @param advertisementId
+	 * @return
+	 */
+	String getRedirectUrlByAdId(Long siteId, Long advertisementId);
+
 	/**
 	 * 添加广告数据
 	 * 

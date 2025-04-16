@@ -296,6 +296,10 @@ public class RedisCache {
 		return objects;
 	}
 
+	public Long getCacheSetSize(final String key) {
+		return Objects.requireNonNullElse(this.redisTemplate.opsForSet().size(key), 0L);
+	}
+
 	/**
 	 * Add element to set cache
 	 *
@@ -595,4 +599,16 @@ public class RedisCache {
     public boolean getBit(String cacheKey, long offset) {
         return Boolean.TRUE.equals(this.redisTemplate.opsForValue().getBit(cacheKey, offset));
     }
+
+	public void addHyperLogLog(String cacheKey, Object... values) {
+		this.redisTemplate.opsForHyperLogLog().add(cacheKey, values);
+	}
+
+	public Long getHyperLogLogSize(String cacheKey) {
+		return Objects.requireNonNullElse(this.redisTemplate.opsForHyperLogLog().size(cacheKey), 0L);
+	}
+
+	public void removeHyperLogLog(String cacheKey) {
+		this.redisTemplate.opsForHyperLogLog().delete(cacheKey);
+	}
 }

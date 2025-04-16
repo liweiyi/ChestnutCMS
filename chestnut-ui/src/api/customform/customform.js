@@ -1,5 +1,12 @@
 import request from '@/utils/request'
 
+export function getLimitRules() {
+  return request({
+    url: '/cms/customform/limit_rules',
+    method: 'get',
+  })
+}
+
 export function listCustomForms(params) {
   return request({
     url: '/cms/customform',

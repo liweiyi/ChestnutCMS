@@ -122,7 +122,6 @@ export default {
               break;
             }
           }
-          console.log(node)
           if (node.children && node.children.length > 0) {
             node.children.forEach(child => this.$refs.menu.setChecked(child.menuId, false))
           }
@@ -162,7 +161,6 @@ export default {
     handleSave() {
       let permissions = [];
       this.getMenuAllCheckedKeys().forEach(node => {
-        console.log(node)
         if (node.perms && node.perms != '' && !node.disabled) {
           permissions.push(node.perms);
         }

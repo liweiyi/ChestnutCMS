@@ -15,22 +15,10 @@
  */
 package com.chestnut.system.service.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import com.chestnut.common.i18n.I18nUtils;
-import org.apache.commons.io.IOUtils;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -39,9 +27,20 @@ import com.chestnut.system.config.I18nMessageSource;
 import com.chestnut.system.domain.SysI18nDict;
 import com.chestnut.system.mapper.SysI18nDictMapper;
 import com.chestnut.system.service.ISysI18nDictService;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -85,6 +84,7 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
     }
 
     @Override
+    @Transactional(rollbackFor = Throwable.class)
     public void deleteI18nDictByIds(List<Long> dictIds) {
         List<SysI18nDict> list = this.listByIds(dictIds);
         this.removeBatchByIds(list);
@@ -103,6 +103,7 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
     }
 
     @Override
+    @Transactional(rollbackFor = Throwable.class)
     public void batchSaveI18nDicts(List<SysI18nDict> dicts) {
         if (CollectionUtils.isEmpty(dicts)) {
             return;
@@ -142,11 +143,11 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
     private void loadMessagesFromDB() {
         Map<String, Map<String, String>> map = this.list().stream().collect(Collectors.groupingBy(
                 SysI18nDict::getLangTag, Collectors.toMap(SysI18nDict::getLangKey, SysI18nDict::getLangValue)));
-        map.entrySet().forEach(e -> {
-            e.getValue().entrySet().forEach(kv -> {
-                redisCache.setCacheMapValue(CACHE_PREFIX + e.getKey(), kv.getKey(), kv.getValue());
-            });
-        });
+        map.forEach((k1, v1) ->
+                v1.forEach((k2, v2) ->
+                        redisCache.setCacheMapValue(CACHE_PREFIX + k1, k2, v2)
+                )
+        );
     }
 
     private void loadMessagesFromResources(I18nMessageSource messageSource) throws IOException {
@@ -158,7 +159,7 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
                 .getResources("classpath*:" + target + "*.properties");
         for (Resource resource : resources) {
             String langTag = messageSource.getDefaultLocale().toLanguageTag();
-            if (resource.getFilename().indexOf("_") > 0) {
+            if (Objects.nonNull(resource.getFilename()) && resource.getFilename().contains("_")) {
                 langTag = resource.getFilename().substring(resource.getFilename().indexOf("_") + 1,
                         resource.getFilename().lastIndexOf("."));
                 langTag = StringUtils.replace(langTag, "_", "-");

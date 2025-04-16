@@ -19,6 +19,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.customform.domain.CmsCustomForm;
 import com.chestnut.customform.domain.dto.CustomFormAddDTO;
 import com.chestnut.customform.domain.dto.CustomFormEditDTO;
+import com.chestnut.customform.rule.ICustomFormLimitRule;
 import com.chestnut.xmodel.domain.XModel;
 import com.chestnut.xmodel.dto.XModelDTO;
 
@@ -26,6 +27,8 @@ import java.io.IOException;
 import java.util.List;
 
 public interface ICustomFormService extends IService<CmsCustomForm> {
+
+	ICustomFormLimitRule getLimitRule(String ruleId);
 
 	/**
 	 * 添加自定义表单

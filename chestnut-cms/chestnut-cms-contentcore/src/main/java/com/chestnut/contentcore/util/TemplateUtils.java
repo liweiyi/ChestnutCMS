@@ -28,7 +28,10 @@ import com.chestnut.contentcore.fixed.config.TemplateSuffix;
 import com.chestnut.contentcore.properties.SiteApiUrlProperty;
 import com.chestnut.system.security.StpAdminUtil;
 import freemarker.core.Environment;
+import freemarker.template.TemplateHashModel;
+import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
+import freemarker.template.TemplateNumberModel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -119,6 +122,14 @@ public class TemplateUtils {
 	 */
 	public final static String TemplateVariable_ClientType = "ClientType";
 
+	public static String evalPrefix(Environment env) throws TemplateModelException {
+		return FreeMarkerUtils.evalStringVariable(env, TemplateVariable_Prefix);
+	}
+
+	public static String evalApiPrefix(Environment env) throws TemplateModelException {
+		return FreeMarkerUtils.evalStringVariable(env, TemplateVariable_ApiPrefix);
+	}
+
 	public static Long evalSiteId(Environment env) throws TemplateModelException {
 		return FreeMarkerUtils.evalLongVariable(env, "Site.siteId");
 	}
@@ -127,8 +138,40 @@ public class TemplateUtils {
 		return FreeMarkerUtils.evalLongVariable(env, "Catalog.catalogId");
 	}
 
+	public static Long findCatalogId(Environment env) {
+		try {
+			TemplateModel model = env.getVariable("Catalog");
+			if (!(model instanceof TemplateHashModel)) {
+				return null;
+			}
+			model = ((TemplateHashModel) model).get("catalogId");
+			if (model instanceof TemplateNumberModel m) {
+				return m.getAsNumber().longValue();
+			}
+		} catch (TemplateModelException e) {
+			// ignore
+		}
+		return null;
+	}
+
 	public static Long evalContentId(Environment env) throws TemplateModelException {
 		return FreeMarkerUtils.evalLongVariable(env, "Content.contentId");
+	}
+
+	public static Long findContentId(Environment env) {
+		try {
+			TemplateModel model = env.getVariable("Content");
+			if (!(model instanceof TemplateHashModel)) {
+				return null;
+			}
+			model = ((TemplateHashModel) model).get("contentId");
+			if (model instanceof TemplateNumberModel m) {
+				return m.getAsNumber().longValue();
+			}
+		} catch (TemplateModelException e) {
+			// ignore
+		}
+		return null;
 	}
 
 	/**

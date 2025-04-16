@@ -5,7 +5,7 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.5.4
+  version: 1.5.5
   # 版权年份
   copyrightYear: 2022-2024
   system:
@@ -40,9 +40,12 @@ server:
 
 # 日志配置
 logging:
+  config: classpath:logback-dev.xml
   level:
-    com.chestnut: debug
     org.springframework: warn
+    com.chestnut: debug
+    cron: debug
+    publish: debug
 
 # Spring配置
 spring:

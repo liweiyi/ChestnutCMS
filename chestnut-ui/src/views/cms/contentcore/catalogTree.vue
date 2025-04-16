@@ -13,6 +13,7 @@
           <el-dropdown-item @click.native="handleBatchAdd">{{ $t('CMS.Catalog.BatchAddCatalog') }}</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
+      <el-button type="text" icon="el-icon-refresh" @click="loadCatalogTreeData" style="float:right;margin-top:2px;">{{ $t("Common.Refresh") }}</el-button>
       <el-input 
         :placeholder="$t('CMS.Catalog.CatalogNamePlaceholder')"
         v-model="filterCatalogName"

@@ -167,7 +167,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <!-- <el-form-item :label="$t('CMS.CustomForm.NeedCaptcha')" prop="needCaptcha">
+        <el-form-item :label="$t('CMS.CustomForm.NeedCaptcha')" prop="needCaptcha">
           <el-switch
             v-model="form.needCaptcha"
             active-value="Y"
@@ -180,14 +180,14 @@
             active-value="Y"
             inactive-value="N"
           ></el-switch>
-        </el-form-item> -->
-        <el-form-item v-if="form.needLogin=='N'" :label="$t('CMS.CustomForm.RuleLimit')" prop="ruleLimit">
+        </el-form-item>
+        <el-form-item :label="$t('CMS.CustomForm.RuleLimit')" prop="ruleLimit">
           <el-select v-model="form.ruleLimit">
             <el-option 
-              v-for="dict in dict.type.CustomFormRule"
-              :key="dict.value"
-              :label="dict.label"
-              :value="dict.value" />
+              v-for="rule in limitRuleOptions"
+              :key="rule.value"
+              :label="rule.label"
+              :value="rule.value" />
           </el-select>
         </el-form-item>
         <div v-if="form.formId && form.formId > 0">
@@ -219,7 +219,7 @@
 </template>
 <script>
 import { listModelDataTables } from "@/api/meta/model";
-import { listCustomForms, getCustomForm, addCustomForm, editCustomForm, deleteCustomForms, publishCustomForm, offlineCustomForm } from "@/api/customform/customform";
+import { getLimitRules, listCustomForms, getCustomForm, addCustomForm, editCustomForm, deleteCustomForms, publishCustomForm, offlineCustomForm } from "@/api/customform/customform";
 
 import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
 
@@ -265,14 +265,21 @@ export default {
         ruleLimit: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
         ]
-      }
+      },
+      limitRuleOptions: [],
     };
   },
   created () {
+    this.loadLimitRules();
     this.loadXModelDataTableList();
     this.loadCustomFormList();
   },
   methods: {
+    loadLimitRules() {
+      getLimitRules().then(response => {
+        this.limitRuleOptions = response.data;
+      });
+    },
     loadXModelDataTableList() {
       listModelDataTables("CmsCustomForm").then(response => {
         this.xmodelDataTableList = response.data.rows;

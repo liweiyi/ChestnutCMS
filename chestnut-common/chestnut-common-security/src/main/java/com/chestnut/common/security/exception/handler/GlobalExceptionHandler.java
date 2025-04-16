@@ -115,9 +115,10 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(BindException.class)
 	public R<?> handleBindException(BindException e) {
+		log.error("参数校验错误", e);
 		String errMsg = e.getBindingResult().getAllErrors().stream()
 				.map(DefaultMessageSourceResolvable::getDefaultMessage)
 				.collect(Collectors.joining("\n"));
-		return R.fail(errMsg);
+		return R.fail(StringUtils.isEmpty(errMsg) ? e.getMessage() : errMsg);
 	}
 }

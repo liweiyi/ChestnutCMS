@@ -272,7 +272,7 @@ export default {
       this.imgCropper.setCropBoxData(data)
     },
     handleCropSizeChange() {
-      console.log('handleCropSizeChange', this.cropSize[0], this.cropSize[1])
+      // console.log('handleCropSizeChange', this.cropSize[0], this.cropSize[1])
       let imageData = this.imgCropper.getImageData();
       let ratio = imageData.width / imageData.naturalWidth;
       let data = this.imgCropper.getCropBoxData();

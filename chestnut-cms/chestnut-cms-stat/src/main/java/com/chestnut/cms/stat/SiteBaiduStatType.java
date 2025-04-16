@@ -23,15 +23,15 @@ import com.chestnut.stat.core.IStatType;
 import com.chestnut.stat.core.StatMenu;
 
 @Component
-public class SiteStatType implements IStatType {
+public class SiteBaiduStatType implements IStatType {
 
 	private final static List<StatMenu> STAT_MENU = List.of(
-			new StatMenu("CmsSiteStat", "", "{STAT.MENU.CmsSiteStat}", 1),
-			new StatMenu("BdSiteTrendOverview", "CmsSiteStat", "{STAT.MENU.BdSiteTrendOverview}", 1),
-			new StatMenu("BdSiteTimeTrend", "CmsSiteStat", "{STAT.MENU.BdSiteTimeTrend}", 2),
-			new StatMenu("BdSiteVisitSource", "CmsSiteStat", "{STAT.MENU.BdSiteVisitSource}", 3),
-			new StatMenu("BdSiteEngineSource", "CmsSiteStat", "{STAT.MENU.BdSiteEngineSource}", 4),
-			new StatMenu("BdSiteSearchWordSource", "CmsSiteStat", "{STAT.MENU.BdSiteSearchWordSource}", 5),
+			new StatMenu("CmsSiteBaiduStat", "", "{STAT.MENU.CmsSiteStat}", 1),
+			new StatMenu("BdSiteTrendOverview", "CmsSiteBaiduStat", "{STAT.MENU.BdSiteTrendOverview}", 1),
+			new StatMenu("BdSiteTimeTrend", "CmsSiteBaiduStat", "{STAT.MENU.BdSiteTimeTrend}", 2),
+			new StatMenu("BdSiteVisitSource", "CmsSiteBaiduStat", "{STAT.MENU.BdSiteVisitSource}", 3),
+			new StatMenu("BdSiteEngineSource", "CmsSiteBaiduStat", "{STAT.MENU.BdSiteEngineSource}", 4),
+			new StatMenu("BdSiteSearchWordSource", "CmsSiteBaiduStat", "{STAT.MENU.BdSiteSearchWordSource}", 5),
 			new StatMenu("CmsContentStat", "", "{STAT.MENU.CmsContentStat}", 2),
 			new StatMenu("ContentDynamicStat", "CmsContentStat", "{STAT.MENU.ContentDynamicStat}", 1),
 			new StatMenu("ContentStatByCatalog", "CmsContentStat", "{STAT.MENU.ContentStatByCatalog}", 2),

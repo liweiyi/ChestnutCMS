@@ -15,16 +15,14 @@
  */
 package com.chestnut.contentcore.service;
 
-import java.io.IOException;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
 import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
-
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.io.IOException;
+import java.util.Map;
 
 public interface ISiteService extends IService<CmsSite> {
 
@@ -38,7 +36,16 @@ public interface ISiteService extends IService<CmsSite> {
 	 */
 	boolean checkSiteUnique(String siteName, String sitePath, Long siteId);
 
-    /**
+	/**
+	 * 获取指定id站点数据，如果不存在则返回当前站点数据
+	 *
+	 * @param siteId
+	 * @param request
+	 * @return
+	 */
+	CmsSite getSiteOrCurrent(Long siteId, HttpServletRequest request);
+
+	/**
      * 获取当前站点，保存在token中
      */
     CmsSite getCurrentSite(HttpServletRequest request);

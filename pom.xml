@@ -4,14 +4,14 @@
 
 	<groupId>com.chestnut</groupId>
 	<artifactId>chestnut</artifactId>
-	<version>1.5.4</version>
+	<version>1.5.5</version>
 	<packaging>pom</packaging>
 
 	<name>ChestnutCMS</name>
 	<description>栗子内容管理系统</description>
 
 	<properties>
-		<chestnut.version>1.5.4</chestnut.version>
+		<chestnut.version>1.5.5</chestnut.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
@@ -502,6 +502,11 @@
 				<artifactId>chestnut-cms-stat</artifactId>
 				<version>${chestnut.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>com.chestnut</groupId>
+				<artifactId>chestnut-cms-stat-pro</artifactId>
+				<version>${chestnut.version}</version>
+			</dependency>
 
 			<!-- CMS自定义表单模块 -->
 			<dependency>
@@ -570,6 +575,9 @@
 					<source>${java.version}</source>
 					<target>${java.version}</target>
 					<encoding>${project.build.sourceEncoding}</encoding>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 		</plugins>

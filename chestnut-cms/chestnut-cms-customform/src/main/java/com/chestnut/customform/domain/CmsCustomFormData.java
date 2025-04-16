@@ -23,6 +23,8 @@ import com.chestnut.xmodel.core.BaseModelData;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -34,10 +36,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @TableName(value = CmsCustomFormData.TABLE_NAME, autoResultMap = true)
-public class CmsCustomFormData extends BaseModelData {
+public class CmsCustomFormData extends BaseModelData implements Serializable {
 
-    private static final long serialVersionUID=1L;
-    
+    @Serial
+    private static final long serialVersionUID =1L;
+
     public static final String TABLE_NAME = "cms_cfd_default";
 
     @TableId(value = "data_id", type = IdType.INPUT)

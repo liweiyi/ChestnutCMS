@@ -31,6 +31,7 @@
       rtype="image"
       :upload-limit="1" 
       :single="true"
+      :siteId="currentSiteId"
       @ok="handleResourceDialogOk">
     </cms-resource-dialog>
   </div>
@@ -69,6 +70,11 @@ export default {
     height: {
       type: Number,
       default: 150,
+      required: false,
+    },
+    siteId: {
+      type: String,
+      default: "0",
       required: false,
     }
   },
@@ -122,7 +128,10 @@ export default {
       } else {
         this.imageViewerList.splice(0);
       }
-    }
+    },
+    siteId(newVal) {
+      this.currentSiteId = newVal;
+    },
   },
   data () {
     return {
@@ -131,6 +140,7 @@ export default {
       openResourceDialog: false,
       showImageViewer: false,
       imageViewerList: [],
+      currentSiteId: '0',
     };
   },
   methods: {

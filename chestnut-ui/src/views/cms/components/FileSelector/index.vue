@@ -76,14 +76,12 @@ export default {
   },
   watch: {
     path (newVal) {
-      console.log("path", newVal)
       this.queryParams.filePath = newVal
     },
     open () {
       this.visible = this.open;
     },
     suffix (newVal) {
-      console.log("suffix", newVal)
       this.queryParams.fileName = "." + newVal
     },
     visible (newVal) {
@@ -96,7 +94,6 @@ export default {
   },
   computed: {
     pathArray() {
-      console.log(this.queryParams.filePath)
       if (this.queryParams.filePath == "/") {
         return [];
       }
@@ -121,7 +118,6 @@ export default {
       if (!this.visible) {
         return;
       }
-      console.log("suffix", this.suffix)
       this.loading = true;
       getFileList(this.queryParams).then(response => {
         this.sourceFileList = response.data;

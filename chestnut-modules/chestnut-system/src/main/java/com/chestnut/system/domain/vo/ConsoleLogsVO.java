@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.customform.rule;
+package com.chestnut.system.domain.vo;
 
-import com.chestnut.customform.domain.CmsCustomForm;
+import java.util.List;
 
 /**
- * 自定义表单校验规则接口
+ * ConsoleLogsVO
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public interface ICustomFormRule {
-
-    public boolean check(CmsCustomForm form);
-}
+public record ConsoleLogsVO(long index, List<String> logs) {}
