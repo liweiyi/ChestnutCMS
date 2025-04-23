@@ -59,7 +59,7 @@ public class ImageHelper {
     }
 
     public static ImageHelper of(File imageFile) throws IOException {
-        if (Objects.isNull(imageFile) || imageFile.exists()) {
+        if (Objects.isNull(imageFile) || !imageFile.exists()) {
             throw new ImageException("Input file is null or not exists.");
         }
         ImageHelper imageHelper = new ImageHelper();
