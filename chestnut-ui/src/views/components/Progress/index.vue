@@ -56,6 +56,11 @@ export default {
       type: Number,
       default: 1000,
       required: false
+    },
+    messageClass: {
+      type: String,
+      default: "",
+      required: false
     }
   },
   watch: {
@@ -104,7 +109,7 @@ export default {
         if (response.data.status == 'SUCCESS' || response.data.status == 'INTERRUPTED') {
           clearInterval(this.timer);
           const successMsg = response.data.progressMessage ? response.data.progressMessage : this.title + this.$t('Component.Progress.Completed');
-          this.$modal.msgSuccess(successMsg);
+          this.$modal.msgSuccess(successMsg, this.messageClass);
           this.progressStatus = "success";
           this.errMessages = response.data.errMessages;
           if (this.autoClose && !this.hasErrMessages()) {

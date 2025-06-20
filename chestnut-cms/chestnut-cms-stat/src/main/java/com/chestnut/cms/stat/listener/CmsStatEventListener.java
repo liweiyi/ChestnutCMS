@@ -15,8 +15,8 @@
  */
 package com.chestnut.cms.stat.listener;
 
-import com.chestnut.cms.stat.CatalogContentCountByStatus;
-import com.chestnut.cms.stat.UserContentCountByStatus;
+import com.chestnut.cms.stat.job.CatalogContentCountByStatus;
+import com.chestnut.cms.stat.job.UserContentCountByStatus;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.listener.event.*;

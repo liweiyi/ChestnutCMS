@@ -109,11 +109,15 @@ export default {
     }
   },
   Error: {
-    Err401: "【401】認證失敗，無法訪問系統資源！",
-    NoPermission: "您沒有訪問許可權！",
-    NoPermissionTip: "對不起，您沒有訪問許可權，請不要進行非法操作！您可以返回主頁面",
+    Err401: "【401】未通過認證！",
+    Forbidden: "未通過認證",
+    ForbiddenTip: "對不起，您尚未通過系統認證，請嘗試重新登錄。",
+    GoLogin: "去登錄",
+    Err403: "【403】權限校驗失敗！",
+    NoPermission: "無訪問權限！",
+    NoPermissionTip: "對不起，您沒有訪問權限，請向系統管理者申請相關資源訪問權限！",
     GoHome: "回首頁",
-    Err404: "【404】访问资源不存在！",
+    Err404: "【404】訪問資源不存在！",
     Err404Tip: "對不起，您正在尋找的頁面不存在。嘗試檢查URL的錯誤，然後按瀏覽器上的刷新按鈕或嘗試在我們的應用程序中找到其他內容。",
     PageNotFound: "找不到網頁！",
     Unknown: '系統未知錯誤，請反饋給管理員！'
@@ -149,6 +153,7 @@ export default {
     Basic: '基礎資料',
     ResetPassword: '修改密碼',
     NickName: '昵稱',
+    RealName: '真實姓名',
     Gender: '性別',
     GenderMale: '男',
     GenderFemale: '女',
@@ -254,6 +259,7 @@ export default {
       UserId: "用戶ID",
       UserName: "用戶名",
       NickName: "昵稱",
+      RealName: "真實姓名",
       Dept: "所屬部門",
       PhoneNumber: "手機號碼",
       Email: "郵箱",
@@ -287,6 +293,7 @@ export default {
         DeptName: "請輸入部門名稱",
         UserName: "請輸入用戶名稱",
         NickName: "請輸入用戶昵稱",
+        RealName: "请输入真實姓名",
         PhoneNumber: "請輸入手機號碼",
         Dept: "請選擇所屬部門",
         Email: "請輸入用戶郵箱",
@@ -954,6 +961,9 @@ export default {
       PrefixMode_Absolute: "絕對路徑",
       PrefixMode_Relative: "相對路徑",
       ErrPageLink: "錯誤頁面",
+      Dashboard: {
+        MissingSiteUrl: "站點域名未配置！"
+      },
       Tab: {
         Basic: "基礎資訊",
         Extend: "擴展配置",
@@ -991,6 +1001,7 @@ export default {
         ThumbnailHeight: "預設縮略圖高度",
         ThumbnailSizeTip: "縮略圖寬/高為0時預設不生成縮略圖",
         StorageType: "存儲策略",
+        StorageTip: "更換存儲策略後，原資源庫的資源文件需要手動同步到新的存儲庫。",
         Local: "本地",
         AliyunOSS: "阿里雲OSS",
         TencentCOS: "騰訊雲COS",
@@ -1382,6 +1393,7 @@ export default {
     },
     Block: {
       Basic: "基礎屬性",
+      PublishPipeProp: "發佈通道配置",
       ManualList: "自定義列表",
       Title: "標題",
       AddRow: "添加行",
@@ -1980,6 +1992,7 @@ export default {
   Deploy: {
     Cert: {
       Domain: "域名",
+      RR: "主機記錄",
       Issuer: "證書頒發機構",
       IssueTime: "簽發時間",
       ExpireTime: "過期時間",
@@ -1998,6 +2011,8 @@ export default {
       Applying: "正在提交證書申請，請稍等...",
       Authroizating: "正在驗證，請稍等...",
       Servers: "同步服務器",
+      SyncToServer: "同步",
+      Syncing: "正在同步證書到遠程服務器，請稍等...",
       Placeholder: {
         Domain: "輸入域名查詢"
       }

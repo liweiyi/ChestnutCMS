@@ -20,7 +20,9 @@ import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.impl.InternalDataType_Catalog;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
+import com.chestnut.contentcore.core.impl.InternalDataType_Site;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.exception.InternalUrlParseException;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import lombok.Getter;
@@ -101,12 +103,19 @@ public class SiteImportContext implements ISiteThemeContext {
     }
 
     public String dealInternalUrl(String iurl) {
-        InternalURL internalURL = InternalUrlUtils.parseInternalUrl(iurl);
+        InternalURL internalURL;
+        try {
+            internalURL = InternalUrlUtils.parseInternalUrl(iurl);
+        } catch (InternalUrlParseException e) {
+            // Ignore parse err
+            return iurl;
+        }
         if (Objects.nonNull(internalURL)) {
             Long id = switch (internalURL.getType()) {
                 case InternalDataType_Catalog.ID -> catalogIdMap.get(internalURL.getId());
                 case InternalDataType_Content.ID -> contentIdMap.get(internalURL.getId());
                 case InternalDataType_Resource.ID -> resourceIdMap.get(internalURL.getId());
+                case InternalDataType_Site.ID -> site.getSiteId();
                 default -> null;
             };
             if (IdUtils.validate(id)) {

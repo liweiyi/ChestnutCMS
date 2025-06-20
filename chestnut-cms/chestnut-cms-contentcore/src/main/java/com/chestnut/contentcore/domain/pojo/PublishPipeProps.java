@@ -13,13 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.contentcore.domain.dto;
+package com.chestnut.contentcore.domain.pojo;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class PublishPipeProp {
+/**
+ * PublishPipeProps
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
+@Setter
+@Getter
+public class PublishPipeProps {
 
 	private String pipeCode;
 	
@@ -27,35 +38,11 @@ public class PublishPipeProp {
 	
 	private Map<String, Object> props;
 	
-	public static PublishPipeProp newInstance(String pipeCode, String pipeName, Map<String, Object> props) {
-		PublishPipeProp ppp = new PublishPipeProp();
+	public static PublishPipeProps newInstance(String pipeCode, String pipeName, Map<String, Object> props) {
+		PublishPipeProps ppp = new PublishPipeProps();
 		ppp.setPipeCode(pipeCode);
 		ppp.setPipeName(pipeName);
 		ppp.setProps(Objects.requireNonNullElse(props, new HashMap<>()));
 		return ppp;
-	}
-
-	public String getPipeCode() {
-		return pipeCode;
-	}
-
-	public void setPipeCode(String pipeCode) {
-		this.pipeCode = pipeCode;
-	}
-
-	public String getPipeName() {
-		return pipeName;
-	}
-
-	public void setPipeName(String pipeName) {
-		this.pipeName = pipeName;
-	}
-
-	public Map<String, Object> getProps() {
-		return props;
-	}
-
-	public void setProps(Map<String, Object> prop) {
-		this.props = prop;
 	}
 }

@@ -20,6 +20,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.InitByContent;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.service.ICatalogService;
@@ -220,7 +221,7 @@ public class ContentDTO implements InitByContent {
 	/**
 	 * 发布通道配置
 	 */
-	private List<PublishPipeProp> publishPipeProps;
+	private List<PublishPipeProps> publishPipeProps;
 	
 	/**
 	 * 栏目扩展配置

@@ -17,6 +17,7 @@ package com.chestnut.common.config;
 
 import com.chestnut.common.config.properties.AsyncProperties;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -47,6 +48,7 @@ public class AsyncConfig implements AsyncConfigurer {
 
 	private final AsyncProperties properties;
 	
+	@NotNull
 	@Bean(COMMON_EXECUTOR_BEAN)
 	@Override
 	public Executor getAsyncExecutor() {

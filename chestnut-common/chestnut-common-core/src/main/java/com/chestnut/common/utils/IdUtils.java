@@ -61,10 +61,6 @@ public class IdUtils {
 		return UUID.randomUUID().toString();
 	}
 	
-	public static void main(String[] args) {
-		System.out.println(UUID.randomUUID().toString());
-	}
-
 	/**
 	 * 简化的UUID，去掉了横线
 	 * 

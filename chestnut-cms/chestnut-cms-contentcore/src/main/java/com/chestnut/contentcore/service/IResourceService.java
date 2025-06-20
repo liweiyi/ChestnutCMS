@@ -16,8 +16,8 @@
 package com.chestnut.contentcore.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.chestnut.common.storage.IFileStorageType;
 import com.chestnut.contentcore.core.IResourceType;
+import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.ResourceUploadDTO;
@@ -26,13 +26,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface IResourceService extends IService<CmsResource> {
-
-	/**
-	 * 获取存储方式
-	 */
-	IFileStorageType getFileStorageType(String type);
 
 	/**
 	 * 上传资源
@@ -102,4 +98,31 @@ public interface IResourceService extends IService<CmsResource> {
 	 * @param operator 操作人
 	 */
     String downloadRemoteImages(String html, CmsSite site, String operator);
+
+	/**
+	 * 检查图片资源缩略图，如果不存在则生成
+	 *
+	 * @param internalURL 内部链接
+	 * @param width 缩略图宽度
+	 * @param height 缩略图高度
+	 */
+	void createThumbnailIfNotExists(InternalURL internalURL, int width, int height) throws IOException;
+
+	/**
+	 * 处理默认缩略图
+	 *
+	 * @param site 站点
+	 * @param images 源图列表
+	 * @param thumbnailsConsumer 缩略图消费者
+	 */
+	void dealDefaultThumbnail(CmsSite site, List<String> images, Consumer<List<String>> thumbnailsConsumer);
+
+	/**
+	 * 处理内容引导图缩略图
+	 *
+	 * @param site 站点
+	 * @param imageSrc 源图列表
+	 * @param thumbnailConsumer 缩略图消费者
+	 */
+	void dealDefaultThumbnail(CmsSite site, String imageSrc, Consumer<String> thumbnailConsumer);
 }

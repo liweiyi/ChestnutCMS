@@ -51,6 +51,11 @@ public class MaxFunction extends AbstractFunc  {
 	}
 
 	@Override
+	public String supportVersion() {
+		return "V1.4.2+";
+	}
+
+	@Override
 	public Object exec0(Object... args) throws TemplateModelException {
 		if (StringUtils.isEmpty(args)) {
 			return StringUtils.EMPTY;

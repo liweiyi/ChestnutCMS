@@ -25,7 +25,6 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IPageWidget;
@@ -41,9 +40,9 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import freemarker.template.TemplateException;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -111,28 +110,30 @@ public class AdSpaceController extends BaseRestController {
 	}
 
 	@PostMapping
-	public R<?> addAdSpace(HttpServletRequest request) throws IOException {
-		PageWidgetAddDTO dto = JacksonUtils.from(request.getInputStream(), PageWidgetAddDTO.class);
+	public R<?> addAdSpace(@RequestBody @Validated PageWidgetAddDTO dto) {
 		dto.setType(pageWidgetType.getId());
-		
-		CmsPageWidget cmsPageWdiget = new CmsPageWidget();
-		BeanUtils.copyProperties(dto, cmsPageWdiget);
+
+		CmsSite site = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsPageWidget pageWidget = new CmsPageWidget();
+		BeanUtils.copyProperties(dto, pageWidget);
+		pageWidget.setSiteId(site.getSiteId());
+		pageWidget.setTemplates(dto.getPublishPipeTemplateMap());
+
 		IPageWidget pw = pageWidgetType.newInstance();
-		pw.setPageWidgetEntity(cmsPageWdiget);
+		pw.setPageWidgetEntity(pageWidget);
 		pw.setOperator(StpAdminUtil.getLoginUser());
-		CmsSite site = this.siteService.getCurrentSite(request);
-		pw.getPageWidgetEntity().setSiteId(site.getSiteId());
 		this.pageWidgetService.addPageWidget(pw);
 		return R.ok();
 	}
 
 	@PutMapping
-	public R<?> editAdSpace(HttpServletRequest request) throws IOException {
-		PageWidgetEditDTO dto = JacksonUtils.from(request.getInputStream(), PageWidgetEditDTO.class);
-		CmsPageWidget cmsPageWdiget = new CmsPageWidget();
-		BeanUtils.copyProperties(dto, cmsPageWdiget);
+	public R<?> editAdSpace(@RequestBody @Validated PageWidgetEditDTO dto) {
+		CmsPageWidget pageWidget = new CmsPageWidget();
+		BeanUtils.copyProperties(dto, pageWidget);
+		pageWidget.setTemplates(dto.getPublishPipeTemplateMap());
+
 		IPageWidget pw = pageWidgetType.newInstance();
-		pw.setPageWidgetEntity(cmsPageWdiget);
+		pw.setPageWidgetEntity(pageWidget);
 		pw.setOperator(StpAdminUtil.getLoginUser());
 		this.pageWidgetService.savePageWidget(pw);
 		return R.ok();

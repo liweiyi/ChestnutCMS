@@ -16,6 +16,9 @@
 package com.chestnut.system.security;
 
 import cn.dev33.satoken.session.SaSession;
+import com.chestnut.common.captcha.CaptchaData;
+import com.chestnut.common.captcha.CaptchaService;
+import com.chestnut.common.captcha.ICaptchaType;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.enums.DeviceType;
@@ -23,14 +26,13 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysUser;
+import com.chestnut.system.domain.dto.LoginBody;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.config.SysCaptchaEnable;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
 import com.chestnut.system.fixed.dict.UserStatus;
-import com.chestnut.system.monitor.CaptchaMonitoredCache;
 import com.chestnut.system.service.*;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.RequiredArgsConstructor;
@@ -51,8 +53,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class SysLoginService {
 
-	private final CaptchaMonitoredCache captchaCache;
-
 	private final ISysDeptService deptService;
 
 	private final ISysUserService userService;
@@ -63,22 +63,21 @@ public class SysLoginService {
 	
 	private final ISysPermissionService permissionService;
 
+	private final CaptchaService captchaService;
+
 	/**
 	 * 登录验证
 	 * 
-	 * @param username 用户名
-	 * @param password 密码
-	 * @param code     验证码
-	 * @param uuid     唯一标识
+	 * @param loginBody 用户名
 	 * @return 结果
 	 */
-	public String login(String username, String password, String code, String uuid) {
+	public String login(LoginBody loginBody) {
 		// 验证码开关
 		if (SysCaptchaEnable.isEnable()) {
-			validateCaptcha(username, code, uuid);
+			validateCaptcha(loginBody.getUsername(), loginBody.getCaptcha());
 		}
 		// 查找用户
-		SysUser user = this.userService.lambdaQuery().eq(SysUser::getUserName, username).one();
+		SysUser user = this.userService.lambdaQuery().eq(SysUser::getUserName, loginBody.getUsername()).one();
 		if (Objects.isNull(user)) {
 			throw SysErrorCode.USER_NOT_EXISTS.exception();
 		}
@@ -89,7 +88,7 @@ public class SysLoginService {
 			throw SysErrorCode.USER_DISABLED.exception();
 		}
 		// 密码校验
-		if (!SecurityUtils.matches(password, user.getPassword())) {
+		if (!SecurityUtils.matches(loginBody.getPassword(), user.getPassword())) {
 			// 密码错误处理策略
 			this.securityConfigService.processLoginPasswordError(user);
 			if (user.isModified()) {
@@ -140,27 +139,17 @@ public class SysLoginService {
 	 * 校验验证码
 	 * 
 	 * @param username 用户名
-	 * @param code     验证码
-	 * @param uuid     唯一标识
+	 * @param captcha 验证码
 	 */
-	public void validateCaptcha(String username, String code, String uuid) {
-		Assert.notEmpty(uuid, SysErrorCode.CAPTCHA_ERR::exception);
+	public void validateCaptcha(String username, CaptchaData captcha) {
+		Assert.notNull(captcha, SysErrorCode.CAPTCHA_ERR::exception);
 
-		String cacheKey = SysConstants.CAPTCHA_CODE_KEY + StringUtils.nvl(uuid, StringUtils.EMPTY);
-		String captcha = captchaCache.getCache(cacheKey);
-		// 过期判断
-		Assert.notNull(captcha, () -> {
-			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,
-					LoginLogType.LOGIN, SuccessOrFail.FAIL, SysErrorCode.CAPTCHA_EXPIRED.name());
-			return SysErrorCode.CAPTCHA_EXPIRED.exception();
-		});
-		// 未过期移除缓存
-		captchaCache.deleteCache(cacheKey);
-		// 判断是否与输入验证码一致
-		Assert.isTrue(StringUtils.equals(code, captcha), () -> {
+		ICaptchaType captchaType = captchaService.getCaptchaType(captcha.getType());
+		boolean validated = captchaType.isTokenValidated(captcha);
+		if (!validated) {
 			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,
 					LoginLogType.LOGIN, SuccessOrFail.FAIL, SysErrorCode.CAPTCHA_ERR.name());
-			return SysErrorCode.CAPTCHA_ERR.exception();
-		});
+			throw SysErrorCode.CAPTCHA_ERR.exception();
+		}
 	}
 }

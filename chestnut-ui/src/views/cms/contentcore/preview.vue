@@ -1,7 +1,7 @@
 <template>
   <div class="app-container preview-page">
     <el-container>
-      <el-header class="header-bar" v-if="type!=='pagewidget'" style="padding-top: 15px">
+      <el-header class="header-bar" style="padding-top: 15px">
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
             <span class="mr10" style="font-size: 14px;">{{ $t('CMS.ContentCore.PublishPipe') }}</span>

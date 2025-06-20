@@ -28,12 +28,14 @@ import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.util.ResourceUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 
+@Slf4j
 public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 
 	private IArticleService articleService;
@@ -48,15 +50,13 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 		CmsArticleDetail articleDetail = this.getExtendEntity();
 		articleDetail.setContentId(this.getContentEntity().getContentId());
 		articleDetail.setSiteId(this.getContentEntity().getSiteId());
-		// 处理内部链接
-		String contentHtml = ResourceUtils.dealHtmlInternalUrl(articleDetail.getContentHtml());
 		// 处理文章正文远程图片
 		if (YesOrNo.isYes(articleDetail.getDownloadRemoteImage())) {
 			AsyncTaskManager.setTaskPercent(90);
-			contentHtml = this.getResourceService().downloadRemoteImages(contentHtml, this.getSite(),
+			String contentHtml = this.getResourceService().downloadRemoteImages(articleDetail.getContentHtml(), this.getSite(),
 					this.getOperatorUName());
+			articleDetail.setContentHtml(contentHtml);
 		}
-		articleDetail.setContentHtml(contentHtml);
 		// 正文首图作为logo
 		if (StringUtils.isEmpty(this.getContentEntity().getImages())
 				&& AutoArticleLogo.getValue(this.getSite().getConfigProps())) {
@@ -76,15 +76,13 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 			return;
 		}
 		CmsArticleDetail articleDetail = this.getExtendEntity();
-		// 处理内部链接
-		String contentHtml = ResourceUtils.dealHtmlInternalUrl(articleDetail.getContentHtml());
 		// 处理文章正文远程图片
 		if (YesOrNo.isYes(articleDetail.getDownloadRemoteImage())) {
 			AsyncTaskManager.setTaskPercent(90);
-			contentHtml = this.getResourceService().downloadRemoteImages(contentHtml, this.getSite(),
+			String contentHtml = this.getResourceService().downloadRemoteImages(articleDetail.getContentHtml(), this.getSite(),
 					this.getOperatorUName());
+			articleDetail.setContentHtml(contentHtml);
 		}
-		articleDetail.setContentHtml(contentHtml);
 		// 正文首图作为logo
 		if (StringUtils.isEmpty(this.getContentEntity().getImages())
 				&& AutoArticleLogo.getValue(this.getSite().getConfigProps())) {
@@ -116,6 +114,10 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 	@Override
 	protected void delete0() {
 		if (this.hasExtendEntity()) {
+			if (Objects.isNull(this.getExtendEntity())) {
+				log.warn("The content extend entity is null: {}", this.getContentEntity().getContentId());
+				return;
+			}
 			this.getArticleService().dao()
 					.deleteByIdAndBackup(this.getExtendEntity(), this.getOperatorUName());
 		}

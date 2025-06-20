@@ -156,6 +156,7 @@ public class ContentServiceImpl implements IContentService {
 						IContentType contentType = ContentCoreUtils.getContentType(content.getContentType());
 						IContent<?> icontent = contentType.loadContent(content);
 						icontent.setOperator(operator);
+						icontent.getParams().put(IContent.PARAM_IS_DELETE_BY_CATALOG, true);
 						icontent.delete();
 					});
 		}

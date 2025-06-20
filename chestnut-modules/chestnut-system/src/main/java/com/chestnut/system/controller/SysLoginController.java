@@ -72,8 +72,7 @@ public class SysLoginController extends BaseRestController {
 	@PostMapping("/login")
 	public R<?> login(@Validated @RequestBody LoginBody loginBody) {
 		// 生成令牌
-		String token = loginService.login(loginBody.getUsername(), loginBody.getPassword(), loginBody.getCode(),
-				loginBody.getUuid());
+		String token = loginService.login(loginBody);
 		return R.ok(token);
 	}
 

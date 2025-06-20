@@ -17,8 +17,13 @@ package com.chestnut.article.format;
 
 import com.chestnut.article.ArticleUtils;
 import com.chestnut.article.IArticleBodyFormat;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.core.SiteImportContext;
 import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.contentcore.util.ResourceUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.regex.Matcher;
 
 /**
  * 文章正文文档格式：富文本
@@ -44,6 +49,30 @@ public class ArticleBodyFormat_RichText implements IArticleBodyFormat {
     @Override
     public String initEditor(String contentHtml) {
         return InternalUrlUtils.dealResourceInternalUrl(contentHtml);
+    }
+
+    @Override
+    public String onSave(String contentHtml) {
+        return ResourceUtils.dealHtmlInternalUrl(contentHtml);
+    }
+
+    @Override
+    public String onSiteThemImport(SiteImportContext context, String contentHtml) {
+        // 替换正文内部资源地址
+        StringBuilder html = new StringBuilder();
+        int index = 0;
+        Matcher matcher = InternalUrlUtils.InternalUrlTagPattern.matcher(contentHtml);
+        while (matcher.find()) {
+            String tagStr = matcher.group();
+            String iurl = matcher.group(1);
+
+            String newIurl = context.dealInternalUrl(iurl);
+            tagStr = StringUtils.replaceEx(tagStr, iurl, newIurl);
+            html.append(contentHtml, index, matcher.start()).append(tagStr);
+            index = matcher.end();
+        }
+        html.append(contentHtml.substring(index));
+        return html.toString();
     }
 
     @Override

@@ -23,6 +23,7 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -78,9 +79,12 @@ public class EXModelController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/options")
-	public R<?> getModelOptions() {
+	public R<?> getModelOptions(@RequestParam(required = false) Long siteId) {
 		PageRequest pr = this.getPageRequest();
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		if (IdUtils.validate(siteId)) {
+			site = this.siteService.getSite(siteId);
+		}
 		LambdaQueryWrapper<XModel> q = new LambdaQueryWrapper<XModel>()
 				.eq(XModel::getOwnerType, CmsExtendMetaModelType.TYPE)
 				.eq(XModel::getOwnerId, site.getSiteId());

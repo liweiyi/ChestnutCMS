@@ -15,24 +15,22 @@
  */
 package com.chestnut.system.config;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.util.Locale;
-import java.util.Objects;
-
+import com.chestnut.common.redis.RedisCache;
+import com.chestnut.common.utils.ConvertUtils;
+import com.chestnut.common.utils.StringUtils;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.support.AbstractMessageSource;
 
-import com.chestnut.common.redis.RedisCache;
-import com.chestnut.common.utils.ConvertUtils;
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.system.service.ISysI18nDictService;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -43,7 +41,7 @@ public class I18nMessageSource extends AbstractMessageSource implements Initiali
 
 	private final RedisCache redisCache;
 
-	private String basename;
+	private List<String> basename;
 
 	private Charset encoding = StandardCharsets.UTF_8;
 

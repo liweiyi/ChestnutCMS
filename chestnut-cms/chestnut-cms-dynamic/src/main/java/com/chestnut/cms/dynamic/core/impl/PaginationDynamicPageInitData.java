@@ -16,7 +16,9 @@
 package com.chestnut.cms.dynamic.core.impl;
 
 import com.chestnut.cms.dynamic.core.IDynamicPageInitData;
+import com.chestnut.common.staticize.StaticizeConstants;
 import com.chestnut.common.staticize.core.TemplateContext;
+import com.chestnut.contentcore.util.TemplateUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
@@ -44,8 +46,12 @@ public class PaginationDynamicPageInitData implements IDynamicPageInitData {
     }
 
     @Override
-    public void initTemplateData(TemplateContext context, Map<String, String> parameters) {
-        int pageIndex = MapUtils.getIntValue(parameters, "pi", 1);
+    public void initTemplateData(TemplateContext context, String path, Map<String, String> parameters) {
+        int pageIndex = MapUtils.getIntValue(parameters, StaticizeConstants.TemplateParam_PageIndex, 1);
         context.setPageIndex(pageIndex);
+        String prefix = context.getVariables().get(context.isPreview() ? TemplateUtils.TemplateVariable_ApiPrefix
+                : TemplateUtils.TemplateVariable_Prefix).toString();;
+        context.setFirstFileName(prefix + path);
+        context.setOtherFileName(prefix + TemplateUtils.appendPageIndexParam(path, TemplateContext.PlaceHolder_PageNo));
     }
 }

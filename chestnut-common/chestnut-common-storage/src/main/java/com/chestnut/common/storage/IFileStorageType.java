@@ -35,17 +35,19 @@ public interface IFileStorageType {
 	/**
 	 * 测试连接
 	 */
-	default boolean testConnection(String endpoint, String accessKey, String accessSecret) {
+	default boolean testConnection(String endpoint, String region, String accessKey, String accessSecret) {
 		return true;
 	}
 
 	/**
 	 * 重置连接客户端
 	 * 
-	 * @param clientKey
-	 * @param args
+	 * @param endpoint endpoint
+	 * @param region region
+	 * @param accessKey accessKey
+	 * @param accessSecret accessSecret
 	 */
-	default void reloadClient(String endpoint, String accessKey, String accessSecret) {
+	default void reloadClient(String endpoint, String region, String accessKey, String accessSecret) {
 		
 	}
 

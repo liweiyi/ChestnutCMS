@@ -45,7 +45,7 @@ public class SystemConfig implements WebMvcConfigurer {
 	public SystemConfig(SysProperties properties) {
 		UPLOAD_DIRECTORY = properties.getUploadPath();
 		if (StringUtils.isEmpty(UPLOAD_DIRECTORY)) {
-			UPLOAD_DIRECTORY = SpringUtils.getAppParentDirectory() + "/profile/";
+			UPLOAD_DIRECTORY = SpringUtils.getAppParentDirectory() + SysConstants.RESOURCE_PREFIX;
 		}
 		UPLOAD_DIRECTORY = StringUtils.appendIfMissing(FileExUtils.normalizePath(UPLOAD_DIRECTORY), "/");
 		FileExUtils.mkdirs(UPLOAD_DIRECTORY);

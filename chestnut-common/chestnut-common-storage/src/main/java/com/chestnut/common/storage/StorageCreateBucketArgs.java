@@ -15,32 +15,59 @@
  */
 package com.chestnut.common.storage;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
-public class StorageCreateBucketArgs {
-	
-	/**
-	 * 访问API接口地址
-	 */
-	private String endpoint;
-
-	/**
-	 * 用户名
-	 */
-	private String accessKey;
-
-	/**
-	 * 访问密码
-	 */
-	private String accessSecret;
+public class StorageCreateBucketArgs extends StorageBasicArgs {
 
 	/**
 	 * 存储空间名
 	 */
 	private String bucket;
+
+	public static class Builder {
+
+		private String endpoint;
+		private String region;
+		private String accessKey;
+		private String accessSecret;
+		private String bucket;
+
+		public StorageCreateBucketArgs build() {
+			StorageCreateBucketArgs storageCreateBucketArgs = new StorageCreateBucketArgs();
+			storageCreateBucketArgs.setEndpoint(endpoint);
+			storageCreateBucketArgs.setRegion(region);
+			storageCreateBucketArgs.setAccessKey(accessKey);
+			storageCreateBucketArgs.setAccessSecret(accessSecret);
+			storageCreateBucketArgs.setBucket(bucket);
+			return storageCreateBucketArgs;
+		}
+
+		public Builder endpoint(String endpoint) {
+			this.endpoint = endpoint;
+			return this;
+		}
+		public Builder region(String region) {
+			this.region = region;
+			return this;
+		}
+		public Builder accessKey(String accessKey) {
+			this.accessKey = accessKey;
+			return this;
+		}
+		public Builder accessSecret(String accessSecret) {
+			this.accessSecret = accessSecret;
+			return this;
+		}
+		public Builder bucket(String bucket) {
+			this.bucket = bucket;
+			return this;
+		}
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
 }

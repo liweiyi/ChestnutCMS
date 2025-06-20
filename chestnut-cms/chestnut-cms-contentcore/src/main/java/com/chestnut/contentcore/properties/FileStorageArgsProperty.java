@@ -15,17 +15,17 @@
  */
 package com.chestnut.contentcore.properties;
 
-import java.util.Map;
-
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
+import com.chestnut.common.serializer.DesensitizationJsonSerializer;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IProperty;
-
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * 资源存储策略参数
@@ -77,12 +77,14 @@ public class FileStorageArgsProperty implements IProperty {
 	@Getter
 	@Setter
 	public static class FileStorageArgs {
-		
+
 		private String accessKey;
-		
+
 		private String accessSecret;
 		
 		private String endpoint;
+
+		private String region;
 		
 		private String bucket;
 		

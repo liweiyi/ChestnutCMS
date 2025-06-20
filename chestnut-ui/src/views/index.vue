@@ -6,6 +6,11 @@
       </el-col>
     </el-row>
     <el-row :gutter="10">
+      <el-col :span="24">
+        <cms-site-panel></cms-site-panel>
+      </el-col>
+    </el-row>
+    <el-row :gutter="10">
       <el-col :span="12">
         <cms-site-visit-stat></cms-site-visit-stat>
         <server-info></server-info>
@@ -24,6 +29,7 @@ import SysShortcut from '@/views/system/dashboard/shortcut'
 import ServerInfo from '@/views/system/dashboard/serverInfo'
 import CmsSiteVisitStat from '@/views/cms/dashboard/siteVisitStat'
 import CmsSiteDataStat from '@/views/cms/dashboard/siteDataStat'
+import CmsSitePanel from '@/views/cms/dashboard/sitePanel'
 
 export default {
   name: 'Index',
@@ -33,6 +39,7 @@ export default {
     'server-info': ServerInfo,
     'cms-site-visit-stat': CmsSiteVisitStat,
     'cms-site-data-stat': CmsSiteDataStat,
+    'cms-site-panel': CmsSitePanel,
   },
   data() {
     return {

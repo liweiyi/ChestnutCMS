@@ -107,7 +107,7 @@ public class SysSecurityConfig extends BaseEntity {
 	
 	/**
 	 * 密码重试安全策略<br/>
-	 * @see com.chestnut.system.fixed.dict.PasswordRetryStrategy.auth.enums.PasswordErrStrategy
+	 * @see com.chestnut.system.fixed.dict.PasswordRetryStrategy
 	 */
 	private String passwordRetryStrategy;
 	

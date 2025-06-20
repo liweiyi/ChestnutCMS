@@ -68,9 +68,9 @@ public class ManualPageWidgetType implements IPageWidgetType {
 	}
 
 	@Override
-	public IPageWidget loadPageWidget(CmsPageWidget cmsPageWdiget) {
+	public IPageWidget loadPageWidget(CmsPageWidget cmsPageWidget) {
 		ManualPageWidget pw = new ManualPageWidget();
-		pw.setPageWidgetEntity(cmsPageWdiget);
+		pw.setPageWidgetEntity(cmsPageWidget);
 		return pw;
 	}
 	

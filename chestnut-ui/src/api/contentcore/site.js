@@ -189,3 +189,11 @@ export function getDynamicPageTypes() {
     method: 'get'
   })
 }
+
+// 首页站点信息看板数据
+export function getDashboardSiteInfo() {
+  return request({
+    url: '/cms/site/getDashboardSiteInfo',
+    method: 'get'
+  })
+}

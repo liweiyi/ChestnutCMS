@@ -200,7 +200,7 @@ public class ContentCoreListener {
 	public void beforeCatalogDelete(BeforeCatalogDeleteEvent event) {
 		CmsCatalog catalog = event.getCatalog();
 		// 删除栏目内容
-		this.contentService.deleteContentsByCatalog(catalog, true, event.getOperator());
+		this.contentService.deleteContentsByCatalog(catalog, false, event.getOperator());
 		// 删除页面部件
 		this.pageWidgetService.deletePageWidgetsByCatalog(catalog);
 	}

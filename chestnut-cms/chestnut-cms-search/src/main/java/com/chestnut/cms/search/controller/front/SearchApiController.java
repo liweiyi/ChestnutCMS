@@ -23,6 +23,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggestOption;
 import co.elastic.clients.elasticsearch.core.search.Suggestion;
 import com.chestnut.cms.search.CmsSearchConstants;
+import com.chestnut.cms.search.template.tag.CmsSearchContentTag;
 import com.chestnut.cms.search.vo.ESContentVO;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
@@ -279,8 +280,11 @@ public class SearchApiController extends BaseRestController {
 	@GetMapping("/group/catalog")
 	public R<?> groupBy(@RequestParam("sid") @LongId Long siteId,
 						@RequestParam(value = "q") @Length(max = 50) String query,
+						@RequestParam(value = "cid", defaultValue = "0") Long catalogId,
+						@RequestParam(value = "level", defaultValue = "0") Integer level,
 						@RequestParam(value = "ot", required = false ,defaultValue = "false") Boolean onlyTitle,
 						@RequestParam(value = "ct", required = false) String contentType) throws ElasticsearchException, IOException {
+		CmsCatalog catalog = IdUtils.validate(catalogId) ? catalogService.getCatalog(catalogId) : null;
 		String indexName = CmsSearchConstants.indexName(siteId.toString());
 		SearchResponse<ObjectNode> sr = esClient.search(s ->
 				s.index(indexName)
@@ -308,6 +312,13 @@ public class SearchApiController extends BaseRestController {
 											);
 										}
 									}
+									if (Objects.nonNull(catalog)) {
+										if (CmsSearchContentTag.SearchLevel.CurrentAndChild.ordinal() == level) {
+											b.must(must -> must.prefix(prefixFn -> prefixFn.field("catalogAncestors").value(catalog.getAncestors())));
+										} else {
+											b.must(must -> must.term(tq -> tq.field("catalogId").value(catalog.getCatalogId())));
+										}
+									}
 									return b;
 								})
 						)
@@ -318,14 +329,14 @@ public class SearchApiController extends BaseRestController {
 						.size(0), ObjectNode.class);
 		Aggregate aggregate = sr.aggregations().get("groupBy");
 		List<ObjectNode> list = aggregate.lterms().buckets().array().stream().map(b -> {
-			Long catalogId = b.key();
-			CmsCatalog catalog = catalogService.getCatalog(b.key());
-			if (Objects.isNull(catalog)) {
+			CmsCatalog _catalog = catalogService.getCatalog(b.key());
+			if (Objects.isNull(_catalog)) {
 				return null;
 			}
 			return JacksonUtils.objectNode()
-					.put("id", catalogId)
-					.put("name", catalog.getName())
+					.put("id", _catalog.getCatalogId())
+					.put("ancestors", _catalog.getAncestors())
+					.put("name", _catalog.getName())
 					.put("total", b.docCount());
 		}).filter(Objects::nonNull).toList();
 		return R.ok(list);

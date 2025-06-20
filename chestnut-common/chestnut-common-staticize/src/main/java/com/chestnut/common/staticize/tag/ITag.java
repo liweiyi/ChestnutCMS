@@ -37,6 +37,13 @@ public interface ITag {
     default String getDescription() {
         return "";
     }
+
+    /**
+     * 支持版本
+     */
+    default String supportVersion() {
+        return "";
+    }
     
     /**
      * 标签属性定义

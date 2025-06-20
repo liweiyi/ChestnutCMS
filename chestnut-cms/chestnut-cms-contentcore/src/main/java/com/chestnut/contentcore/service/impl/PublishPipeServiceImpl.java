@@ -29,7 +29,7 @@ import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_IndexTemplate;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.fixed.config.TemplateSuffix;
 import com.chestnut.contentcore.mapper.CmsPublishPipeMapper;
 import com.chestnut.contentcore.properties.EnableSiteDeleteBackupProperty;
@@ -65,13 +65,13 @@ public class PublishPipeServiceImpl extends ServiceImpl<CmsPublishPipeMapper, Cm
 	private final List<IPublishPipeProp> publishPipeProps;
 
 	@Override
-	public List<PublishPipeProp> getPublishPipeProps(Long siteId, PublishPipePropUseType useType,
-			Map<String, Map<String, Object>> props) {
+	public List<PublishPipeProps> getPublishPipeProps(Long siteId, PublishPipePropUseType useType,
+													  Map<String, Map<String, Object>> props) {
 		List<IPublishPipeProp> list = this.publishPipeProps.stream()
 				.filter(p -> p.getUseTypes().contains(useType))
 				.toList();
 		return this.getPublishPipes(siteId).stream().map(pp -> {
-			PublishPipeProp prop = PublishPipeProp.newInstance(pp.getCode(), pp.getName(),
+			PublishPipeProps prop = PublishPipeProps.newInstance(pp.getCode(), pp.getName(),
 					Objects.isNull(props) ? null : props.get(pp.getCode()));
 			list.forEach(p -> {
 				if (!prop.getProps().containsKey(p.getKey())) {

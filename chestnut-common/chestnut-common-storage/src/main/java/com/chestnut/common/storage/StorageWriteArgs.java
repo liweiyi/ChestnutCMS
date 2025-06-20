@@ -15,31 +15,14 @@
  */
 package com.chestnut.common.storage;
 
-import java.io.InputStream;
-
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.InputStream;
+
 @Getter
 @Setter
-@Builder
-public class StorageWriteArgs {
-	
-	/**
-	 * 访问API接口地址
-	 */
-	private String endpoint;
-
-	/**
-	 * 用户名
-	 */
-	private String accessKey;
-
-	/**
-	 * 访问密码
-	 */
-	private String accessSecret;
+public class StorageWriteArgs extends StorageBasicArgs {
 	
 	/**
 	 * 存储空间名
@@ -59,5 +42,67 @@ public class StorageWriteArgs {
 	/**
 	 * 文件大小
 	 */
-	private Long length;
+	private long length;
+
+	public static class Builder {
+
+		private String endpoint;
+		private String region;
+		private String accessKey;
+		private String accessSecret;
+		private String bucket;
+		private String path;
+		private InputStream inputStream;
+		private long length;
+
+		public StorageWriteArgs build() {
+			StorageWriteArgs args = new StorageWriteArgs();
+			args.setEndpoint(endpoint);
+			args.setRegion(region);
+			args.setAccessKey(accessKey);
+			args.setAccessSecret(accessSecret);
+			args.setBucket(bucket);
+			args.setPath(path);
+			args.setInputStream(inputStream);
+			args.setLength(length);
+			return args;
+		}
+
+		public Builder endpoint(String endpoint) {
+			this.endpoint = endpoint;
+			return this;
+		}
+		public Builder region(String region) {
+			this.region = region;
+			return this;
+		}
+		public Builder accessKey(String accessKey) {
+			this.accessKey = accessKey;
+			return this;
+		}
+		public Builder accessSecret(String accessSecret) {
+			this.accessSecret = accessSecret;
+			return this;
+		}
+		public Builder bucket(String bucket) {
+			this.bucket = bucket;
+			return this;
+		}
+		public Builder path(String path) {
+			this.path = path;
+			return this;
+		}
+		public Builder inputStream(InputStream inputStream) {
+			this.inputStream = inputStream;
+			return this;
+		}
+		public Builder length(long length) {
+			this.length = length;
+			return this;
+		}
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
 }

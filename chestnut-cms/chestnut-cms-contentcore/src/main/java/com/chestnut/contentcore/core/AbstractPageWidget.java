@@ -20,14 +20,11 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsPageWidget;
+import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.fixed.dict.PageWidgetStatus;
-import com.chestnut.contentcore.service.ICatalogService;
-import com.chestnut.contentcore.service.IPageWidgetService;
-import com.chestnut.contentcore.service.IPublishService;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.util.SiteUtils;
-import freemarker.template.TemplateException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +33,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @Getter
@@ -51,6 +49,8 @@ public abstract class AbstractPageWidget implements IPageWidget {
 	private IPageWidgetService pageWidgetService;
 
 	private IPublishService publishService;
+
+	private IPublishPipeService publishPipeService;
 
 	private LoginUser operator;
 
@@ -98,9 +98,12 @@ public abstract class AbstractPageWidget implements IPageWidget {
 		this.getPageWidgetService().removeById(this.getPageWidgetEntity());
 		try {
 			// 删除静态文件
-			FileUtils.delete(new File(this.getStaticFilePath()));
+			List<CmsPublishPipe> publishPipes = this.getPublishPipeService().getAllPublishPipes(this.getPageWidgetEntity().getSiteId());
+			for (CmsPublishPipe publishPipe : publishPipes) {
+				FileUtils.delete(new File(this.getStaticFilePath(publishPipe.getCode())));
+			}
 		} catch (IOException e) {
-			log.error("Delete file failed: {}", this.getStaticFilePath());
+			log.error("Delete page-widget static file failed: {}", this.getPageWidgetEntity().getPageWidgetId());
 		}
 	}
 
@@ -114,11 +117,11 @@ public abstract class AbstractPageWidget implements IPageWidget {
 		this.getPublishService().pageWidgetStaticize(this);
 	}
 	
-	public String getStaticFilePath() {
+	public String getStaticFilePath(String publishPipeCode) {
 		CmsSite site = this.getSiteService().getSite(this.getPageWidgetEntity().getSiteId());
-		String siteRoot = SiteUtils.getSiteRoot(site, this.getPageWidgetEntity().getPublishPipeCode());
+		String siteRoot = SiteUtils.getSiteRoot(site, publishPipeCode);
 		return siteRoot + this.getPageWidgetEntity().getPath() + this.getPageWidgetEntity().getPageWidgetId()
-				+ StringUtils.DOT + site.getStaticSuffix(this.getPageWidgetEntity().getPublishPipeCode());
+				+ StringUtils.DOT + site.getStaticSuffix(publishPipeCode);
 	}
 	
 	public ISiteService getSiteService() {
@@ -147,5 +150,12 @@ public abstract class AbstractPageWidget implements IPageWidget {
 			this.publishService = SpringUtils.getBean(IPublishService.class);
 		}
 		return publishService;
+	}
+
+	public IPublishPipeService getPublishPipeService() {
+		if(this.publishPipeService == null) {
+			this.publishPipeService = SpringUtils.getBean(IPublishPipeService.class);
+		}
+		return publishPipeService;
 	}
 }

@@ -16,6 +16,7 @@
 package com.chestnut.customform.domain.dto;
 
 import com.chestnut.common.security.domain.BaseDTO;
+import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
@@ -24,7 +25,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 自定义表单编辑DTO
@@ -77,7 +77,7 @@ public class CustomFormEditDTO extends BaseDTO {
     /**
      * 模板配置
      */
-    private List<Map<String, String>> templates;
+    private List<PublishPipeTemplate> templates;
 
     /**
      * 备注

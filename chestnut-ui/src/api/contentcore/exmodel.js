@@ -9,10 +9,11 @@ export function listXModel(query) {
   })
 }
 
-export function listXModelOptions() {
+export function listXModelOptions(params) {
   return request({
     url: '/cms/exmodel/options',
-    method: 'get'
+    method: 'get',
+    params: params
   })
 }
 

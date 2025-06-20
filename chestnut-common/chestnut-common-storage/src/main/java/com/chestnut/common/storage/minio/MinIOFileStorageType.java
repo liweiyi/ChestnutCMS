@@ -36,7 +36,7 @@ public class MinIOFileStorageType implements IFileStorageType {
 
 	public final static String TYPE = "MinIO";
 
-	private Map<String, OSSClient<MinioClient>> clients = new HashMap<>();
+	private final Map<String, OSSClient<MinioClient>> clients = new HashMap<>();
 
 	@Override
 	public String getType() {
@@ -48,11 +48,11 @@ public class MinIOFileStorageType implements IFileStorageType {
 		return I18nUtils.get("{STORAGE.TYPE." + TYPE + "}");
 	}
 
-	private OSSClient<MinioClient> getClient(String endpoint, String accessKey, String accessSecret) {
+	private OSSClient<MinioClient> getClient(String endpoint, String region, String accessKey, String accessSecret) {
 		OSSClient<MinioClient> client = this.clients.get(endpoint);
 		if (client == null) {
 			client = new OSSClient<>();
-			client.setClient(MinioClient.builder().endpoint(endpoint).credentials(accessKey, accessSecret).build());
+			client.setClient(MinioClient.builder().endpoint(endpoint).region(region).credentials(accessKey, accessSecret).build());
 			this.clients.put(endpoint, client);
 		}
 		client.setLastActiveTime(System.currentTimeMillis());
@@ -60,8 +60,8 @@ public class MinIOFileStorageType implements IFileStorageType {
 	}
 
 	@Override
-	public boolean testConnection(String endpoint, String accessKey, String accessSecret) {
-		OSSClient<MinioClient> client = this.getClient(endpoint, accessKey, accessSecret);
+	public boolean testConnection(String endpoint, String region, String accessKey, String accessSecret) {
+		OSSClient<MinioClient> client = this.getClient(endpoint, region, accessKey, accessSecret);
 		try {
 			client.getClient().listBuckets();
 			return true;
@@ -78,7 +78,7 @@ public class MinIOFileStorageType implements IFileStorageType {
 		if (StringUtils.isEmpty(args.getBucket())) {
 			throw CommonErrorCode.NOT_EMPTY.exception("bucket");
 		}
-		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(), args.getAccessSecret());
+		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(), args.getAccessSecret());
 		this.createBucket0(client, args.getBucket());
 	}
 
@@ -96,15 +96,15 @@ public class MinIOFileStorageType implements IFileStorageType {
 	}
 
 	@Override
-	public void reloadClient(String endpoint, String accessKey, String accessSecret) {
+	public void reloadClient(String endpoint, String region, String accessKey, String accessSecret) {
 		this.clients.remove(endpoint);
-		this.getClient(endpoint, accessKey, accessSecret);
+		this.getClient(endpoint, region, accessKey, accessSecret);
 	}
 
 	@Override
 	public InputStream read(StorageReadArgs args) {
 		try {
-			OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(),
+			OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(),
 					args.getAccessSecret());
 			GetObjectArgs getObjectArgs = GetObjectArgs.builder().bucket(args.getBucket()).object(args.getPath())
 					.build();
@@ -116,7 +116,7 @@ public class MinIOFileStorageType implements IFileStorageType {
 
 	@Override
 	public List<String> list(StorageListArgs args) {
-		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(),
+		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(),
 				args.getAccessSecret());
 
 		ListObjectsArgs listObjectsArgs = new ListObjectsArgs.Builder()
@@ -144,7 +144,7 @@ public class MinIOFileStorageType implements IFileStorageType {
 				throw CommonErrorCode.NOT_EMPTY.exception("inputStream");
 			}
 			String mimetype = Mimetypes.getInstance().getMimetype(args.getPath());
-			OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(),
+			OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(),
 					args.getAccessSecret());
 			PutObjectArgs putObjectArgs = PutObjectArgs.builder().bucket(args.getBucket()).object(args.getPath())
 					.contentType(mimetype).stream(args.getInputStream(), args.getInputStream().available(), -1).build();
@@ -157,7 +157,7 @@ public class MinIOFileStorageType implements IFileStorageType {
 	@Override
 	public void remove(StorageRemoveArgs args) {
 		try {
-			OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(),
+			OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(),
 					args.getAccessSecret());
 			RemoveObjectArgs removeObjectArgs = RemoveObjectArgs.builder().bucket(args.getBucket())
 					.object(args.getPath()).build();
@@ -169,7 +169,7 @@ public class MinIOFileStorageType implements IFileStorageType {
 
 	@Override
 	public void copy(StorageCopyArgs args) {
-		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(), args.getAccessSecret());
+		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(), args.getAccessSecret());
 		ComposeSource composeSource = new ComposeSource(
 				CopySource.builder().bucket(args.getBucket()).object(args.getSourcePath()).build());
 		ComposeObjectArgs objectArgs = ComposeObjectArgs.builder().bucket(args.getBucket())
@@ -184,7 +184,7 @@ public class MinIOFileStorageType implements IFileStorageType {
 
 	@Override
 	public void move(StorageMoveArgs args) {
-		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getAccessKey(), args.getAccessSecret());
+		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(), args.getAccessSecret());
 		ComposeSource composeSource = new ComposeSource(
 				CopySource.builder().bucket(args.getBucket()).object(args.getSourcePath()).build());
 		ComposeObjectArgs objectArgs = ComposeObjectArgs.builder().bucket(args.getBucket())

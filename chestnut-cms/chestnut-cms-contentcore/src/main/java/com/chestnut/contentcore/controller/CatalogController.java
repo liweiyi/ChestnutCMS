@@ -38,14 +38,12 @@ import com.chestnut.contentcore.core.impl.CatalogType_Link;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.*;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.vo.CatalogVO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.perms.ContentCorePriv;
-import com.chestnut.contentcore.service.ICatalogService;
-import com.chestnut.contentcore.service.IPublishPipeService;
-import com.chestnut.contentcore.service.IPublishService;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.user.preference.CatalogTreeExpandModePreference;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
@@ -92,6 +90,8 @@ public class CatalogController extends BaseRestController {
 
 	private final AsyncTaskManager asyncTaskManager;
 
+	private final IResourceService resourceService;
+
 	/**
 	 * 查询栏目数据列表
 	 */
@@ -118,8 +118,9 @@ public class CatalogController extends BaseRestController {
 		if (StringUtils.isNotEmpty(dto.getLogo())) {
 			dto.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(dto.getLogo()));
 		}
+		resourceService.dealDefaultThumbnail(site, dto.getLogo(), dto::setLogoSrc);
 		// 发布通道数据
-		List<PublishPipeProp> publishPipeProps = this.publishPipeService.getPublishPipeProps(site.getSiteId(),
+		List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(site.getSiteId(),
 				PublishPipePropUseType.Catalog, catalog.getPublishPipeProps());
 		dto.setPublishPipeDatas(publishPipeProps);
 		return R.ok(dto);
@@ -179,12 +180,20 @@ public class CatalogController extends BaseRestController {
 	@Log(title = "删除", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{catalogId}")
 	public R<String> deleteCatalog(@PathVariable("catalogId") @LongId Long catalogId) {
+		CmsCatalog catalog = catalogService.getById(catalogId);
+		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalog));
 		LoginUser operator = StpAdminUtil.getLoginUser();
 		AsyncTask task = new AsyncTask("Catalog-" + catalogId) {
 
 			@Override
 			public void run0() {
-				catalogService.deleteCatalog(catalogId, operator);
+				List<CmsCatalog> list = catalogService.lambdaQuery()
+						.likeRight(CmsCatalog::getAncestors, catalog.getAncestors())
+						.list();
+				list.sort((c1, c2) -> c2.getTreeLevel() - c1.getTreeLevel());
+				list.forEach(c -> {
+					catalogService.deleteCatalog(c, operator);
+				});
 			}
 		};
 		this.asyncTaskManager.execute(task);

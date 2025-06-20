@@ -307,7 +307,7 @@
     <cms-content-rela-dialog :cid="contentId" :open="openRelaContentDialog" @close="handleRelaContentClose"></cms-content-rela-dialog>
     <cms-content-oplog-dialog :cid="contentId" :open="openContentOpLogDialog" @close="handleOpLogsClose"></cms-content-oplog-dialog>
     <!-- 进度条 -->
-    <cms-progress :title="progressTitle" :open.sync="openProgress" :taskId="taskId" @close="handleProgressClose"></cms-progress>
+    <cms-progress :title="progressTitle" :open.sync="openProgress" :taskId="taskId" message-class="message-top-right" @close="handleProgressClose"></cms-progress>
   </div>
 </template>
 <script>
@@ -322,7 +322,6 @@ import CMSProgress from '@/views/components/Progress';
 import CMSImageEditor from '@/views/cms/imageAlbum/editor';
 import CMSAudioEditor from '@/views/cms/media/audioEditor';
 import CMSVideoEditor from '@/views/cms/media/videoEditor';
-import CMSLogoView from '@/views/cms/components/LogoView';
 import CMSImageGroup from '@/views/cms/components/ImageGroup';
 import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
 import CMSContentSelector from "@/views/cms/contentcore/contentSelector";
@@ -347,7 +346,6 @@ export default {
     "cms-image-editor": CMSImageEditor,
     "cms-audio-editor": CMSAudioEditor,
     "cms-video-editor": CMSVideoEditor,
-    "cms-logo-view": CMSLogoView,
     "cms-image-group": CMSImageGroup,
     'cms-catalog-selector': CMSCatalogSelector,
     'cms-content-selector': CMSContentSelector,
@@ -519,9 +517,7 @@ export default {
     handleSelectTemplate(publishPipe, extend = false) {
       this.publishPipeActiveName = publishPipe.pipeCode;
       this.selectExTemplate = extend
-      this.$nextTick(() => {
-        this.openTemplateSelector = true;
-      })
+      this.openTemplateSelector = true;
     },
     handleTemplateSelected (template) {
       this.publishPipeProps.map(pp => {
@@ -583,7 +579,7 @@ export default {
     },
     doToPublishContent() {
       toPublishContent([ this.form.contentId ]).then(response => {
-          this.$modal.msgSuccess(this.$t('CMS.ContentCore.ToPublishSuccess'));
+          this.$modal.msgSuccess(this.$t('CMS.ContentCore.ToPublishSuccess'), "message-top-right");
       });
     },
     handlePublish () {
@@ -596,7 +592,7 @@ export default {
     },
     doPublishContent() {
       publishContent([ this.form.contentId ]).then(response => {
-          this.$modal.msgSuccess(this.$t('CMS.ContentCore.PublishSuccess'));
+          this.$modal.msgSuccess(this.$t('CMS.ContentCore.PublishSuccess'), "message-top-right");
           this.$cache.local.set('publish_flag', "true")
       });
     },
@@ -625,13 +621,13 @@ export default {
       if (this.isLock) {
         unLockContent(this.form.contentId).then(response => {
           this.form.isLock = 'N';
-          this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
+          this.$modal.msgSuccess(this.$t('Common.OpSuccess'), "message-top-right");
         });
       } else {
         lockContent(this.form.contentId).then(response => {
           this.form.isLock = 'Y';
           this.form.lockUser = response.data;
-          this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
+          this.$modal.msgSuccess(this.$t('Common.OpSuccess'), "message-top-right");
         });
       }
     },
@@ -651,7 +647,7 @@ export default {
             };
             moveContent(data).then(response => {
               if (response.code == 200) {
-                this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
+                this.$modal.msgSuccess(this.$t('Common.OpSuccess'), "message-top-right");
                 this.form.catalogId = catalogs[0].id;
                 this.form.catalogName = catalogs[0].name;
               }
@@ -803,7 +799,11 @@ export default {
       this.addPopoverVisible = false;
       this.contentId = '0';
       this.contentType = this.addContentType;
-      this.$router.push({ path: this.$route.path, query: { type: this.contentType, catalogId: this.catalogId, id: this.contentId } });
+      let query = { type: this.contentType, catalogId: this.catalogId, id: this.contentId }
+      if (this.contentType == 'article') {
+        query.format = this.addArticleBodyFormat;
+      }
+      this.$router.push({ path: this.$route.path, query: query });
       this.initData();
     }
   }

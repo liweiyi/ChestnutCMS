@@ -15,7 +15,7 @@
  */
 package com.chestnut.article;
 
-import com.alibaba.excel.util.StringUtils;
+import cn.idev.excel.util.StringUtils;
 import com.chestnut.contentcore.core.IPublishPipeProp;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;

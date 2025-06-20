@@ -29,7 +29,7 @@ public interface IDynamicPageInitData {
 
     String BEAN_PREFIX = "DynamicPageInitData.";
 
-    void initTemplateData(TemplateContext context, Map<String, String> parameters);
+    void initTemplateData(TemplateContext context, String path, Map<String, String> parameters);
 
     String getType();
 

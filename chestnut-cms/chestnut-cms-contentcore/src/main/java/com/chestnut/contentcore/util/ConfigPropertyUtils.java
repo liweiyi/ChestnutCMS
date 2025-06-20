@@ -15,21 +15,17 @@
  */
 package com.chestnut.contentcore.util;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import org.apache.commons.collections4.MapUtils;
-
 import com.chestnut.common.utils.NumberUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IProperty;
 import com.chestnut.contentcore.core.IProperty.UseType;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import org.apache.commons.collections4.MapUtils;
+
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class ConfigPropertyUtils {
 	
@@ -120,8 +116,27 @@ public class ConfigPropertyUtils {
 		String v = null;
 		if (prop != null) {
 			v = MapUtils.getString(firstProps, prop.getId());
-			if (StringUtils.isEmpty(v)) {
+			if (Objects.isNull(v) && Objects.nonNull(secondProps)) {
 				v = MapUtils.getString(secondProps, prop.getId());
+			}
+			if (Objects.isNull(v)) {
+				v = prop.defaultValue().toString();
+			}
+		}
+		return v;
+	}
+
+	public static Object getValue(String propertyKey, Map<String, String> firstProps,
+										Map<String, String> secondProps) {
+		IProperty prop = getConfigProperty(propertyKey);
+		Object v = null;
+		if (prop != null) {
+			v = MapUtils.getObject(firstProps, prop.getId());
+			if (Objects.isNull(v) && Objects.nonNull(secondProps)) {
+				v = MapUtils.getObject(secondProps, prop.getId());
+			}
+			if (Objects.isNull(v)) {
+				v = prop.defaultValue();
 			}
 		}
 		return v;
@@ -151,12 +166,20 @@ public class ConfigPropertyUtils {
 		int intV = 0;
 		if (prop != null) {
 			String v = MapUtils.getString(firstProps, prop.getId());
+			if (Objects.isNull(v) && Objects.nonNull(secondProps)) {
+				v = MapUtils.getString(secondProps, prop.getId());
+			}
 			if (NumberUtils.isCreatable(v)) {
 				intV = NumberUtils.toInt(v);
 			} else {
-				v = MapUtils.getString(secondProps, prop.getId());
-				if (NumberUtils.isCreatable(v)) {
-					intV = NumberUtils.toInt(v);
+				Object defaultV = prop.defaultValue();
+				if (defaultV instanceof Integer defaultIntV) {
+					intV = defaultIntV;
+				} else {
+					v = defaultV.toString();
+					if (NumberUtils.isCreatable(v)) {
+						intV = NumberUtils.toInt(v);
+					}
 				}
 			}
 		}

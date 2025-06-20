@@ -154,6 +154,9 @@
               :key="rt.id"
               :label="rt.id">{{ rt.name }}</el-radio-button>
           </el-radio-group>
+          <div style="color: #909399;font-size:12px;line-height: 30px;">
+            <i class="el-icon-info mr5"></i>{{ $t('CMS.Site.Extend.StorageTip') }}
+          </div>
         </el-form-item>
         <el-form-item v-if="form_extend.FileStorageType != 'Local'" label="access key">
           <el-input v-model="form_extend.FileStorageArgs.accessKey"></el-input>
@@ -169,6 +172,9 @@
         </el-form-item>
         <el-form-item v-if="form_extend.FileStorageType != 'Local'" label="endpoint">
           <el-input v-model="form_extend.FileStorageArgs.endpoint"></el-input>
+        </el-form-item>
+        <el-form-item v-if="form_extend.FileStorageType != 'Local'" label="region">
+          <el-input v-model="form_extend.FileStorageArgs.region"></el-input>
         </el-form-item>
         <el-form-item v-if="form_extend.FileStorageType != 'Local'" label="pipeline">
           <el-input v-model="form_extend.FileStorageArgs.pipeline"></el-input>
@@ -432,7 +438,8 @@ export default {
         { id: "Local", name: this.$t("CMS.Site.Extend.Local") },
         { id: "AliyunOSS", name: this.$t("CMS.Site.Extend.AliyunOSS") },
         { id: "TencentCOS", name: this.$t("CMS.Site.Extend.TencentCOS") },
-        { id: "MinIO", name: this.$t("CMS.Site.Extend.MinIO") }
+        { id: "MinIO", name: this.$t("CMS.Site.Extend.MinIO") },
+        { id: "AmazonS3", name: "AmazonS3" }
       ]
     };
   },
@@ -466,7 +473,8 @@ export default {
       });
     },
     loadEXModelList() {
-      listXModelOptions().then(response => {
+      const params = { siteId: this.siteId };
+      listXModelOptions(params).then(response => {
         this.exmodelOptions = response.data.rows.map(m => {
           return { label: m.name, value: m.modelId };
         });

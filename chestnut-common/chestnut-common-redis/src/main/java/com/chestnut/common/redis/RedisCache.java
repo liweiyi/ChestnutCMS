@@ -326,6 +326,22 @@ public class RedisCache {
 		this.redisTemplate.opsForSet().remove(key, values);
 	}
 
+	public <T> T randomSetValue(final String key, Class<T> clazz) {
+		if (!this.hasKey(key)) {
+			return null;
+		}
+		Object value = this.redisTemplate.opsForSet().randomMember(key);
+		return clazz.cast(value);
+	}
+
+	public <T> List<T> randomSetValues(final String key, long count, Class<T> clazz) {
+		List<Object> objects = this.redisTemplate.opsForSet().randomMembers(key, count);
+		if (Objects.isNull(objects) || objects.isEmpty()) {
+			return List.of();
+		}
+        return objects.stream().map(clazz::cast).toList();
+	}
+
 	/**
 	 * Set map cache
 	 *

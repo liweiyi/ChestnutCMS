@@ -43,6 +43,9 @@ public class DemoModeInterceptor implements HandlerInterceptor {
 		if (StpAdminUtil.isLogin() && SecurityUtils.isSuperAdmin(StpAdminUtil.getLoginIdAsLong())) {
 			return true; // 超级管理员允许操作
 		}
+		if (StpAdminUtil.isLogin() && StpAdminUtil.getRoleList(StpAdminUtil.getLoginId()).contains("admin")) {
+			return true; // admin角色允许操作
+		}
 		// 非Get且无忽略演示模式注解则抛出异常
 		if (HttpMethod.POST.matches(method) || HttpMethod.PUT.matches(method) || HttpMethod.DELETE.matches(method)) {
 			if (handler instanceof HandlerMethod handlerMethod) {

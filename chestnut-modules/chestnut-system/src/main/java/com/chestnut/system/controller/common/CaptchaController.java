@@ -15,88 +15,55 @@
  */
 package com.chestnut.system.controller.common;
 
-import com.chestnut.common.captcha.CaptchaType;
-import com.chestnut.common.config.CaptchaConfig;
+import com.chestnut.common.captcha.CaptchaCheckResult;
+import com.chestnut.common.captcha.CaptchaData;
+import com.chestnut.common.captcha.CaptchaService;
+import com.chestnut.common.captcha.ICaptchaType;
 import com.chestnut.common.domain.R;
-import com.chestnut.common.exception.GlobalException;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.system.SysConstants;
-import com.chestnut.system.config.properties.SysProperties;
-import com.chestnut.system.domain.vo.ImageCaptchaVO;
-import com.chestnut.system.exception.SysErrorCode;
+import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.fixed.config.SysCaptchaEnable;
-import com.chestnut.system.monitor.CaptchaMonitoredCache;
-import com.google.code.kaptcha.Producer;
-import jakarta.servlet.http.HttpServletResponse;
+import com.chestnut.system.fixed.config.SysCaptchaType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.util.FastByteArrayOutputStream;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.Base64;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 验证码操作处理
  */
 @RestController
+@RequestMapping("/captcha")
 @RequiredArgsConstructor
-public class CaptchaController {
+public class CaptchaController extends BaseRestController {
 
-	private final Map<String, Producer> captchaProducers;
+	private final CaptchaService captchaService;
 
-	private final CaptchaMonitoredCache captchaCache;
 
-	private final SysProperties properties;
+	@GetMapping("/get")
+	public R<?> getCaptcha(@RequestParam String type) {
+		ICaptchaType captchaType = captchaService.getCaptchaType(type);
+		Object o = captchaType.create(new CaptchaData(type));
+		return R.ok(o);
+	}
 
-	/**
-	 * 生成验证码
-	 */
-	@GetMapping("/captchaImage")
-	public R<?> getCode(HttpServletResponse response) throws IOException {
-		boolean captchaEnabled = SysCaptchaEnable.isEnable();
-		if (!captchaEnabled) {
-			return R.ok(ImageCaptchaVO.builder().captchaEnabled(false).build());
-		}
+	@IgnoreDemoMode
+	@PostMapping("/check")
+	public R<?> checkCaptcha(@RequestParam String type, @RequestBody CaptchaData captchaData) {
+		ICaptchaType captchaType = captchaService.getCaptchaType(type);
+        try {
+			CaptchaCheckResult result = captchaType.check(captchaData);
+			return R.ok(result);
+		} catch (Exception e) {
+            return R.ok(CaptchaCheckResult.fail());
+        }
+	}
 
-		// 保存验证码信息
-		String uuid = IdUtils.simpleUUID();
-		String verifyKey = SysConstants.CAPTCHA_CODE_KEY + uuid;
-
-		String capStr;
-		String code;
-		BufferedImage image;
-
-		Producer captchaProducer = captchaProducers.get(CaptchaConfig.BEAN_PREFIX + this.properties.getCaptchaType());
-		Assert.notNull(captchaProducer, () -> SysErrorCode.CAPTCHA_CONFIG_ERR.exception(this.properties.getCaptchaType()));
-		// 生成验证码
-		String captchaType = properties.getCaptchaType();
-		if (CaptchaType.MATH.equals(captchaType)) {
-			String capText = captchaProducer.createText();
-			capStr = capText.substring(0, capText.lastIndexOf("@"));
-			code = capText.substring(capText.lastIndexOf("@") + 1);
-			image = captchaProducer.createImage(capStr);
-		} else if (CaptchaType.CHAR.equals(captchaType)) {
-			capStr = code = captchaProducer.createText();
-			image = captchaProducer.createImage(capStr);
-		} else {
-			throw new GlobalException("Unkown captcha type: " + captchaType);
-		}
-
-		captchaCache.setCache(verifyKey, code, SysConstants.CAPTCHA_EXPIRATION, TimeUnit.MINUTES);
-		// 转换流信息写出
-		try(FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
-			ImageIO.write(image, "jpg", os);
-			ImageCaptchaVO vo = ImageCaptchaVO.builder().captchaEnabled(true).uuid(uuid)
-					.img(Base64.getEncoder().encodeToString(os.toByteArray())).build();
-			return R.ok(vo);
-		} catch (IOException e) {
-			return R.fail(e.getMessage());
-		}
+	@GetMapping("/config")
+	public R<?> getLoginCaptchaConfig() {
+		return R.ok(Map.of(
+				"type", SysCaptchaType.getValue(),
+				"enabled", SysCaptchaEnable.isEnable()
+		));
 	}
 }

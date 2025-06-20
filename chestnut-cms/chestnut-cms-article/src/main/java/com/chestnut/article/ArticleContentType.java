@@ -32,23 +32,23 @@ import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
 import com.chestnut.contentcore.domain.*;
-import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
-import com.chestnut.contentcore.service.ICatalogService;
-import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.IPublishPipeService;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.service.*;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 @Component(IContentType.BEAN_NAME_PREFIX + ArticleContentType.ID)
 @RequiredArgsConstructor
 public class ArticleContentType implements IContentType {
@@ -66,6 +66,8 @@ public class ArticleContentType implements IContentType {
     private final IArticleService articleService;
 
     private final IContentService contentService;
+
+    private final IResourceService resourceService;
 
     @Override
     public String getId() {
@@ -119,8 +121,15 @@ public class ArticleContentType implements IContentType {
         content.setContentEntity(contentEntity);
         content.setExtendEntity(extendEntity);
         content.setParams(dto.getParams());
-        if (content.hasExtendEntity() && StringUtils.isEmpty(extendEntity.getContentHtml())) {
-            throw CommonErrorCode.NOT_EMPTY.exception("contentHtml");
+        if (content.hasExtendEntity()) {
+            if (StringUtils.isEmpty(extendEntity.getContentHtml())) {
+                throw CommonErrorCode.NOT_EMPTY.exception("contentHtml");
+            }
+            IArticleBodyFormat format = articleService.getArticleBodyFormat(extendEntity.getFormat());
+            if (Objects.nonNull(format)) {
+                String contentHtml = format.onSave(extendEntity.getContentHtml());
+                extendEntity.setContentHtml(contentHtml);
+            }
         }
         return content;
     }
@@ -129,6 +138,7 @@ public class ArticleContentType implements IContentType {
     public ContentVO initEditor(Long catalogId, Long contentId) {
         CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
         Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalogId));
+        CmsSite site = siteService.getSite(catalog.getSiteId());
         List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(catalog.getSiteId());
         ArticleVO vo;
         if (IdUtils.validate(contentId)) {
@@ -138,7 +148,7 @@ public class ArticleContentType implements IContentType {
             CmsArticleDetail extendEntity = this.articleService.dao().getById(contentId);
             vo = ArticleVO.newInstance(contentEntity, extendEntity);
             // 发布通道模板数据
-            List<PublishPipeProp> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
+            List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
                     PublishPipePropUseType.Content, contentEntity.getPublishPipeProps());
             vo.setPublishPipeProps(publishPipeProps);
         } else {
@@ -146,16 +156,27 @@ public class ArticleContentType implements IContentType {
             vo.setContentId(IdUtils.getSnowflakeId());
             vo.setCatalogId(catalog.getCatalogId());
             vo.setContentType(ID);
-            CmsSite site = siteService.getSite(catalog.getSiteId());
             vo.setDownloadRemoteImage(DownloadRemoteImage.getValue(site.getConfigProps()));
             // 发布通道初始数据
             vo.setPublishPipe(publishPipes.stream().map(CmsPublishPipe::getCode).toArray(String[]::new));
             // 发布通道模板数据
-            List<PublishPipeProp> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
+            List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
                     PublishPipePropUseType.Content, null);
             vo.setPublishPipeProps(publishPipeProps);
         }
         vo.setCatalogName(catalog.getName());
+        // 内容引导图缩略图处理
+        resourceService.dealDefaultThumbnail(site, vo.getImages(), thumbnails -> {
+            vo.setImagesSrc(thumbnails);
+            vo.setLogoSrc(thumbnails.get(0));
+        });
+        // 文章正文内容处理
+        IArticleBodyFormat articleBodyFormat = articleService.getArticleBodyFormat(vo.getFormat());
+        if (Objects.nonNull(articleBodyFormat)) {
+            vo.setContentHtml(articleBodyFormat.initEditor(vo.getContentHtml()));
+        } else {
+            log.warn("Unsupported article body format: " + vo.getFormat());
+        }
         return vo;
     }
 

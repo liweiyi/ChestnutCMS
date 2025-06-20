@@ -29,19 +29,10 @@
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
         </el-input>
       </el-form-item>
-      <el-form-item prop="code" v-if="captchaEnabled">
-        <el-input
-          v-model="registerForm.code"
-          auto-complete="off"
-          placeholder="验证码"
-          style="width: 63%"
-          @keyup.enter.native="handleRegister"
-        >
-          <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
-        </el-input>
-        <div class="register-code">
-          <img :src="codeUrl" @click="getCode" class="register-code-img"/>
-        </div>
+      <el-form-item v-if="captchaConfig.enabled">
+        <text-captcha v-if="captchaConfig.type=='Text'" ref="textCaptcha" @change="handleTextCaptchaSuccess"></text-captcha>
+        <math-captcha v-if="captchaConfig.type=='Math'" ref="mathCaptcha" @change="handleMathCaptchaSuccess"></math-captcha>
+        <slider-captcha v-if="captchaConfig.type=='Slider'" @success="handleSliderCaptchaSuccess"></slider-captcha>
       </el-form-item>
       <el-form-item style="width:100%;">
         <el-button
@@ -67,10 +58,18 @@
 </template>
 
 <script>
-import { getCodeImg, register } from "@/api/login";
+import { getLoginCaptchaConfig, register } from "@/api/login";
+import SliderCaptcha from './components/captcha/slider'
+import MathCaptcha from './components/captcha/math'
+import TextCaptcha from './components/captcha/text'
 
 export default {
   name: "Register",
+  components: {
+    SliderCaptcha,
+    MathCaptcha,
+    TextCaptcha
+  },
   data() {
     const equalToPassword = (rule, value, callback) => {
       if (this.registerForm.password !== value) {
@@ -81,13 +80,10 @@ export default {
     };
     return {
       appInfo: process.env.VUE_APP_INFO,
-      codeUrl: "",
       registerForm: {
         username: "",
         password: "",
         confirmPassword: "",
-        code: "",
-        uuid: ""
       },
       registerRules: {
         username: [
@@ -102,24 +98,43 @@ export default {
           { required: true, trigger: "blur", message: "请再次输入您的密码" },
           { required: true, validator: equalToPassword, trigger: "blur" }
         ],
-        code: [{ required: true, trigger: "change", message: "请输入验证码" }]
       },
       loading: false,
-      captchaEnabled: true
+      captchaConfig: {
+        enabled: false,
+        type: ""
+      },
     };
   },
   created() {
-    this.getCode();
+    this.loadCaptchaConfig();
   },
   methods: {
-    getCode() {
-      getCodeImg().then(res => {
-        this.captchaEnabled = res.data.captchaEnabled === undefined ? true : res.data.captchaEnabled;
-        if (this.captchaEnabled) {
-          this.codeUrl = "data:image/gif;base64," + res.data.img;
-          this.registerForm.uuid = res.data.uuid;
-        }
+    loadCaptchaConfig() {
+      getLoginCaptchaConfig().then(res => {
+        this.captchaConfig = res.data;
       });
+    },
+    handleSliderCaptchaSuccess(data) {
+      this.registerForm.captcha = {
+        type: this.captchaConfig.type,
+        token: data.token,
+        data: data.captcha
+      }
+    },
+    handleMathCaptchaSuccess(data) {
+      this.registerForm.captcha = {
+        type: this.captchaConfig.type,
+        token: data.token,
+        data: data.captcha
+      }
+    },
+    handleTextCaptchaSuccess(data) {
+      this.registerForm.captcha = {
+        type: this.captchaConfig.type,
+        token: data.token,
+        data: data.captcha
+      }
     },
     handleRegister() {
       this.$refs.registerForm.validate(valid => {

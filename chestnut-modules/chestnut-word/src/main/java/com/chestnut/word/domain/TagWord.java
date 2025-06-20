@@ -19,6 +19,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,37 +39,26 @@ public class TagWord extends BaseEntity {
     
     public static final String TABLE_NAME = "cc_tag_word";
 
+    @XComment("TAG ID")
     @TableId(value = "word_id", type = IdType.INPUT)
     private Long wordId;
 
-    /**
-     * 所有者ID（冗余字段，与TagWordGroup.ownerId同步）
-     */
+    @XComment("所有者ID（冗余字段，与TagWordGroup.ownerId同步）")
     private String owner;
 
-    /**
-     * 所属分组ID
-     */
+    @XComment("所属分组ID")
     private Long groupId;
 
-    /**
-     * 名称
-     */
+    @XComment("TAG词")
     private String word;
 
-    /**
-     * 图片路径
-     */
+    @XComment("关联图片路径")
     private String logo;
 
-    /**
-     * 使用次数
-     */
+    @XComment("关联使用次数")
     private Long useCount;
 
-    /**
-     * 点击次数
-     */
+    @XComment("点击次数")
     private Long hitCount;
 
     /**
@@ -77,8 +67,6 @@ public class TagWord extends BaseEntity {
     @TableField(exist = false)
     private String src;
     
-    /**
-     * 排序标识
-     */
+    @XComment("排序标识")
     private Long sortFlag;
 }

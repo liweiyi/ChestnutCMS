@@ -195,7 +195,7 @@ export default {
         accept: "", // 文件类型限制
         acceptSize: 0,
         limit: this.uploadLimit, // 文件数限制
-        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.currentSiteId },
+        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get("CurrentSite") },
         url: process.env.VUE_APP_BASE_API + "/cms/resource/upload", // 上传的地址
         fileList: [], // 上传的文件列表
         data : {} // 附带参数

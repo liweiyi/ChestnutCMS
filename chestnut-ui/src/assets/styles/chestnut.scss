@@ -46,6 +46,9 @@
 .ml10 {
 	margin-left: 10px;
 }
+.mt15 {
+	margin-top: 15px;
+}
 .mt20 {
 	margin-top: 20px;
 }
@@ -60,6 +63,12 @@
 }
 .ml20 {
 	margin-left: 20px;
+}
+.text-align-center {
+	text-align: center;
+}
+.text-align-right {
+	text-align: right;
 }
 
 .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
@@ -111,7 +120,7 @@
 }
 
 .el-form-search .el-form-item {
-  margin-bottom: 0;
+  // margin-bottom: 0;
 }
 
 /** 表格布局 **/

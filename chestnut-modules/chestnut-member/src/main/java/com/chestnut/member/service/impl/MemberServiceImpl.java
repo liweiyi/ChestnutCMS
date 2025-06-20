@@ -34,6 +34,8 @@ import com.chestnut.member.mapper.MemberLevelMapper;
 import com.chestnut.member.mapper.MemberMapper;
 import com.chestnut.member.mapper.MemberSignInLogMapper;
 import com.chestnut.member.service.IMemberService;
+import com.chestnut.system.config.properties.SysProperties;
+import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.service.ISecurityConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -157,6 +159,8 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		}
 	}
 
+	private final SysProperties sysProperties;
+
 	@Override
 	public String uploadAvatarByBase64(Long memberId, String base64Data) throws IOException {
 		if (!ImageUtils.isBase64Image(base64Data)) {
@@ -165,7 +169,9 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		String base64Str = StringUtils.substringAfter(base64Data, ",");
 		byte[] imageBytes = Base64.getDecoder().decode(base64Str);
 
-		String suffix = base64Data.substring(11, base64Data.indexOf(";"));
+		String suffix = base64Data.substring(11, base64Data.indexOf(";")).toLowerCase();
+		Assert.isTrue(sysProperties.getUpload().getImage().contains(suffix), SysErrorCode.UPLOAD_FILE_TYPE_LIMIT::exception);
+
 		String path = "avatar/" + memberId + "." + suffix;
 		FileUtils.writeByteArrayToFile(new File(MemberConfig.getUploadDir() + path), imageBytes);
 

@@ -17,7 +17,7 @@ package com.chestnut.cms.member.domain.vo;
 
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.InitByContent;
-import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -214,7 +214,7 @@ public class MemberContentVO implements InitByContent {
     /**
      * 发布通道配置
      */
-    private List<PublishPipeProp> publishPipeProps;
+    private List<PublishPipeProps> publishPipeProps;
 
     /**
      * SEO标题

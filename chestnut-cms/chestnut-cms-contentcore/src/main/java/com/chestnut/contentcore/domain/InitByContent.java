@@ -40,8 +40,9 @@ public interface InitByContent {
         if (StringUtils.isNotEmpty(content.getImages())) {
             this.setLogo(content.getImages().get(0));
             if (preview) {
-                this.setImagesSrc(content.getImages().stream().map(InternalUrlUtils::getActualPreviewUrl).toList());
-                this.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(content.getLogo()));
+                List<String> srcList = content.getImages().stream().map(InternalUrlUtils::getActualPreviewUrl).toList();
+                this.setImagesSrc(srcList);
+                this.setLogoSrc(srcList.get(0));
             }
         } else {
             this.setImages(List.of());

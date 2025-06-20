@@ -19,6 +19,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.storage.FileStorageService;
+import com.chestnut.common.storage.IFileStorageType;
 import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
@@ -27,7 +29,7 @@ import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IProperty;
 import com.chestnut.contentcore.core.IPublishPipeProp;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
 import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
@@ -39,9 +41,11 @@ import com.chestnut.contentcore.mapper.CmsSiteMapper;
 import com.chestnut.contentcore.perms.SitePermissionType;
 import com.chestnut.contentcore.perms.SitePermissionType.SitePrivItem;
 import com.chestnut.contentcore.properties.EnableSiteDeleteBackupProperty;
+import com.chestnut.contentcore.properties.FileStorageTypeProperty;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
+import com.chestnut.contentcore.util.FileStorageHelper;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysPermissionService;
@@ -76,6 +80,10 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 	private final Map<String, IPublishPipeProp> publishPipeProps;
 
 	private final SiteMonitoredCache siteCache;
+
+	private final FileStorageService fileStorageService;
+
+	private final AsyncTaskManager asyncTaskManager;
 
 	@Override
 	public CmsSite getSite(Long siteId) {
@@ -165,7 +173,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
             prop.getProps().entrySet().removeIf(e -> !publishPipeProps.containsKey(IPublishPipeProp.BEAN_PREFIX + e.getKey()));
         });
 		Map<String, Map<String, Object>> publishPipeProps = dto.getPublishPipeDatas().stream()
-				.collect(Collectors.toMap(PublishPipeProp::getPipeCode, PublishPipeProp::getProps));
+				.collect(Collectors.toMap(PublishPipeProps::getPipeCode, PublishPipeProps::getProps));
 		site.setPublishPipeProps(publishPipeProps);
 		site.updateBy(dto.getOperator().getUsername());
 		this.updateById(site);
@@ -226,8 +234,8 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 	@Override
 	public void saveSiteDefaultTemplate(SiteDefaultTemplateDTO dto) {
 		CmsSite site = this.getSite(dto.getSiteId());
-		List<PublishPipeProp> publishPipeProps = dto.getPublishPipeProps();
-		for (PublishPipeProp ppp : publishPipeProps) {
+		List<PublishPipeProps> publishPipeProps = dto.getPublishPipeProps();
+		for (PublishPipeProps ppp : publishPipeProps) {
 			Map<String, Object> sitePublishPipeProps = site.getPublishPipeProps(ppp.getPipeCode());
 			sitePublishPipeProps.putAll(ppp.getProps());
 		}
@@ -245,6 +253,13 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		site.updateBy(operator);
 		this.updateById(site);
 		this.clearCache(site.getSiteId());
+		// 重新加载StorageClient
+		asyncTaskManager.execute(() -> {
+			String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
+			IFileStorageType fst = fileStorageService.getFileStorageType(fileStorageType);
+			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
+			fileStorageHelper.reloadClient();
+		});
 	}
 
 	@Override

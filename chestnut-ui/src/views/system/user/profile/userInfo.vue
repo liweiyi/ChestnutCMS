@@ -3,6 +3,9 @@
     <el-form-item :label="$t('AccountCenter.NickName')" prop="nickName">
       <el-input v-model="user.nickName" maxlength="30" />
     </el-form-item> 
+    <el-form-item :label="$t('AccountCenter.RealName')" prop="realName">
+      <el-input v-model="user.realName" maxlength="30" />
+    </el-form-item> 
     <el-form-item :label="$t('AccountCenter.PhoneNumber')" prop="phoneNumber">
       <el-input v-model="user.phoneNumber" maxlength="11" />
     </el-form-item>

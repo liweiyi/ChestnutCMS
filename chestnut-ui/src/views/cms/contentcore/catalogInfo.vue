@@ -609,7 +609,7 @@ export default {
         publishPipePropKeys: [ propKey ]
        }
        catalogApi.applyPublishPipeToChildren(data).then(res => {
-         this.$modal.msgSuccess(res.msg);
+         this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
        });
     },
     handleLinkTo(type) {
@@ -661,12 +661,11 @@ export default {
     },
     handleSortCatalog() {
       if (this.sortValue == 0) {
-        this.$modal.msgWarning("排序值不能为0");
         return;
       }
       let data = { catalogId: this.catalogId, sort: this.sortValue }
       catalogApi.sortCatalog(data).then(response => {
-          this.$modal.msgSuccess(response.msg);
+          this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
           this.showSortPop = false;
           this.sortValue = 0;
           this.$emit("reload"); 

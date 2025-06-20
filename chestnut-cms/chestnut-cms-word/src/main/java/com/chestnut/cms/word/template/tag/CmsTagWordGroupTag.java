@@ -110,6 +110,11 @@ public class CmsTagWordGroupTag extends AbstractListTag {
 		return DESC;
 	}
 
+	@Override
+	public String supportVersion() {
+		return "V1.4.2+";
+	}
+
 	private enum TagWordGroupTagLevel {
 		Root(ATTR_OPTION_LEVEL_ROOT),
 		Current(ATTR_OPTION_LEVEL_CURRENT),

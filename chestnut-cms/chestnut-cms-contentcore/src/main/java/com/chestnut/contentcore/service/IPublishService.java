@@ -32,14 +32,12 @@ import java.util.List;
 public interface IPublishService {
 
     /**
-     * 发布站点首页<br/>
-     * <p>
+     * 发布站点首页<br>
      * 此方法供API发布站点首页调用，做基础校验
      *
-     * @param site
-     * @return
-     * @throws IOException
-     * @throws TemplateException
+     * @param site 站点
+     * @throws IOException e1
+     * @throws TemplateException e2
      */
     void publishSiteIndex(CmsSite site) throws IOException, TemplateException;
 
@@ -48,20 +46,20 @@ public interface IPublishService {
      * <p>
      * 发布站点下所有栏目及指定状态内容
      *
-     * @param site
-     * @param contentStatus
-     * @return
+     * @param site 站点
+     * @param contentStatus 内容状态
+     * @return 结果
      */
     AsyncTask publishAll(CmsSite site, final String contentStatus, final LoginUser operator);
 
     /**
      * 站点首页页面内容
      *
-     * @param site
-     * @param requestData
-     * @return
-     * @throws IOException
-     * @throws TemplateException
+     * @param site 站点
+     * @param requestData 请求数据
+     * @return 结果
+     * @throws IOException e1
+     * @throws TemplateException e2
      */
     String getSitePageData(CmsSite site, IInternalDataType.RequestData requestData)
             throws IOException, TemplateException;
@@ -69,12 +67,12 @@ public interface IPublishService {
     /**
      * 获取栏目模板页面内容
      *
-     * @param catalog
-     * @param requestData
-     * @param listFlag
-     * @return
-     * @throws IOException
-     * @throws TemplateException
+     * @param catalog 栏目
+     * @param requestData 请求数据
+     * @param listFlag 是否分页
+     * @return 结果
+     * @throws IOException e1
+     * @throws TemplateException e2
      */
     String getCatalogPageData(CmsCatalog catalog, IInternalDataType.RequestData requestData, boolean listFlag)
             throws IOException, TemplateException;
@@ -82,11 +80,11 @@ public interface IPublishService {
     /**
      * 发布栏目，异步任务
      *
-     * @param catalog
+     * @param catalog 栏目
      * @param publishChild  是否发布子栏目
      * @param publishDetail 是否发布详情页
      * @param publishStatus 指定发布内容状态
-     * @return
+     * @return 结果
      */
     AsyncTask publishCatalog(CmsCatalog catalog, boolean publishChild, boolean publishDetail,
                              String publishStatus, final LoginUser operator);
@@ -94,11 +92,11 @@ public interface IPublishService {
     /**
      * 获取内容模板页面结果
      *
-     * @param content
-     * @param requestData
-     * @return
-     * @throws IOException
-     * @throws TemplateException
+     * @param content 内容
+     * @param requestData 请求数据
+     * @return 结果
+     * @throws IOException e1
+     * @throws TemplateException e2
      */
     String getContentPageData(CmsContent content, IInternalDataType.RequestData requestData)
             throws IOException, TemplateException;
@@ -106,29 +104,27 @@ public interface IPublishService {
     /**
      * 发布内容，创建异步任务发布
      *
-     * @param content
+     * @param content 内容
      */
     void asyncPublishContent(IContent<?> content);
 
     /**
      * 发布内容
      *
-     * @param contentIds
-     * @return
-     * @throws IOException
-     * @throws TemplateException
+     * @param contentIds 内容ID列表
+     * @param operator 操作人
      */
     void publishContent(List<Long> contentIds, LoginUser operator) ;
 
     /**
      * 获取内容扩展模板解析内容
      *
-     * @param content
-     * @param publishPipeCode
-     * @param isPreview
-     * @return
-     * @throws IOException
-     * @throws TemplateException
+     * @param content 内容
+     * @param publishPipeCode 发布通道编码
+     * @param isPreview 是否预览
+     * @return 结果
+     * @throws IOException e1
+     * @throws TemplateException e2
      */
     String getContentExPageData(CmsContent content, String publishPipeCode, boolean isPreview)
             throws IOException, TemplateException;
@@ -136,18 +132,19 @@ public interface IPublishService {
     /**
      * 获取页面部件模板解析内容
      *
-     * @param pageWidget
-     * @param isPreview
-     * @return
-     * @throws IOException
-     * @throws TemplateException
+     * @param pageWidget 页面部件
+     * @param publishPipeCode 发布通道编码
+     * @param isPreview 是否预览
+     * @return 结果
+     * @throws IOException e1
+     * @throws TemplateException e2
      */
-    String getPageWidgetPageData(CmsPageWidget pageWidget, boolean isPreview) throws IOException, TemplateException;
+    String getPageWidgetPageData(CmsPageWidget pageWidget, String publishPipeCode, boolean isPreview) throws IOException, TemplateException;
 
     /**
      * 页面部件静态化
      *
-     * @param pageWidget
+     * @param pageWidget 页面部件
      */
     void pageWidgetStaticize(IPageWidget pageWidget);
 }

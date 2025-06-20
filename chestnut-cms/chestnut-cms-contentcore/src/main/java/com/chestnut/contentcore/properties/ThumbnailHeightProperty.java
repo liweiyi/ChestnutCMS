@@ -54,12 +54,12 @@ public class ThumbnailHeightProperty implements IProperty {
 	
 	@Override
 	public boolean validate(String value) {
-		return StringUtils.isEmpty(value) || NumberUtils.isCreatable(value);
+		return NumberUtils.isCreatable(value);
 	}
 	
 	@Override
 	public Integer defaultValue() {
-		return 128;
+		return 218;
 	}
 	
 	@Override

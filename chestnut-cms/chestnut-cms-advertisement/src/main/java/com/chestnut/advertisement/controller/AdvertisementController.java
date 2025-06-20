@@ -32,6 +32,9 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.service.IResourceService;
+import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import jakarta.validation.constraints.Min;
@@ -58,6 +61,10 @@ import java.util.Objects;
 public class AdvertisementController extends BaseRestController {
 
 	private final IAdvertisementService advertisementService;
+
+	private final ISiteService siteService;
+
+	private final IResourceService resourceService;
 
 	@GetMapping("/types")
 	public R<?> listAdvertisements() {
@@ -89,7 +96,11 @@ public class AdvertisementController extends BaseRestController {
 	public R<AdvertisementVO> getAdvertisementInfo(@PathVariable("advertisementId") @Min(1) Long advertisementId) {
 		CmsAdvertisement ad = this.advertisementService.getById(advertisementId);
 		Assert.notNull(ad, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("advertisementId", advertisementId));
-		return R.ok(new AdvertisementVO(ad).dealPreviewResourcePath());
+
+		CmsSite site = siteService.getSite(ad.getSiteId());
+		AdvertisementVO vo = new AdvertisementVO(ad).dealPreviewResourcePath();
+		resourceService.dealDefaultThumbnail(site, vo.getResourcePath(), vo::setResourceSrc);
+		return R.ok(vo);
 	}
 
 	@Log(title = "新增广告", businessType = BusinessType.INSERT)

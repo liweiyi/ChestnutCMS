@@ -135,8 +135,6 @@ public class FileExUtils {
 					return ext;
 				}
 			}
-		}
-		if (path.contains("?")) {
 			path = StringUtils.substringBefore(path, "?");
 		}
 		return FilenameUtils.getExtension(path);
@@ -220,15 +218,16 @@ public class FileExUtils {
 	 * @return 格式化路径
 	 */
 	public static String normalizePath(String path) {
+		if (StringUtils.isEmpty(path)) {
+			return path;
+		}
 		path = path.replace('\\', '/');
-
-		path = StringUtils.replaceEx(path, "../", "/");
-		path = StringUtils.replaceEx(path, "./", "/");
+		path = path.replaceAll("\\.+(?=/)", "/");
+		path = path.replaceAll("/+", "/");
 		path = StringUtils.replaceEx(path, "~/", "/");
 		if (path.endsWith("..")) {
 			path = path.substring(0, path.length() - 2);
 		}
-		path = path.replaceAll("/+", "/");
 		return path;
 	}
 

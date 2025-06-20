@@ -23,19 +23,9 @@
           <svg-icon slot="prefix" icon-class="password" class="el-input__icon input-icon" />
         </el-input>
       </el-form-item>
-      <el-form-item prop="code" v-if="captchaEnabled">
-        <el-input
-          v-model="loginForm.code"
-          auto-complete="off"
-          :placeholder="$t('Login.Captcha')"
-          style="width: 63%"
-          @keyup.enter.native="handleLogin"
-        >
-          <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
-        </el-input>
-        <div class="login-code">
-          <img :src="codeUrl" @click="getCode" class="login-code-img"/>
-        </div>
+      <el-form-item v-if="captchaConfig.enabled">
+        <text-captcha v-if="captchaConfig.type=='Text'" ref="TextCaptcha" @change="handleCaptchaSuccess"></text-captcha>
+        <math-captcha v-if="captchaConfig.type=='Math'" ref="MathCaptcha" @change="handleCaptchaSuccess"></math-captcha>
       </el-form-item>
       <el-checkbox v-model="loginForm.rememberMe" style="margin:0px 0px 25px 0px;">{{ $t('Login.RememberMe') }}</el-checkbox>
       <el-form-item style="width:100%;">
@@ -65,26 +55,27 @@
 </template>
 
 <script>
-import { getCodeImg } from "@/api/login";
+import { getLoginCaptchaConfig } from "@/api/login";
 import Cookies from "js-cookie";
 import { encrypt, decrypt } from '@/utils/jsencrypt'
 import LanguageSelect from '@/components/LanguageSelect'
+import MathCaptcha from './components/captcha/math'
+import TextCaptcha from './components/captcha/text'
 
 export default {
   name: "Login",
   components: {
-    LanguageSelect
+    LanguageSelect,
+    MathCaptcha,
+    TextCaptcha,
   },
   data() {
     return {
       appInfo: process.env.VUE_APP_INFO,
-      codeUrl: "",
       loginForm: {
         username: "",
         password: "",
         rememberMe: false,
-        code: "",
-        uuid: ""
       },
       loginRules: {
         username: [
@@ -93,11 +84,12 @@ export default {
         password: [
           { required: true, trigger: "blur", message: this.$t('Login.PasswordRuleTip') }
         ],
-        code: [{ required: true, trigger: "change", message: this.$t('Login.CaptchaRuleTip') }]
       },
       loading: false,
-      // 验证码开关
-      captchaEnabled: true,
+      captchaConfig: {
+        enabled: false,
+        type: ""
+      },
       // 注册开关
       register: false,
       redirect: undefined
@@ -113,17 +105,13 @@ export default {
   },
   created() {
     this.appInfo = process.env.VUE_APP_INFO;
-    this.getCode();
+    this.loadCaptchaConfig();
     this.getCookie();
   },
   methods: {
-    getCode() {
-      getCodeImg().then(res => {
-        this.captchaEnabled = res.data.captchaEnabled === undefined ? true : res.data.captchaEnabled;
-        if (this.captchaEnabled) {
-          this.codeUrl = "data:image/gif;base64," + res.data.img;
-          this.loginForm.uuid = res.data.uuid;
-        }
+    loadCaptchaConfig() {
+      getLoginCaptchaConfig().then(res => {
+        this.captchaConfig = res.data;
       });
     },
     getCookie() {
@@ -136,7 +124,14 @@ export default {
         rememberMe: rememberMe === undefined ? false : Boolean(rememberMe)
       };
     },
+    handleCaptchaSuccess(data) {
+      this.loginForm.captcha = data;
+    },
     handleLogin() {
+      if (!this.loginForm.captcha) {
+        this.$modal.msgError(this.$t('Login.CaptchaRuleTip'));
+        return;
+      }
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true;
@@ -153,8 +148,8 @@ export default {
             this.$router.push({ path: this.redirect || process.env.VUE_APP_PATH }).catch(()=>{});
           }).catch(() => {
             this.loading = false;
-            if (this.captchaEnabled) {
-              this.getCode();
+            if (this.captchaConfig.enabled) {
+              this.$refs[this.captchaConfig.type+'Captcha'].reloadCaptcha();
             }
           });
         }
@@ -193,7 +188,7 @@ export default {
     }
   }
   .input-icon {
-    height: 39px;
+    height: 38px;
     width: 14px;
     margin-left: 2px;
   }

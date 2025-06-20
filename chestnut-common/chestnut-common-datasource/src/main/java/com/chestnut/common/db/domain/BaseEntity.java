@@ -15,9 +15,9 @@
  */
 package com.chestnut.common.db.domain;
 
-import com.alibaba.excel.annotation.ExcelIgnore;
-import com.alibaba.excel.annotation.ExcelProperty;
-import com.alibaba.excel.annotation.write.style.ColumnWidth;
+import cn.idev.excel.annotation.ExcelIgnore;
+import cn.idev.excel.annotation.ExcelProperty;
+import cn.idev.excel.annotation.write.style.ColumnWidth;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.chestnut.common.utils.poi.converter.LocalDateTimeConverter;
 import com.fasterxml.jackson.annotation.JsonFormat;

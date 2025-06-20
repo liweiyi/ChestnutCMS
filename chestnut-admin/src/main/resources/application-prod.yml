@@ -5,7 +5,7 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.5.5
+  version: 1.5.6
   # 版权年份
   copyrightYear: 2022-2024
   system:
@@ -13,8 +13,6 @@ chestnut:
     demoMode: true
     # 文件路径 示例（ Windows配置D:/chestnut/uploadPath，Linux配置 /home/app/uploadPath）
     uploadPath: /home/app/uploadPath
-    # 验证码类型 math 数组计算 char 字符验证
-    captchaType: math
   freemarker:
     templateLoaderPath: /home/app/statics
   cms:
@@ -63,9 +61,9 @@ spring:
   servlet:
     multipart: 
       # 单个文件大小
-      max-file-size:  100MB
+      max-file-size:  200MB
       # 设置总上传的文件大小
-      max-request-size:  100MB
+      max-request-size:  200MB
   # 服务模块
   devtools:
     restart:

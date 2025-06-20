@@ -36,7 +36,6 @@ import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.vo.DashboardUserVO;
 import com.chestnut.system.domain.vo.ShortcutVO;
 import com.chestnut.system.domain.vo.UserProfileVO;
-import com.chestnut.system.enums.MenuType;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.*;
@@ -68,8 +67,6 @@ public class SysProfileController extends BaseRestController {
 
 	private final ISysMenuService menuService;
 
-	private final ISysPermissionService permissionService;
-
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping
 	public R<?> profile() {
@@ -95,6 +92,7 @@ public class SysProfileController extends BaseRestController {
 
 		SysUser sysUser = (SysUser) loginUser.getUser();
 		sysUser.setNickName(user.getNickName());
+		sysUser.setRealName(user.getRealName());
 		sysUser.setPhoneNumber(user.getPhoneNumber());
 		sysUser.setEmail(user.getEmail());
 		sysUser.setSex(user.getSex());

@@ -15,8 +15,8 @@
  */
 package com.chestnut.system.service.impl;
 
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.read.listener.ReadListener;
+import cn.idev.excel.context.AnalysisContext;
+import cn.idev.excel.read.listener.ReadListener;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -224,6 +224,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		String oldStatus = db.getStatus();
 
 		db.setNickName(user.getNickName());
+		db.setRealName(user.getRealName());
 		db.setDeptId(user.getDeptId());
 		db.setPhoneNumber(user.getPhoneNumber());
 		db.setEmail(user.getEmail());

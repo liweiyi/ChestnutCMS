@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>chestnut-common</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.5</version>
+		<version>1.5.6</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -30,6 +30,20 @@
 		<dependency>
 			<groupId>com.qcloud</groupId>
 			<artifactId>cos_api</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- AmazonS3 -->
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.31.40</version>
+			<scope>compile</scope>
 		</dependency>
         
 		<dependency>

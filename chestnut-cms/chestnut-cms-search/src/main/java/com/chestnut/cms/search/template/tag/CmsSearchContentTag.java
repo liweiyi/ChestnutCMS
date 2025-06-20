@@ -27,6 +27,8 @@ import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.exmodel.CmsExtendMetaModelType;
 import com.chestnut.search.SearchConsts;
@@ -56,6 +58,9 @@ public class CmsSearchContentTag extends AbstractListTag {
 	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
 	public final static String ATTR_USAGE_QUERY = "{FREEMARKER.TAG." + TAG_NAME + ".query}";
 	public final static String ATTR_USAGE_CATALOG_ID = "{FREEMARKER.TAG." + TAG_NAME + ".catalogId}";
+	public final static String ATTR_USAGE_LEVEL = "{FREEMARKER.TAG." + TAG_NAME + ".level}";
+	public final static String ATTR_OPTION_LEVEL_CURRENT = "{FREEMARKER.TAG." + TAG_NAME + ".level.Current}";
+	public final static String ATTR_OPTION_LEVEL_CURRENT_AND_CHILD = "{FREEMARKER.TAG." + TAG_NAME + ".level.CurrentAndChild}";
 	public final static String ATTR_USAGE_CONTENT_TYPE = "{FREEMARKER.TAG." + TAG_NAME + ".contentType}";
 	public final static String ATTR_USAGE_MODE = "{FREEMARKER.TAG." + TAG_NAME + ".mode}";
 	public final static String ATTR_OPTION_MODE_FULL_TEXT = "{FREEMARKER.TAG." + TAG_NAME + ".mode.FullText}";
@@ -65,16 +70,21 @@ public class CmsSearchContentTag extends AbstractListTag {
 
 	private final static String ATTR_QUERY = "query";
 	private final static String ATTR_CATALOG_ID = "catalogid";
+	private final static String ATTR_LEVEL = "level";
 	private final static String ATTR_CONTENT_TYPE = "contenttype";
 	private final static String ATTR_MODE = "mode";
 
 	private final ElasticsearchClient esClient;
+
+	private final ICatalogService catalogService;
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
 		tagAttrs.add(new TagAttr(ATTR_QUERY, false, TagAttrDataType.STRING, ATTR_USAGE_QUERY));
 		tagAttrs.add(new TagAttr(ATTR_CATALOG_ID, false, TagAttrDataType.STRING, ATTR_USAGE_CATALOG_ID));
+		tagAttrs.add(new TagAttr(ATTR_LEVEL, false, TagAttrDataType.STRING, ATTR_USAGE_LEVEL,
+				SearchLevel.toTagAttrOptions(), SearchLevel.Current.name()));
 		tagAttrs.add(new TagAttr(ATTR_CONTENT_TYPE, false, TagAttrDataType.STRING, ATTR_USAGE_CONTENT_TYPE));
 		tagAttrs.add(new TagAttr(ATTR_MODE, false, TagAttrDataType.STRING, ATTR_USAGE_MODE,
 				SearchMode.toTagAttrOptions(), SearchMode.FullText.name()));
@@ -86,11 +96,14 @@ public class CmsSearchContentTag extends AbstractListTag {
 		Long siteId = TemplateUtils.evalSiteId(env);
 		String mode = MapUtils.getString(attrs, ATTR_MODE, SearchMode.FullText.name());
 		String query = MapUtils.getString(attrs, ATTR_QUERY);
-//		if (StringUtils.isEmpty(query)) {
+		if (StringUtils.isEmpty(query)) {
+			return TagPageData.of(List.of(), 0);
 //			throw new TemplateException("Tag attr `query` cannot be empty.", env);
-//		}
+		}
 		String contentType = MapUtils.getString(attrs, ATTR_CONTENT_TYPE);
-		Long catalogId = MapUtils.getLong(attrs, ATTR_CATALOG_ID);
+		Long catalogId = MapUtils.getLong(attrs, ATTR_CATALOG_ID, 0L);
+		CmsCatalog catalog = IdUtils.validate(catalogId) ? catalogService.getCatalog(catalogId) : null;
+		int level = MapUtils.getIntValue(attrs, ATTR_LEVEL, SearchLevel.Current.ordinal());
 		try {
 			SearchResponse<ObjectNode> sr = esClient.search(s -> {
 				s.index(CmsSearchConstants.indexName(siteId.toString())) // 索引
@@ -100,8 +113,12 @@ public class CmsSearchContentTag extends AbstractListTag {
 							if (StringUtils.isNotEmpty(contentType)) {
 								b.must(must -> must.term(tq -> tq.field("contentType").value(contentType)));
 							}
-							if (IdUtils.validate(catalogId)) {
-								b.must(must -> must.term(tq -> tq.field("catalogId").value(catalogId)));
+							if (Objects.nonNull(catalog)) {
+								if (SearchLevel.CurrentAndChild.ordinal() == level) {
+									b.must(must -> must.prefix(prefixFn -> prefixFn.field("catalogAncestors").value(catalog.getAncestors())));
+								} else {
+									b.must(must -> must.term(tq -> tq.field("catalogId").value(catalog.getCatalogId())));
+								}
 							}
 							if (StringUtils.isNotEmpty(query)) {
 								if (SearchMode.isFullText(mode)) {
@@ -208,11 +225,11 @@ public class CmsSearchContentTag extends AbstractListTag {
 	}
 
 	private enum SearchMode {
-		// 所有站点
+		// 全文检索
 		FullText(ATTR_OPTION_MODE_FULL_TEXT),
-		// 当前站点
+		// 标签检索或
 		Tag(ATTR_OPTION_MODE_TAG),
-		// 当前站点
+		// 标签检索且
 		TagAnd(ATTR_OPTION_MODE_TAG_AND);
 
 		private final String desc;
@@ -238,6 +255,28 @@ public class CmsSearchContentTag extends AbstractListTag {
 					new TagAttrOption(FullText.name(), FullText.desc),
 					new TagAttrOption(Tag.name(), Tag.desc),
 					new TagAttrOption(TagAnd.name(), Tag.desc)
+			);
+		}
+	}
+
+	public enum SearchLevel {
+		Current(ATTR_OPTION_LEVEL_CURRENT),
+		CurrentAndChild(ATTR_OPTION_LEVEL_CURRENT_AND_CHILD);
+
+		private final String desc;
+
+		SearchLevel(String desc) {
+			this.desc = desc;
+		}
+
+		static boolean isCurrent(String mode) {
+			return Current.name().equalsIgnoreCase(mode);
+		}
+
+		static List<TagAttrOption> toTagAttrOptions() {
+			return List.of(
+					new TagAttrOption(Current.name(), Current.desc),
+					new TagAttrOption(CurrentAndChild.name(), CurrentAndChild.desc)
 			);
 		}
 	}

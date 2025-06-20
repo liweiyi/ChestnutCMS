@@ -18,14 +18,10 @@ package com.chestnut.contentcore.template.func;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
-import com.chestnut.common.storage.local.LocalFileStorageType;
 import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.common.utils.file.FileExUtils;
-import com.chestnut.common.utils.image.ImageHelper;
 import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
-import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -33,15 +29,11 @@ import com.chestnut.contentcore.util.SiteUtils;
 import freemarker.core.Environment;
 import freemarker.template.SimpleNumber;
 import freemarker.template.SimpleScalar;
-import freemarker.template.TemplateBooleanModel;
 import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -66,8 +58,6 @@ public class ImageSizeFunction extends AbstractFunc {
 	private static final String ARG2_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg2.Name}";
 
 	private static final String ARG3_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg3.Name}";
-
-	private static final String ARG4_NAME = "{FREEMARKER.FUNC." + FUNC_NAME + ".Arg4.Name}";
 
 	private final ISiteService siteService;
 
@@ -97,48 +87,27 @@ public class ImageSizeFunction extends AbstractFunc {
 		if (!InternalUrlUtils.isInternalUrl(iurl)) {
 			return iurl; // 非内部链接直接返回
 		}
-		boolean crop = false; // 是否在缩放后进行居中裁剪，默认：false
-		if (args.length == 4) {
-			crop = ((TemplateBooleanModel) args[3]).getAsBoolean();
-		}
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(Environment.getCurrentEnvironment());
 		InternalURL internalUrl = InternalUrlUtils.parseInternalUrl(iurl);
 		if (Objects.isNull(internalUrl) || !InternalDataType_Resource.ID.equals(internalUrl.getType())) {
 			return iurl;
 		}
-		String actualUrl = InternalUrlUtils.getActualUrl(internalUrl, context.getPublishPipeCode(),
-				context.isPreview());
+		String originalUrl = InternalUrlUtils.getActualUrl(internalUrl, context.getPublishPipeCode(), context.isPreview());
 		String siteResourceRoot = SiteUtils.getSiteResourceRoot(siteService.getSite(Long.valueOf(internalUrl.getParams().get("sid"))));
 		String destPath = StringUtils.substringBeforeLast(internalUrl.getPath(), ".") + "_" + width + "x" + height
 				+ "." + StringUtils.substringAfterLast(internalUrl.getPath(), ".");
+		String thumbnailUrl = StringUtils.substringBeforeLast(originalUrl, ".") + "_" + width + "x" + height + "."
+				+ StringUtils.substringAfterLast(originalUrl, ".");
 		if (Files.exists(Path.of(siteResourceRoot + destPath))) {
-			return StringUtils.substringBeforeLast(actualUrl, ".") + "_" + width + "x" + height + "."
-					+ StringUtils.substringAfterLast(actualUrl, ".");
+			return thumbnailUrl;
 		}
 		try {
-			CmsResource resource = this.resourceService.getById(internalUrl.getId());
-			if (Objects.nonNull(resource) && LocalFileStorageType.TYPE.equals(resource.getStorageType())) {
-				if (crop) {
-					String ext = FileExUtils.getExtension(resource.getPath());
-					File file = new File(siteResourceRoot + resource.getPath());
-					try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-						try (FileInputStream is = new FileInputStream(file)) {
-							ImageHelper.of(is).format(ext).centerCropAndResize(width, height).to(os);
-						}
-						Files.write(file.toPath(), os.toByteArray());
-					}
-				} else {
-					ImageHelper.of(new File(siteResourceRoot + resource.getPath()))
-							.resize(width, height)
-							.toFile(new File(siteResourceRoot + destPath));
-				}
-				actualUrl = StringUtils.substringBeforeLast(actualUrl, ".") + "_" + width + "x" + height + "."
-						+ StringUtils.substringAfterLast(actualUrl, ".");
-			}
+			resourceService.createThumbnailIfNotExists(internalUrl, width, height);
+			return thumbnailUrl;
 		} catch (Exception e) {
-			log.warn("Generate thumbnail failed: " + actualUrl, e);
+			log.warn("Generate thumbnail failed: " + originalUrl, e);
 		}
-		return actualUrl;
+		return originalUrl;
 	}
 
 	@Override
@@ -146,8 +115,7 @@ public class ImageSizeFunction extends AbstractFunc {
 		return List.of(
 				new FuncArg(ARG1_NAME, FuncArgType.String, true, ARG1_DESC),
 				new FuncArg(ARG2_NAME, FuncArgType.Int, true),
-				new FuncArg(ARG3_NAME, FuncArgType.Int, true),
-				new FuncArg(ARG4_NAME, FuncArgType.Boolean, false)
+				new FuncArg(ARG3_NAME, FuncArgType.Int, true)
 		);
 	}
 }

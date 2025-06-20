@@ -18,6 +18,7 @@ package com.chestnut.contentcore.domain.dto;
 import java.util.List;
 import java.util.Map;
 
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import jakarta.validation.constraints.Pattern;
 
 import org.springframework.beans.BeanUtils;
@@ -61,7 +62,7 @@ public class SiteDTO extends BaseDTO {
 
 	private Map<String, String> configProps;
 
-	private List<PublishPipeProp> publishPipeDatas;
+	private List<PublishPipeProps> publishPipeDatas;
 
 	private Map<String, Object> params;
 

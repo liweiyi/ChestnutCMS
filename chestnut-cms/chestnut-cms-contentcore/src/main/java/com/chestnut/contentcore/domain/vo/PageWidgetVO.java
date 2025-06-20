@@ -15,12 +15,13 @@
  */
 package com.chestnut.contentcore.domain.vo;
 
-import org.springframework.beans.BeanUtils;
-
 import com.chestnut.contentcore.domain.CmsPageWidget;
-
+import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -64,12 +65,19 @@ public class PageWidgetVO {
     /*
      * 发布通道编码
      */
+    @Deprecated(since = "1.5.6", forRemoval = true)
     private String publishPipeCode;
 
     /*
      * 模板路径
      */
+    @Deprecated(since = "1.5.6", forRemoval = true)
     private String template;
+
+    /*
+     * 发布通道模板配置
+     */
+    private List<PublishPipeTemplate> templates;
 
     /*
      * 静态化目录

@@ -24,6 +24,7 @@ import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.XCollectionUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
@@ -51,6 +52,7 @@ public class PageBarTag extends AbstractTag {
 	public final static String ATTR_OPTIONS_TYPE_SIMPLE = "{FREEMARKER.TAG." + TAG_NAME + ".type.simple}";
 	public final static String ATTR_OPTIONS_TARGET_BLANK = "{FREEMARKER.TAG." + TAG_NAME + ".target._blank}";
 	public final static String ATTR_OPTIONS_TARGET_SELF = "{FREEMARKER.TAG." + TAG_NAME + ".target._self}";
+	public final static String ATTR_USAGE_PARAMS = "{FREEMARKER.TAG." + TAG_NAME + ".params}";
 
 	@Override
 	public String getTagName() {
@@ -71,6 +73,7 @@ public class PageBarTag extends AbstractTag {
 	final static String ATTR_TARGET = "target";
 	final static String ATTR_FIRST = "first";
 	final static String ATTR_LAST = "last";
+	final static String ATTR_PARAMS = "params";
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
@@ -79,8 +82,9 @@ public class PageBarTag extends AbstractTag {
 				PageBarType.toTagAttrOptions(), PageBarType.Simple.name()));
 		tagAttrs.add(new TagAttr(ATTR_TARGET, false, TagAttrDataType.STRING, ATTR_USAGE_TARGET,
 				LinkTarget.toTagAttrOptions(), LinkTarget._self.name()));
-		tagAttrs.add(new TagAttr(ATTR_FIRST, false, TagAttrDataType.STRING, ATTR_USAGE_FIRST, ATTR_DEFAULT_FIRST));
-		tagAttrs.add(new TagAttr(ATTR_LAST, false, TagAttrDataType.STRING, ATTR_USAGE_LAST, ATTR_DEFAULT_LAST));
+		tagAttrs.add(new TagAttr(ATTR_FIRST, false, TagAttrDataType.STRING, ATTR_USAGE_FIRST));
+		tagAttrs.add(new TagAttr(ATTR_LAST, false, TagAttrDataType.STRING, ATTR_USAGE_LAST));
+		tagAttrs.add(new TagAttr(ATTR_PARAMS, false, TagAttrDataType.STRING, ATTR_USAGE_PARAMS));
 		return tagAttrs;
 	}
 
@@ -91,22 +95,34 @@ public class PageBarTag extends AbstractTag {
 		String target = MapUtils.getString(attrs, ATTR_TARGET, LinkTarget._self.name());
 		String firstPage = MapUtils.getString(attrs, ATTR_FIRST, I18nUtils.get(ATTR_DEFAULT_FIRST));
 		String lastPage = MapUtils.getString(attrs, ATTR_LAST, I18nUtils.get(ATTR_DEFAULT_LAST));
+		String params = MapUtils.getString(attrs, ATTR_PARAMS);
+		if (StringUtils.isEmpty(params)) {
+			Map<?, ?> mapVariable = FreeMarkerUtils.getImmutableMapVariable(env, StaticizeConstants.TemplateVariable_Request);
+			if (!mapVariable.isEmpty()) {
+				params = XCollectionUtils.join(
+						mapVariable.entrySet(),
+						"&",
+						entry -> entry.getKey().toString() + "=" + entry.getValue().toString(),
+						entry -> !StaticizeConstants.TemplateParam_PageIndex.equals(entry.getKey())
+				);
+			}
+		}
 
 		env.getOut().write(switch (PageBarType.valueOf(type)) {
-			case Mini -> generateMinPageBar(target, firstPage, lastPage, env);
-			case Simple -> generateSimplePageBar(target, firstPage, lastPage, env);
+			case Mini -> generateMinPageBar(target, firstPage, lastPage, params, env);
+			case Simple -> generateSimplePageBar(target, firstPage, lastPage, params, env);
 		});
 		return null;
 	}
 
-	private String generateMinPageBar(String target, String firstPage, String lastPage, Environment env)
+	private String generateMinPageBar(String target, String firstPage, String lastPage, String params, Environment env)
 			throws TemplateException {
-		return generatePageBar(target, firstPage, lastPage, false, env);
+		return generatePageBar(target, firstPage, lastPage, params, false, env);
 	}
 
-	private String generateSimplePageBar(String target, String firstPage, String lastPage, Environment env)
+	private String generateSimplePageBar(String target, String firstPage, String lastPage, String params, Environment env)
 			throws TemplateException {
-		return generatePageBar(target, firstPage, lastPage, true, env);
+		return generatePageBar(target, firstPage, lastPage, params, true, env);
 	}
 
 	/**
@@ -114,7 +130,7 @@ public class PageBarTag extends AbstractTag {
 	 * [首页]...[2][3][4] 5 [6][7][8]...[末页]
 	 * 最多显示7个页码，当前页前后各三个
 	 */
-	private String generatePageBar(String target, String firstPage, String lastPage, boolean withFirstAndLast, Environment env)
+	private String generatePageBar(String target, String firstPage, String lastPage, String params, boolean withFirstAndLast, Environment env)
 			throws TemplateException {
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		int pageSize = context.getPageSize() == 0 ? 20 : context.getPageSize();
@@ -129,6 +145,10 @@ public class PageBarTag extends AbstractTag {
 
 		String firstPageLink = FreeMarkerUtils.evalStringVariable(env, StaticizeConstants.TemplateVariable_FirstPage);
 		String otherPageLink = FreeMarkerUtils.evalStringVariable(env, StaticizeConstants.TemplateVariable_OtherPage);
+		if (StringUtils.isNotEmpty(params)) {
+			firstPageLink += (firstPageLink.contains("?") ? "&" : "?") + params;
+			otherPageLink += (otherPageLink.contains("?") ? "&" : "?") + params;
+		}
 		String temp = "<a href=\"{0}\" class=\"page_link{1}\" target=\"{2}\">{3}</a>";
 		StringBuilder sb = new StringBuilder();
 		sb.append("<div class=\"pagination\">");

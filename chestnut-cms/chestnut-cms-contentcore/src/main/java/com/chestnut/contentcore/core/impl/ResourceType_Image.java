@@ -18,18 +18,19 @@ package com.chestnut.contentcore.core.impl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.storage.IFileStorageType;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.common.utils.image.ImageHelper;
 import com.chestnut.common.utils.image.ImageUtils;
 import com.chestnut.common.utils.image.WatermarkPosition;
 import com.chestnut.contentcore.core.IResourceType;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.properties.*;
+import com.chestnut.contentcore.properties.ImageWatermarkArgsProperty;
 import com.chestnut.contentcore.properties.ImageWatermarkArgsProperty.ImageWatermarkArgs;
+import com.chestnut.contentcore.properties.ImageWatermarkProperty;
+import com.chestnut.contentcore.properties.ThumbnailHeightProperty;
+import com.chestnut.contentcore.properties.ThumbnailWidthProperty;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
-import com.chestnut.contentcore.util.FileStorageHelper;
 import com.chestnut.contentcore.util.ResourceUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import lombok.RequiredArgsConstructor;
@@ -43,11 +44,11 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -97,50 +98,90 @@ public class ResourceType_Image implements IResourceType {
 	}
 
 	@Override
-	public void asyncProcess(CmsResource resource) {
-		asyncTaskManager.execute(() -> {
-			CmsSite site = siteService.getSite(resource.getSiteId());
-			String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
-			IFileStorageType fst = fileStorageTypeMap.get(IFileStorageType.BEAN_NAME_PREIFX + fileStorageType);
-			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
-			String tempDirectory = ResourceUtils.getResourceTempDirectory(site);
-			File tempFile = new File(tempDirectory + resource.getPath());
-			FileExUtils.mkdirs(tempFile.getParent());
-			Map<String, File> paths = new HashMap<>();
-			try (InputStream read = fileStorageHelper.read(resource.getPath())) {
-				FileExUtils.transfer(read, tempFile);
-				// 获取图片属性
-				BufferedImage bi = ImageIO.read(tempFile);
-				resource.setWidth(bi.getWidth());
-				resource.setHeight(bi.getHeight());
-				// 先处理图片水印
-				if (watermark(site, bi, tempFile)) {
-					paths.put(resource.getPath(), tempFile);
-					resource.setFileSize(tempFile.length());
-				}
-				// 默认缩略图处理
-				thumbnail(site, resource, tempFile, paths);
-			} catch (IOException e) {
-				log.error("Image resource process fail.", e);
-			} finally {
-				for (Map.Entry<String, File> entry : paths.entrySet()) {
-					try {
-						Path path = entry.getValue().toPath();
-						try (InputStream is = Files.newInputStream(path)) {
-							fileStorageHelper.write(entry.getKey(), is);
-						}
-						// 删除临时图片文件
-						Files.deleteIfExists(path);
-					} catch (IOException e) {
-						log.error("Delete temp file failed.", e);
-					}
-				}
-				resourceService.updateById(resource);
+	public List<File> process(CmsResource resource, File file) throws IOException {
+		CmsSite site = siteService.getSite(resource.getSiteId());
+		boolean needWatermark = needWatermark(site);
+		boolean needThumbnail = needThumbnail(site);
+		if (!needWatermark && !needThumbnail) {
+			return List.of(); // 不需要处理
+		}
+		List<File> files = new ArrayList<>();
+		try {
+			// 获取图片属性
+			BufferedImage bi = ImageIO.read(file);
+			resource.setWidth(bi.getWidth());
+			resource.setHeight(bi.getHeight());
+			// 先处理图片水印
+			if (needWatermark) {
+				watermark(site, bi, file);
+				resource.setFileSize(file.length());
 			}
-		});
+			// 默认缩略图处理
+			thumbnail(site, resource, file, files);
+		} catch (IOException e) {
+			log.error("Image resource process fail.", e);
+		}
+		return files;
 	}
 
-	private boolean watermark(CmsSite site, BufferedImage bi, File output) {
+//	@Override
+//	public void asyncProcess(CmsResource resource) {
+//		CmsSite site = siteService.getSite(resource.getSiteId());
+//		boolean needWatermark = needWatermark(site);
+//		boolean needThumbnail = needThumbnail(site);
+//		if (!needWatermark && !needThumbnail) {
+//			return; // 不需要处理
+//		}
+//		asyncTaskManager.execute(() -> {
+//			String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
+//			IFileStorageType fst = fileStorageTypeMap.get(IFileStorageType.BEAN_NAME_PREIFX + fileStorageType);
+//			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
+//			String tempDirectory = ResourceUtils.getResourceTempDirectory(site);
+//			File tempFile = new File(tempDirectory + resource.getPath());
+//			FileExUtils.mkdirs(tempFile.getParent());
+//			Map<String, File> paths = new HashMap<>();
+//			try (InputStream read = fileStorageHelper.read(resource.getPath())) {
+//				FileExUtils.transfer(read, tempFile);
+//				// 获取图片属性
+//				BufferedImage bi = ImageIO.read(tempFile);
+//				resource.setWidth(bi.getWidth());
+//				resource.setHeight(bi.getHeight());
+//				// 先处理图片水印
+//				if (needWatermark) {
+//					watermark(site, bi, tempFile);
+//					paths.put(resource.getPath(), tempFile);
+//					resource.setFileSize(tempFile.length());
+//				}
+//				// 默认缩略图处理
+//				thumbnail(site, resource, tempFile);
+//				// 更新文件
+//				for (Map.Entry<String, File> entry : paths.entrySet()) {
+//					try (FileInputStream is = new FileInputStream(entry.getValue())) {
+//						fileStorageHelper.write(entry.getKey(), is, entry.getValue().length());
+//					} catch (IOException e) {
+//						log.error("Write temp file to storage {} failed.", fst.getType(), e);
+//					}
+//				}
+//				if (needWatermark) {
+//					resourceService.updateById(resource);
+//				}
+//			} catch (IOException e) {
+//				log.error("Image resource process fail.", e);
+//			} finally {
+//				try {
+//					// 删除临时文件
+//					Files.deleteIfExists(tempFile.toPath());
+//                    for (File file : paths.values()) {
+//                        Files.deleteIfExists(file.toPath());
+//                    }
+//				} catch (IOException e) {
+//					log.error("Delete temp file failed.", e);
+//				}
+//			}
+//		});
+//	}
+
+	private boolean needWatermark(CmsSite site) {
 		if (!ImageWatermarkProperty.getValue(site.getConfigProps())) {
 			return false;
 		}
@@ -150,9 +191,13 @@ public class ResourceType_Image implements IResourceType {
 		}
 		String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
 		File file = new File(siteResourceRoot + args.getImage());
-		if (!file.exists()) {
-			return false;
-		}
+        return file.exists();
+    }
+
+	private void watermark(CmsSite site, BufferedImage bi, File output) {
+		ImageWatermarkArgs args = ImageWatermarkArgsProperty.getValue(site.getConfigProps());
+		String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
+		File file = new File(siteResourceRoot + args.getImage());
 		try {
 			BufferedImage biWatermarkImage = ImageIO.read(file);
 			String ext = FilenameUtils.getExtension(output.getName());
@@ -163,14 +208,18 @@ public class ResourceType_Image implements IResourceType {
 					WatermarkPosition.str2Position(args.getPosition())
 			).toFile(output);
             log.debug("Watermark success: {}", output.getAbsolutePath());
-			return true;
 		} catch (IOException e) {
 			log.error("Watermark image fail.", e);
 		}
-		return false;
 	}
 
-	private void thumbnail(CmsSite site, CmsResource resource, File tempFile, Map<String, File> paths) {
+	private boolean needThumbnail(CmsSite site) {
+		int w = ThumbnailWidthProperty.getValue(site.getConfigProps());
+		int h = ThumbnailHeightProperty.getValue(site.getConfigProps());
+		return w > 0 && h > 0;
+	}
+
+	private void thumbnail(CmsSite site, CmsResource resource, File tempFile, List<File> files) {
 		// 读取存储配置
 		int w = ThumbnailWidthProperty.getValue(site.getConfigProps());
 		int h = ThumbnailHeightProperty.getValue(site.getConfigProps());
@@ -182,13 +231,13 @@ public class ResourceType_Image implements IResourceType {
 			File output = new File(tempDirectory + thumbnailPath);
             try {
 				ImageHelper.of(tempFile).format(ext).resize(w, h).toFile(output);
-				paths.put(thumbnailPath, output);
+				files.add(output);
 				log.debug("Thumbnail success: {}", output.getAbsolutePath());
             } catch (IOException e) {
                 try {
 					// 生成缩略图失败直接使用源图作为缩略图
                     Files.copy(tempFile.toPath(), Path.of(thumbnailPath), StandardCopyOption.REPLACE_EXISTING);
-					paths.put(thumbnailPath, output);
+					files.add(output);
                 } catch (IOException ex) {
                     log.error("Copy thumbnail file err.", ex);
                 }

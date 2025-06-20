@@ -50,8 +50,8 @@ public class TencentStorageType implements IFileStorageType {
 	}
 	
 	@Override
-	public boolean testConnection(String endpoint, String accessKey, String accessSecret) {
-		OSSClient<COSClient> client = this.getClient(endpoint, accessKey, accessSecret);
+	public boolean testConnection(String endpoint, String region, String accessKey, String accessSecret) {
+		OSSClient<COSClient> client = this.getClient(endpoint, region, accessKey, accessSecret);
 		try {
 			client.getClient().listBuckets();
 			return true;
@@ -61,13 +61,13 @@ public class TencentStorageType implements IFileStorageType {
 	}
 
 	@Override
-	public void reloadClient(String endpoint, String accessKey, String accessSecret) {
+	public void reloadClient(String endpoint, String region, String accessKey, String accessSecret) {
 		OSSClient<COSClient> client = this.clients.get(endpoint);
 		if (client != null) {
 			client.getClient().shutdown();
 			this.clients.remove(endpoint);
 		}
-		this.getClient(endpoint, accessKey, accessSecret);
+		this.getClient(endpoint, region, accessKey, accessSecret);
 	}
 	
 	/**
@@ -138,14 +138,20 @@ public class TencentStorageType implements IFileStorageType {
 		// 复制后删除源
 		client.getClient().deleteObject(args.getBucket(), args.getSourcePath());
 	}
-	
+
 	private OSSClient<COSClient> getClient(String endpoint, String accessKey, String accessSecret) {
+		return getClient(endpoint, null, accessKey, accessSecret);
+	}
+	
+	private OSSClient<COSClient> getClient(String endpoint, String region, String accessKey, String accessSecret) {
 		OSSClient<COSClient> client = this.clients.get(endpoint);
 		if (client == null) {
 			client = new OSSClient<>();
 			COSCredentials credentials = new BasicCOSCredentials(accessKey, accessSecret);
-			String region = StringUtils.substringAfterLast(
-					StringUtils.substringBefore(endpoint, ".myqcloud.com"), ".");
+			if (StringUtils.isEmpty(region)) {
+				region = StringUtils.substringAfterLast(
+						StringUtils.substringBefore(endpoint, ".myqcloud.com"), ".");
+			}
 			client.setClient(new COSClient(credentials, new ClientConfig(new Region(region))));
 			this.clients.put(endpoint, client);
 		}

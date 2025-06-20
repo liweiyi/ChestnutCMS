@@ -65,7 +65,7 @@ public class FileExtractorFunction extends AbstractFunc  {
 	@Override
 	public Object exec0(Object... args) throws TemplateModelException {
 		if (args.length < 1) {
-			return StringUtils.EMPTY;
+			return List.of();
 		}
 		List<String> suffixArray = List.of();
 		if (args.length == 2 && Objects.nonNull(args[1])) {

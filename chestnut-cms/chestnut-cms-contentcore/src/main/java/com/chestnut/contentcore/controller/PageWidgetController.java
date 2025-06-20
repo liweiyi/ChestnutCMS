@@ -34,15 +34,18 @@ import com.chestnut.contentcore.core.IPageWidget;
 import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsPageWidget;
+import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.PageWidgetAddDTO;
 import com.chestnut.contentcore.domain.dto.PageWidgetEditDTO;
+import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.contentcore.domain.vo.PageWidgetVO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.perms.SitePermissionType;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPageWidgetService;
+import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.system.security.AdminUserType;
@@ -75,6 +78,8 @@ public class PageWidgetController extends BaseRestController {
 	private final ICatalogService catalogService;
 
 	private final IPageWidgetService pageWidgetService;
+
+	private final IPublishPipeService publishPipeService;
 
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/types")
@@ -131,7 +136,14 @@ public class PageWidgetController extends BaseRestController {
 
 		IPageWidgetType pwt = this.pageWidgetService.getPageWidgetType(pageWidget.getType());
 		PageWidgetVO vo = pwt.getPageWidgetVO(pageWidget);
-
+		// 发布通道模板
+		List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(pageWidget.getSiteId());
+		List<PublishPipeTemplate> templates = publishPipes.stream().map(pp -> new PublishPipeTemplate(
+						pp.getName(),
+						pp.getCode(),
+						pageWidget.getTemplate(pp.getCode())
+				)).toList();
+		vo.setTemplates(templates);
 		if (pageWidget.getCatalogId() > 0) {
 			CmsCatalog catalog = this.catalogService.getCatalog(pageWidget.getCatalogId());
 			vo.setCatalogName(catalog.getName());
@@ -154,6 +166,7 @@ public class PageWidgetController extends BaseRestController {
 		CmsPageWidget pageWidget= new CmsPageWidget();
 		BeanUtils.copyProperties(dto, pageWidget);
 		pageWidget.setSiteId(site.getSiteId());
+		pageWidget.setTemplates(dto.getPublishPipeTemplateMap());
 		
 		IPageWidget pw = pwt.newInstance();
 		pw.setPageWidgetEntity(pageWidget);
@@ -175,7 +188,8 @@ public class PageWidgetController extends BaseRestController {
 		
 		BeanUtils.copyProperties(dto, pageWidget);
 		pageWidget.setContent(dto.getContentStr());
-		
+		pageWidget.setTemplates(dto.getPublishPipeTemplateMap());
+
 		IPageWidgetType pwt = this.pageWidgetService.getPageWidgetType(pageWidget.getType());
 		IPageWidget pw = pwt.newInstance();
 		pw.setPageWidgetEntity(pageWidget);

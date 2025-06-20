@@ -1,22 +1,14 @@
 <template>
   <div class="errPage-container">
-    <el-button icon="arrow-left" class="pan-back-btn" @click="back">
-      {{ Common.GoBack }}
-    </el-button>
-    <el-row>
+    <el-row style="display: flex; align-items: center;">
       <el-col :span="12">
         <h1 class="text-jumbo text-ginormous">
-          {{ Error.Err401 }}
+          {{ $t('Error.Forbidden') }}
         </h1>
-        <h2>{{ Error.NoPermission }}</h2>
-        <h6>{{ Error.NoPermissionTip }}</h6>
-        <ul class="list-unstyled">
-          <li class="link-type">
-            <router-link to="/">
-              {{ Error.GoHome }}
-            </router-link>
-          </li>
-        </ul>
+        <h2 class="text-desc">{{ $t('Error.ForbiddenTip') }}</h2>
+        <el-button icon="arrow-left" class="pan-back-btn" @click="goLogin">
+          {{ $t('Error.GoLogin') }}
+        </el-button>
       </el-col>
       <el-col :span="12">
         <img :src="errGif" width="313" height="428" alt="Girl has dropped her ice cream.">
@@ -26,7 +18,7 @@
 </template>
 
 <script>
-import errGif from '@/assets/401_images/401.gif'
+import errGif from '@/assets/error/401.gif'
 
 export default {
   name: 'Page401',
@@ -36,12 +28,8 @@ export default {
     }
   },
   methods: {
-    back() {
-      if (this.$route.query.noGoBack) {
-        this.$router.push({ path: '/' })
-      } else {
-        this.$router.go(-1)
-      }
+    goLogin() {
+      this.$router.push({ path: '/login' })
     }
   }
 }
@@ -71,18 +59,8 @@ export default {
       font-weight: 700;
       color: #484848;
     }
-    .list-unstyled {
-      font-size: 14px;
-      li {
-        padding-bottom: 5px;
-      }
-      a {
-        color: #008489;
-        text-decoration: none;
-        &:hover {
-          text-decoration: underline;
-        }
-      }
+    .text-desc {
+      line-height: 1.5;
     }
   }
 </style>

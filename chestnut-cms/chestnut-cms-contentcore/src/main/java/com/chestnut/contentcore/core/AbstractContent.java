@@ -40,6 +40,7 @@ import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.PermissionUtils;
 import lombok.Setter;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 
 import java.time.Instant;
@@ -164,8 +165,8 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			content.setCopyType(ContentCopyType.NONE);
 		}
 		content.createBy(this.getOperatorUName());
-		this.getContentService().dao().save(this.getContentEntity());
 		this.add0();
+		this.getContentService().dao().save(this.getContentEntity());
 		// 栏目内容数+1
 		this.getCatalogService().changeContentCount(catalog.getCatalogId(), 1);
 		ContentLogUtils.addLog(ContentOpType.ADD, this.getContentEntity(), this.getOperator());
@@ -213,14 +214,18 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			content.setStatus(ContentStatus.EDITING);
 		}
 		content.updateBy(this.getOperatorUName());
-		contentService.dao().updateById(this.getContentEntity());
 		this.save0();
+		contentService.dao().updateById(this.getContentEntity());
 		ContentLogUtils.addLog(ContentOpType.UPDATE, this.getContentEntity(), this.getOperator());
 		SpringUtils.publishEvent(new AfterContentSaveEvent(this, this, false));
 		return this.getContentEntity().getContentId();
 	}
 
 	protected abstract void save0();
+
+	public boolean isDeleteByCatalog() {
+		return MapUtils.getBoolean(this.getParams(), PARAM_IS_DELETE_BY_CATALOG, false);
+	}
 
 	@Override
 	public void delete() {
@@ -232,8 +237,10 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		this.getContentService().dao().remove(new LambdaQueryWrapper<CmsContent>()
 				.eq(CmsContent::getCopyType, ContentCopyType.Mapping)
 				.eq(CmsContent::getCopyId, this.getContentEntity().getContentId()));
-		// 栏目内容数-1
-		this.getCatalogService().changeContentCount(getCatalogId(), -1);
+		if (!isDeleteByCatalog()) {
+			// 栏目内容数-1, 删除栏目时，不需要更新栏目的内容数量
+			this.getCatalogService().changeContentCount(getCatalogId(), -1);
+		}
 		ContentLogUtils.addLog(ContentOpType.DELETE, this.getContentEntity(), this.getOperator());
 
 		SpringUtils.publishEvent(new AfterContentDeleteEvent(this, this));

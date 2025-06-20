@@ -31,5 +31,11 @@ public interface IDynamicPageService extends IService<CmsDynamicPage> {
 
 	void deleteDynamicPage(List<Long> dynamicPageIds);
 
-    void generateDynamicPage(String uri, Long siteId, String publishPipeCode, Boolean preview, Map<String, String> parameters, HttpServletResponse response) throws IOException;
+	boolean isRequestMappingExists(CmsDynamicPage dynamicPage);
+
+	void registerDynamicPageMapping(String code, String path);
+
+	void unregisterDynamicPageMapping(String code, String path);
+
+	void generateDynamicPage(String uri, Long siteId, String publishPipeCode, Boolean preview, Map<String, String> parameters, HttpServletResponse response) throws IOException;
 }

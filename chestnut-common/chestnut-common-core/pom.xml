@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>chestnut-common</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.5</version>
+		<version>1.5.6</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -63,20 +63,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>easyexcel</artifactId>
-		</dependency>
-
-		<!-- 验证码 -->
-		<dependency>
-			<groupId>com.github.penggle</groupId>
-			<artifactId>kaptcha</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>javax.servlet-api</artifactId>
-					<groupId>javax.servlet</groupId>
-				</exclusion>
-			</exclusions>
+			<groupId>cn.idev.excel</groupId>
+			<artifactId>fastexcel</artifactId>
 		</dependency>
 
 		<!-- yml解析器 -->

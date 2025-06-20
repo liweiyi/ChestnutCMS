@@ -214,6 +214,16 @@
       @cell-dblclick="handleEdit"
       @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
+      <el-table-column :label="$t('CMS.Content.Logo')" align="center" width="110">
+          <template slot-scope="scope">
+            <el-image 
+              v-if="scope.row.logoSrc&&scope.row.logoSrc.length > 0" 
+              style="max-height: 100px;max-width: 100px;" 
+              :src="scope.row.logoSrc" 
+              fit="contain"
+            ></el-image>
+          </template>
+      </el-table-column>
       <el-table-column :label="$t('CMS.Content.Title')" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span class="content_attr" v-if="scope.row.topFlag>0" :title="$t('CMS.Content.SetTop')">[<svg-icon icon-class="top" />]</span>

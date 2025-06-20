@@ -308,6 +308,9 @@ public class SiteThemeService {
                 } finally {
                     FileUtils.deleteDirectory(new File(destDir));
                     this.setProgressInfo(100, "导入完成");
+                    if (log.isDebugEnabled() && StringUtils.isNotEmpty(this.getErrMessages())) {
+                        this.getErrMessages().forEach(log::debug);
+                    }
                 }
             }
         };

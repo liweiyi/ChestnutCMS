@@ -15,12 +15,13 @@
  */
 package com.chestnut.contentcore.core;
 
-import java.io.IOException;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsResource;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * 资源类型
@@ -71,16 +72,16 @@ public interface IResourceType {
 	
 	/**
 	 * 处理资源：提取资源属性、添加水印等
-	 * 
-	 * @param resource
-	 * @throws IOException 
+	 *
+	 * @param resource 资源记录
+	 * @param tempFile 资源文件
+	 * @return
+	 * @throws IOException ex
 	 */
-	default byte[] process(CmsResource resource, byte[] bytes) throws IOException {
-		resource.setFileSize((long) bytes.length);
-		return bytes;
+	default List<File> process(CmsResource resource, File tempFile) throws IOException {
+		return List.of();
 	}
 
 	default void asyncProcess(CmsResource resource) {
-
 	}
 }

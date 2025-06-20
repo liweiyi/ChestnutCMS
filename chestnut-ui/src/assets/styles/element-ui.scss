@@ -90,3 +90,13 @@
   .el-submenu__icon-arrow {
   display: none;
 }
+
+.message-top-right {
+  left: unset!important;
+  right: 20px!important;
+}
+
+.message-top-left {
+  left: 20px!important;
+  right: unset!important;
+}

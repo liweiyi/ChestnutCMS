@@ -74,6 +74,7 @@ export default {
   props: {
     publishPipeCode: {
       type: String,
+      default: "",
       required: true
     },
     open: {
@@ -95,14 +96,25 @@ export default {
       if (!newVal) {
         this.handleCancel();
       } else {
-        this.getList();
+        if (!this.inited) {
+          this.inited = true;
+          this.getList();
+        }
       }
     },
-    publishPipeCode () {
-      this.queryParams.publishPipeCode = this.publishPipeCode;
+    publishPipeCode (newVal) {
+      if (this.queryParams.publishPipeCode !== newVal) {
+        this.queryParams.publishPipeCode = newVal;
+        this.queryParams.pageNum = 1;
+        if (this.inited) this.getList();
+      }
     },
     siteId(newVal) {
-      this.queryParams.siteId = newVal;
+      if (this.queryParams.siteId !== newVal) {
+       this.queryParams.siteId = newVal;
+       this.queryParams.pageNum = 1;
+       if (this.inited) this.getList();
+      }
     },
   },
   computed: {
@@ -115,6 +127,7 @@ export default {
       // 遮罩层
       loading: false,
       visible: this.open,
+      inited: false,
       // 选中数组
       selectedTemplate: undefined,
       // 资源表格数据
@@ -124,20 +137,19 @@ export default {
       queryParams: {
         publishPipeCode: this.publishPipeCode,
         filename: undefined,
-        siteId: '0',
-        pageSize: 8
+        siteId: this.siteId,
+        pageSize: 8,
+        pageNum: 1
       }
     };
   },
   methods: {
-    /** 查询资源列表 */
     getList () {
-      if (!this.visible) {
+      if (!this.inited) {
         return;
       }
       this.loading = true;
       getTemplateList(this.queryParams).then(response => {
-        // this.templateList = response.data.rows;
         this.templateList = response.data.rows.map(item => {
           let arr = item.path.split("/");
           if (arr.length > 1) {
@@ -163,18 +175,15 @@ export default {
     handleOk () {
       this.$emit("ok", this.selectedTemplate);
     },
-    // 取消按钮
     handleCancel () {
       this.$emit("cancel");
       this.queryParams.filename = undefined;
       this.selectedTemplate = undefined;
-      this.templateList = [];
+      // this.templateList = [];
     },
-    /** 搜索按钮操作 */
     handleQuery () {
       this.getList();
     },
-    /** 重置按钮操作 */
     resetQuery () {
       this.queryParams.filename = undefined;
       this.handleQuery();

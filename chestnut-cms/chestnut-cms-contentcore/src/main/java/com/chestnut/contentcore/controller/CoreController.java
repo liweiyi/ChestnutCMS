@@ -95,7 +95,7 @@ public class CoreController extends BaseRestController {
 			String pageData = internalDataType.getPageData(data);
 			response.getWriter().write(pageData);
 		} catch (Exception e) {
-			e.printStackTrace(response.getWriter());
+			response.getWriter().write(e.getMessage());
 		}
 	}
 

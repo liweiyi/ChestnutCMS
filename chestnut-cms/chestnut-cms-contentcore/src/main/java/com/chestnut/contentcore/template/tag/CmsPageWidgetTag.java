@@ -111,17 +111,18 @@ public class CmsPageWidgetTag extends AbstractTag {
 		if (!PageWidgetStatus.PUBLISHED.equals(pw.getState())) {
 			return null;
 		}
+		String template = pw.getTemplate(context.getPublishPipeCode());
 		CmsSite site = this.siteService.getSite(siteId);
-		File templateFile = this.templateService.findTemplateFile(site, pw.getTemplate(), context.getPublishPipeCode());
-		Assert.notNull(templateFile, () -> new IncludeTemplateNotFoundException(pw.getTemplate(), env));
+		File templateFile = this.templateService.findTemplateFile(site, template, context.getPublishPipeCode());
+		Assert.notNull(templateFile, () -> new IncludeTemplateNotFoundException(template, env));
 
 		boolean ssi = MapUtils.getBoolean(attrs, ATTR_SSI, EnableSSIProperty.getValue(site.getConfigProps()));
-		String templateKey = SiteUtils.getTemplateKey(site, pw.getPublishPipeCode(), pw.getTemplate());
+		String templateKey = SiteUtils.getTemplateKey(site, context.getPublishPipeCode(), template);
 		if (context.isPreview()) {
 			env.getOut().write(this.processTemplate(env, pw, templateKey));
 		} else {
 			String siteRoot = SiteUtils.getSiteRoot(site, context.getPublishPipeCode());
-			String staticFileName = PageWidgetUtils.getStaticFileName(pw, site.getStaticSuffix(pw.getPublishPipeCode()));
+			String staticFileName = PageWidgetUtils.getStaticFileName(pw, site.getStaticSuffix(context.getPublishPipeCode()));
 			String staticFilePath = pw.getPath() + staticFileName;
 			if (ssi) {
 				// 读取页面部件静态化内容

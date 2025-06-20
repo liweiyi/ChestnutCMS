@@ -25,6 +25,7 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
@@ -56,6 +57,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -127,7 +129,7 @@ public class CustomFormServiceImpl extends ServiceImpl<CustomFormMapper, CmsCust
 		form.setNeedLogin(dto.getNeedLogin());
 		form.setRuleLimit(dto.getRuleLimit());
 		form.setRemark(dto.getRemark());
-		dto.getTemplates().forEach(item -> form.getTemplates().put(item.get("code"), item.get("template")));
+		form.setTemplates(dto.getTemplates().stream().collect(Collectors.toMap(PublishPipeTemplate::code, PublishPipeTemplate::template)));
 		this.updateById(form);
 	}
 

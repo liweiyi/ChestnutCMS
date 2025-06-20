@@ -24,16 +24,11 @@ import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
-import com.chestnut.contentcore.domain.BCmsContent;
-import com.chestnut.contentcore.domain.CmsCatalog;
-import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.domain.CmsPublishPipe;
-import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import com.chestnut.contentcore.domain.*;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.enums.ContentCopyType;
-import com.chestnut.contentcore.service.ICatalogService;
-import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.IPublishPipeService;
+import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.media.domain.BCmsAudio;
 import com.chestnut.media.domain.CmsAudio;
@@ -57,6 +52,8 @@ public class AudioContentType implements IContentType {
     
     private final static String NAME = "{CMS.CONTENTCORE.CONTENT_TYPE." + ID + "}";
 
+	private final ISiteService siteService;
+
 	private final IContentService contentService;
 
 	private final IAudioService audioService;
@@ -64,6 +61,8 @@ public class AudioContentType implements IContentType {
 	private final ICatalogService catalogService;
 
 	private final IPublishPipeService publishPipeService;
+
+	private final IResourceService resourceService;
 
 	@Override
 	public String getId() {
@@ -134,7 +133,7 @@ public class AudioContentType implements IContentType {
 			});
 			vo = AudioAlbumVO.newInstance(contentEntity, list);
 			// 发布通道数据
-			List<PublishPipeProp> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
+			List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
 					PublishPipePropUseType.Content, contentEntity.getPublishPipeProps());
 			vo.setPublishPipeProps(publishPipeProps);
 		} else {
@@ -145,11 +144,17 @@ public class AudioContentType implements IContentType {
 			// 发布通道初始数据
 			vo.setPublishPipe(publishPipes.stream().map(CmsPublishPipe::getCode).toArray(String[]::new));
 			// 发布通道数据
-			List<PublishPipeProp> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
+			List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
 					PublishPipePropUseType.Content, null);
 			vo.setPublishPipeProps(publishPipeProps);
 		}
 		vo.setCatalogName(catalog.getName());
+		// 内容引导图缩略图处理
+		CmsSite site = siteService.getSite(catalog.getSiteId());
+		resourceService.dealDefaultThumbnail(site, vo.getImages(), thumbnails -> {
+			vo.setImagesSrc(thumbnails);
+			vo.setLogoSrc(thumbnails.get(0));
+		});
 		return vo;
 	}
 

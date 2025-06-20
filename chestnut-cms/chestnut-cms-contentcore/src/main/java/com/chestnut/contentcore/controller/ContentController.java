@@ -43,10 +43,7 @@ import com.chestnut.contentcore.listener.event.AfterContentEditorInitEvent;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.properties.ShortTitleLabelProperty;
 import com.chestnut.contentcore.properties.SubTitleLabelProperty;
-import com.chestnut.contentcore.service.ICatalogService;
-import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.IPublishService;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.user.preference.IncludeChildContentPreference;
 import com.chestnut.contentcore.user.preference.ShowContentSubTitlePreference;
 import com.chestnut.contentcore.util.CmsPrivUtils;
@@ -89,6 +86,8 @@ public class ContentController extends BaseRestController {
 	private final IContentService contentService;
 
 	private final IPublishService publishService;
+
+	private final IResourceService resourceService;
 
 	private final ApplicationContext applicationContext;
 
@@ -136,6 +135,11 @@ public class ContentController extends BaseRestController {
 		}
 		Page<CmsContent> page = q.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
 		List<ListContentVO> list = page.getRecords().stream().map(ListContentVO::newInstance).toList();
+		// 内容引导图缩略图处理
+		list.forEach(vo -> resourceService.dealDefaultThumbnail(site, vo.getImages(), thumbnails -> {
+			vo.setImagesSrc(thumbnails);
+			vo.setLogoSrc(thumbnails.get(0));
+		}));
 		return this.bindDataTable(list, (int) page.getTotal());
 	}
 

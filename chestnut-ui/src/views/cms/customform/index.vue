@@ -316,9 +316,7 @@ export default {
     },
     handleSelectTemplate(publishPipeCode) {
       this.publishPipe = publishPipeCode;
-      this.$nextTick(() => {
-        this.openTemplateSelector = true;
-      })
+      this.openTemplateSelector = true;
     },
     handleTemplateSelected (template) {
       this.form.templates.some(item => {

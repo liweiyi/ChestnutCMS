@@ -15,6 +15,8 @@
  */
 package com.chestnut.article;
 
+import com.chestnut.contentcore.core.SiteImportContext;
+
 /**
  * 文正正文文档格式
  *
@@ -41,6 +43,18 @@ public interface IArticleBodyFormat {
     default String initEditor(String contentHtml) {
         return contentHtml;
     }
+
+    /**
+     * 编辑器内容保存处理
+     */
+    default String onSave(String contentHtml) {
+        return contentHtml;
+    }
+
+    /**
+     * 站点主题导入处理
+     */
+    String onSiteThemImport(SiteImportContext context, String contentHtml);
 
     /**
      * 文章正文内容发布预览处理

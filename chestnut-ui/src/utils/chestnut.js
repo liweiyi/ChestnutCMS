@@ -366,3 +366,39 @@ export function getResponseCodeErrMsg(code, defaultMsg) {
   }
   return errMsg;
 }
+
+function substringAfter(str, findStr) {
+  if (findStr === "") return "";
+  const index = str.indexOf(findStr);
+  if (index === -1) return "";
+  return str.substring(index + findStr.length);
+}
+
+function substringBefore(str, findStr) {
+  if (findStr === "") return "";
+  const index = str.indexOf(findStr);
+  if (index === -1) return str;
+  return str.substring(0, index);
+}
+
+export function substringAfterLast(str, findStr) {
+  if (findStr === '') {
+      return '';
+  }
+  const index = str.lastIndexOf(findStr);
+  if (index === -1) {
+      return '';
+  }
+  return str.substring(index + findStr.length);
+}
+
+export function substringBeforeLast(str, findStr) {
+  if (findStr === "") return "";
+  const index = str.lastIndexOf(findStr);
+  if (index === -1) return str;
+  return str.substring(0, index);
+}
+
+export function tableRowNo(pageNo, pageSize, current) {
+  return (pageNo - 1) * pageSize + current;
+}

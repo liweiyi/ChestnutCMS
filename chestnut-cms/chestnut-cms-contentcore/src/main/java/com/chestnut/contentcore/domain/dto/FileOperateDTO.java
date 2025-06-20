@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.domain.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,6 +33,7 @@ public class FileOperateDTO {
 	/*
 	 * 重名名名称
 	 */
+	@Pattern(regexp = "^[^/\\\\]*$", message = "{VALIDATOR.CMS.FILE_NAME.REGEXP_ERR}")
 	private String rename;
 	
 	/*

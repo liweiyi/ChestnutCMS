@@ -21,11 +21,10 @@ import com.chestnut.common.utils.NumberUtils;
 import com.chestnut.common.utils.StringUtils;
 import freemarker.core.Environment;
 import freemarker.template.*;
+import jakarta.validation.constraints.NotBlank;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class FreeMarkerUtils {
@@ -78,6 +77,23 @@ public class FreeMarkerUtils {
 			env.setVariable(e.getKey(), env.getObjectWrapper().wrap(e.getValue()));
 		}
         return conflictVariables;
+	}
+
+	public static Map<?, ?> getImmutableMapVariable(Environment env, @NotBlank String name) throws TemplateModelException {
+		TemplateModel model = env.getVariable(name);
+		if (model == null) {
+			return Map.of();
+		}
+		if (model instanceof TemplateHashModelEx m) {
+			Map<String, String> map = new HashMap<>(m.size());
+			for (TemplateModelIterator iterator = m.keys().iterator(); iterator.hasNext();) {
+				TemplateModel next = iterator.next();
+				String key = next.toString();
+				map.put(key, m.get(key).toString());
+			}
+			return Collections.unmodifiableMap(map);
+		}
+		throw new TemplateModelException(StringUtils.messageFormat("Get map variable failed: {0} = {1}", name, model.toString()));
 	}
 
 	public static String getStringVariable(Environment env, String name) throws TemplateModelException {
@@ -291,5 +307,23 @@ public class FreeMarkerUtils {
 		} catch (TemplateModelException e) {
 			throw new TemplateModelException(StringUtils.messageFormat("Eval date boolean variable failed: {0}", name));
 		}
+	}
+
+	public static String createBy(String html) {
+		if (StringUtils.isEmpty(html)) {
+			return html;
+		}
+		String text = StringUtils.rightTrim(html);
+		if (text.length() < 7) {
+			return html;
+		}
+		if (text.substring(text.length() - 7).equalsIgnoreCase("</html>")) {
+			StringBuilder sb = new StringBuilder(html);
+			String poweredBy = new String(Base64.getDecoder().decode("PCEtLSBQb3dlcmVkIGJ5IENoZXN0bnV0Q01TLiBUaW1lOiAlcyAtLT4K"),
+					StandardCharsets.UTF_8).formatted(DateUtils.getDateTime());
+			sb.insert(text.length() - 7, poweredBy);
+			html = sb.toString();
+		}
+		return html;
 	}
 }

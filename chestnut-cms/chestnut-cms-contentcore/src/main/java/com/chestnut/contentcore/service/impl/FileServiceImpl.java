@@ -33,12 +33,15 @@ import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.util.SiteUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -149,27 +152,28 @@ public class FileServiceImpl implements IFileService {
 
 	@Override
 	public void renameFile(CmsSite site, String filePath, String rename) throws IOException {
-		this.checkFileType(rename);
-
+		String ext = FilenameUtils.getExtension(rename);
+		if (StringUtils.isNotEmpty(ext)) {
+			this.checkFileType(rename);
+		}
     	String path = FileExUtils.normalizePath(filePath);
     	if (path.startsWith("/")) {
     		path = path.substring(1);
     	}
-    	this.checkSiteDirectory(site, filePath);
-    	
+    	this.checkSiteDirectory(site, path);
+
     	String root = CMSConfig.getResourceRoot();
     	File file = new File(root + path);
     	Assert.isTrue(file.exists(), ContentCoreErrorCode.FILE_NOT_EXIST::exception);
-    	
-    	String dest = root + StringUtils.substringBeforeLast(path, "/") + "/" + rename;
-    	File destFile = new File(dest);
-    	Assert.isFalse(destFile.exists(), ContentCoreErrorCode.FILE_ALREADY_EXISTS::exception);
+
+		Path dest = Path.of(file.getParent(), rename);
+    	Assert.isFalse(Files.exists(dest), ContentCoreErrorCode.FILE_ALREADY_EXISTS::exception);
 
     	if (file.isDirectory()) {
-			FileUtils.moveDirectory(file, destFile);
+			FileUtils.moveDirectory(file, dest.toFile());
 		} else {
         	this.checkFileType(rename);
-			FileUtils.moveFile(file, destFile);
+			FileUtils.moveFile(file, dest.toFile());
 		}
 	}
 
@@ -205,7 +209,8 @@ public class FileServiceImpl implements IFileService {
     		path = path.substring(1);
     	}
 		this.checkSiteDirectory(site, path);
-    	if (!EDITABLE_FILE_TYPE.contains(FileExUtils.getExtension(path))) {
+		String ext = FilenameUtils.getExtension(path);
+		if (!EDITABLE_FILE_TYPE.contains(ext)) {
     		throw ContentCoreErrorCode.NOT_EDITABLE_FILE.exception();
     	}
     	String root = CMSConfig.getResourceRoot();

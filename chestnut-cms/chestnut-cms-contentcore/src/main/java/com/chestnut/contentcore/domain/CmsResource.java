@@ -66,7 +66,9 @@ public class CmsResource extends BaseEntity {
     
     /**
      * 存储类型，默认：local
+     * @deprecated 1.5.6版本开始不再根据此字段生成资源路径，资源路径统一根据当前站点资源存储配置生成。
      */
+    @Deprecated(forRemoval = true, since = "1.5.6")
     private String storageType;
 
     /**

@@ -39,6 +39,7 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.*;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.mapper.CmsCatalogMapper;
@@ -279,7 +280,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		BeanUtils.copyProperties(dto, catalog);
 		// 发布通道数据处理
 		Map<String, Map<String, Object>> publishPipeProps = dto.getPublishPipeDatas().stream()
-				.collect(Collectors.toMap(PublishPipeProp::getPipeCode, PublishPipeProp::getProps));
+				.collect(Collectors.toMap(PublishPipeProps::getPipeCode, PublishPipeProps::getProps));
 		catalog.setPublishPipeProps(publishPipeProps);
 		catalog.updateBy(dto.getOperator().getUsername());
 		this.updateById(catalog);
@@ -303,8 +304,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public CmsCatalog deleteCatalog(long catalogId, LoginUser operator) {
-		CmsCatalog catalog = this.getById(catalogId);
+	public void deleteCatalog(CmsCatalog catalog, LoginUser operator) {
 		long childCount = lambdaQuery().eq(CmsCatalog::getParentId, catalog.getCatalogId()).count();
 		Assert.isTrue(childCount == 0, ContentCoreErrorCode.DEL_CHILD_FIRST::exception);
 		// 删除前事件发布
@@ -316,11 +316,10 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 			parentCatalog.setChildCount(parentCatalog.getChildCount() - 1);
 			updateById(parentCatalog);
 		}
-		removeById(catalogId);
+		removeById(catalog);
 		clearCache(catalog);
 
 		applicationContext.publishEvent(new AfterCatalogDeleteEvent(this, catalog));
-		return catalog;
 	}
 
 	@Override
@@ -387,8 +386,8 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		List<CmsCatalog> toCatalogs = this.list(q);
 		if (!toCatalogs.isEmpty()) {
 			for (CmsCatalog toCatalog : toCatalogs) {
-				List<PublishPipeProp> publishPipeProps = dto.getPublishPipeProps();
-				for (PublishPipeProp publishPipeProp : publishPipeProps) {
+				List<PublishPipeProps> publishPipeProps = dto.getPublishPipeProps();
+				for (PublishPipeProps publishPipeProp : publishPipeProps) {
 					Map<String, Object> sitePublishPipeProp = site.getPublishPipeProps()
 							.get(publishPipeProp.getPipeCode());
 					Map<String, Object> catalogPublishPipeProp = toCatalog
@@ -604,6 +603,9 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		lock.lock();
 		try {
 			CmsCatalog catalog = getById(catalogId);
+			if (Objects.isNull(catalog)) {
+				return; // 删除栏目时会先删除栏目在删除内容，导致删除内容时栏目已经不存在了
+			}
 			lambdaUpdate().set(CmsCatalog::getContentCount, catalog.getContentCount() + delta)
 					.eq(CmsCatalog::getCatalogId, catalog.getCatalogId()).update();
 		} finally {

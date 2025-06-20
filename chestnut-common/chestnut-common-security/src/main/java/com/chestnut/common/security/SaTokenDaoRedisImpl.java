@@ -16,6 +16,8 @@
 package com.chestnut.common.security;
 
 import cn.dev33.satoken.dao.SaTokenDao;
+import cn.dev33.satoken.session.SaSession;
+import cn.dev33.satoken.strategy.SaStrategy;
 import cn.dev33.satoken.util.SaFoxUtil;
 import com.chestnut.common.redis.RedisCache;
 import lombok.RequiredArgsConstructor;
@@ -80,7 +82,12 @@ public class SaTokenDaoRedisImpl implements SaTokenDao {
 
 	@Override
 	public Object getObject(String key) {
-		return this.redisCache.getCacheObject(key, Object.class);
+		return this.getObject(key, Object.class);
+	}
+
+	@Override
+	public <T> T getObject(String key, Class<T> clazz) {
+		return this.redisCache.getCacheObject(key, clazz);
 	}
 
 	@Override
@@ -107,7 +114,6 @@ public class SaTokenDaoRedisImpl implements SaTokenDao {
 	@Override
 	public void deleteObject(String key) {
 		this.redisCache.deleteObject(key);
-		
 	}
 
 	@Override
@@ -117,6 +123,47 @@ public class SaTokenDaoRedisImpl implements SaTokenDao {
 
 	@Override
 	public void updateObjectTimeout(String key, long timeout) {
+		if (timeout > 0) {
+			this.redisCache.expire(key, timeout);
+		} else if (timeout == NEVER_EXPIRE) {
+			long expire = this.getObjectTimeout(key);
+			if (expire != NEVER_EXPIRE) {
+				this.redisCache.expire(key, timeout, TimeUnit.SECONDS);
+			}
+		}
+	}
+
+	@Override
+	public SaSession getSession(String key) {
+		return this.redisCache.getCacheObject(key, SaStrategy.instance.sessionClassType);
+	}
+
+	@Override
+	public void setSession(SaSession session, long timeout) {
+		if (timeout == NEVER_EXPIRE) {
+			this.redisCache.setCacheObject(session.getId(), session);
+		} else {
+			this.redisCache.setCacheObject(session.getId(), session, timeout, TimeUnit.SECONDS);
+		}
+	}
+
+	@Override
+	public void deleteSession(String key) {
+		this.redisCache.deleteObject(key);
+	}
+
+	@Override
+	public void updateSession(SaSession session) {
+		this.redisCache.setCacheObject(session.getId(), session);
+	}
+
+	@Override
+	public long getSessionTimeout(String key) {
+		return redisCache.getExpire(key, TimeUnit.SECONDS);
+	}
+
+	@Override
+	public void updateSessionTimeout(String key, long timeout) {
 		if (timeout > 0) {
 			this.redisCache.expire(key, timeout);
 		} else if (timeout == NEVER_EXPIRE) {

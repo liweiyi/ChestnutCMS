@@ -102,6 +102,7 @@
     <!-- 模板选择组件 -->
     <cms-template-selector 
       :open="openTemplateSelector" 
+      :siteId="siteId"
       :publishPipeCode="publishPipeActiveName"
       @ok="handleTemplateSelected"
       @cancel="handleTemplateSelectorCancel" />

@@ -46,7 +46,7 @@ public class AliyunFileStorageType implements IFileStorageType {
 	}
 	
 	@Override
-	public boolean testConnection(String endPoint, String accessKey, String accessSecret) {
+	public boolean testConnection(String endPoint, String region, String accessKey, String accessSecret) {
 		OSSClient<OSS> client = this.getClient(endPoint, accessKey, accessSecret);
 		try {
 			client.getClient().getUserQosInfo();
@@ -57,7 +57,7 @@ public class AliyunFileStorageType implements IFileStorageType {
 	}
 
 	@Override
-	public void reloadClient(String endpoint, String accessKey, String accessSecret) {
+	public void reloadClient(String endpoint, String region, String accessKey, String accessSecret) {
 		OSSClient<OSS> client = this.clients.get(endpoint);
 		if (client != null) {
 			client.getClient().shutdown();

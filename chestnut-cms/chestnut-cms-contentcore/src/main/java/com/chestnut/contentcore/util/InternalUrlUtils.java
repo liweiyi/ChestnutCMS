@@ -94,6 +94,10 @@ public class InternalUrlUtils {
 		return getActualUrl(iurl, null, true);
 	}
 
+	public static String getActualPreviewUrl(InternalURL internalURL) {
+		return getActualUrl(internalURL, null, true);
+	}
+
 	/**
 	 * 判断是否是内部资源URL
 	 */

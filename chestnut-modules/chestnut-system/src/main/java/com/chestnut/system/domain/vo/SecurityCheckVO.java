@@ -15,16 +15,8 @@
  */
 package com.chestnut.system.domain.vo;
 
-import com.alibaba.excel.annotation.ExcelProperty;
-import com.chestnut.common.utils.poi.converter.StringToSetConverter;
-import com.chestnut.system.annotation.ExcelDictField;
-import com.chestnut.system.config.converter.DictConverter;
-import com.chestnut.system.fixed.dict.UserStatus;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Set;
 
 @Setter
 @Getter

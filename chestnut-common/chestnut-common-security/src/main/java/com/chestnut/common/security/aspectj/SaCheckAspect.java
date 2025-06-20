@@ -17,9 +17,7 @@ package com.chestnut.common.security.aspectj;
 
 import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.annotation.*;
-import cn.dev33.satoken.basic.SaBasicUtil;
 import cn.dev33.satoken.stp.StpLogic;
-import cn.dev33.satoken.strategy.SaStrategy;
 import com.chestnut.common.security.IUserType;
 import com.chestnut.common.security.SecurityService;
 import com.chestnut.common.security.SecurityUtils;
@@ -40,6 +38,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
  * SA-TOKEN认证切面
@@ -67,8 +66,6 @@ public class SaCheckAspect {
             " || @annotation(cn.dev33.satoken.annotation.SaCheckSafe)" +
             " || @within(cn.dev33.satoken.annotation.SaCheckDisable)" +
             " || @annotation(cn.dev33.satoken.annotation.SaCheckDisable)" +
-            " || @within(cn.dev33.satoken.annotation.SaCheckBasic)" +
-            " || @annotation(cn.dev33.satoken.annotation.SaCheckBasic)" +
             " || @within(com.chestnut.common.security.anno.Priv)" +
             " || @annotation(com.chestnut.common.security.anno.Priv)";
 
@@ -84,7 +81,7 @@ public class SaCheckAspect {
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        if (!(Boolean) SaStrategy.instance.isAnnotationPresent.apply(method, SaIgnore.class)) {
+        if (!method.isAnnotationPresent(SaIgnore.class)) {
             // 先校验 Method 所属 Class 上的注解
             this.checkPermission(method.getDeclaringClass(), joinPoint, method);
             // 再校验 Method 上的注解
@@ -95,7 +92,7 @@ public class SaCheckAspect {
 
     private void checkPermission(AnnotatedElement target, ProceedingJoinPoint joinPoint, Method method) {
         // 校验 @Priv 注解
-        Priv priv = (Priv) SaStrategy.instance.getAnnotation.apply(target, Priv.class);
+        Priv priv = target.getAnnotation(Priv.class);
         if (priv != null) {
             IUserType ut = securityService.getUserType(priv.type());
             Assert.notNull(ut, () -> SecurityErrorCode.UNKNOWN_USER_TYPE.exception(priv.type()));
@@ -112,39 +109,42 @@ public class SaCheckAspect {
             }
         } else {
             // 校验 @SaCheckLogin 注解
-            SaCheckLogin checkLogin = (SaCheckLogin) SaStrategy.instance.getAnnotation.apply(target, SaCheckLogin.class);
-            if (checkLogin != null) {
-                SaManager.getStpLogic(checkLogin.type(), false).checkByAnnotation(checkLogin);
+            SaCheckLogin checkLogin = target.getAnnotation(SaCheckLogin.class);
+            if (Objects.nonNull(checkLogin)) {
+                SaManager.getStpLogic(checkLogin.type(), false).checkLogin();
             }
-
             // 校验 @SaCheckRole 注解
-            SaCheckRole checkRole = (SaCheckRole) SaStrategy.instance.getAnnotation.apply(target, SaCheckRole.class);
-            if (checkRole != null) {
-                SaManager.getStpLogic(checkRole.type(), false).checkByAnnotation(checkRole);
+            SaCheckRole checkRole = target.getAnnotation(SaCheckRole.class);
+            if (Objects.nonNull(checkRole)) {
+                StpLogic stpLogic = SaManager.getStpLogic(checkRole.type(), false);
+                if (checkRole.mode() == SaMode.OR) {
+                    stpLogic.checkRoleOr(checkRole.value());
+                } else {
+                    stpLogic.checkRoleAnd(checkRole.value());
+                }
             }
-
             // 校验 @SaCheckPermission 注解
-            SaCheckPermission checkPermission = (SaCheckPermission) SaStrategy.instance.getAnnotation.apply(target, SaCheckPermission.class);
-            if (checkPermission != null) {
-                SaManager.getStpLogic(checkPermission.type(), false).checkByAnnotation(checkPermission);
+            SaCheckPermission checkPermission = target.getAnnotation(SaCheckPermission.class);
+            if (Objects.nonNull(checkPermission)) {
+                StpLogic stpLogic = SaManager.getStpLogic(checkPermission.type(), false);
+                if (checkPermission.mode() == SaMode.OR) {
+                    stpLogic.checkPermissionOr(checkPermission.value());
+                } else {
+                    stpLogic.checkPermissionAnd(checkPermission.value());
+                }
             }
         }
         // 校验 @SaCheckSafe 注解
-        SaCheckSafe checkSafe = (SaCheckSafe) SaStrategy.instance.getAnnotation.apply(target, SaCheckSafe.class);
-        if (checkSafe != null) {
-            SaManager.getStpLogic(checkSafe.type(), false).checkByAnnotation(checkSafe);
+        SaCheckSafe checkSafe = target.getAnnotation(SaCheckSafe.class);
+        if (Objects.nonNull(checkSafe)) {
+            SaManager.getStpLogic(checkSafe.type(), false).checkSafe(checkSafe.value());
         }
 
         // 校验 @SaCheckDisable 注解
-        SaCheckDisable checkDisable = (SaCheckDisable) SaStrategy.instance.getAnnotation.apply(target, SaCheckDisable.class);
-        if (checkDisable != null) {
-            SaManager.getStpLogic(checkDisable.type(), false).checkByAnnotation(checkDisable);
-        }
-
-        // 校验 @SaCheckBasic 注解
-        SaCheckBasic checkBasic = (SaCheckBasic) SaStrategy.instance.getAnnotation.apply(target, SaCheckBasic.class);
-        if (checkBasic != null) {
-            SaBasicUtil.check(checkBasic.realm(), checkBasic.account());
+        SaCheckDisable checkDisable = target.getAnnotation(SaCheckDisable.class);
+        if (Objects.nonNull(checkDisable)) {
+            StpLogic stpLogic = SaManager.getStpLogic(checkDisable.type(), false);
+            stpLogic.checkDisableLevel(stpLogic.getLoginId(), checkDisable.type(), checkDisable.level());
         }
     }
 

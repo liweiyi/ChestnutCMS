@@ -17,7 +17,7 @@ package com.chestnut.system.domain.dto;
 
 import java.util.Set;
 
-import com.alibaba.excel.annotation.ExcelProperty;
+import cn.idev.excel.annotation.ExcelProperty;
 import com.chestnut.common.utils.poi.converter.StringToSetConverter;
 import com.chestnut.system.annotation.ExcelDictField;
 import com.chestnut.system.config.converter.DictConverter;

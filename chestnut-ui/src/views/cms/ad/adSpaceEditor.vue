@@ -36,152 +36,154 @@
           @click="handleGoBack">{{ $t('Common.GoBack') }}</el-button>
       </el-col>
     </el-row>
-    <el-form 
-      ref="form"
-      :model="form"
-      :rules="rules"
-      label-width="110px">
-      <el-card shadow="never">
-        <div slot="header" class="clearfix">
-          <span>{{ $t('CMS.Adv.Basic') }}</span>
-        </div>
-        <div class="form-col">
-          <el-form-item :label="$t('CMS.PageWidget.Name')" prop="name">
-            <el-input v-model="form.name" />
-          </el-form-item>
-          <el-form-item :label="$t('CMS.PageWidget.Code')" prop="code">
-            <el-input v-model="form.code" />
-          </el-form-item>
-          <el-form-item :label="$t('CMS.PageWidget.Path')" prop="path">
-            <el-input v-model="form.path" />
-          </el-form-item>
-          <el-form-item :label="$t('CMS.PageWidget.PublishPipe')" prop="publishPipeCode">
-            <el-select v-model="form.publishPipeCode">
-              <el-option
-                v-for="pp in publishPipes"
-                :key="pp.pipeCode"
-                :label="pp.pipeName"
-                :value="pp.pipeCode"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item :label="$t('CMS.PageWidget.Template')" prop="template">
-            <el-input v-model="form.template" :disabled="templateDisabled" >
+    <el-row :gutter="10">
+      <el-col :span="16">
+        <el-card shadow="hover">
+          <div slot="header" class="clearfix">
+            <span>{{ $t('CMS.Adv.AdList') }}</span>
+          </div>
+          <el-row :gutter="24" class="mb12">
+            <el-col :span="12">
               <el-button 
-                slot="append"
+                plain
                 type="primary"
-                :disabled="templateDisabled"
-                @click="handleSelectTemplate()">{{ $t("Common.Select") }}</el-button>
-            </el-input>
-          </el-form-item>
-          <el-form-item :label="$t('Common.Remark')" prop="remark">
-            <el-input v-model="form.remark" />
-          </el-form-item>
-        </div>
-      </el-card>
-    </el-form>
-    <el-card class="mt10" shadow="never">
-      <div slot="header" class="clearfix">
-        <span>{{ $t('CMS.Adv.AdList') }}</span>
-      </div>
-      <el-row :gutter="24" class="mb12">
-        <el-col :span="12">
-          <el-button 
-            plain
-            type="primary"
-            icon="el-icon-plus"
-            size="mini"
-            @click="handleAddAdvertisement">{{ $t("Common.Add") }}</el-button>
-          <el-button 
-            plain
-            type="success"
-            icon="el-icon-edit"
-            size="mini"
-            :disabled="selectedRows.length!==1"
-            @click="handleEditAdvertisement">{{ $t('Common.Edit') }}</el-button>
-          <el-button 
-            plain
-            type="danger"
-            icon="el-icon-plus"
-            size="mini"
-            :disabled="selectedRows.length===0"
-            @click="handleDeleteAdvertisements">{{ $t("Common.Delete") }}</el-button>
-        </el-col>
-        <el-col :span="12" style="text-align: right">
-          <el-input :placeholder="$t('CMS.Adv.Placeholder.Name')" v-model="queryParams.name" size="mini" style="width: 200px;" class="mr10"></el-input>
-          <el-button 
-            type="primary"
-            icon="el-icon-search"
-            size="mini"
-            @click="handleQuery">{{ $t("Common.Search") }}</el-button>
-          <el-button 
-            icon="el-icon-refresh"
-            size="mini"
-            @click="resetQuery">{{ $t("Common.Reset") }}</el-button>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-table 
-          v-loading="loading"
-          :data="dataList"
-          @selection-change="handleSelectionChange"
-          @row-dblclick="handleEditAdvertisement">
-          <el-table-column type="selection" width="50" align="center" />
-          <el-table-column :label="$t('CMS.Adv.AdName')" prop="name">
-          </el-table-column>
-          <el-table-column :label="$t('CMS.Adv.Type')" width="100" align="center" prop="typeName">
-          </el-table-column>
-          <el-table-column :label="$t('CMS.Adv.Weight')" width="100" align="center" prop="weight" />
-          <el-table-column :label="$t('CMS.Adv.Status')" width="100" align="center" prop="state">
-            <template slot-scope="scope">
-              <dict-tag :options="dict.type.EnableOrDisable" :value="scope.row.state"/>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('CMS.Adv.OnlineDate')" align="center" prop="onlineDate" width="160">
-            <template slot-scope="scope">
-              <span>{{ scope.row.onlineDate }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('CMS.Adv.OfflineDate')" align="center" prop="offlineDate" width="160">
-            <template slot-scope="scope">
-              <span>{{ scope.row.offlineDate }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('Common.Operation')" align="center" width="200" class-name="small-padding fixed-width">
-            <template slot-scope="scope">
+                icon="el-icon-plus"
+                size="mini"
+                @click="handleAddAdvertisement">{{ $t("Common.Add") }}</el-button>
               <el-button 
-                v-if="scope.row.state==='1'"
-                size="small"
-                type="text"
-                icon="el-icon-switch-button"
-                @click="handleEnableAdvertisements(scope.row)">{{ $t('Common.Enable') }}</el-button>
-              <el-button 
-                v-if="scope.row.state==='0'"
-                size="small"
-                type="text"
-                icon="el-icon-switch-button"
-                @click="handleDisableAdvertisements(scope.row)">{{ $t('Common.Disable') }}</el-button>
-              <el-button 
-                size="small"
-                type="text"
+                plain
+                type="success"
                 icon="el-icon-edit"
-                @click="handleEditAdvertisement(scope.row)">{{ $t("Common.Edit") }}</el-button>
+                size="mini"
+                :disabled="selectedRows.length!==1"
+                @click="handleEditAdvertisement">{{ $t('Common.Edit') }}</el-button>
               <el-button 
-                size="small"
-                type="text"
-                icon="el-icon-delete"
-                @click="handleDeleteAdvertisements(scope.row)">{{ $t("Common.Delete") }}</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <pagination 
-          v-show="total>0"
-          :total="total"
-          :page.sync="queryParams.pageNum"
-          :limit.sync="queryParams.pageSize"
-          @pagination="loadAdvertisementList" />
-      </el-row>
-    </el-card>
+                plain
+                type="danger"
+                icon="el-icon-plus"
+                size="mini"
+                :disabled="selectedRows.length===0"
+                @click="handleDeleteAdvertisements">{{ $t("Common.Delete") }}</el-button>
+            </el-col>
+            <el-col :span="12" style="text-align: right">
+              <el-input :placeholder="$t('CMS.Adv.Placeholder.Name')" v-model="queryParams.name" size="mini" style="width: 200px;" class="mr10"></el-input>
+              <el-button 
+                type="primary"
+                icon="el-icon-search"
+                size="mini"
+                @click="handleQuery">{{ $t("Common.Search") }}</el-button>
+              <el-button 
+                icon="el-icon-refresh"
+                size="mini"
+                @click="resetQuery">{{ $t("Common.Reset") }}</el-button>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-table 
+              v-loading="loading"
+              :data="dataList"
+              @selection-change="handleSelectionChange"
+              @row-dblclick="handleEditAdvertisement">
+              <el-table-column type="selection" width="50" align="center" />
+              <el-table-column :label="$t('CMS.Adv.AdName')" prop="name">
+              </el-table-column>
+              <el-table-column :label="$t('CMS.Adv.Type')" width="100" align="center" prop="typeName">
+              </el-table-column>
+              <el-table-column :label="$t('CMS.Adv.Weight')" width="100" align="center" prop="weight" />
+              <el-table-column :label="$t('CMS.Adv.Status')" width="100" align="center" prop="state">
+                <template slot-scope="scope">
+                  <dict-tag :options="dict.type.EnableOrDisable" :value="scope.row.state"/>
+                </template>
+              </el-table-column>
+              <el-table-column :label="$t('CMS.Adv.OnlineDate')" align="center" prop="onlineDate" width="160">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.onlineDate }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="$t('CMS.Adv.OfflineDate')" align="center" prop="offlineDate" width="160">
+                <template slot-scope="scope">
+                  <span>{{ scope.row.offlineDate }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column :label="$t('Common.Operation')" align="center" width="200" class-name="small-padding fixed-width">
+                <template slot-scope="scope">
+                  <el-button 
+                    v-if="scope.row.state==='1'"
+                    size="small"
+                    type="text"
+                    icon="el-icon-switch-button"
+                    @click="handleEnableAdvertisements(scope.row)">{{ $t('Common.Enable') }}</el-button>
+                  <el-button 
+                    v-if="scope.row.state==='0'"
+                    size="small"
+                    type="text"
+                    icon="el-icon-switch-button"
+                    @click="handleDisableAdvertisements(scope.row)">{{ $t('Common.Disable') }}</el-button>
+                  <el-button 
+                    size="small"
+                    type="text"
+                    icon="el-icon-edit"
+                    @click="handleEditAdvertisement(scope.row)">{{ $t("Common.Edit") }}</el-button>
+                  <el-button 
+                    size="small"
+                    type="text"
+                    icon="el-icon-delete"
+                    @click="handleDeleteAdvertisements(scope.row)">{{ $t("Common.Delete") }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <pagination 
+              v-show="total>0"
+              :total="total"
+              :page.sync="queryParams.pageNum"
+              :limit.sync="queryParams.pageSize"
+              @pagination="loadAdvertisementList" />
+          </el-row>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-form 
+          ref="form"
+          :model="form"
+          :rules="rules"
+          label-width="110px">
+          <el-card shadow="hover">
+            <div slot="header" class="clearfix">
+              <span>{{ $t('CMS.Adv.Basic') }}</span>
+            </div>
+            <div class="form-col">
+              <el-form-item :label="$t('CMS.PageWidget.Name')" prop="name">
+                <el-input v-model="form.name" />
+              </el-form-item>
+              <el-form-item :label="$t('CMS.PageWidget.Code')" prop="code">
+                <el-input v-model="form.code" />
+              </el-form-item>
+              <el-form-item :label="$t('CMS.PageWidget.Path')" prop="path">
+                <el-input v-model="form.path" />
+              </el-form-item>
+              <el-form-item :label="$t('Common.Remark')" prop="remark">
+                <el-input type="textarea" v-model="form.remark" />
+              </el-form-item>
+            </div>
+          </el-card>
+          <el-card shadow="hover" class="mt10">
+            <div slot="header" class="clearfix">
+              <span>{{ $t('CMS.Block.PublishPipeProp') }}</span>
+            </div>
+            <div class="form-col">
+              <el-form-item 
+                v-for="item in form.templates" 
+                :label="item.name" 
+                :key="item.code">
+                <el-input v-model="item.template">
+                  <el-button slot="append" icon="el-icon-folder-opened" @click="handleSelectTemplate(item.code)"></el-button>
+                </el-input>
+              </el-form-item>
+            </div>
+          </el-card>
+        </el-form>
+      </el-col>
+    </el-row>
     <!-- 模板选择组件 -->
     <cms-template-selector 
       :open="openTemplateSelector" 

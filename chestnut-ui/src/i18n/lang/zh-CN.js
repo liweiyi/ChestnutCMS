@@ -109,9 +109,13 @@ export default {
     }
   },
   Error: {
-    Err401: "【401】认证失败，无法访问系统资源！",
-    NoPermission: "您没有访问权限！",
-    NoPermissionTip: "对不起，您没有访问权限，请不要进行非法操作！您可以返回主页面",
+    Err401: "【401】未通过认证！",
+    Forbidden: "未通过认证",
+    ForbiddenTip: "对不起，您尚未通过系统认证，请尝试重新登录。",
+    GoLogin: "去登录",
+    Err403: "【403】权限校验失败！",
+    NoPermission: "无访问权限！",
+    NoPermissionTip: "对不起，您没有访问权限，请向系统管理者申请相关资源访问权限！",
     GoHome: "回首页",
     Err404: "【404】访问资源不存在！",
     Err404Tip: "对不起，您正在寻找的页面不存在。尝试检查URL的错误，然后按浏览器上的刷新按钮或尝试在我们的应用程序中找到其他内容。",
@@ -149,6 +153,7 @@ export default {
     Basic: '基础资料',
     ResetPassword: '修改密码',
     NickName: '昵称',
+    RealName: '真实姓名',
     Gender: '性别',
     GenderMale: '男',
     GenderFemale: '女',
@@ -254,6 +259,7 @@ export default {
       UserId: "用户ID",
       UserName: "用户名",
       NickName: "昵称",
+      RealName: "真实姓名",
       Dept: "所属部门",
       PhoneNumber: "手机号码",
       Email: "邮箱",
@@ -287,6 +293,7 @@ export default {
         DeptName: "请输入部门名称",
         UserName: "请输入用户名称",
         NickName: "请输入用户昵称",
+        RealName: "请输入真实姓名",
         PhoneNumber: "请输入手机号码",
         Dept: "请选择所属部门",
         Email: "请输入用户邮箱",
@@ -954,6 +961,9 @@ export default {
       PrefixMode_Absolute: "绝对路径",
       PrefixMode_Relative: "相对路径",
       ErrPageLink: "错误页面",
+      Dashboard: {
+        MissingSiteUrl: "站点域名未配置！"
+      },
       Tab: {
         Basic: "基础信息",
         Extend: "扩展配置",
@@ -991,6 +1001,7 @@ export default {
         ThumbnailHeight: "默认缩略图高度",
         ThumbnailSizeTip: "缩略图宽/高为0时默认不生成缩略图",
         StorageType: "存储策略",
+        StorageTip: "更换存储策略后，原资源库的资源文件需要手动同步到新的存储库。",
         Local: "本地",
         AliyunOSS: "阿里云OSS",
         TencentCOS: "腾讯云COS",
@@ -1382,6 +1393,7 @@ export default {
     },
     Block: {
       Basic: "基础属性",
+      PublishPipeProp: "发布通道配置",
       ManualList: "自定义列表",
       Title: "标题",
       AddRow: "添加行",
@@ -1980,6 +1992,7 @@ export default {
   Deploy: {
     Cert: {
       Domain: "域名",
+      RR: "主机记录",
       Issuer: "证书颁发机构",
       IssueTime: "签发时间",
       ExpireTime: "过期时间",
@@ -1998,6 +2011,8 @@ export default {
       Applying: "正在提交证书申请，请稍等...",
       Authroizating: "正在验证，请稍等...",
       Servers: "同步服务器",
+      SyncToServer: "同步",
+      Syncing: "正在同步证书到远程服务器，请稍等...",
       Placeholder: {
         Domain: "输入域名查询"
       }

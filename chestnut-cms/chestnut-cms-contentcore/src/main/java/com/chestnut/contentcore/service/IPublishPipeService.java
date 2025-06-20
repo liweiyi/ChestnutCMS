@@ -19,7 +19,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 
 import java.io.IOException;
 import java.util.List;
@@ -79,8 +79,8 @@ public interface IPublishPipeService extends IService<CmsPublishPipe> {
 	 * @param props 数据集合
 	 * @return 结果列表
 	 */
-	List<PublishPipeProp> getPublishPipeProps(Long siteId, PublishPipePropUseType useType,
-			Map<String, Map<String, Object>> props);
+	List<PublishPipeProps> getPublishPipeProps(Long siteId, PublishPipePropUseType useType,
+											   Map<String, Map<String, Object>> props);
 
 	/**
 	 * 获取发布通道属性值

@@ -19,10 +19,18 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.chestnut.common.db.domain.BaseEntity;
-
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.collections4.MapUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 页面部件表对象 [cms_page_widget]
@@ -84,12 +92,20 @@ public class CmsPageWidget extends BaseEntity {
     /**
      * 发布通道
      */
+    @Deprecated(since = "1.5.6", forRemoval = true)
     private String publishPipeCode;
-    
+
     /**
-     * 关联模板
+     * 模板路径
      */
+    @Deprecated(since = "1.5.6", forRemoval = true)
     private String template;
+
+    /**
+     * 发布通道模板配置
+     */
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private Map<String, String> templates;
     
     /**
      * 静态化目录
@@ -103,4 +119,13 @@ public class CmsPageWidget extends BaseEntity {
     
     @TableField(exist = false)
     private Object contentObj;
+
+    public String getTemplate(String publishPipeCode) {
+        String templatePath = MapUtils.getString(templates, publishPipeCode);
+        // 兼容历史版本数据
+        if (StringUtils.isEmpty(templatePath) && StringUtils.equals(publishPipeCode, this.publishPipeCode)) {
+            templatePath = this.template;
+        }
+        return templatePath;
+    }
 }

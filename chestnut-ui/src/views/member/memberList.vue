@@ -99,12 +99,6 @@
         width="55"
         align="center" />
       <el-table-column 
-        :label="$t('Member.UID')"
-        align="center"
-        :show-overflow-tooltip="true"
-        width="100"
-        prop="memberId" />
-      <el-table-column 
         :label="$t('Member.UserName')"
         align="center"
         :show-overflow-tooltip="true"

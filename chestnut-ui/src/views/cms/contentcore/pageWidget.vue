@@ -32,6 +32,7 @@
       :height="tableHeight"
       :max-height="tableMaxHeight"
       @row-click="handleRowClick"
+      @cell-dblclick="handleEdit"
       @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column :label="$t('CMS.PageWidget.Name')" prop="name" :show-overflow-tooltip="true">
@@ -121,16 +122,6 @@
         </el-form-item>
         <el-form-item :label="$t('CMS.PageWidget.Code')" prop="code">
           <el-input v-model="form.code" />
-        </el-form-item>
-        <el-form-item :label="$t('CMS.PageWidget.PublishPipe')" prop="publishPipeCode">
-          <el-select v-model="form.publishPipeCode">
-            <el-option
-              v-for="pp in publishPipes"
-              :key="pp.pipeCode"
-              :label="pp.pipeName"
-              :value="pp.pipeCode"
-            />
-          </el-select>
         </el-form-item>
         <el-form-item :label="$t('CMS.PageWidget.Path')" prop="path">
           <el-input v-model="form.path" />

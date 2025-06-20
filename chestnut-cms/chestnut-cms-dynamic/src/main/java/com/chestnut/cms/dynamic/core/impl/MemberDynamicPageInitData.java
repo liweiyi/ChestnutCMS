@@ -47,7 +47,7 @@ public class MemberDynamicPageInitData implements IDynamicPageInitData {
     }
 
     @Override
-    public void initTemplateData(TemplateContext context, Map<String, String> parameters) {
+    public void initTemplateData(TemplateContext context, String path, Map<String, String> parameters) {
         if (StpMemberUtil.isLogin()) {
             LoginUser loginUser = StpMemberUtil.getLoginUser();
             context.getVariables().put(CmsMemberConstants.TEMPLATE_VARIABLE_MEMBER, loginUser.getUser());

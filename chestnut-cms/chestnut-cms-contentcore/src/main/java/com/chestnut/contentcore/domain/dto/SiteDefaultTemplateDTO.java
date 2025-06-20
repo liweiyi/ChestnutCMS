@@ -18,6 +18,7 @@ package com.chestnut.contentcore.domain.dto;
 import java.util.List;
 
 import com.chestnut.common.security.domain.BaseDTO;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.system.validator.LongId;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -43,5 +44,5 @@ public class SiteDefaultTemplateDTO extends BaseDTO {
 	 * 默认模板属性
 	 */
 	@NotEmpty(message = "{VALIDATOR.CMS.SITE.PUBLISH_PIPE_PROPS_EMPTY}")
-	public List<PublishPipeProp> publishPipeProps;
+	public List<PublishPipeProps> publishPipeProps;
 }

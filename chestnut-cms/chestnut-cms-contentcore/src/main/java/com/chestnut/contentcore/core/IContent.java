@@ -33,6 +33,8 @@ import java.util.Objects;
  */
 public interface IContent<T> {
 
+	String PARAM_IS_DELETE_BY_CATALOG = "isDeleteByCatalog";
+
 	/**
 	 * 获取站点ID
 	 */

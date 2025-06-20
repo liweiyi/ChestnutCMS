@@ -21,7 +21,7 @@ import java.util.Map;
 import org.springframework.beans.BeanUtils;
 
 import com.chestnut.contentcore.domain.CmsCatalog;
-import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -186,7 +186,7 @@ public class CatalogVO {
     /*
      * 栏目发布通道数据
      */
-    private List<PublishPipeProp> publishPipeDatas;
+    private List<PublishPipeProps> publishPipeDatas;
     
     public static CatalogVO newInstance(CmsCatalog catalog) {
     	CatalogVO dto = new CatalogVO();

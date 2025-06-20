@@ -79,7 +79,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
         dynamicPage.setPageId(IdUtils.getSnowflakeId());
         this.save(dynamicPage);
 
-        this.registerDynamicPageMapping(dynamicPage);
+        this.registerDynamicPageMapping(dynamicPage.getCode(), dynamicPage.getPath());
 
         dynamicPageHelper.updateCache(dynamicPage);
     }
@@ -91,13 +91,18 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
         CmsDynamicPage dbDynamicPage = this.getById(dynamicPage.getPageId());
         Assert.notNull(dbDynamicPage, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageId", dynamicPage.getPageId()));
 
+        String oldPath = dbDynamicPage.getPath();
+        String oldCode = dbDynamicPage.getCode();
+
         dbDynamicPage.setName(dynamicPage.getName());
         dbDynamicPage.setCode(dynamicPage.getCode());
         dbDynamicPage.setDescription(dynamicPage.getDescription());
         dbDynamicPage.setInitDataTypes(dynamicPage.getInitDataTypes());
         dbDynamicPage.setTemplates(dynamicPage.getTemplates());
         this.updateById(dbDynamicPage);
-
+        if (!oldPath.equals(dynamicPage.getCode()) || !oldPath.equals(dynamicPage.getPath())) {
+            unregisterDynamicPageMapping(oldCode, oldPath);
+        }
         dynamicPageHelper.updateCache(dbDynamicPage);
     }
 
@@ -107,8 +112,8 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
         this.removeByIds(dynamicPages);
 
         dynamicPages.forEach(dynamicPage -> {
-            this.unregisterDynamicPageMapping(dynamicPage);
             dynamicPageHelper.clearCache(dynamicPage);
+            this.unregisterDynamicPageMapping(dynamicPage.getCode(), dynamicPage.getPath());
         });
     }
 
@@ -118,25 +123,34 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
                         .or().eq(CmsDynamicPage::getCode, dynamicPage.getCode()))
                 .ne(IdUtils.validate(dynamicPage.getPageId()), CmsDynamicPage::getPageId, dynamicPage.getPageId())
                 .count();
-        Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception(dynamicPage.getPath() + "||" + dynamicPage.getPath()));
+        Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception(dynamicPage.getPath()));
         // 校验路径是冲突
         if (!IdUtils.validate(dynamicPage.getPageId())) {
-            for (RequestMappingHandlerMapping mapping : allRequestMapping) {
-                Set<RequestMappingInfo> requestMappingInfos = mapping.getHandlerMethods().keySet();
-                for (RequestMappingInfo requestMappingInfo : requestMappingInfos) {
-                    Assert.isFalse(requestMappingInfo.getPatternValues().contains(dynamicPage.getPath()),
-                            () -> new GlobalException("Conflict request handler mapping: " + dynamicPage.getPath()));
-                }
-            }
+            Assert.isFalse(isRequestMappingExists(dynamicPage),
+                    () -> new GlobalException("Conflict request handler mapping: " + dynamicPage.getPath()));
         }
     }
 
-    private void registerDynamicPageMapping(CmsDynamicPage dynamicPage) {
+    @Override
+    public boolean isRequestMappingExists(CmsDynamicPage dynamicPage) {
+        for (RequestMappingHandlerMapping mapping : allRequestMapping) {
+            Set<RequestMappingInfo> requestMappingInfos = mapping.getHandlerMethods().keySet();
+            for (RequestMappingInfo requestMappingInfo : requestMappingInfos) {
+                if (requestMappingInfo.getPatternValues().contains(dynamicPage.getPath())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void registerDynamicPageMapping(String code, String path) {
         try {
             RequestMappingInfo.Builder builder = RequestMappingInfo
-                    .paths(dynamicPage.getPath())
+                    .paths(path)
                     .methods(RequestMethod.GET)
-                    .mappingName(dynamicPage.getCode());
+                    .mappingName(code);
             RequestMappingInfo mappingInfo = builder.options(this.dynamicPageRequestMapping.getBuilderConfiguration()).build();
 
             DynamicPageFrontController handler = SpringUtils.getBean(DynamicPageFrontController.class);
@@ -148,12 +162,13 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
         }
     }
 
-    private void unregisterDynamicPageMapping(CmsDynamicPage dynamicPage) {
+    @Override
+    public void unregisterDynamicPageMapping(String code, String path) {
         try {
             RequestMappingInfo.Builder builder = RequestMappingInfo
-                    .paths(dynamicPage.getPath())
+                    .paths(path)
                     .methods(RequestMethod.GET)
-                    .mappingName(dynamicPage.getCode());
+                    .mappingName(code);
             RequestMappingInfo mappingInfo = builder.options(this.dynamicPageRequestMapping.getBuilderConfiguration()).build();
 
             this.dynamicPageRequestMapping.unregisterMapping(mappingInfo);
@@ -168,7 +183,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
         this.list().forEach(dynamicPage -> {
             dynamicPageHelper.updateCache(dynamicPage);
 
-            this.registerDynamicPageMapping(dynamicPage);
+            this.registerDynamicPageMapping(dynamicPage.getCode(), dynamicPage.getPath());
         });
     }
 
@@ -206,7 +221,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
                 for (String initDataType : dynamicPage.getInitDataTypes()) {
                     IDynamicPageInitData initData = dynamicPageHelper.getDynamicPageInitData(initDataType);
                     if (Objects.nonNull(initData)) {
-                        initData.initTemplateData(templateContext, parameters);
+                        initData.initTemplateData(templateContext, dynamicPage.getPath(), parameters);
                     }
                 }
             }

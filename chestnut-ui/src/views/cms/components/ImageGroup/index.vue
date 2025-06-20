@@ -28,7 +28,7 @@
       v-if="showImageViewer" 
       :on-close="handleImageViewerClose"
       :initial-index="curIndex" 
-      :url-list="imageSrcList">
+      :url-list="originalSrcList">
     </el-image-viewer>
     <cms-resource-dialog 
       :open.sync="openResourceDialog"
@@ -40,7 +40,7 @@
   </div>
 </template>
 <script>
-import { setUrlParameter } from "@/utils/chestnut";
+import * as utils from "@/utils/chestnut";
 import CMSResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import ElImageViewer from "element-ui/packages/image/src/image-viewer"
 
@@ -107,6 +107,19 @@ export default {
     },
     src(newVal) {
       this.imageSrcList = newVal;
+      this.originalSrcList = []
+      for (let i = 0; i < newVal.length; i++) {
+        if (newVal[i].indexOf("/preview/") > -1) {
+          let fileName = utils.substringAfterLast(newVal[i], "/");
+          if (fileName.indexOf('_') > -1) {
+            let name = utils.substringBeforeLast(fileName, "_") + "." + utils.substringAfterLast(fileName, ".");
+            let prefix = utils.substringBeforeLast(newVal[i], "/");
+            this.originalSrcList.push(prefix + "/" + name)
+          }
+        } else {
+          this.originalSrcList.push(newVal[i]);
+        }
+      }
     },
     imagePathList(newVal) {
       this.$emit("change", newVal);
@@ -116,6 +129,7 @@ export default {
     return {
       imagePathList: this.path,
       imageSrcList: this.src,
+      originalSrcList: [],
       openResourceDialog: false,
       showImageViewer: false,
       curIndex: -1,

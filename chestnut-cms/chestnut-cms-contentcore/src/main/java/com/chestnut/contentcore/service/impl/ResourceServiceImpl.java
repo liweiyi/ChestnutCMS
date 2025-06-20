@@ -18,15 +18,15 @@ package com.chestnut.contentcore.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.storage.FileStorageService;
 import com.chestnut.common.storage.IFileStorageType;
-import com.chestnut.common.storage.StorageReadArgs;
-import com.chestnut.common.storage.StorageReadArgs.StorageReadArgsBuilder;
-import com.chestnut.common.storage.exception.StorageErrorCode;
 import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
+import com.chestnut.common.utils.image.ImageHelper;
 import com.chestnut.common.utils.image.ImageUtils;
 import com.chestnut.contentcore.core.IResourceStat;
 import com.chestnut.contentcore.core.IResourceType;
+import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
 import com.chestnut.contentcore.core.impl.ResourceType_Image;
 import com.chestnut.contentcore.domain.CmsResource;
@@ -34,32 +34,35 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.ResourceUploadDTO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.mapper.CmsResourceMapper;
-import com.chestnut.contentcore.properties.FileStorageArgsProperty;
-import com.chestnut.contentcore.properties.FileStorageArgsProperty.FileStorageArgs;
 import com.chestnut.contentcore.properties.FileStorageTypeProperty;
+import com.chestnut.contentcore.properties.ThumbnailHeightProperty;
+import com.chestnut.contentcore.properties.ThumbnailWidthProperty;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.*;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 
 @Service
 @RequiredArgsConstructor
 public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResource> implements IResourceService {
 
-	private final Map<String, IFileStorageType> fileStorageTypes;
+	private final FileStorageService fileStorageService;
 
 	private final List<IResourceStat> resourceStats;
 
@@ -144,21 +147,40 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		CmsResource resource = this.getById(dto.getResourceId());
 		Assert.notNull(resource, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("resourceId", dto.getResourceId()));
 
+		String oldResourceType = resource.getResourceType();
+		String oldPath = resource.getPath();
+
 		resource.setResourceType(resourceType.getId());
 		resource.setFileName(dto.getFile().getOriginalFilename());
 		resource.setName(StringUtils.isEmpty(dto.getName()) ? dto.getFile().getOriginalFilename() : dto.getName());
 		resource.setSuffix(suffix);
-
 		String fileName = resource.getResourceId() + StringUtils.DOT + suffix;
-		String path = StringUtils.substringBeforeLast(resource.getPath(), "/") + fileName;
-
+		String path = StringUtils.substringBeforeLast(resource.getPath(), "/") + "/" + fileName;
 		resource.setPath(path);
 		resource.updateBy(dto.getOperator().getUsername());
 		resource.setRemark(dto.getRemark());
+		// 删除原文件
+		if (!resource.getPath().equals(oldPath)) {
+			String fileStorageType = FileStorageTypeProperty.getValue(dto.getSite().getConfigProps());
+			IFileStorageType fst = fileStorageService.getFileStorageType(fileStorageType);
+			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, dto.getSite());
+			deleteResource(oldPath, oldResourceType, fileStorageHelper);
+		}
 		// 处理资源
 		this.processResource(resource, resourceType, dto.getSite(), dto.getFile().getBytes());
 		this.updateById(resource);
 		return resource;
+	}
+
+	private void deleteResource(String path, String resourceType, FileStorageHelper fileStorageHelper) {
+		fileStorageHelper.remove(path);
+		// 删除图片缩略图
+		if (ResourceType_Image.ID.equals(resourceType)) {
+			String fileName = StringUtils.substringAfterLast(path, "/");
+			final String fileNamePrefix = StringUtils.substringBeforeLast(fileName, ".") + "_";
+			path = StringUtils.substringBeforeLast(path, "/") + "/" + fileNamePrefix;
+			fileStorageHelper.removeByPrefix(path);
+		}
 	}
 
 	@Override
@@ -234,17 +256,36 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		resource.setWidth(0);
 		resource.setHeight(0);
 		resource.setFileSize((long) bytes.length);
-		// 读取存储配置
-		String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
-		IFileStorageType fst = getFileStorageType(fileStorageType);
-		FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
-		// 写入磁盘/OSS
-		fileStorageHelper.write(resource.getPath(), bytes);
-		// 设置资源参数
-		resource.setStorageType(fileStorageType);
-		resource.setInternalUrl(InternalDataType_Resource.getInternalUrl(resource));
-		// 默认缩略图处理
-		resourceType.asyncProcess(resource);
+		// 保存临时文件处理
+		String tempDirectory = ResourceUtils.getResourceTempDirectory(site);
+		File tempFile = new File(tempDirectory + resource.getPath());
+		FileUtils.writeByteArrayToFile(tempFile, bytes);
+		List<File> processed = resourceType.process(resource, tempFile);
+		try {
+			// 读取存储配置
+			String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
+			IFileStorageType fst = fileStorageService.getFileStorageType(fileStorageType);
+			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
+			// 写入磁盘/OSS
+			fileStorageHelper.write(resource.getPath(), tempFile);
+			if (!processed.isEmpty()) {
+				String prefix = StringUtils.substringBeforeLast(resource.getPath(), "/") + "/";
+				for (File f : processed) {
+					fileStorageHelper.write(prefix + f.getName(), f);
+				}
+			}
+			// 设置资源参数
+			resource.setStorageType(fileStorageType);
+			resource.setInternalUrl(InternalDataType_Resource.getInternalUrl(resource));
+			// 异步后续处理
+			resourceType.asyncProcess(resource);
+		} finally {
+			// 删除临时文件
+			FileUtils.delete(tempFile);
+			for (File file : processed) {
+				FileUtils.delete(file);
+			}
+		}
 	}
 
 	@Override
@@ -252,26 +293,13 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		List<CmsResource> resources = this.listByIds(resourceIds);
 		if (!resources.isEmpty()) {
 			CmsSite site = siteService.getSite(resources.get(0).getSiteId());
-			String siteRoot = SiteUtils.getSiteResourceRoot(site);
+			String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
+			IFileStorageType fst = fileStorageService.getFileStorageType(fileStorageType);
+			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
 			resources.forEach(r -> {
-				// 删除资源文件
-				try {
-					File file = new File(siteRoot + r.getPath());
-					FileUtils.delete(file);
-					final String fileNamePrefix = StringUtils.substringBeforeLast(file.getName(), ".");
-					// 删除图片缩略图
-					File[] others = file.getParentFile().listFiles(
-							(dir, name) -> name.startsWith(fileNamePrefix)
-					);
-					if (Objects.nonNull(others)) {
-						for (File f : others) {
-							FileUtils.delete(f);
-						}
-					}
-				} catch (IOException e) {
-					log.error("Delete resource file failed: " + r.getPath());
-				}
-				// 删除数据库记录
+				// 删除文件
+				deleteResource(r.getPath(), r.getResourceType(), fileStorageHelper);
+                // 删除数据库记录
 				this.removeById(r.getResourceId());
 			});
 		}
@@ -287,29 +315,13 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 	@Override
 	public void downloadResource(CmsResource resource, HttpServletResponse response) {
 		CmsSite site = this.siteService.getSite(resource.getSiteId());
-		IFileStorageType storagetType = this.getFileStorageType(resource.getStorageType());
-		StorageReadArgsBuilder builder = StorageReadArgs.builder();
-		FileStorageArgs fileStorageArgs = FileStorageArgsProperty.getValue(site.getConfigProps());
-		if (fileStorageArgs != null) {
-			builder.endpoint(fileStorageArgs.getEndpoint())
-					.accessKey(fileStorageArgs.getAccessKey())
-					.accessSecret(fileStorageArgs.getAccessSecret())
-					.bucket(fileStorageArgs.getBucket())
-					.path(resource.getPath());
-		}
-		InputStream is = storagetType.read(builder.build());
-		try {
+		IFileStorageType storagetType = fileStorageService.getFileStorageType(resource.getStorageType());
+		FileStorageHelper fileStorageHelper = FileStorageHelper.of(storagetType, site);
+		try (InputStream is = fileStorageHelper.read(resource.getPath())) {
 			IOUtils.copy(is, response.getOutputStream());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	@Override
-	public IFileStorageType getFileStorageType(String type) {
-		IFileStorageType fileStorageType = fileStorageTypes.get(IFileStorageType.BEAN_NAME_PREIFX + type);
-		Assert.notNull(fileStorageType, () -> StorageErrorCode.UNSUPPORTED_STORAGE_TYPE.exception(type));
-		return fileStorageType;
 	}
 
 	/**
@@ -359,13 +371,83 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		return sb.toString();
 	}
 
+	@Override
+	public void createThumbnailIfNotExists(InternalURL internalUrl, int width, int height) throws IOException {
+		if (!InternalDataType_Resource.ID.equals(internalUrl.getType())
+				|| !ResourceType_Image.isImage(internalUrl.getPath())) {
+			return;  // 非图片资源忽略
+		}
+		Long siteId = MapUtils.getLong(internalUrl.getParams(), InternalDataType_Resource.InternalUrl_Param_SiteId);
+		CmsSite site = siteService.getSite(siteId);
+
+		String filePath = internalUrl.getPath();
+		String thumbnailPath = ImageUtils.getThumbnailFileName(filePath, width, height);
+
+		String storageTypeId = FileStorageTypeProperty.getValue(site.getConfigProps());
+		IFileStorageType fst = fileStorageService.getFileStorageType(storageTypeId);
+		FileStorageHelper storageHelper = FileStorageHelper.of(fst, site);
+		if (storageHelper.exists(thumbnailPath)) {
+			return;
+		}
+		CmsResource resource = this.getById(internalUrl.getId());
+		if (Objects.nonNull(resource)) {
+			try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+				try (InputStream is = storageHelper.read(resource.getPath())) {
+					String format = FileExUtils.getExtension(resource.getPath());
+					ImageHelper.of(is).format(format).resize(width, height).to(os);
+				}
+				storageHelper.write(thumbnailPath, os.toByteArray());
+			}
+		}
+	}
+
+	@Override
+	public void dealDefaultThumbnail(CmsSite site, List<String> internalUrls, Consumer<List<String>> consumer) {
+		if (internalUrls.isEmpty()) {
+			return;
+		}
+		int w = ThumbnailWidthProperty.getValue(site.getConfigProps());
+		int h = ThumbnailHeightProperty.getValue(site.getConfigProps());
+		if (w > 0 && h > 0) {
+			List<String> thumbnails = dealThumbnails(internalUrls, w, h);
+			consumer.accept(thumbnails);
+		}
+	}
+
+	@Override
+	public void dealDefaultThumbnail(CmsSite site, String internalUrl, Consumer<String> consumer) {
+		if (StringUtils.isEmpty(internalUrl)) {
+			return;
+		}
+		dealDefaultThumbnail(site, List.of(internalUrl), thumbnails -> consumer.accept(thumbnails.get(0)));
+	}
+
+	private List<String> dealThumbnails(List<String> internalUrls, int w, int h) {
+		return internalUrls.stream().map(iurl -> {
+			try {
+				InternalURL internalURL = InternalUrlUtils.parseInternalUrl(iurl);
+				if (Objects.nonNull(internalURL)) {
+					// 先检查是否存在缩略图，如果不存在需要生成
+					createThumbnailIfNotExists(internalURL, w, h);
+					// 返回缩略图路径
+					return ImageUtils.getThumbnailFileName(InternalUrlUtils.getActualPreviewUrl(internalURL), w, h);
+				}
+				// 非内部链接返回原路径
+				return iurl;
+			} catch (Exception e) {
+				log.error("Generate thumbnail fail: " + iurl, e);
+				return iurl;
+			}
+		}).toList();
+	}
+
 	/**
 	 * 统计资源引用
 	 */
 	public void statResourceUsage(Long siteId) throws InterruptedException {
 		Map<Long, Long> quotedResources = new HashMap<>();
 		for (IResourceStat resourceStat : this.resourceStats) {
-				resourceStat.statQuotedResource(siteId, quotedResources);
+			resourceStat.statQuotedResource(siteId, quotedResources);
 		}
 	}
 }

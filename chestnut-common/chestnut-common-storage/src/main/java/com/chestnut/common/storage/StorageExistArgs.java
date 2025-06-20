@@ -15,29 +15,12 @@
  */
 package com.chestnut.common.storage;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
-public class StorageExistArgs {
-	
-	/**
-	 * 访问API接口地址
-	 */
-	private String endpoint;
-
-	/**
-	 * 用户名
-	 */
-	private String accessKey;
-
-	/**
-	 * 访问密码
-	 */
-	private String accessSecret;
+public class StorageExistArgs extends StorageBasicArgs {
 	
 	/**
 	 * 存储空间名
@@ -48,4 +31,54 @@ public class StorageExistArgs {
 	 * 路径
 	 */
 	private String path;
+
+	public static class Builder {
+
+		private String endpoint;
+		private String region;
+		private String accessKey;
+		private String accessSecret;
+		private String bucket;
+		private String path;
+
+		public StorageExistArgs build() {
+			StorageExistArgs storageExistArgs = new StorageExistArgs();
+			storageExistArgs.setEndpoint(endpoint);
+			storageExistArgs.setRegion(region);
+			storageExistArgs.setAccessKey(accessKey);
+			storageExistArgs.setAccessSecret(accessSecret);
+			storageExistArgs.setBucket(bucket);
+			storageExistArgs.setPath(path);
+			return storageExistArgs;
+		}
+
+		public Builder endpoint(String endpoint) {
+			this.endpoint = endpoint;
+			return this;
+		}
+		public Builder region(String region) {
+			this.region = region;
+			return this;
+		}
+		public Builder accessKey(String accessKey) {
+			this.accessKey = accessKey;
+			return this;
+		}
+		public Builder accessSecret(String accessSecret) {
+			this.accessSecret = accessSecret;
+			return this;
+		}
+		public Builder bucket(String bucket) {
+			this.bucket = bucket;
+			return this;
+		}
+		public Builder path(String path) {
+			this.path = path;
+			return this;
+		}
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
 }

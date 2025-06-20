@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.publish.staticize;
 
 import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.IdUtils;
@@ -30,9 +31,12 @@ import com.chestnut.contentcore.template.impl.SiteTemplateType;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
@@ -100,7 +104,11 @@ public class SiteStaticizeType implements IStaticizeType {
             long s = System.currentTimeMillis();
             context.setDirectory(SiteUtils.getSiteRoot(site, publishPipeCode));
             context.setFirstFileName("index" + StringUtils.DOT + site.getStaticSuffix(publishPipeCode));
-            this.staticizeService.process(context);
+            StringWriter writer = new StringWriter();
+            this.staticizeService.process(context, writer);
+            String text = FreeMarkerUtils.createBy(writer.toString());
+            String filePath = context.getStaticizeFilePath(context.getPageIndex());
+            FileUtils.writeStringToFile(new File(filePath), text, StandardCharsets.UTF_8);
             logger.debug("[{}]首页模板解析：{}，耗时：{}ms", publishPipeCode, site.getName(), (System.currentTimeMillis() - s));
         } catch (Exception e) {
             logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}][{1}]站点首页解析失败：{2}",

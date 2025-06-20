@@ -15,15 +15,14 @@
  */
 package com.chestnut.cms.word.properties;
 
-import java.util.Map;
-
-import org.apache.commons.collections4.MapUtils;
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IProperty;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
  * 应用热词分组IDs
@@ -35,8 +34,9 @@ public class HotWordGroupsProperty implements IProperty {
 	
 	static UseType[] UseTypes = new UseType[] { UseType.Site, UseType.Catalog };
 	
-	private static final String[] DEFAULT_VALUE = {};
-	
+	private static final String DEFAULT_VALUE = "[]";
+	private static final String[] EMPTY_VALUE = {};
+
 	@Override
 	public UseType[] getUseTypes() {
 		return UseTypes;
@@ -53,7 +53,7 @@ public class HotWordGroupsProperty implements IProperty {
 	}
 	
 	@Override
-	public String[] defaultValue() {
+	public String defaultValue() {
 		return DEFAULT_VALUE;
 	}
 	
@@ -63,7 +63,7 @@ public class HotWordGroupsProperty implements IProperty {
 		if (StringUtils.isNotEmpty(string)) {
 			return JacksonUtils.from(string, String[].class);
 		}
-		return defaultValue();
+		return EMPTY_VALUE;
 	}
 	
 	public static String[] getHotWordGroupCodes(Map<String, String> firstProps, Map<String, String> secondProps) {
@@ -71,6 +71,6 @@ public class HotWordGroupsProperty implements IProperty {
 		if (StringUtils.isNotEmpty(propValue)) {
 			return JacksonUtils.from(propValue, String[].class);
 		}
-		return DEFAULT_VALUE;
+		return EMPTY_VALUE;
 	}
 }

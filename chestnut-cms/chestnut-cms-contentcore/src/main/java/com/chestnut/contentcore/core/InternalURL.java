@@ -95,7 +95,7 @@ public class InternalURL {
 			this.params = new HashMap<>();
 		}
 		if (key.equals("id")) {
-			throw new RuntimeException("内部链接自定义参数不可使用固定参数：id");
+			throw new RuntimeException("Conflict with fixed parameter: id.");
 		}
 		this.params.put(key, value);
 		return this.params;
@@ -107,24 +107,28 @@ public class InternalURL {
 		String content = url.substring(IURLProtocol.length());
 		int i = content.lastIndexOf("?");
 		if (i < 0) {
-			throw new InternalUrlParseException("Invalid iurl: missing parameters.");
+			throw new InternalUrlParseException("missing parameters.");
 		}
-		// 默认iurl的路径部分就是内部数据类型，如果参数中含有type则使用参数type，路径部分作为path
-		String type = content.substring(0, i);
-		iurl.setType(type);
+		try {
+			// 默认iurl的路径部分就是内部数据类型，如果参数中含有type则使用参数type，路径部分作为path
+			String type = content.substring(0, i);
+			iurl.setType(type);
 
-		String params = content.substring(i + 1);
-		Map<String, String> args = StringUtils.splitToMap(params, "&", "=");
-		if (args.containsKey("type")) {
-			iurl.setPath(iurl.getType());
-			iurl.setType(args.get("type"));
-			args.remove("type");
+			String params = content.substring(i + 1);
+			Map<String, String> args = StringUtils.splitToMap(params, "&", "=");
+			if (args.containsKey("type")) {
+				iurl.setPath(iurl.getType());
+				iurl.setType(args.get("type"));
+				args.remove("type");
+			}
+			iurl.setId(Long.valueOf(args.get("id")));
+			args.remove("id");
+			// 自定义参数
+			iurl.setParams(args);
+			return iurl;
+		} catch (Exception e) {
+			throw new InternalUrlParseException(url, e);
 		}
-		iurl.setId(Long.valueOf(args.get("id")));
-		args.remove("id");
-		// 自定义参数
-		iurl.setParams(args);
-		return iurl;
 	}
 
 	public String toIUrl() {

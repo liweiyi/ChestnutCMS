@@ -26,9 +26,7 @@ import org.springframework.util.ResourceUtils;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 import java.util.*;
 
@@ -167,5 +165,21 @@ public class ImageUtils {
             return false;
         }
         return isBase64Image(v.toString());
+    }
+
+    public static BufferedImage base64ToImage(String base64Str) throws IOException {
+        Base64.Decoder decoder = Base64.getDecoder();
+        byte[] bytes = decoder.decode(base64Str);
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes)) {
+            return ImageIO.read(inputStream);
+        }
+    }
+
+    public static String imageToBase64(BufferedImage templateImage, String imageFormat) throws IOException {
+        Base64.Encoder encoder = Base64.getEncoder();
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            ImageIO.write(templateImage, imageFormat, os);
+            return encoder.encodeToString(os.toByteArray()).trim();
+        }
     }
 }

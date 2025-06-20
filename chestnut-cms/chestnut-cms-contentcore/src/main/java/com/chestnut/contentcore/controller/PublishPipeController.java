@@ -29,7 +29,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.dto.PublishPipeProp;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
@@ -71,8 +71,8 @@ public class PublishPipeController extends BaseRestController {
     @GetMapping("/selectData")
     public R<?> bindSelectData() {
         CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
-        List<PublishPipeProp> datalist = this.publishPipeService.getPublishPipes(site.getSiteId())
-                .stream().map(p -> PublishPipeProp.newInstance(p.getCode(), p.getName(), null))
+        List<PublishPipeProps> datalist = this.publishPipeService.getPublishPipes(site.getSiteId())
+                .stream().map(p -> PublishPipeProps.newInstance(p.getCode(), p.getName(), null))
                 .collect(Collectors.toList());
         return this.bindDataTable(datalist);
     }

@@ -109,11 +109,15 @@ export default {
     }
   },
   Error: {
-    Err401: "401 Error!",
-    NoPermission: "Permission denied!",
-    NoPermissionTip: "Sorry, you do not have access rights. Please do not engage in illegal operations! You can return to the main page.",
-    GoHome: "Back Home",
-    Err404: "404 Error!",
+    Err401: "[401] Forbidden!",
+    Forbidden: "Unauthenticated!",
+    ForbiddenTip: "Sorry, you have not been authenticated yet. Please try logging in again.",
+    GoLogin: "Go to the login page",
+    Err403: "[403] Deny access!",
+    NoPermission: "Deny access!",
+    NoPermissionTip: "Sorry, you do not have access permission. Please apply for relevant resource access permission from the administrator.",
+    GoHome: "Go to the home page",
+    Err404: "[404] The access resource does not exist!",
     Err404Tip: "Sorry, the page you are looking for does not exist. Try checking for errors in the URL, then press the refresh button on the browser or try to find other content in our application.",
     PageNotFound: "Page not found!",
     Unknown: 'Unknown system error, please notify then administrator!'
@@ -149,6 +153,7 @@ export default {
     Basic: 'Basic',
     ResetPassword: 'Reset Password',
     NickName: 'Nick Name',
+    RealName: 'Real Name',
     Gender: 'Gender',
     GenderMale: 'Male',
     GenderFemale: 'Female',
@@ -254,6 +259,7 @@ export default {
       UserId: "User ID",
       UserName: "User Name",
       NickName: "Nick Name",
+      RealName: "Real Name",
       Dept: "Dept",
       PhoneNumber: "Phone Num",
       Email: "Email",
@@ -287,6 +293,7 @@ export default {
         DeptName: "Input deptment name.",
         UserName: "Input user name.",
         NickName: "Input nick name",
+        RealName: "Input real name",
         PhoneNumber: "Input phone number.",
         Status: "User Status",
         Dept: "Select deptment",
@@ -954,6 +961,9 @@ export default {
       PrefixMode_Absolute: "Absolute",
       PrefixMode_Relative: "Relative",
       ErrPageLink: "Error Page Link",
+      Dashboard: {
+        MissingSiteUrl: "The site domain not configured."
+      },
       Tab: {
         Basic: "Basic Information",
         Extend: "Extend Config",
@@ -991,6 +1001,7 @@ export default {
         ThumbnailHeight: "Thumbnail Height",
         ThumbnailSizeTip: "Do not generate thumbnails when width/height is 0",
         StorageType: "Storage Type",
+        StorageTip: "After changing the storage, you need to manually synchronize resource files to the new storage.",
         Local: "Local",
         AliyunOSS: "AliyunOSS",
         TencentCOS: "TencentCOS",
@@ -1382,6 +1393,7 @@ export default {
     },
     Block: {
       Basic: "Basic",
+      PublishPipeProp: "Publish Pipe Configuration",
       ManualList: "Custom List",
       Title: "Title",
       AddRow: "Add Row",
@@ -1980,6 +1992,7 @@ export default {
   Deploy: {
     Cert: {
       Domain: "Domain",
+      RR: "RR",
       Issuer: "Authority",
       IssueTime: "Issue Time",
       ExpireTime: "Expire Time",
@@ -1998,6 +2011,8 @@ export default {
       Applying: "Waiting for certificate application...",
       Authroizating: "Authorizating...",
       Servers: "Synchronize to server",
+      SyncToServer: "Sync",
+      Syncing: "Syncing certificate to servers...",
       Placeholder: {
         Domain: "Input domain..."
       }

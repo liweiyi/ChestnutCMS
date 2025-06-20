@@ -15,46 +15,34 @@
  */
 package com.chestnut.customform.controller.front;
 
-import com.chestnut.common.captcha.CaptchaType;
-import com.chestnut.common.config.CaptchaConfig;
+import com.chestnut.common.captcha.CaptchaData;
+import com.chestnut.common.captcha.CaptchaService;
+import com.chestnut.common.captcha.ICaptchaType;
+import com.chestnut.common.captcha.math.MathCaptchaType;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.*;
 import com.chestnut.customform.CmsCustomFormMetaModelType;
 import com.chestnut.customform.CustomFormConsts;
-import com.chestnut.customform.cache.CustomFormCaptchaMonitoredCache;
 import com.chestnut.customform.domain.CmsCustomForm;
 import com.chestnut.customform.exception.CustomFormErrorCode;
-import com.chestnut.customform.fixed.config.CustomFormCaptchaExpireSeconds;
 import com.chestnut.customform.service.ICustomFormApiService;
 import com.chestnut.customform.service.ICustomFormService;
 import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.domain.vo.ImageCaptchaVO;
-import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.LongId;
-import com.google.code.kaptcha.Producer;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
-import org.springframework.util.FastByteArrayOutputStream;
 import org.springframework.web.bind.annotation.*;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -73,14 +61,12 @@ public class CustomFormApiController extends BaseRestController {
 
 	private final ICustomFormApiService customFormApiService;
 
-	private final CustomFormCaptchaMonitoredCache captchaCache;
-
-	private final Map<String, Producer> captchaProducers;
-
 	private final SysProperties properties;
 
-	@GetMapping("/captchaImage")
-	public R<?> getCaptchaImage(@RequestParam @LongId Long formId, HttpServletRequest request) {
+	private final CaptchaService captchaService;
+
+	@GetMapping("/captcha")
+	public R<?> getCaptcha(@RequestParam @LongId Long formId, HttpServletRequest request) {
 		CmsCustomForm form = this.customFormService.getById(formId);
 		Assert.notNull(form, CustomFormErrorCode.FORM_NOT_FOUND::exception);
 		// 是否需要验证码
@@ -93,40 +79,12 @@ public class CustomFormApiController extends BaseRestController {
 		}
 		String uuid = CustomFormConsts.tryToGetUUID(request);
 		Assert.notEmpty(uuid, CustomFormErrorCode.MISSING_UUID::exception);
-		// 保存验证码信息
-		String verifyKey = CustomFormCaptchaMonitoredCache.CACHE_PREFIX + uuid;
-
-		String capStr;
-		String code;
-		BufferedImage image;
-
-		Producer captchaProducer = captchaProducers.get(CaptchaConfig.BEAN_PREFIX + this.properties.getCaptchaType());
-		Assert.notNull(captchaProducer, () -> SysErrorCode.CAPTCHA_CONFIG_ERR.exception(this.properties.getCaptchaType()));
-		// 生成验证码
-		String captchaType = properties.getCaptchaType();
-		if (CaptchaType.MATH.equals(captchaType)) {
-			String capText = captchaProducer.createText();
-			capStr = capText.substring(0, capText.lastIndexOf("@"));
-			code = capText.substring(capText.lastIndexOf("@") + 1);
-			image = captchaProducer.createImage(capStr);
-		} else if (CaptchaType.CHAR.equals(captchaType)) {
-			capStr = code = captchaProducer.createText();
-			image = captchaProducer.createImage(capStr);
-		} else {
-			throw new GlobalException("Unknown captcha type: " + captchaType);
-		}
-
-		Integer expireSeconds = CustomFormCaptchaExpireSeconds.getSeconds();
-		captchaCache.setCache(verifyKey, code, expireSeconds, TimeUnit.SECONDS);
-
-		try(FastByteArrayOutputStream os = new FastByteArrayOutputStream()) {
-			ImageIO.write(image, "jpg", os);
-			ImageCaptchaVO vo = ImageCaptchaVO.builder().captchaEnabled(true).uuid(uuid)
-					.img(Base64.getEncoder().encodeToString(os.toByteArray())).build();
-			return R.ok(vo);
-		} catch (IOException e) {
-			return R.fail(e.getMessage());
-		}
+		// TODO 目前固定使用数学计算验证码，待修改成自定义表单后台配置
+		ICaptchaType captchaType = captchaService.getCaptchaType(MathCaptchaType.TYPE);
+		CaptchaData captchaData = new CaptchaData(MathCaptchaType.TYPE);
+		captchaData.setToken(uuid);
+		Object captcha = captchaType.create(captchaData);
+		return R.ok(captcha);
 	}
 
 	@IgnoreDemoMode
@@ -165,16 +123,13 @@ public class CustomFormApiController extends BaseRestController {
 		return R.ok();
 	}
 
-	private void validateCaptcha(String code, String uuid) {
-		Assert.notEmpty(code, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("captcha"));
-
-		String cacheKey = CustomFormCaptchaMonitoredCache.CACHE_PREFIX + Objects.requireNonNullElse(uuid, StringUtils.EMPTY);
-		String cacheValue = captchaCache.getCache(cacheKey);
-		// 过期判断
-		Assert.notNull(cacheValue, CommonErrorCode.CAPTCHA_EXPIRED::exception);
-		// 未过期判断是否与输入验证码一致
-		Assert.isTrue(StringUtils.equals(code, cacheValue), CommonErrorCode.INVALID_CAPTCHA::exception);
-		// 移除缓存
-		captchaCache.deleteCache(cacheKey);
+	private void validateCaptcha(String captchaJson, String uuid) {
+		Assert.notEmpty(captchaJson, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("captcha"));
+		CaptchaData captchaData = JacksonUtils.from(captchaJson, CaptchaData.class);
+		captchaData.setToken(uuid);
+		ICaptchaType captchaType = captchaService.getCaptchaType(MathCaptchaType.TYPE);
+		if (!captchaType.isTokenValidated(captchaData)) {
+			throw CommonErrorCode.INVALID_CAPTCHA.exception();
+		}
 	}
 }

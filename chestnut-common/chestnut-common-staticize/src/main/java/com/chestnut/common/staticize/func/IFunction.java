@@ -36,6 +36,13 @@ public interface IFunction {
 	 * @return
 	 */
 	String getDesc();
+
+	/**
+	 * 支持版本
+	 */
+	default String supportVersion() {
+		return "";
+	}
 	
 	/**
 	 * 获取函数参数定义列表

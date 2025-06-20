@@ -66,10 +66,11 @@ public class DynamicCoreHandler implements ICoreDataHandler {
                     data.setSiteId(context.getSite().getSiteId());
                     data.createBy(context.getOperator());
                     Long count = dynamicPageService.lambdaQuery().eq(CmsDynamicPage::getPath, data.getPath()).count();
-                    if (count > 0) {
+                    if (count > 0 || dynamicPageService.isRequestMappingExists(data)) {
                         data.setPath(data.getPath() + "_" + data.getPageId());
                     }
                     dynamicPageService.save(data);
+                    dynamicPageService.registerDynamicPageMapping(data.getCode(), data.getPath());
                 } catch (Exception e) {
                     AsyncTaskManager.addErrMessage("导入自定义动态模板页面失败：" + data.getName() + "[" + data.getCode() + "]");
                     log.error("Import dynamic page failed: {}", data.getCode(), e);

@@ -17,6 +17,7 @@ package com.chestnut.contentcore.util;
 
 import cn.dev33.satoken.config.SaTokenConfig;
 import com.chestnut.common.staticize.FreeMarkerUtils;
+import com.chestnut.common.staticize.StaticizeConstants;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.ReflectASMUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -44,7 +45,7 @@ public class TemplateUtils {
 	/**
 	 * 模板变量：请求参数
 	 */
-	public final static String TemplateVariable_Request = "Request";
+	public final static String TemplateVariable_Request = StaticizeConstants.TemplateVariable_Request;
 
 	/**
 	 * 模板变量：<@cms_include>标签file属性请求参数，下个大版本移除
@@ -252,33 +253,6 @@ public class TemplateUtils {
 		}
 	}
 
-	public static String appendTokenParameter(String url, Environment env) throws TemplateModelException {
-		if (StringUtils.isEmpty(url)) {
-			return url;
-		}
-		String tokenName = FreeMarkerUtils.getStringVariable(env, TemplateUtils.TemplateVariable_TokenName);
-		String token = FreeMarkerUtils.getStringVariable(env, TemplateUtils.TemplateVariable_Token);
-		if (url.contains("?")) {
-			return url + "&" + tokenName + "=" + token;
-		}
-		return url + "?" + token + "=" + token;
-	}
-
-	public static String appendTokenParameter(String url) {
-		if (StringUtils.isEmpty(url)) {
-			return url;
-		}
-		SaTokenConfig config = StpAdminUtil.getStpLogic().getConfigOrGlobal();
-		String token = StpAdminUtil.getTokenValue();
-		if (StringUtils.isNotEmpty(config.getTokenPrefix())) {
-			token = config.getTokenPrefix() + " " + token;
-		}
-		if (url.contains("?")) {
-			return url + "&" + config.getTokenName() + "=" + token;
-		}
-		return url + "?" + config.getTokenName() + "=" + token;
-	}
-
 
 	/**
 	 * 页面区块静态文件相对路径
@@ -292,5 +266,37 @@ public class TemplateUtils {
 		return "include/" + includeTemplateName.substring(siteTemplatePath.length(),
 				includeTemplateName.length() - TemplateSuffix.getValue().length())
 				+ "." + site.getStaticSuffix(publishPipeCode);
+	}
+
+	public static String appendParam(String path, String name, String value) {
+		if (path.contains("?")) {
+			return path + "&" + name + "=" + value;
+		}
+		return path + "?" + name + "=" + value;
+	}
+
+	public static String appendPageIndexParam(String path, String pageIndex) {
+		return appendParam(path, StaticizeConstants.TemplateParam_PageIndex, pageIndex);
+	}
+
+	public static String appendTokenParameter(String url, Environment env) throws TemplateModelException {
+		if (StringUtils.isEmpty(url)) {
+			return url;
+		}
+		String tokenName = FreeMarkerUtils.getStringVariable(env, TemplateUtils.TemplateVariable_TokenName);
+		String token = FreeMarkerUtils.getStringVariable(env, TemplateUtils.TemplateVariable_Token);
+		return appendParam(url, tokenName, token);
+	}
+
+	public static String appendTokenParameter(String url) {
+		if (StringUtils.isEmpty(url)) {
+			return url;
+		}
+		SaTokenConfig config = StpAdminUtil.getStpLogic().getConfigOrGlobal();
+		String token = StpAdminUtil.getTokenValue();
+		if (StringUtils.isNotEmpty(config.getTokenPrefix())) {
+			token = config.getTokenPrefix() + " " + token;
+		}
+		return appendParam(url, config.getTokenName(), token);
 	}
 }

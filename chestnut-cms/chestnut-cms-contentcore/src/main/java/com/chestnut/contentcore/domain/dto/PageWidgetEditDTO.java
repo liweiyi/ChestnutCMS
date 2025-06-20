@@ -15,12 +15,17 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.system.validator.LongId;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -47,13 +52,19 @@ public class PageWidgetEditDTO {
     /**
      * 发布通道编码
      */
-    @NotEmpty
+    @Deprecated(since = "1.5.6", forRemoval = true)
     private String publishPipeCode;
     
     /**
      * 模板路径
      */
+    @Deprecated(since = "1.5.6", forRemoval = true)
     private String template;
+
+    /**
+     * 发布通道模板配置
+     */
+    private List<PublishPipeTemplate> templates;
     
     /**
      * 静态化目录
@@ -70,4 +81,11 @@ public class PageWidgetEditDTO {
      * 备注
      */
     private String remark;
+
+    public Map<String, String> getPublishPipeTemplateMap() {
+        if (StringUtils.isEmpty(this.templates)) {
+            return Map.of();
+        }
+        return this.templates.stream().collect(Collectors.toMap(PublishPipeTemplate::code, PublishPipeTemplate::template));
+    }
 }

@@ -18,8 +18,10 @@ package com.chestnut.contentcore.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.domain.TreeNode;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.staticize.core.TemplateContext;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.dto.*;
 
@@ -96,7 +98,13 @@ public interface ICatalogService extends IService<CmsCatalog> {
 	 * @param catalogId
 	 * @return
 	 */
-	CmsCatalog deleteCatalog(long catalogId, LoginUser operator);
+	default void deleteCatalog(long catalogId, LoginUser operator) {
+		CmsCatalog catalog = getById(catalogId);
+		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalog));
+		deleteCatalog(catalog, operator);
+	}
+
+	void deleteCatalog(CmsCatalog catalog, LoginUser operator);
 
 	/**
 	 * 获取栏目链接

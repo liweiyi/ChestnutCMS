@@ -15,19 +15,16 @@
  */
 package com.chestnut.contentcore.util;
 
-import com.chestnut.common.storage.IFileStorageType;
-import com.chestnut.common.storage.StorageListArgs;
-import com.chestnut.common.storage.StorageReadArgs;
-import com.chestnut.common.storage.StorageWriteArgs;
+import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.storage.*;
 import com.chestnut.common.storage.local.LocalFileStorageType;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.properties.FileStorageArgsProperty;
 import com.chestnut.contentcore.properties.FileStorageTypeProperty;
 import lombok.Getter;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -48,6 +45,8 @@ public class FileStorageHelper {
 
     private String endpoint;
 
+    private String region;
+
     private String pipeline;
 
     @Getter
@@ -66,9 +65,51 @@ public class FileStorageHelper {
         helper.accessSecret = args.getAccessSecret();
         helper.bucket = args.getBucket();
         helper.endpoint = args.getEndpoint();
+        helper.region = args.getRegion();
         helper.pipeline = args.getPipeline();
         helper.domain = args.getDomain();
+        helper.validate();
         return helper;
+    }
+
+    private void validate() {
+        if (LocalFileStorageType.TYPE.equals(this.fileStorage.getType())) {
+            return; // 本地存储不需要校验
+        }
+        if (StringUtils.isEmpty(this.accessKey)) {
+            throw CommonErrorCode.NOT_EMPTY.exception("fileStorage.accessKey");
+        }
+        if (StringUtils.isEmpty(this.accessSecret)) {
+            throw CommonErrorCode.NOT_EMPTY.exception("fileStorage.accessSecret");
+        }
+        if (StringUtils.isEmpty(this.endpoint)) {
+            throw CommonErrorCode.NOT_EMPTY.exception("fileStorage.endpoint");
+        }
+        if (StringUtils.isEmpty(this.region)) {
+            throw CommonErrorCode.NOT_EMPTY.exception("fileStorage.region");
+        }
+        if (StringUtils.isEmpty(this.bucket)) {
+            throw CommonErrorCode.NOT_EMPTY.exception("fileStorage.bucket");
+        }
+        if (StringUtils.isEmpty(this.domain)) {
+            throw CommonErrorCode.NOT_EMPTY.exception("fileStorage.domain");
+        }
+    }
+
+    public void reloadClient() {
+        fileStorage.reloadClient(this.endpoint, this.region, this.accessKey, this.accessSecret);
+    }
+
+    public boolean exists(String thumbnailPath) {
+        StorageExistArgs args = StorageExistArgs.builder()
+                .accessKey(this.accessKey)
+                .accessSecret(this.accessSecret)
+                .bucket(this.bucket)
+                .endpoint(this.endpoint)
+                .region(this.region)
+                .path(thumbnailPath)
+                .build();
+        return fileStorage.exists(args);
     }
 
     public InputStream read(String path) {
@@ -77,25 +118,34 @@ public class FileStorageHelper {
                 .accessSecret(this.accessSecret)
                 .bucket(this.bucket)
                 .endpoint(this.endpoint)
+                .region(this.region)
                 .path(path)
                 .build();
         return fileStorage.read(storageReadArgs);
     }
 
-    public void write(String path, byte[] bytes) throws IOException {
-        try (ByteArrayInputStream is = new ByteArrayInputStream(bytes)) {
-            write(path, is);
+    public void write(String path, File file) throws IOException {
+        try (FileInputStream is = new FileInputStream(file)) {
+            write(path, is, file.length());
         }
     }
 
-    public void write(String path, InputStream is) {
+    public void write(String path, byte[] bytes) throws IOException {
+        try (ByteArrayInputStream is = new ByteArrayInputStream(bytes)) {
+            write(path, is, bytes.length);
+        }
+    }
+
+    public void write(String path, InputStream is, long length) {
         StorageWriteArgs args = StorageWriteArgs.builder()
                 .accessKey(this.accessKey)
                 .accessSecret(this.accessSecret)
                 .bucket(this.bucket)
                 .endpoint(this.endpoint)
+                .region(this.region)
                 .path(path)
                 .inputStream(is)
+                .length(length)
                 .build();
         this.fileStorage.write(args);
     }
@@ -110,9 +160,46 @@ public class FileStorageHelper {
                 .accessSecret(this.accessSecret)
                 .bucket(this.bucket)
                 .endpoint(this.endpoint)
+                .region(this.region)
                 .prefix(prefix)
                 .maxKeys(count)
                 .build();
         return this.fileStorage.list(storageListArgs);
+    }
+
+    public void remove(String path) {
+        StorageRemoveArgs args = StorageRemoveArgs.builder()
+                .accessKey(this.accessKey)
+                .accessSecret(this.accessSecret)
+                .bucket(this.bucket)
+                .endpoint(this.endpoint)
+                .region(this.region)
+                .path(path)
+                .build();
+        this.fileStorage.remove(args);
+    }
+
+    public void removeByPrefix(String prefix) {
+        StorageListArgs storageListArgs = StorageListArgs.builder()
+                .accessKey(this.accessKey)
+                .accessSecret(this.accessSecret)
+                .bucket(this.bucket)
+                .endpoint(this.endpoint)
+                .region(this.region)
+                .prefix(prefix)
+                .maxKeys(100)
+                .build();
+        List<String> list = this.fileStorage.list(storageListArgs);
+        for (String path : list) {
+            StorageRemoveArgs args = StorageRemoveArgs.builder()
+                    .accessKey(this.accessKey)
+                    .accessSecret(this.accessSecret)
+                    .bucket(this.bucket)
+                    .endpoint(this.endpoint)
+                    .region(this.region)
+                    .path(path)
+                    .build();
+            this.fileStorage.remove(args);
+        }
     }
 }

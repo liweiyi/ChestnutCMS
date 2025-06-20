@@ -1,160 +1,161 @@
 <template>
   <div class="app-container block-manual-container">
-      <el-row :gutter="10" class="mb12">
-        <el-col :span="1.5">
-          <el-button 
-            plain
-            type="success"
-            icon="el-icon-edit"
-            size="mini"
-            v-hasPermi="[ $p('PageWidget:Edit:{0}', [ pageWidgetId ]) ]"
-            @click="handleSave">{{ $t("Common.Save") }}</el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button 
-            plain
-            type="primary"
-            icon="el-icon-s-promotion"
-            size="mini"
-            v-hasPermi="[ $p('PageWidget:Publish:{0}', [ pageWidgetId ]) ]"
-            @click="handlePublish">{{ $t('CMS.ContentCore.Publish') }}</el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button 
-            plain
-            type="primary"
-            icon="el-icon-view"
-            size="mini"
-            @click="handlePreview">{{ $t('CMS.ContentCore.Preview') }}</el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button 
-            plain
-            type="info"
-            icon="el-icon-back"
-            size="mini"
-            @click="handleGoBack">{{ $t('Common.GoBack') }}</el-button>
-        </el-col>
-      </el-row>
-    <el-form 
-      ref="form"
-      :model="form"
-      :rules="rules"
-      label-width="110px">
-      <el-card shadow="hover">
-        <div slot="header" class="clearfix">
-          <span>{{ $t('CMS.Block.Basic') }}</span>
-        </div>
-        <div class="form-col">
-          <el-form-item :label="$t('CMS.PageWidget.Name')" prop="name">
-            <el-input v-model="form.name" />
-          </el-form-item>
-          <el-form-item :label="$t('CMS.PageWidget.Code')" prop="code">
-            <el-input v-model="form.code" />
-          </el-form-item>
-          <el-form-item :label="$t('CMS.PageWidget.Path')" prop="path">
-            <el-input v-model="form.path" />
-          </el-form-item>
-          <el-form-item :label="$t('CMS.PageWidget.PublishPipe')" prop="publishPipeCode">
-            <el-select v-model="form.publishPipeCode">
-              <el-option
-                v-for="pp in publishPipes"
-                :key="pp.pipeCode"
-                :label="pp.pipeName"
-                :value="pp.pipeCode"
-              />
-            </el-select>
-          </el-form-item>
-          <el-form-item :label="$t('CMS.PageWidget.Template')" prop="template">
-            <el-input v-model="form.template" :disabled="templateDisabled" >
-            <el-button 
-              slot="append"
-              type="primary"
-              :disabled="templateDisabled"
-              @click="handleSelectTemplate()">{{ $t("Common.Select") }}</el-button>
-          </el-input>
-          </el-form-item>
-          <el-form-item :label="$t('Common.Remark')"
-                        prop="remark">
-            <el-input v-model="form.remark" />
-          </el-form-item>
-        </div>
-      </el-card>
-    </el-form>
-    <el-card class="mt10">
-      <div slot="header" class="clearfix">
-        <span>{{ $t('CMS.Block.ManualList') }}</span>
-      </div>
-      <el-table :data="this.form.content" style="width: 100%">
-        <el-table-column type="index" :label="$t('Common.RowNo')" width="50">
-        </el-table-column>
-        <el-table-column :label="$t('CMS.Block.Title')" prop="title">
-          <template slot-scope="scope">
-            <span class="row-insert">
-              <el-button 
-                icon="el-icon-plus" 
-                circle 
-                size="mini"
-                @click="handleAddItem(scope.$index)">
-              </el-button>
-            </span>
-            <span class="row">
-              <el-tag
-                class="item-data"
-                effect="plain"
-                type="info"
-                :key="item.title"
-                v-for="(item, index) in scope.row.items">
-                <el-link :underline="false" @click="handleEditItem(scope.$index, index)">{{item.title}}</el-link>
-                <span class="item-op">
-                  <el-link 
-                    class="item-op-add"
-                    :underline="false" 
-                    icon="el-icon-circle-plus-outline" 
-                    @click="handleAddItem(scope.$index, index + 1)">
-                  </el-link>
-                  <el-link 
-                    class="item-op-del"
-                    :underline="false" 
-                    icon="el-icon-circle-close" 
-                    @click="handleDeleteItem(scope.$index, index)">
-                  </el-link>
+    <el-row :gutter="10" class="mb12">
+      <el-col :span="1.5">
+        <el-button 
+          plain
+          type="success"
+          icon="el-icon-edit"
+          size="mini"
+          v-hasPermi="[ $p('PageWidget:Edit:{0}', [ pageWidgetId ]) ]"
+          @click="handleSave">{{ $t("Common.Save") }}</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button 
+          plain
+          type="primary"
+          icon="el-icon-s-promotion"
+          size="mini"
+          v-hasPermi="[ $p('PageWidget:Publish:{0}', [ pageWidgetId ]) ]"
+          @click="handlePublish">{{ $t('CMS.ContentCore.Publish') }}</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button 
+          plain
+          type="primary"
+          icon="el-icon-view"
+          size="mini"
+          @click="handlePreview">{{ $t('CMS.ContentCore.Preview') }}</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button 
+          plain
+          type="info"
+          icon="el-icon-back"
+          size="mini"
+          @click="handleGoBack">{{ $t('Common.GoBack') }}</el-button>
+      </el-col>
+    </el-row>
+    <el-row :gutter="10">
+      <el-col :span="16">
+        <el-card shadow="hover">
+          <div slot="header" class="clearfix">
+            <span>{{ $t('CMS.Block.ManualList') }}</span>
+          </div>
+          <el-table :data="this.form.content" style="width: 100%">
+            <el-table-column type="index" :label="$t('Common.RowNo')" width="50">
+            </el-table-column>
+            <el-table-column :label="$t('CMS.Block.Title')" prop="title">
+              <template slot-scope="scope">
+                <span class="row-insert">
+                  <el-button 
+                    icon="el-icon-plus" 
+                    circle 
+                    size="mini"
+                    @click="handleAddItem(scope.$index)">
+                  </el-button>
                 </span>
-              </el-tag>
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column width="220" align="right">
-          <template slot="header">
-            <el-button
-              plain
-              type="primary"
-              icon="el-icon-plus"
-              size="mini"
-              @click="handleAddRow(form.content.length)">{{ $t('CMS.Block.AddRow') }}</el-button>
-            <el-button
-              plain
-              type="danger"
-              icon="el-icon-delete"
-              size="mini"
-              @click="handleClear">{{ $t('CMS.Block.Clean') }}</el-button>
-          </template>
-          <template slot-scope="scope">
-            <el-button
-              plain
-              size="mini"
-              icon="el-icon-plus"
-              @click="handleAddRow(scope.$index)">{{ $t('CMS.Block.InsertRow') }}</el-button>
-            <el-button
-              plain
-              size="mini"
-              icon="el-icon-delete"
-              type="danger"
-              @click="handleDeleteRow(scope.$index)">{{ $t("Common.Delete") }}</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+                <span class="row">
+                  <el-tag
+                    class="item-data"
+                    effect="plain"
+                    type="info"
+                    :key="item.title"
+                    v-for="(item, index) in scope.row.items">
+                    <el-link :underline="false" @click="handleEditItem(scope.$index, index)">{{item.title}}</el-link>
+                    <span class="item-op">
+                      <el-link 
+                        class="item-op-add"
+                        :underline="false" 
+                        icon="el-icon-circle-plus-outline" 
+                        @click="handleAddItem(scope.$index, index + 1)">
+                      </el-link>
+                      <el-link 
+                        class="item-op-del"
+                        :underline="false" 
+                        icon="el-icon-circle-close" 
+                        @click="handleDeleteItem(scope.$index, index)">
+                      </el-link>
+                    </span>
+                  </el-tag>
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column width="220" align="right">
+              <template slot="header">
+                <el-button
+                  plain
+                  type="primary"
+                  icon="el-icon-plus"
+                  size="mini"
+                  @click="handleAddRow(form.content.length)">{{ $t('CMS.Block.AddRow') }}</el-button>
+                <el-button
+                  plain
+                  type="danger"
+                  icon="el-icon-delete"
+                  size="mini"
+                  @click="handleClear">{{ $t('CMS.Block.Clean') }}</el-button>
+              </template>
+              <template slot-scope="scope">
+                <el-button
+                  plain
+                  size="mini"
+                  icon="el-icon-plus"
+                  @click="handleAddRow(scope.$index)">{{ $t('CMS.Block.InsertRow') }}</el-button>
+                <el-button
+                  plain
+                  size="mini"
+                  icon="el-icon-delete"
+                  type="danger"
+                  @click="handleDeleteRow(scope.$index)">{{ $t("Common.Delete") }}</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-form 
+          ref="form"
+          :model="form"
+          :rules="rules"
+          label-width="110px">
+          <el-card shadow="hover">
+            <div slot="header" class="clearfix">
+              <span>{{ $t('CMS.Block.Basic') }}</span>
+            </div>
+            <div class="form-col">
+              <el-form-item :label="$t('CMS.PageWidget.Name')" prop="name">
+                <el-input v-model="form.name" />
+              </el-form-item>
+              <el-form-item :label="$t('CMS.PageWidget.Code')" prop="code">
+                <el-input v-model="form.code" />
+              </el-form-item>
+              <el-form-item :label="$t('CMS.PageWidget.Path')" prop="path">
+                <el-input v-model="form.path" />
+              </el-form-item>
+              <el-form-item :label="$t('Common.Remark')" prop="remark">
+                <el-input type="textarea" v-model="form.remark" />
+              </el-form-item>
+            </div>
+          </el-card>
+          <el-card shadow="hover" class="mt10">
+            <div slot="header" class="clearfix">
+              <span>{{ $t('CMS.Block.PublishPipeProp') }}</span>
+            </div>
+            <div class="form-col">
+              <el-form-item 
+                v-for="item in form.templates" 
+                :label="item.name" 
+                :key="item.code">
+                <el-input v-model="item.template">
+                  <el-button slot="append" icon="el-icon-folder-opened" @click="handleSelectTemplate(item.code)"></el-button>
+                </el-input>
+              </el-form-item>
+            </div>
+          </el-card>
+        </el-form>
+      </el-col>
+    </el-row>
     <!-- 链接编辑弹窗 -->
     <el-dialog 
       :title="title"
@@ -208,7 +209,7 @@
     <!-- 模板选择组件 -->
     <cms-template-selector 
       :open="openTemplateSelector" 
-      :publishPipeCode="form.publishPipeCode"
+      :publishPipeCode="templatePublishPipeCode"
       @ok="handleTemplateSelected"
       @cancel="handleTemplateSelectorCancel" />
     <!-- 栏目选择组件 -->
@@ -263,6 +264,7 @@ export default {
         ]
       },
       openTemplateSelector: false,
+      templatePublishPipeCode: "",
       title: "",
       dialogVisible: false,
       form_item: {},
@@ -324,11 +326,15 @@ export default {
         }
       });
     },
-    handleSelectTemplate () {
+    handleSelectTemplate (code) {
+      this.templatePublishPipeCode = code
       this.openTemplateSelector = true;
     },
     handleTemplateSelected (template) {
-      this.form.template = template;
+      let prop = this.form.templates.find(item => item.code == this.templatePublishPipeCode);
+      if (prop) {
+        prop.template = template;
+      }
       this.openTemplateSelector = false;
     },
     handleTemplateSelectorCancel () {

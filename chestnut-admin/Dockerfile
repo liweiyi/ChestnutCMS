@@ -34,4 +34,4 @@ VOLUME ["/home/app/logs","/home/app/uploadPath","/home/app/wwwroot_release","/ho
 
 EXPOSE $SERVER_PORT $NETTY_SOCKET_PORT
 
-ENTRYPOINT ["sh","-c","java $JVM_OPTS $JAVA_OPTS org.springframework.boot.loader.JarLauncher"]
+ENTRYPOINT ["sh","-c","java $JVM_OPTS $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]

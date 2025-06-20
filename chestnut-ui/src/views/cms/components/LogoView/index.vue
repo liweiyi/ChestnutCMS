@@ -37,7 +37,7 @@
   </div>
 </template>
 <script>
-import { setUrlParameter } from "@/utils/chestnut";
+import * as utils from "@/utils/chestnut";
 import CMSResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import ElImageViewer from "element-ui/packages/image/src/image-viewer"
 
@@ -118,13 +118,14 @@ export default {
     },
     src(newVal) {
       this.imageSrc = newVal;
+      this.originalSrc = this.getOriginalSrc(newVal);
     },
     imagePath(newVal) {
       this.$emit("change", newVal);
     },
     imageSrc(newVal) {
       if (newVal && newVal.length > 0) {
-        this.imageViewerList = [ newVal ];
+        this.imageViewerList = [ this.getOriginalSrc(newVal) ];
       } else {
         this.imageViewerList.splice(0);
       }
@@ -137,6 +138,7 @@ export default {
     return {
       imagePath: this.path,
       imageSrc: this.src,
+      originalSrc: this.src,
       openResourceDialog: false,
       showImageViewer: false,
       imageViewerList: [],
@@ -171,6 +173,17 @@ export default {
         src: ""
       });
     }, 
+    getOriginalSrc(src) {
+      if (src.indexOf("/preview/") > -1) {
+        let fileName = utils.substringAfterLast(src, "/");
+        if (fileName.indexOf('_') > -1) {
+          let name = utils.substringBeforeLast(fileName, "_") + "." + utils.substringAfterLast(fileName, ".");
+          let prefix = utils.substringBeforeLast(src, "/");
+          return prefix + "/" + name;
+        }
+      }
+      return src;
+    },
   }
 };
 </script>

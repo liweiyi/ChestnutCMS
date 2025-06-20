@@ -27,6 +27,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.customform.domain.CmsCustomForm;
@@ -46,7 +47,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -96,12 +96,12 @@ public class CustomFormController extends BaseRestController {
         Assert.notNull(form, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("formId", formId));
 
         CustomFormVO vo = CustomFormVO.from(form);
-        List<Map<String, String>> templates = this.publishPipeService.getPublishPipes(form.getSiteId())
-                .stream().map(pp -> Map.of(
-                    "name", pp.getName(),
-                    "code", pp.getCode(),
-                    "template", form.getTemplates().getOrDefault(pp.getCode(), "")
-        )).toList();
+        List<PublishPipeTemplate> templates = this.publishPipeService.getPublishPipes(form.getSiteId())
+                .stream().map(pp -> new PublishPipeTemplate(
+                        pp.getName(),
+                        pp.getCode(),
+                        form.getTemplates().getOrDefault(pp.getCode(), "")
+                )).toList();
         vo.setTemplates(templates);
         return R.ok(vo);
     }

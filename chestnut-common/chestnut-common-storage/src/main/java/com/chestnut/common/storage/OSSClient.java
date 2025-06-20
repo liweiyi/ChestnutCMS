@@ -15,25 +15,14 @@
  */
 package com.chestnut.common.storage;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
 public class OSSClient<T> {
 
 	private T client;
 
 	private long lastActiveTime;
-
-	public T getClient() {
-		return client;
-	}
-
-	public void setClient(T client) {
-		this.client = client;
-	}
-
-	public long getLastActiveTime() {
-		return lastActiveTime;
-	}
-
-	public void setLastActiveTime(long lastActiveTime) {
-		this.lastActiveTime = lastActiveTime;
-	}
 }

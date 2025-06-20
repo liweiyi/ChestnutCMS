@@ -5,20 +5,32 @@ let loadingInstance;
 
 export default {
   // 消息提示
-  msg(content) {
-    Message.info(content)
+  msg(content, customClass = "") {
+    Message.info({
+      message: content,
+      customClass: customClass
+    })
   },
   // 错误消息
-  msgError(content) {
-    Message.error(content)
+  msgError(content, customClass = "") {
+    Message.error({
+      message: content,
+      customClass: customClass
+    })
   },
   // 成功消息
-  msgSuccess(content) {
-    Message.success(content)
+  msgSuccess(content, customClass = "") {
+    Message.success({
+      message: content,
+      customClass: customClass
+    })
   },
   // 警告消息
-  msgWarning(content) {
-    Message.warning(content)
+  msgWarning(content, customClass = "") {
+    Message.warning({
+      message: content,
+      customClass: customClass
+    })
   },
   // 弹出提示
   alert(content) {

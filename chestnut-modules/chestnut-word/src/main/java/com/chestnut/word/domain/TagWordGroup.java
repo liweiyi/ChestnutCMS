@@ -18,6 +18,7 @@ package com.chestnut.word.domain;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,36 +38,25 @@ public class TagWordGroup extends BaseEntity {
     
     public static final String TABLE_NAME = "cc_tag_word_group";
 
+    @XComment("标签分组ID")
     @TableId(value = "group_id", type = IdType.INPUT)
     private Long groupId;
 
-    /**
-     * 所有者ID（扩展用）
-     */
+    @XComment("所有者ID（扩展用）")
     private String owner;
 
-    /**
-     * 父级ID
-     */
+    @XComment("父级ID")
     private Long parentId;
 
-    /**
-     * 名称
-     */
+    @XComment("名称")
     private String name;
 
-    /**
-     * 编码，唯一标识
-     */
+    @XComment("编码，唯一标识")
     private String code;
 
-    /**
-     * 排序标识
-     */
+    @XComment("排序标识")
     private Long sortFlag;
 
-    /**
-     * TAG词数量
-     */
+    @XComment("TAG词数量")
     private Long wordTotal;
 }

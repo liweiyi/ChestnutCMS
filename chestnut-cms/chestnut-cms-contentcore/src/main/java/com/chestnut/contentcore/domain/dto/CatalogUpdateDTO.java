@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.domain.dto;
 
 import com.chestnut.common.security.domain.BaseDTO;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
@@ -114,7 +115,7 @@ public class CatalogUpdateDTO extends BaseDTO {
     /*
      * 栏目发布通道数据
      */
-    private List<PublishPipeProp> publishPipeDatas;
+    private List<PublishPipeProps> publishPipeDatas;
     
     /*
      * 自定义参数

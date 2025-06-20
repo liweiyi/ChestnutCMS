@@ -15,18 +15,13 @@
  */
 package com.chestnut.customform.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.customform.domain.CmsCustomForm;
-import com.chestnut.system.fixed.dict.YesOrNo;
-import com.chestnut.system.validator.Dict;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 自定义表单详情VO
@@ -56,7 +51,7 @@ public class CustomFormVO {
 
     private String ruleLimit;
 
-    private List<Map<String, String>> templates;
+    private List<PublishPipeTemplate> templates;
 
     public static CustomFormVO from(CmsCustomForm form) {
         CustomFormVO vo = new CustomFormVO();

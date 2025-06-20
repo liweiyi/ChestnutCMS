@@ -709,10 +709,10 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	 * @return
 	 */
 	public static String replaceEx(String str, String searchStr, String replacement) {
-		if (str == null || str.length() == 0 || replacement == null) {
+		if (str == null || str.isEmpty() || replacement == null) {
 			return str;
 		}
-		if (searchStr == null || searchStr.length() == 0 || searchStr.length() > str.length()) {
+		if (searchStr == null || searchStr.isEmpty() || searchStr.length() > str.length()) {
 			return str;
 		}
 		StringBuilder sb = null;
@@ -725,7 +725,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 				if (sb == null) {
 					sb = new StringBuilder();
 				}
-				sb.append(str.substring(lastIndex, index));
+				sb.append(str, lastIndex, index);
 				sb.append(replacement);
 			}
 			lastIndex = index + searchStr.length();
@@ -780,6 +780,35 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	public static String appendIfNotEmpty(String str, String value, String appendStr) {
 		if (isNotEmpty(value)) {
 			str += appendStr;
+		}
+		return str;
+	}
+
+	public static boolean isSpace(char c) {
+		return (c == ' ') || (c == ' ') || (c == '\r') || (c == '\n')
+				|| (c == '\t') || (c == '\b') || (c == '\f');
+	}
+
+	public static String leftTrim(String str) {
+		if (isEmpty(str)) {
+			return str;
+		}
+		for (int i = 0; i < str.length(); i++) {
+			if (!isSpace(str.charAt(i))) {
+				return str.substring(i);
+			}
+		}
+		return str;
+	}
+
+	public static String rightTrim(String str) {
+		if (isEmpty(str)) {
+			return str;
+		}
+		for (int i = str.length() - 1; i >= 0; i--) {
+			if (!isSpace(str.charAt(i))) {
+				return str.substring(0, i + 1);
+			}
 		}
 		return str;
 	}

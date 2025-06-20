@@ -63,7 +63,7 @@
       :open.sync="openResourceDialog"
       rtype="image"
       :upload-limit="uploadLimit"
-      :single="uploadLimit==1"
+      :single="singleUpload"
       @ok="handleResourceDialogOk">
     </cms-resource-dialog>
     <el-image-viewer 
@@ -98,10 +98,11 @@ export default {
   data () {
     return {
       openResourceDialog: false,
-      uploadLimit: 10,
       editIndex: -1,
       showImageViewer: false,
-      imageViewerIndex: 0
+      imageViewerIndex: 0,
+      uploadLimit: 100,
+      singleUpload: false
     };
   },
   watch: {
@@ -146,10 +147,12 @@ export default {
     },
     addImage () {
       this.editIndex = -1;
-      this.uploadLimit = 10;
+      this.singleUpload = false;
+      this.uploadLimit = 100;
       this.openResourceDialog = true;
     },
     editImage (index) {
+      this.singleUpload = true;
       this.uploadLimit = 1;
       this.editIndex = index;
       this.openResourceDialog = true;

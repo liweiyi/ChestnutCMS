@@ -17,25 +17,34 @@ package com.chestnut.contentcore.job;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.contentcore.core.IContent;
+import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
-import com.chestnut.contentcore.publish.staticize.CatalogStaticizeType;
-import com.chestnut.contentcore.publish.staticize.ContentStaticizeType;
-import com.chestnut.contentcore.publish.staticize.SiteStaticizeType;
+import com.chestnut.contentcore.listener.event.AfterContentPublishEvent;
 import com.chestnut.contentcore.publish.IPublishStrategy;
+import com.chestnut.contentcore.publish.staticize.CatalogStaticizeType;
+import com.chestnut.contentcore.publish.staticize.SiteStaticizeType;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.system.schedule.IScheduledHandler;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 定时发布任务<br/>
@@ -47,7 +56,7 @@ import java.util.List;
  */
 @RequiredArgsConstructor
 @Component(IScheduledHandler.BEAN_PREFIX + SitePublishJobHandler.JOB_NAME)
-public class SitePublishJobHandler extends IJobHandler implements IScheduledHandler {
+public class SitePublishJobHandler extends IJobHandler implements IScheduledHandler, ApplicationContextAware {
 	
 	static final String JOB_NAME = "SitePublishJobHandler";
 
@@ -58,6 +67,8 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 	private final IContentService contentService;
 
 	private final IPublishStrategy publishStrategy;
+
+	private ApplicationContext applicationContext;
 
 	@Override
 	public String getId() {
@@ -74,6 +85,7 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 		logger.info("Job start: {}", JOB_NAME);
 		long s = System.currentTimeMillis();
 		List<CmsSite> sites = this.siteService.list();
+		Set<Long> catalogIds = new HashSet<>();
 		for (CmsSite site : sites) {
 			List<CmsCatalog> catalogList = catalogService
 					.list(new LambdaQueryWrapper<CmsCatalog>().eq(CmsCatalog::getSiteId, site.getSiteId()));
@@ -89,15 +101,32 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 				for (int i = 0; i * pageSize < total; i++) {
 					Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
 					for (CmsContent xContent : page.getRecords()) {
-						publishStrategy.publish(ContentStaticizeType.TYPE, xContent.getContentId().toString());
+						IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
+						IContent<?> content = contentType.loadContent(xContent);
+						if (content.publish()) {
+							applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
+						}
+					}
+				}
+				if (total > 0) {
+					catalogIds.add(catalog.getCatalogId());
+					// 发布关联栏目：内容所属栏目及其所有父级栏目
+					long parentId = catalog.getParentId();
+					while (parentId > 0) {
+						CmsCatalog parent = catalogService.getCatalog(parentId);
+						if (parent == null) {
+							break;
+						}
+						catalogIds.add(parent.getCatalogId());
+						parentId = parent.getParentId();
 					}
 				}
 			}
-			// 发布栏目
-			for (CmsCatalog catalog : catalogList) {
-				publishStrategy.publish(CatalogStaticizeType.TYPE, catalog.getCatalogId().toString());
-			}
-			// 发布站点
+			// 发布相关栏目
+			catalogIds.forEach(catalogId -> {
+				publishStrategy.publish(CatalogStaticizeType.TYPE, catalogId.toString());
+			});
+			// 发布站点首页
 			publishStrategy.publish(SiteStaticizeType.TYPE, site.getSiteId().toString());
 		}
 		logger.info("Job '{}' completed, cost: {}ms", JOB_NAME, System.currentTimeMillis() - s);
@@ -107,5 +136,10 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 	@XxlJob(JOB_NAME)
 	public void execute() throws Exception {
 		this.exec();
+	}
+
+	@Override
+	public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }

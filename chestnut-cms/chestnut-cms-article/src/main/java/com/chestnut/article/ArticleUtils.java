@@ -117,7 +117,7 @@ public class ArticleUtils {
      * 替换为ssi引用标签
      * </p>
      */
-    public static String dealPageWidget(CmsContent content, String articleBody, boolean isPreview) {
+    public static String dealPageWidget(CmsContent content, String articleBody, String publishPipeCode, boolean isPreview) {
         if (StringUtils.isBlank(articleBody)) {
             return articleBody;
         }
@@ -138,17 +138,17 @@ public class ArticleUtils {
                     if (isPreview) {
                         IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(InternalDataType_PageWidget.ID);
                         placeholderImgTag = internalDataType.getPageData(new IInternalDataType.RequestData(pw.getPageWidgetId(),
-                                1, pw.getPublishPipeCode(), true, null));
+                                1, publishPipeCode, true, null));
                     } else {
                         boolean ssiEnabled = EnableSSIProperty.getValue(site.getConfigProps());
                         if (catalog.isStaticize() && ssiEnabled) {
-                            String staticFileName = PageWidgetUtils.getStaticFileName(pw, site.getStaticSuffix(pw.getPublishPipeCode()));
+                            String staticFileName = PageWidgetUtils.getStaticFileName(pw, site.getStaticSuffix(publishPipeCode));
                             String staticFilePath = pw.getPath() + staticFileName;
                             placeholderImgTag = StringUtils.messageFormat(CmsIncludeTag.SSI_INCLUDE_TAG, "/" + staticFilePath);
                         } else {
                             IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(InternalDataType_PageWidget.ID);
                             placeholderImgTag = internalDataType.getPageData(new IInternalDataType.RequestData(pw.getPageWidgetId(),
-                                    1, pw.getPublishPipeCode(), false, null));
+                                    1, publishPipeCode, false, null));
                         }
                     }
                 }

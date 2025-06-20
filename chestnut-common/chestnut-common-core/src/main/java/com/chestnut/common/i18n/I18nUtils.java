@@ -101,33 +101,75 @@ public class I18nUtils {
 	}
 
 	/**
-	 * 获取国际化键名对应的当前默认语言值
+	 * 解析字符串中的国际化占位符转换成当前语言环境的语言值
 	 *
-	 * @param str
-	 * @return
+	 * @param str 带国际化占位符{xxx}的字符串
+	 * @return 结果
 	 */
 	public static String get(String str) {
 		return get(str, LocaleContextHolder.getLocale());
 	}
 
-
+	/**
+	 * 解析字符串中的国际化占位符转换成当前语言环境的语言值
+	 *
+	 * @param str 带国际化占位符{xxx}的字符串
+	 * @param args 参数
+	 * @return 结果
+	 */
 	public static String get(String str, Object... args) {
 		return get(str, LocaleContextHolder.getLocale(), args);
 	}
 
 	/**
-	 * 获取国际化键名指定的语言值
+	 * 解析字符串中的国际化占位符转换成指定的语言值
 	 *
-	 * @param str
-	 * @param locale
-	 * @param args
-	 * @return
+	 * @param str 带国际化占位符{xxx}的字符串
+	 * @param locale 语言区域
+	 * @param args 参数
+	 * @return 结果
 	 */
 	public static String get(String str, Locale locale, Object... args) {
 		if (StringUtils.isEmpty(str)) {
 			return str;
 		}
 		return PlaceholderHelper.replacePlaceholders(str, langKey -> messageSource.getMessage(langKey, args, locale));
+	}
+
+	/**
+	 * 获取国际化键名指定的语言值
+	 *
+	 * @param langKey 国际化键名
+	 * @return 结果
+	 */
+	public static String parse(String langKey) {
+		return parse(langKey, LocaleContextHolder.getLocale());
+	}
+
+	/**
+	 * 获取国际化键名指定的语言值
+	 *
+	 * @param langKey 国际化键名
+	 * @param args 参数
+	 * @return 结果
+	 */
+	public static String parse(String langKey, Object... args) {
+		return parse(langKey, LocaleContextHolder.getLocale(), args);
+	}
+
+	/**
+	 * 获取国际化键名指定的语言值
+	 *
+	 * @param langKey 国际化键名
+	 * @param locale 语言区域
+	 * @param args 参数
+	 * @return 结果
+	 */
+	public static String parse(String langKey, Locale locale, Object... args) {
+		if (StringUtils.isEmpty(langKey)) {
+			return langKey;
+		}
+		return messageSource.getMessage(langKey, args, locale);
 	}
 
 	public static boolean isLanguageTag(String s) {

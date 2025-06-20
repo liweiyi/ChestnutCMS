@@ -39,7 +39,10 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,6 +52,8 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
         implements ISysI18nDictService, CommandLineRunner {
 
     private final static String CACHE_PREFIX = "i18n:";
+
+    private final static String PROPERTY_SPLITERATOR = "=";
 
     private final RedisCache redisCache;
 
@@ -154,26 +159,28 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
         if (StringUtils.isEmpty(messageSource.getBasename())) {
             return;
         }
-        String target = messageSource.getBasename().replace('.', '/');
-        Resource[] resources = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader())
-                .getResources("classpath*:" + target + "*.properties");
-        for (Resource resource : resources) {
-            String langTag = messageSource.getDefaultLocale().toLanguageTag();
-            if (Objects.nonNull(resource.getFilename()) && resource.getFilename().contains("_")) {
-                langTag = resource.getFilename().substring(resource.getFilename().indexOf("_") + 1,
-                        resource.getFilename().lastIndexOf("."));
-                langTag = StringUtils.replace(langTag, "_", "-");
-            }
-            String cacheKey = CACHE_PREFIX + langTag;
-            try (InputStream is = resource.getInputStream()) {
-                List<String> lines = IOUtils.readLines(is, messageSource.getEncoding());
-                lines.stream()
-                        .filter(s -> StringUtils.isNotEmpty(s) && s.indexOf("=") > 0)
-                        .forEach(s -> {
-                            redisCache.setCacheMapValue(cacheKey,
-                                    StringUtils.substringBefore(s, "="),
-                                    StringUtils.substringAfter(s, "="));
-                        });
+        for (String basename : messageSource.getBasename()) {
+            String target = basename.replace('.', '/');
+            Resource[] resources = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader())
+                    .getResources("classpath*:" + target + "*.properties");
+            for (Resource resource : resources) {
+                String langTag = messageSource.getDefaultLocale().toLanguageTag();
+                String filename = resource.getFilename();
+                if (filename.contains("_")) {
+                    langTag = StringUtils.substring(resource.getFilename(),
+                            filename.indexOf("_") + 1, filename.lastIndexOf("."));
+                    langTag = StringUtils.replace(langTag, "_", "-");
+                }
+                String cacheKey = CACHE_PREFIX + langTag;
+                try (InputStream is = resource.getInputStream()) {
+                    List<String> lines = IOUtils.readLines(is, messageSource.getEncoding());
+                    lines.stream()
+                            .filter(s -> StringUtils.isNotEmpty(s) && s.contains(PROPERTY_SPLITERATOR))
+                            .forEach(s -> {
+                                String[] kv = s.split(PROPERTY_SPLITERATOR);
+                                redisCache.setCacheMapValue(cacheKey, kv[0], kv[1]);
+                            });
+                }
             }
         }
     }

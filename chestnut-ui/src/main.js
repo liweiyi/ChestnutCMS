@@ -50,6 +50,7 @@ Vue.use(VideoPlayer)
 Vue.prototype.getDicts = getDicts
 Vue.prototype.getConfigKey = getConfigKey
 Vue.prototype.parseTime = tools.parseTime
+Vue.prototype.tableRowNo = tools.tableRowNo
 Vue.prototype.resetForm = tools.resetForm
 Vue.prototype.addDateRange = tools.addDateRange
 Vue.prototype.selectDictLabel = tools.selectDictLabel

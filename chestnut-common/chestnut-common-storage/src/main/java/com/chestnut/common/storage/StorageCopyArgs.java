@@ -15,29 +15,12 @@
  */
 package com.chestnut.common.storage;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
-public class StorageCopyArgs {
-	
-	/**
-	 * 访问API接口地址
-	 */
-	private String endpoint;
-
-	/**
-	 * 用户名
-	 */
-	private String accessKey;
-
-	/**
-	 * 访问密码
-	 */
-	private String accessSecret;
+public class StorageCopyArgs extends StorageBasicArgs {
 	
 	/**
 	 * 存储空间名
@@ -53,4 +36,60 @@ public class StorageCopyArgs {
 	 * 目标路径
 	 */
 	private String destPath;
+
+	public static class Builder {
+
+		private String endpoint;
+		private String region;
+		private String accessKey;
+		private String accessSecret;
+		private String bucket;
+		private String sourcePath;
+		private String destPath;
+
+		public StorageCopyArgs build() {
+			StorageCopyArgs storageCopyArgs = new StorageCopyArgs();
+			storageCopyArgs.setEndpoint(endpoint);
+			storageCopyArgs.setRegion(region);
+			storageCopyArgs.setAccessKey(accessKey);
+			storageCopyArgs.setAccessSecret(accessSecret);
+			storageCopyArgs.setBucket(bucket);
+			storageCopyArgs.setSourcePath(sourcePath);
+			storageCopyArgs.setDestPath(destPath);
+			return storageCopyArgs;
+		}
+
+		public StorageCopyArgs.Builder endpoint(String endpoint) {
+			this.endpoint = endpoint;
+			return this;
+		}
+		public StorageCopyArgs.Builder region(String region) {
+			this.region = region;
+			return this;
+		}
+		public StorageCopyArgs.Builder accessKey(String accessKey) {
+			this.accessKey = accessKey;
+			return this;
+		}
+		public StorageCopyArgs.Builder accessSecret(String accessSecret) {
+			this.accessSecret = accessSecret;
+			return this;
+		}
+		public StorageCopyArgs.Builder bucket(String bucket) {
+			this.bucket = bucket;
+			return this;
+		}
+		public StorageCopyArgs.Builder sourcePath(String sourcePath) {
+			this.sourcePath = sourcePath;
+			return this;
+		}
+		public StorageCopyArgs.Builder destPath(String destPath) {
+			this.destPath = destPath;
+			return this;
+		}
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
 }

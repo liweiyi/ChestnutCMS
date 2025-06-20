@@ -30,6 +30,7 @@ import com.chestnut.cms.search.fixed.config.SearchAnalyzeType;
 import com.chestnut.cms.search.properties.EnableIndexProperty;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.ArrayUtils;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
@@ -187,7 +188,7 @@ public class ContentIndexService implements CommandLineRunner {
 					.doc(newESContentDoc(content))
 					.docAsUpsert(true), ESContent.class);
 		} catch (ElasticsearchException | IOException e) {
-			AsyncTaskManager.addErrMessage(e.getMessage());
+			AsyncTaskManager.addErrMessage(e.getMessage() + ", contentId=" + content.getContentEntity().getContentId());
 			log.error("Update es index document failed", e);
 		}
 	}
@@ -251,7 +252,7 @@ public class ContentIndexService implements CommandLineRunner {
 			for (int i = 0; i * pageSize < total; i++) {
                 try {
 					AsyncTaskManager.setTaskProgressInfo((int) (count++ * 100 / total),
-							"正在重建栏目【" + catalog.getName() + "】内容索引");
+							I18nUtils.parse("PROGRESS.INFO.BUILDING_INDEX", catalog.getName()));
 					AsyncTaskManager.checkInterrupt(); // 允许中断
 					Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
                     batchContentDoc(site, catalog, page.getRecords());
@@ -286,7 +287,7 @@ public class ContentIndexService implements CommandLineRunner {
 					for (CmsCatalog catalog : catalogs) {
 						rebuildCatalog(catalog, false);
 					}
-					this.setProgressInfo(100, "重建全站索引完成");
+					this.setProgressInfo(100, I18nUtils.parse("PROGRESS.INFO.BUILD_SUCCEED"));
 				} catch (Exception e) {
 					log.error("RebuildAllContentIndex failed.", e);
 					addErrorMessage(e.getMessage());

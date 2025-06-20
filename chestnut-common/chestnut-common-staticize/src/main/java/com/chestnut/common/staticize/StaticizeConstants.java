@@ -61,4 +61,14 @@ public class StaticizeConstants {
 	 * 模板解析时间
 	 */
 	public static final String TemplateVariable_TimeMillis = "TimeMillis";
+
+	/**
+	 * 模板变量：请求参数
+	 */
+	public final static String TemplateVariable_Request = "Request";
+
+	/**
+	 * 模板路径参数：页码
+	 */
+	public final static String TemplateParam_PageIndex = "pi";
 }

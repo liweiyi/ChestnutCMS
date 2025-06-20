@@ -35,14 +35,17 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.IProperty.UseType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
+import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.dto.*;
+import com.chestnut.contentcore.domain.dto.PublishSiteDTO;
+import com.chestnut.contentcore.domain.dto.SiteDTO;
+import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
+import com.chestnut.contentcore.domain.dto.SiteExportDTO;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
+import com.chestnut.contentcore.domain.vo.SiteDashboardVO;
 import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.perms.SitePermissionType.SitePrivItem;
-import com.chestnut.contentcore.service.ICatalogService;
-import com.chestnut.contentcore.service.IPublishPipeService;
-import com.chestnut.contentcore.service.IPublishService;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.service.impl.SiteThemeService;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -97,6 +100,8 @@ public class SiteController extends BaseRestController {
 
     private final SiteThemeService siteExportService;
 
+    private final IResourceService resourceService;
+
     /**
      * 获取当前站点数据
      *
@@ -107,6 +112,14 @@ public class SiteController extends BaseRestController {
     public R<Map<String, Object>> getCurrentSite() {
         CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
         return R.ok(Map.of("siteId", site.getSiteId(), "siteName", site.getName()));
+    }
+
+    @Priv(type = AdminUserType.TYPE)
+    @GetMapping("/getDashboardSiteInfo")
+    public R<SiteDashboardVO> getDashboardSiteInfo() {
+        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(site.getSiteId());
+        return R.ok(SiteDashboardVO.create(site, publishPipes));
     }
 
     /**
@@ -161,8 +174,9 @@ public class SiteController extends BaseRestController {
             site.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(site.getLogo()));
         }
         SiteDTO dto = SiteDTO.newInstance(site);
+        resourceService.dealDefaultThumbnail(site, dto.getLogo(), dto::setLogoSrc);
         // 发布通道数据
-        List<PublishPipeProp> publishPipeProps = this.publishPipeService.getPublishPipeProps(site.getSiteId(),
+        List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(site.getSiteId(),
                 PublishPipePropUseType.Site, site.getPublishPipeProps());
         dto.setPublishPipeDatas(publishPipeProps);
         return R.ok(dto);
@@ -298,7 +312,7 @@ public class SiteController extends BaseRestController {
         SiteDefaultTemplateDTO dto = new SiteDefaultTemplateDTO();
         dto.setSiteId(siteId);
         // 发布通道数据
-        List<PublishPipeProp> publishPipeProps = this.publishPipeService.getPublishPipeProps(site.getSiteId(),
+        List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(site.getSiteId(),
                 PublishPipePropUseType.Site, site.getPublishPipeProps());
         dto.setPublishPipeProps(publishPipeProps);
         return R.ok(dto);

@@ -201,6 +201,9 @@
         <el-form-item :label="$t('System.User.NickName')" prop="nickName">
           <el-input v-model="form.nickName" :placeholder="$t('System.User.Placeholder.NickName')" maxlength="30" />
         </el-form-item>
+        <el-form-item :label="$t('System.User.RealName')" prop="realName">
+          <el-input v-model="form.realName" :placeholder="$t('System.User.Placeholder.RealName')" maxlength="30" />
+        </el-form-item>
         <el-form-item v-if="form.userId == undefined" :label="$t('System.User.Password')" prop="password">
           <el-input v-model="form.password" :placeholder="$t('System.User.Placeholder.Password')" type="password" maxlength="20" show-password/>
         </el-form-item>

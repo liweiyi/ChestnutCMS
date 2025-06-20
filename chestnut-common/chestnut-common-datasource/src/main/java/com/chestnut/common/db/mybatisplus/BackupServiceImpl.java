@@ -86,7 +86,9 @@ public class BackupServiceImpl<M extends BaseMapper<T>, T extends IBackupable<B>
     @Transactional(rollbackFor = Exception.class)
     public void deleteAndBackup(Wrapper<T> wrapper, String operator, String backupRemark) {
         List<T> list = this.list(wrapper);
-        list.forEach(entity -> this.backup(entity, operator, backupRemark));
+        for (T entity : list) {
+            this.backup(entity, operator, backupRemark);
+        }
 
         this.remove(wrapper);
     }

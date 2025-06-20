@@ -15,29 +15,12 @@
  */
 package com.chestnut.common.storage;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
-public class StorageListArgs {
-	
-	/**
-	 * 访问API接口地址
-	 */
-	private String endpoint;
-
-	/**
-	 * 用户名
-	 */
-	private String accessKey;
-
-	/**
-	 * 访问密码
-	 */
-	private String accessSecret;
+public class StorageListArgs extends StorageBasicArgs {
 	
 	/**
 	 * 存储空间名
@@ -58,4 +41,66 @@ public class StorageListArgs {
 	 * 列举文件的最大个数
 	 */
 	private int maxKeys;
+
+	public static class Builder {
+
+		private String endpoint;
+		private String region;
+		private String accessKey;
+		private String accessSecret;
+		private String bucket;
+		private String continuationToken;
+		private String prefix;
+		private int maxKeys = 1000;
+
+		public StorageListArgs build() {
+			StorageListArgs args = new StorageListArgs();
+			args.setEndpoint(endpoint);
+			args.setRegion(region);
+			args.setAccessKey(accessKey);
+			args.setAccessSecret(accessSecret);
+			args.setBucket(bucket);
+			args.setContinuationToken(continuationToken);
+			args.setPrefix(prefix);
+			args.setMaxKeys(maxKeys);
+			return args;
+		}
+
+		public Builder endpoint(String endpoint) {
+			this.endpoint = endpoint;
+			return this;
+		}
+		public Builder region(String region) {
+			this.region = region;
+			return this;
+		}
+		public Builder accessKey(String accessKey) {
+			this.accessKey = accessKey;
+			return this;
+		}
+		public Builder accessSecret(String accessSecret) {
+			this.accessSecret = accessSecret;
+			return this;
+		}
+		public Builder bucket(String bucket) {
+			this.bucket = bucket;
+			return this;
+		}
+		public Builder continuationToken(String continuationToken) {
+			this.continuationToken = continuationToken;
+			return this;
+		}
+		public Builder prefix(String prefix) {
+			this.prefix = prefix;
+			return this;
+		}
+		public Builder maxKeys(int maxKeys) {
+			this.maxKeys = maxKeys;
+			return this;
+		}
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
 }

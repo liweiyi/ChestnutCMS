@@ -15,19 +15,17 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import java.io.IOException;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.IPublishService;
-
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 /**
  * 内部数据类型：页面组件
@@ -55,6 +53,6 @@ public class InternalDataType_PageWidget implements IInternalDataType {
 		CmsPageWidget pageWidget = pageWidgetService.getById(data.getDataId());
 		Assert.notNull(pageWidget, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", data.getDataId()));
 		
-		return this.publishService.getPageWidgetPageData(pageWidget, data.isPreview());
+		return this.publishService.getPageWidgetPageData(pageWidget, data.getPublishPipeCode(), data.isPreview());
 	}
 }

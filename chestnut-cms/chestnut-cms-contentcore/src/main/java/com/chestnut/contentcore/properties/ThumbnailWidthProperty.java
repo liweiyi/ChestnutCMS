@@ -54,7 +54,7 @@ public class ThumbnailWidthProperty implements IProperty {
 	
 	@Override
 	public boolean validate(String value) {
-		return StringUtils.isEmpty(value) || NumberUtils.isCreatable(value);
+		return NumberUtils.isCreatable(value);
 	}
 	
 	@Override
