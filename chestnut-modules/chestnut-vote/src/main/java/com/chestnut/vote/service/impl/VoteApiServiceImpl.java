@@ -22,7 +22,6 @@ import com.chestnut.common.utils.DateUtils;
 import com.chestnut.vote.core.IVoteUserType;
 import com.chestnut.vote.domain.VoteLog;
 import com.chestnut.vote.domain.dto.VoteSubmitDTO;
-import com.chestnut.vote.domain.dto.VoteSubmitDTO.SubjectResult;
 import com.chestnut.vote.domain.vo.VoteVO;
 import com.chestnut.vote.exception.VoteErrorCode;
 import com.chestnut.vote.service.IVoteApiService;
@@ -35,8 +34,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -82,13 +79,11 @@ public class VoteApiServiceImpl implements IVoteApiService {
 			Assert.isTrue(dayCount < vote.getDayLimit(), VoteErrorCode.VOTE_DAY_LIMIT::exception);
 	
 			// 记录日志
-			Map<Long, String> result = dto.getSubjects().stream()
-					.collect(Collectors.toMap(SubjectResult::getSubjectId, SubjectResult::getResult));
 			VoteLog voteLog = new VoteLog();
 			voteLog.setVoteId(dto.getVoteId());
 			voteLog.setUserType(vote.getUserType());
 			voteLog.setUserId(userId);
-			voteLog.setResult(result);
+			voteLog.setResult(dto.getSubjects());
 			voteLog.setLogTime(LocalDateTime.now());
 			voteLog.setIp(dto.getIp());
 			voteLog.setUserAgent(dto.getUserAgent());

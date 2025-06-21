@@ -17,6 +17,8 @@ package com.chestnut.vote.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.chestnut.vote.domain.VoteSubjectItem;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * <p>
@@ -28,4 +30,6 @@ import com.chestnut.vote.domain.VoteSubjectItem;
  */
 public interface VoteSubjectItemMapper extends BaseMapper<VoteSubjectItem> {
 
+    @Update("UPDATE " + VoteSubjectItem.TABLE_NAME + " SET total = total + ${delta} WHERE item_id = #{itemId}")
+    void increaseVoteSubjectItemTotal(@Param("itemId") Long itemId, @Param("delta") Integer delta);
 }

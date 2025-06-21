@@ -23,15 +23,15 @@ package com.chestnut.vote.core;
  */
 public interface IVoteItemType {
 
-	public String BEAN_PREFIX = "VoteItemType_";
+	String BEAN_PREFIX = "VoteItemType_";
 	
 	/**
 	 * 问卷调查选项类型ID，唯一标识
 	 */
-	public String getId();
+    String getId();
 
 	/**
 	 * 问卷调查选项类型名称
 	 */
-	public String getName();
+    String getName();
 }

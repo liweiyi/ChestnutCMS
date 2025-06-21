@@ -155,7 +155,7 @@ public class SysScheduledTaskController extends BaseRestController {
 	@DeleteMapping("/logs")
 	public R<?> removeLogs(@RequestBody @NotEmpty List<Long> logIds) {
 		Assert.isTrue(IdUtils.validate(logIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception());
-		this.logMapper.deleteBatchIds(logIds);
+		this.logMapper.deleteByIds(logIds);
 		return R.ok();
 	}
 }

@@ -15,10 +15,11 @@
  */
 package com.chestnut.vote.domain.dto;
 
-import java.util.List;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -52,10 +53,15 @@ public class VoteSubmitDTO {
 		 * 主题ID
 		 */
 		private Long subjectId;
-		
+
+		/**
+		 * 主题类型
+		 */
+		private String type;
+
 		/**
 		 * 结果：itemId || inputText
 		 */
-		private String result;
+		private ArrayList<String> result;
 	}
 }

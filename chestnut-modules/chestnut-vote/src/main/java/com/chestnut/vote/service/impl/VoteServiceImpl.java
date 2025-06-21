@@ -16,7 +16,6 @@
 package com.chestnut.vote.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -30,6 +29,7 @@ import com.chestnut.vote.domain.Vote;
 import com.chestnut.vote.domain.VoteLog;
 import com.chestnut.vote.domain.VoteSubject;
 import com.chestnut.vote.domain.VoteSubjectItem;
+import com.chestnut.vote.domain.dto.VoteSubmitDTO;
 import com.chestnut.vote.domain.vo.VoteSubjectItemVO;
 import com.chestnut.vote.domain.vo.VoteSubjectVO;
 import com.chestnut.vote.domain.vo.VoteVO;
@@ -51,8 +51,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -67,12 +66,14 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 
 	private final VoteSubjectItemMapper itemMapper;
 
+	private final VoteMapper voteMapper;
+
 	private final VoteLogMapper voteLogMapper;
 
 	private final RedisCache redisCache;
 	
 	private final Map<String, IVoteUserType> voteUserTypes;
-	
+
 	private final Map<String, IVoteItemType> voteItemTypes;
 	
 	private final RedissonClient redissonClient;
@@ -235,22 +236,66 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 		try {
 			VoteVO vote = this.getVote(voteLog.getVoteId());
 			// 问卷调查参与数+1
-			Vote voteEntity = this.lambdaQuery().select(Vote::getVoteId, Vote::getTotal)
-					.eq(Vote::getVoteId, voteLog.getVoteId()).one();
-			this.lambdaUpdate().set(Vote::getTotal, voteEntity.getTotal() + 1)
-					.eq(Vote::getVoteId, voteLog.getVoteId()).update();
+			vote.setTotal(Objects.requireNonNullElse(vote.getTotal(), 0) + 1);
+			voteMapper.increaseVoteTotal(vote.getVoteId(), 1);
 			// 单选/多选主题选项票数+1
 			vote.getSubjects().forEach(subject -> {
 				if (!VoteSubjectType.isInput(subject.getType())) {
-					String result = voteLog.getResult().get(subject.getSubjectId());
-					VoteSubjectItem item = new LambdaQueryChainWrapper<>(this.itemMapper)
-							.select(VoteSubjectItem::getItemId, VoteSubjectItem::getTotal)
-							.eq(VoteSubjectItem::getItemId, result)
-							.one();
-					new LambdaUpdateChainWrapper<>(this.itemMapper)
-							.set(VoteSubjectItem::getTotal, item.getTotal() + 1)
-							.eq(VoteSubjectItem::getItemId, item.getItemId())
-							.update();
+					List<VoteSubmitDTO.SubjectResult> subjectResults = voteLog.getResult();
+					Optional<VoteSubmitDTO.SubjectResult> opt = subjectResults.stream()
+							.filter(r -> subject.getSubjectId().equals(r.getSubjectId()) && subject.getType().equals(r.getType()))
+							.findFirst();
+					if (opt.isPresent()) {
+						VoteSubmitDTO.SubjectResult result = opt.get();
+						for (String itemIdStr : result.getResult()) {
+							Long itemId = Long.parseLong(itemIdStr);
+							this.itemMapper.increaseVoteSubjectItemTotal(itemId, 1);
+						}
+					}
+				}
+			});
+			// 更新缓存
+			this.redisCache.setCacheObject(CACHE_PREFIX + vote.getVoteId(), vote);
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	public void resetVoteStat(Long voteId) {
+		RLock lock = redissonClient.getLock("VoteTotalUpdate-" + voteId);
+		lock.lock();
+		try {
+			VoteVO vote = this.getVote(voteId);
+
+			List<VoteLog> voteLogs = voteLogMapper.selectList(new LambdaQueryWrapper<VoteLog>()
+					.eq(VoteLog::getVoteId, vote.getVoteId()));
+			// 问卷调查参与数
+			vote.setTotal(voteLogs.size());
+			this.lambdaUpdate().set(Vote::getTotal, voteLogs.size()).eq(Vote::getVoteId, vote.getVoteId()).update();
+			// 单选/多选主题选项票数
+			vote.getSubjects().forEach(subject -> {
+				if (!VoteSubjectType.isInput(subject.getType())) {
+					Map<Long, Integer> itemTotalMap = new HashMap<>();
+					List<Long> itemIds = subject.getItems().stream().map(VoteSubjectItemVO::getItemId).toList();
+					for (VoteLog voteLog : voteLogs) {
+						Optional<VoteSubmitDTO.SubjectResult> opt = voteLog.getResult().stream().filter(r ->
+								r.getSubjectId().equals(subject.getSubjectId()) && r.getType().equals(subject.getTitle())
+						).findFirst();
+						if (opt.isPresent()) {
+							VoteSubmitDTO.SubjectResult result = opt.get();
+							for (String itemIdStr : result.getResult()) {
+								long itemId = Long.parseLong(itemIdStr);
+								if (itemIds.contains(itemId)) {
+									itemTotalMap.put(itemId, itemTotalMap.getOrDefault(itemId, 0) + 1);
+								}
+							}
+						}
+					}
+					for (Map.Entry<Long, Integer> entry : itemTotalMap.entrySet()) {
+                        new LambdaUpdateChainWrapper<>(itemMapper).set(VoteSubjectItem::getTotal, entry.getValue())
+								.eq(VoteSubjectItem::getItemId, entry.getKey())
+								.update();
+					}
 				}
 			});
 			// 更新缓存

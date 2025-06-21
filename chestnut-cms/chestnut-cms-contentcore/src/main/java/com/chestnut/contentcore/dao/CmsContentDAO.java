@@ -90,6 +90,6 @@ public class CmsContentDAO extends BackupServiceImpl<CmsContentMapper, CmsConten
         if (StringUtils.isEmpty(backupIds)) {
             return;
         }
-        this.getBackupMapper().deleteBatchIds(backupIds);
+        this.getBackupMapper().deleteByIds(backupIds);
     }
 }

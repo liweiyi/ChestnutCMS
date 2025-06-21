@@ -73,7 +73,7 @@ public class ImageListener {
 							new LambdaQueryWrapper<BCmsImage>().select(List.of(BCmsImage::getImageId))
 									.eq(BCmsImage::getSiteId, site.getSiteId())
 						).getRecords().stream().map(BCmsImage::getBackupId).toList();
-				backupMapper.deleteBatchIds(backupIds);
+				backupMapper.deleteByIds(backupIds);
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除图片内容备份错误：" + e.getMessage());

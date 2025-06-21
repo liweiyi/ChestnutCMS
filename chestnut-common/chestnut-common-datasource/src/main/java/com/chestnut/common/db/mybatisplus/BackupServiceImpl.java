@@ -124,7 +124,7 @@ public class BackupServiceImpl<M extends BaseMapper<T>, T extends IBackupable<B>
 
     @Override
     public void deleteBackupByIds(Collection<Serializable> backupIds) {
-        this.backupMapper.deleteBatchIds(backupIds);
+        this.backupMapper.deleteByIds(backupIds);
     }
 
     @Override

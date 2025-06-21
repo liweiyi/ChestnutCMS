@@ -77,6 +77,6 @@ public class CmsArticleDetailDAO extends BackupServiceImpl<CmsArticleDetailMappe
         if (StringUtils.isEmpty(backupIds)) {
             return;
         }
-        this.getBackupMapper().deleteBatchIds(backupIds);
+        this.getBackupMapper().deleteByIds(backupIds);
     }
 }

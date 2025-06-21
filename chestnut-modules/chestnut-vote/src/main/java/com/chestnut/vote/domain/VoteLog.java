@@ -15,18 +15,18 @@
  */
 package com.chestnut.vote.domain;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
-
+import com.chestnut.vote.domain.dto.VoteSubmitDTO;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 问卷调查日志表
@@ -63,11 +63,9 @@ public class VoteLog implements Serializable {
 
 	/**
 	 * 投票结果
-	 * 
-	 * 格式：<subjectId, itemId|inputText>
 	 */
 	@TableField(typeHandler = JacksonTypeHandler.class)
-	private Map<Long, String> result;
+	private List<VoteSubmitDTO.SubjectResult> result;
 	
 	/**
 	 * 日志记录时间

@@ -79,7 +79,7 @@ public class MediaListener {
 								.eq(BCmsAudio::getSiteId, site.getSiteId())
 
 				).getRecords().stream().map(BCmsAudio::getBackupId).toList();
-				backupMapper.deleteBatchIds(backupIds);
+				backupMapper.deleteByIds(backupIds);
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除音频内容备份错误：" + e.getMessage());
@@ -116,7 +116,7 @@ public class MediaListener {
 								.eq(BCmsVideo::getSiteId, site.getSiteId())
 
 				).getRecords().stream().map(BCmsVideo::getBackupId).toList();
-				backupMapper.deleteBatchIds(backupIds);
+				backupMapper.deleteByIds(backupIds);
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除视频内容备份错误：" + e.getMessage());

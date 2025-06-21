@@ -18,7 +18,6 @@ package com.chestnut.vote.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
@@ -40,7 +39,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -74,17 +72,13 @@ public class VoteController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
 	@GetMapping("/userTypes")
 	public R<?> getVoteUserTypes() {
-		List<Map<String, String>> list = this.userTypes.stream()
-				.map(vut -> Map.of("id", vut.getId(), "name", I18nUtils.get(vut.getName()))).toList();
-		return R.ok(list);
+		return bindSelectOptions(this.userTypes, IVoteUserType::getId, IVoteUserType::getName);
 	}
 
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/item/types")
 	public R<?> getVoteItemTypes() {
-		List<Map<String, String>> list = this.itemTypes.stream()
-				.map(vut -> Map.of("id", vut.getId(), "name", I18nUtils.get(vut.getName()))).toList();
-		return R.ok(list);
+		return bindSelectOptions(this.itemTypes, IVoteItemType::getId, IVoteItemType::getName);
 	}
 
 	@Log(title = "新增问卷调查", businessType = BusinessType.INSERT)

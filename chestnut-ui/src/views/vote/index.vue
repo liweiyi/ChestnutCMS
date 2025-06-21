@@ -172,9 +172,9 @@
           <el-radio-group v-model="form.userType">
             <el-radio
               v-for="ut in userTypeOptions"
-              :key="ut.id"
-              :label="ut.id"
-            >{{ ut.name }}</el-radio>
+              :key="ut.value"
+              :label="ut.value"
+            >{{ ut.label }}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item :label="$t('Vote.DayLimit')" prop="totalLimit">

@@ -76,9 +76,9 @@
                 <el-select v-model="scope2.row.type" size="mini" disabled>
                   <el-option
                     v-for="type in subjectItemTypes"
-                    :key="type.id"
-                    :label="type.name"
-                    :value="type.id"
+                    :key="type.value"
+                    :label="type.label"
+                    :value="type.value"
                   />
                 </el-select>
               </template>
@@ -221,14 +221,14 @@
             <el-select v-model="scope.row.type">
               <el-option
                 v-for="type in subjectItemTypes"
-                :key="type.id"
-                :label="type.name"
-                :value="type.id"
+                :key="type.value"
+                :label="type.label"
+                :value="type.value"
               />
             </el-select>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('Comment.Details')">
+        <el-table-column :label="$t('Common.Details')">
           <template slot-scope="scope">
             <el-input v-if="scope.row.type==='Text'" type="text" v-model="scope.row.content"></el-input>
           </template>

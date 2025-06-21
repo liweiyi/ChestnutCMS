@@ -143,7 +143,7 @@ public class VoteSubjectServiceImpl extends ServiceImpl<VoteSubjectMapper, VoteS
 		List<Long> removeItemIds = dbItems.stream().map(VoteSubjectItem::getItemId)
 				.filter(itemId -> !updateItemIds.contains(itemId)).toList();
 		if (!removeItemIds.isEmpty()) {
-			this.voteSubjectItemMapper.deleteBatchIds(removeItemIds);
+			this.voteSubjectItemMapper.deleteByIds(removeItemIds);
 		}
 
 		Map<Long, VoteSubjectItem> updateMap = dbItems.stream().filter(item -> updateItemIds.contains(item.getItemId()))
