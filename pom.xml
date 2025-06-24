@@ -365,13 +365,6 @@
 				<version>${chestnut.version}</version>
 			</dependency>
 
-			<!-- 验证码扩展模块 -->
-			<dependency>
-				<groupId>com.chestnut</groupId>
-				<artifactId>chestnut-captcha</artifactId>
-				<version>${chestnut.version}</version>
-			</dependency>
-
 			<!-- 系统模块 -->
 			<dependency>
 				<groupId>com.chestnut</groupId>

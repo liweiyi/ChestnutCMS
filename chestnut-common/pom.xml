@@ -21,6 +21,7 @@
 		<module>chestnut-common-security</module>
 		<module>chestnut-common-log</module>
 		<module>chestnut-common-extend</module>
+		<module>chestnut-common-captcha</module>
     </modules>
 	
 	<dependencyManagement>
