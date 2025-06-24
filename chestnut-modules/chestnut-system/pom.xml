@@ -55,7 +55,7 @@
 
         <dependency>
             <groupId>com.chestnut</groupId>
-            <artifactId>chestnut-captcha</artifactId>
+            <artifactId>chestnut-common-captcha</artifactId>
         </dependency>
 
         <dependency>
