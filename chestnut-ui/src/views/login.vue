@@ -128,7 +128,7 @@ export default {
       this.loginForm.captcha = data;
     },
     handleLogin() {
-      if (!this.loginForm.captcha) {
+      if (this.captchaConfig.enabled && !this.loginForm.captcha) {
         this.$modal.msgError(this.$t('Login.CaptchaRuleTip'));
         return;
       }

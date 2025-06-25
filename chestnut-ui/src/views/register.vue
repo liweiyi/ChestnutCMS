@@ -30,9 +30,8 @@
         </el-input>
       </el-form-item>
       <el-form-item v-if="captchaConfig.enabled">
-        <text-captcha v-if="captchaConfig.type=='Text'" ref="textCaptcha" @change="handleTextCaptchaSuccess"></text-captcha>
-        <math-captcha v-if="captchaConfig.type=='Math'" ref="mathCaptcha" @change="handleMathCaptchaSuccess"></math-captcha>
-        <slider-captcha v-if="captchaConfig.type=='Slider'" @success="handleSliderCaptchaSuccess"></slider-captcha>
+        <text-captcha v-if="captchaConfig.type=='Text'" ref="textCaptcha" @change="handleCaptchaSuccess"></text-captcha>
+        <math-captcha v-if="captchaConfig.type=='Math'" ref="mathCaptcha" @change="handleCaptchaSuccess"></math-captcha>
       </el-form-item>
       <el-form-item style="width:100%;">
         <el-button
@@ -59,7 +58,6 @@
 
 <script>
 import { getLoginCaptchaConfig, register } from "@/api/login";
-import SliderCaptcha from './components/captcha/slider'
 import MathCaptcha from './components/captcha/math'
 import TextCaptcha from './components/captcha/text'
 
@@ -115,28 +113,14 @@ export default {
         this.captchaConfig = res.data;
       });
     },
-    handleSliderCaptchaSuccess(data) {
-      this.registerForm.captcha = {
-        type: this.captchaConfig.type,
-        token: data.token,
-        data: data.captcha
-      }
-    },
-    handleMathCaptchaSuccess(data) {
-      this.registerForm.captcha = {
-        type: this.captchaConfig.type,
-        token: data.token,
-        data: data.captcha
-      }
-    },
-    handleTextCaptchaSuccess(data) {
-      this.registerForm.captcha = {
-        type: this.captchaConfig.type,
-        token: data.token,
-        data: data.captcha
-      }
+    handleCaptchaSuccess(data) {
+      this.registerForm.captcha = data;
     },
     handleRegister() {
+      if (this.captchaConfig.enabled && !this.registerForm.captcha) {
+        this.$modal.msgError(this.$t('Login.CaptchaRuleTip'));
+        return;
+      }
       this.$refs.registerForm.validate(valid => {
         if (valid) {
           this.loading = true;
@@ -150,8 +134,8 @@ export default {
             }).catch(() => {});
           }).catch(() => {
             this.loading = false;
-            if (this.captchaEnabled) {
-              this.getCode();
+            if (this.captchaConfig.enabled) {
+              this.$refs[this.captchaConfig.type+'Captcha'].reloadCaptcha();
             }
           })
         }
