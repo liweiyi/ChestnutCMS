@@ -30,8 +30,8 @@
         </el-input>
       </el-form-item>
       <el-form-item v-if="captchaConfig.enabled">
-        <text-captcha v-if="captchaConfig.type=='Text'" ref="textCaptcha" @change="handleCaptchaSuccess"></text-captcha>
-        <math-captcha v-if="captchaConfig.type=='Math'" ref="mathCaptcha" @change="handleCaptchaSuccess"></math-captcha>
+        <text-captcha v-if="captchaConfig.type=='Text'" ref="TextCaptcha" @change="handleCaptchaSuccess"></text-captcha>
+        <math-captcha v-if="captchaConfig.type=='Math'" ref="MathCaptcha" @change="handleCaptchaSuccess"></math-captcha>
       </el-form-item>
       <el-form-item style="width:100%;">
         <el-button
@@ -64,9 +64,8 @@ import TextCaptcha from './components/captcha/text'
 export default {
   name: "Register",
   components: {
-    SliderCaptcha,
     MathCaptcha,
-    TextCaptcha
+    TextCaptcha,
   },
   data() {
     const equalToPassword = (rule, value, callback) => {
