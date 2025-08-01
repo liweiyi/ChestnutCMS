@@ -26,8 +26,8 @@ export function editHotWord(data) {
 
 export function deleteHotWord(data) {
   return request({
-    url: '/word/hotword',
-    method: 'delete',
+    url: '/word/hotword/delete',
+    method: 'post',
     data: data
   })
 }
@@ -64,8 +64,8 @@ export function editHotWordGroup(data) {
 
 export function deleteHotWordGroup(data) {
   return request({
-    url: '/word/hotword/group',
-    method: 'delete',
+    url: '/word/hotword/group/delete',
+    method: 'post',
     data: data
   })
 }

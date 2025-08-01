@@ -24,6 +24,8 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 元数据模型对象 [XModel]
  * 
@@ -35,6 +37,7 @@ import lombok.Setter;
 @TableName(XModel.TABLE_NAME)
 public class XModel extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
     
     public static final String TABLE_NAME = "x_model";

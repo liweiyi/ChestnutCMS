@@ -33,8 +33,8 @@ export function updateMember(data) {
 
 export function deleteMembers(memberIds) {
   return request({
-    url: '/member',
-    method: 'delete',
+    url: '/member/delete',
+    method: 'post',
     data: memberIds
   })
 }

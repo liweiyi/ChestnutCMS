@@ -40,8 +40,8 @@ export function updateLevelConfig(data) {
 
 export function deleteLevelConfigs(levelConfigIds) {
   return request({
-    url: '/member/levelConfig',
-    method: 'delete',
+    url: '/member/levelConfig/delete',
+    method: 'post',
     data: levelConfigIds
   })
 }

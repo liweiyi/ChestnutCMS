@@ -40,8 +40,8 @@ export function updateTask(data) {
 
 export function delTask(taskIds) {
   return request({
-    url: '/monitor/task',
-    method: 'delete',
+    url: '/monitor/task/delete',
+    method: 'post',
     data: taskIds
   })
 }
@@ -77,8 +77,8 @@ export function getTaskLogs(params) {
 
 export function delTaskLogs(logIds) {
   return request({
-    url: '/monitor/task/logs',
-    method: 'delete',
+    url: '/monitor/task/logs/delete',
+    method: 'post',
     data: logIds
   })
 }

@@ -16,6 +16,9 @@
 package com.chestnut.common.config;
 
 import com.chestnut.common.config.properties.ChestnutProperties;
+import com.chestnut.common.utils.image.ImageProcessor;
+import com.chestnut.common.utils.image.ImageUtils;
+import com.chestnut.common.utils.image.JDKImageProcessor;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -26,6 +29,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -101,5 +105,13 @@ public class ChestnutConfig {
 	@Bean
 	public ResourceLoader resourceLoader() {
 		return new PathMatchingResourcePatternResolver();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public ImageProcessor imageProcessor() {
+		JDKImageProcessor processor = new JDKImageProcessor();
+		ImageUtils.setImageProcessor(processor);
+		return processor;
 	}
 }

@@ -24,6 +24,7 @@ import com.chestnut.vote.domain.dto.VoteSubmitDTO;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,11 +40,12 @@ import java.util.List;
 @TableName(value = VoteLog.TABLE_NAME, autoResultMap = true)
 public class VoteLog implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "cc_vote_log";
 
-	@TableId(value = "log_id", type = IdType.AUTO)
+	@TableId(value = "log_id", type = IdType.INPUT)
 	private Long logId;
 
 	/**

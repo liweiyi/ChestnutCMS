@@ -15,24 +15,19 @@
  */
 package com.chestnut.system.service.impl;
 
-import java.time.LocalDateTime;
-
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.utils.*;
+import com.chestnut.system.domain.SysLogininfor;
+import com.chestnut.system.mapper.SysLogininforMapper;
+import com.chestnut.system.service.ISysLogininforService;
+import eu.bitwalker.useragentutils.UserAgent;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.common.utils.ConvertUtils;
-import com.chestnut.common.utils.IP2RegionUtils;
-import com.chestnut.common.utils.ServletUtils;
-import com.chestnut.common.utils.StringUtils;
-import com.chestnut.system.domain.SysLogininfor;
-import com.chestnut.system.mapper.SysLogininforMapper;
-import com.chestnut.system.service.ISysLogininforService;
-
-import eu.bitwalker.useragentutils.UserAgent;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
 
 /**
  * 系统访问日志情况信息 服务层处理
@@ -80,6 +75,7 @@ public class SysLogininforServiceImpl extends ServiceImpl<SysLogininforMapper, S
 			String browser = userAgent.getBrowser().getName();
 			// 封装对象
 			SysLogininfor logininfor = new SysLogininfor();
+			logininfor.setInfoId(IdUtils.getSnowflakeId());
 			logininfor.setUserType(userType);
 			logininfor.setUserId(ConvertUtils.toStr(userId));
 			logininfor.setUserName(username);

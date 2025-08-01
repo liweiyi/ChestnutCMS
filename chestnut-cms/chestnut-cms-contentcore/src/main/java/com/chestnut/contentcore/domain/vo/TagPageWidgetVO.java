@@ -31,31 +31,31 @@ import org.springframework.beans.BeanUtils;
 @Setter
 public class TagPageWidgetVO {
 
-	@XComment("页面部件ID")
+	@XComment("{CMS.PAGE_WIDGET.ID}")
 	private Long pageWidgetId;
 
-	@XComment("所属站点ID")
+	@XComment("{CMS.PAGE_WIDGET.SITE_ID}")
 	private Long siteId;
 
-	@XComment("所属栏目ID")
+	@XComment("{CMS.PAGE_WIDGET.CATALOG_ID}")
 	private Long catalogId;
 
-	@XComment("所属栏目祖级IDs")
+	@XComment("{CMS.PAGE_WIDGET.CATALOG_ANCESTORS}")
 	private String catalogAncestors;
 
-	@XComment("类型")
+	@XComment("{CMS.PAGE_WIDGET.TYPE}")
 	private String type;
 
-	@XComment("名称")
+	@XComment("{CMS.PAGE_WIDGET.NAME}")
 	private String name;
 
-	@XComment("编码")
+	@XComment("{CMS.PAGE_WIDGET.CODE}")
 	private String code;
 
-	@XComment("发布通道")
+	@XComment(value = "{CMS.PAGE_WIDGET.PUBLISH_PIPE}", deprecated = true, forRemoval = "1.6.0")
 	private String publishPipeCode;
 
-	@XComment("页面部件扩展数据")
+	@XComment("{CMS.PAGE_WIDGET.CONTENT_OBJ}")
 	private Object contentObj;
 
 	public static TagPageWidgetVO newInstance(CmsPageWidget pageWidget) {

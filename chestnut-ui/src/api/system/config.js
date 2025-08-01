@@ -46,8 +46,8 @@ export function updateConfig(data) {
 // 删除参数配置
 export function delConfig(configIds) {
   return request({
-    url: '/system/config',
-    method: 'delete',
+    url: '/system/config/delete',
+    method: 'post',
     data: configIds
   })
 }
@@ -56,6 +56,6 @@ export function delConfig(configIds) {
 export function refreshCache() {
   return request({
     url: '/system/config/refreshCache',
-    method: 'delete'
+    method: 'post'
   })
 }

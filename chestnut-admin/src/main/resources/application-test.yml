@@ -5,9 +5,9 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.5.6
+  version: 1.5.7
   # 版权年份
-  copyrightYear: 2022-2024
+  copyrightYear: 2022-2025
   system:
     # 演示模式开关
     demoMode: true
@@ -121,7 +121,7 @@ spring:
         master:
           type: ${spring.datasource.type}
           driverClassName: com.mysql.cj.jdbc.Driver
-          url: jdbc:mysql://127.0.0.1:3308/chestnut_cms?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
+          url: jdbc:mysql://127.0.0.1:3306/chestnut_cms?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true
           username: root
           password: hello1234
         # 从库

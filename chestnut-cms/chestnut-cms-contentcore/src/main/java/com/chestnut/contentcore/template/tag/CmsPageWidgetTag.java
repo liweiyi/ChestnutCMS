@@ -132,7 +132,8 @@ public class CmsPageWidgetTag extends AbstractTag {
 					FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
 					this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
 				}
-				env.getOut().write(StringUtils.messageFormat(CmsIncludeTag.SSI_INCLUDE_TAG, "/" + staticFilePath));
+				String prefix = SiteUtils.getPublishPipePrefix(site, context.getPublishPipeCode(), context.isPreview());
+				env.getOut().write(StringUtils.messageFormat(CmsIncludeTag.SSI_INCLUDE_TAG, prefix + staticFilePath));
 			} else {
 				// 非ssi模式无法使用缓存
 				String staticContent = this.processTemplate(env, pw, templateKey);

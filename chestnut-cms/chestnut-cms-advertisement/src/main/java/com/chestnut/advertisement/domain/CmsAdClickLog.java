@@ -36,7 +36,7 @@ public class CmsAdClickLog implements Serializable {
 	
 	public final static String TABLE_NAME = "cms_ad_click_log";
 
-	@TableId(value = "log_id", type = IdType.AUTO)
+	@TableId(value = "log_id", type = IdType.INPUT)
 	private Long logId;
 	
 	/**

@@ -136,10 +136,12 @@ public class ContentController extends BaseRestController {
 		Page<CmsContent> page = q.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
 		List<ListContentVO> list = page.getRecords().stream().map(ListContentVO::newInstance).toList();
 		// 内容引导图缩略图处理
-		list.forEach(vo -> resourceService.dealDefaultThumbnail(site, vo.getImages(), thumbnails -> {
-			vo.setImagesSrc(thumbnails);
-			vo.setLogoSrc(thumbnails.get(0));
-		}));
+		list.forEach(vo ->
+				resourceService.dealDefaultThumbnail(site, vo.getImages(), thumbnails -> {
+					vo.setImagesSrc(thumbnails);
+					vo.setLogoSrc(thumbnails.get(0));
+				}
+			));
 		return this.bindDataTable(list, (int) page.getTotal());
 	}
 
@@ -197,7 +199,7 @@ public class ContentController extends BaseRestController {
 	}
 
 	@Log(title = "删除内容", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteContent(@RequestBody @NotEmpty List<Long> contentIds) {
 		this.contentService.deleteContents(contentIds, StpAdminUtil.getLoginUser());
 		return R.ok();
@@ -213,8 +215,9 @@ public class ContentController extends BaseRestController {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		PermissionUtils.checkPermission(CatalogPrivItem.Publish.getPermissionKey(content.getCatalogId()), loginUser);
 
-		this.publishService.publishContent(publishContentDTO.getContentIds(), StpAdminUtil.getLoginUser());
-		return R.ok();
+		List<CmsContent> list = this.contentService.dao().listByIds(publishContentDTO.getContentIds());
+		AsyncTask task = this.publishService.publishContents(list, StpAdminUtil.getLoginUser());
+		return R.ok(task.getTaskId());
 	}
 
 	/**
@@ -244,8 +247,8 @@ public class ContentController extends BaseRestController {
 	@PostMapping("/copy")
 	public R<?> copy(@RequestBody @Validated CopyContentDTO dto) {
 		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.contentService.copy(dto);
-		return R.ok();
+		AsyncTask task = this.contentService.copy(dto);
+		return R.ok(task.getTaskId());
 	}
 
 	/**
@@ -255,8 +258,8 @@ public class ContentController extends BaseRestController {
 	@PostMapping("/move")
 	public R<?> move(@RequestBody @Validated MoveContentDTO dto) {
 		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.contentService.move(dto);
-		return R.ok();
+		AsyncTask task = this.contentService.move(dto);
+		return R.ok(task.getTaskId());
 	}
 
 	/**
@@ -297,8 +300,8 @@ public class ContentController extends BaseRestController {
 	@Log(title = "下线内容", businessType = BusinessType.UPDATE)
 	@PostMapping("/offline")
 	public R<?> offline(@RequestBody @NotEmpty List<Long> contentIds) {
-		this.contentService.offline(contentIds, StpAdminUtil.getLoginUser());
-		return R.ok();
+		AsyncTask task = this.contentService.offline(contentIds, StpAdminUtil.getLoginUser());
+		return R.ok(task.getTaskId());
 	}
 
 	/**
@@ -332,7 +335,7 @@ public class ContentController extends BaseRestController {
 	}
 
 	@Log(title = "移除内容属性", businessType = BusinessType.UPDATE)
-	@DeleteMapping("/attr")
+	@PostMapping("/attr/delete")
 	public R<?> removeContentsAttribute(@RequestBody @Validated ChangeContentAttrDTO dto) {
 		this.contentService.dao().listByIds(dto.getContentIds()).forEach(content -> {
 			int attributes = ContentAttribute.remove(content.getAttributes(), ContentAttribute.bit(dto.getAttr()));

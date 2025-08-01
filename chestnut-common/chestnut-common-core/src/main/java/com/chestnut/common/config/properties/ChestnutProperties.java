@@ -46,24 +46,10 @@ public class ChestnutProperties {
 	 */
 	private Snowflake snowflake;
 
-	private GraphicsMagick graphicsMagick;
-
 	@Getter
 	@Setter
 	public static class Snowflake {
 
 		private short workerId = 1;
-	}
-
-	@Getter
-	@Setter
-	public static class GraphicsMagick {
-
-		public boolean enable = false;
-
-		/**
-		 * GraphicsMagick安装路径
-		 */
-		public String path;
 	}
 }

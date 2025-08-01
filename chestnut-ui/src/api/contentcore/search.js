@@ -12,8 +12,8 @@ export function getContentIndexList(query) {
 // 删除内容索引
 export function deleteContentIndex(contentIds) {
   return request({
-    url: '/cms/search/contents',
-    method: 'delete',
+    url: '/cms/search/contents/delete',
+    method: 'post',
     data: contentIds
   })
 }

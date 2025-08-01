@@ -37,136 +37,136 @@ import java.util.List;
 @Setter
 public class TagContentVO extends TagBaseVO {
 
-    @XComment("内容ID")
+    @XComment("{CMS.CONTENT.ID}")
     private Long contentId;
 
-    @XComment("所属站点ID")
+    @XComment("{CMS.CONTENT.SITE_ID}")
     private Long siteId;
 
-    @XComment("所属栏目ID")
+    @XComment("{CMS.CONTENT.CATALOG_ID}")
     private Long catalogId;
 
-    @XComment("所属栏目祖级IDs")
+    @XComment("{CMS.CONTENT.CATALOG_ANCESTORS}")
     private String catalogAncestors;
 
-    @XComment("所属顶级栏目")
+    @XComment("{CMS.CONTENT.TOP_CATALOG}")
     private Long topCatalog;
 
-    @XComment("所属部门ID")
+    @XComment("{CMS.CONTENT.DEPT_ID}")
     private Long deptId;
 
-    @XComment("所属部门编码")
+    @XComment("{CMS.CONTENT.DEPT_CODE}")
     private String deptCode;
 
-    @XComment("内容类型")
+    @XComment("{CMS.CONTENT.TYPE}")
     private String contentType;
 
-    @XComment("标题")
+    @XComment("{CMS.CONTENT.TITLE}")
     private String title;
 
-    @XComment("副标题")
+    @XComment("{CMS.CONTENT.SUB_TITLE}")
     private String subTitle;
 
-    @XComment("短标题")
+    @XComment("{CMS.CONTENT.SHORT_TITLE}")
     private String shortTitle;
 
-    @XComment("标题样式")
+    @XComment("{CMS.CONTENT.SHORT_TITLE}")
     private String titleStyle;
 
-    @XComment(value = "封面图", deprecated = true, forRemoval = "1.6.0")
+    @XComment(value = "{CMS.CONTENT.LOGO}")
     private String logo;
 
-    @XComment(value = "封面图访问路径", deprecated = true, forRemoval = "1.6.0")
+    @XComment(value = "{CMS.CONTENT.LOGO_SRC}")
     private String logoSrc;
 
-    @XComment("封面图列表")
+    @XComment("{CMS.CONTENT.IMAGES}")
     private List<String> images;
 
-    @XComment("来源")
+    @XComment("{CMS.CONTENT.SOURCE}")
     private String source;
 
-    @XComment("来源URL")
+    @XComment("{CMS.CONTENT.SOURCE_URL}")
     private String sourceUrl;
 
-    @XComment("是否原创")
+    @XComment("{CMS.CONTENT.ORIGINAL}")
     private String original;
 
-    @XComment("作者")
+    @XComment("{CMS.CONTENT.AUTHOR}")
     private String author;
 
-    @XComment("编辑")
+    @XComment("{CMS.CONTENT.EDITOR}")
     private String editor;
 
-    @XComment("投稿用户ID")
+    @XComment("{CMS.CONTENT.CONTRIBUTOR_ID}")
     private Long contributorId;
 
-    @XComment("摘要")
+    @XComment("{CMS.CONTENT.SUMMARY}")
     private String summary;
 
-    @XComment("内容属性标识列表")
+    @XComment("{CMS.CONTENT.ATTRS}")
     private String[] attributes;
 
-    @XComment("内容状态")
+    @XComment("{CMS.CONTENT.STATUS}")
     private String status;
 
-    @XComment("是否链接内容")
+    @XComment("{CMS.CONTENT.LINK_FLAG}")
     private String linkFlag;
 
-    @XComment("跳转链接（linkFlag==Y）")
+    @XComment("{CMS.CONTENT.REDIRECT_URL}")
     private String redirectUrl;
 
-    @XComment("置顶标识")
+    @XComment("{CMS.CONTENT.TOP_FLAG}")
     private Long topFlag;
 
-    @XComment("置顶结束时间")
+    @XComment("{CMS.CONTENT.TOP_DATE}")
     private LocalDateTime topDate;
 
-    @XComment("排序值")
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 
-    @XComment("关键词")
+    @XComment("{CMS.CONTENT.KEYWORDS}")
     private String[] keywords;
 
-    @XComment("TAGs")
+    @XComment("{CMS.CONTENT.TAGS}")
     private String[] tags;
 
-    @XComment("发布时间")
+    @XComment("{CMS.CONTENT.PUBLISH_DATE}")
     private LocalDateTime publishDate;
 
-    @XComment("SEO标题")
+    @XComment("{CMS.CONTENT.SEO_TITLE}")
     private String seoTitle;
 
-    @XComment("SEO关键词")
+    @XComment("{CMS.CONTENT.SEO_KEYWORDS}")
     private String seoKeywords;
 
-    @XComment("SEO描述")
+    @XComment("{CMS.CONTENT.SEO_DESC}")
     private String seoDescription;
 
-    @XComment("点赞数（非实时）")
+    @XComment("{CMS.CONTENT.LIKE}")
     private Long likeCount;
 
-    @XComment("评论数（非实时）")
+    @XComment("{CMS.CONTENT.COMMENT}")
     private Long commentCount;
 
-    @XComment("收藏数（非实时）")
+    @XComment("{CMS.CONTENT.FAVORITE}")
     private Long favoriteCount;
 
-    @XComment("文章浏览数（非实时）")
+    @XComment("{CMS.CONTENT.VIEW}")
     private Long viewCount;
 
-    @XComment("备用字段1")
+    @XComment("{CMS.CONTENT.PROP1}")
     private String prop1;
 
-    @XComment("备用字段2")
+    @XComment("{CMS.CONTENT.PROP2}")
     private String prop2;
 
-    @XComment("备用字段3")
+    @XComment("{CMS.CONTENT.PROP3}")
     private String prop3;
 
-    @XComment("备用字段4")
+    @XComment("{CMS.CONTENT.PROP4}")
     private String prop4;
 
-    @XComment("内容链接")
+    @XComment("{CMS.CONTENT.LINK}")
     private String link;
 
     public static TagContentVO newInstance(CmsContent content, String publishPipeCode, boolean preview) {

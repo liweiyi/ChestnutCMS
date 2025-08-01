@@ -20,13 +20,8 @@ import com.chestnut.contentcore.domain.dto.SiteDTO;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
-import java.io.Serial;
-
 @Getter
 public class AfterSiteAddEvent extends ApplicationEvent {
-
-	@Serial
-	private static final long serialVersionUID = 1L;
 
 	private final SiteDTO siteDTO;
 

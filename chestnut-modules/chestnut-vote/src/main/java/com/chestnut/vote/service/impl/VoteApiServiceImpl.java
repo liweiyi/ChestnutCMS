@@ -19,6 +19,7 @@ import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.DateUtils;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.vote.core.IVoteUserType;
 import com.chestnut.vote.domain.VoteLog;
 import com.chestnut.vote.domain.dto.VoteSubmitDTO;
@@ -80,6 +81,7 @@ public class VoteApiServiceImpl implements IVoteApiService {
 	
 			// 记录日志
 			VoteLog voteLog = new VoteLog();
+			voteLog.setLogId(IdUtils.getSnowflakeId());
 			voteLog.setVoteId(dto.getVoteId());
 			voteLog.setUserType(vote.getUserType());
 			voteLog.setUserId(userId);

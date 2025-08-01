@@ -64,7 +64,7 @@ public interface IModelDataService {
 	 * @param modeId
 	 * @param pkValues
 	 */
-	void deleteModelDataByPkValue(Long modeId, List<Map<String, String>> pkValues);
+	void deleteModelDataByPkValue(Long modeId, List<Map<String, Object>> pkValues);
 
     List<Map<String, Object>> selectModelDataList(Long modelId, Consumer<SqlBuilder> consumer);
 

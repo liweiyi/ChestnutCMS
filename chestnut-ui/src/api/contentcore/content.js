@@ -38,8 +38,8 @@ export function saveContent(data) {
 // 删除内容
 export function delContent(data) {
   return request({
-    url: '/cms/content',
-    method: 'delete',
+    url: '/cms/content/delete',
+    method: 'post',
     data: data
   })
 }
@@ -150,8 +150,8 @@ export function addContentAttribute(data) {
 
 export function removeContentAttribute(data) {
   return request({
-    url: '/cms/content/attr',
-    method: 'delete',
+    url: '/cms/content/attr/delete',
+    method: 'post',
     data: data
   })
 }

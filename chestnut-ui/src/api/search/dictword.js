@@ -20,8 +20,8 @@ export function addDictWord(words) {
 // 删除词库新词
 export function deleteDictWords(dictWordIds) {
   return request({
-    url: '/search/dict',
-    method: 'delete',
+    url: '/search/dict/delete',
+    method: 'post',
     data: dictWordIds
   })
 }

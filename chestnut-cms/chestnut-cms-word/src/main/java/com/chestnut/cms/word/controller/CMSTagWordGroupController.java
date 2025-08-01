@@ -53,7 +53,7 @@ public class CMSTagWordGroupController extends BaseRestController {
 	public R<?> getTreeData() {
 		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
 		List<TagWordGroup> groups = this.tagWordGroupService.lambdaQuery()
-				.eq(TagWordGroup::getOwner, currentSite.getSiteId())
+				.eq(TagWordGroup::getOwner, currentSite.getSiteId().toString())
 				.list();
 		List<TreeNode<String>> treeData = this.tagWordGroupService.buildTreeData(groups);
 		return R.ok(treeData);

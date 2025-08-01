@@ -178,7 +178,7 @@ public class CatalogController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Delete:${#catalogId}")
 	@Log(title = "删除", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{catalogId}")
+	@PostMapping("/delete/{catalogId}")
 	public R<String> deleteCatalog(@PathVariable("catalogId") @LongId Long catalogId) {
 		CmsCatalog catalog = catalogService.getById(catalogId);
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalog));

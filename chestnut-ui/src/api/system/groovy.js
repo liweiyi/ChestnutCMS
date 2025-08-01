@@ -33,7 +33,7 @@ export function saveGroovyScript(data) {
 export function deleteGroovyScript(scriptIds) {
   return request({
     url: '/groovy/delete',
-    method: 'delete',
+    method: 'post',
     data: scriptIds
   })
 }

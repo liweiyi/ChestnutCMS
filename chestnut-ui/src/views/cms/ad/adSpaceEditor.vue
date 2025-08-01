@@ -229,6 +229,7 @@ export default {
         ]
       },
       openTemplateSelector: false,
+      templatePublishPipeCode: '',
       dataList: undefined,
       total: 0,
       selectedRows: [],
@@ -296,11 +297,15 @@ export default {
         }
       });
     },
-    handleSelectTemplate () {
+    handleSelectTemplate (publishPipeCode) {
+      this.templatePublishPipeCode = publishPipeCode;
       this.openTemplateSelector = true;
     },
     handleTemplateSelected (template) {
-      this.form.template = template;
+      let prop = this.form.templates.find(item => item.code == this.templatePublishPipeCode);
+      if (prop) {
+        prop.template = template;
+      }
       this.openTemplateSelector = false;
     },
     handleTemplateSelectorCancel () {

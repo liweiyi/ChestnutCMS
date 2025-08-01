@@ -105,7 +105,7 @@ public class AdLogController extends BaseRestController {
 			
 			CmsAdHourStat stat = collect.get(hourStr);
 			clickDatas.add(Objects.isNull(stat) ? 0 : stat.getClick());
-			viewDatas.add(Objects.isNull(stat) ? 0 : stat.getView());
+			viewDatas.add(Objects.isNull(stat) ? 0 : stat.getViewTotal());
 			
 			beginTime = DateUtils.addHours(beginTime, 1);
 		}

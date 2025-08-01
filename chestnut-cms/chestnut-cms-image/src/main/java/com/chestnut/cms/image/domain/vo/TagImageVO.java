@@ -31,46 +31,46 @@ import lombok.Setter;
 @Setter
 public class TagImageVO extends TagBaseVO {
 
-    @XComment("图片ID")
+    @XComment("{CMS.IMAGE.ID}")
     private Long imageId;
 
-    @XComment("所属内容ID")
+    @XComment("{CMS.IMAGE.CONTENT_ID}")
     private Long contentId;
 
-    @XComment("所属站点ID")
+    @XComment("{CMS.IMAGE.SITE_ID}")
     private Long siteId;
 
-    @XComment("视频标题")
+    @XComment("{CMS.IMAGE.TITLE}")
     private String title;
 
-    @XComment("简介")
+    @XComment("{CMS.IMAGE.DESC}")
     private String description;
 
-    @XComment("图片原文件名")
+    @XComment("{CMS.IMAGE.FILE_NAME}")
     private String fileName;
 
-    @XComment("图片路径")
+    @XComment("{CMS.IMAGE.PATH}")
     private String path;
 
-    @XComment(value = "访问路径", deprecated = true, forRemoval = "1.6.0")
+    @XComment(value = "{CMS.IMAGE.SRC}", deprecated = true, forRemoval = "1.6.0")
     private String src;
 
-    @XComment("图片类型")
+    @XComment("{CMS.IMAGE.TYPE}")
     private String imageType;
 
-    @XComment("图片大小")
+    @XComment("{CMS.IMAGE.FILE_SIZE}")
     private Long fileSize;
 
-    @XComment("图片宽度")
+    @XComment("{CMS.IMAGE.WIDTH}")
     private Integer width;
 
-    @XComment("图片高度")
+    @XComment("{CMS.IMAGE.HEIGHT}")
     private Integer height;
 
-    @XComment("跳转链接")
+    @XComment("{CMS.IMAGE.REDIRECT_URL}")
     private String redirectUrl;
 
-    @XComment("排序值")
+    @XComment("{CC.ENTITY.SORT}")
     private Integer sortFlag;
 
     public static TagImageVO newInstance(CmsImage image) {

@@ -15,6 +15,7 @@
  */
 package com.chestnut.search.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -34,6 +35,7 @@ import lombok.Setter;
 @TableName(SearchLog.TABLE_NAME)
 public class SearchLog implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "search_log";

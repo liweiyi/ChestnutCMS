@@ -26,8 +26,8 @@ export function editSensitiveWord(data) {
 
 export function deleteSensitiveWord(data) {
   return request({
-    url: '/word/sensitiveword',
-    method: 'delete',
+    url: '/word/sensitiveword/delete',
+    method: 'post',
     data: data
   })
 }

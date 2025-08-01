@@ -16,7 +16,6 @@
 package com.chestnut.contentcore.service.impl;
 
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.storage.IFileStorageType;
 import com.chestnut.common.storage.exception.StorageErrorCode;
 import com.chestnut.common.utils.Assert;
@@ -36,6 +35,7 @@ import com.chestnut.contentcore.util.FileStorageHelper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.DigestUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class ImageProcessServiceImpl implements IImageProcessService {
     }
 
     @Override
-    public void cropImage(ImageCropDTO dto) throws IOException {
+    public void cropImage(ImageCropDTO dto) throws Exception {
         CmsResource resource = this.resourceService.getById(dto.getResourceId());
         Assert.notNull(resource, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("resourceId", dto.getResourceId()));
 
@@ -75,10 +75,6 @@ public class ImageProcessServiceImpl implements IImageProcessService {
         Assert.isTrue(isImage, ContentCoreErrorCode.ONLY_SUPPORT_IMAGE::exception);
 
         CmsSite site = this.siteService.getSite(resource.getSiteId());
-
-        if (!resource.getStorageType().equals(FileStorageTypeProperty.getValue(site.getConfigProps()))) {
-            throw ContentCoreErrorCode.UNSUPPORTED_RESOURCE_STORAGE.exception();
-        }
         // 读取存储配置
         String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
         IFileStorageType fst = this.getFileStorageType(fileStorageType);
@@ -88,7 +84,7 @@ public class ImageProcessServiceImpl implements IImageProcessService {
         String imageFormat = FilenameUtils.getExtension(resource.getFileName());
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             try (InputStream is = fileStorageHelper.read(resource.getPath())) {
-                ImageHelper.of(is).format(imageFormat)
+                ImageHelper.of(is, imageFormat)
                         .crop(dto.getX(), dto.getY(), dto.getWidth(), dto.getHeight())
                         .to(os);
             }
@@ -96,10 +92,12 @@ public class ImageProcessServiceImpl implements IImageProcessService {
         }
         // 重新生成缩略图
         regenerateThumbnails(resource, imageFormat, fileStorageHelper);
+        // 更新资源唯一标识码
+        updateResourceIdentifier(resource, fileStorageHelper);
     }
 
     @Override
-    public void rotateImage(ImageRotateDTO dto) throws IOException {
+    public void rotateImage(ImageRotateDTO dto) throws Exception {
         CmsResource resource = this.resourceService.getById(dto.getResourceId());
         Assert.notNull(resource, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("resourceId", dto.getResourceId()));
 
@@ -107,10 +105,6 @@ public class ImageProcessServiceImpl implements IImageProcessService {
         Assert.isTrue(isImage, ContentCoreErrorCode.ONLY_SUPPORT_IMAGE::exception);
 
         CmsSite site = this.siteService.getSite(resource.getSiteId());
-
-        if (!resource.getStorageType().equals(FileStorageTypeProperty.getValue(site.getConfigProps()))) {
-            throw new GlobalException("资源存储方式与当前站点配置不一致");
-        }
         // 读取存储配置
         String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
         IFileStorageType fst = getFileStorageType(fileStorageType);
@@ -120,7 +114,7 @@ public class ImageProcessServiceImpl implements IImageProcessService {
         String imageFormat = FilenameUtils.getExtension(resource.getPath());
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             try (InputStream is = fileStorageHelper.read(resource.getPath())) {
-                ImageHelper.of(is).format(imageFormat)
+                ImageHelper.of(is, imageFormat)
                         .resize(Objects.requireNonNullElse(dto.getWidth(), 0),
                                 Objects.requireNonNullElse(dto.getHeight(), 0))
                         .rotate(dto.getRotate())
@@ -131,9 +125,11 @@ public class ImageProcessServiceImpl implements IImageProcessService {
         }
         // 重新生成缩略图
         regenerateThumbnails(resource, imageFormat, fileStorageHelper);
+        // 更新资源唯一标识码
+        updateResourceIdentifier(resource, fileStorageHelper);
     }
 
-    public void regenerateThumbnails(CmsResource resource, String imageFormat, FileStorageHelper fileStorageHelper) throws IOException {
+    public void regenerateThumbnails(CmsResource resource, String imageFormat, FileStorageHelper fileStorageHelper) throws Exception {
         String pathPrefix = StringUtils.substringBefore(resource.getPath(), ".") + "_";
         List<String> pathList = fileStorageHelper.listObjects(pathPrefix);
         for (String path : pathList) {
@@ -141,12 +137,21 @@ public class ImageProcessServiceImpl implements IImageProcessService {
                 String fileName = StringUtils.substringAfterLast(path, "/");
                 String[] size = fileName.substring(fileName.indexOf("_") + 1, fileName.indexOf(".")).split("x");
                 try (InputStream is = fileStorageHelper.read(resource.getPath())) {
-                    ImageHelper.of(is).format(imageFormat)
+                    ImageHelper.of(is, imageFormat)
                             .resize(Integer.parseInt(size[0]), Integer.parseInt(size[1]))
                             .to(os);
                 }
                 fileStorageHelper.write(path, os.toByteArray());
             }
         }
+    }
+
+    private void updateResourceIdentifier(CmsResource resource, FileStorageHelper fileStorageHelper) throws IOException {
+        try (InputStream is = fileStorageHelper.read(resource.getPath())) {
+            String identifier = DigestUtils.md5DigestAsHex(is);
+            resource.setIdentifier(identifier);
+        }
+        this.resourceService.lambdaUpdate().set(CmsResource::getIdentifier, resource.getIdentifier())
+                .eq(CmsResource::getResourceId, resource.getResourceId()).update();
     }
 }

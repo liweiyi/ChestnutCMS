@@ -20,11 +20,13 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.xmodel.dto.FieldOptions;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.util.List;
 import java.util.Map;
 
@@ -40,41 +42,49 @@ import java.util.Map;
 @TableName(value = XModelField.TABLE_NAME, autoResultMap = true)
 public class XModelField extends BaseEntity {
 
-    private static final long serialVersionUID=1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     
     public static final String TABLE_NAME = "x_model_field";
 
+    @XComment("{SYS.XMODEL_FIELD.ID}")
     @TableId(value = "field_id", type = IdType.INPUT)
     private Long fieldId;
 
     /**
      * 模型ID
      */
+    @XComment("{SYS.XMODEL_FIELD.MODEL_ID}")
     private Long modelId;
 
     /**
      * 名称
      */
+    @XComment("{SYS.XMODEL_FIELD.NAME}")
     private String name;
 
     /**
      * 唯一标识编码
      */
+    @XComment("{SYS.XMODEL_FIELD.CODE}")
     private String code;
 
     /**
      * 如果是x_model_data表，字段类型：varchar(50)，varchar(200)，varchar(2000)，mediumText，bigint，double，datetime
      */
+    @XComment("{SYS.XMODEL_FIELD.TYPE}")
     private String fieldType;
     
     /**
      * 如果是自定义表，对应数据库表字段名
      */
+    @XComment("{SYS.XMODEL_FIELD.FIELD_NAME}")
     private String fieldName;
 
     /**
      * 对应前端显示控件类型
      */
+    @XComment("{SYS.XMODEL_FIELD.CONTROL_TYPE}")
     private String controlType;
     
     /**
@@ -87,28 +97,33 @@ public class XModelField extends BaseEntity {
      *   text = 自定义格式：<名称=值>\n...
      *   	
      */
+    @XComment("{SYS.XMODEL_FIELD.OPTIONS}")
     @TableField(typeHandler = JacksonTypeHandler.class)
     private FieldOptions options;
     
     /**
      * 默认值
      */
+    @XComment("{SYS.XMODEL_FIELD.DEFAULT_VALUE}")
     private String defaultValue;
 
     /**
      * 校验规则
      */
+    @XComment("{SYS.XMODEL_FIELD.VALIDATIONS}")
     @TableField(typeHandler = JacksonTypeHandler.class)
     private List<Map<String, Object>> validations;
 
     /**
      * 排序字段
      */
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
     
     /**
      * 字段值
      */
+    @XComment("{SYS.XMODEL_FIELD.VALUE}")
     @TableField(exist = false)
     private String value;
 }

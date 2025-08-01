@@ -25,6 +25,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 通知公告表 sys_notice
  *
@@ -36,6 +38,7 @@ import lombok.Setter;
 @TableName(SysNotice.TABLE_NAME)
 public class SysNotice extends BaseEntity {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "sys_notice";

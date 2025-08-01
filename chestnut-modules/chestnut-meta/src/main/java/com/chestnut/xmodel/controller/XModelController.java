@@ -119,7 +119,7 @@ public class XModelController extends BaseRestController {
 	}
 
 	@Log(title = "删除元数据", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<XModelDTO> dtoList) {
 		List<Long> modelIds = dtoList.stream().map(XModelDTO::getModelId).toList();
 		this.modelService.deleteModel(modelIds);

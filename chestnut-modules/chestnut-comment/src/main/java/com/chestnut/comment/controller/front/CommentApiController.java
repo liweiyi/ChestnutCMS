@@ -91,7 +91,7 @@ public class CommentApiController extends BaseRestController {
 
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
-	@DeleteMapping("/{commentId}")
+	@PostMapping("/delete/{commentId}")
 	public R<?> deleteMyComment(@PathVariable @Min(1) Long commentId) {
 		this.commentApiService.deleteUserComment(StpMemberUtil.getLoginIdAsLong(), commentId);
 		return R.ok();

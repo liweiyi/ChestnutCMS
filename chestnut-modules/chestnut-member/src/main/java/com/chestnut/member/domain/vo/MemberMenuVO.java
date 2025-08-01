@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.domain.vo;
 
+import com.chestnut.common.annotation.XComment;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,7 +26,9 @@ import lombok.Setter;
  * @email 190785909@qq.com
  */
 public record MemberMenuVO(
+        @XComment("{CMS.MEMBER.MENU.NAME}")
         String name,
+        @XComment("{CMS.MEMBER.MENU.URL}")
         String url
 ){
 

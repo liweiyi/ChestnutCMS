@@ -20,15 +20,12 @@ import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.context.model.SaRequest;
 import cn.dev33.satoken.context.model.SaStorage;
-import cn.dev33.satoken.error.SaErrorCode;
-import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.fun.SaFunction;
 import cn.dev33.satoken.listener.SaTokenEventCenter;
 import cn.dev33.satoken.session.SaSession;
-import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
-import cn.dev33.satoken.stp.StpUtil;
+import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import cn.dev33.satoken.util.SaTokenConsts;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.StringUtils;
@@ -56,42 +53,6 @@ public class StpMemberUtil {
 		@Override
 		public String splicingKeyTokenName() {
 			return super.splicingKeyTokenName() + "-M";
-		}
-
-		@Override
-		public String getTokenValueNotCut(){
-			// 0. 获取相应对象
-			SaStorage storage = SaHolder.getStorage();
-			SaRequest request = SaHolder.getRequest();
-			SaTokenConfig config = getConfigOrGlobal();
-			String keyTokenName = getTokenName();
-			String tokenValue = null;
-
-			// 1. 尝试从Storage里读取
-			if(storage.get(splicingKeyJustCreatedSave()) != null) {
-				tokenValue = String.valueOf(storage.get(splicingKeyJustCreatedSave()));
-			}
-			// 2. 尝试从请求体里面读取
-			if(tokenValue == null && config.getIsReadBody()){
-				tokenValue = request.getParam(keyTokenName);
-			}
-			// 3. 尝试从header里读取
-			if(tokenValue == null && config.getIsReadHeader()){
-				tokenValue = request.getHeader(keyTokenName);
-			}
-			// 4. 尝试从cookie里读取
-			if(tokenValue == null && config.getIsReadCookie()){
-				tokenValue = request.getCookieValue(keyTokenName);
-				// 临时处理一下
-				if (StringUtils.isNotEmpty(tokenValue)) {
-					String tokenPrefix = getConfigOrGlobal().getTokenPrefix();
-					if (StringUtils.isNotEmpty(tokenPrefix) && !tokenValue.startsWith(tokenPrefix + SaTokenConsts.TOKEN_CONNECTOR_CHAT)) {
-						tokenValue = tokenPrefix + SaTokenConsts.TOKEN_CONNECTOR_CHAT + tokenValue;
-					}
-				}
-			}
-			// 5. 返回
-			return tokenValue;
 		}
 	};
 
@@ -164,7 +125,7 @@ public class StpMemberUtil {
  	 * @param tokenValue token值 
  	 * @param loginModel 登录参数 
  	 */
-	public static void setTokenValue(String tokenValue, SaLoginModel loginModel){
+	public static void setTokenValue(String tokenValue, SaLoginParameter loginModel){
 		stpLogic.setTokenValue(tokenValue, loginModel);
 	}
 
@@ -240,7 +201,7 @@ public class StpMemberUtil {
 	 * @param id         登录id，建议的类型：（long | int | String）
 	 * @param loginModel 此次登录的参数Model
 	 */
-	public static void login(Object id, SaLoginModel loginModel) {
+	public static void login(Object id, SaLoginParameter loginModel) {
 		stpLogic.login(id, loginModel);
 	}
 
@@ -259,7 +220,7 @@ public class StpMemberUtil {
 	 * @param loginModel 此次登录的参数Model 
 	 * @return 返回会话令牌 
 	 */
-	public static String createLoginSession(Object id, SaLoginModel loginModel) {
+	public static String createLoginSession(Object id, SaLoginParameter loginModel) {
 		return stpLogic.createLoginSession(id, loginModel);
 	}
 	
@@ -796,7 +757,7 @@ public class StpMemberUtil {
 	 * @return 当前令牌的登录设备类型
 	 */
 	public static String getLoginDevice() {
-		return stpLogic.getLoginDevice(); 
+		return stpLogic.getLoginDeviceType();
 	}
 
 	

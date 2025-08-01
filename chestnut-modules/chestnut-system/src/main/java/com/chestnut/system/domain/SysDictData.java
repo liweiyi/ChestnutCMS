@@ -29,6 +29,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 字典数据表 sys_dict_data
  *
@@ -39,6 +41,8 @@ import lombok.Setter;
 @Setter
 @TableName(SysDictData.TABLE_NAME)
 public class SysDictData extends BaseEntity {
+
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "sys_dict_data";

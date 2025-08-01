@@ -16,19 +16,17 @@
 package com.chestnut.common.utils.image;
 
 import com.chestnut.common.exception.ImageException;
-import com.chestnut.common.utils.SpringUtils;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.ResourceUtils;
+import org.springframework.util.StreamUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.List;
-import java.util.*;
+import java.util.Base64;
+import java.util.Objects;
 
 /**
  * 图片处理工具类
@@ -38,62 +36,32 @@ public class ImageUtils {
 
     public static final String FORMAT_GIF = "gif";
 
-    private static final List<ImageProcessor> imageProcessors = new ArrayList<>();
+    public static final String FORMAT_JPG = "jpg";
 
-    static {
-        GraphicsEnvironment localGraphicsEnvironment = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        loadUserFonts().values().forEach(localGraphicsEnvironment::registerFont);
-        registerImageProcessor(new JPGImageProcessor());
-        registerImageProcessor(new PNGImageProcessor());
+    public static final String FORMAT_JPEG = "jpeg";
+
+    public static final String FORMAT_PNG = "png";
+
+    public static final String FORMAT_WEBP = "webp";
+
+    private static ImageProcessor IMAGE_PROCESSOR = null;
+
+    public static ImageProcessor getImageProcessor() {
+        Assert.notNull(IMAGE_PROCESSOR, () -> new ImageException("No available image processors."));
+        return IMAGE_PROCESSOR;
     }
 
-    /**
-     * 获取系统可用字体系列名称
-     */
-    public static String[] getSupportFonts() {
-        return GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+    public static void setImageProcessor(ImageProcessor imageProcessor) {
+        IMAGE_PROCESSOR = imageProcessor;
+        log.info("Load image processor: {}", imageProcessor.getClass().getName());
     }
 
-    /**
-     * 获取用户字体
-     *
-     * @return 用户字体(key=字体名称, value=文件名称)
-     */
-    public static Map<String, Font> loadUserFonts() {
-        try {
-            ResourceLoader resourceLoader = SpringUtils.getBean(ResourceLoader.class);
-            Resource resource = resourceLoader.getResource(ResourceUtils.CLASSPATH_URL_PREFIX + "fonts/");
-            if (!resource.exists() || !resource.getFile().isDirectory()) {
-                return Map.of();
-            }
-            File[] fontFiles = resource.getFile().listFiles(f -> f.getName().matches("(?i).+\\.(ttf|ttc)"));
-            if (Objects.isNull(fontFiles) || fontFiles.length == 0) {
-                return Map.of();
-            }
-            Map<String, Font> fontsMap = new HashMap<>();
-            for (File fontFile : fontFiles) {
-                try {
-                    Font f = Font.createFont(Font.TRUETYPE_FONT, fontFile);
-                    fontsMap.put(f.getFamily().toLowerCase(), f);
-                } catch (Exception e) {
-                    log.warn("Load user fonts failed: " + fontFile.getName(), e);
-                }
-            }
-            return fontsMap;
-        } catch (IOException e) {
-            log.warn("Load user fonts directory failed.", e);
-            return Map.of();
-        }
+    public static boolean isJPG(String suffix) {
+        return FORMAT_JPG.equalsIgnoreCase(suffix) || FORMAT_JPEG.equalsIgnoreCase(suffix);
     }
 
 	public static Dimension getDimension(File file) throws IOException {
-        BufferedImage bufferedImage = ImageIO.read(file);
-        return new Dimension(bufferedImage.getWidth(), bufferedImage.getHeight());
-    }
-
-    public static Dimension getDimension(InputStream is) throws IOException {
-        BufferedImage bufferedImage = ImageIO.read(is);
-        return new Dimension(bufferedImage.getWidth(), bufferedImage.getHeight());
+        return IMAGE_PROCESSOR.getDimension(file);
     }
 
     /**
@@ -138,20 +106,6 @@ public class ImageUtils {
         return img;
     }
 
-    public static void registerImageProcessor(ImageProcessor imageProcessor) {
-        imageProcessors.add(imageProcessor);
-    }
-
-    public static ImageProcessor getImageProcessor(String imageFormat) {
-        Optional<ImageProcessor> first = imageProcessors.stream()
-                .filter(processor -> processor.check(imageFormat))
-                .findFirst();
-        if (first.isPresent()) {
-            return first.get();
-        }
-        throw new ImageException("Unsupported image format: " + imageFormat);
-    }
-
     public static boolean isBase64Image(String base64) {
         if (!StringUtils.startsWithIgnoreCase(base64, "data:image/")) {
             return false;
@@ -181,5 +135,10 @@ public class ImageUtils {
             ImageIO.write(templateImage, imageFormat, os);
             return encoder.encodeToString(os.toByteArray()).trim();
         }
+    }
+
+    public static String streamToBase64(InputStream is) throws IOException {
+        byte[] bytes = StreamUtils.copyToByteArray(is);
+        return Base64.getEncoder().encodeToString(bytes);
     }
 }

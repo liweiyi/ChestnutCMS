@@ -31,61 +31,61 @@ import lombok.Setter;
 @Setter
 public class TagVideoVO extends TagBaseVO {
 
-    @XComment("视频ID")
+    @XComment("{CMS.MEDIA.VIDEO.ID}")
     private Long videoId;
 
-    @XComment("所属内容ID")
+    @XComment("{CMS.MEDIA.VIDEO.CONTENT_ID}")
     private Long contentId;
 
-    @XComment("所属站点ID")
+    @XComment("{CMS.MEDIA.VIDEO.SITE_ID}")
     private Long siteId;
 
-    @XComment("视频封面图")
+    @XComment("{CMS.MEDIA.VIDEO.COVER}")
     private String cover;
 
-    @XComment(value = "视频封面图", deprecated = true, forRemoval = "1.6.0")
+    @XComment(value = "{CMS.MEDIA.VIDEO.COVER_SRC}", deprecated = true, forRemoval = "1.6.0")
     private String coverSrc;
 
-    @XComment("视频标题")
+    @XComment("{CMS.MEDIA.VIDEO.TITLE}")
     private String title;
 
-    @XComment("简介")
+    @XComment("{CMS.MEDIA.VIDEO.DESC}")
     private String description;
 
-    @XComment("视频类型")
+    @XComment("{CMS.MEDIA.VIDEO.TYPE}")
     private String type;
 
-    @XComment("视频路径，如果type==SHARE则存放第三方引用代码")
+    @XComment("{CMS.MEDIA.VIDEO.PATH}")
     private String path;
 
-    @XComment(value = "预览路径", deprecated = true, forRemoval = "1.6.0")
+    @XComment(value = "{CMS.MEDIA.VIDEO.SRC}", deprecated = true, forRemoval = "1.6.0")
     private String src;
 
-    @XComment("文件大小")
+    @XComment("{CMS.MEDIA.VIDEO.FILE_SIZE}")
     private Long fileSize;
 
-    @XComment("视频格式")
+    @XComment("{CMS.MEDIA.VIDEO.FORMAT}")
     private String format;
 
-    @XComment("时长，单位：毫秒")
+    @XComment("{CMS.MEDIA.VIDEO.DURATION}")
     private Long duration;
 
-    @XComment("编码方式")
+    @XComment("{CMS.MEDIA.VIDEO.DECODER}")
     private String decoder;
 
-    @XComment("视频宽度")
+    @XComment("{CMS.MEDIA.VIDEO.WIDTH}")
     private Integer width;
 
-    @XComment("视频高度")
+    @XComment("{CMS.MEDIA.VIDEO.HEIGHT}")
     private Integer height;
 
-    @XComment("比特率")
+    @XComment("{CMS.MEDIA.VIDEO.BIT_RATE}")
     private Integer bitRate;
 
-    @XComment("帧率")
+    @XComment("{CMS.MEDIA.VIDEO.FRAME_RATE}")
     private Integer frameRate;
 
-    @XComment("排序值")
+    @XComment("{CC.ENTITY.SORT}")
     private Integer sortFlag;
 
     public static TagVideoVO newInstance(CmsVideo video) {

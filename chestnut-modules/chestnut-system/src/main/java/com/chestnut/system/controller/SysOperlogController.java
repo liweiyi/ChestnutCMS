@@ -67,14 +67,14 @@ public class SysOperlogController extends BaseRestController {
 	}
 
 	@Log(title = "操作日志", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> operIds) {
 		operLogService.removeByIds(operIds);
 		return R.ok();
 	}
 
 	@Log(title = "操作日志", businessType = BusinessType.CLEAN)
-	@DeleteMapping("/clean")
+	@PostMapping("/clean")
 	public R<?> clean() {
 		operLogService.cleanOperLog();
 		return R.ok();

@@ -96,7 +96,7 @@ public class CommentController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.Delete)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteComment(@RequestBody @NotEmpty List<Long> commentIds) {
 		this.commentService.deleteComments(commentIds);
 		return R.ok();

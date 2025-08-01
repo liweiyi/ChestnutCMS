@@ -61,7 +61,7 @@ public class CmsExtendMetaModelType implements IMetaModelType {
             MODEL_ID_FIELD_NAME, true, MetaControlType_Input.TYPE, MetaFieldType.LONG);
 
     public static final MetaModelField FIELD_DATA_ID = new MetaModelField("数据ID", "dataId",
-            "data_id", true, MetaControlType_Input.TYPE, MetaFieldType.LONG);
+            "data_id", true, MetaControlType_Input.TYPE, MetaFieldType.SHORT_TEXT);
 
     public static final MetaModelField FIELD_DATA_TYPE = new MetaModelField("数据类型", "dataType",
             "data_type", true, MetaControlType_Input.TYPE, MetaFieldType.SHORT_TEXT);

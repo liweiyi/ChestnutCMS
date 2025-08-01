@@ -26,7 +26,7 @@ import java.awt.image.BufferedImage;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public class ResizeOp implements ImageOp {
+public class ResizeOp extends JDKImageOp {
 
     private int width;
     private int height;
@@ -38,7 +38,7 @@ public class ResizeOp implements ImageOp {
 
     @Override
     public void validate() {
-        if (width <= 0 || height <= 0) {
+        if (width <= 0 && height <= 0) {
             throw new ImageException("Invalid resize args: width = %d, height = %d".formatted(width, height));
         }
     }
@@ -66,14 +66,20 @@ public class ResizeOp implements ImageOp {
     }
 
     public static double calResizeRate(int width, int height, int toWidth, int toHeight) {
-        double rate;
-        if (toWidth == 0 && height > toHeight) {
+        double rate = 1;
+        if (toWidth == 0) {
+            if (height > toHeight) {
+                rate = toHeight * 1.0 / height;
+            }
+        } else if (toHeight == 0) {
+            if (width > toWidth) {
+                rate = toWidth * 1.0 / width;
+            }
+        } else if (toWidth / width > toHeight / height) {
             rate = toHeight * 1.0 / height;
-        } else if (toHeight == 0 && width > toWidth) {
-            rate = toWidth * 1.0 / width;
         } else {
-            rate = Math.min(toWidth * 1.0 / width, toHeight * 1.0 / height);
+            rate = toWidth * 1.0 / width;
         }
-        return Math.min(rate, 1);
+        return rate;
     }
 }

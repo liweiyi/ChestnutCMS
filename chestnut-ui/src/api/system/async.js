@@ -26,7 +26,7 @@ export function stopTask(taskIds) {
 export function removeTask(taskIds) {
   return request({
     url: '/async/task/remove',
-    method: 'delete',
+    method: 'post',
     data: taskIds
   })
 }

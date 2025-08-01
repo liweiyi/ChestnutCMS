@@ -169,7 +169,7 @@ public class PublishPipeController extends BaseRestController {
             mode = SaMode.AND
     )
     @Log(title = "删除发布通道", businessType = BusinessType.DELETE)
-    @DeleteMapping
+    @PostMapping("/delete")
     public R<String> remove(@RequestBody @NotEmpty List<Long> publishPipeIds) throws IOException {
         this.publishPipeService.deletePublishPipe(publishPipeIds);
         return R.ok();

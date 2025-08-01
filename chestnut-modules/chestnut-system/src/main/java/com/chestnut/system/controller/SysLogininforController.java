@@ -70,14 +70,14 @@ public class SysLogininforController extends BaseRestController {
 	}
 
 	@Log(title = "登录日志", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> infoIds) {
 		logininforService.removeByIds(infoIds);
 		return R.ok();
 	}
 
 	@Log(title = "登录日志", businessType = BusinessType.CLEAN)
-	@DeleteMapping("/clean")
+	@PostMapping("/clean")
 	public R<?> clean() {
 		logininforService.cleanLogininfor();
 		return R.ok();

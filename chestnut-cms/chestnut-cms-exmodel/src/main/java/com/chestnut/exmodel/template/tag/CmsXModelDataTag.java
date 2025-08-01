@@ -23,9 +23,7 @@ import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.exmodel.CmsExtendMetaModelType;
-import com.chestnut.xmodel.core.IMetaControlType;
 import com.chestnut.xmodel.service.IModelDataService;
-import com.chestnut.xmodel.service.IModelService;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
@@ -55,9 +53,7 @@ public class CmsXModelDataTag extends AbstractTag {
 	public final static String ATTR_DATA_TYPE = "dataType";
 	public final static String ATTR_DATA_ID = "dataId";
 
-	private final IModelService modelService;
 	private final IModelDataService modelDataService;
-	private final Map<String, IMetaControlType> controlTypeMap;
 
 	@Override
 	public List<TagAttr> getTagAttrs() {

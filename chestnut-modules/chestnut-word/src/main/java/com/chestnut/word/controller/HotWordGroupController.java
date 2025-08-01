@@ -104,7 +104,7 @@ public class HotWordGroupController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> groupIds) {
 		this.hotWordGroupService.deleteHotWordGroups(groupIds);
 		return R.ok();

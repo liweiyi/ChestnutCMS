@@ -35,6 +35,7 @@
         :height="435"
         :data="templateList"
         highlight-current-row
+        @cell-dblclick="handleDbClick"
         @current-change="handleSelectionChange">
         <el-table-column 
           type="index"
@@ -171,6 +172,10 @@ export default {
       if (selection) {
         this.selectedTemplate = selection.path;
       }
+    },
+    handleDbClick (row) {
+      console.log(row)
+      this.$emit("ok", row.path);
     },
     handleOk () {
       this.$emit("ok", this.selectedTemplate);

@@ -22,6 +22,7 @@ import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsContentOpLog;
 import com.chestnut.contentcore.service.IContentOpLogService;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
@@ -31,6 +32,7 @@ import java.time.LocalDateTime;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Slf4j
 public class ContentLogUtils {
 
     private static final IContentOpLogService contentOpLogService = SpringUtils.getBean(IContentOpLogService.class);
@@ -50,6 +52,8 @@ public class ContentLogUtils {
             CmsContentOpLog opLog = new CmsContentOpLog();
             opLog.setLogId(IdUtils.getSnowflakeId());
             opLog.setSiteId(content.getSiteId());
+            opLog.setCatalogId(content.getCatalogId());
+            opLog.setCatalogAncestors(content.getCatalogAncestors());
             opLog.setContentId(content.getContentId());
             opLog.setType(opType);
             opLog.setDetails(details);
@@ -57,6 +61,7 @@ public class ContentLogUtils {
             opLog.setOperator(operator);
             opLog.setLogTime(LocalDateTime.now());
             contentOpLogService.save(opLog);
+            log.debug("CC.Content[{}].log: {}", content.getContentId(), opType);
         });
     }
 }

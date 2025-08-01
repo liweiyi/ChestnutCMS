@@ -10,7 +10,7 @@ CREATE TABLE `search_word_hour_stat` (
   `search_count` bigint NOT NULL,
   PRIMARY KEY (`stat_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-# 菜单名称路由调整
+-- 菜单名称路由调整
 UPDATE sys_menu SET component = 'search/wordTab', path = 'searchWord' where menu_id = 2053;
 
 ALTER TABLE cms_content ADD COLUMN prop1 VARCHAR(100);

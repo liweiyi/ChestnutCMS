@@ -125,7 +125,7 @@ public class SysDictDataController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictRemove)
 	@Log(title = "字典类型", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> dictCodes) {
 		dictDataService.deleteDictDataByIds(dictCodes);
 		return R.ok();

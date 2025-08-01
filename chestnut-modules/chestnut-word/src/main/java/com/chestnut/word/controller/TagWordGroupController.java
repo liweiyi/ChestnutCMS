@@ -83,7 +83,7 @@ public class TagWordGroupController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> groupIds) {
 		this.tagWordGroupService.deleteTagWordGroups(groupIds);
 		return R.ok();

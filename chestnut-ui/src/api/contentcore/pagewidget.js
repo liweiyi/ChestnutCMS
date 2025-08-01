@@ -40,8 +40,8 @@ export function editPageWidget(params) {
 
 export function deletePageWidget(params) {
   return request({
-    url: '/cms/pagewidget',
-    method: 'delete',
+    url: '/cms/pagewidget/delete',
+    method: 'post',
     data: params
   })
 }

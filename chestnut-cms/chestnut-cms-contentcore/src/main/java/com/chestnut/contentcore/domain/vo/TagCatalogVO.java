@@ -36,73 +36,73 @@ import java.util.Map;
 @Setter
 public class TagCatalogVO extends TagBaseVO {
 
-	@XComment("栏目ID")
+	@XComment("{CMS.CATALOG.ID}")
 	private Long catalogId;
 
-	@XComment("站点ID")
+	@XComment("{CMS.CATALOG.SITE_ID}")
 	private Long siteId;
 
-	@XComment("父级栏目ID")
+	@XComment("{CMS.CATALOG.PARENT_ID}")
 	private Long parentId;
 
-	@XComment("祖级栏目IDs")
+	@XComment("{CMS.CATALOG.ANCESTORS}")
 	private String ancestors;
 
-	@XComment("栏目名称")
+	@XComment("{CMS.CATALOG.NAME}")
 	private String name;
 
-	@XComment("栏目引导图")
+	@XComment("{CMS.CATALOG.LOGO}")
 	private String logo;
 
-	@XComment(value = "栏目引导图访问路径", deprecated = true, forRemoval = "1.6.0")
+	@XComment(value = "{CMS.CATALOG.LOGO_SRC}", deprecated = true, forRemoval = "1.6.0")
 	private String logoSrc;
 
-	@XComment("栏目别名")
+	@XComment("{CMS.CATALOG.ALIAS}")
 	private String alias;
 
-	@XComment("栏目简介")
+	@XComment("{CMS.CATALOG.DESC}")
 	private String description;
 
-	@XComment("所属部门编码")
+	@XComment("{CMS.CATALOG.DEPT_CODE}")
 	private String deptCode;
 
-	@XComment("栏目类型")
+	@XComment("{CMS.CATALOG.TYPE}")
 	private String catalogType;
 
-	@XComment("栏目目录")
+	@XComment("{CMS.CATALOG.PATH}")
 	private String path;
 	
-	@XComment("标题栏目跳转地址")
+	@XComment("{CMS.CATALOG.REDIRECT_URL}")
 	private String redirectUrl;
 
-	@XComment("排序值")
+	@XComment("{CC.ENTITY.SORT}")
 	private Long sortFlag;
 
-	@XComment("栏目层级")
+	@XComment("{CMS.CATALOG.TREE_LEVEL}")
 	private Integer treeLevel;
 
-	@XComment("子栏目数")
+	@XComment("{CMS.CATALOG.CHILD_COUNT}")
 	private Integer childCount;
 
-	@XComment("内容数量")
+	@XComment("{CMS.CATALOG.CONTENT_COUNT}")
 	private Integer contentCount;
 
-	@XComment("SEO关键词")
+	@XComment("{CMS.CATALOG.SEO_KEYWORDS}")
 	private String seoKeywords;
 
-	@XComment("SEO描述")
+	@XComment("{CMS.CATALOG.SEO_DESC}")
 	private String seoDescription;
 
-	@XComment("SEO标题")
+	@XComment("{CMS.CATALOG.SEO_TITLE}")
 	private String seoTitle;
 
-	@XComment("扩展配置")
+	@XComment("{CMS.CATALOG.CONFIG_PROPS}")
 	private Map<String, String> configProps;
 
-	@XComment("栏目链接")
+	@XComment("{CMS.CATALOG.LINK}")
 	private String link;
 
-	@XComment("列表页链接（无首页模板时与link一致）")
+	@XComment("{CMS.CATALOG.LIST_LINK}")
 	private String listLink;
 
 	public static TagCatalogVO newInstance(CmsCatalog catalog, String publishPipeCode, boolean preview) {

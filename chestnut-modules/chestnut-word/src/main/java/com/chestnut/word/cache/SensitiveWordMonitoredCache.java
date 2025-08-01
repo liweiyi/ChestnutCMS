@@ -64,7 +64,7 @@ public class SensitiveWordMonitoredCache implements IMonitoredCache<Set<String>>
         String cacheKey = CACHE_PREFIX + type.name().toLowerCase();
         if (!this.redisCache.hasKey(cacheKey)) {
             Set<String> words = supplier.get();
-            this.redisCache.addSetValue(cacheKey, words.toArray(String[]::new));
+            this.redisCache.addSetValue(cacheKey, words.toArray(Object[]::new));
             return words;
         }
         return this.redisCache.getCacheSet(cacheKey, String.class);

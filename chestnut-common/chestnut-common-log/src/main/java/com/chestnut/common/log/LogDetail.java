@@ -15,6 +15,7 @@
  */
 package com.chestnut.common.log;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -26,6 +27,7 @@ import lombok.Setter;
 @Setter
 public class LogDetail implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	/**

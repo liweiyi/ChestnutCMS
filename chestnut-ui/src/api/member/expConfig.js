@@ -41,8 +41,8 @@ export function updateExpConfig(data) {
 
 export function deleteExpConfigs(expOperationIds) {
   return request({
-    url: '/member/expConfig',
-    method: 'delete',
+    url: '/member/expConfig/delete',
+    method: 'post',
     data: expOperationIds
   })
 }

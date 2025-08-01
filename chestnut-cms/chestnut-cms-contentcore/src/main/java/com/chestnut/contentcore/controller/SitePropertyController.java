@@ -129,7 +129,7 @@ public class SitePropertyController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
 	@Log(title = "删除站点属性", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<String> removeSiteProperties(@RequestBody @NotEmpty List<Long> propertyIds) throws IOException {
 		return this.sitePropertyService.deleteSiteProperties(propertyIds);
 	}

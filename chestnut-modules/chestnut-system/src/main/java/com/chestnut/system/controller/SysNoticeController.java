@@ -117,7 +117,7 @@ public class SysNoticeController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeRemove)
 	@Log(title = "通知公告", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> noticeIds) {
 		noticeService.deleteNoticeByIds(noticeIds);
 		return R.ok();

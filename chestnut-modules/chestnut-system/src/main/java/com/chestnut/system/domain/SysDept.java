@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,7 @@ import lombok.Setter;
 @TableName(SysDept.TABLE_NAME)
 public class SysDept extends BaseEntity {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "sys_dept";

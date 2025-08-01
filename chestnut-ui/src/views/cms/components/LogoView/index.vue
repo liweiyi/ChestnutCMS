@@ -119,13 +119,15 @@ export default {
     src(newVal) {
       this.imageSrc = newVal;
       this.originalSrc = this.getOriginalSrc(newVal);
+      console.log("originalSrc", this.originalSrc)
     },
     imagePath(newVal) {
       this.$emit("change", newVal);
     },
     imageSrc(newVal) {
       if (newVal && newVal.length > 0) {
-        this.imageViewerList = [ this.getOriginalSrc(newVal) ];
+        this.originalSrc = this.getOriginalSrc(newVal);
+        this.imageViewerList = [ this.originalSrc ];
       } else {
         this.imageViewerList.splice(0);
       }
@@ -179,10 +181,10 @@ export default {
         if (fileName.indexOf('_') > -1) {
           let name = utils.substringBeforeLast(fileName, "_") + "." + utils.substringAfterLast(fileName, ".");
           let prefix = utils.substringBeforeLast(src, "/");
-          return prefix + "/" + name;
+          return utils.setUrlParameter(prefix + "/" + name, "t", new Date().getTime());
         }
       }
-      return src;
+      return utils.setUrlParameter(src, "t", new Date().getTime());
     },
   }
 };

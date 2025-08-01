@@ -109,7 +109,7 @@ public class LinkController extends BaseRestController {
 
 	@Log(title = "删除友链", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.Delete)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<String> remove(@RequestBody @Validated @NotEmpty List<LinkDTO> dtoList) {
 		List<Long> linkIds = dtoList.stream().map(LinkDTO::getLinkId).toList();
 		this.linkService.removeByIds(linkIds);

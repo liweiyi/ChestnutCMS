@@ -47,8 +47,8 @@ export function editTemplate(data) {
 // 删除模板
 export function delTemplate(templates) {
   return request({
-    url: '/cms/template',
-    method: 'delete',
+    url: '/cms/template/delete',
+    method: 'post',
     data: templates
   })
 }
@@ -57,7 +57,7 @@ export function delTemplate(templates) {
 export function clearIncludeCache(templates) {
   return request({
     url: '/cms/template/clearIncludeCache',
-    method: 'delete',
+    method: 'post',
     data: templates
   })
 }

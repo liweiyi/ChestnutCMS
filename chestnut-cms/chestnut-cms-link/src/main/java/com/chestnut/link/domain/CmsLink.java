@@ -24,6 +24,8 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 友情链接表对象 [cms_link]
  * 
@@ -35,11 +37,12 @@ import lombok.Setter;
 @TableName(CmsLink.TABLE_NAME)
 public class CmsLink extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
 
 	public static final String TABLE_NAME = "cms_link";
 
-    @XComment("友链ID")
+    @XComment("{CMS.LINK.ID}")
     @TableId(value = "link_id", type = IdType.INPUT)
     private Long linkId;
 
@@ -59,9 +62,9 @@ public class CmsLink extends BaseEntity {
     private String logo;
 
     @TableField(exist = false)
-    @XComment(value = "图片访问地址", deprecated = true, forRemoval = "1.6.0")
+    @XComment(value = "{CMS.LINK.SRC}", deprecated = true, forRemoval = "1.6.0")
     private String src;
     
-    @XComment("排序值")
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 }

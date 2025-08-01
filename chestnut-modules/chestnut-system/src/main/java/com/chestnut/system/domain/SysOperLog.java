@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -41,13 +42,14 @@ import lombok.Setter;
 @TableName(SysOperLog.TABLE_NAME)
 public class SysOperLog implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "sys_oper_log";
 
 	/** 日志主键 */
 	@ExcelProperty("日志ID")
-	@TableId(value = "oper_id", type = IdType.AUTO)
+	@TableId(value = "oper_id", type = IdType.INPUT)
 	private Long operId;
 
 	@ExcelProperty("操作模块")

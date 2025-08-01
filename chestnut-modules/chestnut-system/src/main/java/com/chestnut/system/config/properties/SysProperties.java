@@ -42,7 +42,7 @@ public class SysProperties {
 	/**
 	 * 可上传文件类型
 	 */
-	private FileTypes upload;
+	private FileTypes upload = new FileTypes();
 
 	@Getter
 	@Setter

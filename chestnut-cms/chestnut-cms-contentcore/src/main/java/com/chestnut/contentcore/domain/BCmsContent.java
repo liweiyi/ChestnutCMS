@@ -26,6 +26,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -102,9 +103,16 @@ public class BCmsContent extends BackupBaseEntity<CmsContent> {
     private String titleStyle;
 
     /**
-     * logo
+     * 封面图
      */
+    @TableField(exist = false)
     private String logo;
+
+    /**
+     * 新封面图字段
+     */
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<String> images;
 
     /**
      * 来源

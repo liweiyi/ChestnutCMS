@@ -26,13 +26,11 @@ import lombok.Getter;
 @Getter
 public class AfterCatalogMoveEvent extends ApplicationEvent {
 	
-	private static final long serialVersionUID = 1L;
-
-	private CmsCatalog fromCatalog;
+	private final CmsCatalog fromCatalog;
 	
-	private CmsCatalog toCatalog;
+	private final CmsCatalog toCatalog;
 	
-	private List<CmsCatalog> childrenCatalogs;
+	private final List<CmsCatalog> childrenCatalogs;
 	
 	public AfterCatalogMoveEvent(Object source, CmsCatalog fromCatalog, CmsCatalog toCatalog, List<CmsCatalog> children) {
 		super(source);

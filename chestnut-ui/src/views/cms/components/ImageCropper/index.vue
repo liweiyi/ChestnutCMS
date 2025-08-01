@@ -128,6 +128,7 @@ export default {
       }
     },
     src(newVal) {
+      console.log("src", newVal)
       this.imageUrl = newVal;
       this.initCropper();
     },

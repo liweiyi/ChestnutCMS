@@ -117,7 +117,7 @@ public class SysScheduledTaskController extends BaseRestController {
 		return R.ok();
 	}
 
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> taskIds) {
 		Assert.isTrue(IdUtils.validate(taskIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception());
 		taskService.deleteTasks(taskIds);
@@ -152,7 +152,7 @@ public class SysScheduledTaskController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
-	@DeleteMapping("/logs")
+	@PostMapping("/logs/delete")
 	public R<?> removeLogs(@RequestBody @NotEmpty List<Long> logIds) {
 		Assert.isTrue(IdUtils.validate(logIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception());
 		this.logMapper.deleteByIds(logIds);

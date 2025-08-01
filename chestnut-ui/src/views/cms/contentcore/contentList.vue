@@ -6,7 +6,7 @@
           <el-row style="margin-bottom:20px;">
             <el-divider content-position="left">{{ $t('CMS.Content.ContentType') }}</el-divider>
             <el-radio-group v-model="addContentType">
-              <el-radio-button 
+              <el-radio-button
                 v-for="ct in contentTypeOptions"
                 :key="ct.id"
                 :label="ct.id"
@@ -14,7 +14,7 @@
             </el-radio-group>
             <el-divider v-if="addContentType=='article'" content-position="left">{{ $t('CMS.Article.Format') }}</el-divider>
             <el-radio-group v-if="addContentType=='article'" v-model="addArticleBodyFormat">
-              <el-radio-button 
+              <el-radio-button
                 v-for="item in articleBodyFormatOptions"
                 :key="item.id"
                 :label="item.id"
@@ -22,13 +22,13 @@
             </el-radio-group>
           </el-row>
           <el-row style="text-align:right;">
-            <el-button 
+            <el-button
               plain
               type="primary"
               size="small"
               @click="handleAdd">{{ $t('Common.Confirm') }}</el-button>
           </el-row>
-          <el-button 
+          <el-button
             type="primary"
             slot="reference"
             icon="el-icon-plus"
@@ -38,7 +38,7 @@
         </el-popover>
       </el-col>
       <el-col :span="1.5">
-        <el-button 
+        <el-button
           plain
           type="danger"
           icon="el-icon-delete"
@@ -49,7 +49,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button 
+        <el-button
           plain
           type="primary"
           icon="el-icon-timer"
@@ -60,7 +60,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button 
+        <el-button
           plain
           type="success"
           icon="el-icon-s-promotion"
@@ -71,7 +71,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button 
+        <el-button
           plain
           type="warning"
           icon="el-icon-download"
@@ -82,7 +82,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button 
+        <el-button
           plain
           type="primary"
           icon="el-icon-document-copy"
@@ -92,7 +92,7 @@
         </el-button>
       </el-col>
       <el-col :span="1.5">
-        <el-button 
+        <el-button
           plain
           type="primary"
           icon="el-icon-right"
@@ -103,9 +103,9 @@
       </el-col>
       <el-col :span="1.5">
         <el-dropdown class="btn-permi" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]">
-          <el-button 
+          <el-button
             plain
-            size="mini" 
+            size="mini"
             type="primary"
             :disabled="multiple">
             <svg-icon icon-class="recommend" /> {{ $t('CMS.Content.Recommend') }}<i class="el-icon-arrow-down el-icon--right"></i>
@@ -118,9 +118,9 @@
       </el-col>
       <el-col :span="1.5">
         <el-dropdown class="btn-permi" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]">
-          <el-button 
+          <el-button
             plain
-            size="mini" 
+            size="mini"
             type="primary"
             :disabled="multiple">
             <svg-icon icon-class="fire" /> {{ $t('CMS.Content.Hot') }}<i class="el-icon-arrow-down el-icon--right"></i>
@@ -136,7 +136,7 @@
       <el-form :model="queryParams" ref="queryForm" size="small" class="el-form-search" style="text-align:left;" :inline="true">
         <div>
           <el-form-item prop="title">
-            <el-input 
+            <el-input
               v-model="queryParams.title"
               :placeholder="$t('CMS.Content.Placeholder.Title')"
               clearable
@@ -144,12 +144,12 @@
               @keyup.enter.native="handleQuery" />
           </el-form-item>
           <el-form-item prop="contentType">
-            <el-select 
+            <el-select
               v-model="queryParams.contentType"
               :placeholder="$t('CMS.Content.ContentType')"
               clearable
               style="width: 125px">
-              <el-option 
+              <el-option
                 v-for="ct in contentTypeOptions"
                 :key="ct.id"
                 :label="ct.name"
@@ -157,12 +157,12 @@
             </el-select>
           </el-form-item>
           <el-form-item prop="status">
-            <el-select 
+            <el-select
               v-model="queryParams.status"
               :placeholder="$t('CMS.Content.Status')"
               clearable
               style="width: 110px">
-              <el-option 
+              <el-option
                 v-for="dict in dict.type.CMSContentStatus"
                 :key="dict.value"
                 :label="dict.label"
@@ -190,7 +190,7 @@
         </div>
         <div v-show="showSearch">
           <el-form-item :label="$t('Common.CreateTime')">
-            <el-date-picker 
+            <el-date-picker
               v-model="dateRange"
               style="width: 386px"
               value-format="yyyy-MM-dd HH:mm:ss"
@@ -203,7 +203,7 @@
       </el-form>
     </el-row>
 
-    <el-table 
+    <el-table
       v-loading="loading"
       ref="tableContentList"
       size="small"
@@ -216,10 +216,10 @@
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column :label="$t('CMS.Content.Logo')" align="center" width="110">
           <template slot-scope="scope">
-            <el-image 
-              v-if="scope.row.logoSrc&&scope.row.logoSrc.length > 0" 
-              style="max-height: 100px;max-width: 100px;" 
-              :src="scope.row.logoSrc" 
+            <el-image
+              v-if="scope.row.logoSrc&&scope.row.logoSrc.length > 0"
+              style="max-height: 100px;max-width: 100px;"
+              :src="scope.row.logoSrc"
               fit="contain"
             ></el-image>
           </template>
@@ -227,7 +227,7 @@
       <el-table-column :label="$t('CMS.Content.Title')" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <span class="content_attr" v-if="scope.row.topFlag>0" :title="$t('CMS.Content.SetTop')">[<svg-icon icon-class="top" />]</span>
-          <span 
+          <span
             v-for="dict in dict.type.CMSContentAttribute"
             :key="dict.value"
             :title="dict.label">
@@ -250,7 +250,7 @@
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column 
+      <el-table-column
         :label="$t('Common.Operation')"
         align="center"
         width="260"
@@ -264,7 +264,7 @@
               @click="handlePreview(scope.row)">{{ $t('CMS.ContentCore.Preview') }}</el-button>
           </span>
           <span class="btn-cell-wrap">
-            <el-button 
+            <el-button
               size="small"
               type="text"
               icon="el-icon-s-promotion"
@@ -272,7 +272,7 @@
               @click="handlePublish(scope.row)">{{ $t('CMS.ContentCore.Publish') }}</el-button>
           </span>
           <span class="btn-cell-wrap">
-            <el-button 
+            <el-button
               size="small"
               type="text"
               icon="el-icon-timer"
@@ -297,15 +297,15 @@
         </template>
       </el-table-column>
     </el-table>
-    <pagination 
+    <pagination
       v-show="total>0"
       :total="total"
       :page.sync="queryParams.pageNum"
       :limit.sync="queryParams.pageSize"
       @pagination="loadContentList" />
-              
-    <!-- 置顶时间设置弹窗 -->  
-    <el-dialog 
+
+    <!-- 置顶时间设置弹窗 -->
+    <el-dialog
       :title="$t('CMS.Content.SetTop')"
       width="400px"
       :visible.sync="topDialogVisible"
@@ -313,8 +313,8 @@
       append-to-body>
       <el-form ref="top_form" label-width="100px" :model="topForm">
         <el-form-item :label="$t('CMS.Content.TopEndTime')" prop="topEndTime">
-          <el-date-picker 
-            v-model="topForm.topEndTime" 
+          <el-date-picker
+            v-model="topForm.topEndTime"
             :picker-options="topEndTimePickerOptions"
             value-format="yyyy-MM-dd HH:mm:ss"
             type="datetime">
@@ -327,7 +327,7 @@
       </div>
     </el-dialog>
     <!-- 进度条 -->
-    <cms-progress :title="$t('CMS.ContentCore.PublishProgressTitle')" :open.sync="openProgress" :taskId="taskId"></cms-progress>
+    <cms-progress :title="progressTitle" :open.sync="openProgress" :taskId="taskId" @close="handleProgressClose"></cms-progress>
     <!-- 栏目选择组件 -->
     <cms-catalog-selector
       :open="openCatalogSelector"
@@ -347,9 +347,9 @@
 import { getUserPreference } from "@/api/system/user";
 import { getContentTypes } from "@/api/contentcore/catalog";
 import { getArticleBodyFormats } from "@/api/contentcore/article"
-import { 
-  getContentList, delContent, publishContent, createIndexes, 
-  copyContent, moveContent, setTopContent, cancelTopContent, sortContent, 
+import {
+  getContentList, delContent, publishContent, createIndexes,
+  copyContent, moveContent, setTopContent, cancelTopContent, sortContent,
   offlineContent, archiveContent, toPublishContent, addContentAttribute, removeContentAttribute
 } from "@/api/contentcore/content";
 import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
@@ -358,10 +358,10 @@ import CMSProgress from '@/views/components/Progress';
 
 export default {
   name: "CMSContentList",
-  components: { 
+  components: {
     'cms-catalog-selector': CMSCatalogSelector,
     'cms-content-sort': CMSContentSort,
-    'cms-progress': CMSProgress
+    'cms-progress': CMSProgress,
   },
   dicts: [ 'CMSContentStatus', 'CMSContentAttribute' ],
   props: {
@@ -402,10 +402,12 @@ export default {
       },
       topEndTimePickerOptions: {
         disabledDate(time) {
-            return time.getTime() < Date.now() - 8.64e7;//如果没有后面的-8.64e7就是不可以选择今天的 
+            return time.getTime() < Date.now() - 8.64e7;//如果没有后面的-8.64e7就是不可以选择今天的
          }
       },
       openProgress: false,
+      progressTitle: '',
+      progressType: '',
       taskId: "",
       addContentType: "",
       articleBodyFormatOptions: [],
@@ -413,11 +415,11 @@ export default {
       openCatalogSelector: false, // 栏目选择弹窗
       isCopy: false,
       openContentSortDialog: false, // 内容选择弹窗
-      openEditorW: false
+      openEditorW: false,
     };
   },
   watch: {
-    cid(newVal) { 
+    cid(newVal) {
       this.catalogId = newVal;
     },
     catalogId(newVal) {
@@ -537,14 +539,12 @@ export default {
         this.$modal.msgWarning(this.$t('CMS.Content.SelectRowFirst'));
         return;
       }
-      this.$modal.loading("Loading...");
       publishContent(contentIds).then(response => {
-        this.$modal.closeLoading();
-        this.$modal.msgSuccess(this.$t('CMS.ContentCore.PublishSuccess'))
-        this.loadContentList();
+        this.taskId = response.data;
         this.$cache.local.set('publish_flag', "true")
-      }).catch(() => {
-        this.$modal.closeLoading();
+        this.progressType = "publish";
+        this.progressTitle = this.$t('CMS.Content.PublishProgressTitle')
+        this.openProgress = true;
       });
     },
     handlePreview (row) {
@@ -583,17 +583,17 @@ export default {
       this.openCatalogSelector = true;
     },
     doCopy(catalogs, copyType) {
-      const data = {  
+      const data = {
         contentIds: this.selectedRows.map(item => item.contentId),
         catalogIds: catalogs.map(item => item.id),
         copyType: copyType
       };
       copyContent(data).then(response => {
-        this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
         this.openCatalogSelector = false;
-        if (this.catalogId && data.catalogIds.indexOf(this.catalogId) > -1) {
-          this.loadContentList();
-        }
+        this.taskId = response.data;
+        this.progressType = "copy";
+        this.progressTitle = this.$t('CMS.Content.CopyProgressTitle')
+        this.openProgress = true;
       });
     },
     handleMove(row) {
@@ -609,9 +609,11 @@ export default {
         catalogId: catalogs[0].id
       };
       moveContent(data).then(response => {
-        this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
         this.openCatalogSelector = false;
-        this.loadContentList();
+        this.taskId = response.data;
+        this.progressType = "copy";
+        this.progressTitle = this.$t('CMS.Content.MoveProgressTitle')
+        this.openProgress = true;
       });
     },
     handleCatalogSelectorOk(catalogs, copyType) {
@@ -622,7 +624,7 @@ export default {
       }
     },
     handleCatalogSelectorClose() {
-      this.openCatalogSelector = false; 
+      this.openCatalogSelector = false;
     },
     handleSetTop(row) {
       if (row.contentId) {
@@ -681,8 +683,10 @@ export default {
     handleOffline(row) {
       const contentIds = row.contentId ? [ row.contentId ] : this.selectedRows.map(item => item.contentId);
       offlineContent(contentIds).then(response => {
-        this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
-        this.loadContentList();
+        this.taskId = response.data;
+        this.progressType = "offline";
+        this.progressTitle = this.$t('CMS.Content.OfflineProgressTitle')
+        this.openProgress = true;
       });
     },
     handleToPublish(row) {
@@ -726,7 +730,12 @@ export default {
         this.$modal.msgSuccess(this.$t('Common.OpSuccess'));
         this.loadContentList();
       });
-    }
+    },
+    handleProgressClose (result) {
+      if (result.status == 'SUCCESS') {
+        this.loadContentList();
+      }
+    },
   }
 };
 </script>

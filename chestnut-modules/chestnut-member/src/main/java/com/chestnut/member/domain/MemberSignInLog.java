@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -36,11 +37,12 @@ import lombok.Setter;
 @TableName(MemberSignInLog.TABLE_NAME)
 public class MemberSignInLog implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public static final String TABLE_NAME = "cc_member_signin_log";
 
-	@TableId(value = "log_id", type = IdType.AUTO)
+	@TableId(value = "log_id", type = IdType.INPUT)
     private Long logId;
 	
 	/**

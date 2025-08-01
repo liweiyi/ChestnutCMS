@@ -1,4 +1,4 @@
-# ChestnutCMS v1.5.6
+# ChestnutCMS v1.5.7
 
 ### 系统简介
 
@@ -40,7 +40,6 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 | Redisson          | 3.46.0  | 分布式锁    |
 | FreeMarker        | 2.3.32  | 模板引擎    |
 | Sa-Token          | 1.43.0  | 权限认证    |
-| Xxl-Job           | 3.1.0   | 任务调度    |
 | Lombok            | 1.18.38 | 你懂的     |
 
 ### 相关文档

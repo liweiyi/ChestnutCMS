@@ -40,8 +40,8 @@ export function saveSecurityConfig(data) {
 
 export function deleteSecurityConfig(configIds) {
   return request({
-    url: "/system/security/config",
-    method: "delete",
+    url: "/system/security/config/delete",
+    method: 'post',
     data: configIds
   });
 }

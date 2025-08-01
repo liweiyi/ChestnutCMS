@@ -960,6 +960,7 @@ export default {
       PrefixMode: "路徑模式",
       PrefixMode_Absolute: "絕對路徑",
       PrefixMode_Relative: "相對路徑",
+      RelativePrefix: "相對路徑前綴",
       ErrPageLink: "錯誤頁面",
       Dashboard: {
         MissingSiteUrl: "站點域名未配置！"
@@ -1178,6 +1179,9 @@ export default {
       Hot: "熱點",
       CancelHot: "取消熱點",
       SEOConfig: "SEO配置",
+      ImportWord: "導入WORD",
+      UploadWord: "上傳WORD文檔",
+      SaveUploadWordFile: "保留上傳的WORD文檔",
       SortOption: {
         Default: "預設排序",
         CreateTimeAsc: '添加時間升序',
@@ -1221,6 +1225,10 @@ export default {
       RuleTips:  {
         Title: "標題不能為空"
       },
+      PublishProgressTitle: "發佈內容中",
+      OfflineProgressTitle: "下線內容中",
+      CopyProgressTitle: "複製內容中",
+      MoveProgressTitle: "移動內容中",
       SaveProgressTitle: "保存內容中",
       SortDialogTitle: "內容排序",
       SortDialogTip: "內容將會排在下方列表選中的內容之前，選中內容置頂則排序內容也會添加置頂狀態，反之則會取消置頂狀態。",
@@ -1520,6 +1528,8 @@ export default {
       RequestArgs: "請求參數",
       DefaultValue: "預設值",
       CustomDynamicTemplate: "自定義動態模板",
+      DocGen: "生成文檔",
+      DocGenLang: "語言",
       CustomDynamicPage: {
         Name: "名稱",
         Code: "編碼",
@@ -1661,6 +1671,19 @@ export default {
         Flag: "來源標識",
       }
     },
+    SiteEvent: {
+      Type: "類型",
+      Name: "名稱",
+      Desc: "描述",
+      StartTime: "開始時間",
+      EndTime: "結束時間",
+      Status: "狀態",
+      Enable: "啟用",
+      Disable: "停用",
+      Publish: "發佈",
+      AddTitle: "新建站點事件",
+      EditTitle: "編輯站點事件"
+    }
   },
   WordMgr: {
     TAG: {

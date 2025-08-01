@@ -411,6 +411,7 @@ export default {
       selectExTemplate: false,
       publishAfterSave: false,
       toPublishAfterSave: false,
+      publishing: false,
       openRelaContentDialog: false,
       openContentOpLogDialog: false,
       ueditorImportCss: "",
@@ -592,12 +593,19 @@ export default {
     },
     doPublishContent() {
       publishContent([ this.form.contentId ]).then(response => {
-          this.$modal.msgSuccess(this.$t('CMS.ContentCore.PublishSuccess'), "message-top-right");
           this.$cache.local.set('publish_flag', "true")
+          this.taskId = response.data;
+          this.publishing = true;
+          this.progressTitle = this.$t('CMS.Content.PublishProgressTitle')
+          this.openProgress = true;
       });
     },
     handleProgressClose (result) {
       if (result.status == 'SUCCESS') {
+        if (this.publishing) {
+          this.publishing = false;
+          return;
+        } 
         if (this.publishAfterSave) {
           this.publishAfterSave = false;
           this.doPublishContent();

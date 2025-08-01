@@ -5,9 +5,9 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.5.6
+  version: 1.5.7
   # 版权年份
-  copyrightYear: 2022-2024
+  copyrightYear: 2022-2025
   system:
     # 演示模式开关
     demoMode: false
@@ -130,6 +130,18 @@ spring:
           url: jdbc:mysql://127.0.0.1:3308/chestnut_cms?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&autoReconnect=true&rewriteBatchedStatements=true&&nullCatalogMeansCurrent=true
           username: root
           password: hello1234
+#        master:
+#          type: ${spring.datasource.type}
+#          driverClassName: org.postgresql.Driver
+#          url: jdbc:postgresql://127.0.0.1:5432/chestnut_cms2
+#          username: postgres
+#          password: hello1234
+#        master:
+#          type: ${spring.datasource.type}
+#          driverClassName: dm.jdbc.driver.DmDriver
+#          url: jdbc:dm://127.0.0.1:5236/SYSDBA
+#          username: SYSDBA
+#          password: Hello1234
         # 从库
         #slave:
         #  lazy: true
@@ -155,6 +167,8 @@ spring:
       max-lifetime: 1800000
       # 用于测试连接是否可用的查询语句
       connection-test-query: SELECT 1
+      # 链接占用超时时间，超时会打印警告信息，可能存在连接泄露风险。单位：毫秒，默认：0。
+      leak-detection-threshold: 60000
 
   # 邮件配置
   mail:
@@ -212,6 +226,7 @@ sa-token:
     token-name: Authorization
     # token前缀
     token-prefix: Bearer
+    cookie-auto-fill-prefix: true
     # token有效期，单位s 默认30天, -1代表永不过期 
     timeout: 2592000
     # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒

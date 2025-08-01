@@ -124,7 +124,7 @@ public class SysConfigController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigRemove)
 	@Log(title = "参数管理", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> configIds) {
 		Assert.isTrue(IdUtils.validate(configIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception());
 		configService.deleteConfigByIds(configIds);
@@ -136,7 +136,7 @@ public class SysConfigController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigRemove)
 	@Log(title = "参数管理", businessType = BusinessType.CLEAN)
-	@DeleteMapping("/refreshCache")
+	@PostMapping("/refreshCache")
 	public R<?> refreshCache() {
 		configService.resetConfigCache();
 		return R.ok();

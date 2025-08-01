@@ -308,15 +308,17 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 	@Override
 	public String getResourceLink(CmsResource resource, String publishPipeCode, boolean isPreview) {
 		CmsSite site = this.siteService.getSite(resource.getSiteId());
-		String prefix = ResourceUtils.getResourcePrefix(resource.getStorageType(), site, publishPipeCode, isPreview);
+		String storageType = FileStorageTypeProperty.getValue(site.getConfigProps());
+		String prefix = ResourceUtils.getResourcePrefix(storageType, site, publishPipeCode, isPreview);
 		return prefix + resource.getPath();
 	}
 
 	@Override
 	public void downloadResource(CmsResource resource, HttpServletResponse response) {
 		CmsSite site = this.siteService.getSite(resource.getSiteId());
-		IFileStorageType storagetType = fileStorageService.getFileStorageType(resource.getStorageType());
-		FileStorageHelper fileStorageHelper = FileStorageHelper.of(storagetType, site);
+		String storageTypeId = FileStorageTypeProperty.getValue(site.getConfigProps());
+		IFileStorageType storageType = fileStorageService.getFileStorageType(storageTypeId);
+		FileStorageHelper fileStorageHelper = FileStorageHelper.of(storageType, site);
 		try (InputStream is = fileStorageHelper.read(resource.getPath())) {
 			IOUtils.copy(is, response.getOutputStream());
 		} catch (IOException e) {
@@ -350,7 +352,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 					// base64图片保存到资源库
 					CmsResource resource = addBase64Image(site, operator, src);
 					if (Objects.nonNull(resource)) {
-						imgTag = imgTag.replaceFirst("data:image/([^'\"]+)", src);
+						imgTag = StringUtils.replaceEx(imgTag, src, resource.getInternalUrl());
 					}
 				} else if (!InternalUrlUtils.isInternalUrl(src) && ServletUtils.isHttpUrl(src)) {
 					// 非iurl的http链接则下载图片
@@ -360,7 +362,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 					}
 				}
 			} catch (Exception e1) {
-				String imgSrc = (src.startsWith("data:image/") ? "base64Img" : src);
+				String imgSrc = ImageUtils.isBase64Image(src) ? "base64Img" : src;
 				log.warn("Save image failed: " + imgSrc);
 				AsyncTaskManager.addErrMessage("Download remote image failed: " + imgSrc);
 			}
@@ -372,7 +374,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 	}
 
 	@Override
-	public void createThumbnailIfNotExists(InternalURL internalUrl, int width, int height) throws IOException {
+	public void createThumbnailIfNotExists(InternalURL internalUrl, int width, int height) throws Exception {
 		if (!InternalDataType_Resource.ID.equals(internalUrl.getType())
 				|| !ResourceType_Image.isImage(internalUrl.getPath())) {
 			return;  // 非图片资源忽略
@@ -394,7 +396,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 			try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 				try (InputStream is = storageHelper.read(resource.getPath())) {
 					String format = FileExUtils.getExtension(resource.getPath());
-					ImageHelper.of(is).format(format).resize(width, height).to(os);
+					ImageHelper.of(is, format).resize(width, height).to(os);
 				}
 				storageHelper.write(thumbnailPath, os.toByteArray());
 			}

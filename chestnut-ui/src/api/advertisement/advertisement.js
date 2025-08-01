@@ -32,8 +32,8 @@ export function editAdSpace(params) {
 
 export function deleteAdSpace(params) {
   return request({
-    url: '/cms/adspace',
-    method: 'delete',
+    url: '/cms/adspace/delete',
+    method: 'post',
     data: params
   })
 }
@@ -86,8 +86,8 @@ export function editAdvertisement(params) {
 
 export function deleteAdvertisement(params) {
   return request({
-    url: '/cms/advertisement',
-    method: 'delete',
+    url: '/cms/advertisement/delete',
+    method: 'post',
     data: params
   })
 }

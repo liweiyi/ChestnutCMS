@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.common.utils.image.op;
+package com.chestnut.contentcore.listener.event;
 
-import java.awt.image.BufferedImage;
+import com.chestnut.contentcore.core.IContent;
+import lombok.Getter;
+import org.springframework.context.ApplicationEvent;
 
-/**
- * 图片操作
- *
- * @author 兮玥
- * @email 190785909@qq.com
- */
-public interface ImageOp {
+@Getter
+public class AfterContentTopSetEvent extends ApplicationEvent {
 
-    /**
-     * 操作参数校验
-     */
-    default void validate() {}
+	private final IContent<?> content;
 
-    /**
-     * 预处理
-     */
-    default void prepare(int originalWidth, int originalHeight) {}
-
-    BufferedImage op(BufferedImage image);
+	public AfterContentTopSetEvent(Object source, IContent<?> content) {
+		super(source);
+		this.content = content;
+	}
 }

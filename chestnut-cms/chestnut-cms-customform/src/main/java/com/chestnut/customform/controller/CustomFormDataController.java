@@ -118,10 +118,14 @@ public class CustomFormDataController extends BaseRestController {
         return R.ok();
     }
 
-    @DeleteMapping
+    @PostMapping("/delete")
     public R<?> deleteCustomFormDatas(@RequestParam @LongId Long formId, @RequestBody @NotEmpty List<Long> dataIds) {
-        List<Map<String, String>> pkValues = dataIds.stream()
-                .map(id -> Map.of(CmsCustomFormMetaModelType.FIELD_DATA_ID.getCode(), id.toString())).toList();
+        List<Map<String, Object>> pkValues = dataIds.stream()
+                .map(id -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put(CmsCustomFormMetaModelType.FIELD_DATA_ID.getCode(), id);
+                    return map;
+                }).toList();
         this.modelDataService.deleteModelDataByPkValue(formId, pkValues);
         return R.ok();
     }

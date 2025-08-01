@@ -55,8 +55,8 @@ export function batchSaveI18nDicts(data) {
 
 export function delI18nDict(dictIds) {
   return request({
-    url: '/system/i18n/dict',
-    method: 'delete',
+    url: '/system/i18n/dict/delete',
+    method: 'post',
     data: dictIds
   })
 }
@@ -64,6 +64,6 @@ export function delI18nDict(dictIds) {
 export function refreshCache() {
   return request({
     url: '/system/i18n/dict/refreshCache',
-    method: 'delete'
+    method: 'post'
   })
 }

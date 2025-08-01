@@ -87,7 +87,7 @@ public class RecycleContentController extends BaseRestController {
 	}
 
 	@Log(title = "删除回收站内容", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteRecycleContents(@RequestBody @NotEmpty List<Long> backupIds) {
 		this.contentService.deleteRecycleContents(backupIds);
 		return R.ok();

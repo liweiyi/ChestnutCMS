@@ -57,7 +57,7 @@ public class BackupServiceImpl<M extends BaseMapper<T>, T extends IBackupable<B>
 
     @Override
     public List<B> getBackupByIds(Collection<Long> backupIds) {
-        return backupMapper.selectBatchIds(backupIds);
+        return backupMapper.selectByIds(backupIds);
     }
 
     @Override

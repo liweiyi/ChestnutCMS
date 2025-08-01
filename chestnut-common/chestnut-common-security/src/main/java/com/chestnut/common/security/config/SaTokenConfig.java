@@ -15,8 +15,11 @@
  */
 package com.chestnut.common.security.config;
 
+import com.chestnut.common.security.SecurityUtils;
+import com.chestnut.common.security.config.properties.SecurityProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -26,7 +29,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableConfigurationProperties(SecurityProperties.class)
 public class SaTokenConfig implements WebMvcConfigurer {
+
+    public SaTokenConfig(SecurityProperties securityProperties) {
+        SecurityUtils.setSecurityProperties(securityProperties);
+    }
 
     @Autowired
     public void rewriteGetAnnotationSaStrategy() {

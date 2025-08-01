@@ -26,8 +26,8 @@ export function editLinkGroup(params) {
 
 export function deleteLinkGroup(params) {
   return request({
-    url: '/cms/link_group',
-    method: 'delete',
+    url: '/cms/link_group/delete',
+    method: 'post',
     data: params
   })
 }

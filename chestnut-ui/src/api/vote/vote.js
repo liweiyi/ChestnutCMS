@@ -47,8 +47,8 @@ export function updateVote(data) {
 
 export function deleteVotes(voteIds) {
   return request({
-    url: '/vote',
-    method: 'delete',
+    url: '/vote/delete',
+    method: 'post',
     data: voteIds
   })
 }

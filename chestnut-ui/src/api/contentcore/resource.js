@@ -48,8 +48,8 @@ export function updateResource(data) {
 // 删除资源
 export function delResource(resourceIds) {
   return request({
-    url: '/cms/resource',
-    method: 'delete',
+    url: '/cms/resource/delete',
+    method: 'post',
     data: resourceIds
   })
 }

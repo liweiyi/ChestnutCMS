@@ -25,6 +25,8 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 热词分组表对应 [cms_hot_word_group]
  * 
@@ -36,6 +38,7 @@ import lombok.Setter;
 @TableName(HotWordGroup.TABLE_NAME)
 public class HotWordGroup extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
     
     public static final String TABLE_NAME = "cc_hot_word_group";

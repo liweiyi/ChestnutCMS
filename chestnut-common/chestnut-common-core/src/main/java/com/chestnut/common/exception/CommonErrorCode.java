@@ -15,6 +15,12 @@
  */
 package com.chestnut.common.exception;
 
+/**
+ * 通用错误码
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 public enum CommonErrorCode implements ErrorCode {
 	
 	/**

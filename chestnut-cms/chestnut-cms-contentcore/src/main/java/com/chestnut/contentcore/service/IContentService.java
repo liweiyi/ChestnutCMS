@@ -28,6 +28,7 @@ import com.chestnut.contentcore.domain.dto.SetTopContentDTO;
 import com.chestnut.contentcore.domain.dto.SortContentDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IContentService extends HasDAO<CmsContentDAO> {
 
@@ -48,6 +49,8 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	 */
 	void deleteContents(List<Long> contentIds, LoginUser operator);
 
+
+	void deleteContent(CmsContent cmsContent, LoginUser operator, Map<String, Object> params);
 
 	/**
 	 * 恢复回收站删除的内容到指定栏目
@@ -87,12 +90,12 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	/**
 	 * 复制内容
 	 */
-	void copy(CopyContentDTO dto);
+	AsyncTask copy(CopyContentDTO dto);
 
 	/**
 	 * 转移内容
 	 */
-	void move(MoveContentDTO dto);
+	AsyncTask move(MoveContentDTO dto);
 
 	void moveContent(CmsContent cmsContent, CmsCatalog toCatalog, LoginUser operator);
 
@@ -119,13 +122,22 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 
 	/**
 	 * 下线内容
+	 *
+	 * @return
 	 */
-	void offline(List<Long> contentIds, LoginUser operator);
+	AsyncTask offline(List<Long> contentIds, LoginUser operator);
 
 	/**
+	 * 下线内容
+	 */
+    void offline(CmsContent cmsContent, LoginUser operator);
+
+    /**
 	 * 排序，将指定内容排到目标内容之前
 	 */
 	void sort(SortContentDTO dto);
+
+	void toPublish(CmsContent cmsContent, LoginUser operator);
 
 	/**
 	 * 归档

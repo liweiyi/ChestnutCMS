@@ -74,10 +74,17 @@ public class MemberFavoritesApiController extends BaseRestController {
 	 * 取消收藏
 	 */
 	@IgnoreDemoMode
-	@DeleteMapping
+	@PostMapping("/cancel")
 	public R<?> cancelFavorite(@RequestBody @Validated FavoriteDTO dto) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		this.memberFavoritesService.cancelFavorite(memberId, dto.getDataType(), dto.getDataId());
 		return R.ok();
+	}
+
+	@IgnoreDemoMode
+	@DeleteMapping
+	@Deprecated(since = "1.5.7", forRemoval = true)
+	public R<?> cancelFavorite2(@RequestBody @Validated FavoriteDTO dto) {
+		return cancelFavorite(dto);
 	}
 }

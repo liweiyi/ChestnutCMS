@@ -61,6 +61,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -85,6 +86,8 @@ import static com.chestnut.common.utils.SortUtils.getDefaultSortValue;
 @RequestMapping("/api/account/contribute")
 public class MemberContributeApiController extends BaseRestController implements ApplicationContextAware {
 
+	private final TransactionTemplate transactionTemplate;
+
 	private final IContentService contentService;
 
 	private final ISiteService siteService;
@@ -99,7 +102,7 @@ public class MemberContributeApiController extends BaseRestController implements
 
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteContribute(@RequestParam("cid") @LongId Long contentId) {
 		CmsContent xContent = this.contentService.dao().getById(contentId);
 		if (xContent == null) {
@@ -115,10 +118,16 @@ public class MemberContributeApiController extends BaseRestController implements
 		IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
 		IContent<?> content = contentType.loadContent(xContent);
 		content.setOperator(StpMemberUtil.getLoginUser());
-		content.delete();
-
+		transactionTemplate.executeWithoutResult(transactionStatus -> content.delete());
 		applicationContext.publishEvent(new AfterContentDeleteEvent(this, content));
 		return R.ok();
+	}
+	@IgnoreDemoMode
+	@Priv(type = MemberUserType.TYPE)
+	@DeleteMapping
+	@Deprecated(since = "1.5.7", forRemoval = true)
+	public R<?> deleteContribute2(@RequestParam("cid") @LongId Long contentId) {
+		return deleteContribute(contentId);
 	}
 
 	/**

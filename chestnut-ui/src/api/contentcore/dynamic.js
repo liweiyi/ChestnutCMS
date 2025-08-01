@@ -41,8 +41,8 @@ export function editDynamicPage(data) {
 
 export function deleteDynamicPages(pageIds) {
   return request({
-    url: '/cms/dynamic_page',
-    method: 'delete',
+    url: '/cms/dynamic_page/delete',
+    method: 'post',
     data: pageIds
   })
 }

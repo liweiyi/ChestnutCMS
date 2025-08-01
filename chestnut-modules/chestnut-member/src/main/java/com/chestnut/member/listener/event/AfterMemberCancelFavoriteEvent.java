@@ -28,9 +28,7 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class AfterMemberCancelFavoriteEvent extends ApplicationEvent {
 
-    private static final long serialVersionUID = 1L;
-
-    private MemberFavorites memberFavorites;
+    private final MemberFavorites memberFavorites;
 
     public AfterMemberCancelFavoriteEvent(Object source, MemberFavorites memberFavorites) {
         super(source);

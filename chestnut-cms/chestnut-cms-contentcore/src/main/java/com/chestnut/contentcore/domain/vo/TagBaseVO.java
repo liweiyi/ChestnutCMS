@@ -31,18 +31,18 @@ import java.time.LocalDateTime;
 @Setter
 public class TagBaseVO {
 
-    @XComment("创建者")
+    @XComment("{CC.ENTITY.CREATE_BY}")
     private String createBy;
 
-    @XComment("创建时间")
+    @XComment("{CC.ENTITY.CREATE_TIME}")
     private LocalDateTime createTime;
 
-    @XComment("更新者")
+    @XComment("{CC.ENTITY.UPDATE_BY}")
     private String updateBy;
 
-    @XComment("更新时间")
+    @XComment("{CC.ENTITY.UPDATE_TIME}")
     private LocalDateTime updateTime;
 
-    @XComment("备注")
+    @XComment("{CC.ENTITY.REMARK}")
     private String remark;
 }

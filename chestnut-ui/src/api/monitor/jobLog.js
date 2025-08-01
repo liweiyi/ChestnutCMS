@@ -12,8 +12,8 @@ export function listJobLog(query) {
 // 删除调度日志
 export function delJobLog(jobLogId) {
   return request({
-    url: '/monitor/jobLog/' + jobLogId,
-    method: 'delete'
+    url: '/monitor/jobLog/delete/' + jobLogId,
+    method: 'post'
   })
 }
 
@@ -21,6 +21,6 @@ export function delJobLog(jobLogId) {
 export function cleanJobLog() {
   return request({
     url: '/monitor/jobLog/clean',
-    method: 'delete'
+    method: 'post'
   })
 }

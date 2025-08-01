@@ -47,8 +47,8 @@ export function updatePublishPipe(data) {
 // 删除发布通道
 export function delPublishPipe(publishPipeIds) {
   return request({
-    url: '/cms/publishpipe',
-    method: 'delete',
+    url: '/cms/publishpipe/delete',
+    method: 'post',
     data: publishPipeIds
   })
 }

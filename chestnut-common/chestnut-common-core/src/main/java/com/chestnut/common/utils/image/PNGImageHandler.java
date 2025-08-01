@@ -16,14 +16,14 @@
 package com.chestnut.common.utils.image;
 
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.common.utils.image.op.ImageOp;
+import com.chestnut.common.utils.image.op.JDKImageOp;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 
 /**
  * PNGImageProcessor
@@ -31,25 +31,26 @@ import java.util.ArrayList;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public class PNGImageProcessor implements ImageProcessor {
+public class PNGImageHandler implements ImageHandler {
 
     public static final String ENCODE = "B0EB1BE5047EA16C7AC1C62FC6D4C12C";
 
     @Override
-    public boolean check(String imageFormat) {
+    public boolean isSupport(String imageFormat) {
         return "png".equalsIgnoreCase(imageFormat);
     }
 
     @Override
-    public void process(ImageHelper.ImageInputWrap<?> inputWrap, ArrayList<ImageOp> imageOps, OutputStream os) throws IOException {
-        BufferedImage image = inputWrap.readBufferedImage();
-        for (ImageOp op : imageOps) {
+    public void handle(File imageFile, OutputStream os, java.util.List<JDKImageOp> imageOps) throws IOException {
+        BufferedImage image = ImageIO.read(imageFile);
+        for (JDKImageOp op : imageOps) {
             op.prepare(image.getWidth(), image.getHeight());
             image = op.op(image);
             encode(image);
         }
         ImageIO.write(image, "png", os);
     }
+
     private void encode(BufferedImage image) {
         String binary = StringUtils.toBinary(ENCODE.length() + "." + ENCODE);
         int index = 0;

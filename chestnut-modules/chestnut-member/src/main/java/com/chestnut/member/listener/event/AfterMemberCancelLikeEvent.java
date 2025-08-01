@@ -15,7 +15,6 @@
  */
 package com.chestnut.member.listener.event;
 
-import com.chestnut.member.domain.MemberFavorites;
 import com.chestnut.member.domain.MemberLike;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
@@ -29,9 +28,7 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class AfterMemberCancelLikeEvent extends ApplicationEvent {
 
-    private static final long serialVersionUID = 1L;
-
-    private MemberLike memberLike;
+    private final MemberLike memberLike;
 
     public AfterMemberCancelLikeEvent(Object source, MemberLike memberLike) {
         super(source);

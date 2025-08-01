@@ -61,8 +61,8 @@ export function updateSite(data) {
 // 删除站点配置
 export function delSite(siteId) {
   return request({
-    url: '/cms/site/' + siteId,
-    method: 'delete'
+    url: '/cms/site/delete/' + siteId,
+    method: 'post'
   })
 }
 
@@ -140,8 +140,8 @@ export function saveSiteProperty(data) {
 // 删除站点自定义属性
 export function deleteSiteProperty(data) {
   return request({
-    url: '/cms/site/prop',
-    method: 'delete',
+    url: '/cms/site/prop/delete',
+    method: 'post',
     data: data
   })
 }

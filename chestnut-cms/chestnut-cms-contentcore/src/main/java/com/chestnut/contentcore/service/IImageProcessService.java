@@ -34,7 +34,7 @@ public interface IImageProcessService {
      * @param dto
      * @throws IOException
      */
-    void cropImage(ImageCropDTO dto) throws IOException;
+    void cropImage(ImageCropDTO dto) throws Exception;
 
     /**
      * 图片翻转
@@ -42,5 +42,5 @@ public interface IImageProcessService {
      * @param dto
      * @throws IOException
      */
-    void rotateImage(ImageRotateDTO dto) throws IOException;
+    void rotateImage(ImageRotateDTO dto) throws Exception;
 }

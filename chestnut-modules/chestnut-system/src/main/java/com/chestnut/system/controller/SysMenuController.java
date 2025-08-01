@@ -149,7 +149,7 @@ public class SysMenuController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuRemove)
 	@Log(title = "菜单管理", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{menuId}")
+	@PostMapping("/delete/{menuId}")
 	public R<?> remove(@PathVariable("menuId") @LongId Long menuId) {
 		menuService.deleteMenuById(menuId);
 		return R.ok();

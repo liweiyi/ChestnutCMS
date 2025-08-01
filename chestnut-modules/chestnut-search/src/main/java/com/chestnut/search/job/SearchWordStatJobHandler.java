@@ -17,6 +17,7 @@ package com.chestnut.search.job;
 
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.DateUtils;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.domain.SearchWordHourStat;
 import com.chestnut.search.service.ISearchWordHourStatService;
@@ -96,6 +97,7 @@ public class SearchWordStatJobHandler extends IJobHandler implements IScheduledH
 				SearchWordHourStat stat = stats.get(wordIdLongV);
 				if (Objects.isNull(stat)) {
 					stat = new SearchWordHourStat();
+					stat.setStatId(IdUtils.getSnowflakeId());
 					stat.setHour(hour);
 					stat.setWordId(wordIdLongV);
 					stat.setWord(searchWords.get(wordIdLongV));

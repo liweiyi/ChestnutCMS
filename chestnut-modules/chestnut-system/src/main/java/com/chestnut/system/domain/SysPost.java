@@ -29,6 +29,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 岗位表 sys_post
  *
@@ -39,7 +41,8 @@ import lombok.Setter;
 @Setter
 @TableName(SysPost.TABLE_NAME)
 public class SysPost extends BaseEntity {
-	
+
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "sys_post";

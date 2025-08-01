@@ -19,10 +19,13 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serial;
 
 /**
  * 问卷调查主题选项表
@@ -35,46 +38,55 @@ import lombok.Setter;
 @TableName(value = VoteSubjectItem.TABLE_NAME)
 public class VoteSubjectItem extends BaseEntity {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "cc_vote_item";
 
+	@XComment("{CC.VOTE_SUBJECT.ITEM.ID}")
 	@TableId(value = "item_id", type = IdType.INPUT)
 	private Long itemId;
 
 	/**
 	 * 关联问卷调查表ID
 	 */
+	@XComment("{CC.VOTE_SUBJECT.ITEM.VOTE_ID}")
 	private Long voteId;
 
 	/**
 	 * 关联主题ID
 	 */
+	@XComment("{CC.VOTE_SUBJECT.ITEM.SUBJECT_ID}")
 	private Long subjectId;
 	
 	/**
 	 * 类型（文字、图片、内容引用）
 	 */
+	@XComment("{CC.VOTE_SUBJECT.ITEM.TYPE}")
 	private String type;
 	
 	/**
 	 * 选项内容（文字内容、图片地址、内容引用地址）
 	 */
+	@XComment("{CC.VOTE_SUBJECT.ITEM.CONTENT}")
 	private String content;
 	
 	/**
 	 * 选项描述
 	 */
+	@XComment("{CC.VOTE_SUBJECT.ITEM.DESC}")
 	private String description;
 
 	/**
 	 * 排序标识
 	 */
+	@XComment("{CC.VOTE_SUBJECT.ITEM.CONTENT}")
 	private Integer sortFlag;
 	
 	/**
 	 * 选项票数
 	 */
+	@XComment("{CC.VOTE_SUBJECT.ITEM.TOTAL}")
 	private Integer total;
 	
 	/**

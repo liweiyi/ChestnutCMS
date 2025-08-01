@@ -92,7 +92,7 @@ public class GroovyController extends BaseRestController {
 	}
 
 	@Log(title = "刪除Groovy脚本", businessType = BusinessType.DELETE)
-	@DeleteMapping("/delete")
+	@PostMapping("/delete")
 	public R<?> deleteGroovyScript(@RequestBody @NotEmpty List<Long> scriptIds) {
 		this.groovyScriptMapper.deleteByIds(scriptIds);
 		return R.ok();

@@ -25,7 +25,7 @@ import java.awt.image.BufferedImage;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public class RotateOp implements ImageOp {
+public class RotateOp extends JDKImageOp {
 
     private int degree;
 

@@ -18,8 +18,8 @@ export function recoverRecycleContent(backupIds) {
 
 export function deleteRecycleContents(backupIds) {
   return request({
-    url: '/cms/content/recycle',
-    method: 'delete',
+    url: '/cms/content/recycle/delete',
+    method: 'post',
     data: backupIds
   })
 }

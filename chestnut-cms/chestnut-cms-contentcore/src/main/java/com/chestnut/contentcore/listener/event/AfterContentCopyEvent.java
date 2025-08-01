@@ -19,19 +19,12 @@ import com.chestnut.contentcore.domain.CmsContent;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
-import java.io.Serial;
-
 @Getter
 public class AfterContentCopyEvent extends ApplicationEvent {
 
-	@Serial
-	private static final long serialVersionUID = 1L;
+	private final CmsContent sourceContent;
 
-	private CmsContent sourceContent;
-
-	private CmsContent copyContent;
-
-	private boolean add;
+	private final CmsContent copyContent;
 
 	public AfterContentCopyEvent(Object source, CmsContent sourceContent, CmsContent copyContent) {
 		super(source);

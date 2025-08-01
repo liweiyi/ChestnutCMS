@@ -33,8 +33,8 @@ export function updateVoteSubject(data) {
 
 export function deleteVoteSubjects(voteIds) {
   return request({
-    url: '/vote/subject',
-    method: 'delete',
+    url: '/vote/subject/delete',
+    method: 'post',
     data: voteIds
   })
 }

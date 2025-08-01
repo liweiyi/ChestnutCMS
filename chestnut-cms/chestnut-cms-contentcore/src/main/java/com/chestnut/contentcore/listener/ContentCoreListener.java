@@ -18,15 +18,12 @@ package com.chestnut.contentcore.listener;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
-import com.chestnut.contentcore.core.impl.InternalDataType_Content;
 import com.chestnut.contentcore.domain.*;
-import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.service.*;
-import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.SiteUtils;
-import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -60,6 +57,8 @@ public class ContentCoreListener {
 	private final ITemplateService templateService;
 	
 	private final IContentRelaService contentRelaService;
+
+	private final IPublishService publishService;
 
 	private final AsyncTaskManager asyncTaskManager;
 
@@ -207,37 +206,13 @@ public class ContentCoreListener {
 
 	@EventListener
 	public void afterContentOffline(AfterContentOfflineEvent event) {
-		final Long contentId = event.getContent().getContentEntity().getContentId();
-		final String operator = event.getContent().getOperatorUName();
-		asyncTaskManager.execute(() -> {
-			// 映射关联内容同步下线
-			List<CmsContent> mappingList = contentService.dao().lambdaQuery()
-					.gt(CmsContent::getCopyType, ContentCopyType.Mapping)
-					.eq(CmsContent::getCopyId, contentId).list();
-			for (CmsContent c : mappingList) {
-				if (ContentStatus.PUBLISHED.equals(c.getStatus())) {
-					contentService.deleteStaticFiles(c);
-				}
-				c.setStatus(ContentStatus.OFFLINE);
-				c.updateBy(operator);
-			}
-			contentService.dao().updateBatchById(mappingList);
-			// 标题内容同步下线
-			String internalUrl = InternalUrlUtils.getInternalUrl(InternalDataType_Content.ID, contentId);
-			List<CmsContent> linkList = contentService.dao().lambdaQuery().eq(CmsContent::getLinkFlag, YesOrNo.YES)
-					.eq(CmsContent::getRedirectUrl, internalUrl).list();
-			for (CmsContent c : linkList) {
-				c.setStatus(ContentStatus.OFFLINE);
-				c.updateBy(operator);
-			}
-			mappingList.addAll(linkList);
-			contentService.dao().updateBatchById(mappingList);
-		});
-	}
-
-	@EventListener
-	public void afterContentDelete(AfterContentDeleteEvent event) {
-		contentRelaService.onContentDelete(event.getContent().getContentEntity().getContentId());
+		// 重新发布内容所在栏目和父级栏目
+		String[] catalogIds = event.getContent().getContentEntity().getCatalogAncestors()
+				.split(CatalogUtils.ANCESTORS_SPLITER);
+		for (String catalogId : catalogIds) {
+			this.publishService.publishCatalog(this.catalogService.getCatalog(Long.valueOf(catalogId)),
+					false, false, null, event.getContent().getOperator());
+		}
 	}
 
 	@EventListener
@@ -281,6 +256,26 @@ public class ContentCoreListener {
 					break;
 				}
 			}
+		}
+	}
+
+	@EventListener
+	public void afterContentPublish(AfterContentPublishEvent event) {
+		// 静态化
+		this.publishService.asyncStaticizeContent(event.getContent());
+	}
+
+	@EventListener
+	public void afterContentSetTopEvent(AfterContentTopSetEvent event) {
+		if (ContentStatus.isPublished(event.getContent().getContentEntity().getStatus())) {
+			this.publishService.publishContent(event.getContent().getContentEntity(), event.getContent().getOperator());
+		}
+	}
+
+	@EventListener
+	public void afterContentTopCancelEvent(AfterContentTopCancelEvent event) {
+		if (ContentStatus.isPublished(event.getContent().getContentEntity().getStatus())) {
+			this.publishService.publishContent(event.getContent().getContentEntity(), event.getContent().getOperator());
 		}
 	}
 }

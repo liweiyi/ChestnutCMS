@@ -186,7 +186,7 @@ public class SysUserController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserRemove)
 	@Log(title = "用户管理", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> userIds) {
 		userService.deleteUserByIds(userIds);
 		return R.ok();

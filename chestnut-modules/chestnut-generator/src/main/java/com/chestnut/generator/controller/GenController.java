@@ -141,7 +141,7 @@ public class GenController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = GenMenuPriv.Remove)
 	@Log(title = "代码生成", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody List<Long> tableIds) {
 		this.genTableService.deleteGenTableByIds(tableIds);
 		return R.ok();

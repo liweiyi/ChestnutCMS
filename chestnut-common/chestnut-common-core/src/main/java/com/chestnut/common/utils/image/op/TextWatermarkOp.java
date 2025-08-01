@@ -30,7 +30,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public class TextWatermarkOp implements ImageOp {
+public class TextWatermarkOp extends JDKImageOp {
 
     private final String text;
 

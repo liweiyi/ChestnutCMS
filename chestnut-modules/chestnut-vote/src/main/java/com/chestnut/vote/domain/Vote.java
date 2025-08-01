@@ -15,6 +15,7 @@
  */
 package com.chestnut.vote.domain;
 
+import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.system.validator.Dict;
 import com.chestnut.vote.fixed.dict.VoteStatus;
@@ -44,16 +46,19 @@ import lombok.Setter;
 @TableName(value = Vote.TABLE_NAME)
 public class Vote extends BaseEntity {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "cc_vote";
 
+	@XComment("{CC.VOTE.ID}")
 	@TableId(value = "vote_id", type = IdType.INPUT)
 	private Long voteId;
 
 	/**
 	 * 唯一标识编码
 	 */
+	@XComment("{CC.VOTE.CODE}")
 	@Pattern(regexp = "^[A-Za-z0-9_]+$", message = "编码不能为空且只能使用大小写字母及数字组合")
 	private String code;
 
@@ -61,36 +66,42 @@ public class Vote extends BaseEntity {
 	 * 问卷调查标题
 	 */
 	@NotEmpty
+	@XComment("{CC.VOTE.TITLE}")
 	private String title;
 
 	/**
 	 * 开始时间
 	 */
 	@NotNull
+	@XComment("{CC.VOTE.START_TIME}")
 	private LocalDateTime startTime;
 
 	/**
 	 * 结束时间
 	 */
 	@NotNull
+	@XComment("{CC.VOTE.END_TIME}")
 	private LocalDateTime endTime;
 
 	/**
 	 * 用户类型（IP、浏览器指纹，登录用户）
 	 */
 	@NotEmpty
+	@XComment("{CC.VOTE.USER_TYPE}")
 	private String userType;
 
 	/**
 	 * 每日限制次数
 	 */
 	@Min(1)
+	@XComment("{CC.VOTE.DAY_LIMIT}")
 	private Integer dayLimit;
 
 	/**
 	 * 总共可参与次数
 	 */
 	@Min(1)
+	@XComment("{CC.VOTE.TOTAL_LIMIT}")
 	private Integer totalLimit;
 
 	/**
@@ -99,27 +110,32 @@ public class Vote extends BaseEntity {
 	 * @see com.chestnut.vote.fixed.dict.VoteStatus
 	 */
 	@Dict(VoteStatus.TYPE)
+	@XComment("{CC.VOTE.STATUS}")
 	private String status;
 
 	/**
 	 * 结果查看方式（不允许查看、提交后可看、不限制）
 	 */
 	@NotEmpty
+	@XComment("{CC.VOTE.VIEW_TYPE}")
 	private String viewType;
 
 	/**
 	 * 提交总人数
 	 */
+	@XComment("{CC.VOTE.TOTAL}")
 	private Integer total;
 	
 	/**
 	 * 来源归属标识，例如：cms:siteid
 	 */
+	@XComment("{CC.VOTE.SOURCE}")
 	private String source;
 
 	/**
 	 * 主题列表
 	 */
+	@XComment("{CC.VOTE.SUBJECT_LIST}")
 	@TableField(exist = false)
 	private List<VoteSubject> subjectList;
 }

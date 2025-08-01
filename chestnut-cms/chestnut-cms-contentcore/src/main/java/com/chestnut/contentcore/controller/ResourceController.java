@@ -113,14 +113,13 @@ public class ResourceController extends BaseRestController {
 			page.getRecords().forEach(r -> {
 				IResourceType rt = ContentCoreUtils.getResourceType(r.getResourceType());
 				r.setResourceTypeName(I18nUtils.get(rt.getName()));
+				r.setInternalUrl(InternalDataType_Resource.getInternalUrl(r));
+				r.setFileSizeName(FileUtils.byteCountToDisplaySize(r.getFileSize()));
 				if (r.getPath().startsWith("http://") || r.getPath().startsWith("https://")) {
 					r.setSrc(r.getPath());
 				} else {
-					String resourceLink = this.resourceService.getResourceLink(r, null, true);
-					r.setSrc(resourceLink);
+					resourceService.dealDefaultThumbnail(site, r.getInternalUrl(), r::setSrc);
 				}
-				r.setInternalUrl(InternalDataType_Resource.getInternalUrl(r));
-				r.setFileSizeName(FileUtils.byteCountToDisplaySize(r.getFileSize()));
 			});
 		}
 		return bindDataTable(page);
@@ -170,7 +169,7 @@ public class ResourceController extends BaseRestController {
 	}
 
 	@Log(title = "删除素材", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<String> delResources(@RequestBody @NotEmpty List<Long> resourceIds) {
 		Assert.notEmpty(resourceIds, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("resourceIds"));
 		this.resourceService.deleteResource(resourceIds);

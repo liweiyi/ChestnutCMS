@@ -117,7 +117,7 @@ public class CacheController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
-	@DeleteMapping("/clearCacheName/{monitoredId}")
+	@PostMapping("/clearCacheName/{monitoredId}")
 	public R<?> clearCacheName(@PathVariable String monitoredId) {
 		IMonitoredCache<?> iMonitoredCache = this.monitoredCaches.get(IMonitoredCache.BEAN_PREFIX + monitoredId);
 		Assert.notNull(iMonitoredCache, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(monitoredId));
@@ -129,14 +129,14 @@ public class CacheController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
-	@DeleteMapping("/clearCacheKey")
+	@PostMapping("/clearCacheKey")
 	public R<?> clearCacheKey(@RequestBody ClearCacheDTO dto) {
 		redisTemplate.delete(dto.getCacheKey());
 		return R.ok();
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
-	@DeleteMapping("/clearCacheAll")
+	@PostMapping("/clearCacheAll")
 	public R<?> clearCacheAll() {
 		Collection<String> cacheKeys = redisTemplate.keys("*");
 		if (Objects.nonNull(cacheKeys)) {

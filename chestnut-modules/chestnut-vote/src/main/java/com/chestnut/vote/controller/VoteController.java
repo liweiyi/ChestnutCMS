@@ -101,7 +101,7 @@ public class VoteController extends BaseRestController {
 
 	@Log(title = "删除问卷调查", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.Delete)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<String> delete(@RequestBody @NotEmpty List<Long> dictWordIds) {
 		this.voteService.deleteVotes(dictWordIds);
 		return R.ok();

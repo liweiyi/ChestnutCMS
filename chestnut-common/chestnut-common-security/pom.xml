@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>chestnut-common</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.6</version>
+		<version>1.5.7</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -38,6 +38,10 @@
 		<dependency>
 		    <groupId>cn.dev33</groupId>
 		    <artifactId>sa-token-spring-boot3-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>de.mkammerer</groupId>
+			<artifactId>argon2-jvm</artifactId>
 		</dependency>
 		
 		<dependency>

@@ -15,20 +15,16 @@
  */
 package com.chestnut.contentcore.listener.event;
 
-import org.springframework.context.ApplicationEvent;
-
 import com.chestnut.contentcore.core.IContent;
-
 import lombok.Getter;
+import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class BeforeContentSaveEvent extends ApplicationEvent {
 	
-	private static final long serialVersionUID = 1L;
-	
-	private IContent<?> content;
+	private final IContent<?> content;
 
-	private boolean add;
+	private final boolean add;
 	
 	public BeforeContentSaveEvent(Object source, IContent<?> content, boolean add) {
 		super(source);
@@ -36,7 +32,4 @@ public class BeforeContentSaveEvent extends ApplicationEvent {
 		this.add = add;
 	}
 
-	public boolean isAdd() {
-		return add;
-	}
 }

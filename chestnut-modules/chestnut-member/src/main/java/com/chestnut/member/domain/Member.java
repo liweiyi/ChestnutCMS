@@ -26,6 +26,7 @@ import com.chestnut.system.security.ISecurityUser;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.time.LocalDateTime;
 
 /***
@@ -36,6 +37,7 @@ import java.time.LocalDateTime;
 @TableName(Member.TABLE_NAME)
 public class Member extends BaseEntity implements ISecurityUser {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public static final String TABLE_NAME = "cc_member";

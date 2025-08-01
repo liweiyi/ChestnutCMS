@@ -105,7 +105,7 @@ public class SysPostController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostRemove)
 	@Log(title = "岗位管理", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> postIds) {
 		postService.deletePostByIds(postIds);
 		return R.ok();

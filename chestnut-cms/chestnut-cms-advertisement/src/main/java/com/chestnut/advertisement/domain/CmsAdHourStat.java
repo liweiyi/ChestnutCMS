@@ -42,7 +42,7 @@ public class CmsAdHourStat implements Serializable {
 
 	public final static String TABLE_NAME = "cms_ad_hour_stat";
 
-	@TableId(value = "stat_id", type = IdType.AUTO)
+	@TableId(value = "stat_id", type = IdType.INPUT)
 	private Long statId;
 	
 	/**
@@ -68,7 +68,7 @@ public class CmsAdHourStat implements Serializable {
 	/**
 	 * 展现数
 	 */
-	private Integer view;
+	private Integer viewTotal;
 	
 	/**
 	 * 广告名称

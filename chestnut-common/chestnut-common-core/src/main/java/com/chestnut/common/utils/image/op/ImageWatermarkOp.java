@@ -27,7 +27,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public class ImageWatermarkOp implements ImageOp {
+public class ImageWatermarkOp extends JDKImageOp {
 
     private BufferedImage biWatermarkImage;
 

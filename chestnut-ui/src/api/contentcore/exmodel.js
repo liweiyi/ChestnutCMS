@@ -47,8 +47,8 @@ export function editXModel(data) {
 // 删除扩展模型
 export function deleteXModel(data) {
   return request({
-    url: '/cms/exmodel',
-    method: 'delete',
+    url: '/cms/exmodel/delete',
+    method: 'post',
     data: data
   })
 }
@@ -83,8 +83,8 @@ export function editXModelField(data) {
 // 删除扩展模型字段
 export function deleteXModelField(data) {
   return request({
-    url: '/cms/exmodel/field',
-    method: 'delete',
+    url: '/cms/exmodel/field/delete',
+    method: 'post',
     data: data
   })
 }

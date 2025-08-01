@@ -17,6 +17,12 @@ package com.chestnut.common.exception;
 
 import com.chestnut.common.domain.R;
 
+/**
+ * 自定义错误码接口
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 public interface ErrorCode {
 
 	/**

@@ -102,19 +102,21 @@ public interface IPublishService {
             throws IOException, TemplateException;
 
     /**
-     * 发布内容，创建异步任务发布
+     * 内容静态化
      *
      * @param content 内容
      */
-    void asyncPublishContent(IContent<?> content);
+    void asyncStaticizeContent(IContent<?> content);
 
     /**
      * 发布内容
      *
-     * @param contentIds 内容ID列表
+     * @param contents 内容列表
      * @param operator 操作人
      */
-    void publishContent(List<Long> contentIds, LoginUser operator) ;
+    AsyncTask publishContents(List<CmsContent> contents, LoginUser operator);
+
+    void publishContent(CmsContent content, LoginUser operator);
 
     /**
      * 获取内容扩展模板解析内容

@@ -83,7 +83,7 @@ public class TagWordController extends BaseRestController {
 		return R.ok();
 	}
 
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> tagWordIds) {
 		this.tagWordService.deleteTagWords(tagWordIds);
 		return R.ok();

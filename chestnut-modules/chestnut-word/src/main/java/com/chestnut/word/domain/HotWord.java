@@ -22,6 +22,8 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 热词表对象[cms_hot_word]
  * 
@@ -33,6 +35,7 @@ import lombok.Setter;
 @TableName(HotWord.TABLE_NAME)
 public class HotWord extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
     
     public static final String TABLE_NAME = "cc_hot_word";

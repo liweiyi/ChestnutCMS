@@ -17,6 +17,7 @@ package com.chestnut.vote.domain.vo;
 
 import java.util.List;
 
+import com.chestnut.common.annotation.XComment;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,25 +28,30 @@ public class VoteSubjectVO {
 	/**
 	 * ID
 	 */
+	@XComment("{CC.VOTE_SUBJECT.ID}")
 	private Long subjectId;
 	
 	/**
 	 * 类型（单选、多选、输入）
 	 */
+	@XComment("{CC.VOTE_SUBJECT.TYPE}")
 	private String type;
 	
 	/**
 	 * 标题
 	 */
+	@XComment("{CC.VOTE_SUBJECT.TITLE}")
 	private String title;
 
 	/**
 	 * 排序标识
 	 */
+	@XComment("{CC.ENTITY.SORT}")
 	private Integer sortFlag;
 
 	/**
 	 * 选项列表
 	 */
+	@XComment("{CC.VOTE_SUBJECT.ITEM_LIST}")
 	private List<VoteSubjectItemVO> items;
 }

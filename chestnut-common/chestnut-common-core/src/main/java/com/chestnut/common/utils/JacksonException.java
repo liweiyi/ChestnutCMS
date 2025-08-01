@@ -15,8 +15,11 @@
  */
 package com.chestnut.common.utils;
 
+import java.io.Serial;
+
 public class JacksonException extends RuntimeException {
-	
+
+    @Serial
 	private static final long serialVersionUID = -6243633891270839926L;
 
 	public JacksonException() {

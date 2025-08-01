@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain;
 
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ import lombok.Setter;
 @TableName(value = SysPermission.TABLE_NAME, autoResultMap = true)
 public class SysPermission extends BaseEntity {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public final static String TABLE_NAME = "sys_permission";

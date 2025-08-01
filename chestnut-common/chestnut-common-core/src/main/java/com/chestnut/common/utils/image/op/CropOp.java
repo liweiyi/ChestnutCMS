@@ -16,9 +16,13 @@
 package com.chestnut.common.utils.image.op;
 
 import com.chestnut.common.exception.ImageException;
+import org.apache.commons.io.FilenameUtils;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * 图片裁剪
@@ -26,7 +30,7 @@ import java.awt.image.BufferedImage;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public class CropOp implements ImageOp {
+public class CropOp extends JDKImageOp {
 
     private final int x;
     private final int y;

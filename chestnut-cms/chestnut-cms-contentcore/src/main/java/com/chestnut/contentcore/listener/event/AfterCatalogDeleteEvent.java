@@ -24,9 +24,7 @@ import lombok.Getter;
 @Getter
 public class AfterCatalogDeleteEvent extends ApplicationEvent {
 	
-	private static final long serialVersionUID = 1L;
-
-	private CmsCatalog catalog;
+	private final CmsCatalog catalog;
 	
 	public AfterCatalogDeleteEvent(Object source, CmsCatalog catalog) {
 		super(source);

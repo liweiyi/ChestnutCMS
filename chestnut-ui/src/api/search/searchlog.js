@@ -12,8 +12,8 @@ export function getSearchLogs(params) {
 // 删除搜索日志
 export function deleteSearchLogs(searchLogIds) {
   return request({
-    url: '/search/log',
-    method: 'delete',
+    url: '/search/log/delete',
+    method: 'post',
     data: searchLogIds
   })
 }

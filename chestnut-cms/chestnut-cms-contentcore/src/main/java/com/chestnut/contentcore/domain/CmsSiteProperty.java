@@ -25,6 +25,8 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 站点自定义属性表对象 [cms_site_property]
  * 
@@ -36,6 +38,7 @@ import lombok.Setter;
 @TableName(CmsSiteProperty.TABLE_NAME)
 public class CmsSiteProperty extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
     
     public static final String TABLE_NAME = "cms_site_property";

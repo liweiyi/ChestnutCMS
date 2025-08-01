@@ -23,6 +23,8 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 模板表对象 [cms_template]
  * 
@@ -34,6 +36,7 @@ import lombok.Setter;
 @TableName(CmsTemplate.TABLE_NAME)
 public class CmsTemplate extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
     
     public static final String TABLE_NAME = "cms_template";

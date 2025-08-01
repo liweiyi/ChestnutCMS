@@ -18,16 +18,14 @@ package com.chestnut.contentcore.listener.event;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationEvent;
 
 @Getter
-@Setter
 public class OnCatalogClearEvent extends ApplicationEvent {
 
-	private CmsCatalog catalog;
+	private final CmsCatalog catalog;
 
-	private LoginUser operator;
+	private final LoginUser operator;
 
 	public OnCatalogClearEvent(Object source, CmsCatalog catalog, LoginUser operator) {
 		super(source);

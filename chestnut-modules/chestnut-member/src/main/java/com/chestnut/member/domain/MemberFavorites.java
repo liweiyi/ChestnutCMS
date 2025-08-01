@@ -21,6 +21,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -28,7 +29,8 @@ import java.time.LocalDateTime;
 @Setter
 @TableName(MemberFavorites.TABLE_NAME)
 public class MemberFavorites implements Serializable {
-	
+
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public final static String TABLE_NAME = "cc_member_favorites";

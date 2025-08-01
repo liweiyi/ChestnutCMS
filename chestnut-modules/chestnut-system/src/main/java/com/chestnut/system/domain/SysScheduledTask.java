@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.util.Objects;
 
 /**
@@ -36,7 +37,8 @@ import java.util.Objects;
 @Setter
 @TableName(SysScheduledTask.TABLE_NAME)
 public class SysScheduledTask extends BaseEntity {
-	
+
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public static final String TABLE_NAME = "sys_scheduled_task";

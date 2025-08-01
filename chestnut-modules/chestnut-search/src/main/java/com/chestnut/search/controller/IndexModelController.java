@@ -62,7 +62,7 @@ public class IndexModelController extends BaseRestController {
 	}
 
 	@Log(title = "删除索引模型", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteIndexModel(@RequestBody @NotEmpty List<Long> modelIds) {
 		this.indexModelService.deleteIndexModel(modelIds);
 		return R.ok();

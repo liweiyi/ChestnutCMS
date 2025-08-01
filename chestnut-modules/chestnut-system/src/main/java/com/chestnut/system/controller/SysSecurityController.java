@@ -106,7 +106,7 @@ public class SysSecurityController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> delConfig(@RequestBody @NotEmpty List<Long> configIds) {
 		this.securityConfigService.deleteConfigs(configIds);
 		return R.ok();

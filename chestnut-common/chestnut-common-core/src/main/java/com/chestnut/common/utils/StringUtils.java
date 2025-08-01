@@ -186,10 +186,24 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	}
 
 	/**
-	 * 去空格
+	 * 去除字符串前后的空白字符，如果全是空白字符原样返回
 	 */
 	public static String trim(String str) {
-		return (str == null ? "" : str.trim());
+		if (isEmpty(str)) {
+			return str;
+		}
+		for (int i = 0; i < str.length(); i++) {
+			if (!isSpace(str.charAt(i))) {
+				str = str.substring(i);
+				break;
+			}
+		}
+		for (int i = str.length() - 1; i >= 0; i--) {
+			if (!isSpace(str.charAt(i))) {
+				return str.substring(0, i + 1);
+			}
+		}
+		return str;
 	}
 
 	public static String firstNotBlankStr(String... strArr) {

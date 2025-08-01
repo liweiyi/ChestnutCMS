@@ -28,6 +28,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 参数配置表 sys_config
  */
@@ -35,7 +37,8 @@ import lombok.Setter;
 @Setter
 @TableName(SysConfig.TABLE_NAME)
 public class SysConfig extends BaseEntity {
-	
+
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public static final String TABLE_NAME = "sys_config";

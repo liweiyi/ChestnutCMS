@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain;
 
+import java.io.Serial;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ import lombok.Setter;
 @TableName(value = SysUser.TABLE_NAME, autoResultMap = true)
 public class SysUser extends BaseEntity implements ISecurityUser {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "sys_user";

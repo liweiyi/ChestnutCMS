@@ -26,4 +26,8 @@ public class ImageException extends GlobalException {
     public ImageException(String message) {
         super(message);
     }
+
+    public ImageException(Throwable e, ErrorCode errorCode, Object... args) {
+        super(e, errorCode, args);
+    }
 }

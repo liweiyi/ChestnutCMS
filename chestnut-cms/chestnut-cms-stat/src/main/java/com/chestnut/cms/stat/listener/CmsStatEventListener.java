@@ -33,12 +33,20 @@ public class CmsStatEventListener {
 	private final UserContentCountByStatus userContentCountByStatus;
 
 	private void triggerStatUpdate(CmsContent content) {
-		// 更新栏目内容统计数据
-		catalogContentCountByStatus.triggerChange(content.getCatalogId());
+		triggerCatalogStatUpdate(content.getCatalogId());
 		if (!IdUtils.validate(content.getContributorId())) {
-			// 更新用户内容统计数据
-			userContentCountByStatus.triggerChange(content.getCreateBy(), content.getSiteId());
+			triggerUserStatUpdate(content.getCreateBy(), content.getSiteId());
 		}
+	}
+
+	private void triggerCatalogStatUpdate(Long catalogId) {
+		// 更新栏目内容统计数据
+		catalogContentCountByStatus.triggerChange(catalogId);
+	}
+
+	private void triggerUserStatUpdate(String username, Long siteId) {
+		// 更新用户内容统计数据
+		userContentCountByStatus.triggerChange(username, siteId);
 	}
 
 	@EventListener
@@ -64,5 +72,16 @@ public class CmsStatEventListener {
 	@EventListener
 	public void afterContentOffline(AfterContentOfflineEvent event) {
 		triggerStatUpdate(event.getContent().getContentEntity());
+	}
+
+	@EventListener
+	public void afterContentCopy(AfterContentCopyEvent event) {
+		triggerStatUpdate(event.getCopyContent());
+	}
+
+	@EventListener
+	public void afterContentMove(AfterContentMoveEvent event) {
+		triggerCatalogStatUpdate(event.getFromCatalog().getCatalogId());
+		triggerStatUpdate(event.getContent());
 	}
 }

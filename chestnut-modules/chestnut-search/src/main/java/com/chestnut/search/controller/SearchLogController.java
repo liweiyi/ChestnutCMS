@@ -52,7 +52,7 @@ public class SearchLogController extends BaseRestController {
 
 	@Log(title = "删除检索日志", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> delete(@RequestBody @NotEmpty List<String> logIds) {
 		this.searchLogService.removeByIds(logIds);
 		return R.ok();

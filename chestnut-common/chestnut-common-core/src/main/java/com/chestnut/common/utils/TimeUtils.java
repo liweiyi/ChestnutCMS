@@ -30,6 +30,8 @@ public class TimeUtils {
 
     public static final DateTimeFormatter YYYY_MM_DD_HH_MM_SS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    public static final DateTimeFormatter YYYYMMDDHHMMSS = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+
     public static final DateTimeFormatter YYYY_MM_DD = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public static OffsetDateTime offset() {
@@ -69,6 +71,18 @@ public class TimeUtils {
 
     public static String localFormat(Instant instant) {
         return YYYY_MM_DD_HH_MM_SS.format(toLocalDateTime(instant));
+    }
+
+    public static String localFormat(Instant instant, DateTimeFormatter formatter) {
+        return formatter.format(toLocalDateTime(instant));
+    }
+
+    public static String nowLocalFormat() {
+        return YYYY_MM_DD_HH_MM_SS.format(LocalDateTime.now());
+    }
+
+    public static String nowLocalFormat(DateTimeFormatter formatter) {
+        return formatter.format(LocalDateTime.now());
     }
 
     public static String format(LocalDateTime localDateTime) {

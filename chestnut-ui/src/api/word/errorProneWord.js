@@ -26,8 +26,8 @@ export function editErrorProneWord(data) {
 
 export function deleteErrorProneWord(data) {
   return request({
-    url: '/word/errorproneword',
-    method: 'delete',
+    url: '/word/errorproneword/delete',
+    method: 'post',
     data: data
   })
 }

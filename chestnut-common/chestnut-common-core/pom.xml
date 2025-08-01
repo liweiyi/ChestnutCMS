@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>chestnut-common</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.6</version>
+		<version>1.5.7</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -107,10 +107,6 @@
 		</dependency>
 
 		<!-- 图像处理 -->
-		<dependency>
-			<groupId>org.im4java</groupId>
-			<artifactId>im4java</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.github.usefulness</groupId>
 			<artifactId>webp-imageio</artifactId>

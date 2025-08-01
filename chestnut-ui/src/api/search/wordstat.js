@@ -26,8 +26,8 @@ export function editSearchWord(data) {
 
 export function deleteSearchWords(wordIds) {
   return request({
-    url: '/search/word',
-    method: 'delete',
+    url: '/search/word/delete',
+    method: 'post',
     data: wordIds
   })
 }

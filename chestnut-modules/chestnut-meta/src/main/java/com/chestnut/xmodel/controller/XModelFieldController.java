@@ -99,7 +99,7 @@ public class XModelFieldController extends BaseRestController {
 	}
 
 	@Log(title = "删除元数据字段", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> fieldIds) {
 		this.modelFieldService.deleteModelField(fieldIds);
 		return R.ok();

@@ -28,9 +28,7 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class BeforeCommentSubmitEvent extends ApplicationEvent {
 
-	private static final long serialVersionUID = 1L;
-
-	private Comment comment;
+	private final Comment comment;
 
 	public BeforeCommentSubmitEvent(Object source, Comment comment) {
 		super(source);

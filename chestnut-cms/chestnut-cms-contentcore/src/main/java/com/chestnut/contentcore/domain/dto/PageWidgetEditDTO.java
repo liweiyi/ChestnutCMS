@@ -25,6 +25,7 @@ import lombok.Setter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Getter
@@ -86,6 +87,6 @@ public class PageWidgetEditDTO {
         if (StringUtils.isEmpty(this.templates)) {
             return Map.of();
         }
-        return this.templates.stream().collect(Collectors.toMap(PublishPipeTemplate::code, PublishPipeTemplate::template));
+        return this.templates.stream().collect(Collectors.toMap(PublishPipeTemplate::code, t -> Objects.requireNonNullElse(t.template(), "")));
     }
 }

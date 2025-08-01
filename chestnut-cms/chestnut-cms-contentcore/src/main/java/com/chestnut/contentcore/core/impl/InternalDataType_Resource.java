@@ -15,11 +15,11 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import com.chestnut.common.storage.local.LocalFileStorageType;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.properties.FileStorageTypeProperty;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.ResourceUtils;
 import lombok.RequiredArgsConstructor;
@@ -53,8 +53,8 @@ public class InternalDataType_Resource implements IInternalDataType {
 	public String getLink(InternalURL internalUrl, int pageIndex, String publishPipeCode, boolean isPreview) {
 		long siteId = MapUtils.getLongValue(internalUrl.getParams(), InternalUrl_Param_SiteId);
 		CmsSite site = this.siteService.getSite(siteId);
-		String storageType = MapUtils.getString(internalUrl.getParams(), InternalUrl_Param_StorageType, LocalFileStorageType.TYPE);
 
+		String storageType = FileStorageTypeProperty.getValue(site.getConfigProps());
 		String prefix = ResourceUtils.getResourcePrefix(storageType, site, publishPipeCode, isPreview);
 		return prefix + internalUrl.getPath();
 	}
@@ -67,7 +67,6 @@ public class InternalDataType_Resource implements IInternalDataType {
 	public static String getInternalUrl(CmsResource resource) {
 		InternalURL internalURL = new InternalURL(ID, resource.getResourceId(), resource.getPath());
 		internalURL.addParam(InternalUrl_Param_SiteId, resource.getSiteId().toString());
-		internalURL.addParam(InternalUrl_Param_StorageType, resource.getStorageType());
 		return internalURL.toIUrl();
 	}
 }

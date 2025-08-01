@@ -120,7 +120,7 @@ public class AdvertisementController extends BaseRestController {
 	}
 
 	@Log(title = "删除广告", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteAdvertisements(@RequestBody List<Long> advertisementIds) {
 		if (StringUtils.isEmpty(advertisementIds)) {
 			return R.fail(StringUtils.messageFormat("参数[{0}]不能为空", "advertisementIds"));

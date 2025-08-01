@@ -36,49 +36,49 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class AdvertisementVO {
 
-    @XComment("广告ID")
+    @XComment("{CMS.AD.ID}")
     private Long advertisementId;
 	
-    @XComment("所属广告版本（页面部件）ID")
+    @XComment("{CMS.AD.SPACE_ID}")
 	private Long adSpaceId;
 	
-    @XComment("类型")
+    @XComment("{CMS.AD.TYPE}")
     private String type;
 
-    @XComment("名称")
+    @XComment("{CMS.AD.NAME}")
     private String name;
 
-    @XComment("权重")
+    @XComment("{CMS.AD.WEIGHT}")
     private Integer weight;
 
-    @XComment("关键词")
+    @XComment("{CMS.AD.KEYWORDS}")
     private String keywords;
 
-    @XComment("状态")
+    @XComment("{CMS.AD.STATE}")
     private String state;
     
-    @XComment("上线时间")
+    @XComment("{CMS.AD.ONLINE_DATE}")
     private LocalDateTime onlineDate;
 
-    @XComment("下线时间")
+    @XComment("{CMS.AD.OFFLINE_DATE}")
     private LocalDateTime offlineDate;
 
-    @XComment("原始跳转链接")
+    @XComment("{CMS.AD.REDIRECT_URL}")
     private String redirectUrl;
 
-    @XComment("实际跳转链接（可设置为中转地址）")
+    @XComment("{CMS.AD.LINK}")
     private String link;
     
-    @XComment("素材路径")
+    @XComment("{CMS.AD.RESOURCE_PATH}")
     private String resourcePath;
     
-    @XComment("素材访问链接")
+    @XComment("{CMS.AD.RESOURCE_SRC}")
     private String resourceSrc;
     
-    @XComment("创建人")
+    @XComment("{CC.ENTITY.CREATE_BY}")
     private String createBy;
     
-    @XComment("创建时间")
+    @XComment("{CC.ENTITY.CREATE_TIME}")
     private LocalDateTime createTime;
     
     public AdvertisementVO(CmsAdvertisement ad) {

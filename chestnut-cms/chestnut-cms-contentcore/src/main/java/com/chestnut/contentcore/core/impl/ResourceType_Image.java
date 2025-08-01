@@ -15,8 +15,6 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import com.chestnut.common.async.AsyncTaskManager;
-import com.chestnut.common.storage.IFileStorageType;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.image.ImageHelper;
 import com.chestnut.common.utils.image.ImageUtils;
@@ -29,19 +27,16 @@ import com.chestnut.contentcore.properties.ImageWatermarkArgsProperty.ImageWater
 import com.chestnut.contentcore.properties.ImageWatermarkProperty;
 import com.chestnut.contentcore.properties.ThumbnailHeightProperty;
 import com.chestnut.contentcore.properties.ThumbnailWidthProperty;
-import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.ResourceUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,7 +44,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -71,12 +65,6 @@ public class ResourceType_Image implements IResourceType {
 
 	private final ISiteService siteService;
 
-	private final IResourceService resourceService;
-
-	private final Map<String, IFileStorageType> fileStorageTypeMap;
-
-	private final AsyncTaskManager asyncTaskManager;
-
 	@Override
 	public String getId() {
 		return ID;
@@ -93,7 +81,7 @@ public class ResourceType_Image implements IResourceType {
 	}
 	
 	public static boolean isImage(String path) {
-		String ext = FileNameUtils.getExtension(path);
+		String ext = FilenameUtils.getExtension(path);
 		return Objects.nonNull(path) && ArrayUtils.contains(SuffixArray, ext);
 	}
 
@@ -108,12 +96,12 @@ public class ResourceType_Image implements IResourceType {
 		List<File> files = new ArrayList<>();
 		try {
 			// 获取图片属性
-			BufferedImage bi = ImageIO.read(file);
-			resource.setWidth(bi.getWidth());
-			resource.setHeight(bi.getHeight());
+			Dimension dimension = ImageUtils.getDimension(file);
+			resource.setWidth(dimension.width);
+			resource.setHeight(dimension.height);
 			// 先处理图片水印
 			if (needWatermark) {
-				watermark(site, bi, file);
+				watermark(site, file);
 				resource.setFileSize(file.length());
 			}
 			// 默认缩略图处理
@@ -194,21 +182,19 @@ public class ResourceType_Image implements IResourceType {
         return file.exists();
     }
 
-	private void watermark(CmsSite site, BufferedImage bi, File output) {
+	private void watermark(CmsSite site, File resourceFile) {
 		ImageWatermarkArgs args = ImageWatermarkArgsProperty.getValue(site.getConfigProps());
 		String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
-		File file = new File(siteResourceRoot + args.getImage());
+		File wartermarkFile = new File(siteResourceRoot + args.getImage());
 		try {
-			BufferedImage biWatermarkImage = ImageIO.read(file);
-			String ext = FilenameUtils.getExtension(output.getName());
-			ImageHelper.of(bi).format(ext).watermark(
-					biWatermarkImage,
+			ImageHelper.of(resourceFile).watermark(
+					wartermarkFile,
 					args.getRatio() * 0.01f,
 					args.getOpacity(),
 					WatermarkPosition.str2Position(args.getPosition())
-			).toFile(output);
-            log.debug("Watermark success: {}", output.getAbsolutePath());
-		} catch (IOException e) {
+			).toFile(resourceFile);
+            log.debug("Watermark success: {}", resourceFile.getAbsolutePath());
+		} catch (Exception e) {
 			log.error("Watermark image fail.", e);
 		}
 	}
@@ -226,14 +212,13 @@ public class ResourceType_Image implements IResourceType {
 		if (w > 0 && h > 0) {
 			// 生成默认缩略图
 			String tempDirectory = ResourceUtils.getResourceTempDirectory(site);
-			String ext = FilenameUtils.getExtension(resource.getFileName());
 			String thumbnailPath = ImageUtils.getThumbnailFileName(resource.getPath(), w, h);
 			File output = new File(tempDirectory + thumbnailPath);
             try {
-				ImageHelper.of(tempFile).format(ext).resize(w, h).toFile(output);
+				ImageHelper.of(tempFile).resize(w, h).toFile(output);
 				files.add(output);
 				log.debug("Thumbnail success: {}", output.getAbsolutePath());
-            } catch (IOException e) {
+            } catch (Exception e) {
                 try {
 					// 生成缩略图失败直接使用源图作为缩略图
                     Files.copy(tempFile.toPath(), Path.of(thumbnailPath), StandardCopyOption.REPLACE_EXISTING);

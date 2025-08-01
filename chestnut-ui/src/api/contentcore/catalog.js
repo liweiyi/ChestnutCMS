@@ -61,8 +61,8 @@ export function updateCatalog(data) {
 // 删除栏目
 export function delCatalog(catalogId) {
   return request({
-    url: '/cms/catalog/' + catalogId,
-    method: 'delete'
+    url: '/cms/catalog/delete/' + catalogId,
+    method: 'post'
   })
 }
 

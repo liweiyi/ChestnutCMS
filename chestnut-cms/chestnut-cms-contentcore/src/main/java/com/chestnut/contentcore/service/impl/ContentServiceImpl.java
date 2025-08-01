@@ -27,7 +27,6 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IInternalDataType;
-import com.chestnut.contentcore.core.impl.CatalogType_Common;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
 import com.chestnut.contentcore.dao.CmsContentDAO;
 import com.chestnut.contentcore.domain.*;
@@ -35,16 +34,16 @@ import com.chestnut.contentcore.domain.dto.CopyContentDTO;
 import com.chestnut.contentcore.domain.dto.MoveContentDTO;
 import com.chestnut.contentcore.domain.dto.SetTopContentDTO;
 import com.chestnut.contentcore.domain.dto.SortContentDTO;
+import com.chestnut.contentcore.enums.ContentCopyType;
+import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
+import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.properties.RepeatTitleCheckProperty;
 import com.chestnut.contentcore.publish.IContentPathRule;
-import com.chestnut.contentcore.service.ICatalogService;
-import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.IPublishPipeService;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.ContentLogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -58,15 +57,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -75,11 +73,15 @@ public class ContentServiceImpl implements IContentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ContentServiceImpl.class);
 
+	private final TransactionTemplate transactionTemplate;
+
 	private final ISiteService siteService;
 
 	private final ICatalogService catalogService;
 
 	private final IPublishPipeService publishPipeService;
+
+	private final IContentRelaService contentRelaService;
 
 	private final AsyncTaskManager asyncTaskManager;
 
@@ -91,21 +93,50 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public void deleteContents(List<Long> contentIds, LoginUser operator) {
 		for (Long contentId : contentIds) {
 			CmsContent xContent = this.dao().getById(contentId);
 			Assert.notNull(xContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 			PermissionUtils.checkPermission(CatalogPrivItem.DeleteContent.getPermissionKey(xContent.getCatalogId()), operator);
 
-			boolean canDelete = ContentStatus.isDraft(xContent.getStatus()) || ContentStatus.isOffline(xContent.getStatus());
-			Assert.isTrue(canDelete, ContentCoreErrorCode.DEL_CONTENT_ERR::exception);
-
-			IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
-			IContent<?> content = contentType.loadContent(xContent);
-			content.setOperator(operator);
-			content.delete();
+			deleteContent(xContent, operator, Map.of());
 		}
+	}
+
+	@Override
+	public void deleteContent(CmsContent cmsContent, LoginUser operator, Map<String, Object> params) {
+		boolean canDelete = ContentStatus.isDraft(cmsContent.getStatus()) || ContentStatus.isOffline(cmsContent.getStatus());
+		Assert.isTrue(canDelete, ContentCoreErrorCode.DEL_CONTENT_ERR::exception);
+
+		IContentType contentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
+		IContent<?> content = contentType.loadContent(cmsContent);
+		content.setOperator(operator);
+		content.setParams(params);
+		transactionTemplate.executeWithoutResult(transactionStatus -> deleteContent0(content));
+		SpringUtils.publishEvent(new AfterContentDeleteEvent(this, content));
+	}
+
+	private void deleteContent0(IContent<?> content) {
+		content.delete();
+		// 删除映射内容
+		List<CmsContent> mappingList = this.dao().lambdaQuery()
+				.eq(CmsContent::getCopyType, ContentCopyType.Mapping)
+				.eq(CmsContent::getCopyId, content.getContentEntity().getContentId())
+				.list();
+		for (CmsContent mappingContent : mappingList) {
+			log.debug("CC.Content[{}].delete: mapping content delete", content.getContentEntity().getContentId());
+			try {
+				deleteContent(mappingContent, content.getOperator(), Map.of(
+						IContent.PARAM_IS_DELETE_BY_CATALOG, content.getParams().get(IContent.PARAM_IS_DELETE_BY_CATALOG)
+				));
+			} catch (Exception e) {
+				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.DELETING_MAPPING_CONTENT.locale(
+						mappingContent.getTitle(), mappingContent.getContentId()));
+			}
+		}
+		// 删除相关内容
+		contentRelaService.onContentDelete(content.getContentEntity().getContentId());
+		// TODO 删除内容历史版本？
 	}
 
 	@Override
@@ -174,6 +205,7 @@ public class ContentServiceImpl implements IContentService {
 		}
 		CmsSite site = this.siteService.getSite(content.getSiteId());
 		CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());
+		String prefix = SiteUtils.getPublishPipePrefix(site, publishPipeCode, isPreview);
 		if (catalog.isStaticize()) {
 			String contentPath = content.getStaticPath();
 			if (StringUtils.isEmpty(contentPath)) {
@@ -181,11 +213,11 @@ public class ContentServiceImpl implements IContentService {
 				String path = Objects.isNull(rule) ? catalog.getPath() : rule.getDirectory(site, catalog, content);
 				contentPath = path + content.getContentId() + "." + site.getStaticSuffix(publishPipeCode);
 			}
-			return site.getUrl(publishPipeCode) + contentPath;
+			return prefix + contentPath;
 		} else {
 			String viewPath = IInternalDataType.getViewPath(InternalDataType_Content.ID, content.getContentId(),
 					publishPipeCode, pageIndex);
-			return site.getUrl(publishPipeCode) + viewPath;
+			return prefix + viewPath;
 		}
 	}
 
@@ -251,7 +283,7 @@ public class ContentServiceImpl implements IContentService {
 				saveContent0(content);
 			}
 		};
-		task.setType("SaveContent-" + content.getContentEntity().getContentId());
+		task.setType("SaveContent");
 		asyncTaskManager.execute(task);
 		return task;
 	}
@@ -263,43 +295,65 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void copy(CopyContentDTO dto) {
-		List<Long> contentIds = dto.getContentIds();
-		for (Long contentId : contentIds) {
-			CmsContent cmsContent = this.dao().getById(contentId);
-			Assert.notNull(cmsContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+	public AsyncTask copy(CopyContentDTO dto) {
+		List<CmsCatalog> catalogs = dto.getCatalogIds().stream().map(catalogService::getCatalog)
+				.filter(Objects::nonNull).toList();
+		AsyncTask task = new AsyncTask(LocaleContextHolder.getLocale()) {
 
-			for (Long catalogId : dto.getCatalogIds()) {
-				CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
-				if (catalog == null) {
-					continue; // 目标栏目错误直接跳过
+			@Override
+			public void run0() {
+				List<Long> contentIds = dto.getContentIds();
+				for (Long contentId : contentIds) {
+					CmsContent cmsContent = dao().getById(contentId);
+					if (Objects.nonNull(cmsContent)) {
+						for (CmsCatalog catalog : catalogs) {
+                            CmsContent copyContent = copy0(cmsContent, catalog, dto.getCopyType(), dto.getOperator());
+							SpringUtils.publishEvent(new AfterContentCopyEvent(this, cmsContent, copyContent));
+						}
+					}
 				}
-				if (!catalog.getCatalogType().equals(CatalogType_Common.ID)) {
-					continue; // 非普通栏目不能复制
-				}
-				IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
-				IContent<?> content = ct.loadContent(cmsContent);
-				content.setOperator(dto.getOperator());
-				content.copyTo(catalog, dto.getCopyType());
+				this.setProgressInfo(100, ContentTips.COPY_CONTENT_SUCCESS.locale(this.getLocale()));
 			}
-		}
+		};
+		task.setType("CopyContent");
+		asyncTaskManager.execute(task);
+		return task;
+
+	}
+
+	private CmsContent copy0(CmsContent cmsContent, CmsCatalog toCatalog, Integer copyType, LoginUser operator) {
+		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.COPYING_CONTENT.locale(AsyncTaskManager.getLocale(),
+				cmsContent.getTitle(), toCatalog.getName()));
+		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
+		IContent<?> content = ct.loadContent(cmsContent);
+		content.setOperator(operator);
+		return transactionTemplate.execute(transactionStatus -> content.copyTo(toCatalog, copyType));
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void move(MoveContentDTO dto) {
-		List<Long> contentIds = dto.getContentIds();
-		for (Long contentId : contentIds) {
-			CmsContent cmsContent = this.dao().getById(contentId);
-			Assert.notNull(cmsContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+	public AsyncTask move(MoveContentDTO dto) {
+		final CmsCatalog catalog = catalogService.getCatalog(dto.getCatalogId());
+		Assert.notNull(catalog,
+				() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", dto.getCatalogId()));
+		AsyncTask task = new AsyncTask(LocaleContextHolder.getLocale()) {
 
-			CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
-			Assert.notNull(catalog,
-					() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", dto.getCatalogId()));
+			@Override
+			public void run0() {
 
-			moveContent(cmsContent, catalog, dto.getOperator());
-		}
+				List<Long> contentIds = dto.getContentIds();
+				for (Long contentId : contentIds) {
+					CmsContent cmsContent = dao().getById(contentId);
+					if (Objects.nonNull(cmsContent)) {
+						moveContent(cmsContent, catalog, dto.getOperator());
+						SpringUtils.publishEvent(new AfterContentMoveEvent(this, catalog, cmsContent));
+					}
+				}
+				this.setProgressInfo(100, ContentTips.MOVE_CONTENT_SUCCESS.locale(this.getLocale()));
+			}
+		};
+		task.setType("MoveContent");
+		asyncTaskManager.execute(task);
+		return task;
 	}
 
 	@Override
@@ -308,50 +362,83 @@ public class ContentServiceImpl implements IContentService {
 			log.warn("Cannot move content to source catalog!");
 			return;
 		}
-		if (!toCatalog.getCatalogType().equals(CatalogType_Common.ID)) {
-			log.warn("Cannot move content to catalog which type is not common!");
-			return;
-		}
+		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.MOVING_CONTENT.locale(AsyncTaskManager.getLocale(),
+				cmsContent.getTitle(), toCatalog.getName()));
 		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 		IContent<?> content = ct.loadContent(cmsContent);
 		content.setOperator(operator);
-		content.moveTo(toCatalog);
+		transactionTemplate.executeWithoutResult(transactionStatus -> content.moveTo(toCatalog));
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public void setTop(SetTopContentDTO dto) {
 		List<CmsContent> contents = this.dao().listByIds(dto.getContentIds());
 		for (CmsContent c : contents) {
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
 			content.setOperator(dto.getOperator());
-			content.setTop(dto.getTopEndTime());
+			transactionTemplate.executeWithoutResult(transactionStatus -> content.setTop(dto.getTopEndTime()));
+			SpringUtils.publishEvent(new AfterContentTopSetEvent(this, content));
 		}
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public void cancelTop(List<Long> contentIds, LoginUser operator) {
-		List<CmsContent> contents = this.dao().listByIds(contentIds);
+		List<CmsContent> contents = this.dao().lambdaQuery()
+				.gt(CmsContent::getTopFlag, 0)
+				.in(CmsContent::getContentId, contentIds)
+				.list();
 		for (CmsContent c : contents) {
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
 			content.setOperator(operator);
-			content.cancelTop();
+			transactionTemplate.executeWithoutResult(transactionStatus -> content.cancelTop());
+			SpringUtils.publishEvent(new AfterContentTopCancelEvent(this, content));
 		}
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void offline(List<Long> contentIds, LoginUser operator) {
-		List<CmsContent> contents = this.dao().listByIds(contentIds);
-		for (CmsContent c : contents) {
-			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
-			IContent<?> content = ct.loadContent(c);
-			content.setOperator(operator);
-			content.offline();
+	public AsyncTask offline(List<Long> contentIds, LoginUser operator) {
+		Locale locale = LocaleContextHolder.getLocale();
+		AsyncTask task = new AsyncTask() {
+			@Override
+			public void run0() {
+				List<CmsContent> contents = dao().listByIds(contentIds);
+				for (CmsContent c : contents) {
+					offline0(c, operator, locale);
+				}
+				this.setProgressInfo(100, ContentTips.OFFLINE_SUCCESS.locale(locale));
+			}
+		};
+		task.setType("ContentOffline");
+		asyncTaskManager.execute(task);
+		return task;
+	}
+
+	@Override
+	public void offline(CmsContent cmsContent, LoginUser operator) {
+		offline0(cmsContent, operator, LocaleContextHolder.getLocale());
+	}
+
+	private void offline0(CmsContent cmsContent, LoginUser operator, Locale locale) {
+		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.OFFLINE_CONTENT.locale(locale, cmsContent.getTitle()));
+		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
+		IContent<?> content = ct.loadContent(cmsContent);
+		content.setOperator(operator);
+		transactionTemplate.executeWithoutResult(transactionStatus -> content.offline());
+		// 映射关联内容同步下线
+		if (!cmsContent.isLinkContent() && !ContentCopyType.isMapping(cmsContent.getCopyType())) {
+			List<CmsContent> mappingList = dao().lambdaQuery()
+					.gt(CmsContent::getCopyType, ContentCopyType.Mapping)
+					.eq(CmsContent::getCopyId, cmsContent.getContentId())
+					.list();
+			for (CmsContent c : mappingList) {
+				log.debug("CC.Content[{}].offline: mapping content offline", cmsContent.getContentId());
+				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.OFFLINE_MAPPING_CONTENT.locale(locale, c.getTitle()));
+				offline0(c, operator, locale);
+			}
 		}
+		SpringUtils.publishEvent(new AfterContentOfflineEvent(this, content));
 	}
 
 	@Override
@@ -365,15 +452,20 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	@Transactional(rollbackFor = Exception.class)
 	public void toPublish(List<Long> contentIds, LoginUser operator) {
 		List<CmsContent> contents = this.dao().listByIds(contentIds);
 		for (CmsContent c : contents) {
-			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
-			IContent<?> content = ct.loadContent(c);
-			content.setOperator(operator);
-			content.toPublish();
+			toPublish(c, operator);
 		}
+	}
+
+	@Override
+	public void toPublish(CmsContent cmsContent, LoginUser operator) {
+		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
+		IContent<?> content = ct.loadContent(cmsContent);
+		content.setOperator(operator);
+		transactionTemplate.executeWithoutResult(transactionStatus -> content.toPublish());
+		SpringUtils.publishEvent(new AfterContentToPublishEvent(this, content));
 	}
 
 	@Override

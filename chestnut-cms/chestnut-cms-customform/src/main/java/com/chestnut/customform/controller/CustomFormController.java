@@ -128,7 +128,7 @@ public class CustomFormController extends BaseRestController {
 
     @Log(title = "删除自定义表单", businessType = BusinessType.DELETE)
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.Delete)
-    @DeleteMapping
+    @PostMapping("/delete")
     public R<?> remove(@RequestBody @Validated @NotEmpty List<Long> formIds) {
         this.customFormService.deleteCustomForm(formIds);
         return R.ok();

@@ -36,49 +36,49 @@ import java.util.Map;
 @Setter
 public class TagSiteVO extends TagBaseVO {
 
-    @XComment("站点ID")
+    @XComment("{CMS.SITE.ID}")
     private Long siteId;
 
-    @XComment("父级站点ID")
+    @XComment("{CMS.SITE.PARENT_ID}")
     private Long parentId;
 
-    @XComment("站点名称")
+    @XComment("{CMS.SITE.NAME}")
     private String name;
 
-    @XComment("站点描述")
+    @XComment("{CMS.SITE.DESC}")
     private String description;
 
-    @XComment("站点LOGO")
+    @XComment("{CMS.SITE.LOGO}")
     private String logo;
 
-    @XComment(value = "站点LOGO访问地址", deprecated = true, forRemoval = "1.6.0")
+    @XComment(value = "{CMS.SITE.LOGO_SRC}", deprecated = true, forRemoval = "1.6.0")
     private String logoSrc;
 
-    @XComment("站点目录")
+    @XComment("{CMS.SITE.PATH}")
     private String path;
 
-    @XComment("站点资源访问域名")
+    @XComment("{CMS.SITE.RESOURCE_URL}")
     private String resourceUrl;
 
-    @XComment("所属部门编码")
+    @XComment("{CMS.SITE.DEPT_CODE}")
     private String deptCode;
 
-    @XComment("排序值")
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 
-    @XComment("SEO关键词")
+    @XComment("{CMS.SITE.SEO_KEYWORDS}")
     private String seoKeywords;
 
-    @XComment("SEO描述")
+    @XComment("{CMS.SITE.SEO_DESC}")
     private String seoDescription;
 
-    @XComment("SEO标题")
+    @XComment("{CMS.SITE.SEO_TITLE}")
     private String seoTitle;
 
-    @XComment("扩展属性配置")
+    @XComment("{CMS.SITE.CONFIG_PROPS}")
     private Map<String, String> configProps;
 
-    @XComment("站点访问地址")
+    @XComment("{CMS.SITE.LINK}")
     private String link;
 
     public static TagSiteVO newInstance(CmsSite site, String publishPipeCode, boolean preview) {

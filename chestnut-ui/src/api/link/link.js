@@ -26,8 +26,8 @@ export function editLink(params) {
 
 export function deleteLink(params) {
   return request({
-    url: '/cms/link',
-    method: 'delete',
+    url: '/cms/link/delete',
+    method: 'post',
     data: params
   })
 }

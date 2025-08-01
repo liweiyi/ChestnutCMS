@@ -24,7 +24,6 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.dto.MemberDTO;
@@ -101,9 +100,8 @@ public class MemberController extends BaseRestController {
 	}
 
 	@Log(title = "删除会员", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> delete(@RequestBody @NotEmpty List<Long> memberIds) {
-		IdUtils.validate(memberIds);
 		this.memberService.deleteMembers(memberIds);
 		return R.ok();
 	}

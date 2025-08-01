@@ -19,6 +19,7 @@ import cn.idev.excel.annotation.ExcelIgnore;
 import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.annotation.write.style.ColumnWidth;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.utils.poi.converter.LocalDateTimeConverter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -41,26 +42,31 @@ public abstract class BaseEntity implements Serializable {
 
 	public static final String Field_updateTime = "update_time";
 
+	@XComment("{CC.ENTITY.CREATE_BY}")
 	@ExcelProperty("创建者")
 	@TableField("create_by")
 	private String createBy;
 
+	@XComment("{CC.ENTITY.CREATE_TIME}")
 	@ColumnWidth(16)
 	@ExcelProperty(value = "创建时间", converter = LocalDateTimeConverter.class)
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@TableField(Field_createTime)
 	private LocalDateTime createTime;
 
+	@XComment("{CC.ENTITY.UPDATE_BY}")
 	@ExcelProperty("更新者")
 	@TableField("update_by")
 	private String updateBy;
 
+	@XComment("{CC.ENTITY.UPDATE_TIME}")
 	@ColumnWidth(16)
 	@ExcelProperty(value = "更新时间", converter = LocalDateTimeConverter.class)
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@TableField(Field_updateTime)
 	private LocalDateTime updateTime;
 
+	@XComment("{CC.ENTITY.REMARK}")
 	@ExcelProperty("备注")
 	private String remark;
 

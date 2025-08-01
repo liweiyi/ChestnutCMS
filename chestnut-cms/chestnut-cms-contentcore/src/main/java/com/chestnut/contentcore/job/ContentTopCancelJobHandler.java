@@ -17,9 +17,11 @@ package com.chestnut.contentcore.job;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.listener.event.AfterContentTopCancelEvent;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.system.schedule.IScheduledHandler;
@@ -27,6 +29,7 @@ import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 
@@ -41,6 +44,8 @@ import java.time.LocalDateTime;
 public class ContentTopCancelJobHandler extends IJobHandler implements IScheduledHandler {
 
 	static final String JOB_NAME = "ContentTopCancelJobHandler";
+
+	private final TransactionTemplate transactionTemplate;
 
 	private final IContentService contentService;
 
@@ -69,7 +74,8 @@ public class ContentTopCancelJobHandler extends IJobHandler implements ISchedule
 			for (CmsContent xContent : page.getRecords()) {
 				IContentType ct = ContentCoreUtils.getContentType(xContent.getContentType());
 				IContent<?> content = ct.loadContent(xContent);
-				content.cancelTop();
+				transactionTemplate.executeWithoutResult(transactionStatus -> content.cancelTop());
+				SpringUtils.publishEvent(new AfterContentTopCancelEvent(this, content));
 			}
 		}
 		logger.info("Job '{}' completed, cost: {}ms", JOB_NAME, System.currentTimeMillis() - s);

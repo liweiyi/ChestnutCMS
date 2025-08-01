@@ -54,8 +54,8 @@ export function previewTable(tableId) {
 // 删除表数据
 export function delTable(tableIds) {
   return request({
-    url: '/tool/gen/',
-    method: 'delete',
+    url: '/tool/gen/delete',
+    method: 'post',
     data: tableIds
   })
 }

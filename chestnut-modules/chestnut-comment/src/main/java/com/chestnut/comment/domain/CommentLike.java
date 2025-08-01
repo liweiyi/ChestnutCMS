@@ -15,6 +15,7 @@
  */
 package com.chestnut.comment.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -36,11 +37,12 @@ import lombok.Setter;
 @TableName(value = CommentLike.TABLE_NAME)
 public class CommentLike implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public static final String TABLE_NAME = "cc_comment_like";
 
-	@TableId(value = "log_id", type = IdType.AUTO)
+	@TableId(value = "log_id", type = IdType.INPUT)
     private Long logId;
 	
 	/**

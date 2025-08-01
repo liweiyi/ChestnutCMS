@@ -88,12 +88,13 @@ public class CatalogUtils {
 					publishPipeCode, pageIndex);
 			return BackendContext.getValue() + catalogPath;
 		}
+		String prefix = SiteUtils.getPublishPipePrefix(site, publishPipeCode, isPreview);
 		if (catalog.isStaticize()) {
-			return site.getUrl(publishPipeCode) + catalog.getPath();
+			return prefix + catalog.getPath();
 		} else {
 			String catalogPath = IInternalDataType.getViewPath(InternalDataType_Catalog.ID, catalog.getCatalogId(),
 					publishPipeCode, pageIndex);
-			return site.getUrl(publishPipeCode) + catalogPath;
+			return prefix + catalogPath;
 		}
 	}
 

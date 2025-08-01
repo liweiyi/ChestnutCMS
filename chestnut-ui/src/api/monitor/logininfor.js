@@ -12,8 +12,8 @@ export function list(query) {
 // 删除登录日志
 export function delLogininfor(infoIds) {
   return request({
-    url: '/monitor/logininfor',
-    method: 'delete',
+    url: '/monitor/logininfor/delete',
+    method: 'post',
     data:infoIds
   })
 }
@@ -22,6 +22,6 @@ export function delLogininfor(infoIds) {
 export function cleanLogininfor() {
   return request({
     url: '/monitor/logininfor/clean',
-    method: 'delete'
+    method: 'post'
   })
 }

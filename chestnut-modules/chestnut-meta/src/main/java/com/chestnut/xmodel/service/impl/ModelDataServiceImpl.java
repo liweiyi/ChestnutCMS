@@ -23,6 +23,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.xmodel.core.*;
 import com.chestnut.xmodel.domain.XModel;
 import com.chestnut.xmodel.exception.MetaXValidationException;
+import com.chestnut.xmodel.fixed.dict.MetaFieldType;
 import com.chestnut.xmodel.service.IModelDataService;
 import com.chestnut.xmodel.service.IModelService;
 import com.chestnut.xmodel.util.XModelUtils;
@@ -89,7 +90,7 @@ public class ModelDataServiceImpl implements IModelDataService {
 	public void addModelData(Long modelId, Map<String, Object> data) {
 		MetaModel model = this.modelService.getMetaModel(modelId);
 
-		final Map<String, String> fieldValues = this.parseFieldValues(model, data);
+		final Map<String, Object> fieldValues = this.parseFieldValues(model, data);
 		// 构建插入sql添加数据
 		SqlBuilder sqlBuilder = new SqlBuilder().insertInto(model.getModel().getTableName(),
 				fieldValues.keySet(), fieldValues.values());
@@ -101,7 +102,7 @@ public class ModelDataServiceImpl implements IModelDataService {
 		MetaModel model = this.modelService.getMetaModel(modelId);
 
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
-		final Map<String, String> fieldValues = this.parseFieldValues(model, data);
+		final Map<String, Object> fieldValues = this.parseFieldValues(model, data);
 
 		List<MetaModelField> primaryKeys = mmt.getFixedFields().stream()
 				.filter(MetaModelField::isPrimaryKey).toList();
@@ -125,14 +126,15 @@ public class ModelDataServiceImpl implements IModelDataService {
 		sqlBuilder.executeUpdate();
 	}
 
-	private Map<String, String> parseFieldValues(MetaModel model, Map<String, Object> data) {
-		final Map<String, String> fieldValues = new HashMap<>();
+	private Map<String, Object> parseFieldValues(MetaModel model, Map<String, Object> data) {
+		final Map<String, Object> fieldValues = new HashMap<>();
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
 		// 固定字段
 		mmt.getFixedFields().forEach(f -> {
 			Object value = data.get(f.getCode());
 			this.validateFieldValue(f.getName(), value, f.getValidations());
-			fieldValues.put(f.getFieldName(), value.toString());
+			value = MetaFieldType.parse(f.getFieldType(), value);
+			fieldValues.put(f.getFieldName(), value);
 		});
 		// 自定义字段
 		model.getFields().forEach(field -> {
@@ -147,7 +149,8 @@ public class ModelDataServiceImpl implements IModelDataService {
 			}
 			// 校验
 			this.validateFieldValue(field.getName(), fieldValue, field.getValidations());
-			fieldValues.put(field.getFieldName(), Objects.isNull(fieldValue) ? null : fieldValue.toString());
+			fieldValue = MetaFieldType.parse(field.getFieldType(), fieldValue);
+			fieldValues.put(field.getFieldName(), fieldValue);
 		});
 		return fieldValues;
 	}
@@ -163,7 +166,7 @@ public class ModelDataServiceImpl implements IModelDataService {
 	}
 
 	@Override
-	public void deleteModelDataByPkValue(Long modelId, List<Map<String, String>> pkValues) {
+	public void deleteModelDataByPkValue(Long modelId, List<Map<String, Object>> pkValues) {
 		MetaModel model = this.modelService.getMetaModel(modelId);
 
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
@@ -178,7 +181,7 @@ public class ModelDataServiceImpl implements IModelDataService {
 					sqlBuilder.and();
 				}
 				MetaModelField pkField = primaryKeys.get(i);
-				String fieldValue = pkValue.get(pkField.getCode());
+				Object fieldValue = pkValue.get(pkField.getCode());
 				if (Objects.isNull(fieldValue)) {
 					throw new RuntimeException("Primary key `"+pkField.getCode()+"` cannot be null!");
 				}

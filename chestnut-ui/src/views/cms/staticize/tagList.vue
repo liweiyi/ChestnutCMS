@@ -81,8 +81,6 @@
     </el-row>
   </div>
 </template>
-<style>
-</style>
 <script>
 import { getTagList } from "@/api/contentcore/staticize";
 
@@ -98,7 +96,7 @@ export default {
       },
       sourceTagList: [],
       tagList: [],
-      tagName: undefined
+      tagName: undefined,
     };
   },
   created () {

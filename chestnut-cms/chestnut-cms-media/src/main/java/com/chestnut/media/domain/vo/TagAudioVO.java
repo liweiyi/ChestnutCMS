@@ -31,55 +31,55 @@ import lombok.Setter;
 @Setter
 public class TagAudioVO extends TagBaseVO {
 
-    @XComment("音频ID")
+    @XComment("{CMS.MEDIA.AUDIO.ID}")
     private Long audioId;
 
-    @XComment("所属内容ID")
+    @XComment("{CMS.MEDIA.AUDIO.CONTENT_ID}")
     private Long contentId;
 
-    @XComment("所属站点ID")
+    @XComment("{CMS.MEDIA.AUDIO.SITE_ID}")
     private Long siteId;
 
-    @XComment("音频标题")
+    @XComment("{CMS.MEDIA.AUDIO.TITLE}")
     private String title;
 
-    @XComment("作者")
+    @XComment("{CMS.MEDIA.AUDIO.AUTHOR}")
     private String author;
 
-    @XComment("简介")
+    @XComment("{CMS.MEDIA.AUDIO.DESC}")
     private String description;
 
-    @XComment("音频类型")
+    @XComment("{CMS.MEDIA.AUDIO.TYPE}")
     private String type;
 
-    @XComment("音频路径")
+    @XComment("{CMS.MEDIA.AUDIO.PATH}")
     private String path;
 
-    @XComment(value = "预览路径", deprecated = true, forRemoval = "1.6.0")
+    @XComment(value = "{CMS.MEDIA.AUDIO.SRC}", deprecated = true, forRemoval = "1.6.0")
     private String src;
 
-    @XComment("文件大小，单位：字节")
+    @XComment("{CMS.MEDIA.AUDIO.FILE_SIZE}")
     private Long fileSize;
 
-    @XComment("格式")
+    @XComment("{CMS.MEDIA.AUDIO.FORMAT}")
     private String format;
 
-    @XComment("时长，单位：毫秒")
+    @XComment("{CMS.MEDIA.AUDIO.DURATION}")
     private Long duration;
 
-    @XComment("编码方式")
+    @XComment("{CMS.MEDIA.AUDIO.DECODER}")
     private String decoder;
 
-    @XComment("声道数")
+    @XComment("{CMS.MEDIA.AUDIO.CHANNELS}")
     private Integer channels;
 
-    @XComment("比特率")
+    @XComment("{CMS.MEDIA.AUDIO.BIT_RATE}")
     private Integer bitRate;
 
-    @XComment("采样率")
+    @XComment("{CMS.MEDIA.AUDIO.SAMPLING_RATE}")
     private Integer samplingRate;
 
-    @XComment("排序值")
+    @XComment("{CC.ENTITY.SORT}")
     private Integer sortFlag;
 
     public static TagAudioVO newInstance(CmsAudio audio) {

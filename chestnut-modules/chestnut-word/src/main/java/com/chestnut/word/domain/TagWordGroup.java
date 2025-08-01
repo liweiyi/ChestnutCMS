@@ -23,6 +23,8 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 标签分组表 [cc_tag_word_group]
  * 
@@ -34,29 +36,30 @@ import lombok.Setter;
 @TableName(TagWordGroup.TABLE_NAME)
 public class TagWordGroup extends BaseEntity {
 
-    private static final long serialVersionUID=1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     
     public static final String TABLE_NAME = "cc_tag_word_group";
 
-    @XComment("标签分组ID")
+    @XComment("{CC.TAG_WORD_GROUP.ID}")
     @TableId(value = "group_id", type = IdType.INPUT)
     private Long groupId;
 
-    @XComment("所有者ID（扩展用）")
+    @XComment("{CC.TAG_WORD_GROUP.OWNER}")
     private String owner;
 
-    @XComment("父级ID")
+    @XComment("{CC.TAG_WORD_GROUP.PARENT_ID}")
     private Long parentId;
 
-    @XComment("名称")
+    @XComment("{CC.TAG_WORD_GROUP.NAME}")
     private String name;
 
-    @XComment("编码，唯一标识")
+    @XComment("{CC.TAG_WORD_GROUP.CODE}")
     private String code;
 
-    @XComment("排序标识")
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 
-    @XComment("TAG词数量")
+    @XComment("{CC.TAG_WORD_GROUP.TOTAL}")
     private Long wordTotal;
 }

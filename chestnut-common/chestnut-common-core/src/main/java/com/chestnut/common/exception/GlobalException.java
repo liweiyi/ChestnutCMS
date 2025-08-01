@@ -24,6 +24,9 @@ import java.io.Serial;
 
 /**
  * 自定义全局异常
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Getter
 @NoArgsConstructor

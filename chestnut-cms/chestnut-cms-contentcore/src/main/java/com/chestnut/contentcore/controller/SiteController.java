@@ -229,7 +229,7 @@ public class SiteController extends BaseRestController {
      */
     @Priv(type = AdminUserType.TYPE, value = "Site:Delete:${#siteId}")
     @Log(title = "删除站点", businessType = BusinessType.DELETE)
-    @DeleteMapping("/{siteId}")
+    @PostMapping("/delete/{siteId}")
     public R<String> remove(@PathVariable("siteId") @LongId Long siteId) throws IOException {
         CmsSite site = siteService.getById(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));

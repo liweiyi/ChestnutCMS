@@ -123,6 +123,7 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 						.eq(Comment::getCommentId, comment.getCommentId()).update();
 
 				CommentLike commentLike = new CommentLike();
+				commentLike.setLogId(IdUtils.getSnowflakeId());
 				commentLike.setCommentId(comment.getCommentId());
 				commentLike.setUid(uid);
 				commentLike.setLikeTime(LocalDateTime.now());

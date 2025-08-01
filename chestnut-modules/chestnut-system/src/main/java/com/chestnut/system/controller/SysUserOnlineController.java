@@ -15,16 +15,7 @@
  */
 package com.chestnut.system.controller;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import cn.dev33.satoken.session.SaSession;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
@@ -38,9 +29,12 @@ import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysUserOnlineService;
-
-import cn.dev33.satoken.session.SaSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * 在线用户监控
@@ -86,7 +80,7 @@ public class SysUserOnlineController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorOnlineForceLogout)
 	@Log(title = "在线用户", businessType = BusinessType.FORCE)
-	@DeleteMapping("/{tokenId}")
+	@PostMapping("/delete/{tokenId}")
 	public R<?> forceLogout(@PathVariable String tokenId) {
 		StpAdminUtil.logoutByTokenValue(tokenId);
 		return R.ok();

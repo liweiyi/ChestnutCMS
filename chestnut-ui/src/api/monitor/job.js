@@ -38,8 +38,8 @@ export function updateJob(data) {
 // 删除定时任务调度
 export function delJob(jobIds) {
   return request({
-    url: '/monitor/job',
-    method: 'delete',
+    url: '/monitor/job/delete',
+    method: 'post',
     data: jobIds
   })
 }

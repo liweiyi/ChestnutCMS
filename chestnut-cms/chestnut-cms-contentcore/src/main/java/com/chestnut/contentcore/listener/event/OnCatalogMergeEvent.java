@@ -18,20 +18,18 @@ package com.chestnut.contentcore.listener.event;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.context.ApplicationEvent;
 
 import java.util.List;
 
 @Getter
-@Setter
 public class OnCatalogMergeEvent extends ApplicationEvent {
 
-	private CmsCatalog targetCatalog;
+	private final CmsCatalog targetCatalog;
 
-	private List<CmsCatalog> mergeCatalogs;
+	private final List<CmsCatalog> mergeCatalogs;
 
-	private LoginUser operator;
+	private final LoginUser operator;
 
 	public OnCatalogMergeEvent(Object source, CmsCatalog targetCatalog, List<CmsCatalog> mergeCatalogs, LoginUser operator) {
 		super(source);

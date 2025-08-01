@@ -97,7 +97,7 @@ public class MemberLevelConfigController extends BaseRestController {
 	}
 
 	@Log(title = "删除会员等级配置", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteConfig(@RequestBody @NotEmpty List<Long> configIds) {
 		this.memberLevelConfigService.deleteLevelConfig(configIds);
 		return R.ok();

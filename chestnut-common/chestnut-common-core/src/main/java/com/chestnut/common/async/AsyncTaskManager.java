@@ -23,11 +23,13 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import jakarta.annotation.Resource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -204,5 +206,14 @@ public class AsyncTaskManager {
 			return task.getPercent();
 		}
 		return 0;
+	}
+
+	public static Locale getLocale() {
+		Locale locale = null;
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			locale = task.getLocale();
+		}
+		return Objects.requireNonNullElse(locale, LocaleContextHolder.getLocale());
 	}
 }

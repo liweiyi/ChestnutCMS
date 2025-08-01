@@ -12,6 +12,6 @@ export function getPublishTaskCount() {
 export function clearPublishTask() {
   return request({
     url: '/cms/publish/clear',
-    method: 'delete'
+    method: 'post'
   })
 }

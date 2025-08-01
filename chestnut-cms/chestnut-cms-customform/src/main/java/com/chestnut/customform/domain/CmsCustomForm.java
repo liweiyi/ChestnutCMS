@@ -24,6 +24,7 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ import java.util.Map;
 @TableName(value = CmsCustomForm.TABLE_NAME, autoResultMap = true)
 public class CmsCustomForm extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
     
     public static final String TABLE_NAME = "cms_custom_form";

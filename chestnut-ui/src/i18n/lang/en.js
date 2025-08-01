@@ -960,6 +960,7 @@ export default {
       PrefixMode: "Prefix Mode",
       PrefixMode_Absolute: "Absolute",
       PrefixMode_Relative: "Relative",
+      RelativePrefix: "Relative Prefix",
       ErrPageLink: "Error Page Link",
       Dashboard: {
         MissingSiteUrl: "The site domain not configured."
@@ -1178,6 +1179,9 @@ export default {
       Hot: "Hot",
       CancelHot: "Cancel Hot",
       SEOConfig: "SEO",
+      ImportWord: "Import Word",
+      UploadWord: "Upload Word Files",
+      SaveUploadWordFile: "Save uploaded Word document.",
       SortOption: {
         Default: "Default Sorting",
         CreateTimeAsc: 'Create Time ASC',
@@ -1221,6 +1225,10 @@ export default {
       RuleTips:  {
         Title: "Title cannot be empty."
       },
+      PublishProgressTitle: "Publishing contents",
+      OfflineProgressTitle: "Offline contents",
+      CopyProgressTitle: "Copy contents",
+      MoveProgressTitle: "Move contents",
       SaveProgressTitle: "Content Saving",
       SortDialogTitle: "Content Sort",
       SortDialogTip: "The content will be sort before the selected content in this list. If the selected content is at the top, the sorting content will also be added to the top status, and if not, the top status will be cancelled.",
@@ -1520,6 +1528,8 @@ export default {
       RequestArgs: "Request Args",
       DefaultValue: "Default Value",
       CustomDynamicTemplate: "Custom Dynamic Page",
+      DocGen: "Generate Document",
+      DocGenLang: "Language",
       CustomDynamicPage: {
         Name: "Name",
         Code: "Code",
@@ -1661,6 +1671,19 @@ export default {
         Flag: "Source Key",
       }
     },
+    SiteEvent: {
+      Type: "Type",
+      Name: "Name",
+      Desc: "Description",
+      StartTime: "Start Time",
+      EndTime: "End Time",
+      Status: "Status",
+      Enable: "Enable",
+      Disable: "Disable",
+      Publish: "Publish",
+      AddTitle: "Add site event",
+      EditTitle: "Edit site event"
+    }
   },
   WordMgr: {
     TAG: {

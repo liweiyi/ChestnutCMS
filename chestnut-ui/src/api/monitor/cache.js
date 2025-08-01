@@ -36,7 +36,7 @@ export function getCacheValue(monitoredId, cacheKey) {
 export function clearCacheName(monitoredId) {
   return request({
     url: '/monitor/cache/clearCacheName/' + monitoredId,
-    method: 'delete'
+    method: 'post'
   })
 }
 
@@ -44,7 +44,7 @@ export function clearCacheName(monitoredId) {
 export function clearCacheKey(monitoredId, cacheKey) {
   return request({
     url: '/monitor/cache/clearCacheKey',
-    method: 'delete',
+    method: 'post',
     data: {
       monitoredId: monitoredId,
       cacheKey: cacheKey
@@ -56,6 +56,6 @@ export function clearCacheKey(monitoredId, cacheKey) {
 export function clearCacheAll() {
   return request({
     url: '/monitor/cache/clearCacheAll',
-    method: 'delete'
+    method: 'post'
   })
 }

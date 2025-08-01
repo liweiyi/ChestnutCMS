@@ -18,8 +18,8 @@ export function addRelaContents(data) {
 
 export function delRelaContents(data) {
   return request({
-    url: '/cms/content/rela?contentId=' + data.contentId,
-    method: 'delete',
+    url: '/cms/content/rela/delete?contentId=' + data.contentId,
+    method: 'post',
     data: data.relaContentIds
   })
 }

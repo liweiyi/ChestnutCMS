@@ -15,11 +15,9 @@
  */
 package com.chestnut.comment.listener.event;
 
-import org.springframework.context.ApplicationEvent;
-
 import com.chestnut.comment.domain.Comment;
-
 import lombok.Getter;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * 评论保存数据库后事件
@@ -30,9 +28,7 @@ import lombok.Getter;
 @Getter
 public class AfterCommentSubmitEvent extends ApplicationEvent {
 
-	private static final long serialVersionUID = 1L;
-
-	private Comment comment;
+	private final Comment comment;
 
 	public AfterCommentSubmitEvent(Object source, Comment comment) {
 		super(source);

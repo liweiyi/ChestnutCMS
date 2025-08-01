@@ -26,8 +26,8 @@ export function getCommentLikeList(commentId, params) {
 
 export function deleteComments(commentIds) {
   return request({
-    url: '/comment',
-    method: 'delete',
+    url: '/comment/delete',
+    method: 'post',
     data: commentIds
   })
 }

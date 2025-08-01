@@ -26,12 +26,14 @@ import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
-import com.chestnut.contentcore.listener.event.*;
+import com.chestnut.contentcore.listener.event.AfterContentSaveEvent;
+import com.chestnut.contentcore.listener.event.BeforeContentSaveEvent;
+import com.chestnut.contentcore.listener.event.OnContentCopyEvent;
+import com.chestnut.contentcore.listener.event.OnContentMoveEvent;
 import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.properties.PublishedContentEditProperty;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.ContentCoreUtils;
@@ -40,16 +42,17 @@ import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.PermissionUtils;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@Slf4j
 public abstract class AbstractContent<T> implements IContent<T> {
 
 	private CmsContent content;
@@ -66,8 +69,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	private ICatalogService catalogService;
 
 	private IContentService contentService;
-
-	private IPublishService publishService;
 
 	@Setter
 	private Map<String, Object> params;
@@ -229,21 +230,17 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	@Override
 	public void delete() {
+		log.debug("CC.Content[{}].delete: {}", this.getContentEntity().getContentId(), this.getContentEntity().getTitle());
 		this.checkLock();
 		// 删除到备份表
 		this.getContentService().dao().deleteByIdAndBackup(this.getContentEntity(), getOperatorUName());
 		this.delete0();
-		// 直接删除站内映射内容
-		this.getContentService().dao().remove(new LambdaQueryWrapper<CmsContent>()
-				.eq(CmsContent::getCopyType, ContentCopyType.Mapping)
-				.eq(CmsContent::getCopyId, this.getContentEntity().getContentId()));
 		if (!isDeleteByCatalog()) {
 			// 栏目内容数-1, 删除栏目时，不需要更新栏目的内容数量
 			this.getCatalogService().changeContentCount(getCatalogId(), -1);
 		}
-		ContentLogUtils.addLog(ContentOpType.DELETE, this.getContentEntity(), this.getOperator());
-
-		SpringUtils.publishEvent(new AfterContentDeleteEvent(this, this));
+		ContentLogUtils.addLog(ContentOpType.DELETE, this.getContentEntity(), getContentEntity().getTitle(),
+				this.getOperator().getUserType(), this.getOperator().getUsername());
 	}
 
 	protected abstract void delete0();
@@ -267,8 +264,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			this.getContentService().dao().updateById(content);
 			ContentLogUtils.addLog(ContentOpType.PUBLISH, this.getContentEntity(), this.getOperator());
 		}
-		// 静态化
-		this.getPublishService().asyncPublishContent(this);
 		return true;
 	}
 
@@ -308,7 +303,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		// 栏目内容数+1
 		this.getCatalogService().changeContentCount(toCatalog.getCatalogId(), 1);
 
-		SpringUtils.publishEvent(new AfterContentCopyEvent(this, this.getContentEntity(), newContent));
+		SpringUtils.publishEvent(new OnContentCopyEvent(this, this.getContentEntity(), newContent));
 		return newContent;
 	}
 
@@ -343,6 +338,8 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		this.getCatalogService().changeContentCount(toCatalog.getCatalogId(), 1);
 		// 源栏目内容数量-1
 		this.getCatalogService().changeContentCount(fromCatalog.getCatalogId(), -1);
+
+		SpringUtils.publishEvent(new OnContentMoveEvent(this, fromCatalog, content));
 	}
 
 	@Override
@@ -351,10 +348,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		content.setTopDate(topEndTime);
 		content.updateBy(this.getOperatorUName());
 		this.getContentService().dao().updateById(content);
-		// 重新发布内容
-		if (ContentStatus.isPublished(this.getContentEntity().getStatus())) {
-			this.getPublishService().publishContent(List.of(content.getContentId()), getOperator());
-		}
 		ContentLogUtils.addLog(ContentOpType.TOP, this.getContentEntity(), this.getOperator());
 	}
 
@@ -366,10 +359,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		content.setTopFlag(0L);
 		content.setTopDate(null);
 		this.getContentService().dao().updateById(content);
-		// 重新发布内容
-		if (ContentStatus.isPublished(this.getContentEntity().getStatus())) {
-			this.getPublishService().publishContent(List.of(content.getContentId()), getOperator());
-		}
 		ContentLogUtils.addLog(ContentOpType.CANCEL_TOP, this.getContentEntity(), this.getOperator());
 	}
 
@@ -402,6 +391,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	@Override
 	public void offline() {
+		log.debug("CC.Content[{}].offline: {}", this.getContentEntity().getContentId(), this.getContentEntity().getTitle());
 		String status = this.getContentEntity().getStatus();
 		if (!ContentStatus.isOffline(status)) {
 			this.getContentEntity().setStatus(ContentStatus.OFFLINE);
@@ -410,17 +400,11 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		}
 		if (ContentStatus.isPublished(status)) {
 			// 已发布内容删除静态页面
-			this.getContentService().deleteStaticFiles(this.getContentEntity());
-			// 重新发布内容所在栏目和父级栏目
-			String[] catalogIds = this.getContentEntity().getCatalogAncestors()
-					.split(CatalogUtils.ANCESTORS_SPLITER);
-			for (String catalogId : catalogIds) {
-				this.getPublishService().publishCatalog(this.getCatalogService().getCatalog(Long.valueOf(catalogId)),
-						false, false, null, this.getOperator());
+			if (!this.getContentEntity().isLinkContent()) {
+				this.getContentService().deleteStaticFiles(this.getContentEntity());
 			}
 		}
 		ContentLogUtils.addLog(ContentOpType.OFFLINE, this.getContentEntity(), this.getOperator());
-		SpringUtils.publishEvent(new AfterContentOfflineEvent(this, this));
 	}
 
 	@Override
@@ -431,7 +415,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			this.getContentService().dao().updateById(this.getContentEntity());
 		}
 		ContentLogUtils.addLog(ContentOpType.TO_PUBLISH, this.getContentEntity(), this.getOperator());
-		SpringUtils.publishEvent(new AfterContentToPublishEvent(this, this));
 	}
 
 	@Override
@@ -485,12 +468,5 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			this.contentService = SpringUtils.getBean(IContentService.class);
 		}
 		return this.contentService;
-	}
-
-	private IPublishService getPublishService() {
-		if (this.publishService == null) {
-			this.publishService = SpringUtils.getBean(IPublishService.class);
-		}
-		return this.publishService;
 	}
 }

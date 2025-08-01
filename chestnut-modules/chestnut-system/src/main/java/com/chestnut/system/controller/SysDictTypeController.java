@@ -111,7 +111,7 @@ public class SysDictTypeController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictRemove)
 	@Log(title = "字典类型", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> dictIds) {
 		dictTypeService.deleteDictTypeByIds(dictIds);
 		return R.ok();
@@ -122,7 +122,7 @@ public class SysDictTypeController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictRemove)
 	@Log(title = "字典类型", businessType = BusinessType.CLEAN)
-	@DeleteMapping("/refreshCache")
+	@PostMapping("/refreshCache")
 	public R<?> refreshCache() {
 		dictTypeService.resetDictCache();
 		return R.ok();

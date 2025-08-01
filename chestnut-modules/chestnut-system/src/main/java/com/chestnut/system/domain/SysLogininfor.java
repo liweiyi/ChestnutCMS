@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -41,13 +42,14 @@ import lombok.Setter;
 @TableName(SysLogininfor.TABLE_NAME)
 public class SysLogininfor implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "sys_logininfor";
 
 	/** ID */
 	@ExcelProperty("日志ID")
-	@TableId(value = "info_id", type = IdType.AUTO)
+	@TableId(value = "info_id", type = IdType.INPUT)
 	private Long infoId;
 
 	@ExcelProperty("用户类型")

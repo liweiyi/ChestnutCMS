@@ -49,6 +49,12 @@ public class CmsContentOpLog implements Serializable {
     @XComment("所属站点ID")
     private Long siteId;
 
+    @XComment("所属栏目ID")
+    private Long catalogId;
+
+    @XComment("所属栏目祖级IDs")
+    private String catalogAncestors;
+
     @XComment("所属内容ID")
     private Long contentId;
 

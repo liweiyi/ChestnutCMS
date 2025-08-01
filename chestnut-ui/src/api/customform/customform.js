@@ -40,8 +40,8 @@ export function editCustomForm(data) {
 
 export function deleteCustomForms(data) {
   return request({
-    url: '/cms/customform',
-    method: 'delete',
+    url: '/cms/customform/delete',
+    method: 'post',
     data: data
   })
 }
@@ -99,8 +99,8 @@ export function editCustomFormData(formId, data) {
 
 export function deleteCustomFormDatas(formId, dataIds) {
   return request({
-    url: '/cms/customform/data?formId=' + formId,
-    method: 'delete',
+    url: '/cms/customform/data/delete?formId=' + formId,
+    method: 'post',
     data: dataIds
   })
 }

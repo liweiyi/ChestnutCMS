@@ -26,13 +26,11 @@ import lombok.Getter;
 @Getter
 public class AfterCatalogSaveEvent extends ApplicationEvent {
 
-	private static final long serialVersionUID = 1L;
+	private final String oldPath;
 
-	private String oldPath;
+	private final Map<String, Object> extendParams;
 
-	private Map<String, Object> extendParams;
-
-	private CmsCatalog catalog;
+	private final CmsCatalog catalog;
 
 	public AfterCatalogSaveEvent(Object source, CmsCatalog catalog, String oldPath, Map<String, Object> extendParams) {
 		super(source);

@@ -369,21 +369,6 @@
       
       <el-card shadow="hover">
         <div slot="header" class="clearfix">
-          <span>{{ $t('CMS.Site.Extend.CustomFormCardTitle') }}</span>
-        </div>
-        <el-form-item :label="$t('CMS.Site.Extend.EnableCustomFormCaptcha')" prop="EnableCustomFormCaptcha">
-          <el-switch
-            v-model="form_extend.EnableCustomFormCaptcha"
-            :active-text="$t('Common.Yes')"
-            :inactive-text="$t('Common.No')"
-            active-value="Y"
-            inactive-value="N">
-          </el-switch>
-        </el-form-item>
-      </el-card>
-      
-      <el-card shadow="hover">
-        <div slot="header" class="clearfix">
           <span>{{ $t('CMS.Site.Extend.CommentCardTitle') }}</span>
         </div>
         <el-form-item :label="$t('CMS.Site.Extend.EnableCommentAudit')" prop="EnableCommentAudit">

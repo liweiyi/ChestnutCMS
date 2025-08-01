@@ -200,7 +200,7 @@ public class PageWidgetController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE)
 	@Log(title = "删除页面组件", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deletePageWidgets(@RequestBody @NotEmpty List<Long> pageWidgetIds) {
 		this.pageWidgetService.deletePageWidgets(pageWidgetIds, StpAdminUtil.getLoginUser());
 		return R.ok();

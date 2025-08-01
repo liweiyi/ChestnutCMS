@@ -34,7 +34,7 @@ CREATE TABLE `cms_dynamic_page` (
   PRIMARY KEY (`page_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-# 菜单名称繁体数据
+-- 菜单名称繁体数据
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'MENU.NAME.1';
 insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655384645, 'zh-TW', 'MENU.NAME.1', '系統管理');
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'MENU.NAME.2';
@@ -252,7 +252,7 @@ insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(51227
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'MENU.NAME.473338047254597';
 insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655409249, 'zh-TW', 'MENU.NAME.473338047254597', '刪除');
 
-# 系统参数繁体数据
+-- 系统参数繁体数据
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'CONFIG.sys.index.skinName';
 insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655437893, 'zh-TW', 'CONFIG.sys.index.skinName', '主框架頁-預設皮膚樣式名稱');
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'CONFIG.sys.index.sideTheme';
@@ -284,7 +284,7 @@ insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(51227
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'CONFIG.CMSSearchAnalyzeType';
 insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655437907, 'zh-TW', 'CONFIG.CMSSearchAnalyzeType', '檢索分詞方式');
 
-# 数据字典繁体数据
+-- 数据字典繁体数据
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'DICT.YesOrNo';
 insert into sys_i18n_dict (dict_id, lang_tag, lang_key, lang_value) values(512272655487045, 'zh-TW', 'DICT.YesOrNo', '是/否');
 delete from sys_i18n_dict where lang_tag = 'zh-TW' and lang_key = 'DICT.YesOrNo.Y';

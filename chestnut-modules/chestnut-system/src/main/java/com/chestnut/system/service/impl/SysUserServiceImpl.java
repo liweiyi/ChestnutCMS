@@ -30,12 +30,10 @@ import com.chestnut.common.validation.BeanValidators;
 import com.chestnut.system.config.SystemConfig;
 import com.chestnut.system.domain.*;
 import com.chestnut.system.domain.dto.UserImportData;
+import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.UserStatus;
-import com.chestnut.system.mapper.SysPostMapper;
-import com.chestnut.system.mapper.SysUserMapper;
-import com.chestnut.system.mapper.SysUserPostMapper;
-import com.chestnut.system.mapper.SysUserRoleMapper;
+import com.chestnut.system.mapper.*;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.*;
 import jakarta.validation.Validator;
@@ -76,6 +74,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	private final SysUserRoleMapper userRoleMapper;
 
 	private final ISecurityConfigService securityConfigService;
+
+	private final SysPermissionMapper permissionMapper;
 
 	/**
 	 * 查询用户所属角色组
@@ -308,11 +308,17 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	public void deleteUserByIds(List<Long> userIds) {
 		for (Long userId : userIds) {
 			Assert.isFalse(SecurityUtils.isSuperAdmin(userId), SysErrorCode.SUPERADMIN_DELETE::exception);
+			// 注销已登录token
+			StpAdminUtil.logout(userId);
 		}
 		// 删除用户与角色关联
 		userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getUserId, userIds));
 		// 删除用户与岗位关联
 		userPostMapper.delete(new LambdaQueryWrapper<SysUserPost>().in(SysUserPost::getUserId, userIds));
+		// 删除用户权限配置
+		this.permissionMapper.delete(new LambdaQueryWrapper<SysPermission>()
+				.eq(SysPermission::getOwnerType, PermissionOwnerType.User.name())
+				.in(SysPermission::getOwner, userIds));
 		// 删除用户数据
 		this.removeByIds(userIds);
 	}

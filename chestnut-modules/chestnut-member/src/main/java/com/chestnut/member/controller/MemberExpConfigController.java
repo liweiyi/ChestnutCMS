@@ -104,7 +104,7 @@ public class MemberExpConfigController extends BaseRestController {
 	}
 
 	@Log(title = "删除会员经验配置", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteExpOperations(@RequestBody @NotEmpty List<Long> expOperationIds) {
 		this.memberExpOperationService.deleteExpOperations(expOperationIds);
 		return R.ok();

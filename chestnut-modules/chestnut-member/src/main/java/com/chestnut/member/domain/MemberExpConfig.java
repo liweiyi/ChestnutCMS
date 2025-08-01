@@ -24,6 +24,8 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /***
  * 会员经验配置表
  */
@@ -32,6 +34,7 @@ import lombok.Setter;
 @TableName(MemberExpConfig.TABLE_NAME)
 public class MemberExpConfig extends BaseEntity {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public static final String TABLE_NAME = "cc_member_exp_config";

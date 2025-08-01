@@ -22,9 +22,7 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class AfterContentToPublishEvent extends ApplicationEvent {
 
-	private static final long serialVersionUID = 1L;
-
-	private IContent<?> content;
+	private final IContent<?> content;
 
 	public AfterContentToPublishEvent(Object source, IContent<?> content) {
 		super(source);

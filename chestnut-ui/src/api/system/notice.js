@@ -38,8 +38,8 @@ export function updateNotice(data) {
 // 删除公告
 export function delNotice(noticeIds) {
   return request({
-    url: '/system/notice',
-    method: 'delete',
+    url: '/system/notice/delete',
+    method: 'post',
     data: noticeIds
   })
 }

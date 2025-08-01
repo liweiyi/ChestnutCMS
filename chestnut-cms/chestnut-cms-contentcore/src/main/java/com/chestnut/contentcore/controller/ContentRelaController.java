@@ -91,7 +91,7 @@ public class ContentRelaController extends BaseRestController {
 		return R.ok();
 	}
 
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteRelaContents(@RequestParam Long contentId, @RequestBody @NotEmpty List<Long> relaContentIds) {
 		this.contentRelaService.remove(new LambdaQueryWrapper<CmsContentRela>()
 				.eq(CmsContentRela::getContentId, contentId)

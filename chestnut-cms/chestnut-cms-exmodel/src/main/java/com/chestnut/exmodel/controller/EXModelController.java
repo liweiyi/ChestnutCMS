@@ -71,7 +71,7 @@ public class EXModelController extends BaseRestController {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 		LambdaQueryWrapper<XModel> q = new LambdaQueryWrapper<XModel>()
 				.eq(XModel::getOwnerType, CmsExtendMetaModelType.TYPE)
-				.eq(XModel::getOwnerId, site.getSiteId())
+				.eq(XModel::getOwnerId, site.getSiteId().toString())
 				.like(StringUtils.isNotEmpty(query), XModel::getName, query);
 		Page<XModel> page = this.modelService.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true), q);
 		return this.bindDataTable(page);
@@ -87,7 +87,7 @@ public class EXModelController extends BaseRestController {
 		}
 		LambdaQueryWrapper<XModel> q = new LambdaQueryWrapper<XModel>()
 				.eq(XModel::getOwnerType, CmsExtendMetaModelType.TYPE)
-				.eq(XModel::getOwnerId, site.getSiteId());
+				.eq(XModel::getOwnerId, site.getSiteId().toString());
 		Page<XModel> page = this.modelService.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true), q);
 		return this.bindDataTable(page);
 	}
@@ -115,11 +115,8 @@ public class EXModelController extends BaseRestController {
 
 	@Log(title = "删除扩展模型", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE, value = EXModelPriv.Delete)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @Validated @NotEmpty List<XModelDTO> dtoList) {
-		if (dtoList == null || dtoList.size() == 0) {
-			return R.fail("参数不能为空");
-		}
 		List<Long> modelIds = dtoList.stream().map(XModelDTO::getModelId).toList();
 		this.modelService.deleteModel(modelIds);
 		return R.ok();

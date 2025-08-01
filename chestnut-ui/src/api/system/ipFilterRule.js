@@ -33,8 +33,8 @@ export function editRule(data) {
 
 export function delRule(ids) {
   return request({
-    url: '/sys/iprule',
-    method: 'delete',
+    url: '/sys/iprule/delete',
+    method: 'post',
     data: ids
   })
 }

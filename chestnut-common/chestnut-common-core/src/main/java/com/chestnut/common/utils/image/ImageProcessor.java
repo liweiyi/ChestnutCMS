@@ -15,21 +15,36 @@
  */
 package com.chestnut.common.utils.image;
 
-import com.chestnut.common.utils.image.op.ImageOp;
-
-import java.io.IOException;
-import java.io.OutputStream;
+import java.awt.*;
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
- * ImageProcessor
+ * GifImageProcessor
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
 public interface ImageProcessor {
 
-    boolean check(String imageFormat);
+    String BEAN_PREFIX = "ImageProcessor_";
 
-    void process(ImageHelper.ImageInputWrap<?> inputWrap, ArrayList<ImageOp> imageOps, OutputStream os) throws IOException;
+    Dimension getDimension(File imageFile);
+
+    void process(File sourcePath, String imageFormat, ArrayList<ImageOp> imageOps, File out) throws Exception;
+
+    ImageOp crop(int x, int y, int width, int height);
+
+    ImageOp resize(int width, int height);
+
+    ImageOp rotate(int degree);
+
+    ImageOp flip(boolean horizontal);
+
+    ImageOp textWatermark(String text, Font font, Color color, float opacity, WatermarkPosition position);
+
+    ImageOp imageWatermark(File watermarkImageFile, float ratio, float opacity, WatermarkPosition position);
+
+    ImageOp convert(String format, double quality, boolean strip);
 }

@@ -41,19 +41,19 @@ public class CmsLinkGroup extends BaseEntity {
 
 	public static final String TABLE_NAME = "cms_link_group";
 
-    @XComment("友链分组ID")
+    @XComment("{CMS.LINK_GROUP.ID}")
     @TableId(value = "link_group_id", type = IdType.INPUT)
     private Long linkGroupId;
 
-    @XComment("所属站点ID")
+    @XComment("{CMS.LINK_GROUP.SITE_ID}")
     private Long siteId;
 
-    @XComment("分组名称")
+    @XComment("{CMS.LINK_GROUP.NAME}")
     private String name;
 
-    @XComment("分组编码")
+    @XComment("{CMS.LINK_GROUP.CODE}")
     private String code;
     
-    @XComment("排序值")
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 }

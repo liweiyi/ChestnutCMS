@@ -21,6 +21,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 /***
@@ -31,6 +32,7 @@ import java.io.Serializable;
 @TableName(MemberStatData.TABLE_NAME)
 public class MemberStatData implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public static final String TABLE_NAME = "cc_member_stat_data";

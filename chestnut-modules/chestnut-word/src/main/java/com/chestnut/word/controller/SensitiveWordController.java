@@ -82,7 +82,7 @@ public class SensitiveWordController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> sensitiveWordIds) {
 		this.sensitiveWordService.deleteWord(sensitiveWordIds);
 		return R.ok();

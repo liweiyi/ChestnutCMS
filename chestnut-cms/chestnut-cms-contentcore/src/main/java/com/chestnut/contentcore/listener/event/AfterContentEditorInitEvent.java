@@ -15,18 +15,14 @@
  */
 package com.chestnut.contentcore.listener.event;
 
-import org.springframework.context.ApplicationEvent;
-
 import com.chestnut.contentcore.domain.vo.ContentVO;
-
 import lombok.Getter;
+import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class AfterContentEditorInitEvent extends ApplicationEvent {
 	
-	private static final long serialVersionUID = 1L;
-
-	private ContentVO contentVO;
+	private final ContentVO contentVO;
 	
 	public AfterContentEditorInitEvent(Object source, ContentVO vo) {
 		super(source);

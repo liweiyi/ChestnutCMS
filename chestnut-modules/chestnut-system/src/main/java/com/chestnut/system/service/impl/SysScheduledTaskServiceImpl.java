@@ -129,6 +129,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
             return;
         }
         SysScheduledTaskLog taskLog = new SysScheduledTaskLog();
+        taskLog.setLogId(IdUtils.getSnowflakeId());
         taskLog.setTaskId(task.getTaskId());
         taskLog.setTaskType(task.getType());
         taskLog.setResult(task.getStatus() == ScheduledTaskStatus.SUCCESS ? SuccessOrFail.SUCCESS : SuccessOrFail.FAIL);
@@ -137,7 +138,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
         taskLog.setEndTime(task.getEndTime());
         taskLog.setInterruptTime(task.getInterruptTime());
         taskLog.setLogTime(LocalDateTime.now());
-        taskLog.setPercent(task.getPercent());
+        taskLog.setTaskPercent(task.getPercent());
         if (StringUtils.isNotEmpty(task.getErrMessages())) {
             StringJoiner stringJoiner = new StringJoiner(StringUtils.COMMA);
             for (String err : task.getErrMessages()) {

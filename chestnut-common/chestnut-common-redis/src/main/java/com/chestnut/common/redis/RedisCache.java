@@ -243,19 +243,28 @@ public class RedisCache {
 		return objects;
 	}
 
+	public <T> void setCacheList(final String key, Collection<T> list) {
+		if (Objects.isNull(list)) {
+			return;
+		}
+		for (T item : list) {
+			redisTemplate.opsForList().rightPush(key, item);
+		}
+	}
+
 	@NotNull
 	public <T> List<T> getCacheList(final String key, Class<T> clazz, Supplier<List<T>> supplier) {
-		List<Object> cacheValue = redisTemplate.opsForList().range(key, 0, -1);
-		if (Objects.isNull(cacheValue)) {
+		if (!redisTemplate.hasKey(key)) {
 			if (Objects.nonNull(supplier)) {
 				List<T> list = supplier.get();
 				if (Objects.nonNull(list)) {
-					this.setCacheObject(key, list);
+					setCacheList(key, list);
 					return list;
 				}
 			}
 			return List.of();
 		}
+		List<Object> cacheValue = redisTemplate.opsForList().range(key, 0, -1);
 		ArrayList<T> objects = new ArrayList<>(cacheValue.size());
 		for (Object obj : cacheValue) {
 			objects.add(clazz.cast(obj));
@@ -285,10 +294,10 @@ public class RedisCache {
 	 * @return 缓存数据
 	 */
 	public <T> Set<T> getCacheSet(final String key, Class<T> clazz) {
-		Set<Object> cacheValue = redisTemplate.opsForSet().members(key);
-		if (Objects.isNull(cacheValue) || cacheValue.isEmpty()) {
+		if (!redisTemplate.hasKey(key)) {
 			return Set.of();
 		}
+		Set<Object> cacheValue = redisTemplate.opsForSet().members(key);
 		Set<T> objects = new HashSet<>(cacheValue.size());
 		for (Object obj : cacheValue) {
 			objects.add(clazz.cast(obj));
@@ -306,7 +315,7 @@ public class RedisCache {
 	 * @param key Cache key
 	 * @param values Set Element
 	 */
-	public <T> void addSetValue(final String key, final T... values) {
+	public void addSetValue(final String key, final Object... values) {
 		if (StringUtils.isEmpty(values)) {
 			return;
 		}
@@ -335,8 +344,11 @@ public class RedisCache {
 	}
 
 	public <T> List<T> randomSetValues(final String key, long count, Class<T> clazz) {
+		if (!this.redisTemplate.hasKey(key)) {
+			return List.of();
+		}
 		List<Object> objects = this.redisTemplate.opsForSet().randomMembers(key, count);
-		if (Objects.isNull(objects) || objects.isEmpty()) {
+		if (objects.isEmpty()) {
 			return List.of();
 		}
         return objects.stream().map(clazz::cast).toList();
@@ -491,9 +503,6 @@ public class RedisCache {
 	 */
 	public long atomicLongIncr(String key) {
 		RedisConnectionFactory connectionFactory = this.redisTemplate.getConnectionFactory();
-		if (Objects.isNull(connectionFactory)) {
-			throw new NullPointerException("connectionFactory");
-		}
 		RedisAtomicLong redisAtomicLong = new RedisAtomicLong(key, connectionFactory);
 		return redisAtomicLong.incrementAndGet();
 	}

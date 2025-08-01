@@ -111,7 +111,7 @@ public class LinkGroupController extends BaseRestController {
 
 	@Log(title = "删除友链分组", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.Delete)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<String> remove(@RequestBody @Validated @NotEmpty List<LinkGroupDTO> dtoList) {
 		List<Long> linkGroupIds = dtoList.stream().map(LinkGroupDTO::getLinkGroupId).toList();
 		this.linkGroupService.deleteLinkGroup(linkGroupIds);

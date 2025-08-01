@@ -16,6 +16,7 @@
 package com.chestnut.xmodel.fixed.dict;
 
 import com.chestnut.common.utils.ArrayUtils;
+import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.fixed.FixedDictType;
@@ -23,7 +24,9 @@ import com.chestnut.system.service.ISysDictTypeService;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -95,6 +98,24 @@ public class MetaFieldType extends FixedDictType {
 
 	public static boolean isStringField(String fieldType) {
 		return ArrayUtils.contains(fieldType, STRING_FIELD);
+	}
+
+	public static Object parse(String type, Object value) {
+		if (Objects.nonNull(value)) {
+			if (isLongField(type) && !(value instanceof Long)) {
+				return Long.valueOf(value.toString());
+			}
+			if (isDoubleField(type) && !(value instanceof Double)) {
+				return Double.valueOf(value.toString());
+			}
+			if (isDateField(type) && !(value instanceof Date)) {
+				return DateUtils.parseDate(value);
+			}
+			if (isStringField(type) && !(value instanceof String)) {
+				return value.toString();
+			}
+		}
+		return value;
 	}
 
 	public static <T> void decode(List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {

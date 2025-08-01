@@ -18,6 +18,7 @@ package com.chestnut.member.service.impl;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.member.level.impl.SignInExpOperation;
 import com.chestnut.member.service.IMemberExpConfigService;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ public class MemberSignInLogServiceImpl extends ServiceImpl<MemberSignInLogMappe
 		Assert.isTrue(count == 0, MemberErrorCode.SIGN_IN_COMPLETED::exception);
 		
 		MemberSignInLog signInLog = new MemberSignInLog();
+		signInLog.setLogId(IdUtils.getSnowflakeId());
 		signInLog.setMemberId(loginUser.getUserId());
 		signInLog.setSignInKey(signInKey);
 		signInLog.setLogTime(now);
@@ -69,6 +71,7 @@ public class MemberSignInLogServiceImpl extends ServiceImpl<MemberSignInLogMappe
 		Assert.isTrue(count == 0, MemberErrorCode.SIGN_IN_COMPLETED::exception);
 		
 		MemberSignInLog signInLog = new MemberSignInLog();
+		signInLog.setLogId(IdUtils.getSnowflakeId());
 		signInLog.setMemberId(dto.getOperator().getUserId());
 		signInLog.setSignInKey(signInKey);
 		signInLog.setLogTime(LocalDateTime.now());

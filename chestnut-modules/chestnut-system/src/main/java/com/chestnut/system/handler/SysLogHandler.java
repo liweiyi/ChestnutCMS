@@ -20,6 +20,7 @@ import com.chestnut.common.log.ILogHandler;
 import com.chestnut.common.log.LogDetail;
 import com.chestnut.common.log.restful.RestfulLogData;
 import com.chestnut.common.log.restful.RestfulLogType;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysOperLog;
 import com.chestnut.system.service.ISysOperLogService;
@@ -64,6 +65,7 @@ public class SysLogHandler implements ILogHandler {
 			try {
 				String requestMethod = MapUtils.getString(details, RestfulLogData.PARAM_REQUEST_METHOD);
 				SysOperLog operLog = new SysOperLog();
+				operLog.setOperId(IdUtils.getSnowflakeId());
 				operLog.setTitle(logDetail.getLogTitle());
 				operLog.setBusinessType(logDetail.getBusinessType());
 				operLog.setOperIp(MapUtils.getString(details, RestfulLogData.PARAM_IP));

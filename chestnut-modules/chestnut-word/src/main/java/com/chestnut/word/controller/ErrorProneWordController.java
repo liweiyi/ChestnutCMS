@@ -76,7 +76,7 @@ public class ErrorProneWordController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<String> remove(@RequestBody @NotEmpty List<Long> errorProneWordIds) {
 		this.errorProneWordService.removeByIds(errorProneWordIds);
 		return R.ok();

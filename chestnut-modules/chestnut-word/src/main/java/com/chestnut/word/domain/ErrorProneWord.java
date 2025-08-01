@@ -23,6 +23,8 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 易错词表 [CmsErrorProneWord]
  * 
@@ -34,6 +36,7 @@ import lombok.Setter;
 @TableName(ErrorProneWord.TABLE_NAME)
 public class ErrorProneWord extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
     
     public static final String TABLE_NAME = "cc_error_prone_word";

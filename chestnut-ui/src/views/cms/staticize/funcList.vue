@@ -73,7 +73,7 @@ export default {
       },
       sourceFuncList: [],
       funcList: [],
-      funcName: undefined
+      funcName: undefined,
     };
   },
   created () {

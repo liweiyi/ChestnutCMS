@@ -44,11 +44,6 @@ public class BCmsArticleDetail extends BackupEntity<CmsArticleDetail> {
      * 站点ID
      */
     private Long siteId;
-    
-    /**
-     * 正文详情（json）
-     */
-    private String contentJson;
 
     /**
      * 正文详情（html）
@@ -64,6 +59,11 @@ public class BCmsArticleDetail extends BackupEntity<CmsArticleDetail> {
      * 是否下载远程图片
      */
     private String downloadRemoteImage;
+
+    /**
+     * 正文格式（图文混排，MARKDOWN）
+     */
+    private String format;
 
     @Override
     public CmsArticleDetail toSourceEntity() {

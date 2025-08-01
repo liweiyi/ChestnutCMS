@@ -960,6 +960,7 @@ export default {
       PrefixMode: "路径模式",
       PrefixMode_Absolute: "绝对路径",
       PrefixMode_Relative: "相对路径",
+      RelativePrefix: "相对路径前缀",
       ErrPageLink: "错误页面",
       Dashboard: {
         MissingSiteUrl: "站点域名未配置！"
@@ -1178,6 +1179,9 @@ export default {
       Hot: "热点",
       CancelHot: "取消热点",
       SEOConfig: "SEO配置",
+      ImportWord: "导入WORD",
+      UploadWord: "上传WORD文档",
+      SaveUploadWordFile: "保留上传的WORD文档",
       SortOption: {
         Default: "默认排序",
         CreateTimeAsc: '添加时间升序',
@@ -1221,6 +1225,10 @@ export default {
       RuleTips:  {
         Title: "标题不能为空"
       },
+      PublishProgressTitle: "发布内容中",
+      OfflineProgressTitle: "下线内容中",
+      CopyProgressTitle: "复制内容中",
+      MoveProgressTitle: "移动内容中",
       SaveProgressTitle: "保存内容中",
       SortDialogTitle: "内容排序",
       SortDialogTip: "内容将会排在下方列表选中的内容之前，选中内容置顶则排序内容也会添加置顶状态，反之则会取消置顶状态。",
@@ -1520,6 +1528,8 @@ export default {
       RequestArgs: "请求参数",
       DefaultValue: "默认值",
       CustomDynamicTemplate: "自定义动态模板",
+      DocGen: "生成文档",
+      DocGenLang: "语言",
       CustomDynamicPage: {
         Name: "名称",
         Code: "编码",
@@ -1661,6 +1671,19 @@ export default {
         Flag: "来源标识",
       }
     },
+    SiteEvent: {
+      Type: "类型",
+      Name: "名称",
+      Desc: "描述",
+      StartTime: "开始时间",
+      EndTime: "结束时间",
+      Status: "状态",
+      Enable: "启用",
+      Disable: "停用",
+      Publish: "发布",
+      AddTitle: "新建站点事件",
+      EditTitle: "编辑站点事件"
+    }
   },
   WordMgr: {
     TAG: {

@@ -19,9 +19,9 @@ import cn.dev33.satoken.SaManager;
 import cn.dev33.satoken.fun.SaFunction;
 import cn.dev33.satoken.listener.SaTokenEventCenter;
 import cn.dev33.satoken.session.SaSession;
-import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
+import cn.dev33.satoken.stp.parameter.SaLoginParameter;
 import com.chestnut.common.security.domain.LoginUser;
 
 import java.util.List;
@@ -112,7 +112,7 @@ public class StpAdminUtil {
  	 * @param tokenValue token值 
  	 * @param loginModel 登录参数 
  	 */
-	public static void setTokenValue(String tokenValue, SaLoginModel loginModel){
+	public static void setTokenValue(String tokenValue, SaLoginParameter loginModel){
 		stpLogic.setTokenValue(tokenValue, loginModel);
 	}
 
@@ -188,7 +188,7 @@ public class StpAdminUtil {
 	 * @param id         登录id，建议的类型：（long | int | String）
 	 * @param loginModel 此次登录的参数Model
 	 */
-	public static void login(Object id, SaLoginModel loginModel) {
+	public static void login(Object id, SaLoginParameter loginModel) {
 		stpLogic.login(id, loginModel);
 	}
 
@@ -207,7 +207,7 @@ public class StpAdminUtil {
 	 * @param loginModel 此次登录的参数Model 
 	 * @return 返回会话令牌 
 	 */
-	public static String createLoginSession(Object id, SaLoginModel loginModel) {
+	public static String createLoginSession(Object id, SaLoginParameter loginModel) {
 		return stpLogic.createLoginSession(id, loginModel);
 	}
 	
@@ -744,7 +744,7 @@ public class StpAdminUtil {
 	 * @return 当前令牌的登录设备类型
 	 */
 	public static String getLoginDevice() {
-		return stpLogic.getLoginDevice(); 
+		return stpLogic.getLoginDeviceType();
 	}
 
 	

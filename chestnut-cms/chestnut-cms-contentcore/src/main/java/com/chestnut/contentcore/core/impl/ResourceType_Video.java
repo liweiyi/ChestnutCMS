@@ -15,15 +15,13 @@
  */
 package com.chestnut.contentcore.core.impl;
 
-import java.util.Objects;
-
-import org.apache.commons.compress.utils.FileNameUtils;
+import com.chestnut.contentcore.core.IResourceType;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
-import com.chestnut.contentcore.core.IResourceType;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Objects;
 
 /**
  * 资源类型：视频
@@ -57,7 +55,7 @@ public class ResourceType_Video implements IResourceType {
 	}
 
 	public static boolean isVideo(String path) {
-		String ext = FileNameUtils.getExtension(path);
+		String ext = FilenameUtils.getExtension(path);
 		return Objects.nonNull(path) && ArrayUtils.contains(SuffixArray, ext);
 	}
 }

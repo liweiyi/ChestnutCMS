@@ -40,25 +40,25 @@ public interface SysConstants {
     /**
      * 参数管理 cache key
      */
-    String CACHE_SYS_CONFIG_KEY = "sys_config:";
+    String CACHE_SYS_CONFIG_KEY = "sys:config:";
 
     /**
      * 字典管理 cache key
      */
-    String CACHE_SYS_DICT_KEY = "sys_dict:";
+    String CACHE_SYS_DICT_KEY = "sys:dict:";
 
     /**
      * 部门信息 cache key
      */
-    String CACHE_SYS_DEPT_KEY = "sys_dept:";
+    String CACHE_SYS_DEPT_KEY = "sys:dept:";
 
     /**
      * 角色信息 cache key
      */
-    String CACHE_SYS_ROLE_KEY = "sys_role:";
+    String CACHE_SYS_ROLE_KEY = "sys:role:";
 
     /**
      * 岗位信息 cache key
      */
-    String CACHE_SYS_POST_KEY = "sys_post:";
+    String CACHE_SYS_POST_KEY = "sys:post:";
 }

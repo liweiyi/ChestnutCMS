@@ -144,10 +144,10 @@ public class CmsArticleTag extends AbstractTag {
 	@NoArgsConstructor
 	public static class ArticleTagData {
 
-		@XComment("文章正文格式")
+		@XComment("{CMS.ARTICLE.FORMAT}")
 		private String Format;
 
-		@XComment("文章正文")
+		@XComment("{CMS.ARTICLE.BODY_TEXT}")
 		private String ArticleContent;
 
 		public ArticleTagData(String format, String articleContent) {

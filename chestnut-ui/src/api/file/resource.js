@@ -39,6 +39,6 @@ export function updateResource(data) {
 export function delResource(resourceIds) {
   return request({
     url: '/ccfile/resource/' + resourceIds,
-    method: 'delete'
+    method: 'post'
   })
 }

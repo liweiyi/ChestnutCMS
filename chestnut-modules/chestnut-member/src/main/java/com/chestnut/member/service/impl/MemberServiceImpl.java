@@ -29,13 +29,17 @@ import com.chestnut.member.core.IMemberStatData;
 import com.chestnut.member.domain.*;
 import com.chestnut.member.domain.dto.MemberDTO;
 import com.chestnut.member.exception.MemberErrorCode;
+import com.chestnut.member.fixed.dict.MemberStatus;
 import com.chestnut.member.mapper.MemberLevelExpLogMapper;
 import com.chestnut.member.mapper.MemberLevelMapper;
 import com.chestnut.member.mapper.MemberMapper;
 import com.chestnut.member.mapper.MemberSignInLogMapper;
+import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberService;
 import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.exception.SysErrorCode;
+import com.chestnut.system.fixed.dict.UserStatus;
+import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISecurityConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -99,6 +103,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", dto.getMemberId()));
 
 		this.checkMemberUnique(dto.getUserName(), dto.getPhoneNumber(), dto.getEmail(), dto.getMemberId());
+		String oldStatus = member.getStatus();
 
 		member.setEmail(dto.getEmail());
 		member.setPhoneNumber(dto.getPhoneNumber());
@@ -108,6 +113,11 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		member.setRemark(dto.getRemark());
 		member.updateBy(dto.getOperator().getUsername());
 		this.updateById(member);
+		// 变更未封禁或锁定状态时注销登录状态
+		if (!StringUtils.equals(member.getStatus(), oldStatus)
+				&& (MemberStatus.isDisbale(member.getStatus()) || UserStatus.isLocked(member.getStatus()))) {
+			StpAdminUtil.logout(member.getUserId());
+		}
 	}
 
 	@Override
@@ -121,6 +131,10 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		// 删除会员签到日志
 		this.memberSignInLogMapper
 				.delete(new LambdaQueryWrapper<MemberSignInLog>().in(MemberSignInLog::getMemberId, memberIds));
+		// 注销已登录用户TOKEN
+		for (Long memberId : memberIds) {
+			StpMemberUtil.logout(memberId);
+		}
 	}
 
 	/**

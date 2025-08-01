@@ -126,7 +126,7 @@ public class SearchWordController extends BaseRestController {
 	}
 
 	@Log(title = "删除搜索词", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteWords(@RequestBody @NotEmpty List<Long> wordIds) {
 		this.searchWordStatService.deleteWords(wordIds);
 		return R.ok();

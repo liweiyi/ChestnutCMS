@@ -15,17 +15,26 @@
  */
 package com.chestnut.common.domain;
 
-import java.io.Serializable;
-
+import com.chestnut.common.i18n.I18nUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.io.Serial;
+import java.io.Serializable;
 
 /**
  * 响应信息主体
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
+@Getter
+@Setter
 public class R<T> implements Serializable {
-	
+
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/** 成功 */
@@ -35,10 +44,10 @@ public class R<T> implements Serializable {
 	public static final int FAIL = HttpStatus.INTERNAL_SERVER_ERROR.value();
 
 	/** 成功默认消息 */
-	public static final String SUCCESS_MESSAGE = "SUCCESS";
+	public static final String SUCCESS_MESSAGE = "{CC.COMMON.R.SUCCESS}";
 
 	/** 失败默认消息 */
-	public static final String FAIL_MESSAGE = "FAIL";
+	public static final String FAIL_MESSAGE = "{CC.COMMON.R.FAIL}";
 
 	/**
 	 * 响应码
@@ -100,31 +109,7 @@ public class R<T> implements Serializable {
 		R<T> apiResult = new R<>();
 		apiResult.setCode(code);
 		apiResult.setData(data);
-		apiResult.setMsg(msg);
+		apiResult.setMsg(I18nUtils.get(msg));
 		return apiResult;
-	}
-
-	public int getCode() {
-		return code;
-	}
-
-	public void setCode(int code) {
-		this.code = code;
-	}
-
-	public String getMsg() {
-		return msg;
-	}
-
-	public void setMsg(String msg) {
-		this.msg = msg;
-	}
-
-	public T getData() {
-		return data;
-	}
-
-	public void setData(T data) {
-		this.data = data;
 	}
 }

@@ -29,6 +29,8 @@ import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 安全配置
  * 
@@ -40,6 +42,7 @@ import lombok.Setter;
 @TableName(value = SysSecurityConfig.TABLE_NAME, autoResultMap = true)
 public class SysSecurityConfig extends BaseEntity {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public final static String TABLE_NAME = "sys_security_config";

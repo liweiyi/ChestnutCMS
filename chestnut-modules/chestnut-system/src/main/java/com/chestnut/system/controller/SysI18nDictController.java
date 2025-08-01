@@ -139,7 +139,7 @@ public class SysI18nDictController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictRemove)
 	@Log(title = "国际化管理", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> i18nDictIds) {
 		Assert.notEmpty(i18nDictIds, CommonErrorCode.INVALID_REQUEST_ARG::exception);
 		i18nDictService.deleteI18nDictByIds(i18nDictIds);
@@ -148,7 +148,7 @@ public class SysI18nDictController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictRemove)
 	@Log(title = "国际化管理", businessType = BusinessType.CLEAN)
-	@DeleteMapping("/refreshCache")
+	@PostMapping("/refreshCache")
 	public R<?> refreshCache() throws IOException {
 		i18nDictService.loadMessages(this.messageSource);
 		return R.ok();

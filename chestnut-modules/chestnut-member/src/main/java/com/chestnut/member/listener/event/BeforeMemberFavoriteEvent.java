@@ -27,11 +27,9 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class BeforeMemberFavoriteEvent extends ApplicationEvent {
 
-    private static final long serialVersionUID = 1L;
+    private final String dataType;
 
-    private String dataType;
-
-    private Long dataId;
+    private final Long dataId;
 
     public BeforeMemberFavoriteEvent(Object source, String dataType, Long dataId) {
         super(source);

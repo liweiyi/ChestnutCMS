@@ -46,8 +46,8 @@ export function updateData(data) {
 // 删除字典数据
 export function delData(dictCode) {
   return request({
-    url: '/system/dict/data',
-    method: 'delete',
+    url: '/system/dict/data/delete',
+    method: 'post',
     data: dictCode
   })
 }

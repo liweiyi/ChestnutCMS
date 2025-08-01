@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.domain.vo;
 
+import com.chestnut.common.annotation.XComment;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,17 +28,24 @@ import java.util.Map;
 @Setter
 public class MemberCache {
 
+    @XComment("{CMS.MEMBER.ID}")
     private Long memberId;
 
+    @XComment("{CMS.MEMBER.DISPLAY_NAME}")
     private String displayName;
 
+    @XComment("{CMS.MEMBER.COVER}")
     private String cover;
 
+    @XComment("{CMS.MEMBER.AVATAR}")
     private String avatar;
 
+    @XComment("{CMS.MEMBER.SLOGAN}")
     private String slogan;
 
+    @XComment("{CMS.MEMBER.STAT}")
     private Map<String, Integer> stat = new HashMap<>();
 
+    @XComment("{CMS.MEMBER.MENU}")
     private List<MemberMenuVO> menus = new ArrayList<>();
 }

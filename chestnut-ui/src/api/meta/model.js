@@ -74,8 +74,8 @@ export function editModel(data) {
 // 删除元数据模型
 export function deleteModel(data) {
   return request({
-    url: '/xmodel',
-    method: 'delete',
+    url: '/xmodel/delete',
+    method: 'post',
     data: data
   })
 }
@@ -121,8 +121,8 @@ export function editModelField(data) {
 // 删除元数据模型字段
 export function deleteModelField(data) {
   return request({
-    url: '/xmodel/field',
-    method: 'delete',
+    url: '/xmodel/field/delete',
+    method: 'post',
     data: data
   })
 }

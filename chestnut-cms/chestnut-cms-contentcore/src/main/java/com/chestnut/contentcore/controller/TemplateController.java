@@ -45,6 +45,7 @@ import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.system.validator.LongId;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -117,7 +118,7 @@ public class TemplateController extends BaseRestController {
 			mode = SaMode.AND
 	)
 	@GetMapping("/{templateId}")
-	public R<?> getTemplateDetail(@PathVariable("templateId") String templateId) {
+	public R<?> getTemplateDetail(@PathVariable("templateId") @LongId Long templateId) {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 		this.templateService.scanTemplates(site);
 
@@ -222,7 +223,7 @@ public class TemplateController extends BaseRestController {
 			mode = SaMode.AND
 	)
 	@Log(title = "删除模板", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> delete(@RequestBody @NotEmpty List<Long> templateIds) throws IOException {
 		Assert.isTrue(IdUtils.validate(templateIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("templateIds"));
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
@@ -248,7 +249,7 @@ public class TemplateController extends BaseRestController {
 			mode = SaMode.AND
 	)
 	@Log(title = "清理区块缓存", businessType = BusinessType.OTHER)
-	@DeleteMapping("/clearIncludeCache")
+	@PostMapping("/clearIncludeCache")
 	public R<?> clearIncludeCache(@RequestBody @NotEmpty List<Long> templateIds) {
 		this.templateService.listByIds(templateIds).forEach(template -> {
 			CmsSite site = this.siteService.getSite(template.getSiteId());

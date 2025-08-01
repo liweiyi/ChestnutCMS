@@ -134,6 +134,7 @@ public class MemberExpConfigServiceImpl extends ServiceImpl<MemberExpConfigMappe
 				this.memberLevelService.updateById(memberLevel);
 				// 记录经验值变更日志
 				MemberLevelExpLog expLog = new MemberLevelExpLog();
+				expLog.setLogId(IdUtils.getSnowflakeId());
 				expLog.setLogTime(LocalDateTime.now());
 				expLog.setLevelType(levelType);
 				expLog.setMemberId(memberId);

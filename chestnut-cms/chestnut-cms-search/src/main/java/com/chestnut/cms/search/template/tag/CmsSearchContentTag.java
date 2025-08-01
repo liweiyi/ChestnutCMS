@@ -275,8 +275,8 @@ public class CmsSearchContentTag extends AbstractListTag {
 
 		static List<TagAttrOption> toTagAttrOptions() {
 			return List.of(
-					new TagAttrOption(Current.name(), Current.desc),
-					new TagAttrOption(CurrentAndChild.name(), CurrentAndChild.desc)
+					new TagAttrOption(String.valueOf(Current.ordinal()), Current.desc),
+					new TagAttrOption(String.valueOf(CurrentAndChild.ordinal()), CurrentAndChild.desc)
 			);
 		}
 	}

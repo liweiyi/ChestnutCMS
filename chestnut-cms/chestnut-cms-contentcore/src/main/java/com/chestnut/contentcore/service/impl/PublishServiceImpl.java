@@ -31,6 +31,7 @@ import com.chestnut.contentcore.core.impl.PublishPipeProp_ContentTemplate;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_DefaultListTemplate;
 import com.chestnut.contentcore.domain.*;
 import com.chestnut.contentcore.enums.ContentCopyType;
+import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.listener.event.AfterContentPublishEvent;
 import com.chestnut.contentcore.publish.IPublishStrategy;
@@ -53,7 +54,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +68,8 @@ import java.util.*;
 public class PublishServiceImpl implements IPublishService, ApplicationContextAware {
 
 	private static final Logger logger = LoggerFactory.getLogger(PublishServiceImpl.class);
+
+	private final TransactionTemplate transactionTemplate;
 
 	private final ISiteService siteService;
 
@@ -156,7 +161,10 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 							IContent<?> content = contentType.newContent();
 							content.setContentEntity(xContent);
 							content.setOperator(operator);
-							content.publish();
+							Boolean published = transactionTemplate.execute(callback -> content.publish());
+							if (published) {
+								applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
+							}
 							this.checkInterrupt();
 							count++;
 						}
@@ -287,7 +295,10 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 								IContent<?> content = contentType.newContent();
 								content.setContentEntity(xContent);
 								content.setOperator(operator);
-								content.publish();
+								Boolean published = transactionTemplate.execute(callback -> content.publish());
+								if (published) {
+									applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
+								}
 								this.checkInterrupt();
 								count++;
 							}
@@ -386,48 +397,69 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	 * 内容发布
 	 */
 	@Override
-	public void publishContent(List<Long> contentIds, LoginUser operator) {
-		List<CmsContent> list = this.contentService.dao().listByIds(contentIds);
-		if (list.isEmpty()) {
-			return;
-		}
-		asyncTaskManager.execute(() -> {
-			// 发布内容
-			Set<Long> catalogIds = new HashSet<>();
-			for (CmsContent cmsContent : list) {
-				IContentType contentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
-				IContent<?> content = contentType.loadContent(cmsContent);
-				content.setOperator(operator);
-
-				catalogIds.add(cmsContent.getCatalogId());
-				if (content.publish()) {
-					applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
-				}
+	public AsyncTask publishContents(List<CmsContent> contents, LoginUser operator) {
+		Locale locale = LocaleContextHolder.getLocale();
+		AsyncTask task = new AsyncTask() {
+			@Override
+			public void run0() {
+				publishContents0(contents, operator, locale);
 			}
-			// 发布关联栏目：内容所属栏目及其所有父级栏目
-			Map<Long, CmsCatalog> catalogMap = new HashMap<>();
-			catalogIds.forEach(catalogId -> {
-				CmsCatalog catalog = catalogService.getCatalog(catalogId);
-				catalogMap.put(catalog.getCatalogId(), catalog);
-				long parentId = catalog.getParentId();
-				while (parentId > 0) {
-					CmsCatalog parent = catalogService.getCatalog(parentId);
-					if (parent == null) {
-						break;
-					}
-					catalogMap.put(parent.getCatalogId(), parent);
-					parentId = parent.getParentId();
-				}
-			});
-			CmsSite site = siteService.getSite(list.get(0).getSiteId());
-			catalogMap.values().forEach(this::asyncPublishCatalog);
-			// 发布站点首页
-			asyncPublishSite(site);
-		});
+		};
+		task.setType("PublishContents");
+		asyncTaskManager.execute(task);
+		return task;
 	}
 
 	@Override
-	public void asyncPublishContent(IContent<?> content) {
+	public void publishContent(CmsContent content, LoginUser operator) {
+		publishContents0(List.of(content), operator, null);
+	}
+
+	private void publishContents0(List<CmsContent> contents, LoginUser operator, Locale locale) {
+		if (contents.isEmpty()) {
+			return;
+		}
+		// 发布内容
+		Set<Long> catalogIds = new HashSet<>();
+		for (CmsContent cmsContent : contents) {
+			AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.PUBLISHING_CONTENT.locale(locale, cmsContent.getTitle()));
+			IContentType contentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
+			IContent<?> content = contentType.loadContent(cmsContent);
+			content.setOperator(operator);
+			Boolean published = transactionTemplate.execute(callback -> content.publish());
+			if (published) {
+				applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
+			}
+			catalogIds.add(cmsContent.getCatalogId());
+		}
+		// 发布关联栏目：内容所属栏目及其所有父级栏目
+		Map<Long, CmsCatalog> catalogMap = new HashMap<>();
+		catalogIds.forEach(catalogId -> {
+			CmsCatalog catalog = catalogService.getCatalog(catalogId);
+			catalogMap.put(catalog.getCatalogId(), catalog);
+			long parentId = catalog.getParentId();
+			while (parentId > 0) {
+				CmsCatalog parent = catalogService.getCatalog(parentId);
+				if (parent == null) {
+					break;
+				}
+				catalogMap.put(parent.getCatalogId(), parent);
+				parentId = parent.getParentId();
+			}
+		});
+		CmsSite site = siteService.getSite(contents.get(0).getSiteId());
+		catalogMap.values().forEach(catalog -> {
+			AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.PUBLISHING_CATALOG.locale(locale, catalog.getName()));
+			asyncPublishCatalog(catalog);
+		});
+		// 发布站点首页
+		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.PUBLISHING_SITE.locale(locale, site.getName()));
+		asyncPublishSite(site);
+		AsyncTaskManager.setTaskProgressInfo(100, ContentTips.PUBLISH_SUCCESS.locale(locale));
+	}
+
+	@Override
+	public void asyncStaticizeContent(IContent<?> content) {
 		CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());
 		if (!catalog.isStaticize()) {
 			return;

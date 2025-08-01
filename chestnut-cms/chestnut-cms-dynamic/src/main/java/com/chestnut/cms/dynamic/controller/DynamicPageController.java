@@ -110,7 +110,7 @@ public class DynamicPageController extends BaseRestController {
 	}
 
 	@Log(title = "删除自定动态模板页面", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<String> remove(@RequestBody @NotEmpty List<Long> publishPipeIds) {
 		this.dynamicPageService.deleteDynamicPage(publishPipeIds);
 		return R.ok();

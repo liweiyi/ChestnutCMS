@@ -26,6 +26,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -100,7 +101,16 @@ public abstract class AsyncTask implements Runnable {
 	 */
 	private boolean interruptible = false;
 
+	/**
+	 * 国际化地域
+	 */
+	private Locale locale = LocaleContextHolder.getLocale();
+
 	public AsyncTask() {}
+
+	public AsyncTask(Locale locale) {
+		this.locale = locale;
+	}
 
 	public AsyncTask(String taskId) {
 		this.taskId = taskId;
@@ -307,5 +317,13 @@ public abstract class AsyncTask implements Runnable {
 
 	public void setInterruptible(boolean interruptible) {
 		this.interruptible = interruptible;
+	}
+
+	public Locale getLocale() {
+		return locale;
+	}
+
+	public void setLocale(Locale locale) {
+		this.locale = locale;
 	}
 }

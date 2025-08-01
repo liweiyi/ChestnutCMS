@@ -27,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 内容定时下线任务<br/>
@@ -67,7 +66,7 @@ public class ContentOfflineJobHandler extends IJobHandler implements IScheduledH
 		for (int i = 0; i * pageSize < total; i++) {
 			Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
 			for (CmsContent xContent : page.getRecords()) {
-				contentService.offline(List.of(xContent.getContentId()), null);
+				contentService.offline(xContent, null);
 			}
 		}
 		logger.info("Job '{}' completed, cost: {}ms", JOB_NAME, System.currentTimeMillis() - s);

@@ -17,7 +17,7 @@ package com.chestnut.contentcore.core.impl;
 
 import com.chestnut.contentcore.core.IResourceType;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +55,7 @@ public class ResourceType_Audio implements IResourceType {
 	}
 	
 	public static boolean isAudio(String path) {
-		String ext = FileNameUtils.getExtension(path);
+		String ext = FilenameUtils.getExtension(path);
 		return Objects.nonNull(path) && ArrayUtils.contains(SuffixArray, ext);
 	}
 }

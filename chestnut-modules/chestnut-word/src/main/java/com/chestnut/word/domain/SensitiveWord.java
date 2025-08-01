@@ -23,6 +23,8 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 敏感词表对象 [cms_sensitive_word]
  * 
@@ -34,6 +36,7 @@ import lombok.Setter;
 @TableName(SensitiveWord.TABLE_NAME)
 public class SensitiveWord extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
     
     public static final String TABLE_NAME = "cc_sensitive_word";

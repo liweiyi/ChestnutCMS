@@ -101,7 +101,7 @@ public class AsyncController extends BaseRestController {
 	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
-	@DeleteMapping("task/remove")
+	@PostMapping("task/remove")
 	public R<?> deleteAsyncTask(@RequestBody @NotEmpty List<String> taskIds) {
 		for (String taskId : taskIds) {
 			this.asyncTaskManager.removeById(taskId);

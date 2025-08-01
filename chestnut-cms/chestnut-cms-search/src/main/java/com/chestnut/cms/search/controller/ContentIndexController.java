@@ -172,7 +172,7 @@ public class ContentIndexController extends BaseRestController {
 	}
 
 	@Log(title = "删除索引", businessType = BusinessType.DELETE)
-	@DeleteMapping("/contents")
+	@PostMapping("/contents/delete")
 	public R<?> deleteDocuments(@RequestBody @NotEmpty List<Long> contentIds) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());

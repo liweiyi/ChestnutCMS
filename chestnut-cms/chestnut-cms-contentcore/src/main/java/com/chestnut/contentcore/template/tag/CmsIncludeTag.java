@@ -160,7 +160,8 @@ public class CmsIncludeTag extends AbstractTag {
 				}
 			}
 			if (ssi) {
-				env.getOut().write(StringUtils.messageFormat(SSI_INCLUDE_TAG, "/" + staticFilePath));
+				String prefix = SiteUtils.getPublishPipePrefix(site, context.getPublishPipeCode(), context.isPreview());
+				env.getOut().write(StringUtils.messageFormat(SSI_INCLUDE_TAG, prefix + staticFilePath));
 			} else {
 				env.getOut().write(staticContent);
 			}

@@ -34,8 +34,8 @@ export function editTagWord(data) {
 
 export function deleteTagWord(data) {
   return request({
-    url: '/word/tagword',
-    method: 'delete',
+    url: '/word/tagword/delete',
+    method: 'post',
     data: data
   })
 }
@@ -65,8 +65,8 @@ export function editTagWordGroup(data) {
 
 export function deleteTagWordGroup(data) {
   return request({
-    url: '/word/tagword/group',
-    method: 'delete',
+    url: '/word/tagword/group/delete',
+    method: 'post',
     data: data
   })
 }

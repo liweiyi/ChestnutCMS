@@ -69,13 +69,11 @@ public class EXModelEventListener {
 	public void afterSiteDelete(AfterSiteDeleteEvent event) {
 		String modelId = SiteExtendModelProperty.getValue(event.getSite().getConfigProps());
 		if (NumberUtils.isDigits(modelId)) {
-			String dataId = event.getSite().getSiteId().toString();
-			this.modelDataService.deleteModelDataByPkValue(Long.valueOf(modelId),
-					List.of(Map.of(
-							CmsExtendMetaModelType.FIELD_MODEL_ID.getCode(), modelId,
-							CmsExtendMetaModelType.FIELD_DATA_TYPE.getCode(), ExtendModelDataType.SITE,
-							CmsExtendMetaModelType.FIELD_DATA_ID.getCode(), dataId
-					)));
+			HashMap<String, Object> pkMap = new HashMap<>(3);
+			pkMap.put(CmsExtendMetaModelType.FIELD_MODEL_ID.getCode(), modelId);
+			pkMap.put(CmsExtendMetaModelType.FIELD_DATA_TYPE.getCode(), ExtendModelDataType.SITE);
+			pkMap.put(CmsExtendMetaModelType.FIELD_DATA_ID.getCode(), event.getSite().getSiteId());
+			this.modelDataService.deleteModelDataByPkValue(Long.valueOf(modelId), List.of(pkMap));
 		}
 	}
 
@@ -137,7 +135,7 @@ public class EXModelEventListener {
 	}
 
 	@EventListener
-	public void afterContentCopy(AfterContentCopyEvent event) {
+	public void onContentCopy(OnContentCopyEvent event) {
 		CmsContent sourceContent = event.getSourceContent();
 		CmsCatalog sourceCatalog = catalogService.getCatalog(sourceContent.getCatalogId());
 		String sourceModelId = ContentExtendModelProperty.getValue(sourceCatalog.getConfigProps());
@@ -149,9 +147,9 @@ public class EXModelEventListener {
 		if (NumberUtils.isDigits(sourceModelId) && IdUtils.validate(Long.valueOf(sourceModelId))
 				&& sourceModelId.equals(copyModelId)) {
 			Map<String, Object> data = this.modelDataService.getModelDataByPkValue(Long.valueOf(sourceModelId), Map.of(
-					CmsExtendMetaModelType.FIELD_MODEL_ID.getCode(), sourceModelId,
+					CmsExtendMetaModelType.FIELD_MODEL_ID.getCode(), Long.valueOf(sourceModelId),
 					CmsExtendMetaModelType.FIELD_DATA_TYPE.getCode(), ExtendModelDataType.CONTENT,
-					CmsExtendMetaModelType.FIELD_DATA_ID.getCode(), sourceContent.getContentId()
+					CmsExtendMetaModelType.FIELD_DATA_ID.getCode(), sourceContent.getContentId().toString()
 			));
 			if (!data.isEmpty()) {
 				this.saveModelData(Long.valueOf(sourceModelId), ExtendModelDataType.CONTENT, copyContent.getContentId().toString(), data);

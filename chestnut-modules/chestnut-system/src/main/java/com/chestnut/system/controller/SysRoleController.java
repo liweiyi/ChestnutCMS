@@ -127,7 +127,7 @@ public class SysRoleController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleRemove)
 	@Log(title = "角色管理", businessType = BusinessType.DELETE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> remove(@RequestBody List<Long> roleIds) {
 		boolean validate = IdUtils.validate(roleIds);
 		Assert.isTrue(validate, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("roleIds"));

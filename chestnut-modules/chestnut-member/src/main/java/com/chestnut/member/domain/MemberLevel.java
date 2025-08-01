@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -32,6 +33,7 @@ import lombok.Setter;
 @TableName(MemberLevel.TABLE_NAME)
 public class MemberLevel implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	
 	public static final String TABLE_NAME = "cc_member_level";

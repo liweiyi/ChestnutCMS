@@ -17,6 +17,7 @@ package com.chestnut.common.db.domain;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.chestnut.common.annotation.XComment;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -35,21 +36,25 @@ public abstract class BackupBaseEntity<T> extends BaseEntity implements IBackupE
 	/**
 	 * 备份ID
 	 */
+	@XComment("{CC.ENTITY.BACKUP_ID}")
 	@TableId(value = "backup_id", type = IdType.INPUT)
 	private Long backupId;
 
 	/**
 	 * 备份时间
 	 */
+	@XComment("{CC.ENTITY.BACKUP_TIME}")
 	private LocalDateTime backupTime;
 
 	/**
 	 * 备份操作人
 	 */
+	@XComment("{CC.ENTITY.BACKUP_BY}")
 	private String backupBy;
 
 	/**
 	 * 备注
 	 */
+	@XComment("{CC.ENTITY.BACKUP_REMARK}")
 	private String backupRemark;
 }

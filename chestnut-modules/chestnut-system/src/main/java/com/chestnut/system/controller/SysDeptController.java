@@ -113,7 +113,7 @@ public class SysDeptController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptRemove)
 	@Log(title = "部门管理", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{deptId}")
+	@PostMapping("/delete/{deptId}")
 	public R<?> remove(@PathVariable @LongId Long deptId) {
 		deptService.deleteDeptById(deptId);
 		return R.ok();

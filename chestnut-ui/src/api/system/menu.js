@@ -53,7 +53,7 @@ export function updateMenu(data) {
 // 删除菜单
 export function delMenu(menuId) {
   return request({
-    url: '/system/menu/' + menuId,
-    method: 'delete'
+    url: '/system/menu/delete/' + menuId,
+    method: 'post'
   })
 }

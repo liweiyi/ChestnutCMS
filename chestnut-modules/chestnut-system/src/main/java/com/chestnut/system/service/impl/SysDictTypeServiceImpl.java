@@ -66,11 +66,9 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 
 	@Override
 	public List<SysDictData> selectDictDatasByType(String dictType) {
-        Map<String, SysDictData> map = this.redisCache.getCacheMap(SysConstants.CACHE_SYS_DICT_KEY + dictType, SysDictData.class,
+        return this.redisCache.getCacheList(SysConstants.CACHE_SYS_DICT_KEY + dictType, SysDictData.class,
 				() -> new LambdaQueryChainWrapper<>(this.dictDataMapper).eq(SysDictData::getDictType, dictType)
-						.orderByAsc(SysDictData::getDictSort).list()
-						.stream().collect(Collectors.toMap(SysDictData::getDictValue, d -> d)));
-		return map.values().stream().toList();
+						.orderByAsc(SysDictData::getDictSort).list());
 	}
 
 	@Override
@@ -157,8 +155,9 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 	@Override
 	public void loadingDictCache() {
 		List<SysDictData> list = this.dictDataMapper.selectList(null);
-		list.stream().sorted(Comparator.comparing(SysDictData::getDictSort))
-				.collect(Collectors.groupingBy(SysDictData::getDictType)).forEach(this::setCache);
+		Map<String, List<SysDictData>> collect = list.stream().sorted(Comparator.comparing(SysDictData::getDictSort))
+				.collect(Collectors.groupingBy(SysDictData::getDictType));
+		collect.forEach((k, v) -> this.redisCache.setCacheList(SysConstants.CACHE_SYS_DICT_KEY + k, v));
 	}
 
 	@Override
@@ -168,11 +167,6 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 
 	private void deleteCache(String dictType) {
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_DICT_KEY + dictType);
-	}
-
-	private void setCache(String dictType, List<SysDictData> list) {
-		Map<String, SysDictData> collect = list.stream().collect(Collectors.toMap(SysDictData::getDictValue, d -> d));
-		this.redisCache.setCacheMap(SysConstants.CACHE_SYS_DICT_KEY + dictType, collect);
 	}
 
 	/**

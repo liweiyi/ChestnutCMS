@@ -12,8 +12,8 @@ export function list(query) {
 // 删除操作日志
 export function delOperlog(operIds) {
   return request({
-    url: '/monitor/operlog',
-    method: 'delete',
+    url: '/monitor/operlog/delete',
+    method: 'post',
     data: operIds
   })
 }
@@ -22,6 +22,6 @@ export function delOperlog(operIds) {
 export function cleanOperlog() {
   return request({
     url: '/monitor/operlog/clean',
-    method: 'delete'
+    method: 'post'
   })
 }

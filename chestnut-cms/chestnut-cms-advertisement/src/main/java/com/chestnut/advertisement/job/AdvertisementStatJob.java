@@ -21,6 +21,7 @@ import com.chestnut.advertisement.service.IAdHourStatService;
 import com.chestnut.advertisement.service.IAdvertisementService;
 import com.chestnut.advertisement.service.impl.AdvertisementStatServiceImpl;
 import com.chestnut.common.redis.RedisCache;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.system.schedule.IScheduledHandler;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -94,6 +95,7 @@ public class AdvertisementStatJob extends IJobHandler implements IScheduledHandl
 				CmsAdHourStat stat = stats.get(advertisementId);
 				if (Objects.isNull(stat)) {
 					stat = new CmsAdHourStat();
+					stat.setStatId(IdUtils.getSnowflakeId());
 					stat.setSiteId(advertisements.get(advertisementId));
 					stat.setHour(hour);
 					stat.setAdvertisementId(advertisementId);
@@ -102,7 +104,7 @@ public class AdvertisementStatJob extends IJobHandler implements IScheduledHandl
 					insertAdvIds.add(advertisementId);
 				}
 				stat.setClick(Math.max(click, 0));
-				stat.setView(Math.max(view, 0));
+				stat.setViewTotal(Math.max(view, 0));
 			}
 		}
 		// 更新数据库

@@ -183,6 +183,9 @@
                 <el-radio-button label="relative">{{ $t('CMS.Site.PrefixMode_Relative') }}</el-radio-button>
               </el-radio-group>
             </el-form-item>
+            <el-form-item v-show="pp.props.PrefixMode=='relative'" :label="$t('CMS.Site.RelativePrefix')">
+              <el-input v-model="pp.props.RelativePrefix" />
+            </el-form-item>
             <el-form-item :label="$t('CMS.Site.ErrPageLink')">
               <el-input v-model="pp.props.errPageLink" placeholder="/err.html" />
             </el-form-item>

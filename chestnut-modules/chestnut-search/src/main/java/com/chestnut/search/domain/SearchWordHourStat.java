@@ -40,7 +40,7 @@ public class SearchWordHourStat implements Serializable {
 
 	public final static String TABLE_NAME = "search_word_hour_stat";
 
-	@TableId(value = "stat_id", type = IdType.AUTO)
+	@TableId(value = "stat_id", type = IdType.INPUT)
 	private Long statId;
 	
 	/**

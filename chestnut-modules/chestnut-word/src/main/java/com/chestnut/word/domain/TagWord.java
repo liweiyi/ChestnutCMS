@@ -24,6 +24,8 @@ import com.chestnut.common.db.domain.BaseEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
+
 /**
  * 标签对象 [cms_tag_word]
  * 
@@ -35,30 +37,31 @@ import lombok.Setter;
 @TableName(TagWord.TABLE_NAME)
 public class TagWord extends BaseEntity {
 
+    @Serial
     private static final long serialVersionUID=1L;
     
     public static final String TABLE_NAME = "cc_tag_word";
 
-    @XComment("TAG ID")
+    @XComment("{CC.TAG_WORD.ID}")
     @TableId(value = "word_id", type = IdType.INPUT)
     private Long wordId;
 
-    @XComment("所有者ID（冗余字段，与TagWordGroup.ownerId同步）")
+    @XComment("{CC.TAG_WORD.OWNER}")
     private String owner;
 
-    @XComment("所属分组ID")
+    @XComment("{CC.TAG_WORD.GROUP_ID}")
     private Long groupId;
 
-    @XComment("TAG词")
+    @XComment("{CC.TAG_WORD.WORD}")
     private String word;
 
-    @XComment("关联图片路径")
+    @XComment("{CC.TAG_WORD.LOGO}")
     private String logo;
 
-    @XComment("关联使用次数")
+    @XComment("{CC.TAG_WORD.USE_COUNT}")
     private Long useCount;
 
-    @XComment("点击次数")
+    @XComment("{CC.TAG_WORD.HIT_COUNT}")
     private Long hitCount;
 
     /**
@@ -67,6 +70,6 @@ public class TagWord extends BaseEntity {
     @TableField(exist = false)
     private String src;
     
-    @XComment("排序标识")
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 }

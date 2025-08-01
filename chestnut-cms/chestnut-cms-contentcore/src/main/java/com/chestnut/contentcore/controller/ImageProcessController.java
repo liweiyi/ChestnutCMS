@@ -56,28 +56,28 @@ public class ImageProcessController extends BaseRestController {
 
 	@Log(title = "图片裁剪", businessType = BusinessType.UPDATE)
 	@PostMapping("/crop")
-	public R<?> cropImage(@RequestBody @Validated ImageCropDTO dto) throws IOException {
+	public R<?> cropImage(@RequestBody @Validated ImageCropDTO dto) throws Exception {
 		this.imageProcessService.cropImage(dto);
 		return R.ok();
 	}
 
 	@Log(title = "旋转缩放", businessType = BusinessType.UPDATE)
 	@PostMapping("/rotate")
-	public R<?> rotateImage(@RequestBody @Validated ImageRotateDTO dto) throws IOException {
+	public R<?> rotateImage(@RequestBody @Validated ImageRotateDTO dto) throws Exception {
 		this.imageProcessService.rotateImage(dto);
 		return R.ok();
 	}
 
 	@Log(title = "文字水印", businessType = BusinessType.UPDATE)
 	@PostMapping("/image/textWatermark")
-	public R<?> textWatermark(@RequestBody @Validated ImageCropDTO dto) throws IOException {
+	public R<?> textWatermark(@RequestBody @Validated ImageCropDTO dto) {
 
 		return R.ok();
 	}
 
 	@Log(title = "图片水印", businessType = BusinessType.UPDATE)
 	@PostMapping("/image/imageWatermark")
-	public R<?> imageWatermark(@RequestBody @Validated ImageCropDTO dto) throws IOException {
+	public R<?> imageWatermark(@RequestBody @Validated ImageCropDTO dto) {
 
 		return R.ok();
 	}

@@ -74,7 +74,7 @@ public class DictWordController extends BaseRestController {
 
 	@Log(title = "删除检索词", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE)
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<String> delete(@RequestBody @NotEmpty List<Long> dictWordIds) {
 		this.dictWordService.removeByIds(dictWordIds);
 		return R.ok();

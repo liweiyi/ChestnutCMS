@@ -59,7 +59,7 @@ public class CMSHotWordGroupController extends BaseRestController {
 		PageRequest pr = this.getPageRequest();
 		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
 		Page<HotWordGroup> page = this.hotWordGroupService.lambdaQuery()
-				.eq(HotWordGroup::getOwner, currentSite.getSiteId())
+				.eq(HotWordGroup::getOwner, currentSite.getSiteId().toString())
 				.like(StringUtils.isNotEmpty(query), HotWordGroup::getName, query)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
 		return this.bindDataTable(page);
@@ -70,7 +70,7 @@ public class CMSHotWordGroupController extends BaseRestController {
 	public R<?> getOptions() {
 		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
 		List<HotWordGroup> list = this.hotWordGroupService.lambdaQuery()
-				.eq(HotWordGroup::getOwner, currentSite.getSiteId())
+				.eq(HotWordGroup::getOwner, currentSite.getSiteId().toString())
 				.list();
 		List<Map<String, Object>> options = new ArrayList<>();
 		list.forEach(g -> {
@@ -84,9 +84,9 @@ public class CMSHotWordGroupController extends BaseRestController {
 	public R<?> getTreeData() {
 		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
 		List<HotWordGroup> groups = this.hotWordGroupService.lambdaQuery()
-				.eq(HotWordGroup::getOwner, currentSite.getSiteId()).list();
+				.eq(HotWordGroup::getOwner, currentSite.getSiteId().toString()).list();
 		List<TreeNode<String>> list = new ArrayList<>();
-		if (groups != null && groups.size() > 0) {
+		if (StringUtils.isNotEmpty(groups)) {
 			groups.forEach(c -> {
 				TreeNode<String> treeNode = new TreeNode<>(String.valueOf(c.getGroupId()), "", c.getName(), true);
 				treeNode.setProps(Map.of("code", c.getCode()));

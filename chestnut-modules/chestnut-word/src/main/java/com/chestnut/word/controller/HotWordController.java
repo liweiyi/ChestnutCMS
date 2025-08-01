@@ -74,7 +74,7 @@ public class HotWordController extends BaseRestController {
     	return R.ok();
 	}
 
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<String> remove(@RequestBody @NotEmpty List<Long> hotWordIds) {
 		this.hotWordService.deleteHotWords(hotWordIds);
 		return R.ok();

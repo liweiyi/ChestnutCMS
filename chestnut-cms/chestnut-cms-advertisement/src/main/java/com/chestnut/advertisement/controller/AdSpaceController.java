@@ -139,7 +139,7 @@ public class AdSpaceController extends BaseRestController {
 		return R.ok();
 	}
 
-	@DeleteMapping
+	@PostMapping("/delete")
 	public R<?> deleteAdSpaces(@RequestBody List<Long> adSpaceIds) {
 		Assert.notEmpty(adSpaceIds, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("adSpaceIds"));
 		this.pageWidgetService.deletePageWidgets(adSpaceIds, StpAdminUtil.getLoginUser());
