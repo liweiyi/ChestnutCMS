@@ -138,6 +138,10 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 		if (this.getContentEntity().isLinkContent()) {
 			return super.getFullText();
 		}
+		if (this.hasExtendEntity() && Objects.isNull(this.getExtendEntity())) {
+			CmsArticleDetail articleDetail = this.getArticleService().dao().getById(this.getContentEntity().getContentId());
+			this.setExtendEntity(articleDetail);
+		}
 		return super.getFullText() + StringUtils.SPACE + HtmlUtils.clean(this.getExtendEntity().getContentHtml());
 	}
 
