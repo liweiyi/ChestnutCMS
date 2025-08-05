@@ -66,7 +66,6 @@ public class CmsContentTag extends AbstractListTag {
 	public final static String ATTR_USAGE_HAS_ATTRIBUTE = "{FREEMARKER.TAG." + TAG_NAME + ".hasattribute}";
 	public final static String ATTR_USAGE_NO_ATTRIBUTE = "{FREEMARKER.TAG." + TAG_NAME + ".noattribute}";
 	public final static String ATTR_USAGE_STATUS = "{FREEMARKER.TAG." + TAG_NAME + ".status}";
-	public final static String ATTR_DEFAULT_NO_STATUS = "{FREEMARKER.TAG." + TAG_NAME + ".status.defaultValue}";
 	public final static String ATTR_USAGE_TOP_FLAG = "{FREEMARKER.TAG." + TAG_NAME + ".topflag}";
 
 	public final static String ATTR_CATALOG_ID = "catalogid";
@@ -91,7 +90,7 @@ public class CmsContentTag extends AbstractListTag {
 		tagAttrs.add(new TagAttr(ATTR_SORT, false, TagAttrDataType.STRING, ATTR_USAGE_SORT, SortTagAttr.toTagAttrOptions(), SortTagAttr.Default.name()));
 		tagAttrs.add(new TagAttr(ATTR_HAS_ATTRIBUTE, false, TagAttrDataType.STRING, ATTR_USAGE_HAS_ATTRIBUTE));
 		tagAttrs.add(new TagAttr(ATTR_NO_ATTRIBUTE, false, TagAttrDataType.STRING, ATTR_USAGE_NO_ATTRIBUTE));
-		tagAttrs.add(new TagAttr(ATTR_STATUS, false, TagAttrDataType.STRING, ATTR_USAGE_STATUS, ATTR_DEFAULT_NO_STATUS));
+		tagAttrs.add(new TagAttr(ATTR_STATUS, false, TagAttrDataType.STRING, ATTR_USAGE_STATUS));
 		tagAttrs.add(new TagAttr(ATTR_TOP_FLAG, false, TagAttrDataType.BOOLEAN, ATTR_USAGE_TOP_FLAG, Boolean.TRUE.toString()));
 		return tagAttrs;
 	}
@@ -116,7 +115,7 @@ public class CmsContentTag extends AbstractListTag {
 		String status = MapUtils.getString(attrs, ATTR_STATUS, ContentStatus.PUBLISHED);
 
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<>();
-		q.eq(CmsContent::getSiteId, siteId).eq(!"-1".equals(status), CmsContent::getStatus, ContentStatus.PUBLISHED);
+		q.eq(CmsContent::getSiteId, siteId).eq(!"-1".equals(status), CmsContent::getStatus, status);
 		if (Objects.nonNull(catalog)) {
 			if (LevelTagAttr.isCurrent(level)) {
 				q.eq(CmsContent::getCatalogId, catalog.getCatalogId());
