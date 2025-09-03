@@ -15,10 +15,12 @@
  */
 package com.chestnut.system.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysDictData;
+import com.chestnut.system.domain.dto.CreateDictDataRequest;
+import com.chestnut.system.domain.dto.UpdateDictDataRequest;
+
+import java.util.List;
 
 /**
  * 字典 业务层
@@ -39,18 +41,14 @@ public interface ISysDictDataService extends IService<SysDictData> {
 	/**
 	 * 新增保存字典数据信息
 	 * 
-	 * @param dictData
-	 *            字典数据信息
-	 * @return 结果
+	 * @param req 字典数据信息
 	 */
-	void insertDictData(SysDictData dictData);
+	void insertDictData(CreateDictDataRequest req);
 
 	/**
 	 * 修改保存字典数据信息
 	 * 
-	 * @param dictData
-	 *            字典数据信息
-	 * @return 结果
+	 * @param req 字典数据信息
 	 */
-	void updateDictData(SysDictData dictData);
+	void updateDictData(UpdateDictDataRequest req);
 }

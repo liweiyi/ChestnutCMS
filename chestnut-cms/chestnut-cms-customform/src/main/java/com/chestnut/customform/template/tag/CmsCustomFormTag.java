@@ -114,19 +114,19 @@ public class CmsCustomFormTag extends AbstractTag {
 			String siteRoot = SiteUtils.getSiteRoot(site, context.getPublishPipeCode());
 			String staticFileName = form.getCode() + "." + site.getStaticSuffix(context.getPublishPipeCode());
 			String staticFilePath = CustomFormConsts.STATICIZE_DIRECTORY + staticFileName;
-			if (ssi) {
-				// 读取自定义表单静态化内容
-				String staticContent = templateService.getTemplateStaticContentCache(templateKey);
-				if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
-					staticContent = this.processTemplate(env, form, site, context.getPublishPipeCode(), templateKey);
+
+			String staticContent = templateService.getTemplateStaticContentCache(templateKey);
+			if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
+				staticContent = this.processTemplate(env, form, site, context.getPublishPipeCode(), templateKey);
+				this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
+				if (ssi) {
 					FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
-					this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
 				}
-				String prefix = SiteUtils.getPublishPipePrefix(site, context.getPublishPipeCode(), context.isPreview());
+			}
+			if (ssi) {
+				String prefix = CmsIncludeTag.getIncludePathPrefix(context.getPublishPipeCode(), site);
 				env.getOut().write(StringUtils.messageFormat(CmsIncludeTag.SSI_INCLUDE_TAG, prefix + staticFilePath));
 			} else {
-				// 非ssi模式无法使用缓存
-				String staticContent = this.processTemplate(env, form, site, context.getPublishPipeCode(), templateKey);
 				env.getOut().write(staticContent);
 			}
 		}

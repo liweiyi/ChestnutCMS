@@ -24,22 +24,19 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysScheduledTask;
 import com.chestnut.system.domain.SysScheduledTaskLog;
-import com.chestnut.system.domain.dto.ScheduledTaskDTO;
+import com.chestnut.system.domain.dto.CreateScheduledTaskRequest;
+import com.chestnut.system.domain.dto.UpdateScheduledTaskRequest;
 import com.chestnut.system.domain.vo.ScheduledTaskVO;
 import com.chestnut.system.mapper.SysScheduledTaskLogMapper;
 import com.chestnut.system.schedule.IScheduledHandler;
 import com.chestnut.system.schedule.ScheduledTask;
-import com.chestnut.system.schedule.ScheduledTaskTriggerType;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysScheduledTaskService;
 import com.chestnut.system.validator.LongId;
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -69,11 +66,10 @@ public class SysScheduledTaskController extends BaseRestController {
 	
 	@GetMapping("/typeOptions")
 	public R<?> getTaskTypeOptions() {
-		List<Map<String, String>> list = this.taskHandlers.values().stream()
+		List<IScheduledHandler> list = this.taskHandlers.values().stream()
 				.sorted(Comparator.comparing(IScheduledHandler::getId))
-				.map(t -> Map.of("label", I18nUtils.get(t.getName()), "value", t.getId()))
 				.toList();
-		return R.ok(list);
+		return bindSelectOptions(list, IScheduledHandler::getId, IScheduledHandler::getName);
 	}
 	
 	@GetMapping
@@ -96,7 +92,7 @@ public class SysScheduledTaskController extends BaseRestController {
 	}
 
 	@GetMapping("/{taskId}")
-	public R<?> getInfo(@PathVariable Long taskId) {
+	public R<?> getInfo(@PathVariable @LongId Long taskId) {
 		SysScheduledTask task = this.taskService.getById(taskId);
 		Assert.notNull(task, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("taskId", taskId));
 		task.setData(JacksonUtils.parse(task.getTriggerArgs()));
@@ -104,22 +100,19 @@ public class SysScheduledTaskController extends BaseRestController {
 	}
 
 	@PostMapping
-	public R<?> add(@Validated @RequestBody ScheduledTaskDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
+	public R<?> add(@Validated @RequestBody CreateScheduledTaskRequest dto) {
 		taskService.insertTask(dto);
 		return R.ok();
 	}
 
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody ScheduledTaskDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
+	public R<?> edit(@Validated @RequestBody UpdateScheduledTaskRequest dto) {
 		taskService.updateTask(dto);
 		return R.ok();
 	}
 
 	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> taskIds) {
-		Assert.isTrue(IdUtils.validate(taskIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception());
 		taskService.deleteTasks(taskIds);
 		return R.ok();
 	}
@@ -154,7 +147,6 @@ public class SysScheduledTaskController extends BaseRestController {
 
 	@PostMapping("/logs/delete")
 	public R<?> removeLogs(@RequestBody @NotEmpty List<Long> logIds) {
-		Assert.isTrue(IdUtils.validate(logIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception());
 		this.logMapper.deleteByIds(logIds);
 		return R.ok();
 	}

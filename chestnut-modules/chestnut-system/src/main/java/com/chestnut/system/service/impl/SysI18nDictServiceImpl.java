@@ -16,6 +16,7 @@
 package com.chestnut.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
@@ -25,6 +26,9 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.config.I18nMessageSource;
 import com.chestnut.system.domain.SysI18nDict;
+import com.chestnut.system.domain.dto.BatchSaveI18nDictRequest;
+import com.chestnut.system.domain.dto.CreateI18nDictRequest;
+import com.chestnut.system.domain.dto.UpdateI18nDictRequest;
 import com.chestnut.system.mapper.SysI18nDictMapper;
 import com.chestnut.system.service.ISysI18nDictService;
 import lombok.RequiredArgsConstructor;
@@ -70,20 +74,30 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
     }
 
     @Override
-    public void insertI18nDict(SysI18nDict dict) {
-        Assert.isTrue(this.checkUnique(dict), () -> CommonErrorCode.DATA_CONFLICT.exception(dict.getLangTag() + ":" + dict.getLangKey()));
+    public void insertI18nDict(CreateI18nDictRequest req) {
+        boolean unique = this.checkUnique(req.getLangTag(), req.getLangKey(), null);
+        Assert.isTrue(unique,
+                () -> CommonErrorCode.DATA_CONFLICT.exception(req.getLangTag() + ":" + req.getLangKey()));
 
+        SysI18nDict dict = new SysI18nDict();
         dict.setDictId(IdUtils.getSnowflakeId());
+        dict.setLangTag(req.getLangTag());
+        dict.setLangKey(req.getLangKey());
+        dict.setLangValue(req.getLangValue());
         this.save(dict);
         redisCache.setCacheMapValue(CACHE_PREFIX + dict.getLangTag(), dict.getLangKey(), dict.getLangValue());
     }
 
     @Override
-    public void updateI18nDict(SysI18nDict dict) {
-        SysI18nDict db = this.getById(dict.getDictId());
-        Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("dictId", dict.getDictId()));
-        Assert.isTrue(this.checkUnique(dict), () -> CommonErrorCode.DATA_CONFLICT.exception(dict.getLangTag() + ":" + dict.getLangKey()));
+    public void updateI18nDict(UpdateI18nDictRequest req) {
+        SysI18nDict dict = this.getById(req.getDictId());
+        Assert.notNull(dict, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("dictId", req.getDictId()));
+        boolean unique = this.checkUnique(req.getLangTag(), req.getLangKey(), req.getDictId());
+        Assert.isTrue(unique, () -> CommonErrorCode.DATA_CONFLICT.exception(req.getLangTag() + ":" + req.getLangKey()));
 
+        dict.setLangTag(req.getLangTag());
+        dict.setLangKey(req.getLangKey());
+        dict.setLangValue(req.getLangValue());
         this.updateById(dict);
         redisCache.setCacheMapValue(CACHE_PREFIX + dict.getLangTag(), dict.getLangKey(), dict.getLangValue());
     }
@@ -99,32 +113,76 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
         });
     }
 
-    private boolean checkUnique(SysI18nDict dict) {
+    @Override
+    public void deleteByLangKey(String langKey, boolean prefix) {
+        LambdaQueryChainWrapper<SysI18nDict> q = this.lambdaQuery();
+        if (prefix) {
+            q.likeRight(SysI18nDict::getLangKey, langKey);
+        } else {
+            q.eq(SysI18nDict::getLangKey, langKey);
+        }
+        List<SysI18nDict> list = q.list();
+        this.removeBatchByIds(list);
+
+        list.forEach(dict -> {
+            redisCache.deleteCacheMapValue(CACHE_PREFIX + dict.getLangTag(), dict.getLangKey());
+        });
+    }
+
+    @Override
+    public void changeLangKey(String oldLangKey, String newLangKey, boolean includePrefix) {
+        List<SysI18nDict> list = this.lambdaQuery().eq(SysI18nDict::getLangKey, oldLangKey).list();
+        for (SysI18nDict dict : list) {
+            dict.setLangKey(newLangKey);
+            redisCache.deleteCacheMapValue(CACHE_PREFIX + dict.getLangTag(), oldLangKey);
+        }
+        if (includePrefix) {
+            List<SysI18nDict> list2 = this.lambdaQuery().likeRight(SysI18nDict::getLangKey, oldLangKey + ".").list();
+            for (SysI18nDict dict : list2) {
+                String oldKey = dict.getLangKey();
+                dict.setLangKey(dict.getLangKey().replace(oldLangKey, newLangKey));
+                redisCache.deleteCacheMapValue(CACHE_PREFIX + dict.getLangTag(), oldKey);
+            }
+            list.addAll(list2);
+        }
+        this.updateBatchById(list);
+        // 更新缓存
+        for (SysI18nDict dict : list) {
+            redisCache.setCacheMapValue(CACHE_PREFIX + dict.getLangTag(), dict.getLangKey(), dict.getLangValue());
+        }
+    }
+
+    private boolean checkUnique(String langTag, String langKey, Long dictId) {
         long count = this.count(new LambdaQueryWrapper<SysI18nDict>()
-                .eq(SysI18nDict::getLangTag, dict.getLangTag())
-                .eq(SysI18nDict::getLangKey, dict.getLangKey())
-                .ne(IdUtils.validate(dict.getDictId()), SysI18nDict::getDictId, dict.getDictId()));
+                .eq(SysI18nDict::getLangTag, langTag)
+                .eq(SysI18nDict::getLangKey, langKey)
+                .ne(IdUtils.validate(dictId), SysI18nDict::getDictId, dictId));
         return count == 0;
     }
 
     @Override
     @Transactional(rollbackFor = Throwable.class)
-    public void batchSaveI18nDicts(List<SysI18nDict> dicts) {
-        if (CollectionUtils.isEmpty(dicts)) {
+    public void batchSaveI18nDicts(List<BatchSaveI18nDictRequest> dictList) {
+        if (CollectionUtils.isEmpty(dictList)) {
             return;
         }
         List<SysI18nDict> list = new ArrayList<>();
-        for (SysI18nDict dict : dicts) {
-            boolean checkUnique = this.checkUnique(dict);
-            Assert.isTrue(checkUnique, () -> CommonErrorCode.DATA_CONFLICT.exception(dict.getLangTag() + ":" + dict.getLangKey()));
+        for (BatchSaveI18nDictRequest item : dictList) {
+            boolean checkUnique = this.checkUnique(item.getLangTag(), item.getLangKey(), item.getDictId());
+            Assert.isTrue(checkUnique, () -> CommonErrorCode.DATA_CONFLICT.exception(item.getLangTag() + ":" + item.getLangKey()));
 
-            String dictValue = I18nUtils.get(dict.getLangKey(), Locale.forLanguageTag(dict.getLangTag()));
-            if (dict.getLangValue().equals(dictValue)) {
+            String dictValue = I18nUtils.get(item.getLangKey(), Locale.forLanguageTag(item.getLangTag()));
+            if (item.getLangValue().equals(dictValue)) {
                 continue; // 已存在且无变更
             }
+            SysI18nDict dict = new SysI18nDict();
+            dict.setDictId(item.getDictId());
             if (!IdUtils.validate(dict.getDictId())) {
                 dict.setDictId(IdUtils.getSnowflakeId());
             }
+            dict.setLangTag(item.getLangTag());
+            dict.setLangKey(item.getLangKey());
+            dict.setLangValue(item.getLangValue());
             list.add(dict);
         }
 

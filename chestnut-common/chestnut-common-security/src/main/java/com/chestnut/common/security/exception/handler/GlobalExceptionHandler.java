@@ -53,11 +53,12 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(GlobalException.class)
 	public R<?> handleGlobalException(GlobalException e) {
-		if (StringUtils.isNotEmpty(e.getMessage())) {
-			return R.fail(e.getMessage());
+		String msg = e.getMessage();
+		if (StringUtils.isEmpty(msg)) {
+			msg = I18nUtils.get(e.getErrorCode().value(), LocaleContextHolder.getLocale(), e.getErrArgs());
 		}
 		log.error("Global error: {}", e.getMessage(), e);
-		return R.fail(I18nUtils.get(e.getErrorCode().value(), LocaleContextHolder.getLocale(), e.getErrArgs()));
+		return R.fail(msg);
 	}
 
 	/**

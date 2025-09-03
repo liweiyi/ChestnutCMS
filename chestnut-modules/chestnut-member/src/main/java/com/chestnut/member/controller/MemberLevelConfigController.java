@@ -27,13 +27,13 @@ import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.MemberLevelConfig;
-import com.chestnut.member.domain.dto.LevelConfigDTO;
+import com.chestnut.member.domain.dto.CreateLevelConfigRequest;
+import com.chestnut.member.domain.dto.UpdateLevelConfigRequest;
 import com.chestnut.member.domain.vo.LevelTypeVO;
 import com.chestnut.member.level.ILevelType;
 import com.chestnut.member.permission.MemberPriv;
 import com.chestnut.member.service.IMemberLevelConfigService;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -82,17 +82,15 @@ public class MemberLevelConfigController extends BaseRestController {
 
 	@Log(title = "新增会员等级配置", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> addMemberConfig(@RequestBody @Validated LevelConfigDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.memberLevelConfigService.addLevelConfig(dto);
+	public R<?> addMemberConfig(@RequestBody @Validated CreateLevelConfigRequest req) {
+		this.memberLevelConfigService.addLevelConfig(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑会员等级配置", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> updateMemberConfig(@RequestBody @Validated LevelConfigDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.memberLevelConfigService.updateLevelConfig(dto);
+	public R<?> updateMemberConfig(@RequestBody @Validated UpdateLevelConfigRequest req) {
+		this.memberLevelConfigService.updateLevelConfig(req);
 		return R.ok();
 	}
 

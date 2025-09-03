@@ -15,18 +15,6 @@
  */
 package com.chestnut.system.controller;
 
-import java.util.List;
-
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -37,13 +25,18 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDept;
+import com.chestnut.system.domain.dto.CreateDeptRequest;
+import com.chestnut.system.domain.dto.QueryDeptRequest;
+import com.chestnut.system.domain.dto.UpdateDeptRequest;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysDeptService;
 import com.chestnut.system.validator.LongId;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 部门信息
@@ -63,10 +56,10 @@ public class SysDeptController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptList)
 	@GetMapping("/list")
-	public R<?> list(SysDept dept) {
+	public R<?> list(@Validated QueryDeptRequest req) {
 		LambdaQueryWrapper<SysDept> q = new LambdaQueryWrapper<SysDept>()
-				.like(StringUtils.isNotEmpty(dept.getDeptName()), SysDept::getDeptName, dept.getDeptName())
-				.eq(StringUtils.isNotEmpty(dept.getStatus()), SysDept::getStatus, dept.getStatus())
+				.like(StringUtils.isNotEmpty(req.getDeptName()), SysDept::getDeptName, req.getDeptName())
+				.eq(StringUtils.isNotEmpty(req.getStatus()), SysDept::getStatus, req.getStatus())
 				.orderByAsc(SysDept::getParentId).orderByAsc(SysDept::getOrderNum);
 		List<SysDept> list = deptService.list(q);
 		return bindDataTable(list);
@@ -90,9 +83,8 @@ public class SysDeptController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptAdd)
 	@Log(title = "部门管理", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@Validated @RequestBody SysDept dept) {
-		dept.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
-		deptService.insertDept(dept);
+	public R<?> add(@Validated @RequestBody CreateDeptRequest req) {
+		deptService.insertDept(req);
 		return R.ok();
 	}
 
@@ -102,9 +94,8 @@ public class SysDeptController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptEdit)
 	@Log(title = "部门管理", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody SysDept dept) {
-		dept.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		deptService.updateDept(dept);
+	public R<?> edit(@Validated @RequestBody UpdateDeptRequest req) {
+		deptService.updateDept(req);
 		return R.ok();
 	}
 

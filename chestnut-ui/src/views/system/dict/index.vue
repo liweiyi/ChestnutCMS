@@ -56,16 +56,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
     <el-row style="text-align:right" v-show="showSearch">
-      <el-form :model="queryParams" ref="queryForm" size="small" class="el-form-search mb12" :inline="true">
-        <el-form-item :label="$t('System.Dict.DictName')" prop="dictName">
-          <el-input
-            v-model="queryParams.dictName"
-            :placeholder="$t('System.Dict.Placeholder.DictName')"
-            clearable
-            style="width: 240px"
-            @keyup.enter.native="handleQuery"
-          />
-        </el-form-item>
+      <el-form :model="queryParams" ref="queryForm" :rules="queryRules" size="small" class="el-form-search mb12" :inline="true">
         <el-form-item :label="$t('System.Dict.DictType')" prop="dictType">
           <el-input
             v-model="queryParams.dictType"
@@ -138,11 +129,11 @@
       @pagination="getList"
     />
 
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="600px" :close-on-click-modal="false" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-form-item :label="$t('System.Dict.DictName')" prop="dictName">
           <el-input v-model="form.dictName" :placeholder="$t('System.Dict.Placeholder.DictName')">
-            <i18n-editor slot="append" v-if="form.dictType&&form.dictType.length>0" :languageKey="'DICT.' + form.dictType"></i18n-editor>
+            <i18n-editor slot="append" v-if="form.dictId&&form.dictId.length>0" :languageKey="'DICT.' + form.dictType"></i18n-editor>
           </el-input>
         </el-form-item>
         <el-form-item :label="$t('System.Dict.DictType')" prop="dictType">
@@ -196,34 +187,47 @@ export default {
         pageSize: 10,
         dictName: undefined,
         dictType: undefined,
-        status: undefined
+      },
+      queryRules: {
+        dictType: [
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
+        ]
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
         dictName: [
-          { required: true, message: this.$t('System.Dict.RuleTips.DictName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         dictType: [
-          { required: true, message: this.$t('System.Dict.RuleTips.DictType'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: "change" }
         ]
       }
     };
   },
-  created() {
+  mounted() {
     this.getList();
   },
   methods: {
     /** 查询字典类型列表 */
     getList() {
-      this.loading = true;
-      listType(this.queryParams).then(response => {
-          this.typeList = response.data.rows;
-          this.total = parseInt(response.data.total);
-          this.loading = false;
+      this.$refs["queryForm"].validate(valid => {
+        if (valid) {
+          this.loading = true;
+          listType(this.queryParams).then(response => {
+              this.typeList = response.data.rows;
+              this.total = parseInt(response.data.total);
+              this.loading = false;
+            }
+          );
         }
-      );
+      });
     },
     // 取消按钮
     cancel() {
@@ -236,7 +240,6 @@ export default {
         dictId: undefined,
         dictName: undefined,
         dictType: undefined,
-        status: "0",
         remark: undefined
       };
       this.resetForm("form");

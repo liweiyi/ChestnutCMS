@@ -19,6 +19,8 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysConfig;
+import com.chestnut.system.domain.dto.CreateConfigRequest;
+import com.chestnut.system.domain.dto.UpdateConfigRequest;
 
 /**
  * 参数配置 服务层
@@ -35,46 +37,41 @@ public interface ISysConfigService extends IService<SysConfig> {
 	 *            参数键名
 	 * @return 参数键值
 	 */
-	public String selectConfigByKey(String configKey);
+	String selectConfigByKey(String configKey);
 
 	/**
 	 * 新增参数配置
 	 * 
-	 * @param config
-	 *            参数配置信息
-	 * @return 结果
+	 * @param req 参数配置信息
 	 */
-	public void insertConfig(SysConfig config);
+	void insertConfig(CreateConfigRequest req);
 
 	/**
 	 * 修改参数配置
 	 * 
-	 * @param config
-	 *            参数配置信息
-	 * @return 结果
+	 * @param req 参数配置信息
 	 */
-	public void updateConfig(SysConfig config);
+	void updateConfig(UpdateConfigRequest req);
 
 	/**
 	 * 批量删除参数信息
 	 * 
-	 * @param configIds
-	 *            需要删除的参数ID
+	 * @param configIds 需要删除的参数ID
 	 */
-	public void deleteConfigByIds(List<Long> configIds);
+	void deleteConfigByIds(List<Long> configIds);
 
 	/**
 	 * 加载参数缓存数据
 	 */
-	public void loadingConfigCache();
+	void loadingConfigCache();
 
 	/**
 	 * 清空参数缓存数据
 	 */
-	public void clearConfigCache();
+	void clearConfigCache();
 
 	/**
 	 * 重置参数缓存数据
 	 */
-	public void resetConfigCache();
+	void resetConfigCache();
 }

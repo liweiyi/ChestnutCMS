@@ -42,9 +42,6 @@ public class AsyncController extends BaseRestController {
 
 	/**
 	 * 异步任务列表
-	 * 
-	 * @param type 任务类型
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@GetMapping("/task")
@@ -62,9 +59,6 @@ public class AsyncController extends BaseRestController {
 
 	/**
 	 * 异步任务详情
-	 * 
-	 * @param taskId 任务ID
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/task/{taskId}")
@@ -77,9 +71,6 @@ public class AsyncController extends BaseRestController {
 
 	/**
 	 * 停止异步任务
-	 * 
-	 * @param taskIds
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PutMapping("/task/stop")
@@ -96,9 +87,6 @@ public class AsyncController extends BaseRestController {
 
 	/**
 	 * 删除异步任务
-	 * 
-	 * @param taskIds
-	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PostMapping("task/remove")

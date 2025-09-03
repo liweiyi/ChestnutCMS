@@ -277,6 +277,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		checkRedirectUrl(dto.getCatalogType(), dto.getRedirectUrl());
 
 		String oldPath = catalog.getPath();
+		String oldAlias = catalog.getAlias();
 		BeanUtils.copyProperties(dto, catalog);
 		// 发布通道数据处理
 		Map<String, Map<String, Object>> publishPipeProps = dto.getPublishPipeDatas().stream()
@@ -285,7 +286,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		catalog.updateBy(dto.getOperator().getUsername());
 		this.updateById(catalog);
 
-		this.clearCache(catalog);
+		this.clearCache(catalog.getSiteId(), catalog.getCatalogId(), oldAlias);
 		this.applicationContext.publishEvent(new AfterCatalogSaveEvent(this, catalog, oldPath, dto.getParams()));
 		return catalog;
 	}
@@ -404,7 +405,11 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 
 	@Override
 	public void clearCache(CmsCatalog catalog) {
-		this.catalogCache.clear(catalog);
+		this.catalogCache.clear(catalog.getSiteId(), catalog.getCatalogId(), catalog.getAlias());
+	}
+
+	private void clearCache(Long siteId, Long catalogId, String alias) {
+		this.catalogCache.clear(siteId, catalogId, alias);
 	}
 
 	@Override

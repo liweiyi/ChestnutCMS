@@ -143,6 +143,7 @@
   </div>
 </template>
 <script>
+import { codeValidator } from '@/utils/validate';
 import { getDynamicPageInitDataTypes, getDynamicPageList, getDynamicPageDetail, addDynamicPage, editDynamicPage, deleteDynamicPages } from "@/api/contentcore/dynamic";
 import { getPublishPipeSelectData } from "@/api/contentcore/publishpipe"
 
@@ -180,7 +181,8 @@ export default {
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         code: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('Common.RuleTips.Code'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
         ],
         path: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },

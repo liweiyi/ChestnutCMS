@@ -15,6 +15,8 @@
  */
 package com.chestnut.word;
 
+import java.util.regex.Pattern;
+
 public interface WordConstants {
 
 	/**
@@ -26,4 +28,11 @@ public interface WordConstants {
 	 * 热词链接替换模板字符串
 	 */
 	String HOT_WORD_REPLACEMENT = "<a class=\"hot-word\" href=\"{0}\" target=\"{2}\">{1}</a>";
+
+    Pattern LINK_PATTERN = Pattern.compile("<a[^>]*>([^<]*)</a>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
+
+    /**
+     * 热词链接匹配正则
+     */
+    Pattern HOT_WORD_LINK_PATTERN = Pattern.compile("<a[^>]*class\\s*=\\s*['\"]hot-word['\"][^>]*>([^<]*)</a>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.MULTILINE);
 }

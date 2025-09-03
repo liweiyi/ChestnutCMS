@@ -104,6 +104,7 @@
   </div>
 </template>
 <script>
+import { codeValidator } from '@/utils/validate';
 import { getPublishPipeList, getPublishPipeData, addPublishPipe, updatePublishPipe, delPublishPipe } from "@/api/contentcore/publishpipe";
 
 export default {
@@ -137,16 +138,17 @@ export default {
       // 表单校验
       rules: {
         name: [
-          { required: true, message: this.$t('CMS.PublishPipe.RuleTips.Name'), trigger: "blur" },
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
         ],
         code :[
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('CMS.PublishPipe.RuleTips.Code'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
         ],
         state :[
-          { required: true, message: this.$t('CMS.PublishPipe.RuleTips.Status'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         sort :[
-          { required: true, message: this.$t('CMS.PublishPipe.RuleTips.Sort'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ]
       }
     };

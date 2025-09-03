@@ -67,6 +67,10 @@ public class HotWordMonitoredCache implements IMonitoredCache<Map<String, HotWor
         return this.redisCache.getCacheMap(cacheKey(groupCode), HotWordCache.class, supplier);
     }
 
+    public void deleteCache(String groupCode) {
+        this.redisCache.deleteObject(cacheKey(groupCode));
+    }
+
     @Getter
     @Setter
     @AllArgsConstructor

@@ -56,7 +56,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
     <el-row v-show="showSearch">
-      <el-form :model="queryParams" ref="queryForm" size="small" class="el-form-search mb12" :inline="true">
+      <el-form :model="queryParams" :rules="queryRules" ref="queryForm" size="small" class="el-form-search mb12" :inline="true">
         <el-form-item prop="langTag">
           <el-select
             v-model="queryParams.langTag"
@@ -189,31 +189,49 @@ export default {
         langValue: undefined
       },
       form: {},
-      rules: {
+      queryRules: {
         langTag: [
-          { required: true, message: this.$t('System.I18n.RuleTips.LangTag'), trigger: "blur" }
+          { max: 10, message: this.$t('Common.RuleTips.MaxLength', [ 10 ]), trigger: "change" }
         ],
         langKey: [
-          { required: true, message: this.$t('System.I18n.RuleTips.LangKey'), trigger: "blur" }
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         langValue: [
-          { required: true, message: this.$t('System.I18n.RuleTips.LangValue'), trigger: "blur" }
+          { max: 255, message: this.$t('Common.RuleTips.MaxLength', [ 255 ]), trigger: "change" }
+        ],
+      },
+      rules: {
+        langTag: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 10, message: this.$t('Common.RuleTips.MaxLength', [ 10 ]), trigger: "change" }
+        ],
+        langKey: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
+        ],
+        langValue: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 255, message: this.$t('Common.RuleTips.MaxLength', [ 255 ]), trigger: "change" }
         ]
       }
     };
   },
-  created() {
+  mounted() {
     this.getList();
   },
   methods: {
     getList() {
-      this.loading = true;
-      listI18nDict(this.queryParams).then(response => {
-          this.dictList = response.data.rows;
-          this.total = parseInt(response.data.total);
-          this.loading = false;
+      this.$refs["queryForm"].validate(valid => {
+        if (valid) {
+          this.loading = true;
+          listI18nDict(this.queryParams).then(response => {
+              this.dictList = response.data.rows;
+              this.total = parseInt(response.data.total);
+              this.loading = false;
+            }
+          );
         }
-      );
+      });
     },
     cancel() {
       this.open = false;

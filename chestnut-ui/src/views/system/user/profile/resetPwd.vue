@@ -47,13 +47,13 @@ export default {
       // 表单校验
       rules: {
         oldPassword: [
-          { required: true, message: this.$t('AccountCenter.OldPwdEmptyTip'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         newPassword: [
-          { required: true, message: this.$t('AccountCenter.NewPwdEmptyTip'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         confirmPassword: [
-          { required: true, message: this.$t('AccountCenter.ConfirmPwdEmptyTip'), trigger: "blur" },
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
           { required: true, validator: equalToPassword, trigger: "blur" }
         ]
       }

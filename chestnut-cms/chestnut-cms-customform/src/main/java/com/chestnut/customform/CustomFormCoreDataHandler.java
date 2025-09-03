@@ -177,7 +177,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
             for (CmsCustomFormData data : list) {
                 String oldKey = data.getModelId() + "-" + data.getDataId();
                 try {
-                    data.setDataId(IdUtils.getSnowflakeId());
+                    data.setDataId(IdUtils.getSnowflakeId()+"");
                     data.setModelId(customFormIdMapping.get(data.getModelId()));
                     // 处理图片和富文本内部链接
                     MetaModel model = modelService.getMetaModel(data.getModelId());

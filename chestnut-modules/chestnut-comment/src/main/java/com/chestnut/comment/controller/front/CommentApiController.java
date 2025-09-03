@@ -26,7 +26,9 @@ import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.system.annotation.IgnoreDemoMode;
+import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,14 +44,14 @@ public class CommentApiController extends BaseRestController {
 	/**
 	 * 评论列表，按时间（ID）倒序
 	 * 
-	 * @param type
-	 * @param dataId
-	 * @return
+	 * @param type 评论源类型
+	 * @param dataId 评论源ID
 	 */
 	@GetMapping("/{type}/{dataId}")
-	public R<?> getCommentList(@PathVariable("type") String type, @PathVariable("dataId") Long dataId,
-			@RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
-			@RequestParam(value = "offset", defaultValue = "0") Long offset) {
+	public R<?> getCommentList(@PathVariable("type") @NotBlank String type,
+							   @PathVariable("dataId") @LongId Long dataId,
+							   @RequestParam(required = false, defaultValue = "10") @Min(1) Integer limit,
+							   @RequestParam(required = false, defaultValue = "0") @Min(0) Long offset) {
 		List<CommentVO> list = this.commentApiService.getCommentList(type, dataId, limit, offset);
 		return R.ok(list);
 	}
@@ -57,15 +59,12 @@ public class CommentApiController extends BaseRestController {
 	/**
 	 * 获取评论回复列表，按时间（ID）倒序
 	 * 
-	 * @param commentId
-	 * @param limit
-	 * @param offset
-	 * @return
+	 * @param commentId 评论ID
 	 */
 	@GetMapping("/reply/{commentId}")
-	public R<?> getCommentReplyList(@PathVariable @Min(1) Long commentId,
-			@RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit,
-			@RequestParam(value = "offset", defaultValue = "0") Long offset) {
+	public R<?> getCommentReplyList(@PathVariable @LongId Long commentId,
+									@RequestParam(required = false, defaultValue = "10") @Min(1) Integer limit,
+									@RequestParam(required = false, defaultValue = "0") @Min(0) Long offset) {
 		List<CommentVO> list = this.commentApiService.getCommentReplyList(commentId, limit, offset);
 		return R.ok(list);
 	}
@@ -74,7 +73,6 @@ public class CommentApiController extends BaseRestController {
 	@Priv(type = MemberUserType.TYPE)
 	@PostMapping("/submit")
 	public R<?> submitComment(@RequestBody SubmitCommentDTO dto) {
-		dto.setOperator(StpMemberUtil.getLoginUser());
 		dto.setClientIp(ServletUtils.getIpAddr(ServletUtils.getRequest()));
 		dto.setUserAgent(ServletUtils.getUserAgent());
 		Comment comment = this.commentApiService.submitComment(dto);
@@ -84,7 +82,7 @@ public class CommentApiController extends BaseRestController {
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@PutMapping("/like/{commentId}")
-	public R<?> likeComment(@PathVariable @Min(1) Long commentId) {
+	public R<?> likeComment(@PathVariable @LongId Long commentId) {
 		this.commentApiService.likeComment(commentId, StpMemberUtil.getLoginIdAsLong());
 		return R.ok();
 	}
@@ -92,7 +90,7 @@ public class CommentApiController extends BaseRestController {
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@PostMapping("/delete/{commentId}")
-	public R<?> deleteMyComment(@PathVariable @Min(1) Long commentId) {
+	public R<?> deleteMyComment(@PathVariable @LongId Long commentId) {
 		this.commentApiService.deleteUserComment(StpMemberUtil.getLoginIdAsLong(), commentId);
 		return R.ok();
 	}

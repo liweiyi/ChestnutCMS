@@ -25,8 +25,8 @@ import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.Member;
-import com.chestnut.member.domain.dto.MemberLoginDTO;
-import com.chestnut.member.domain.dto.MemberRegisterDTO;
+import com.chestnut.member.domain.dto.MemberLoginRequest;
+import com.chestnut.member.domain.dto.MemberRegisterRequest;
 import com.chestnut.member.exception.MemberErrorCode;
 import com.chestnut.member.fixed.dict.MemberStatus;
 import com.chestnut.member.service.IMemberService;
@@ -65,7 +65,7 @@ public class MemberLoginService {
 	 *
 	 * @return 结果
 	 */
-	public String login(MemberLoginDTO dto) {
+	public String login(MemberLoginRequest dto) {
 		// 查找用户
 		Member member = this.memberService.lambdaQuery()
 				.eq(Member::getUserName, dto.getUsername())
@@ -118,7 +118,7 @@ public class MemberLoginService {
 		return loginUser;
 	}
 
-	public String register(MemberRegisterDTO dto) {
+	public String register(MemberRegisterRequest dto) {
 		// 查找用户
 		LambdaQueryWrapper<Member> q = new LambdaQueryWrapper<>();
 		if ("email".equals(dto.getType())) {

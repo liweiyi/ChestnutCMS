@@ -25,6 +25,8 @@ import com.chestnut.common.utils.SortUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
+import com.chestnut.word.domain.dto.CreateTagWordGroupRequest;
+import com.chestnut.word.domain.dto.UpdateTagWordGroupRequest;
 import com.chestnut.word.mapper.TagWordGroupMapper;
 import com.chestnut.word.mapper.TagWordMapper;
 import com.chestnut.word.service.ITagWordGroupService;
@@ -35,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -44,27 +47,39 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 	private final TagWordMapper tagWordMapper;
 
 	@Override
-	public TagWordGroup addTagWordGroup(TagWordGroup group) {
-		checkUnique(group.getOwner(), null, group.getCode());
+	public TagWordGroup addTagWordGroup(CreateTagWordGroupRequest req) {
+		checkUnique(req.getOwner(), null, req.getCode());
 
+		TagWordGroup group = new TagWordGroup();
 		group.setGroupId(IdUtils.getSnowflakeId());
+		group.setOwner(req.getOwner());
+		group.setParentId(req.getParentId());
+		group.setName(req.getName());
+		group.setCode(req.getCode());
+		group.setLogo(req.getLogo());
 		group.setWordTotal(0L);
-		group.setSortFlag(SortUtils.getDefaultSortValue());
+		group.setSortFlag(Objects.requireNonNullElse(req.getSortFlag(), SortUtils.getDefaultSortValue()));
+		group.setRemark(req.getRemark());
+		group.createBy(req.getOperator().getUsername());
 		this.save(group);
 		return group;
 	}
 
 	@Override
-	public void editTagWordGroup(TagWordGroup group) {
-		TagWordGroup dbGroup = this.getById(group.getGroupId());
-		Assert.notNull(dbGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", group.getGroupId()));
+	public void editTagWordGroup(UpdateTagWordGroupRequest req) {
+		TagWordGroup dbGroup = this.getById(req.getGroupId());
+		Assert.notNull(dbGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", req.getGroupId()));
 
-		checkUnique(dbGroup.getOwner(), dbGroup.getGroupId(), group.getCode());
+		checkUnique(dbGroup.getOwner(), dbGroup.getGroupId(), req.getCode());
 
-		dbGroup.setName(group.getName());
-		dbGroup.setRemark(group.getRemark());
-		dbGroup.updateBy(group.getUpdateBy());
-		this.updateById(group);
+		dbGroup.setParentId(req.getParentId());
+		dbGroup.setName(req.getName());
+		dbGroup.setCode(req.getCode());
+		dbGroup.setLogo(req.getLogo());
+		dbGroup.setSortFlag(Objects.requireNonNullElse(req.getSortFlag(), SortUtils.getDefaultSortValue()));
+		dbGroup.setRemark(req.getRemark());
+		dbGroup.updateBy(req.getOperator().getUsername());
+		this.updateById(dbGroup);
 	}
 
 	@Override

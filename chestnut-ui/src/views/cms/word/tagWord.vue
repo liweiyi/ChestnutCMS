@@ -182,7 +182,7 @@ export default {
       formBatch: {},
       rulesBatch: {
         words: [
-          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
         ],
       },
       diagTitle: "",
@@ -190,7 +190,11 @@ export default {
       form: {},
       rules: {
         word: [
-          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { max: 255, message: this.$t('Common.RuleTips.MaxLength', [ 255 ]), trigger: [ "blur", "change" ] },
+        ],
+        sortFlag: [
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
         ],
       }
     };

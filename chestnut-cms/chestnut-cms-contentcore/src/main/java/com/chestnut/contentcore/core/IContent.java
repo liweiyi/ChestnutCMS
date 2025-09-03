@@ -15,7 +15,7 @@
  */
 package com.chestnut.contentcore.core;
 
-import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -95,7 +95,7 @@ public interface IContent<T> {
 	/**
 	 * 获取操作人信息
 	 */
-	LoginUser getOperator();
+	Operator getOperator();
 
 	/**
 	 * 获取操作人用户名
@@ -111,7 +111,7 @@ public interface IContent<T> {
 	/**
 	 * 设置操作人信息
 	 */
-	void setOperator(LoginUser operator);
+	void setOperator(Operator operator);
 
 	/**
      * 复制内容到指定栏目

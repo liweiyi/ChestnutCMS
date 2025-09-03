@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.service.impl;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -26,6 +27,7 @@ import com.chestnut.member.listener.event.BeforeMemberFavoriteEvent;
 import com.chestnut.member.mapper.MemberFavoritesMapper;
 import com.chestnut.member.service.IMemberFavoritesService;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -50,14 +52,13 @@ public class MemberFavoritesServiceImpl extends ServiceImpl<MemberFavoritesMappe
 
     @Override
     public List<MemberFavorites> getMemberFavorites(Long memberId, String dataType, Integer limit, Long offset) {
-        List<MemberFavorites> list = this.lambdaQuery()
+        return this.lambdaQuery()
                 .eq(MemberFavorites::getDataType, dataType)
                 .eq(MemberFavorites::getMemberId, memberId)
                 .lt(IdUtils.validate(offset), MemberFavorites::getLogId, offset)
                 .orderByDesc(MemberFavorites::getLogId)
-                .last("limit " + limit)
-                .list();
-        return list;
+                .page(Page.of(1, limit, false))
+                .getRecords();
     }
 
     @Override
@@ -98,7 +99,7 @@ public class MemberFavoritesServiceImpl extends ServiceImpl<MemberFavoritesMappe
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 }

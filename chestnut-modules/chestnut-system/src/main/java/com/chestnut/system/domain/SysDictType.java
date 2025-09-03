@@ -16,17 +16,22 @@
 package com.chestnut.system.domain;
 
 import cn.idev.excel.annotation.ExcelProperty;
+import cn.idev.excel.converters.longconverter.LongStringConverter;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.common.i18n.I18nField;
+import com.chestnut.system.annotation.ExcelDictField;
+import com.chestnut.system.config.converter.DictConverter;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 import java.io.Serial;
 
@@ -46,31 +51,23 @@ public class SysDictType extends BaseEntity {
 	
 	public static final String TABLE_NAME = "sys_dict_type";
 
-	@ExcelProperty("字典主键")
+	@XComment("{ENT.SYS.DICT_TYPE.ID}")
+	@ExcelProperty(value = "{ENT.SYS.DICT_TYPE.ID}" ,converter = LongStringConverter.class)
 	@TableId(value = "dict_id", type = IdType.INPUT)
 	private Long dictId;
 
-	@ExcelProperty("字典名称")
+	@XComment("{ENT.SYS.DICT_TYPE.NAME}")
+	@ExcelProperty("{ENT.SYS.DICT_TYPE.NAME}")
 	@I18nField("{DICT.#{dictType}}")
 	private String dictName;
 
-	@ExcelProperty("字典类型")
+	@XComment("{ENT.SYS.DICT_TYPE.TYPE}")
+	@ExcelProperty("{ENT.SYS.DICT_TYPE.TYPE}")
 	private String dictType;
 
-	@ExcelProperty("是否系统固定字典")
+	@XComment("{ENT.SYS.DICT_TYPE.FIXED}")
+	@ExcelDictField(YesOrNo.TYPE)
+	@ExcelProperty(value = "{ENT.SYS.DICT_TYPE.FIXED}", converter = DictConverter.class)
 	@TableField(exist = false)
 	private String fixed;
-
-	@NotBlank(message = "字典名称不能为空")
-	@Size(min = 0, max = 100, message = "字典类型名称长度不能超过100个字符")
-	public String getDictName() {
-		return dictName;
-	}
-
-	@NotBlank(message = "字典类型不能为空")
-	@Size(min = 0, max = 100, message = "字典类型类型长度不能超过100个字符")
-	@Pattern(regexp = "^[A-Za-z][A-Za-z0-9_]*$", message = "字典类型必须以字母开头，且只能为（大小写字母，数字，下滑线）")
-	public String getDictType() {
-		return dictType;
-	}
 }

@@ -22,7 +22,8 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.system.domain.SysMenu;
 import com.chestnut.system.domain.SysPermission;
-import com.chestnut.system.domain.dto.SysPermissionDTO;
+import com.chestnut.system.domain.dto.SavePermissionRequest;
+import com.chestnut.system.domain.vo.GetMenuPermissionVO;
 import com.chestnut.system.permission.MenuPermissionType;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -33,7 +34,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -43,6 +43,7 @@ import java.util.Set;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/permission")
@@ -54,16 +55,14 @@ public class SysPermissionController extends BaseRestController {
 	
 	private final MenuPermissionType menuPermissionType;
 
-	@Priv(type = AdminUserType.TYPE)
 	@Log(title = "权限设置", businessType = BusinessType.UPDATE)
 	@PostMapping
-	public R<?> saveMenuPermission(@Validated @RequestBody SysPermissionDTO dto) {
+	public R<?> saveMenuPermission(@Validated @RequestBody SavePermissionRequest dto) {
 		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.permissionService.saveMenuPermissions(dto);
 		return R.ok();
 	}
 
-	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/menu")
 	public R<?> getMenuPerms(@RequestParam String ownerType, @RequestParam String owner) {
 		List<SysMenu> menus = this.menuService.lambdaQuery().orderByAsc(SysMenu::getOrderNum).list();
@@ -74,6 +73,10 @@ public class SysPermissionController extends BaseRestController {
 			perms = menuPermissionType.deserialize(json);
 		}
 		Set<String> disabledPerms = this.permissionService.getInheritedPermissionKeys(ownerType, owner, MenuPermissionType.ID);
-		return R.ok(Map.of("menus", menus, "perms", perms, "disabledPerms", disabledPerms));
+		GetMenuPermissionVO vo = new GetMenuPermissionVO();
+		vo.setMenus(menus);
+		vo.setPerms(perms);
+		vo.setDisabledPerms(disabledPerms);
+		return R.ok(vo);
 	}
 }

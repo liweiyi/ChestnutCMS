@@ -29,9 +29,13 @@ import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.common.validation.BeanValidators;
 import com.chestnut.system.config.SystemConfig;
 import com.chestnut.system.domain.*;
+import com.chestnut.system.domain.dto.CreateUserRequest;
+import com.chestnut.system.domain.dto.ResetUserPwdRequest;
+import com.chestnut.system.domain.dto.UpdateUserRequest;
 import com.chestnut.system.domain.dto.UserImportData;
 import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.exception.SysErrorCode;
+import com.chestnut.system.exception.SystemUserTips;
 import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.mapper.*;
 import com.chestnut.system.security.StpAdminUtil;
@@ -42,6 +46,7 @@ import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -52,6 +57,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -77,12 +83,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	private final SysPermissionMapper permissionMapper;
 
-	/**
-	 * 查询用户所属角色组
-	 *
-	 * @param userId 用户ID
-	 * @return 结果
-	 */
 	@Override
 	public String selectUserRoleGroup(Long userId) {
 		List<SysRole> list = roleService.selectRolesByUserId(userId);
@@ -92,12 +92,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		return list.stream().map(SysRole::getRoleName).collect(Collectors.joining(","));
 	}
 
-	/**
-	 * 查询用户所属岗位组
-	 *
-	 * @param userId 用户ID
-	 * @return 结果
-	 */
 	@Override
 	public String selectUserPostGroup(Long userId) {
 		List<Long> postIds = this.userPostMapper.selectList(
@@ -111,13 +105,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		).stream().map(SysPost::getPostName).collect(Collectors.joining(","));
 	}
 
-	/**
-	 * 校验用户名称是否唯一
-	 *
-	 * @param username 用户名
-	 * @param userId 用户ID
-	 * @return 结果
-	 */
 	@Override
 	public boolean checkUserNameUnique(String username, Long userId) {
 		long count = this.count(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, username)
@@ -125,23 +112,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		return count == 0;
 	}
 
-	private boolean checkUserUnique(SysUser user) {
+	private boolean checkUserUnique(String username, String phoneNumber, String email, Long userId) {
 		LambdaQueryWrapper<SysUser> q = new LambdaQueryWrapper<SysUser>()
 				.and(wrapper -> wrapper
-						.eq(StringUtils.isNotEmpty(user.getUserName()), SysUser::getUserName, user.getUserName()).or()
-						.eq(StringUtils.isNotEmpty(user.getPhoneNumber()), SysUser::getPhoneNumber,
-								user.getPhoneNumber())
-						.or().eq(StringUtils.isNotEmpty(user.getEmail()), SysUser::getEmail, user.getEmail()))
-				.ne(IdUtils.validate(user.getUserId()), SysUser::getUserId, user.getUserId());
+						.eq(StringUtils.isNotEmpty(username), SysUser::getUserName, username).or()
+						.eq(StringUtils.isNotEmpty(phoneNumber), SysUser::getPhoneNumber, phoneNumber)
+						.or().eq(StringUtils.isNotEmpty(email), SysUser::getEmail, email))
+				.ne(IdUtils.validate(userId), SysUser::getUserId, userId);
 		return this.count(q) == 0;
 	}
 
-	/**
-	 * 校验手机号码是否唯一
-	 *
-	 * @param phoneNumber 用户电话号码
-	 * @param userId 用户ID
-	 */
 	@Override
 	public boolean checkPhoneUnique(String phoneNumber, Long userId) {
 		if (StringUtils.isNotEmpty(phoneNumber)) {
@@ -152,12 +132,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		return true;
 	}
 
-	/**
-	 * 校验email是否唯一
-	 *
-	 * @param email 用户Email
-	 * @param userId 用户ID
-	 */
 	@Override
 	public boolean checkEmailUnique(String email, Long userId) {
 		if (StringUtils.isNotEmpty(email)) {
@@ -168,37 +142,30 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		return true;
 	}
 
-	/**
-	 * 新增保存用户信息
-	 *
-     */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void insertUser(SysUser user) {
-		boolean checkUserUnique = this.checkUserUnique(user);
-		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phonenumber,email]"));
+	public void insertUser(CreateUserRequest req) {
+		boolean checkUserUnique = this.checkUserUnique(req.getUserName(), req.getPhoneNumber(), req.getEmail(), null);
+		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phoneNumber,email]"));
 		// 校验密码
-		this.securityConfigService.validPassword(user, user.getPassword());
+		SysUser user = new SysUser();
+		BeanUtils.copyProperties(req, user);
+		this.securityConfigService.validPassword(user, req.getPassword());
 		// 强制首次登陆修改密码
 		this.securityConfigService.forceModifyPwdAfterUserAdd(user);
 		// 密码家吗
 		user.setUserId(IdUtils.getSnowflakeId());
-		user.setPassword(SecurityUtils.passwordEncode(user.getPassword()));
-		user.setCreateTime(LocalDateTime.now());
+		user.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
+		user.createBy(req.getOperator().getUsername());
 		this.save(user);
 		// 新增用户岗位关联
-		syncUserPost(user, false);
+		syncUserPost(user.getUserId(), req.getPostIds(), false);
 	}
 
-	/**
-	 * 注册用户信息
-	 *
-	 * @param user 用户信息
-     */
 	@Override
 	public void registerUser(SysUser user) {
-		boolean checkUserUnique = this.checkUserUnique(user);
-		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phonenumber,email]"));
+		boolean checkUserUnique = this.checkUserUnique(user.getUserName(), user.getPhoneNumber(), user.getEmail(), null);
+		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phoneNumber,email]"));
 
 		this.securityConfigService.validPassword(user, user.getPassword());
 
@@ -208,48 +175,34 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		this.save(user);
 	}
 
-	/**
-	 * 修改保存用户信息
-	 *
-	 * @param user 用户信息
-     */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateUser(SysUser user) {
-		SysUser db = this.getById(user.getUserId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(user.getUserId()));
-		boolean checkUserUnique = this.checkUserUnique(user);
-		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phonenumber,email]"));
+	public void updateUser(UpdateUserRequest req) {
+		SysUser db = this.getById(req.getUserId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getUserId()));
+		boolean checkUserUnique = this.checkUserUnique(req.getUserName(), req.getPhoneNumber(), req.getEmail(), req.getUserId());
+		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phoneNumber,email]"));
 
 		String oldStatus = db.getStatus();
 
-		db.setNickName(user.getNickName());
-		db.setRealName(user.getRealName());
-		db.setDeptId(user.getDeptId());
-		db.setPhoneNumber(user.getPhoneNumber());
-		db.setEmail(user.getEmail());
-		db.setSex(user.getSex());
-		db.setStatus(user.getStatus());
-		db.setPostIds(user.getPostIds());
-		db.setRoleIds(user.getRoleIds());
-		db.setRemark(user.getRemark());
-		db.updateBy(user.getUpdateBy());
+		db.setNickName(req.getNickName());
+		db.setRealName(req.getRealName());
+		db.setDeptId(req.getDeptId());
+		db.setPhoneNumber(req.getPhoneNumber());
+		db.setEmail(req.getEmail());
+		db.setSex(req.getSex());
+		db.setStatus(req.getStatus());
+		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
 		// 用户与岗位关联
-		syncUserPost(user, true);
+		syncUserPost(db.getUserId(), req.getPostIds(), true);
 		// 变更未封禁或锁定状态时注销登录状态
 		if (!StringUtils.equals(db.getStatus(), oldStatus)
 				&& (UserStatus.isDisbale(db.getStatus()) || UserStatus.isLocked(db.getStatus()))) {
-			StpAdminUtil.logout(user.getUserId());
+			StpAdminUtil.logout(req.getUserId());
 		}
 	}
 
-	/**
-	 * 用户授权角色
-	 *
-	 * @param userId  用户ID
-	 * @param roleIds 角色组
-	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void insertUserAuth(final Long userId, final List<Long> roleIds) {
@@ -260,49 +213,34 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		}
 	}
 
-	/**
-	 * 重置用户密码
-	 *
-	 * @param user 用户信息
-	 */
 	@Override
-	public void resetPwd(SysUser user) {
-		SysUser db = this.getById(user.getUserId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("userId", user.getUserId()));
+	public void resetPwd(ResetUserPwdRequest req) {
+		SysUser db = this.getById(req.getUserId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("userId", req.getUserId()));
 
-		this.securityConfigService.validPassword(db, user.getPassword());
+		this.securityConfigService.validPassword(db, req.getPassword());
 
-		db.setPassword(SecurityUtils.passwordEncode(user.getPassword()));
+		db.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
 		db.setUpdateTime(LocalDateTime.now());
-		db.setUpdateBy(user.getUpdateBy());
+		db.setUpdateBy(req.getOperator().getUsername());
 		this.updateById(db);
 	}
 
-	/**
-	 * 新增用户岗位信息
-	 *
-	 * @param user 用户对象
-	 */
-	public void syncUserPost(SysUser user, boolean update) {
+	public void syncUserPost(Long userId, Long[] postIds, boolean update) {
 		if (update) {
-			userPostMapper.delete(new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, user.getUserId()));
+			userPostMapper.delete(new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, userId));
 		}
-		if (StringUtils.isNotEmpty(user.getPostIds())) {
+		if (StringUtils.isNotEmpty(postIds)) {
 			// 新增用户与岗位管理
-			Stream.of(user.getPostIds()).map(postId -> {
+			Stream.of(postIds).map(postId -> {
 				SysUserPost up = new SysUserPost();
 				up.setPostId(postId);
-				up.setUserId(user.getUserId());
+				up.setUserId(userId);
 				return up;
 			}).forEach(userPostMapper::insert);
 		}
 	}
 
-	/**
-	 * 批量删除用户信息
-	 *
-	 * @param userIds 需要删除的用户ID
-	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteUserByIds(List<Long> userIds) {
@@ -384,6 +322,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		@Setter
 		private StringWriter logWriter;
 
+		@Setter
+		private Locale locale;
+
 		@Override
 		public void invoke(UserImportData data, AnalysisContext context) {
 			try {
@@ -397,7 +338,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 							.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptName, data.getDeptName()));
 					if (Objects.isNull(dept)) {
 						failCount++;
-						logWriter.append("账号 ").append(data.getUserName()).append(" 部门不存在。<br/>");
+						logWriter.append(SystemUserTips.USER_DEPT_NOT_EXISTS.locale(locale, data.getUserName())).append("<br/>");
 						return;
 					}
 					u = new SysUser();
@@ -419,7 +360,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 					u.setRemark(data.getRemark());
 					u.setPassword(data.getPassword());
 					u.setCreateBy(this.operator);
-					this.userService.insertUser(u);
+					CreateUserRequest req = new CreateUserRequest();
+					BeanUtils.copyProperties(u, req);
+					this.userService.insertUser(req);
 					if (StringUtils.isNotEmpty(data.getRoleCodes())) {
 						for (String roleCode : data.getRoleCodes()) {
 							SysRole role = this.roleService.getRole(roleCode);
@@ -443,21 +386,23 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 					u.setRemark(data.getRemark());
 					u.setPassword(data.getPassword());
 					u.setUpdateBy(this.operator);
-					this.userService.updateUser(u);
+					UpdateUserRequest req = new UpdateUserRequest();
+					BeanUtils.copyProperties(u, req);
+					this.userService.updateUser(req);
 					successCount++;
 				} else {
 					failCount++;
-					logWriter.append("账号 ").append(data.getUserName()).append(" 已存在。<br/>");
+					logWriter.append(SystemUserTips.USER_EXISTS.locale(locale, data.getUserName())).append("<br/>");
 				}
 			} catch (Exception e) {
 				failCount++;
-				logWriter.append("账号 ").append(data.getUserName()).append(" 导入失败：").append(e.getMessage()).append("<br/>");
+				logWriter.append(SystemUserTips.IMPORT_FAIL.locale(locale, data.getUserName(), e.getMessage())).append("<br/>");
 			}
 		}
 
 		@Override
 		public void doAfterAllAnalysed(AnalysisContext context) {
-			logWriter.append("导入完成，成功数：").append(String.valueOf(successCount)).append("，失败数：").append(String.valueOf(failCount));
+			logWriter.append(SystemUserTips.IMPORT_FAIL.locale(locale, successCount, failCount));
 		}
 
 		public void setUpdateSupport(boolean isUpdateSupport) {

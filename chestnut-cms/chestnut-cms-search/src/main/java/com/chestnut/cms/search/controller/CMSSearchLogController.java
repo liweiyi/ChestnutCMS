@@ -26,7 +26,6 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.search.domain.SearchLog;
-import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.service.ISearchLogService;
 import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,7 @@ public class CMSSearchLogController extends BaseRestController {
 	
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	public R<?> getPageList(@RequestParam(required = false) String query) {
 		PageRequest pr = this.getPageRequest();
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 		Page<SearchLog> page = this.searchLogService.lambdaQuery()

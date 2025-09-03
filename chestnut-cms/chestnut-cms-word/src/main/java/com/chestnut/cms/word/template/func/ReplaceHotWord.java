@@ -15,6 +15,7 @@
  */
 package com.chestnut.cms.word.template.func;
 
+import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.ConvertUtils;
 import com.chestnut.common.utils.ObjectUtils;
@@ -84,7 +85,7 @@ public class ReplaceHotWord extends AbstractFunc  {
 			replacementTemplate = ConvertUtils.toStr(args[2]);
 		}
 		return this.hotWordService.replaceHotWords(text, siteId.toString(),
-				hotGroupCodes.toArray(String[]::new), null, replacementTemplate);
+				hotGroupCodes.toArray(String[]::new), 0, null, replacementTemplate);
 	}
 
 	private ArrayList<String> getHotGroupCodes(Object arg) throws TemplateModelException {

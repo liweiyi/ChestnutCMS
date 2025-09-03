@@ -24,7 +24,9 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.vote.domain.Vote;
 import com.chestnut.vote.domain.VoteSubject;
 import com.chestnut.vote.domain.VoteSubjectItem;
-import com.chestnut.vote.domain.dto.SaveSubjectItemsDTO;
+import com.chestnut.vote.domain.dto.CreateVoteSubjectRequest;
+import com.chestnut.vote.domain.dto.SaveSubjectItemsRequest;
+import com.chestnut.vote.domain.dto.UpdateVoteSubjectRequest;
 import com.chestnut.vote.fixed.dict.VoteSubjectType;
 import com.chestnut.vote.mapper.VoteSubjectItemMapper;
 import com.chestnut.vote.mapper.VoteSubjectMapper;
@@ -32,12 +34,12 @@ import com.chestnut.vote.service.IVoteService;
 import com.chestnut.vote.service.IVoteSubjectService;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,18 +73,23 @@ public class VoteSubjectServiceImpl extends ServiceImpl<VoteSubjectMapper, VoteS
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void addVoteSubject(VoteSubject voteSubject) {
-		Vote vote = this.voteService.getById(voteSubject.getVoteId());
-		Assert.notNull(vote, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("voteId", voteSubject.getVoteId()));
+	public void addVoteSubject(CreateVoteSubjectRequest req) {
+		Vote vote = this.voteService.getById(req.getVoteId());
+		Assert.notNull(vote, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("voteId", req.getVoteId()));
 
-		Map<Long, VoteSubject> dbSubjects = this.lambdaQuery().eq(VoteSubject::getVoteId, voteSubject.getVoteId())
+		Map<Long, VoteSubject> dbSubjects = this.lambdaQuery().eq(VoteSubject::getVoteId, req.getVoteId())
 				.orderByAsc(VoteSubject::getSortFlag).list().stream()
 				.collect(Collectors.toMap(VoteSubject::getSubjectId, s -> s));
 
+		VoteSubject voteSubject = new VoteSubject();
 		voteSubject.setSubjectId(IdUtils.getSnowflakeId());
-		if (IdUtils.validate(voteSubject.getNextSubjectId())) {
+		voteSubject.setVoteId(req.getVoteId());
+		voteSubject.setType(req.getType());
+		voteSubject.setTitle(req.getTitle());
+		voteSubject.createBy(req.getOperator().getUsername());
+		if (IdUtils.validate(req.getNextSubjectId())) {
 			// 在指定主题后的所有主题排序号+1
-			VoteSubject nextSubject = dbSubjects.get(voteSubject.getNextSubjectId());
+			VoteSubject nextSubject = dbSubjects.get(req.getNextSubjectId());
 			dbSubjects.values().stream().filter(s -> s.getSortFlag() >= nextSubject.getSortFlag()).forEach(s -> {
 				this.lambdaUpdate().set(VoteSubject::getSortFlag, s.getSortFlag() + 1)
 						.eq(VoteSubject::getSubjectId, s.getSubjectId()).update();
@@ -93,24 +100,26 @@ public class VoteSubjectServiceImpl extends ServiceImpl<VoteSubjectMapper, VoteS
 		}
 		this.save(voteSubject);
 		// 更新缓存
-		this.voteService.clearVoteCache(voteSubject.getVoteId());
+		this.voteService.clearVoteCache(req.getVoteId());
 	}
 
 	@Override
-	public void updateVoteSubject(VoteSubject voteSubject) {
-		VoteSubject db = this.getById(voteSubject.getSubjectId());
+	public void updateVoteSubject(UpdateVoteSubjectRequest req) {
+		VoteSubject db = this.getById(req.getSubjectId());
 		Assert.notNull(db,
-				() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("subjectId", voteSubject.getSubjectId()));
+				() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("subjectId", req.getSubjectId()));
 
-		db.setTitle(voteSubject.getTitle());
-		if (!db.getType().equals(voteSubject.getType())) {
-			db.setType(voteSubject.getType());
+		db.setTitle(req.getTitle());
+		if (!db.getType().equals(req.getType())) {
+			db.setType(req.getType());
 			if (VoteSubjectType.isInput(db.getType())) {
 				// 类型修改成输入则移除所有选项
 				this.voteSubjectItemMapper.delete(
 						new LambdaQueryWrapper<VoteSubjectItem>().eq(VoteSubjectItem::getSubjectId, db.getSubjectId()));
 			}
+			db.setType(req.getType());
 		}
+		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
 		// 更新缓存
 		this.voteService.clearVoteCache(db.getVoteId());
@@ -120,6 +129,9 @@ public class VoteSubjectServiceImpl extends ServiceImpl<VoteSubjectMapper, VoteS
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteVoteSubjects(@NotEmpty List<Long> subjectIds) {
 		List<VoteSubject> subjects = this.listByIds(subjectIds);
+		if (subjects.isEmpty()) {
+			return;
+		}
 		this.removeByIds(subjects);
 		// 删除选项
 		this.voteSubjectItemMapper
@@ -131,40 +143,40 @@ public class VoteSubjectServiceImpl extends ServiceImpl<VoteSubjectMapper, VoteS
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void saveSubjectItems(SaveSubjectItemsDTO dto) {
-		VoteSubject subject = this.getById(dto.getSubjectId());
-		Assert.notNull(subject, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("subjectId", dto.getSubjectId()));
+	public void saveSubjectItems(SaveSubjectItemsRequest req) {
+		VoteSubject subject = this.getById(req.getSubjectId());
+		Assert.notNull(subject, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("subjectId", req.getSubjectId()));
 
 		List<VoteSubjectItem> dbItems = new LambdaQueryChainWrapper<>(this.voteSubjectItemMapper)
 				.eq(VoteSubjectItem::getSubjectId, subject.getSubjectId()).list();
+		Map<Long, VoteSubjectItem> dbItemMap = dbItems.stream().collect(Collectors.toMap(VoteSubjectItem::getItemId, item -> item));
 
-		List<Long> updateItemIds = dto.getItemList().stream().map(VoteSubjectItem::getItemId)
+		List<Long> updateItemIds = req.getItemList().stream().map(SaveSubjectItemsRequest.SubjectItem::getItemId)
 				.filter(IdUtils::validate).toList();
 		List<Long> removeItemIds = dbItems.stream().map(VoteSubjectItem::getItemId)
 				.filter(itemId -> !updateItemIds.contains(itemId)).toList();
 		if (!removeItemIds.isEmpty()) {
 			this.voteSubjectItemMapper.deleteByIds(removeItemIds);
 		}
-
-		Map<Long, VoteSubjectItem> updateMap = dbItems.stream().filter(item -> updateItemIds.contains(item.getItemId()))
-				.collect(Collectors.toMap(VoteSubjectItem::getItemId, item -> item));
-		List<VoteSubjectItem> itemList = dto.getItemList();
+		List<SaveSubjectItemsRequest.SubjectItem> itemList = req.getItemList();
 		for (int i = 0; i < itemList.size(); i++) {
-			VoteSubjectItem item = itemList.get(i);
-			item.setSortFlag(i);
-			if (IdUtils.validate(item.getItemId())) {
-				VoteSubjectItem dbItem = updateMap.get(item.getItemId());
-				BeanUtils.copyProperties(item, dbItem, "total");
-				dbItem.updateBy(dto.getOperator().getUsername());
-				this.voteSubjectItemMapper.updateById(dbItem);
-			} else {
-				item.setItemId(IdUtils.getSnowflakeId());
-				item.setVoteId(subject.getVoteId());
-				item.setSubjectId(subject.getSubjectId());
-				item.setTotal(0);
-				item.updateBy(dto.getOperator().getUsername());
-				this.voteSubjectItemMapper.insert(item);
+			SaveSubjectItemsRequest.SubjectItem item = itemList.get(i);
+
+			VoteSubjectItem subjectItem = dbItemMap.get(item.getItemId());
+			if (Objects.isNull(subjectItem)) {
+				subjectItem = new VoteSubjectItem();
+				subjectItem.setItemId(IdUtils.getSnowflakeId());
+				subjectItem.setVoteId(subject.getVoteId());
+				subjectItem.setSubjectId(subject.getSubjectId());
+				subjectItem.setTotal(0);
+				subjectItem.createBy(req.getOperator().getUsername());
 			}
+			subjectItem.setType(item.getType());
+			subjectItem.setContent(item.getContent());
+			subjectItem.setDescription(item.getDescription());
+			subjectItem.setSortFlag(i);
+			subjectItem.updateBy(req.getOperator().getUsername());
+			this.voteSubjectItemMapper.insertOrUpdate(subjectItem);
 		}
 		// 更新缓存
 		this.voteService.clearVoteCache(subject.getVoteId());

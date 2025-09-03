@@ -17,6 +17,8 @@ package com.chestnut.member.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.member.domain.MemberExpConfig;
+import com.chestnut.member.domain.dto.CreateMemberExpConfigRequest;
+import com.chestnut.member.domain.dto.UpdateMemberExpConfigRequest;
 import com.chestnut.member.level.IExpOperation;
 
 import java.util.List;
@@ -49,16 +51,16 @@ public interface IMemberExpConfigService extends IService<MemberExpConfig> {
 	/**
 	 * 添加操作项配置
 	 * 
-	 * @param expOp 操作项配置
+	 * @param req 操作项配置
 	 */
-	void addExpOperation(MemberExpConfig expOp);
+	void addExpOperation(CreateMemberExpConfigRequest req);
 
 	/**
 	 * 更细操作项配置
 	 * 
-	 * @param expOp 操作项配置
+	 * @param req 操作项配置
 	 */
-	void updateExpOperation(MemberExpConfig expOp);
+	void updateExpOperation(UpdateMemberExpConfigRequest req);
 
 	/**
 	 * 删除操作项配置

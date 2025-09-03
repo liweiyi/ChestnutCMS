@@ -54,6 +54,7 @@ import com.chestnut.xmodel.core.IMetaModelType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -85,9 +86,9 @@ public class ContentIndexController extends BaseRestController {
 	}
 
 	@GetMapping("/contents")
-	public R<?> selectDocumentList(@RequestParam(value = "query", required = false) String query,
+	public R<?> selectDocumentList(@RequestParam(value = "query", required = false) @Length(max = 200) String query,
 								   @RequestParam(value = "onlyTitle", required = false ,defaultValue = "false") Boolean onlyTitle,
-								   @RequestParam(value = "contentType", required = false) String contentType) throws ElasticsearchException, IOException {
+								   @RequestParam(value = "contentType", required = false) @Length(max = 20) String contentType) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
 		PageRequest pr = this.getPageRequest();
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());

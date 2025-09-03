@@ -24,13 +24,14 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysCache;
-import com.chestnut.system.domain.dto.ClearCacheDTO;
+import com.chestnut.system.domain.dto.ClearCacheRequest;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -87,7 +88,7 @@ public class CacheController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
 	@GetMapping("/getKeys/{monitoredId}")
-	public R<?> getCacheKeys(@PathVariable String monitoredId) {
+	public R<?> getCacheKeys(@PathVariable @NotBlank String monitoredId) {
 		IMonitoredCache<?> iMonitoredCache = this.monitoredCaches.get(IMonitoredCache.BEAN_PREFIX + monitoredId);
 		Assert.notNull(iMonitoredCache, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(monitoredId));
 
@@ -122,7 +123,7 @@ public class CacheController {
 		IMonitoredCache<?> iMonitoredCache = this.monitoredCaches.get(IMonitoredCache.BEAN_PREFIX + monitoredId);
 		Assert.notNull(iMonitoredCache, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(monitoredId));
 		Collection<String> cacheKeys = redisTemplate.keys(iMonitoredCache.getCacheKey() + "*");
-		if (Objects.nonNull(cacheKeys)) {
+		if (StringUtils.isNotEmpty(cacheKeys)) {
 			redisTemplate.delete(cacheKeys);
 		}
 		return R.ok();
@@ -130,7 +131,7 @@ public class CacheController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
 	@PostMapping("/clearCacheKey")
-	public R<?> clearCacheKey(@RequestBody ClearCacheDTO dto) {
+	public R<?> clearCacheKey(@RequestBody @Validated ClearCacheRequest dto) {
 		redisTemplate.delete(dto.getCacheKey());
 		return R.ok();
 	}
@@ -139,7 +140,7 @@ public class CacheController {
 	@PostMapping("/clearCacheAll")
 	public R<?> clearCacheAll() {
 		Collection<String> cacheKeys = redisTemplate.keys("*");
-		if (Objects.nonNull(cacheKeys)) {
+		if (StringUtils.isNotEmpty(cacheKeys)) {
 			redisTemplate.delete(cacheKeys);
 		}
 		return R.ok();

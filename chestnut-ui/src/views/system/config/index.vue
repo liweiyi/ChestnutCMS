@@ -57,15 +57,6 @@
     </el-row>
     <el-row v-show="showSearch">
       <el-form :model="queryParams" ref="queryForm" size="small" class="el-form-search mb12" :inline="true">
-        <el-form-item :label="$t('System.Config.ConfigName')" prop="configName">
-          <el-input
-            v-model="queryParams.configName"
-            :placeholder="$t('System.Config.Placeholder.ConfigName')"
-            clearable
-            style="width: 240px"
-            @keyup.enter.native="handleQuery"
-          />
-        </el-form-item>
         <el-form-item :label="$t('System.Config.ConfigKey')" prop="configKey">
           <el-input
             v-model="queryParams.configKey"
@@ -160,6 +151,7 @@
 </template>
 
 <script>
+import { codeValidator } from '@/utils/validate';
 import { listConfig, getConfig, delConfig, addConfig, updateConfig, refreshCache } from "@/api/system/config";
 import I18nEditor from '@/views/components/I18nFieldEditor';
 
@@ -193,22 +185,27 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        configName: undefined,
         configKey: undefined,
-        configType: undefined
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
         configName: [
-          { required: true, message: this.$t('System.Config.RuleTips.ConfigName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         configKey: [
-          { required: true, message: this.$t('System.Config.RuleTips.ConfigKey'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         configValue: [
-          { required: true, message: this.$t('System.Config.RuleTips.ConfigValue'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: "change" }
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: "change" }
         ]
       }
     };

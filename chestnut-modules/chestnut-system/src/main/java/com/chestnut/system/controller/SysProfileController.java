@@ -33,6 +33,7 @@ import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.config.SystemConfig;
 import com.chestnut.system.domain.SysMenu;
 import com.chestnut.system.domain.SysUser;
+import com.chestnut.system.domain.dto.UpdateUserProfileRequest;
 import com.chestnut.system.domain.vo.DashboardUserVO;
 import com.chestnut.system.domain.vo.ShortcutVO;
 import com.chestnut.system.domain.vo.UserProfileVO;
@@ -42,6 +43,7 @@ import com.chestnut.system.service.*;
 import com.chestnut.system.user.preference.ShortcutUserPreference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,6 +56,7 @@ import java.util.Objects;
 /**
  * 个人信息 业务处理
  */
+@Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/user/profile")
@@ -67,7 +70,6 @@ public class SysProfileController extends BaseRestController {
 
 	private final ISysMenuService menuService;
 
-	@Priv(type = AdminUserType.TYPE)
 	@GetMapping
 	public R<?> profile() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
@@ -78,37 +80,38 @@ public class SysProfileController extends BaseRestController {
 		return R.ok(new UserProfileVO(user, roleGroup, postGroup));
 	}
 
-	@Priv(type = AdminUserType.TYPE)
 	@PutMapping
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE)
-	public R<?> updateProfile(@RequestBody SysUser user) {
+	public R<?> updateProfile(@RequestBody @Validated UpdateUserProfileRequest req) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 
-		boolean checkPhoneUnique = this.userService.checkPhoneUnique(user.getPhoneNumber(), loginUser.getUserId());
+		boolean checkPhoneUnique = this.userService.checkPhoneUnique(req.getPhoneNumber(), loginUser.getUserId());
 		Assert.isTrue(checkPhoneUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("PhoneNumber"));
 
-		boolean checkEmailUnique = this.userService.checkPhoneUnique(user.getEmail(), loginUser.getUserId());
+		boolean checkEmailUnique = this.userService.checkPhoneUnique(req.getEmail(), loginUser.getUserId());
 		Assert.isTrue(checkEmailUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("Email"));
 
-		SysUser sysUser = (SysUser) loginUser.getUser();
-		sysUser.setNickName(user.getNickName());
-		sysUser.setRealName(user.getRealName());
-		sysUser.setPhoneNumber(user.getPhoneNumber());
-		sysUser.setEmail(user.getEmail());
-		sysUser.setSex(user.getSex());
-
 		LambdaUpdateWrapper<SysUser> q = new LambdaUpdateWrapper<SysUser>()
-				.set(SysUser::getNickName, user.getNickName()).set(SysUser::getPhoneNumber, user.getPhoneNumber())
-				.set(SysUser::getEmail, user.getEmail()).set(SysUser::getSex, user.getSex())
+				.set(SysUser::getNickName, req.getNickName())
+				.set(SysUser::getPhoneNumber, req.getPhoneNumber())
+				.set(SysUser::getEmail, req.getEmail())
+				.set(SysUser::getSex, req.getSex())
+				.set(SysUser::getBirthday, req.getBirthday())
 				.eq(SysUser::getUserId, loginUser.getUserId());
 		if (this.userService.update(q)) {
+			SysUser sysUser = (SysUser) loginUser.getUser();
+			sysUser.setNickName(req.getNickName());
+			sysUser.setRealName(req.getRealName());
+			sysUser.setPhoneNumber(req.getPhoneNumber());
+			sysUser.setEmail(req.getEmail());
+			sysUser.setSex(req.getSex());
+			sysUser.setBirthday(req.getBirthday());
 			StpAdminUtil.setLoginUser(loginUser);
 			return R.ok();
 		}
 		return R.fail();
 	}
 
-	@Priv(type = AdminUserType.TYPE)
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PutMapping("/updatePwd")
 	public R<?> updatePwd(String oldPassword, String newPassword) {
@@ -131,7 +134,6 @@ public class SysProfileController extends BaseRestController {
 	}
 
 	@IgnoreDemoMode
-	@Priv(type = AdminUserType.TYPE)
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE)
 	@PostMapping("/avatar")
 	public R<?> avatar(@RequestParam("avatarfile") MultipartFile file) throws Exception {
@@ -150,7 +152,6 @@ public class SysProfileController extends BaseRestController {
 	/**
 	 * 首页用户信息
 	 */
-	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/homeInfo")
 	public R<?> getHomeInfo() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
@@ -168,7 +169,6 @@ public class SysProfileController extends BaseRestController {
 		return R.ok(vo);
 	}
 
-	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/shortcuts")
 	public R<?> getHomeShortcuts() {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());

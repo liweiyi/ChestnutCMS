@@ -17,6 +17,7 @@ package com.chestnut.common.utils.image.op;
 
 import com.chestnut.common.exception.ImageException;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.image.TextWatermarkProperties;
 import com.chestnut.common.utils.image.WatermarkPosition;
 import com.chestnut.common.utils.image.WatermarkText;
 
@@ -40,13 +41,13 @@ public class TextWatermarkOp extends JDKImageOp {
 
     private final float opacity;
 
-    private final WatermarkPosition position;
+    private WatermarkPosition position;
 
     private AlphaComposite alphaComposite;
 
     private FontMetrics fontMetrics;
 
-    private Point point;
+    private TextWatermarkProperties point;
 
     public TextWatermarkOp(String text, Font font, Color color, float opacity, WatermarkPosition position) {
         this.text = text;
@@ -54,6 +55,14 @@ public class TextWatermarkOp extends JDKImageOp {
         this.color = color;
         this.opacity = Math.min(opacity, 1f);
         this.position = position;
+    }
+
+    public TextWatermarkOp(String text, Font font, Color color, float opacity, TextWatermarkProperties point) {
+        this.text = text;
+        this.font = font;
+        this.color = color;
+        this.opacity = Math.min(opacity, 1f);
+        this.point = point;
     }
 
     @Override
@@ -72,8 +81,11 @@ public class TextWatermarkOp extends JDKImageOp {
             alphaComposite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
         }
         fontMetrics = this.getFontMetrics(font);
-        point = ImageWatermarkOp.calculateWatermarkPoint(originalWidth, originalHeight,
-                fontMetrics.stringWidth(text), fontMetrics.getAscent(), 10, position);
+        if (Objects.isNull(point)) {
+            Point p = ImageWatermarkOp.calculateWatermarkPoint(originalWidth, originalHeight,
+                    fontMetrics.stringWidth(text), fontMetrics.getAscent(), 10, position);
+            point = new TextWatermarkProperties(p.x, p.y, 0);
+        }
     }
 
     @Override
@@ -87,10 +99,40 @@ public class TextWatermarkOp extends JDKImageOp {
         }
         g.setColor(watermarkText.getColor());
         g.setFont(watermarkText.getFont());
-        g.drawString(watermarkText.getText(), point.x, point.y + fontMetrics.getAscent() - fontMetrics.getDescent());
+//        if (point.getWidth() > 0) {
+            drawString(g, watermarkText.getText(), point);
+//        } else {
+//            g.drawString(watermarkText.getText(), point.getX(), point.getY() + fontMetrics.getAscent() - fontMetrics.getDescent());
+//        }
         g.dispose();
 
         return newImage;
+    }
+
+    /**
+     * 在指定最大宽度内自动换行绘制文本
+     *
+     * @param g2d       Graphics2D 对象
+     * @param text      要绘制的文本
+     * @param point     水印位置信息
+     */
+    public void drawString(Graphics2D g2d, String text, TextWatermarkProperties point) {
+        int y = point.getY();
+        FontMetrics fm = g2d.getFontMetrics(); // 用于测量文本宽度
+        int lineHeight = (int) (fm.getHeight() * point.getLineHeight());  // 每行高度（包含 ascent 和 descent）
+
+        int lineWidth = 0;
+        for (int i = 0; i < text.length(); i++) {
+            String c = String.valueOf(text.charAt(i));
+            int cWidth = fm.stringWidth(c);
+            // 超出行宽并有当前行有至少一个字才换行
+            if (point.getWidth() > 0 && lineWidth + cWidth > point.getWidth() && lineWidth > 0) {
+                y += lineHeight;
+                lineWidth = 0;
+            }
+            g2d.drawString(c, point.getX() + lineWidth, y + fontMetrics.getAscent() - fontMetrics.getDescent());
+            lineWidth += cWidth + point.getSpacing();
+        }
     }
 
     private FontMetrics getFontMetrics(Font font) {

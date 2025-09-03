@@ -124,19 +124,19 @@ public class CmsPageWidgetTag extends AbstractTag {
 			String siteRoot = SiteUtils.getSiteRoot(site, context.getPublishPipeCode());
 			String staticFileName = PageWidgetUtils.getStaticFileName(pw, site.getStaticSuffix(context.getPublishPipeCode()));
 			String staticFilePath = pw.getPath() + staticFileName;
-			if (ssi) {
-				// 读取页面部件静态化内容
-				String staticContent = templateService.getTemplateStaticContentCache(templateKey);
-				if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
-					staticContent = this.processTemplate(env, pw, templateKey);
+
+			String staticContent = templateService.getTemplateStaticContentCache(templateKey);
+			if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
+				staticContent = this.processTemplate(env, pw, templateKey);
+				this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
+				if (ssi) {
 					FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
-					this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
 				}
-				String prefix = SiteUtils.getPublishPipePrefix(site, context.getPublishPipeCode(), context.isPreview());
+			}
+			if (ssi) {
+				String prefix = CmsIncludeTag.getIncludePathPrefix(context.getPublishPipeCode(), site);
 				env.getOut().write(StringUtils.messageFormat(CmsIncludeTag.SSI_INCLUDE_TAG, prefix + staticFilePath));
 			} else {
-				// 非ssi模式无法使用缓存
-				String staticContent = this.processTemplate(env, pw, templateKey);
 				env.getOut().write(staticContent);
 			}
 		}

@@ -25,13 +25,17 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysUserOnline;
+import com.chestnut.system.domain.dto.QueryOnlineUserRequest;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysUserOnlineService;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -53,7 +57,7 @@ public class SysUserOnlineController extends BaseRestController {
 	
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorOnlineList)
 	@GetMapping("/list")
-	public R<?> list(String ipaddr, String userName) {
+	public R<?> list(@Validated QueryOnlineUserRequest req) {
 		String keyPrefix = StpAdminUtil.getStpLogic().getConfigOrGlobal().getTokenName() + ":" + AdminUserType.TYPE + ":token:";
 		Set<String> keys = redisCache.scanKeys(keyPrefix + "*", 100);
 		List<SysUserOnline> userOnlineList = keys.stream().map(key -> {
@@ -64,14 +68,11 @@ public class SysUserOnlineController extends BaseRestController {
 			if (Objects.isNull(online)) {
 				return false;
 			}
-			if(StringUtils.isNotEmpty(ipaddr) && !StringUtils.equals(ipaddr, online.getIpaddr())) {
+			if(StringUtils.isNotEmpty(req.getIpaddr()) && !StringUtils.equals(req.getIpaddr(), online.getIpaddr())) {
 				return false;
 			}
-			if(StringUtils.isNotEmpty(userName) && !StringUtils.equals(userName, online.getUserName())) {
-				return false;
-			}
-			return true;
-		}).sorted((u1, u2) -> u1.getLoginTime() > u2.getLoginTime() ? 1 : -1).toList();
+            return !StringUtils.isNotEmpty(req.getUserName()) || StringUtils.equals(req.getUserName(), online.getUserName());
+        }).sorted(Comparator.comparing(SysUserOnline::getLoginTime).reversed()).toList();
 		return bindDataTable(userOnlineList);
 	}
 
@@ -80,9 +81,11 @@ public class SysUserOnlineController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorOnlineForceLogout)
 	@Log(title = "在线用户", businessType = BusinessType.FORCE)
-	@PostMapping("/delete/{tokenId}")
-	public R<?> forceLogout(@PathVariable String tokenId) {
-		StpAdminUtil.logoutByTokenValue(tokenId);
+	@PostMapping("/delete")
+	public R<?> forceLogout(@RequestBody @NotEmpty List<String> tokenIds) {
+		for (String tokenId : tokenIds) {
+			StpAdminUtil.logoutByTokenValue(tokenId);
+		}
 		return R.ok();
 	}
 }

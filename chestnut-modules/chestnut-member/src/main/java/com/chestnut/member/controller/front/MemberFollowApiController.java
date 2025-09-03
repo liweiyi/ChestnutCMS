@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.controller.front;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
@@ -27,7 +28,8 @@ import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberFollowService;
 import com.chestnut.member.service.IMemberStatDataService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
-import jakarta.validation.constraints.NotEmpty;
+import com.chestnut.system.validator.LongId;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Priv(type = MemberUserType.TYPE)
 @RequiredArgsConstructor
@@ -48,21 +51,21 @@ public class MemberFollowApiController extends BaseRestController {
 	private final IMemberStatDataService memberStatDataService;
 
 	@GetMapping("/api/member/check_follow")
-	public R<?> checkFollowMember(@RequestParam @NotEmpty String targetIds) {
-		String[] memberIds = StringUtils.split(targetIds, ",");
+	public R<?> checkFollowMember(@RequestParam @NotBlank String targetIds) {
+		String[] targetMemberStrIds = StringUtils.split(targetIds, ",");
+		List<Long> targetMemberIds = Stream.of(targetMemberStrIds).map(Long::valueOf).toList();
+		IdUtils.validate(targetMemberIds, true);
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		List<MemberFollow> list = this.memberFollowService.lambdaQuery().eq(MemberFollow::getMemberId, memberId)
-				.in(MemberFollow::getFollowMemberId, List.of(memberIds)).list();
+				.in(MemberFollow::getFollowMemberId, targetMemberIds).list();
 		Map<String, Boolean> map = new HashMap<>(list.size());
-		list.forEach(mf -> {
-			map.put(mf.getFollowMemberId().toString(), true);
-		});
+		list.forEach(mf -> map.put(mf.getFollowMemberId().toString(), true));
 		return R.ok(map);
 	}
 
 	@IgnoreDemoMode
 	@PostMapping("/api/member/follow")
-	public R<?> followMember(@RequestParam Long targetId) {
+	public R<?> followMember(@RequestParam @LongId Long targetId) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		this.memberFollowService.follow(memberId, targetId);
 		return R.ok();
@@ -70,7 +73,7 @@ public class MemberFollowApiController extends BaseRestController {
 
 	@IgnoreDemoMode
 	@PostMapping("/api/member/cancel_follow")
-	public R<?> cancelFollowMember(@RequestParam Long targetId) {
+	public R<?> cancelFollowMember(@RequestParam @LongId Long targetId) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		if (memberId == targetId) {
 			return R.ok();
@@ -90,8 +93,8 @@ public class MemberFollowApiController extends BaseRestController {
 				.eq(MemberFollow::getMemberId, memberId)
 				.lt(IdUtils.validate(offset), MemberFollow::getLogId, offset)
 				.orderByDesc(MemberFollow::getLogId)
-				.last("limit " + limit)
-				.list().stream().map(MemberFollow::getFollowMemberId).toList();
+				.page(new Page<>(1, limit, false))
+				.getRecords().stream().map(MemberFollow::getFollowMemberId).toList();
 
 		List<MemberCache> list = followMemberIds.stream().map(memberStatDataService::getMemberCache).toList();
 		return this.bindDataTable(list);
@@ -108,8 +111,8 @@ public class MemberFollowApiController extends BaseRestController {
 				.eq(MemberFollow::getFollowMemberId, memberId)
 				.lt(IdUtils.validate(offset), MemberFollow::getLogId, offset)
 				.orderByDesc(MemberFollow::getLogId)
-				.last("limit " + limit)
-				.list().stream().map(MemberFollow::getMemberId).toList();
+				.page(new Page<>(1, limit, false))
+				.getRecords().stream().map(MemberFollow::getMemberId).toList();
 
 		List<MemberCache> list = followerMemberIds.stream().map(memberStatDataService::getMemberCache).toList();
 		return this.bindDataTable(list);

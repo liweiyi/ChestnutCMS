@@ -16,6 +16,7 @@
 package com.chestnut.cms.dynamic.listener;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -25,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -40,11 +43,21 @@ public class DynamicListener {
 		try {
 			long total = this.dynamicPageService
 					.count(new LambdaQueryWrapper<CmsDynamicPage>().eq(CmsDynamicPage::getSiteId, site.getSiteId()));
+			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
 						"正在删除自定义动态模板页面数据：" + (i * pageSize) + "/" + total);
-				this.dynamicPageService.remove(new LambdaQueryWrapper<CmsDynamicPage>().eq(CmsDynamicPage::getSiteId, site.getSiteId())
-						.last("limit " + pageSize));
+				Page<CmsDynamicPage> pages = this.dynamicPageService.lambdaQuery()
+						.select(CmsDynamicPage::getPageId)
+						.eq(CmsDynamicPage::getSiteId, site.getSiteId())
+						.gt(CmsDynamicPage::getPageId, lastId)
+						.orderByAsc(CmsDynamicPage::getPageId)
+						.page(Page.of(1, pageSize, false));
+				if (!pages.getRecords().isEmpty()) {
+					List<Long> pageIds = pages.getRecords().stream().map(CmsDynamicPage::getPageId).toList();
+					this.dynamicPageService.removeBatchByIds(pageIds);
+					lastId = pageIds.get(pageIds.size() - 1);
+				}
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除自定义动态模板页面数据错误：" + e.getMessage());

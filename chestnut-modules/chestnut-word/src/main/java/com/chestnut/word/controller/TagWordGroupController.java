@@ -23,12 +23,15 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.system.validator.LongId;
 import com.chestnut.word.domain.TagWordGroup;
+import com.chestnut.word.domain.dto.CreateTagWordGroupRequest;
+import com.chestnut.word.domain.dto.UpdateTagWordGroupRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.ITagWordGroupService;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,8 +53,8 @@ public class TagWordGroupController extends BaseRestController {
 	private final ITagWordGroupService tagWordGroupService;
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	@GetMapping("/list")
+	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<TagWordGroup> page = this.tagWordGroupService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(query), TagWordGroup::getName, query)
@@ -68,17 +71,22 @@ public class TagWordGroupController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@PostMapping
-	public R<?> add(@RequestBody @Validated TagWordGroup group) {
-		group.createBy(StpAdminUtil.getLoginUser().getUsername());
-		return R.ok(this.tagWordGroupService.addTagWordGroup(group));
+	@GetMapping("/data/{groupId}")
+	public R<?> getData(@PathVariable @LongId Long groupId) {
+		TagWordGroup group = this.tagWordGroupService.getById(groupId);
+		return R.ok(group);
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@PutMapping
-	public R<?> edit(@RequestBody @Validated TagWordGroup group) {
-		group.updateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.tagWordGroupService.editTagWordGroup(group);
+	@PostMapping("/add")
+	public R<?> add(@RequestBody @Validated CreateTagWordGroupRequest req) {
+		return R.ok(this.tagWordGroupService.addTagWordGroup(req));
+	}
+
+	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
+	@PutMapping("/update")
+	public R<?> edit(@RequestBody @Validated UpdateTagWordGroupRequest req) {
+		this.tagWordGroupService.editTagWordGroup(req);
 		return R.ok();
 	}
 

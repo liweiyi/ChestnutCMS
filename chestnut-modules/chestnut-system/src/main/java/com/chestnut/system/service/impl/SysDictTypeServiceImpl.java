@@ -28,7 +28,8 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.domain.SysDictType;
-import com.chestnut.system.domain.SysI18nDict;
+import com.chestnut.system.domain.dto.CreateDictTypeRequest;
+import com.chestnut.system.domain.dto.UpdateDictTypeRequest;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.FixedDictUtils;
 import com.chestnut.system.mapper.SysDictDataMapper;
@@ -91,41 +92,42 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 			this.removeById(dictType);
 			this.deleteCache(dictType.getDictType());
 			// 删除国际化配置
-			this.i18nDictService.remove(new LambdaQueryWrapper<SysI18nDict>()
-					.likeRight(SysI18nDict::getLangKey, "DICT." + dictType.getDictType()));
+			this.i18nDictService.deleteByLangKey(langKey(dictType.getDictType()), false);
+			this.i18nDictService.deleteByLangKey(langKey(dictType.getDictType()) + ".", true);
 		}
 	}
 
 	@Override
 	@Transactional(rollbackFor = Throwable.class)
-	public void insertDictType(SysDictType dict) {
-		Assert.isTrue(this.checkDictTypeUnique(dict),
-				() -> SysErrorCode.DICT_TYPE_CONFLICT.exception(dict.getDictType()));
+	public void insertDictType(CreateDictTypeRequest req) {
+		Assert.isTrue(this.checkDictTypeUnique(req.getDictType(), null),
+				() -> SysErrorCode.DICT_TYPE_CONFLICT.exception(req.getDictType()));
+
+		SysDictType dict = new SysDictType();
 		dict.setDictId(IdUtils.getSnowflakeId());
-		dict.setCreateTime(LocalDateTime.now());
+		dict.setDictType(req.getDictType());
+		dict.setDictName(req.getDictName());
+		dict.setRemark(req.getRemark());
+		dict.createBy(req.getOperator().getUsername());
 		this.save(dict);
 
-		SysI18nDict i18nDict = new SysI18nDict();
-		i18nDict.setLangKey("DICT." + dict.getDictType());
-		i18nDict.setLangTag(LocaleContextHolder.getLocale().toLanguageTag());
-		i18nDict.setLangValue(dict.getDictName());
-		i18nDictService.batchSaveI18nDicts(List.of(i18nDict));
+		i18nDictService.saveOrUpdate(LocaleContextHolder.getLocale().toLanguageTag(), langKey(dict.getDictType()), dict.getDictName());
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateDictType(SysDictType dict) {
-		SysDictType dbDict = this.getById(dict.getDictId());
-		Assert.notNull(dbDict, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("dictId", dict.getDictId()));
-		Assert.isTrue(this.checkDictTypeUnique(dict),
-				() -> CommonErrorCode.DATA_CONFLICT.exception("dictType:" + dict.getDictType()));
+	public void updateDictType(UpdateDictTypeRequest req) {
+		SysDictType dbDict = this.getById(req.getDictId());
+		Assert.notNull(dbDict, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("dictId", req.getDictId()));
+		Assert.isTrue(this.checkDictTypeUnique(req.getDictType(), req.getDictId()),
+				() -> CommonErrorCode.DATA_CONFLICT.exception("dictType:" + req.getDictType()));
 
 		// 类型变更需要更新关联字典项数据
 		String oldDictType = dbDict.getDictType();
 
-		dbDict.setDictName(dict.getDictName());
-		dbDict.setDictType(dict.getDictType());
-		dbDict.setRemark(dict.getRemark());
+		dbDict.setDictName(req.getDictName());
+		dbDict.setDictType(req.getDictType());
+		dbDict.setRemark(req.getRemark());
 		dbDict.setUpdateTime(LocalDateTime.now());
 		this.updateById(dbDict);
 		// 类型变更需要更新字典数据，更新缓存
@@ -135,14 +137,17 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 			// 修改字典数据类型，更新缓存
 			new LambdaUpdateChainWrapper<>(this.dictDataMapper).set(SysDictData::getDictType, dbDict.getDictType())
 					.eq(SysDictData::getDictType, oldDictType).update();
-			this.deleteCache(dict.getDictType());
+			this.deleteCache(req.getDictType());
+			this.deleteCache(oldDictType);
+			// 国际化
+			i18nDictService.changeLangKey(langKey(oldDictType), langKey(dbDict.getDictType()), true);
 		}
 	}
 
 	@Override
-	public boolean checkDictTypeUnique(SysDictType dict) {
-		long result = this.lambdaQuery().eq(SysDictType::getDictType, dict.getDictType())
-				.ne(IdUtils.validate(dict.getDictId()), SysDictType::getDictId, dict.getDictId()).count();
+	public boolean checkDictTypeUnique(String dictType, Long dictId) {
+		long result = this.lambdaQuery().eq(SysDictType::getDictType, dictType)
+				.ne(IdUtils.validate(dictId), SysDictType::getDictId, dictId).count();
 		return result == 0;
 	}
 
@@ -167,6 +172,10 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 
 	private void deleteCache(String dictType) {
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_DICT_KEY + dictType);
+	}
+
+	private String langKey(String dictType) {
+		return "DICT." + dictType;
 	}
 
 	/**

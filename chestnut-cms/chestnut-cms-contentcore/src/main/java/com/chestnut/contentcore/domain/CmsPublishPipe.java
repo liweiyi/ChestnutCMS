@@ -19,8 +19,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.db.domain.BaseEntity;
+import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -64,7 +64,7 @@ public class CmsPublishPipe extends BaseEntity {
     /**
      * 编码
      */
-    @Pattern(regexp = "[A-Za-z0-9_]+")
+    @Pattern(regexp = RegexConsts.REGEX_CODE)
     private String code;
 
     /**

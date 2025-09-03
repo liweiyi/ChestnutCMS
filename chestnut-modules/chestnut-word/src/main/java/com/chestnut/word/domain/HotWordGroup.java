@@ -19,7 +19,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.db.domain.BaseEntity;
-
+import com.chestnut.common.validation.RegexConsts;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -61,7 +61,7 @@ public class HotWordGroup extends BaseEntity {
      * 编码，唯一标识
      */
     @NotEmpty
-	@Pattern(regexp = "^[A-Za-z0-9_]+$", message = "热词分组编码只能使用大小写字母、数字和下划线")
+	@Pattern(regexp = RegexConsts.REGEX_CODE)
     private String code;
     
     /**

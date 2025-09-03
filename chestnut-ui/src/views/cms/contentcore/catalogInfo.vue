@@ -141,6 +141,7 @@
         </div>
         <el-form-item :label="$t('CMS.Catalog.CatalogId')" prop="catalogId">
           <span class="span_catalogid" v-if="form_info.catalogId!=undefined">{{form_info.catalogId}}</span>
+          <span v-if="!catalogVisible" style="color: #ffba00;"> [ {{ $t('Common.Hide') }} ]</span>
         </el-form-item>
         <el-form-item :label="$t('CMS.Catalog.Name')" prop="name">
           <el-input v-model="form_info.name" />
@@ -374,6 +375,7 @@
   </div>
 </template>
 <script>
+import { codeValidator, pathValidator } from '@/utils/validate';
 import * as catalogApi from "@/api/contentcore/catalog";
 import CMSCatalogSelector from "@/views/cms/contentcore/catalogSelector";
 import CMSContentSelector from "@/views/cms/contentcore/contentSelector";
@@ -445,16 +447,36 @@ export default {
       // 表单校验
       rules: {
         name: [
-          { required: true, message: this.$t('CMS.Catalog.RuleTips.Name'), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { max: 100, messag: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         alias: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('CMS.Catalog.RuleTips.Alias'), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
+          { max: 100, messag: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         path: [
-          { required: true, pattern: "^[A-Za-z0-9_\/]+$", message: this.$t('CMS.Catalog.RuleTips.Path'), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { validator: pathValidator, trigger: "change" },
+          { max: 255, messag: this.$t('Common.RuleTips.MaxLength', [ 255 ]), trigger: "change" }
         ],
         catalogType: [
-          { required: true, message: this.$t('CMS.Catalog.RuleTips.CatalogType'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        description: [
+          { max: 255, messag: this.$t('Common.RuleTips.MaxLength', [ 255 ]), trigger: "change" }
+        ],
+        redirectUrl: [
+          { max: 255, messag: this.$t('Common.RuleTips.MaxLength', [ 255 ]), trigger: "change" }
+        ],
+        seoTitle: [
+          { max: 200, messag: this.$t('Common.RuleTips.MaxLength', [ 200 ]), trigger: "change" }
+        ],
+        seoKeywords: [
+          { max: 400, messag: this.$t('Common.RuleTips.MaxLength', [ 400 ]), trigger: "change" }
+        ],
+        seoDescription: [
+          { max: 1000, messag: this.$t('Common.RuleTips.MaxLength', [ 1000 ]), trigger: "change" }
         ]
       },
       openFileSelector: false,

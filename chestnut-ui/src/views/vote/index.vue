@@ -246,7 +246,8 @@ export default {
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         code: [
-          { required: true, validator: codeValidator, trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" }
         ],
         startTime: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }

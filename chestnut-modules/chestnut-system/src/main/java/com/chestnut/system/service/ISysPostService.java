@@ -15,10 +15,12 @@
  */
 package com.chestnut.system.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysPost;
+import com.chestnut.system.domain.dto.CreatePostRequest;
+import com.chestnut.system.domain.dto.UpdatePostRequest;
+
+import java.util.List;
 
 /**
  * 岗位信息 服务层
@@ -28,62 +30,37 @@ public interface ISysPostService extends IService<SysPost> {
 	/**
 	 * 根据用户ID获取岗位选择框列表
 	 * 
-	 * @param userId
-	 *            用户ID
+	 * @param userId 用户ID
 	 * @return 选中岗位ID列表
 	 */
-	public List<SysPost> selectPostListByUserId(Long userId);
-
-	/**
-	 * 校验岗位名称
-	 * 
-	 * @param post
-	 *            岗位信息
-	 * @return 结果
-	 */
-	public boolean checkPostNameUnique(SysPost post);
-
-	/**
-	 * 校验岗位编码
-	 * 
-	 * @param post
-	 *            岗位信息
-	 * @return 结果
-	 */
-	public boolean checkPostCodeUnique(SysPost post);
+	List<SysPost> selectPostListByUserId(Long userId);
 
 	/**
 	 * 批量删除岗位信息
 	 * 
-	 * @param postIds
-	 *            需要删除的岗位ID
-	 * @return 结果
+	 * @param postIds 需要删除的岗位ID
 	 */
-	public void deletePostByIds(List<Long> postIds);
+	void deletePostByIds(List<Long> postIds);
 
 	/**
 	 * 新增保存岗位信息
 	 * 
-	 * @param post
-	 *            岗位信息
-	 * @return 结果
+	 * @param post 岗位信息
 	 */
-	public void insertPost(SysPost post);
+	void insertPost(CreatePostRequest post);
 
 	/**
 	 * 修改保存岗位信息
 	 * 
-	 * @param post
-	 *            岗位信息
-	 * @return 结果
+	 * @param post 岗位信息
 	 */
-	public void updatePost(SysPost post);
+	void updatePost(UpdatePostRequest post);
 
 	/**
 	 * 获取岗位缓存信息
 	 * 
-	 * @param postCode
-	 * @return
+	 * @param postCode 岗位编码
+	 * @return 结果
 	 */
 	SysPost getPost(String postCode);
 }

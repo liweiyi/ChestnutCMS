@@ -166,13 +166,7 @@
         <el-form-item :label="$t('System.Role.RoleName')" prop="roleName">
           <el-input v-model="form.roleName" :placeholder="$t('System.Role.Placeholder.RoleName')" />
         </el-form-item>
-        <el-form-item prop="roleKey">
-          <span slot="label">
-            <el-tooltip :content="$t('System.Role.RoleKeyTips')" placement="top">
-              <i class="el-icon-question"></i>
-            </el-tooltip>
-            {{ $t('System.Role.RoleKey') }}
-          </span>
+        <el-form-item :label="$t('System.Role.RoleKey')" prop="roleKey">
           <el-input v-model="form.roleKey" :placeholder="$t('System.Role.Placeholder.RoleKey')" />
         </el-form-item>
         <el-form-item :label="$t('System.Role.Sort')" prop="roleSort">
@@ -210,6 +204,7 @@
 </template>
 
 <script>
+import { codeValidator } from '@/utils/validate';
 import { listRole, getRole, delRole, addRole, updateRole, changeRoleStatus } from "@/api/system/role";
 import RolePermission from '@/views/system/permission/permsTab';
 
@@ -255,13 +250,19 @@ export default {
       // 表单校验
       rules: {
         roleName: [
-          { required: true, message: this.$t('System.Role.RuleTips.RoleName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: "blur" }
         ],
         roleKey: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('System.Role.RuleTips.RoleKey'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "blur" }
         ],
         roleSort: [
-          { required: true, message: this.$t('System.Role.RuleTips.Sort'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: "blur" }
         ]
       }
     };
@@ -368,7 +369,7 @@ export default {
             });
           } else {
             addRole(this.form).then(response => {
-              this.$modal.msgSuccess(this.$t('Common.DeleteSuccess'));
+              this.$modal.msgSuccess(this.$t('Common.AddSuccess'));
               this.open = false;
               this.getList();
             });

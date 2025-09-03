@@ -188,19 +188,19 @@
       append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item v-if="form.memberId == undefined" :label="$t('Member.UserName')" prop="userName">
-          <el-input v-model="form.userName" :maxlength="30" />
-        </el-form-item>
-        <el-form-item :label="$t('Member.NickName')" prop="nickName">
-          <el-input v-model="form.nickName" :maxlength="30" />
-        </el-form-item>
-        <el-form-item v-if="form.memberId == undefined" :label="$t('Member.Password')" prop="password">
-          <el-input v-model="form.password" type="password" :maxlength="32" show-password/>
+          <el-input v-model="form.userName" />
         </el-form-item>
         <el-form-item label="Email" prop="email">
-          <el-input v-model="form.email" :maxlength="30" />
+          <el-input v-model="form.email" />
         </el-form-item>
         <el-form-item :label="$t('Member.PhoneNumber')" prop="phoneNumber">
-          <el-input v-model="form.phoneNumber" :maxlength="11" />
+          <el-input v-model="form.phoneNumber" />
+        </el-form-item>
+        <el-form-item :label="$t('Member.NickName')" prop="nickName">
+          <el-input v-model="form.nickName" />
+        </el-form-item>
+        <el-form-item v-if="form.memberId == undefined" :label="$t('Member.Password')" prop="password">
+          <el-input v-model="form.password" type="password" show-password/>
         </el-form-item>
         <el-form-item :label="$t('Member.Birthday')" prop="birthday">
           <el-date-picker v-model="form.birthday" format="yyyy-MM-dd" value-format="yyyy-MM-dd HH:mm:ss" type="date"></el-date-picker>
@@ -226,7 +226,7 @@
   </div>
 </template>
 <script>
-import { isBlank, validEmail, validPhoneNumber } from '@/utils/validate';
+import { isBlank, userNameValidator, emailValidator, phoneNumberValidator } from '@/utils/validate';
 import { getMemberList, getMemberDetail, addMember, updateMember, deleteMembers, resetMemberPassword } from "@/api/member/member";
 
 export default {
@@ -236,20 +236,6 @@ export default {
     const validateMember = (rule, value, callback) => {
         if (isBlank(this.form.userName) && isBlank(this.form.phoneNumber) && isBlank(this.form.email)) {
           callback(new Error(this.$t('Member.RuleTips.Member')));
-        } else {
-          callback();
-        }
-      };
-    const emailValidator = (rule, value, callback) => {
-        if (!isBlank(value) && !validEmail(value)) {
-          callback(new Error(this.$t('Common.RuleTips.Email')));
-        } else {
-          callback();
-        }
-      };
-    const phoneNumberValidator = (rule, value, callback) => {
-        if (!isBlank(value) && !validPhoneNumber(value)) {
-          callback(new Error(this.$t('Common.RuleTips.PhoneNumber')));
         } else {
           callback();
         }
@@ -274,6 +260,11 @@ export default {
       open: false,
       // 查询参数
       queryParams: {
+        userName: undefined,
+        nickName: undefined,
+        email: undefined,
+        phoneNumber: undefined,
+        status: undefined,
         pageNum: 1,
         pageSize: 10,
       },
@@ -283,27 +274,36 @@ export default {
       },
       // 表单校验
       rules: {
-        userName: [,
-          {
-            pattern: /^[A-Za-z][A-Za-z0-9_]+$/,
-            message: this.$t('Member.RuleTips.UserName'),
-            trigger: "blur"
-          },
+        userName: [
+          { validator: userNameValidator, trigger: [ "change", "blur" ] },
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: [ "change", "blur" ] },
           { validator: validateMember }
         ],
+        nickName: [
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: [ "change", "blur" ] },
+        ],
+        realName: [
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: [ "change", "blur" ] },
+        ],
         password: [
-          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: [ "change", "blur" ] },
         ],
         email: [
           { validator: emailValidator, trigger: "blur" },
-          { validator: validateMember, trigger: "blur" }
+          { validator: validateMember, trigger: "blur" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: [ "change", "blur" ] },
         ],
         phoneNumber: [
           { validator: phoneNumberValidator, trigger: "blur" },
-          { validator: validateMember, trigger: "blur" }
+          { validator: validateMember, trigger: "blur" },
+          { max: 20, message: this.$t('Common.RuleTips.MaxLength', [ 20 ]), trigger: [ "change", "blur" ] },
         ],
         status: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: [ "change", "blur" ] },
         ]
       }
     };
@@ -325,7 +325,15 @@ export default {
       this.getList();
     },
     resetQuery() {
-      this.resetForm("queryForm");
+      this.queryParams = {
+        userName: undefined,
+        nickName: undefined,
+        email: undefined,
+        phoneNumber: undefined,
+        status: undefined,
+        pageNum: 1,
+        pageSize: 10,
+      };
       this.handleQuery();
     },
     handleSelectionChange (selection) {

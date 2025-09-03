@@ -13,8 +13,20 @@ export function isExternal(path) {
  * @returns {Boolean}
  */
 export function validUsername(str) {
-  const valid_map = ['admin', 'editor']
-  return valid_map.indexOf(str.trim()) >= 0
+  const reg = /^[A-Za-z][A-Za-z0-9_]+$/
+  return reg.test(str)
+}
+
+export function userNameValidator(rule, value, callback) {
+  if (!isBlank(value)) {
+    if (!validCode(value)) {
+      callback(new Error(i18n.t('Common.RuleTips.UserName')));
+    } else {
+      callback();
+    }
+  } else {
+    callback();
+  }
 }
 
 /**
@@ -73,10 +85,15 @@ export function validEmail(email) {
 }
 
 export function emailValidator(rule, value, callback) {
-  if (!validEmail(value)) {
-    return callback(new Error(i18n.t('Common.RuleTips.Email')));
+  if (!isBlank(value)) {
+    if (!validEmail(value)) {
+      return callback(new Error(i18n.t('Common.RuleTips.Email')));
+    } else {
+      callback();
+    }
+  } else {
+    callback();
   }
-  callback();
 }
 
 export function validPhoneNumber(phoneNumber) {
@@ -85,10 +102,15 @@ export function validPhoneNumber(phoneNumber) {
 }
 
 export function phoneNumberValidator(rule, value, callback) {
-  if (!validPhoneNumber(value)) {
-    return callback(new Error(i18n.t('Common.RuleTips.PhoneNumber')));
+  if (!isBlank(value)) {
+    if (!validPhoneNumber(value)) {
+      return callback(new Error(i18n.t('Common.RuleTips.PhoneNumber')));
+    } else {
+      callback();
+    }
+  } else {
+    callback();
   }
-  callback();
 }
 
 export function isBlank(value) {
@@ -128,11 +150,47 @@ export function validCode(code) {
 }
 
 export function codeValidator(rule, value, callback) {
-  if (!value || value.length == 0) {
-    return callback(new Error(i18n.t('Common.RuleTips.NotEmpty')));
+  if (!isBlank(value)) {
+    if (!validCode(value)) {
+      callback(new Error(i18n.t('Common.RuleTips.Code')));
+    } else {
+      callback();
+    }
+  } else {
+    callback();
   }
-  if (!validCode(value)) {
-    return callback(new Error(i18n.t('Common.RuleTips.Code')));
+}
+
+export function validPath(path) {
+  const reg = /^[A-Za-z0-9_\/]+$/
+  return reg.test(path)
+}
+
+export function pathValidator(rule, value, callback) {
+  if (!isBlank(value)) {
+    if (!validPath(value)) {
+      callback(new Error(i18n.t('Common.RuleTips.Path')));
+    } else {
+      callback();
+    }
+  } else {
+    callback();
   }
-  callback();
+}
+
+export function validFileName(path) {
+  const reg = /^[A-Za-z0-9_\.]+$/
+  return reg.test(path)
+}
+
+export function fileNameValidator(rule, value, callback) {
+  if (!isBlank(value)) {
+    if (!validPath(value)) {
+      callback(new Error(i18n.t('Common.RuleTips.Code')));
+    } else {
+      callback();
+    }
+  } else {
+    callback();
+  }
 }

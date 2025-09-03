@@ -128,6 +128,7 @@
 <style scoped>
 </style>
 <script>
+import { codeValidator } from '@/utils/validate';
 import { delSite, addSite, listSite, publishSite  } from "@/api/contentcore/site";
 import CMSProgress from '@/views/components/Progress';
 
@@ -153,10 +154,11 @@ export default {
       // 表单校验
       rules: {
         name: [
-          { required: true, message: this.$t("CMS.Site.RuleTips.Name"), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" }
         ],
         path: [
-          { required: true, pattern: "^[A-Za-z0-9]+$", message: this.$t("CMS.Site.RuleTips.Path"), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" }
         ]
       },
       openProgress: false,

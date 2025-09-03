@@ -24,7 +24,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysPermission;
 import com.chestnut.system.domain.SysRole;
-import com.chestnut.system.domain.dto.SysPermissionDTO;
+import com.chestnut.system.domain.dto.SavePermissionRequest;
 import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.mapper.SysPermissionMapper;
 import com.chestnut.system.permission.IPermissionType;
@@ -71,7 +71,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	}
 
 	@Override
-	public void saveMenuPermissions(SysPermissionDTO dto) {
+	public void saveMenuPermissions(SavePermissionRequest dto) {
 		this.savePermissions(dto.getOwnerType(), dto.getOwner(), dto.getPermissions(), dto.getPermType(), dto.getOperator().getUserType());
 	}
 

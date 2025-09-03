@@ -58,7 +58,7 @@ public class WatermarkImage extends Watermark {
         Assert.isTrue(f.exists(), () -> new FileNotFoundException("Watermark image not found."));
 
         String ext = FilenameUtils.getExtension(f.getName());
-        if (ImageUtils.FORMAT_GIF.equalsIgnoreCase(ext)) {
+        if (ImageFormat.GIF.ext().equalsIgnoreCase(ext)) {
             throw new ImageException("Unsupported gif watermark image");
         }
         if (ratio <= 0 || ratio > 1) {

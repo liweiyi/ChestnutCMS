@@ -24,7 +24,6 @@ import freemarker.cache.MruCacheStorage;
 import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -63,11 +62,6 @@ public class FreeMarkerConfig {
 		MultiTemplateLoader multiTemplateLoader = new MultiTemplateLoader(
 				templateLoaders.toArray(TemplateLoader[]::new));
 		cfg.setTemplateLoader(multiTemplateLoader);
-		if (SpringUtils.isProduction()) {
-			cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-		} else {
-			cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-		}
 		// 默认模板缓存策略：Most recently use cache.
 		// 缓存分两级，强引用->弱引用，强引用数达到上限则会将使用次数更少的转移到弱引用缓存，强引用不会被JVM释放，弱引用则相反。
 		// 默认设置：strongSizeLimit = 100，softSizeLimit = 1000

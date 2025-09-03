@@ -16,6 +16,7 @@
 package com.chestnut.system.domain.dto;
 
 import com.chestnut.common.captcha.CaptchaData;
+import com.chestnut.common.validation.RegexConsts;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -34,14 +35,14 @@ public class LoginBody {
 	/**
 	 * 用户名
 	 */
-	@NotBlank(message = "{VALIDATOR.SYSTEM.INVALID_UNAME}")
-	@Pattern(regexp = "^[A-Za-z0-9_]+$", message = "{VALIDATOR.SYSTEM.INVALID_UNAME}")
+	@NotBlank
+	@Pattern(regexp = RegexConsts.REGEX_USERNAME)
 	private String username;
 
 	/**
 	 * 用户密码
 	 */
-	@NotBlank(message = "{VALIDATOR.SYSTEM.INVALID_PWD}")
+	@NotBlank
 	private String password;
 
 	/**

@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.Writer;
 
 /**
  * 内部数据类型：站点
@@ -53,6 +54,12 @@ public class InternalDataType_Site implements IInternalDataType {
 		CmsSite site = siteService.getSite(requestData.getDataId());
 		return this.publishService.getSitePageData(site, requestData);
 	}
+
+	@Override
+	public void processPageData(RequestData requestData, Writer writer) throws TemplateException, IOException {
+		CmsSite site = siteService.getSite(requestData.getDataId());
+        this.publishService.processSitePage(site, requestData, writer);
+    }
 
 	@Override
 	public String getLink(InternalURL internalUrl, int pageIndex, String publishPipeCode, boolean isPreview) {

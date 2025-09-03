@@ -168,14 +168,14 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                 try {
                     Long dataId = switch (data.getDataType()) {
                         case ExtendModelDataType.SITE -> context.getSite().getSiteId();
-                        case ExtendModelDataType.CATALOG -> context.getCatalogIdMap().get(data.getDataId());
-                        case ExtendModelDataType.CONTENT -> context.getContentIdMap().get(data.getDataId());
+                        case ExtendModelDataType.CATALOG -> context.getCatalogIdMap().get(ConvertUtils.toLong(data.getDataId()));
+                        case ExtendModelDataType.CONTENT -> context.getContentIdMap().get(ConvertUtils.toLong(data.getDataId()));
                         default -> null;
                     };
                     if (Objects.isNull(dataId)) {
                         throw new RuntimeException("Old `data_id` linked data is missing.");
                     }
-                    data.setDataId(dataId);
+                    data.setDataId(dataId.toString());
                     data.setModelId(modelIdMapping.get(data.getModelId()));
                     // 处理图片和富文本内部链接
                     MetaModel model = modelService.getMetaModel(data.getModelId());

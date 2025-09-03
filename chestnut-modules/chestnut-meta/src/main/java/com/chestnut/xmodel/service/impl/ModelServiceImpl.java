@@ -33,7 +33,8 @@ import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.core.impl.MetaControlType_Input;
 import com.chestnut.xmodel.domain.XModel;
 import com.chestnut.xmodel.domain.XModelField;
-import com.chestnut.xmodel.dto.XModelDTO;
+import com.chestnut.xmodel.dto.CreateXModelRequest;
+import com.chestnut.xmodel.dto.UpdateXModelRequest;
 import com.chestnut.xmodel.exception.MetaErrorCode;
 import com.chestnut.xmodel.mapper.XModelFieldMapper;
 import com.chestnut.xmodel.mapper.XModelMapper;
@@ -102,25 +103,25 @@ public class ModelServiceImpl extends ServiceImpl<XModelMapper, XModel>
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void addModel(XModelDTO dto) {
-		IMetaModelType mmt = XModelUtils.getMetaModelType(dto.getOwnerType());
-		if (StringUtils.isEmpty(dto.getTableName())) {
-			dto.setTableName(mmt.getDefaultTable());
+	public void addModel(CreateXModelRequest req) {
+		IMetaModelType mmt = XModelUtils.getMetaModelType(req.getOwnerType());
+		if (StringUtils.isEmpty(req.getTableName())) {
+			req.setTableName(mmt.getDefaultTable());
 		}
-		if (!mmt.getDefaultTable().equalsIgnoreCase(dto.getTableName())) {
-			List<DBTable> dbTables = this.dbService.listTables(dto.getTableName());
-			Assert.isFalse(dbTables.isEmpty(), () -> MetaErrorCode.META_TABLE_NOT_EXISTS.exception(dto.getTableName()));
+		if (!mmt.getDefaultTable().equalsIgnoreCase(req.getTableName())) {
+			List<DBTable> dbTables = this.dbService.listTables(req.getTableName());
+			Assert.isFalse(dbTables.isEmpty(), () -> MetaErrorCode.META_TABLE_NOT_EXISTS.exception(req.getTableName()));
 		}
 		XModel model = new XModel();
-		BeanUtils.copyProperties(dto, model, "modelId");
+		BeanUtils.copyProperties(req, model, "modelId");
 		model.setModelId(IdUtils.getSnowflakeId());
-		model.createBy(dto.getOperator().getUsername());
+		model.createBy(req.getOperator().getUsername());
 		this.save(model);
 
 		List<String> fixedFields = mmt.getFixedFields().stream().map(MetaModelField::getFieldName).toList();
 		// 自定义表直接初始化非固定字段
-		if (!mmt.getDefaultTable().equalsIgnoreCase(dto.getTableName())) {
-			List<DBTable> tables = this.dbService.listTables(dto.getTableName());
+		if (!mmt.getDefaultTable().equalsIgnoreCase(req.getTableName())) {
+			List<DBTable> tables = this.dbService.listTables(req.getTableName());
 			if (!tables.isEmpty()) {
 				List<DBTableColumn> listTableColumn = tables.get(0).getColumns();
 				for (DBTableColumn column : listTableColumn) {
@@ -133,7 +134,7 @@ public class ModelServiceImpl extends ServiceImpl<XModelMapper, XModel>
 						field.setFieldName(column.getName());
 						field.setControlType(MetaControlType_Input.TYPE);
 						field.setDefaultValue(column.getDefaultValue());
-						field.createBy(dto.getOperator().getUsername());
+						field.createBy(req.getOperator().getUsername());
 						this.modelFieldMapper.insert(field);
 					}
 				}
@@ -142,12 +143,12 @@ public class ModelServiceImpl extends ServiceImpl<XModelMapper, XModel>
 	}
 
 	@Override
-	public void editModel(XModelDTO dto) {
-		XModel model = this.getById(dto.getModelId());
-		Assert.notNull(model, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("modelId", dto.getModelId()));
+	public void editModel(UpdateXModelRequest req) {
+		XModel model = this.getById(req.getModelId());
+		Assert.notNull(model, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("modelId", req.getModelId()));
 
-		BeanUtils.copyProperties(dto, model, "modelId", "ownerType", "ownerId", "tableName");
-		model.updateBy(dto.getOperator().getUsername());
+		BeanUtils.copyProperties(req, model, "modelId", "ownerType", "ownerId", "tableName");
+		model.updateBy(req.getOperator().getUsername());
 		this.updateById(model);
 		this.clearMetaModelCache(model.getModelId());
 	}

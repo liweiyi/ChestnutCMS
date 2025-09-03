@@ -176,6 +176,7 @@
   </div>
 </template>
 <script>
+import { fileNameValidator } from '@/utils/validate';
 import { getToken } from "@/utils/auth";
 import { isImage, getFileSvgIconClass } from "@/utils/chestnut";
 import { getDirectoryTreeData, getFileList, renameFile, addFile, deleteFile } from "@/api/contentcore/file";
@@ -214,7 +215,8 @@ export default {
       // 表单校验
       rules: {
         fileName: [
-          { required: true, pattern: "^[A-Za-z0-9_\.]+$", message: this.$t('CMS.File.RuleTips.FileName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: fileNameValidator, trigger: "change" },
         ]
       },
       openUploadDialog: false,

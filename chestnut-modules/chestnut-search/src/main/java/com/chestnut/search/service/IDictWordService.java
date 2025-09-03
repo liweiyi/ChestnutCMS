@@ -15,11 +15,11 @@
  */
 package com.chestnut.search.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.search.domain.DictWord;
-import com.chestnut.search.domain.dto.DictWordDTO;
+import com.chestnut.search.domain.dto.CreateDictWordRequest;
+
+import java.util.List;
 
 public interface IDictWordService extends IService<DictWord> {
 
@@ -31,16 +31,14 @@ public interface IDictWordService extends IService<DictWord> {
 	/**
 	 * 批量导入词库新词
 	 * 
-	 * @param words
-	 * @return
+	 * @param req 新词
 	 */
-	void batchAddDictWords(DictWordDTO dto);
+	void batchAddDictWords(CreateDictWordRequest req);
 
 	/**
 	 * 删除词库新词
 	 * 
-	 * @param dictWordIds
-	 * @return
+	 * @param dictWordIds 词库ID列表
 	 */
 	void deleteDictWord(List<Long> dictWordIds);
 }

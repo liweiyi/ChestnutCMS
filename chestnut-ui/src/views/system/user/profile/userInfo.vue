@@ -1,16 +1,16 @@
 <template>
   <el-form ref="form" :model="user" :rules="rules" label-width="140px">
     <el-form-item :label="$t('AccountCenter.NickName')" prop="nickName">
-      <el-input v-model="user.nickName" maxlength="30" />
+      <el-input v-model="user.nickName" />
     </el-form-item> 
     <el-form-item :label="$t('AccountCenter.RealName')" prop="realName">
-      <el-input v-model="user.realName" maxlength="30" />
+      <el-input v-model="user.realName" />
     </el-form-item> 
     <el-form-item :label="$t('AccountCenter.PhoneNumber')" prop="phoneNumber">
-      <el-input v-model="user.phoneNumber" maxlength="11" />
+      <el-input v-model="user.phoneNumber" />
     </el-form-item>
     <el-form-item :label="$t('AccountCenter.Email')" prop="email">
-      <el-input v-model="user.email" maxlength="50" />
+      <el-input v-model="user.email" />
     </el-form-item>
     <el-form-item :label="$t('AccountCenter.Gender')">
       <el-radio-group v-model="user.sex">
@@ -26,6 +26,7 @@
 </template>
 
 <script>
+import { emailValidator, phoneNumberValidator } from '@/utils/validate';
 import { updateUserProfile } from "@/api/system/user";
 
 export default {
@@ -39,23 +40,21 @@ export default {
       // 表单校验
       rules: {
         nickName: [
-          { required: true, message: this.$t('AccountCenter.AccountEmptyTip'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: "change" }
+        ],
+        realName: [
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: "change" }
         ],
         email: [
-          { required: true, message: this.$t('AccountCenter.EmailEmptyTip'), trigger: "blur" },
-          {
-            type: "email",
-            message: this.$t('AccountCenter.EmailRuleTip'),
-            trigger: ["blur", "change"]
-          }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: emailValidator, trigger: "change" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: "change" }
         ],
         phoneNumber: [
-          { required: true, message: this.$t('AccountCenter.PhoneNumEmptyTip'), trigger: "blur" },
-          {
-            pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
-            message: this.$t('AccountCenter.PhoneNumRuleTip'),
-            trigger: "blur"
-          }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: phoneNumberValidator, trigger: "change" },
+          { max: 20, message: this.$t('Common.RuleTips.MaxLength', [ 20 ]), trigger: "change" }
         ]
       }
     };

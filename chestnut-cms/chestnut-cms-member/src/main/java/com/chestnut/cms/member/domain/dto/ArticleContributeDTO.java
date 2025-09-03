@@ -69,4 +69,9 @@ public class ArticleContributeDTO {
      * 引导图
      */
     private String logo;
+
+    /**
+     * 文章格式
+     */
+    private String format;
 }

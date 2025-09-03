@@ -15,7 +15,10 @@
  */
 package com.chestnut.common.config;
 
+import com.chestnut.common.config.properties.ChestnutImageProperties;
 import com.chestnut.common.config.properties.ChestnutProperties;
+import com.chestnut.common.utils.SpringUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.image.ImageProcessor;
 import com.chestnut.common.utils.image.ImageUtils;
 import com.chestnut.common.utils.image.JDKImageProcessor;
@@ -29,33 +32,41 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
+import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * 读取项目相关配置
  *
  * @author 兮玥（190785909@qq.com）
  */
+@Slf4j
 @Configuration
 @EnableAspectJAutoProxy(exposeProxy = true)
-@EnableConfigurationProperties(ChestnutProperties.class)
+@EnableConfigurationProperties({ ChestnutProperties.class, ChestnutImageProperties.class })
 public class ChestnutConfig {
+
+	public ChestnutConfig() {
+		loadFonts();
+		initImageProcessor();
+	}
 	
 	@Bean
 	public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
@@ -102,16 +113,43 @@ public class ChestnutConfig {
 		};
 	}
 
-	@Bean
-	public ResourceLoader resourceLoader() {
-		return new PathMatchingResourcePatternResolver();
+	/**
+	 * 加载用户字体
+	 */
+	public void loadFonts() {
+		try {
+			// 获取图形环境
+			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+			PathMatchingResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
+			Resource[] resources = resourcePatternResolver.getResources("classpath*:/fonts/*.ttf");
+			for (Resource resource : resources) {
+				try (InputStream is = resource.getInputStream()) {
+					Font font = Font.createFont(Font.TRUETYPE_FONT, is);
+					// 派生出一个默认大小的字体（注册时不需要，但可用于测试）
+					Font derivedFont = font.deriveFont(12f);
+					// 注册字体
+					if (ge.registerFont(derivedFont)) {
+						log.info("Font registered: " + font.getFontName() + ", family: " + font.getFamily());
+					}
+				} catch (FontFormatException e) {
+					log.warn("Font register fail: " + resource.getURI());
+				}
+			}
+		} catch (IOException e) {
+			log.warn("Font register failed.", e);
+		}
 	}
 
-	@Bean
-	@ConditionalOnMissingBean
-	public ImageProcessor imageProcessor() {
-		JDKImageProcessor processor = new JDKImageProcessor();
-		ImageUtils.setImageProcessor(processor);
-		return processor;
+	private void initImageProcessor() {
+		ChestnutImageProperties properties = SpringUtils.getBean(ChestnutImageProperties.class);
+		Map<String, ImageProcessor> imageProcessorMap = SpringUtils.getBeanMap(ImageProcessor.class);
+		ImageProcessor imageProcessor = null;
+		if (StringUtils.isNotEmpty(properties.getType())) {
+			imageProcessor = imageProcessorMap.get(ImageProcessor.BEAN_PREFIX + properties.getType());
+		}
+		if (Objects.isNull(imageProcessor)) {
+			imageProcessor = imageProcessorMap.get(ImageProcessor.BEAN_PREFIX + JDKImageProcessor.ID);
+		}
+		ImageUtils.setImageProcessor(imageProcessor);
 	}
 }

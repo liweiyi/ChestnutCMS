@@ -24,14 +24,6 @@
     </el-row>
     <el-row v-show="showSearch">
       <el-form :model="queryParams" ref="queryForm" size="small" class="el-form-search mb12" :inline="true">
-        <el-form-item :label="$t('System.Menu.MenuName')" prop="menuName">
-          <el-input
-            v-model="queryParams.menuName"
-            :placeholder="$t('System.Menu.Placeholder.MenuName')"
-            clearable
-            @keyup.enter.native="handleQuery"
-          />
-        </el-form-item>
         <el-form-item :label="$t('System.Menu.Status')" prop="status">
           <el-select v-model="queryParams.status" style="width:100px;" clearable>
             <el-option
@@ -325,29 +317,92 @@ export default {
       refreshTable: true,
       // 查询参数
       queryParams: {
-        menuName: undefined,
-        visible: undefined
+        status: undefined
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
+        parentId: [
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" }
+        ],
+        menuType: [
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" }
+        ],
         menuName: [
-          { required: true, message: this.$t("System.Menu.RuleTips.MenuName"), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: "change" }
         ],
         orderNum: [
-          { required: true, message: this.$t("System.Menu.RuleTips.Sort"), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" }
         ],
         path: [
-          { required: true, message: this.$t("System.Menu.RuleTips.RouterLink"), trigger: "blur" }
-        ]
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { validator: this.validatePath, trigger: 'blur' }
+        ],
+        component: [
+          { validator: this.validateComponent, trigger: 'blur' }
+        ],
+        isFrame: [],
+        isCache: [],
+        visible: [],
+        status: []
       }
     };
   },
-  created() {
+  watch: {
+    'form.menuType': function(newVal) {
+      if (newVal != 'F') {
+        this.rules.isFrame = [
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: 'blur' }
+        ];
+        this.rules.visible = [
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: 'blur' }
+        ];
+        this.rules.status = [
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: 'blur' }
+        ];
+      }
+      if (newVal == 'C') {
+        this.rules.isCache = [
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: 'blur' }
+        ];
+      }
+      this.$nextTick(() => {
+        this.$refs['form'].clearValidate();
+      });
+    }
+  },
+  mounted() {
     this.getList();
   },
   methods: {
+    validateComponent(rule, value, callback) {
+      if (this.form.menuType == 'C' && this.form.isFrame == 'N') {
+        if (this.$tools.isEmpty(value)) {
+          callback(new Error(this.$t('Common.RuleTips.NotEmpty')));
+        } else if (value.length > 255) {
+          callback(new Error(this.$t('Common.RuleTips.MaxLength', [ 255 ])));
+        } else {
+          callback();
+        }
+      } else {
+        callback();
+      }
+    },
+    validatePath(rule, value, callback) {
+      if (this.form.menuType != 'F' && this.form.isFrame == 'Y') {
+        if (value.length > 200) {
+          callback(new Error(this.$t('Common.RuleTips.MaxLength', [ 200 ])));
+        } else if (!value.startsWith('http://') && !value.startsWith('https://')) {
+          callback(new Error(this.$t('Common.RuleTips.Url')));
+        } else {
+          callback();
+        }
+      } else {
+        callback();
+      }
+    },
     // 选择图标
     selected(name) {
       this.form.icon = name;

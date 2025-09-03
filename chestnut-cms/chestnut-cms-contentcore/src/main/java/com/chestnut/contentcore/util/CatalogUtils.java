@@ -88,7 +88,7 @@ public class CatalogUtils {
 					publishPipeCode, pageIndex);
 			return BackendContext.getValue() + catalogPath;
 		}
-		String prefix = SiteUtils.getPublishPipePrefix(site, publishPipeCode, isPreview);
+		String prefix = SiteUtils.getPublishPipePrefix(site, publishPipeCode, false);
 		if (catalog.isStaticize()) {
 			return prefix + catalog.getPath();
 		} else {

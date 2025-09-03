@@ -34,16 +34,6 @@ import java.util.Objects;
 @Slf4j
 public class ImageUtils {
 
-    public static final String FORMAT_GIF = "gif";
-
-    public static final String FORMAT_JPG = "jpg";
-
-    public static final String FORMAT_JPEG = "jpeg";
-
-    public static final String FORMAT_PNG = "png";
-
-    public static final String FORMAT_WEBP = "webp";
-
     private static ImageProcessor IMAGE_PROCESSOR = null;
 
     public static ImageProcessor getImageProcessor() {
@@ -53,11 +43,6 @@ public class ImageUtils {
 
     public static void setImageProcessor(ImageProcessor imageProcessor) {
         IMAGE_PROCESSOR = imageProcessor;
-        log.info("Load image processor: {}", imageProcessor.getClass().getName());
-    }
-
-    public static boolean isJPG(String suffix) {
-        return FORMAT_JPG.equalsIgnoreCase(suffix) || FORMAT_JPEG.equalsIgnoreCase(suffix);
     }
 
 	public static Dimension getDimension(File file) throws IOException {

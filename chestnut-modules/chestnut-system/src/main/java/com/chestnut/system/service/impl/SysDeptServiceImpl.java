@@ -15,16 +15,6 @@
  */
 package com.chestnut.system.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.domain.TreeNode;
@@ -35,13 +25,18 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysDept;
 import com.chestnut.system.domain.SysUser;
+import com.chestnut.system.domain.dto.CreateDeptRequest;
+import com.chestnut.system.domain.dto.UpdateDeptRequest;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.mapper.SysDeptMapper;
 import com.chestnut.system.mapper.SysUserMapper;
 import com.chestnut.system.service.ISysDeptService;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 部门管理 服务实现
@@ -69,13 +64,6 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 		return Optional.ofNullable(dept);
 	}
 
-	/**
-	 * 构建前端所需要树结构
-	 *
-	 * @param depts
-	 *            部门列表
-	 * @return 树结构列表
-	 */
 	@Override
 	public List<SysDept> buildDeptTree(List<SysDept> depts) {
 		List<SysDept> returnList = new ArrayList<SysDept>();
@@ -96,13 +84,6 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 		return returnList;
 	}
 
-	/**
-	 * 构建前端所需要下拉树结构
-	 *
-	 * @param depts
-	 *            部门列表
-	 * @return 下拉树结构列表
-	 */
 	@Override
 	public List<TreeNode<Long>> buildDeptTreeSelect(List<SysDept> depts) {
 		List<SysDept> deptTrees = buildDeptTree(depts);
@@ -118,98 +99,75 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 		return ts;
 	}
 
-	/**
-	 * 当前父节点下无同名部门
-	 *
-	 * @param dept
-	 * @return
-	 */
-	private boolean checkDeptNameUnique(SysDept dept) {
+	private boolean checkDeptNameUnique(Long parentId, String deptName, Long deptId) {
 		long count = this.count(new LambdaQueryWrapper<SysDept>()
-				.eq(SysDept::getParentId, dept.getParentId())
-				.eq(SysDept::getDeptName, dept.getDeptName())
-				.ne(IdUtils.validate(dept.getDeptId()), SysDept::getDeptId, dept.getDeptId()));
+				.eq(SysDept::getParentId, parentId)
+				.eq(SysDept::getDeptName, deptName)
+				.ne(IdUtils.validate(deptId), SysDept::getDeptId, deptId));
 		return count == 0;
 	}
 
-	/**
-	 * 新增保存部门信息
-	 *
-	 * @param dept
-	 *            部门信息
-	 * @return 结果
-	 */
 	@Override
-	public void insertDept(SysDept dept) {
-		SysDept parent = this.getById(dept.getParentId());
+	public void insertDept(CreateDeptRequest req) {
+		SysDept parent = this.getById(req.getParentId());
 		// 如果父节点不为正常状态,则不允许新增子节点
-		Assert.isTrue(parent.isEnable(), SysErrorCode.DISBALE_DEPT_ADD_CHILD::exception);
+		Assert.isTrue(parent.isEnable(), SysErrorCode.DISABLE_DEPT_ADD_CHILD::exception);
 
-		boolean unique = this.checkDeptNameUnique(dept);
-		Assert.isTrue(unique, () -> CommonErrorCode.DATA_CONFLICT.exception(dept.getDeptName()));
+		boolean unique = this.checkDeptNameUnique(req.getParentId(),req.getDeptName(), 0L);
+		Assert.isTrue(unique, () -> CommonErrorCode.DATA_CONFLICT.exception(req.getDeptName()));
 
+		SysDept dept = new SysDept();
+		dept.setParentId(req.getParentId());
+		dept.setDeptName(req.getDeptName());
+		dept.setOrderNum(req.getOrderNum());
+		dept.setLeader(req.getLeader());
+		dept.setPhone(req.getPhone());
+		dept.setEmail(req.getEmail());
+		dept.setStatus(req.getStatus());
 		dept.setDeptId(IdUtils.getSnowflakeId());
 		dept.setAncestors(parent.getAncestors() + "," + dept.getParentId());
-		dept.setCreateTime(LocalDateTime.now());
+		dept.createBy(req.getOperator().getUsername());
 		this.save(dept);
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_DEPT_KEY + dept.getDeptId());
 	}
 
-	/**
-	 * 修改保存部门信息
-	 *
-	 * @param dept
-	 *            部门信息
-	 * @return 结果
-	 */
 	@Override
-	public void updateDept(SysDept dept) {
-		SysDept db = this.getById(dept.getDeptId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(dept.getDeptId()));
-		if (EnableOrDisable.isEnable(db.getStatus()) && EnableOrDisable.isDisable(dept.getStatus())
+	public void updateDept(UpdateDeptRequest req) {
+		SysDept db = this.getById(req.getDeptId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getDeptId()));
+		if (EnableOrDisable.isEnable(db.getStatus()) && EnableOrDisable.isDisable(req.getStatus())
 				&& this.lambdaQuery().likeRight(SysDept::getAncestors, db.getAncestors() + "," + db.getDeptId()).count() > 0) {
-			throw CommonErrorCode.SYSTEM_ERROR.exception("该部门包含未停用的子部门！");
+			throw SysErrorCode.HAS_ENABLE_CHILD_DEPT.exception();
 		}
 
-		boolean unique = this.checkDeptNameUnique(dept);
-		Assert.isTrue(unique, () -> CommonErrorCode.DATA_CONFLICT.exception(dept.getDeptName()));
+		boolean unique = this.checkDeptNameUnique(req.getParentId(), req.getDeptName(), req.getDeptId());
+		Assert.isTrue(unique, () -> CommonErrorCode.DATA_CONFLICT.exception(req.getDeptName()));
 
-		db.setDeptName(dept.getDeptName());
-		db.setOrderNum(dept.getOrderNum());
-		db.setLeader(dept.getLeader());
-		db.setPhone(dept.getPhone());
-		db.setEmail(dept.getEmail());
-		db.setStatus(dept.getStatus());
-		db.setUpdateTime(LocalDateTime.now());
-		db.updateBy(dept.getUpdateBy());
-		this.updateById(dept);
+		db.setDeptName(req.getDeptName());
+		db.setOrderNum(req.getOrderNum());
+		db.setLeader(req.getLeader());
+		db.setPhone(req.getPhone());
+		db.setEmail(req.getEmail());
+		db.setStatus(req.getStatus());
+		db.updateBy(req.getOperator().getUsername());
+		this.updateById(db);
 
-		this.redisCache.deleteObject(SysConstants.CACHE_SYS_DEPT_KEY + dept.getDeptId());
+		this.redisCache.deleteObject(SysConstants.CACHE_SYS_DEPT_KEY + db.getDeptId());
 	}
 
-	/**
-	 * 删除部门管理信息
-	 *
-	 * @param deptId
-	 *            部门ID
-	 * @return 结果
-	 */
 	@Override
 	public void deleteDeptById(Long deptId) {
 		boolean hasChildren = this.lambdaQuery().eq(SysDept::getParentId, deptId).count() > 0;
-		Assert.isFalse(hasChildren, () -> CommonErrorCode.SYSTEM_ERROR.exception("存在下级部门,不允许删除"));
+		Assert.isFalse(hasChildren, SysErrorCode.DEPT_DEL_FAIL_HAS_CHILD::exception);
 
 		boolean hasUser = this.userMapper.selectCount(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDeptId, deptId)) > 0;
-		Assert.isFalse(hasUser, () -> CommonErrorCode.SYSTEM_ERROR.exception("部门存在用户,不允许删除"));
+		Assert.isFalse(hasUser, SysErrorCode.DEPT_DEL_FAIL_HAS_USER::exception);
 
 		this.removeById(deptId);
 
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_DEPT_KEY + deptId);
 	}
 
-	/**
-	 * 递归列表
-	 */
 	private void recursionFn(List<SysDept> list, SysDept t) {
 		// 得到子节点列表
 		List<SysDept> childList = getChildList(list, t);
@@ -221,14 +179,11 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 		}
 	}
 
-	/**
-	 * 得到子节点列表
-	 */
 	private List<SysDept> getChildList(List<SysDept> list, SysDept t) {
-		List<SysDept> tlist = new ArrayList<SysDept>();
+		List<SysDept> tlist = new ArrayList<>();
 		Iterator<SysDept> it = list.iterator();
 		while (it.hasNext()) {
-			SysDept n = (SysDept) it.next();
+			SysDept n = it.next();
 			if (Objects.nonNull(n.getParentId()) && n.getParentId().longValue() == t.getDeptId().longValue()) {
 				tlist.add(n);
 			}
@@ -236,10 +191,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 		return tlist;
 	}
 
-	/**
-	 * 判断是否有子节点
-	 */
 	private boolean hasChild(List<SysDept> list, SysDept t) {
-		return getChildList(list, t).size() > 0;
+		return !getChildList(list, t).isEmpty();
 	}
 }

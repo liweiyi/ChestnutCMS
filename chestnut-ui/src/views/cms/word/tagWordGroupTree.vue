@@ -64,6 +64,9 @@
         <el-form-item :label="$t('WordMgr.TAG.GroupLogo')" prop="logo">
           <cms-logo-view v-model="form.logo" :src="form.logoSrc" :width="218" :height="150"></cms-logo-view>
         </el-form-item>
+        <el-form-item :label="$t('Common.Sort')" prop="sortFlag">
+          <el-input-number v-model="form.sortFlag" />
+        </el-form-item>
       </el-form>
       <div slot="footer"
            class="dialog-footer">
@@ -74,8 +77,9 @@
   </div>
 </template>
 <script>
+import { codeValidator } from '@/utils/validate';
 import { getTagWordGroupTreeData, addTagWordGroup } from "@/api/contentcore/word";
-import { editTagWordGroup, deleteTagWordGroup } from "@/api/word/tagWord";
+import { getTagWordGroupData, editTagWordGroup, deleteTagWordGroup } from "@/api/word/tagWord";
 import CMSLogoView from '@/views/cms/components/LogoView';
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
@@ -117,10 +121,13 @@ export default {
       },
       rules: {
         name: [
-          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 255, message: this.$t('Common.RuleTips.MaxLength', [ 255 ]), trigger: [ "blur", "change" ] }
         ],
         code: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('Common.RuleTips.Code'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: [ "blur", "change" ] },
+          { validator: codeValidator, trigger: "change" },
         ]
       }
     };
@@ -184,14 +191,9 @@ export default {
       this.diagOpen = true;
     },
     handleEdit (data) {
-      this.form = { 
-        groupId: data.id, 
-        parentId: data.parentId == '0' ? null : data.parentId, 
-        name: data.label, 
-        code: data.props.code, 
-        logo: data.props.logo, 
-        logoSrc: data.props.logoSrc
-      };
+      getTagWordGroupData(data.id).then(response => {
+        this.form = response.data;
+      });
       this.diagTitle = this.$t('WordMgr.TAG.EditGroupTitle');
       this.diagOpen = true;
     },

@@ -102,19 +102,19 @@ export default {
       },
       rules: {
         type: [
-          { required: true, message: this.$t('CMS.Adv.RuleTips.Type'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         name: [
-          { required: true, message: this.$t('CMS.Adv.RuleTips.Name'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         weight: [
-          { required: true, message: this.$t('CMS.Adv.RuleTips.Weight'), trigger: "blur" },
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
         ],
         onlineDate: [
-          { required: true, message: this.$t('CMS.Adv.RuleTips.OnlineDate'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         offlineDate: [
-          { required: true, message: this.$t('CMS.Adv.RuleTips.OfflineDate'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ]
       }
     };

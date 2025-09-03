@@ -15,19 +15,6 @@
  */
 package com.chestnut.vote.controller;
 
-import java.util.List;
-
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
@@ -36,18 +23,21 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
 import com.chestnut.vote.domain.VoteSubject;
 import com.chestnut.vote.domain.VoteSubjectItem;
-import com.chestnut.vote.domain.dto.SaveSubjectItemsDTO;
+import com.chestnut.vote.domain.dto.CreateVoteSubjectRequest;
+import com.chestnut.vote.domain.dto.SaveSubjectItemsRequest;
+import com.chestnut.vote.domain.dto.UpdateVoteSubjectRequest;
 import com.chestnut.vote.permission.VotePriv;
 import com.chestnut.vote.service.IVoteSubjectItemService;
 import com.chestnut.vote.service.IVoteSubjectService;
-
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -76,18 +66,16 @@ public class VoteSubjectController extends BaseRestController {
 	@Log(title = "新增调查主题", businessType = BusinessType.INSERT)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
 	@PostMapping
-	public R<?> add(@RequestBody @Validated VoteSubject voteSubject) {
-		voteSubject.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.voteSubjectService.addVoteSubject(voteSubject);
+	public R<?> add(@RequestBody @Validated CreateVoteSubjectRequest req) {
+		this.voteSubjectService.addVoteSubject(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑调查主题", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
 	@PutMapping
-	public R<?> update(@RequestBody @Validated VoteSubject voteSubject) {
-		voteSubject.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.voteSubjectService.updateVoteSubject(voteSubject);
+	public R<?> update(@RequestBody @Validated UpdateVoteSubjectRequest req) {
+		this.voteSubjectService.updateVoteSubject(req);
 		return R.ok();
 	}
 
@@ -101,7 +89,7 @@ public class VoteSubjectController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
 	@GetMapping("/items/{subjectId}")
-	public R<?> getSubjectItems(@PathVariable @Min(1) Long subjectId) {
+	public R<?> getSubjectItems(@PathVariable @LongId Long subjectId) {
 		List<VoteSubjectItem> list = voteSubjectItemService.lambdaQuery().eq(VoteSubjectItem::getSubjectId, subjectId)
 				.orderByAsc(VoteSubjectItem::getSortFlag).list();
 		return this.bindDataTable(list);
@@ -110,9 +98,8 @@ public class VoteSubjectController extends BaseRestController {
 	@Log(title = "保存调查主题选项", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
 	@PostMapping("/items")
-	public R<?> saveSubjectItems(@RequestBody SaveSubjectItemsDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.voteSubjectService.saveSubjectItems(dto);
+	public R<?> saveSubjectItems(@RequestBody @Validated SaveSubjectItemsRequest req) {
+		this.voteSubjectService.saveSubjectItems(req);
 		return R.ok();
 	}
 }

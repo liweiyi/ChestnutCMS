@@ -36,7 +36,7 @@ public class CmsExtendModelData extends BaseModelData {
     /**
      * 关联数据ID（联合主键）
      */
-    private Long dataId;
+    private String dataId;
 
     /**
      * 关联数据类型（联合主键）
@@ -51,7 +51,7 @@ public class CmsExtendModelData extends BaseModelData {
     @Override
     public void setFieldValue(String fieldName, Object fieldValue) {
         switch(fieldName) {
-            case "data_id" -> this.setDataId(ConvertUtils.toLong(fieldValue));
+            case "data_id" -> this.setDataId(ConvertUtils.toStr(fieldValue));
             case "data_type" -> this.setDataType(ConvertUtils.toStr(fieldValue));
             case "model_id" -> this.setModelId(ConvertUtils.toLong(fieldValue));
             default -> super.setFieldValue(fieldName, fieldValue);

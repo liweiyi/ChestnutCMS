@@ -20,10 +20,7 @@ import com.chestnut.common.staticize.func.IFunction;
 import com.chestnut.common.staticize.tag.ITag;
 import com.chestnut.common.utils.Assert;
 import freemarker.core.Environment;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateModelException;
+import freemarker.template.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -71,6 +68,11 @@ public class StaticizeService {
 		long s = System.currentTimeMillis();
 		context.setTimeMillis(s);
 		Environment env = template.createProcessingEnvironment(context.getVariables(), writer);
+		if (context.isPreview()) {
+			cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
+		} else {
+			cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+		}
 		FreeMarkerUtils.addGlobalVariables(env, context);
 		env.process();
 		log.debug("[{}], page：{}, cost: {}ms", context.getTemplateId(), context.getPageIndex(),

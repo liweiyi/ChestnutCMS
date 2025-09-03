@@ -28,15 +28,17 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.domain.DictWord;
-import com.chestnut.search.domain.dto.DictWordDTO;
-import com.chestnut.search.domain.dto.WordAnalyzeDTO;
+import com.chestnut.search.domain.dto.CreateDictWordRequest;
+import com.chestnut.search.domain.dto.WordAnalyzeRequest;
+import com.chestnut.search.fixed.dict.SearchDictWordType;
 import com.chestnut.search.service.IDictWordService;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
-import jakarta.servlet.http.HttpServletRequest;
+import com.chestnut.system.validator.Dict;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,7 +57,7 @@ public class DictWordController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	public R<?> getPageList(@RequestParam(required = false) @Length(max = 100) String query) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<DictWord> q = new LambdaQueryWrapper<DictWord>().like(StringUtils.isNotEmpty(query),
 				DictWord::getWord, query);
@@ -66,9 +68,8 @@ public class DictWordController extends BaseRestController {
 	@Log(title = "新增检索词", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping
-	public R<?> add(@RequestBody @Validated DictWordDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.dictWordService.batchAddDictWords(dto);
+	public R<?> add(@RequestBody @Validated CreateDictWordRequest req) {
+		this.dictWordService.batchAddDictWords(req);
 		return R.ok();
 	}
 
@@ -82,12 +83,9 @@ public class DictWordController extends BaseRestController {
 
 	/**
 	 * 检查词库是否有变更
-	 *
-	 * @param request
-	 * @param response
 	 */
 	@RequestMapping(value = "/ik/{type}", method = RequestMethod.HEAD)
-	public void checkDictNewest(@PathVariable("type") @NotEmpty String type, HttpServletRequest request,
+	public void checkDictNewest(@PathVariable("type") @NotEmpty String type,
 								HttpServletResponse response) {
 		String lastModified = this.dictWordService.getLastModified(type);
 		response.setHeader("Last-Modified", StringUtils.isEmpty(lastModified) ? "0" : lastModified);
@@ -99,7 +97,7 @@ public class DictWordController extends BaseRestController {
 	 * @return 词库字符串，每行一个词
 	 */
 	@RequestMapping(value = "/ik/{type}", method = RequestMethod.GET, produces = { "text/html;charset=utf-8" })
-	public String dictNewest(@PathVariable("type") @NotEmpty String type) {
+	public String dictNewest(@PathVariable("type") @NotBlank @Dict(SearchDictWordType.TYPE) String type) {
 		String words = this.dictWordService.lambdaQuery().eq(DictWord::getWordType, type).list().stream()
 				.map(DictWord::getWord).collect(Collectors.joining("\n"));
 		return words;
@@ -109,8 +107,8 @@ public class DictWordController extends BaseRestController {
 	 * 分词测试
 	 */
 	@PostMapping("/analyze")
-	public R<?> wordAnalyze(@RequestBody WordAnalyzeDTO dto) throws IOException {
-		AnalyzeRequest analyzeRequest = new AnalyzeRequest.Builder().analyzer(dto.getType()).text(dto.getText()).build();
+	public R<?> wordAnalyze(@RequestBody WordAnalyzeRequest req) throws IOException {
+		AnalyzeRequest analyzeRequest = new AnalyzeRequest.Builder().analyzer(req.getType()).text(req.getText()).build();
 		AnalyzeResponse analyzeResponse = this.esClient.indices().analyze(analyzeRequest);
 		String result = analyzeResponse.tokens().stream().map(
 				token -> token.token() + "/" + token.type()

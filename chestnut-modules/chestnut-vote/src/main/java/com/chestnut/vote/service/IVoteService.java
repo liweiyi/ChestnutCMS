@@ -15,31 +15,32 @@
  */
 package com.chestnut.vote.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.vote.core.IVoteItemType;
 import com.chestnut.vote.core.IVoteUserType;
 import com.chestnut.vote.domain.Vote;
 import com.chestnut.vote.domain.VoteLog;
+import com.chestnut.vote.domain.dto.CreateVoteRequest;
+import com.chestnut.vote.domain.dto.UpdateVoteRequest;
 import com.chestnut.vote.domain.vo.VoteVO;
+
+import java.util.List;
 
 public interface IVoteService extends IService<Vote> {
 
 	/**
 	 * 添加问卷调查
 	 * 
-	 * @param vote
-	 * @return
+	 * @param req
 	 */
-	void addVote(Vote vote);
+	void addVote(CreateVoteRequest req);
 	
 	/**
 	 * 修改问卷调查
 	 * 
-	 * @param vote
+	 * @param req
 	 */
-	void updateVote(Vote vote);
+	void updateVote(UpdateVoteRequest req);
 	
 	/**
 	 * 删除问卷调查

@@ -16,13 +16,12 @@
 package com.chestnut.word.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.word.WordConstants;
 import com.chestnut.word.cache.SensitiveWordMonitoredCache;
 import com.chestnut.word.domain.SensitiveWord;
+import com.chestnut.word.domain.dto.CreateSensitiveWordRequest;
 import com.chestnut.word.mapper.SensitiveWordMapper;
 import com.chestnut.word.sensitive.SensitiveWordProcessor;
 import com.chestnut.word.sensitive.SensitiveWordProcessor.MatchType;
@@ -33,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,34 +62,17 @@ public class SensitiveWordServiceImpl extends ServiceImpl<SensitiveWordMapper, S
 	}
 
 	@Override
-	public void addWord(SensitiveWord word) {
+	public void addWord(CreateSensitiveWordRequest req) {
+		SensitiveWord word = new SensitiveWord();
 		word.setWordId(IdUtils.getSnowflakeId());
-		word.setCreateTime(LocalDateTime.now());
+		word.setType(req.getType());
+		word.setWord(req.getWord());
+		word.setReplaceWord(req.getReplaceWord());
+		word.setRemark(req.getRemark());
+		word.createBy(req.getOperator().getUsername());
 		this.save(word);
 
 		this.processor.addWord(word.getWord(), SensitiveWordType.valueOf(word.getType()));
-	}
-
-	@Override
-	public void editWord(SensitiveWord word) {
-		SensitiveWord dbSensitiveWord = this.getById(word.getWordId());
-		Assert.notNull(dbSensitiveWord,
-				() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("wordId", word.getWordId()));
-
-		String oldWord = dbSensitiveWord.getWord();
-		String oldType = dbSensitiveWord.getType();
-
-		dbSensitiveWord.setWord(word.getWord());
-		dbSensitiveWord.setReplaceWord(word.getReplaceWord());
-		dbSensitiveWord.setType(word.getType());
-		dbSensitiveWord.setRemark(word.getRemark());
-		dbSensitiveWord.updateBy(word.getUpdateBy());
-		this.updateById(word);
-
-		if (!dbSensitiveWord.getWord().equals(oldWord) || !dbSensitiveWord.getType().equals(oldType)) {
-			this.processor.removeWord(oldWord);
-			this.processor.addWord(dbSensitiveWord.getWord(), SensitiveWordType.valueOf(dbSensitiveWord.getType()));
-		}
 	}
 
 	@Override

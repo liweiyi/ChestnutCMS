@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Objects;
 
 /**
@@ -55,6 +56,14 @@ public class InternalDataType_Catalog implements IInternalDataType {
 		boolean listFlag = YesOrNo.isYes(requestData.getParams().get("list"));
 		return this.publishService.getCatalogPageData(catalog, requestData, listFlag);
 	}
+
+	@Override
+	public void processPageData(RequestData requestData, Writer writer) throws TemplateException, IOException {
+		CmsCatalog catalog = catalogService.getCatalog(requestData.getDataId());
+		boolean listFlag = YesOrNo.isYes(requestData.getParams().get("list"));
+        this.publishService.processCatalogPage(catalog, requestData, listFlag, writer);
+
+    }
 
 	@Override
 	public String getLink(InternalURL internalUrl, int pageIndex, String publishPipeCode, boolean isPreview) {

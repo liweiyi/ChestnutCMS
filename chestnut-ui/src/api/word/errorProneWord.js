@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getErrorProneWordList(params) {
   return request({
-    url: '/word/errorproneword',
+    url: '/word/errorproneword/list',
     method: 'get',
     params: params
   })
@@ -10,7 +10,7 @@ export function getErrorProneWordList(params) {
 
 export function addErrorProneWord(data) {
   return request({
-    url: '/word/errorproneword',
+    url: '/word/errorproneword/add',
     method: 'post',
     data: data
   })
@@ -18,7 +18,7 @@ export function addErrorProneWord(data) {
 
 export function editErrorProneWord(data) {
   return request({
-    url: '/word/errorproneword',
+    url: '/word/errorproneword/update',
     method: 'put',
     data: data
   })

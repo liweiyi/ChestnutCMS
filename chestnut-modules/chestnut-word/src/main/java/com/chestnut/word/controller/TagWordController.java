@@ -22,14 +22,16 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.system.validator.LongId;
 import com.chestnut.word.domain.TagWord;
-import com.chestnut.word.domain.dto.BatchAddTagDTO;
+import com.chestnut.word.domain.dto.BatchAddTagRequest;
+import com.chestnut.word.domain.dto.CreateTagWordRequest;
+import com.chestnut.word.domain.dto.UpdateTagWordRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.ITagWordService;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,9 +53,9 @@ public class TagWordController extends BaseRestController {
 
 	private final ITagWordService tagWordService;
 
-	@GetMapping
-	public R<?> getPageList(@RequestParam("groupId") @Min(1) Long groupId,
-			@RequestParam(value = "query", required = false) String query) {
+	@GetMapping("/list")
+	public R<?> getPageList(@RequestParam("groupId") @LongId Long groupId,
+			@RequestParam(required = false) @Length(max = 255) String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<TagWord> page = this.tagWordService.lambdaQuery().eq(TagWord::getGroupId, groupId)
 				.like(StringUtils.isNotEmpty(query), TagWord::getWord, query)
@@ -62,24 +64,21 @@ public class TagWordController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
-	@PostMapping
-	public R<?> add(@RequestBody @Validated TagWord tagWord) {
-		tagWord.createBy(StpAdminUtil.getLoginUser().getUsername());
-		this.tagWordService.addTagWord(tagWord);
+	@PostMapping("/add")
+	public R<?> add(@RequestBody @Validated CreateTagWordRequest req) {
+		this.tagWordService.addTagWord(req);
 		return R.ok();
 	}
 
 	@PostMapping("/batchAdd")
-	public R<?> batchAdd(@RequestBody @Validated BatchAddTagDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.tagWordService.batchAddTagWord(dto);
+	public R<?> batchAdd(@RequestBody @Validated BatchAddTagRequest req) {
+		this.tagWordService.batchAddTagWord(req);
 		return R.ok();
 	}
 
-	@PutMapping
-	public R<?> edit(@RequestBody @Validated TagWord tagWord) {
-		tagWord.updateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.tagWordService.editTagWord(tagWord);
+	@PutMapping("/update")
+	public R<?> edit(@RequestBody @Validated UpdateTagWordRequest req) {
+		this.tagWordService.editTagWord(req);
 		return R.ok();
 	}
 

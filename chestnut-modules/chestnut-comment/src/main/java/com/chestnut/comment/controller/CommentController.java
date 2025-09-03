@@ -23,9 +23,11 @@ import com.chestnut.comment.permission.CommentPriv;
 import com.chestnut.comment.service.ICommentLikeService;
 import com.chestnut.comment.service.ICommentService;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
@@ -98,6 +100,7 @@ public class CommentController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.Delete)
 	@PostMapping("/delete")
 	public R<?> deleteComment(@RequestBody @NotEmpty List<Long> commentIds) {
+		Assert.isTrue(IdUtils.validate(commentIds), CommonErrorCode.INVALID_REQUEST_ARG::exception);
 		this.commentService.deleteComments(commentIds);
 		return R.ok();
 	}

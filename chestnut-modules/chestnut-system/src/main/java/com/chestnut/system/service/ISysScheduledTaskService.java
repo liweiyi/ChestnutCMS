@@ -19,7 +19,8 @@ import java.util.List;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysScheduledTask;
-import com.chestnut.system.domain.dto.ScheduledTaskDTO;
+import com.chestnut.system.domain.dto.CreateScheduledTaskRequest;
+import com.chestnut.system.domain.dto.UpdateScheduledTaskRequest;
 import com.chestnut.system.schedule.ScheduledTask;
 
 /**
@@ -37,14 +38,14 @@ public interface ISysScheduledTaskService extends IService<SysScheduledTask> {
 	 * 
 	 * @param task
 	 */
-	void insertTask(ScheduledTaskDTO task);
+	void insertTask(CreateScheduledTaskRequest task);
 
 	/**
 	 * 编辑定时任务信息
 	 * 
 	 * @param task
 	 */
-	void updateTask(ScheduledTaskDTO task);
+	void updateTask(UpdateScheduledTaskRequest task);
 
 	/**
 	 * 删除定时任务

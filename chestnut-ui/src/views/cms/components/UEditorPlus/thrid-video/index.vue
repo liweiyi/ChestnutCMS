@@ -78,7 +78,7 @@ export default {
         align: 'center'
       },
       rules: {
-        code: [{ required: true, message: this.$t('CMS.UEditor.ThirdVideo.RuleTips.Code'), trigger: "blur" }]
+        code: [{ required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }]
       },
     };
   },

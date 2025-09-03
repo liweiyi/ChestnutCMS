@@ -31,11 +31,17 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.config.I18nMessageSource;
 import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.domain.SysI18nDict;
+import com.chestnut.system.domain.dto.BatchSaveI18nDictRequest;
+import com.chestnut.system.domain.dto.CreateI18nDictRequest;
+import com.chestnut.system.domain.dto.QueryI18nDictRequest;
+import com.chestnut.system.domain.dto.UpdateI18nDictRequest;
 import com.chestnut.system.fixed.dict.I18nDictType;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.service.ISysDictTypeService;
 import com.chestnut.system.service.ISysI18nDictService;
+import com.chestnut.system.validator.LongId;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -45,7 +51,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -68,12 +73,12 @@ public class SysI18nDictController extends BaseRestController {
 	@ExcelExportable(SysI18nDict.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictList)
 	@GetMapping("/list")
-	public R<?> list(SysI18nDict dict) {
+	public R<?> list(@Validated QueryI18nDictRequest req) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysI18nDict> q = new LambdaQueryWrapper<SysI18nDict>()
-				.like(StringUtils.isNotEmpty(dict.getLangTag()), SysI18nDict::getLangTag, dict.getLangTag())
-				.like(StringUtils.isNotEmpty(dict.getLangKey()), SysI18nDict::getLangKey, dict.getLangKey())
-				.like(StringUtils.isNotEmpty(dict.getLangValue()), SysI18nDict::getLangValue, dict.getLangValue())
+				.like(StringUtils.isNotEmpty(req.getLangTag()), SysI18nDict::getLangTag, req.getLangTag())
+				.like(StringUtils.isNotEmpty(req.getLangKey()), SysI18nDict::getLangKey, req.getLangKey())
+				.like(StringUtils.isNotEmpty(req.getLangValue()), SysI18nDict::getLangValue, req.getLangValue())
 				.orderByDesc(SysI18nDict::getLangTag);
 		Page<SysI18nDict> page = i18nDictService.page(new Page<>(pr.getPageNumber(), pr.getPageSize()), q);
 		return bindDataTable(page);
@@ -83,18 +88,18 @@ public class SysI18nDictController extends BaseRestController {
 	public R<?> bindLanguageOptions() {
 		List<SysDictData> list = dictTypeService.selectDictDatasByType(I18nDictType.TYPE);
 		I18nUtils.replaceI18nFields(list, LocaleContextHolder.getLocale());
-		return R.ok(list.stream().map(d -> Map.of("value", d.getDictValue(), "label", d.getDictLabel())).toList());
+		return bindSelectOptions(list, SysDictData::getDictValue, SysDictData::getDictLabel);
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictList)
 	@GetMapping(value = "/{i18nDictId}")
-	public R<?> getInfo(@PathVariable Long i18nDictId) {
+	public R<?> getInfo(@PathVariable @LongId Long i18nDictId) {
 		return R.ok(this.i18nDictService.getById(i18nDictId));
 	}
 
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping(value = "/langKey/{langKey}")
-	public R<?> listByLangKey(@PathVariable @NotEmpty String langKey) {
+	public R<?> listByLangKey(@PathVariable @NotBlank String langKey) {
 		LambdaQueryWrapper<SysI18nDict> q = new LambdaQueryWrapper<SysI18nDict>()
 				.eq(SysI18nDict::getLangKey, langKey);
 		List<SysI18nDict> list = i18nDictService.list(q);
@@ -106,7 +111,7 @@ public class SysI18nDictController extends BaseRestController {
 				SysI18nDict d = new SysI18nDict();
 				d.setLangTag(data.getDictValue());
 				d.setLangKey(langKey);
-				d.setLangValue(I18nUtils.get("{" + langKey + "}", Locale.forLanguageTag(data.getDictValue())));
+				d.setLangValue(I18nUtils.parse(langKey, Locale.forLanguageTag(data.getDictValue())));
 				list.add(d);
 			}
 		}
@@ -116,23 +121,23 @@ public class SysI18nDictController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictAdd)
 	@Log(title = "国际化管理", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@Validated @RequestBody SysI18nDict config) {
-		i18nDictService.insertI18nDict(config);
+	public R<?> add(@Validated @RequestBody CreateI18nDictRequest req) {
+		i18nDictService.insertI18nDict(req);
 		return R.ok();
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictEdit)
 	@Log(title = "国际化管理", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody SysI18nDict dict) {
-		i18nDictService.updateI18nDict(dict);
+	public R<?> edit(@Validated @RequestBody UpdateI18nDictRequest req) {
+		i18nDictService.updateI18nDict(req);
 		return R.ok();
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictEdit)
 	@Log(title = "国际化管理", businessType = BusinessType.UPDATE)
 	@PutMapping("/batch")
-	public R<?> batchSave(@RequestBody @NotEmpty @Validated List<SysI18nDict> i18nDicts) {
+	public R<?> batchSave(@RequestBody @NotEmpty @Validated List<BatchSaveI18nDictRequest> i18nDicts) {
 		i18nDictService.batchSaveI18nDicts(i18nDicts);
 		return R.ok();
 	}

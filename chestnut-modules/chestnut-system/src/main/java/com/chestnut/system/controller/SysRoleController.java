@@ -18,25 +18,22 @@ package com.chestnut.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
-import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.SysUserRole;
+import com.chestnut.system.domain.dto.*;
 import com.chestnut.system.domain.vo.UserWithRoleFlagVO;
 import com.chestnut.system.mapper.SysUserMapper;
 import com.chestnut.system.mapper.SysUserRoleMapper;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysRoleService;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
@@ -66,12 +63,12 @@ public class SysRoleController extends BaseRestController {
 	@ExcelExportable(SysRole.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
 	@GetMapping("/list")
-	public R<?> list(SysRole role) {
+	public R<?> list(@Validated QueryRoleRequest req) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysRole> q = new LambdaQueryWrapper<SysRole>()
-				.like(StringUtils.isNotEmpty(role.getRoleName()), SysRole::getRoleName, role.getRoleName())
-				.like(StringUtils.isNotEmpty(role.getRoleKey()), SysRole::getRoleKey, role.getRoleKey())
-				.eq(StringUtils.isNotEmpty(role.getStatus()), SysRole::getStatus, role.getStatus())
+				.like(StringUtils.isNotEmpty(req.getRoleName()), SysRole::getRoleName, req.getRoleName())
+				.like(StringUtils.isNotEmpty(req.getRoleKey()), SysRole::getRoleKey, req.getRoleKey())
+				.eq(StringUtils.isNotEmpty(req.getStatus()), SysRole::getStatus, req.getStatus())
 				.orderByAsc(SysRole::getRoleSort);
 		Page<SysRole> page = roleService.page(new Page<>(pr.getPageNumber(), pr.getPageSize()), q);
 		return bindDataTable(page);
@@ -82,7 +79,7 @@ public class SysRoleController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
 	@GetMapping(value = "/{roleId}")
-	public R<?> getInfo(@PathVariable Long roleId) {
+	public R<?> getInfo(@PathVariable @LongId Long roleId) {
 		return R.ok(roleService.getById(roleId));
 	}
 
@@ -92,8 +89,7 @@ public class SysRoleController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleAdd)
 	@Log(title = "角色管理", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@Validated @RequestBody SysRole role) {
-		role.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
+	public R<?> add(@Validated @RequestBody CreateRoleRequest role) {
 		roleService.insertRole(role);
 		return R.ok();
 	}
@@ -104,8 +100,7 @@ public class SysRoleController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody SysRole role) {
-		role.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
+	public R<?> edit(@Validated @RequestBody UpdateRoleRequest role) {
 		roleService.updateRole(role);
 		return R.ok();
 	}
@@ -116,9 +111,8 @@ public class SysRoleController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.UPDATE)
 	@PutMapping("/changeStatus")
-	public R<?> changeStatus(@RequestBody SysRole role) {
-		role.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		roleService.updateRoleStatus(role);
+	public R<?> changeStatus(@RequestBody @Validated UpdateRoleStatusRequest req) {
+		roleService.updateRoleStatus(req);
 		return R.ok();
 	}
 
@@ -128,10 +122,7 @@ public class SysRoleController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleRemove)
 	@Log(title = "角色管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody List<Long> roleIds) {
-		boolean validate = IdUtils.validate(roleIds);
-		Assert.isTrue(validate, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("roleIds"));
-
+	public R<?> remove(@RequestBody @NotEmpty List<Long> roleIds) {
 		roleService.deleteRoleByIds(roleIds);
 		return R.ok();
 	}
@@ -141,10 +132,10 @@ public class SysRoleController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
 	@GetMapping("/authUser/allocatedList")
-	public R<?> allocatedList(@RequestParam("roleId") @LongId Long roleId,
-			@RequestParam(required = false) String userName, @RequestParam(required = false) String phoneNumber) {
+	public R<?> allocatedList(@Validated QueryRoleUserRequest req) {
 		PageRequest pr = this.getPageRequest();
-		Page<SysUser> page = this.userMapper.selectAllocatedList(new Page<>(pr.getPageNumber(), pr.getPageSize()), roleId, userName, phoneNumber);
+		Page<SysUser> page = this.userMapper.selectAllocatedList(new Page<>(pr.getPageNumber(), pr.getPageSize()),
+				req.getRoleId(), req.getUserName(), req.getPhoneNumber());
 		return bindDataTable(page);
 	}
 
@@ -153,22 +144,21 @@ public class SysRoleController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
 	@GetMapping("/authUser/unallocatedList")
-	public R<?> unallocatedList(@RequestParam("roleId") @LongId Long roleId,
-			@RequestParam(required = false) String userName, @RequestParam(required = false) String phoneNumber) {
+	public R<?> unallocatedList(@Validated QueryRoleUserRequest req) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysUser> page = this.userMapper.selectPage(
 				new Page<>(pr.getPageNumber(), pr.getPageSize()),
-				new LambdaQueryWrapper<SysUser>().like(StringUtils.isNotEmpty(userName), SysUser::getUserName, userName)
-						.like(StringUtils.isNotEmpty(phoneNumber), SysUser::getPhoneNumber, phoneNumber)
+				new LambdaQueryWrapper<SysUser>().like(StringUtils.isNotEmpty(req.getUserName()), SysUser::getUserName, req.getUserName())
+						.like(StringUtils.isNotEmpty(req.getPhoneNumber()), SysUser::getPhoneNumber, req.getPhoneNumber())
 		);
 		List<Long> userIds = page.getRecords().stream().map(SysUser::getUserId).toList();
 		LambdaQueryWrapper<SysUserRole> q = new LambdaQueryWrapper<SysUserRole>()
-				.eq(SysUserRole::getRoleId, roleId)
+				.eq(SysUserRole::getRoleId, req.getRoleId())
 				.in(SysUserRole::getUserId, userIds);
 		List<Long> allocatedUserIds = this.userRoleMapper.selectList(q).stream().map(SysUserRole::getUserId).toList();
 
 		List<UserWithRoleFlagVO> list = page.getRecords().stream()
-				.map(user -> UserWithRoleFlagVO.newInstance(user, roleId, allocatedUserIds.contains(user.getUserId())))
+				.map(user -> UserWithRoleFlagVO.newInstance(user, req.getRoleId(), allocatedUserIds.contains(user.getUserId())))
 				.toList();
 		return bindDataTable(list, page.getTotal());
 	}

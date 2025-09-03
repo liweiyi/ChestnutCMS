@@ -15,26 +15,28 @@
  */
 package com.chestnut.word.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.word.domain.HotWordGroup;
+import com.chestnut.word.domain.dto.CreateHotWordGroupRequest;
+import com.chestnut.word.domain.dto.UpdateHotWordGroupRequest;
+
+import java.util.List;
 
 public interface IHotWordGroupService extends IService<HotWordGroup> {
 
 	/**
 	 * 添加热词分组
 	 * 
-	 * @param group
+	 * @param req
 	 */
-	HotWordGroup addHotWordGroup(HotWordGroup group);
+	HotWordGroup addHotWordGroup(CreateHotWordGroupRequest req);
 
 	/**
 	 * 修改热词分组
 	 * 
-	 * @param group
+	 * @param req
 	 */
-	void updateHotWordGroup(HotWordGroup group);
+	void updateHotWordGroup(UpdateHotWordGroupRequest req);
 
 	/**
 	 * 删除热词分组

@@ -23,8 +23,8 @@ import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.word.domain.TagWordGroup;
+import com.chestnut.word.domain.dto.CreateTagWordGroupRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.ITagWordGroupService;
 import lombok.RequiredArgsConstructor;
@@ -61,10 +61,9 @@ public class CMSTagWordGroupController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping
-	public R<?> add(@RequestBody @Validated TagWordGroup group) {
-		group.createBy(StpAdminUtil.getLoginUser().getUsername());
+	public R<?> add(@RequestBody @Validated CreateTagWordGroupRequest req) {
 		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
-		group.setOwner(currentSite.getSiteId().toString());
-		return R.ok(this.tagWordGroupService.addTagWordGroup(group));
+		req.setOwner(currentSite.getSiteId().toString());
+		return R.ok(this.tagWordGroupService.addTagWordGroup(req));
 	}
 }

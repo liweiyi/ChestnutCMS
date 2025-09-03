@@ -31,7 +31,6 @@ import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.service.ISysLogininforService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +54,7 @@ public class SysLogininforController extends BaseRestController {
 
 	@ExcelExportable(SysLogininfor.class)
 	@GetMapping("/list")
-	public R<TableData<SysLogininfor>> list(SysLogininfor logininfor, HttpServletRequest request) {
+	public R<TableData<SysLogininfor>> list(SysLogininfor logininfor) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysLogininfor> q = new LambdaQueryWrapper<SysLogininfor>()
 				.like(StringUtils.isNotEmpty(logininfor.getUserName()), SysLogininfor::getUserName, logininfor.getUserName())

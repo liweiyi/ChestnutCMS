@@ -27,7 +27,9 @@ import com.chestnut.common.utils.image.ImageUtils;
 import com.chestnut.member.config.MemberConfig;
 import com.chestnut.member.core.IMemberStatData;
 import com.chestnut.member.domain.*;
-import com.chestnut.member.domain.dto.MemberDTO;
+import com.chestnut.member.domain.dto.CreateMemberRequest;
+import com.chestnut.member.domain.dto.ResetMemberPasswordRequest;
+import com.chestnut.member.domain.dto.UpdateMemberRequest;
 import com.chestnut.member.exception.MemberErrorCode;
 import com.chestnut.member.fixed.dict.MemberStatus;
 import com.chestnut.member.mapper.MemberLevelExpLogMapper;
@@ -70,48 +72,48 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 	private final ISecurityConfigService securityConfigService;
 
 	@Override
-	public void addMember(MemberDTO dto) {
-		boolean allBlank = StringUtils.isAllBlank(dto.getUserName(), dto.getPhoneNumber(), dto.getEmail());
+	public void addMember(CreateMemberRequest req) {
+		boolean allBlank = StringUtils.isAllBlank(req.getUserName(), req.getPhoneNumber(), req.getEmail());
 		Assert.isFalse(allBlank, MemberErrorCode.USERNAME_PHONE_EMAIL_ALL_EMPTY::exception);
 
-		this.checkMemberUnique(dto.getUserName(), dto.getPhoneNumber(), dto.getEmail(), null);
+		this.checkMemberUnique(req.getUserName(), req.getPhoneNumber(), req.getEmail(), null);
 
 		Member member = new Member();
 		member.setMemberId(IdUtils.getSnowflakeId());
-		member.setUserName(dto.getUserName());
+		member.setUserName(req.getUserName());
 		if (StringUtils.isEmpty(member.getUserName())) {
 			member.setUserName(CDKeyUtil.genChar56(member.getMemberId(), 10));
 		}
-		member.setEmail(dto.getEmail());
-		member.setPhoneNumber(dto.getPhoneNumber());
-		member.setNickName(dto.getNickName());
-		member.setBirthday(dto.getBirthday());
-		member.setPassword(SecurityUtils.passwordEncode(dto.getPassword()));
-		member.setStatus(dto.getStatus());
-		member.setRemark(dto.getRemark());
-		member.createBy(dto.getOperator().getUsername());
+		member.setEmail(req.getEmail());
+		member.setPhoneNumber(req.getPhoneNumber());
+		member.setNickName(req.getNickName());
+		member.setBirthday(req.getBirthday());
+		member.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
+		member.setStatus(req.getStatus());
+		member.setRemark(req.getRemark());
+		member.createBy(req.getOperator().getUsername());
 		// 校验密码
-		this.securityConfigService.validPassword(member, dto.getPassword());
+		this.securityConfigService.validPassword(member, req.getPassword());
 		// 强制首次登陆修改密码
 		this.securityConfigService.forceModifyPwdAfterUserAdd(member);
 		this.save(member);
 	}
 
 	@Override
-	public void updateMember(MemberDTO dto) {
-		Member member = this.getById(dto.getMemberId());
-		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", dto.getMemberId()));
+	public void updateMember(UpdateMemberRequest req) {
+		Member member = this.getById(req.getMemberId());
+		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", req.getMemberId()));
 
-		this.checkMemberUnique(dto.getUserName(), dto.getPhoneNumber(), dto.getEmail(), dto.getMemberId());
+		this.checkMemberUnique(req.getUserName(), req.getPhoneNumber(), req.getEmail(), req.getMemberId());
 		String oldStatus = member.getStatus();
 
-		member.setEmail(dto.getEmail());
-		member.setPhoneNumber(dto.getPhoneNumber());
-		member.setNickName(dto.getNickName());
-		member.setBirthday(dto.getBirthday());
-		member.setStatus(dto.getStatus());
-		member.setRemark(dto.getRemark());
-		member.updateBy(dto.getOperator().getUsername());
+		member.setEmail(req.getEmail());
+		member.setPhoneNumber(req.getPhoneNumber());
+		member.setNickName(req.getNickName());
+		member.setBirthday(req.getBirthday());
+		member.setStatus(req.getStatus());
+		member.setRemark(req.getRemark());
+		member.updateBy(req.getOperator().getUsername());
 		this.updateById(member);
 		// 变更未封禁或锁定状态时注销登录状态
 		if (!StringUtils.equals(member.getStatus(), oldStatus)
@@ -141,15 +143,15 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 	 * 重置用户密码
 	 */
 	@Override
-	public void resetPwd(MemberDTO dto) {
-		Member member = this.getById(dto.getMemberId());
-		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", dto.getMemberId()));
+	public void resetPwd(ResetMemberPasswordRequest req) {
+		Member member = this.getById(req.getMemberId());
+		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", req.getMemberId()));
 
-		this.securityConfigService.validPassword(member, dto.getPassword());
+		this.securityConfigService.validPassword(member, req.getPassword());
 
-		member.setPassword(SecurityUtils.passwordEncode(dto.getPassword()));
+		member.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
 		member.setUpdateTime(LocalDateTime.now());
-		member.setUpdateBy(dto.getOperator().getUsername());
+		member.setUpdateBy(req.getOperator().getUsername());
 		this.updateById(member);
 	}
 

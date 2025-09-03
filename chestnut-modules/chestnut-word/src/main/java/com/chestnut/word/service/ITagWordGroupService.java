@@ -18,6 +18,8 @@ package com.chestnut.word.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.word.domain.TagWordGroup;
+import com.chestnut.word.domain.dto.CreateTagWordGroupRequest;
+import com.chestnut.word.domain.dto.UpdateTagWordGroupRequest;
 
 import java.util.List;
 
@@ -26,18 +28,17 @@ public interface ITagWordGroupService extends IService<TagWordGroup> {
 	/**
 	 * 添加TAG词分组
 	 * 
-	 * @param group
+	 * @param req
 	 * @return
 	 */
-	TagWordGroup addTagWordGroup(TagWordGroup group);
+	TagWordGroup addTagWordGroup(CreateTagWordGroupRequest req);
 
 	/**
 	 * 编辑TAG词分组
 	 * 
-	 * @param group
-	 * @return
+	 * @param req
 	 */
-	void editTagWordGroup(TagWordGroup group);
+	void editTagWordGroup(UpdateTagWordGroupRequest req);
 
 	/**
 	 * 校验TAG词分组编码唯一性
@@ -52,7 +53,6 @@ public interface ITagWordGroupService extends IService<TagWordGroup> {
 	 * 删除TAG词分组
 	 * 
 	 * @param groupIds
-	 * @return
 	 */
 	void deleteTagWordGroups(List<Long> groupIds);
 

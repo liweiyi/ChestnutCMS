@@ -22,9 +22,10 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SortUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.word.domain.HotWord;
 import com.chestnut.word.domain.HotWordGroup;
+import com.chestnut.word.domain.dto.CreateHotWordGroupRequest;
+import com.chestnut.word.domain.dto.UpdateHotWordGroupRequest;
 import com.chestnut.word.exception.WordErrorCode;
 import com.chestnut.word.mapper.HotWordGroupMapper;
 import com.chestnut.word.mapper.HotWordMapper;
@@ -42,28 +43,33 @@ public class HotWordGroupServiceImpl extends ServiceImpl<HotWordGroupMapper, Hot
 	private final HotWordMapper hotWordMapper;
 
 	@Override
-	public HotWordGroup addHotWordGroup(HotWordGroup group) {
-		this.checkUnique(group.getOwner(), group.getGroupId(), group.getCode());
+	public HotWordGroup addHotWordGroup(CreateHotWordGroupRequest req) {
+		this.checkUnique(req.getOwner(), null, req.getCode());
 
-		group.setGroupId(IdUtils.getSnowflakeId());
-		group.setWordTotal(0L);
-		group.setSortFlag(SortUtils.getDefaultSortValue());
-		group.createBy(StpAdminUtil.getLoginUser().getUsername());
-		this.save(group);
-		return group;
+		HotWordGroup word = new HotWordGroup();
+		word.setGroupId(IdUtils.getSnowflakeId());
+		word.setOwner(req.getOwner());
+		word.setName(req.getName());
+		word.setCode(req.getCode());
+		word.setWordTotal(0L);
+		word.setSortFlag(SortUtils.getDefaultSortValue());
+		word.setRemark(req.getRemark());
+		word.createBy(req.getOperator().getUsername());
+		this.save(word);
+		return word;
 	}
 
 	@Override
-	public void updateHotWordGroup(HotWordGroup group) {
-		HotWordGroup db = this.getById(group.getGroupId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", group.getGroupId()));
+	public void updateHotWordGroup(UpdateHotWordGroupRequest req) {
+		HotWordGroup db = this.getById(req.getGroupId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", req.getGroupId()));
 
-		this.checkUnique(group.getOwner(), group.getGroupId(), group.getCode());
+		this.checkUnique(db.getOwner(), db.getGroupId(), req.getCode());
 
-		db.setName(group.getName());
-		db.setCode(group.getCode());
-		db.setRemark(group.getRemark());
-		db.updateBy(group.getUpdateBy());
+		db.setName(req.getName());
+		db.setCode(req.getCode());
+		db.setRemark(req.getRemark());
+		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
 	}
 

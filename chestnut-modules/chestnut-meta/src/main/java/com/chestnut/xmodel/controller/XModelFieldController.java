@@ -24,17 +24,18 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
 import com.chestnut.xmodel.core.MetaModel;
 import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.domain.XModelField;
-import com.chestnut.xmodel.dto.XModelFieldDTO;
+import com.chestnut.xmodel.dto.CreateXModelFieldRequest;
+import com.chestnut.xmodel.dto.UpdateXModelFieldRequest;
 import com.chestnut.xmodel.service.IModelFieldService;
 import com.chestnut.xmodel.service.IModelService;
 import com.chestnut.xmodel.util.XModelUtils;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,7 +62,7 @@ public class XModelFieldController extends BaseRestController {
 
 	@GetMapping("/list")
 	public R<?> getModelFieldList(@RequestParam @LongId Long modelId,
-								  @RequestParam(value = "query", required = false) String query) {
+								  @RequestParam(required = false) @Length(max = 50) String query) {
 		PageRequest pr = getPageRequest();
 		Page<XModelField> page = modelFieldService.lambdaQuery()
 				.eq(XModelField::getModelId, modelId)
@@ -84,17 +85,15 @@ public class XModelFieldController extends BaseRestController {
 
 	@Log(title = "新增元数据字段", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@RequestBody @Validated XModelFieldDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.modelFieldService.addModelField(dto);
+	public R<?> add(@RequestBody @Validated CreateXModelFieldRequest req) {
+		this.modelFieldService.addModelField(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑元数据字段", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@RequestBody @Validated XModelFieldDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.modelFieldService.editModelField(dto);
+	public R<?> edit(@RequestBody @Validated UpdateXModelFieldRequest req) {
+		this.modelFieldService.editModelField(req);
 		return R.ok();
 	}
 

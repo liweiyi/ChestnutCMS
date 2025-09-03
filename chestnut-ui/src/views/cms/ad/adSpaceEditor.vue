@@ -37,13 +37,13 @@
       </el-col>
     </el-row>
     <el-row :gutter="10">
-      <el-col :span="16">
+      <el-col :lg="16" :md="24">
         <el-card shadow="hover">
           <div slot="header" class="clearfix">
             <span>{{ $t('CMS.Adv.AdList') }}</span>
           </div>
           <el-row :gutter="24" class="mb12">
-            <el-col :span="12">
+            <el-col :lg="12" :md="24">
               <el-button 
                 plain
                 type="primary"
@@ -65,7 +65,7 @@
                 :disabled="selectedRows.length===0"
                 @click="handleDeleteAdvertisements">{{ $t("Common.Delete") }}</el-button>
             </el-col>
-            <el-col :span="12" style="text-align: right">
+            <el-col :lg="12" :md="24" style="text-align: right">
               <el-input :placeholder="$t('CMS.Adv.Placeholder.Name')" v-model="queryParams.name" size="mini" style="width: 200px;" class="mr10"></el-input>
               <el-button 
                 type="primary"
@@ -141,7 +141,7 @@
           </el-row>
         </el-card>
       </el-col>
-      <el-col :span="8">
+      <el-col :lg="8" :md="24">
         <el-form 
           ref="form"
           :model="form"
@@ -193,6 +193,7 @@
   </div>
 </template>
 <script>
+import { codeValidator, pathValidator } from '@/utils/validate';
 import { getPublishPipeSelectData } from "@/api/contentcore/publishpipe";
 import { getPageWidget, addPageWidget, editPageWidget, publishPageWidgets } from "@/api/contentcore/pagewidget";
 import { listAdvertisements, deleteAdvertisement, enableAdvertisement, disableAdvertisement } from "@/api/advertisement/advertisement";
@@ -216,16 +217,18 @@ export default {
       },
       rules: {
         name: [
-          { required: true, message: this.$t('CMS.PageWidget.RuleTips.Name'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         code: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('CMS.PageWidget.RuleTips.Code'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
         ],
         publishPipeCode: [
-          { required: true, message: this.$t('CMS.PageWidget.RuleTips.PublishPipe'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         path: [
-          { required: true, pattern: "^[A-Za-z0-9_\/]+$", message: this.$t('CMS.PageWidget.RuleTips.Path'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: pathValidator, trigger: "change" },
         ]
       },
       openTemplateSelector: false,
@@ -399,15 +402,11 @@ export default {
 };
 </script>
 <style scoped>
-.adspace-editor-container .el-input, .el-select, .el-textarea {
-  width: 400px;
-}
 .adspace-editor-container .form-row {
-  width: 100%;
   display: inline-block;
 }
 .adspace-editor-container .el-form-item {
-  width: 500px;
+  width: 100%;
   float: left;
 }
 </style>

@@ -40,8 +40,9 @@ import com.chestnut.search.SearchConsts;
 import com.chestnut.search.service.ISearchLogService;
 import com.chestnut.system.validator.LongId;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
@@ -51,6 +52,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -65,6 +67,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/cms/search")
 public class SearchApiController extends BaseRestController {
 
+	private static final String SORT_SCORE = "1"; // 排序方式：相关度
+	private static final String SORT_PUBLISH_DATE = "2"; // 排序方式：发布时间
+
 	private final ICatalogService catalogService;
 
 	private final ElasticsearchClient esClient;
@@ -75,50 +80,81 @@ public class SearchApiController extends BaseRestController {
 
 	@GetMapping("/query")
 	public R<?> selectDocumentList(
-			@RequestParam(value = "sid") Long siteId,
-			@RequestParam(value = "pp") String publishPipeCode,
-			@RequestParam(value = "q") @Length(max = 50) String query,
-			@RequestParam(value = "ot", required = false ,defaultValue = "false") Boolean onlyTitle,
-			@RequestParam(value = "ct", required = false) String contentType,
-			@RequestParam(value = "page", required = false, defaultValue = "1") @Min(1) Integer page,
+			@RequestParam(value = "sid") Long siteId, // 站点ID
+			@RequestParam(value = "pp") String publishPipeCode, // 发布通道
+			@RequestParam(value = "q") @Length(max = 50) String query, // 检索词
+			@RequestParam(value = "ot", required = false ,defaultValue = "false") Boolean onlyTitle, // 是否只查标题
+			@RequestParam(value = "ct", required = false) String contentType, // 类型类型
+			@RequestParam(value = "ts", required = false) String[] tags, // 标签列表
+			@RequestParam(value = "st", required = false, defaultValue = SORT_SCORE) String sortType, // 排序方式：1 = 相关度，2 = 发布时间
+			@RequestParam(value = "bt", required = false) LocalDate beginTime, // 发布时间Begin
+			@RequestParam(value = "et", required = false) LocalDate endTime, // 发布时间End
+			@RequestParam(value = "page", required = false, defaultValue = "1") @Min(1) Integer page, // 页码
+			@RequestParam(value = "size", required = false, defaultValue = "10") @Min(1) Integer pageSize, // 每页数量
 			@RequestParam(value = "preview", required = false, defaultValue = "false") Boolean preview) throws ElasticsearchException, IOException {
-		int pageSize = 10;
 		String indexName = CmsSearchConstants.indexName(siteId.toString());
 		SearchResponse<ObjectNode> sr = esClient.search(s -> {
 			s.index(indexName) // 索引
-				.query(q ->
-					q.bool(b -> {
-						if (StringUtils.isNotEmpty(contentType)) {
-							b.must(must -> must.term(tq -> tq.field("contentType.keyword").value(contentType)));
-						}
-						if (StringUtils.isNotEmpty(query)) {
-							if (onlyTitle) {
-								b.must(must -> must
-										.match(match -> match
-												.analyzer(SearchConsts.IKAnalyzeType_Smart)
-												.field("title")
-												.query(query)
-										)
-								);
-							} else {
-								b.must(must -> must
-										.multiMatch(match -> match
-												.analyzer(SearchConsts.IKAnalyzeType_Smart)
-												.fields("title^10", "fullText^1")
-												.query(query)
-										)
-								);
-							}
-						}	
-						return b;
-					})
-				);
+					.query(q ->
+							q.bool(b -> {
+								if (StringUtils.isNotEmpty(contentType)) {
+									b.must(must -> must.term(tq -> tq.field("contentType.keyword").value(contentType)));
+								}
+								if (StringUtils.isNotEmpty(query)) {
+									if (onlyTitle) {
+										b.must(must -> must
+												.match(match -> match
+														.analyzer(SearchConsts.IKAnalyzeType_Smart)
+														.field("title")
+														.query(query)
+												)
+										);
+									} else {
+										b.must(must -> must
+												.multiMatch(match -> match
+														.analyzer(SearchConsts.IKAnalyzeType_Smart)
+														.fields("title^10", "fullText^1")
+														.query(query)
+												)
+										);
+									}
+								}
+								if (StringUtils.isNotEmpty(tags)) {
+									b.must(should -> {
+										for (String tag : tags) {
+											should.constantScore(cs ->
+													cs.boost(1F).filter(f ->
+															f.match(m ->
+																	m.field("tags").query(tag))));
+										}
+										return should;
+									});
+								}
+								if (Objects.nonNull(beginTime) || Objects.nonNull(endTime)) {
+									b.must(must -> must.range(range ->
+											range.number(num -> {
+												num.field("publishDate");
+												if (Objects.nonNull(beginTime)) {
+													num.gte((double) beginTime.atStartOfDay().toEpochSecond(ZoneOffset.UTC));
+												}
+												if (Objects.nonNull(endTime)) {
+													num.lte((double) endTime.atStartOfDay().toEpochSecond(ZoneOffset.UTC));
+												}
+												return num;
+											})
+									));
+								}
+								return b;
+							})
+					);
 			if (StringUtils.isNotEmpty(query)) {
-				s.highlight(h ->  
-					h.fields("title", f -> f.preTags("<font color='red'>").postTags("</font>"))
-						.fields("fullText", f -> f.preTags("<font color='red'>").postTags("</font>")));
+				s.highlight(h ->
+						h.fields("title", f -> f.preTags("<font color='red'>").postTags("</font>"))
+								.fields("fullText", f -> f.preTags("<font color='red'>").postTags("</font>")));
 			}
-			s.sort(sort -> sort.field(f -> f.field("_score").order(SortOrder.Desc)));
+			if (SORT_SCORE.equals(sortType)) {
+				s.sort(sort -> sort.field(f -> f.field("_score").order(SortOrder.Desc)));
+			}
 			s.sort(sort -> sort.field(f -> f.field("publishDate").order(SortOrder.Desc))); // 排序: _score:desc + publishDate:desc
 //			s.source(source -> source.filter(f -> f.excludes("fullText"))); // 过滤字段
 			s.from((page - 1) * pageSize).size(pageSize);  // 分页，0开始
@@ -166,13 +202,13 @@ public class SearchApiController extends BaseRestController {
 
 	@GetMapping("/tag")
 	public R<?> selectDocumentByTag(
-			@RequestParam(value = "sid") Long siteId,
+			@RequestParam(value = "sid") @LongId Long siteId,
 			@RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
-			@RequestParam(value = "pp") String publishPipeCode,
-			@RequestParam(value = "q", required = false) @Length(max = 200) String query,
-			@RequestParam(value = "ct", required = false) String contentType,
+			@RequestParam(value = "pp") @NotBlank @Length(max = 50) String publishPipeCode,
+			@RequestParam(value = "q", required = false) @NotBlank @Length(max = 200) String query,
+			@RequestParam(value = "ct", required = false) @Length(max = 20) String contentType,
 			@RequestParam(value = "page", required = false, defaultValue = "1") @Min(1) Integer page,
-			@RequestParam(value = "size", required = false, defaultValue = "10") @Min(1) Integer size,
+			@RequestParam(value = "size", required = false, defaultValue = "10") @Min(1) @Max(100) Integer size,
 			@RequestParam(value = "preview", required = false, defaultValue = "false") Boolean preview) throws ElasticsearchException, IOException {
 		String indexName = CmsSearchConstants.indexName(siteId.toString());
 		SearchResponse<ObjectNode> sr = esClient.search(s -> {
@@ -238,9 +274,9 @@ public class SearchApiController extends BaseRestController {
 	@GetMapping("/suggest")
 	public R<List<String>> getSuggestWords(@RequestParam("sid") @LongId Long siteId,
 								@RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
-								@RequestParam(value = "q") @NotEmpty @Length(max = 50) String query,
-								@RequestParam(value = "ct", required = false) String contentType,
-								@RequestParam(value = "size", required = false) Integer size) throws IOException {
+								@RequestParam(value = "q") @NotBlank @Length(max = 200) String query,
+								@RequestParam(value = "ct", required = false) @Length(max = 20) String contentType,
+								@RequestParam(value = "size", required = false) @Min(1) @Max(100) Integer size) throws IOException {
 		String suggester = "title-suggest";
 		String indexName = CmsSearchConstants.indexName(siteId.toString());
 		SearchResponse<ObjectNode> sr = esClient.search(s ->
@@ -279,11 +315,11 @@ public class SearchApiController extends BaseRestController {
 
 	@GetMapping("/group/catalog")
 	public R<?> groupBy(@RequestParam("sid") @LongId Long siteId,
-						@RequestParam(value = "q") @Length(max = 50) String query,
+						@RequestParam(value = "q") @NotBlank @Length(max = 200) String query,
 						@RequestParam(value = "cid", defaultValue = "0") Long catalogId,
 						@RequestParam(value = "level", defaultValue = "0") Integer level,
 						@RequestParam(value = "ot", required = false ,defaultValue = "false") Boolean onlyTitle,
-						@RequestParam(value = "ct", required = false) String contentType) throws ElasticsearchException, IOException {
+						@RequestParam(value = "ct", required = false) @Length(max = 20) String contentType) throws ElasticsearchException, IOException {
 		CmsCatalog catalog = IdUtils.validate(catalogId) ? catalogService.getCatalog(catalogId) : null;
 		String indexName = CmsSearchConstants.indexName(siteId.toString());
 		SearchResponse<ObjectNode> sr = esClient.search(s ->

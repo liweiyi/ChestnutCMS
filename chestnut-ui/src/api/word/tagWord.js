@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getTagWordList(params) {
   return request({
-    url: '/word/tagword',
+    url: '/word/tagword/list',
     method: 'get',
     params: params
   })
@@ -10,7 +10,7 @@ export function getTagWordList(params) {
 
 export function addTagWord(data) {
   return request({
-    url: '/word/tagword',
+    url: '/word/tagword/add',
     method: 'post',
     data: data
   })
@@ -26,7 +26,7 @@ export function batchAddTagWords(data) {
 
 export function editTagWord(data) {
   return request({
-    url: '/word/tagword',
+    url: '/word/tagword/update',
     method: 'put',
     data: data
   })
@@ -47,9 +47,16 @@ export function getTagWordGroupTreeData() {
   })
 }
 
+export function getTagWordGroupData(groupId) {
+  return request({
+    url: '/word/tagword/group/data/' + groupId,
+    method: 'get'
+  })
+}
+
 export function addTagWordGroup(data) {
   return request({
-    url: '/word/tagword/group',
+    url: '/word/tagword/group/add',
     method: 'post',
     data: data
   })
@@ -57,7 +64,7 @@ export function addTagWordGroup(data) {
 
 export function editTagWordGroup(data) {
   return request({
-    url: '/word/tagword/group',
+    url: '/word/tagword/group/update',
     method: 'put',
     data: data
   })

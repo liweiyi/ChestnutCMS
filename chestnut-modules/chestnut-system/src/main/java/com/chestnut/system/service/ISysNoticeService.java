@@ -15,11 +15,12 @@
  */
 package com.chestnut.system.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysNotice;
-import com.chestnut.system.domain.dto.SysNoticeDTO;
+import com.chestnut.system.domain.dto.CreateNoticeRequest;
+import com.chestnut.system.domain.dto.UpdateNoticeRequest;
+
+import java.util.List;
 
 /**
  * 公告 服务层
@@ -32,27 +33,21 @@ public interface ISysNoticeService extends IService<SysNotice> {
 	/**
 	 * 新增公告
 	 * 
-	 * @param notice
-	 *            公告信息
-	 * @return 结果
+	 * @param req 公告信息
 	 */
-	public void insertNotice(SysNoticeDTO dto);
+	void insertNotice(CreateNoticeRequest req);
 
 	/**
 	 * 修改公告
 	 * 
-	 * @param notice
-	 *            公告信息
-	 * @return 结果
+	 * @param req 公告信息
 	 */
-	public void updateNotice(SysNoticeDTO dto);
+	void updateNotice(UpdateNoticeRequest req);
 
 	/**
 	 * 批量删除公告信息
 	 * 
-	 * @param noticeIds
-	 *            需要删除的公告ID
-	 * @return 结果
+	 * @param noticeIds 公告ID列表
 	 */
-	public void deleteNoticeByIds(List<Long> noticeIds);
+	void deleteNoticeByIds(List<Long> noticeIds);
 }

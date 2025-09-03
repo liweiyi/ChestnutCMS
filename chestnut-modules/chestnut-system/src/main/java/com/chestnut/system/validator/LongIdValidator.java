@@ -15,13 +15,11 @@
  */
 package com.chestnut.system.validator;
 
-import org.springframework.context.i18n.LocaleContextHolder;
-
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.IdUtils;
-
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 public class LongIdValidator implements ConstraintValidator<LongId, Long> {
 

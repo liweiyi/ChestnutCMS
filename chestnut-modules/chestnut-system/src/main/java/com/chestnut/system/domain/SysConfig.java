@@ -20,11 +20,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.chestnut.common.i18n.I18nField;
 import com.chestnut.common.db.domain.BaseEntity;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import com.chestnut.common.i18n.I18nField;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -66,22 +63,4 @@ public class SysConfig extends BaseEntity {
 	 */
 	@TableField(exist = false)
 	private String fixed;
-
-	@NotBlank(message = "参数名称不能为空")
-	@Size(min = 0, max = 100, message = "参数名称不能超过100个字符")
-	public String getConfigName() {
-		return configName;
-	}
-
-	@NotBlank(message = "参数键名长度不能为空")
-	@Size(min = 0, max = 100, message = "参数键名长度不能超过100个字符")
-	public String getConfigKey() {
-		return configKey;
-	}
-
-	@NotBlank(message = "参数键值不能为空")
-	@Size(min = 0, max = 500, message = "参数键值长度不能超过500个字符")
-	public String getConfigValue() {
-		return configValue;
-	}
 }

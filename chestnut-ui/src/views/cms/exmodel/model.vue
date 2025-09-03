@@ -119,6 +119,7 @@
 <style scoped>
 </style>
 <script>
+import { codeValidator } from '@/utils/validate';
 import { listModelDataTables } from "@/api/meta/model";
 import { addXModel, editXModel, deleteXModel, listXModel } from "@/api/contentcore/exmodel";
 
@@ -151,13 +152,20 @@ export default {
       // 表单校验
       rules: {
         name: [
-          { required: true, message: this.$t('CMS.ExModel.RuleTips.Name'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: [ "change", "blur" ] }
         ],
         code: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('CMS.ExModel.RuleTips.Code'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: [ "change", "blur" ] },
+          { validator: codeValidator, trigger: "change" }
         ],
         tableName: [
-          { required: true, message: this.$t('CMS.ExModel.RuleTips.TableName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: [ "change", "blur" ] }
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: [ "change", "blur" ] }
         ]
       }
     };

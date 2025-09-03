@@ -102,7 +102,27 @@ public enum SysErrorCode implements ErrorCode {
 	/**
 	 * "部门停用，不允许新增"
 	 */
-	DISBALE_DEPT_ADD_CHILD,
+	DISABLE_DEPT_ADD_CHILD,
+
+	/**
+	 * 该部门包含未停用的子部门
+	 */
+	HAS_ENABLE_CHILD_DEPT,
+
+	/**
+	 * 存在下级部门,不允许删除
+	 */
+	DEPT_DEL_FAIL_HAS_CHILD,
+
+	/**
+	 * 存在用户的部门,不允许删除
+	 */
+	DEPT_DEL_FAIL_HAS_USER,
+
+	/**
+	 *
+	 */
+	CANNOT_DELETE_WITH_USER,
 	
 	/**
 	 * 请先删除字典数据项
@@ -127,7 +147,7 @@ public enum SysErrorCode implements ErrorCode {
 	/**
 	 * 暂未开放账号注册
 	 */
-	REGIST_DISABELD,
+	REGISTER_DISABLED,
 	
 	/**
 	 * 上传文件大小不能超过：{0}

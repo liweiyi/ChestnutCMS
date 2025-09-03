@@ -21,6 +21,8 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.word.cache.ErrorProneWordMonitoredCache;
 import com.chestnut.word.domain.ErrorProneWord;
+import com.chestnut.word.domain.dto.CreateErrorProneWordRequest;
+import com.chestnut.word.domain.dto.UpdateErrorProneWordRequest;
 import com.chestnut.word.exception.WordErrorCode;
 import com.chestnut.word.mapper.ErrorProneWordMapper;
 import com.chestnut.word.sensitive.ErrorProneWordProcessor;
@@ -53,32 +55,36 @@ public class ErrorProneWordServiceImpl extends ServiceImpl<ErrorProneWordMapper,
 	}
 
 	@Override
-	public void addErrorProneWord(ErrorProneWord word) {
-		Long count = this.lambdaQuery().eq(ErrorProneWord::getWord, word.getWord()).count();
-		Assert.isTrue(count == 0, () -> WordErrorCode.CONFLIECT_ERROR_PRONE_WORD.exception(word.getWord()));
+	public void addErrorProneWord(CreateErrorProneWordRequest req) {
+		Long count = this.lambdaQuery().eq(ErrorProneWord::getWord, req.getWord()).count();
+		Assert.isTrue(count == 0, () -> WordErrorCode.CONFLIECT_ERROR_PRONE_WORD.exception(req.getWord()));
 
+		ErrorProneWord word = new ErrorProneWord();
 		word.setWordId(IdUtils.getSnowflakeId());
+		word.setWord(req.getWord());
+		word.setReplaceWord(req.getReplaceWord());
+		word.createBy(req.getOperator().getUsername());
 		this.save(word);
-		this.processor.addWord(word.getWord(), word.getReplaceWord());
+		this.processor.addWord(req.getWord(), req.getReplaceWord());
 		this.wordMonitoredCache.clear();
 	}
 
 	@Override
-	public void updateErrorProneWord(ErrorProneWord word) {
-		ErrorProneWord db = this.getById(word.getWordId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("wordId", word.getWordId()));
+	public void updateErrorProneWord(UpdateErrorProneWordRequest req) {
+		ErrorProneWord db = this.getById(req.getWordId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("wordId", req.getWordId()));
 
-		Long count = this.lambdaQuery().eq(ErrorProneWord::getWord, word.getWord())
-				.ne(ErrorProneWord::getWordId, word.getWordId()).count();
-		Assert.isTrue(count == 0, () -> WordErrorCode.CONFLIECT_ERROR_PRONE_WORD.exception(word.getWord()));
+		Long count = this.lambdaQuery().eq(ErrorProneWord::getWord, req.getWord())
+				.ne(ErrorProneWord::getWordId, req.getWordId()).count();
+		Assert.isTrue(count == 0, () -> WordErrorCode.CONFLIECT_ERROR_PRONE_WORD.exception(req.getWord()));
 
 		String oldWord = db.getWord();
 
-		db.setWord(word.getWord());
-		db.setReplaceWord(word.getReplaceWord());
-		db.setRemark(word.getRemark());
-		db.updateBy(word.getUpdateBy());
+		db.setWord(req.getWord());
+		db.setReplaceWord(req.getReplaceWord());
+		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
+
 		this.processor.removeWord(oldWord);
 		this.processor.addWord(db.getWord(), db.getReplaceWord());
 		this.wordMonitoredCache.clear();

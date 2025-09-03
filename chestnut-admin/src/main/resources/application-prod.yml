@@ -5,7 +5,7 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.5.7
+  version: 1.5.8
   # 版权年份
   copyrightYear: 2022-2025
   system:
@@ -15,6 +15,8 @@ chestnut:
     uploadPath: /home/app/uploadPath
   freemarker:
     templateLoaderPath: /home/app/statics
+  image:
+    type: 'JDK'
   cms:
     resourceRoot: /home/app/wwwroot_release
     publish:

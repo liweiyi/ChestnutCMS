@@ -104,8 +104,12 @@ export default {
       NotEmpty: "Cannot be empty.",
       Email: "Invalid email.",
       Url: "Invalid url, must starts with http(s)://.",
-      Code: "Only 'A-Za-z', '0-9' and '_' can be used.",
-      PhoneNumber: "Invalid phone number."
+      Code: "Only letters, numbers, and underscores can be used.",
+      Path: "Only letters, numbers, underscores, and slashes can be used.",
+      UserName: "Must start with a letter and can only use letters, numbers, and underscores.",
+      PhoneNumber: "Invalid phone number.",
+      MaxLength: "The length cannot exceed {0}.",
+      LengthRange: "The length must be between {0} and {1}.",
     }
   },
   Error: {
@@ -157,20 +161,12 @@ export default {
     Gender: 'Gender',
     GenderMale: 'Male',
     GenderFemale: 'Female',
-    NickNameEmptyTip: 'Nick name cannot be empty.',
-    EmailEmptyTip: 'Email cannot be empty.',
-    EmailRuleTip: 'Invalid email.',
-    PhoneNumEmptyTip: 'Phone number cannot be empty.',
-    PhoneNumRuleTip: 'Invalid phone number.',
     OldPwd: 'Old Password',
     NewPwd: 'New Password',
     ConfirmPwd: 'Confirm Password',
     OldPwdPlaceHolder: 'Please input old password',
     NewPwdPlaceHolder: 'Please input new password',
     ConfirmPwdPlaceHolder: 'Please confirm new password',
-    OldPwdEmptyTip: 'Old password cannot be empty.',
-    NewPwdEmptyTip: 'New password cannot be empty.',
-    ConfirmPwdEmptyTip: 'Confirm new password cannot be empty.',
     NewPwdLenTip: 'Should be {0} - {1} characters in length.',
     NewPwdSensitiveTip: 'Cannot contain user sensitive information.',
     NewPwdTip: 'Insecure new password .',
@@ -302,15 +298,6 @@ export default {
         Gender: "Select gender",
         Post: "Select posts",
         Role: "Select roles"
-      },
-      RuleTips: {
-        UserName1: "User name cannot be empty.",
-        UserName2: "User name length must be between 2 and 20",
-        DeptId: "User department cannot be empty.",
-        NickName: "Nickname cannot be empty",
-        Password1: "Password cannot be empty",
-        Email: "Invalid email address",
-        PhoneNumber: "Invalid phone number"
       }
     },
     UserPreference: {
@@ -333,7 +320,6 @@ export default {
       RoleId: "Role ID",
       RoleName: "Role Name",
       RoleKey: "Role Key",
-      RoleKeyTips: "Role key cannot be empty and only number, character and underline.",
       Sort: "Sort",
       Status: "Status",
       UserSetting: "User Setting",
@@ -353,11 +339,6 @@ export default {
         RoleName: "Input role name",
         RoleKey: "Input role key",
         Status: "Role status"
-      },
-      RuleTips: {
-        RoleName: "Role name cannot be empty.",
-        RoleKey: "Role key cannot be empty.",
-        Sort: "Role sort cannot be empty."
       }
     },
     Permission: {
@@ -409,11 +390,6 @@ export default {
         Perms: "Input permisison key",
         RouterParams: "Input router parameters",
       },
-      RuleTips: {
-        MenuName: "Menu cannot be empty.",
-        Sort: "Menu sort cannot be empty.",
-        RouterLink: "Router link cannot be empty."
-      },
       Shortcut: "Shortcut"
     },
     Dept: {
@@ -424,7 +400,6 @@ export default {
       Leader: "Leader",
       Phone: "Phone Num.",
       Email: "Email",
-      ConfirmDelete: '是否确认删除名称为"{0}"的数据项？',
       Dialog: {
         Add: "Add Department",
         Edit: "Edit Department"
@@ -436,13 +411,6 @@ export default {
         Leader: "Input department leader",
         Phone: "Input phone number",
         Email: "Input email"
-      },
-      RuleTips: {
-        DeptName: "Department name cannot be empty.",
-        ParentDept: "Parent department cannot be empty.",
-        Sort: "Sort cannot be empty",
-        Email: "Invalid emial.",
-        Phone: "Invlaid phone number."
       }
     },
     Post: {
@@ -460,11 +428,6 @@ export default {
         PostCode: "Input post code",
         PostName: "Input post name",
         Status: "Post Status"
-      },
-      RuleTips: {
-        PostName: "Post name cannot be empty.",
-        PostCode: "Post code cannot be empty.",
-        PostSort: "Post sort cannot be empty."
       }
     },
     Dict: {
@@ -496,14 +459,6 @@ export default {
         DictValue: "Input dict data value",
         CssClass: "Input dict data css class",
         Status: "Input status"
-      },
-      RuleTips: {
-        DictName: "Dict name cannot be empty.",
-        DictType: "Dict type cannot be empty.",
-        DictCode: "Dict data code cannot be empty.",
-        DictLabel: "Dict data label cannot be empty.",
-        DictValue: "Dict data value cannot be empty.",
-        DictSort: "Dict sort cannot be empty.",
       }
     },
     Config: {
@@ -522,11 +477,6 @@ export default {
         ConfigKey: "Input config key",
         ConfigValue: "Input config value",
         ConfigType: "Fixed Config",
-      },
-      RuleTips: {
-        ConfigName: "Config name cannot be empty.",
-        ConfigKey: "Config key cannot be empty.",
-        ConfigValue: "Config value cannot be empty.",
       }
     },
     Notice: {
@@ -538,10 +488,6 @@ export default {
       Dialog: {
         Add: "Add Notice",
         Edit: "Edit Notice"
-      },
-      RuleTips: {
-        NoticeTitle: "Notice title cannot be empty.",
-        NoticeType: "Notice type cannot be empty."
       }
     },
     I18n: {
@@ -552,25 +498,6 @@ export default {
       Dialog: {
         Add: "Add I18n",
         Edit: "Edit I18n"
-      },
-      RuleTips: {
-        LangTag: "Language tag cannot be empty.",
-        LangKey: "Language key cannot be empty.",
-        LangValue: "Language value cannot be empty.",
-      }
-    },
-    IPRule: {
-      Type: "Type",
-      ExpireTime: "Expire Time",
-      CIDR: "CIDR",
-      Dialog: {
-        Add: "Add IP Rule",
-        Edit: "Edit IP Rule",
-      },
-      RuleTips: {
-        IP: "IP address cannot be empty.",
-        Type: "Type cannot be empty.",
-        CIDR: "CIDR cannot be empty."
       }
     },
     OpLog: {
@@ -688,11 +615,6 @@ export default {
       },
       Placeholder: {
         InvokeTarget: "Input invoke target string"
-      },
-      RuleTips: {
-        JobName: "Job name cannot be empty.",
-        InvokeTaget: "Invoke taget cannot be empty.",
-        CronExpression: "Cron expression cannot be empty."
       }
     },
     ScheduledTask: {
@@ -878,7 +800,6 @@ export default {
         AlignLeft: "Left",
         AlignRight: "Right",
         RuleTips: {
-          Code: "Cannot be empty.",
           IframeSrc: "The video code <iframe>  attribtue `src` is missing!"
         }
       },
@@ -962,9 +883,6 @@ export default {
       PrefixMode_Relative: "Relative",
       RelativePrefix: "Relative Prefix",
       ErrPageLink: "Error Page Link",
-      Dashboard: {
-        MissingSiteUrl: "The site domain not configured."
-      },
       Tab: {
         Basic: "Basic Information",
         Extend: "Extend Config",
@@ -973,10 +891,6 @@ export default {
       },
       Dialog: {
         AddTitle: "Add Site"
-      },
-      RuleTips: {
-        Name: "Cannot be empty.",
-        Path: "Cannot be empty and only [A-Za-z0-9]+"
       },
       Extend: {
         BasicCardTitle: "Basic",
@@ -1019,6 +933,8 @@ export default {
         SensitiveWordEnable: "Replace Sensitive Word On Save Article",
         ErrorProneWordEnable: "Replace Fallible Word On Save Article",
         HotWordGroup: "Hot Word Group",
+        HotWordMaxReplaceCount: "Replace Limit",
+        HotWordMaxReplaceCountTip: "The max replaced number in each article, with 0 indicating no limit.",
         StatConfCardTitle: "Statistics",
         BaiduApiKey: "Baidu ApiKey",
         BaiduSecretKey: "Baidu SecretKey",
@@ -1047,10 +963,6 @@ export default {
         PropName: "Name",
         PropCode: "Code",
         PropValue: "Value",
-        RuleTips: {
-          PropName: "Cannot be empty.",
-          PropCode: "Cannot be empty and only [A-Za-z0-9_]+"
-        }
       },
       DefaultTemplate: {
         Title: "Default Template",
@@ -1071,6 +983,7 @@ export default {
         MemberContribute: "Member Contribute Template",
       },
       Dashboard: {
+        MissingSiteUrl: "The site domain not configured.",
         DataCountCard: "Statistical Data",
         Catalog: "Catalog",
         Content: "Content",
@@ -1125,12 +1038,6 @@ export default {
       ExportCatalogTree: "Catalog Tree",
       NoSitePermissions: "No site permissions.",
       ContentPathRule: "Content Path Rule",
-      RuleTips: {
-        Name: "Cannot be empty",
-        Alias: "Cannot be empty and only [A-Za-z0-9_]+",
-        Path: "Cannot be empty and only [A-Za-z0-9_]+",
-        CatalogType: "Cannot be empty"
-      },
       SelectCatalogFirst: "Please select catalog first",
       PublishProgressTitle: "Publish catalog task",
       DeleteProgressTitle: "Delete catalog task",
@@ -1150,6 +1057,8 @@ export default {
         ContentConfig: "Content Configuration",
         WordConfig: "Word Configuration",
         HotWordGroup: "Hot Word Group",
+        HotWordMaxReplaceCount: "Replace Limit",
+        HotWordMaxReplaceCountTip: "The max replaced number in each article, with 0 indicating no limit.",
         EnableContribute: "Enable Contribute"
       }
     },
@@ -1222,9 +1131,6 @@ export default {
       PublishPipe: "Publish Pipe",
       StaticPath: "Static Path",
       Template: "Template",
-      RuleTips:  {
-        Title: "Title cannot be empty."
-      },
       PublishProgressTitle: "Publishing contents",
       OfflineProgressTitle: "Offline contents",
       CopyProgressTitle: "Copy contents",
@@ -1348,11 +1254,6 @@ export default {
       CloseChapterEditorTip: "Chapter data not saved, are you sure to quit?",
       Route: {
         EditChapter: "Edit book chapter"
-      },
-      RuleTips: {
-        Title: "Title cannot be empty.",
-        Content: "Content cannot be empty.",
-        PublishDate: "Publish date cannot be empty."
       }
     },
     PageWidget: {
@@ -1365,13 +1266,6 @@ export default {
       InvalidPageWidgetId: "Invalid page widget id: {0}",
       Placeholder: {
         Type: "Select Type"
-      },
-      RuleTips: {
-        Type: "Type cannot be empty.",
-        Name: "Name cannot be empty.",
-        Code: "Code cannot be empty and only [A-Za-z0-9_]+",
-        PublishPipe: "Publish pipe cannot be empty.",
-        Path: "Path cannot be empty and only [A-Za-z0-9_]+"
       },
       AddTitle: "Add Page Widget",
     },
@@ -1391,13 +1285,6 @@ export default {
       GoBack: "Go Back",
       AdMaterials: "Advertising Materials",
       RedirectUrl: "Redirect Url",
-      RuleTips: {
-        Type: "Type cannot be empty.",
-        Name: "Name cannot be empty.",
-        Weight: "Weight cannot be empty.",
-        OnlineDate: "OnlineDate cannot be empty.",
-        OfflineDate: "OfflineDate cannot be empty."
-      }
     },
     Block: {
       Basic: "Basic",
@@ -1424,9 +1311,6 @@ export default {
       AddDialogTitle: "Add Resource",
       EditDialogTitle: "Eidt Resource",
       FileTypeErrMsg: "The file format is incorrect.",
-      RuleTips: {
-        Name: "Name cannot be empty."
-      },
       SelectorTitle: "Resources",
       LocalUpload: "Local Upload",
       RemoteLink: "Remote Link",
@@ -1453,12 +1337,6 @@ export default {
       Status: "Status",
       AddDialogTitle: "Add Publish Pipe",
       EditDialogTitle: "Edit Publish Pipe",
-      RuleTips: {
-        Name: "Name cannot be empty.",
-        Code: "Code cannot be empty and only [A-Za-z0-9_]+",
-        Status: "Status cannot be empty.",
-        Sort: "Sort cannot be empty."
-      }
     },
     File: {
       Upload: "Upload",
@@ -1475,9 +1353,6 @@ export default {
       UploadTitle: "Upload file",
       UploadTip: "Drag the file here or click to upload.",
       ResourceRoot: "Site Resource Root",
-      RuleTips: {
-        FileName: "Cannot be empty and only [A-Za-z0-9_]+"
-      }
     },
     Template: {
       Name: "Template Name",
@@ -1564,18 +1439,6 @@ export default {
       Placeholder: {
         Query: "Input model name/code",
         FieldQuery: "Input field name/code"
-      },
-      RuleTips: {
-        Name: "Name cannot be empty.",
-        Code: "Code cannot be empty and only [A-Za-z0-9_]+",
-        TableName: "Table name cannot be empty.",
-        FieldName: "Name cannot be empty.",
-        FieldCode: "Code cannot be empty and only [A-Za-z0-9_]+",
-        FieldControlType: "Control type cannot be empty.",
-        FieldMandatory: "Mandatory cannot be empty.",
-        FieldType: "Field type cannot be empty.",
-        FieldMappingName: "Table column name cannot be empty.",
-        FieldMappingUsed: "The table column alreay used.",
       }
     },
     FriendLink: {
@@ -1627,6 +1490,9 @@ export default {
       IP: "IP",
       AvgVisitTime: "Avg Visit Time",
       Rate: "Rate",
+      PVRate: "PV Rate",
+      UVRate: "UV Rate",
+      IPRate: "IP Rate",
       Hour: "Hour",
       Day: "Day",
       Week: "Week",
@@ -1912,12 +1778,6 @@ export default {
       Regex: "Regex expression..."
     },
     RuleTips: {
-      FieldName: "Name cannot be empty.",
-      FieldCode: "Code cannot be empty and only [A-Za-z0-9_]+",
-      FieldControlType: "Control type cannot be empty.",
-      FieldMandatory: "Mandatory cannot be empty.",
-      FieldType: "Field type cannot be empty.",
-      FieldMappingName: "Table column name cannot be empty.",
       FieldMappingUsed: "The table column alreay used.",
     }
   },

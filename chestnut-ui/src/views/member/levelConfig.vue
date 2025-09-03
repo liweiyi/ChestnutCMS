@@ -180,6 +180,7 @@ export default {
       open: false,
       // 查询参数
       queryParams: {
+        levelType: undefined,
         pageNum: 1,
         pageSize: 10,
       },
@@ -196,9 +197,13 @@ export default {
         ],
         name: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: [ "change", "blur" ] },
         ],
         nextNeedExp: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: [ "change", "blur" ] },
         ]
       }
     };
@@ -224,7 +229,11 @@ export default {
       this.getList();
     },
     resetQuery() {
-      this.resetForm("queryForm");
+      this.queryParams = {
+        levelType: undefined,
+        pageNum: 1,
+        pageSize: 10,
+      };
       this.handleQuery();
     },
     handleSelectionChange (selection) {
@@ -259,13 +268,13 @@ export default {
         if (valid) {
           if (this.form.configId != undefined) {
             updateLevelConfig(this.form).then(response => {
-              this.$modal.msgSuccess(ths.$t('Common.SaveSuccess'));
+              this.$modal.msgSuccess(this.$t('Common.SaveSuccess'));
               this.open = false;
               this.getList();
             });
           } else {
             addLevelConfig(this.form).then(response => {
-              this.$modal.msgSuccess(ths.$t('Common.AddSuccess'));
+              this.$modal.msgSuccess(this.$t('Common.AddSuccess'));
               this.open = false;
               this.getList();
             });
@@ -275,11 +284,11 @@ export default {
     },
     handleDelete (row) {
       const configIds = row.configId ? [ row.configId ] : this.ids;
-      this.$modal.confirm(ths.$t('Common.ConfirmDelete')).then(function () {
+      this.$modal.confirm(this.$t('Common.ConfirmDelete')).then(function () {
         return deleteLevelConfigs(configIds);
       }).then(() => {
         this.getList();
-        this.$modal.msgSuccess(ths.$t('Common.DeleteSuccess'));
+        this.$modal.msgSuccess(this.$t('Common.DeleteSuccess'));
       }).catch(function () { });
     }
   }

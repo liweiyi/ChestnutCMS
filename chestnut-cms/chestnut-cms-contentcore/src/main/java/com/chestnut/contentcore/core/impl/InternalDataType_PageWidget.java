@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.Writer;
 
 /**
  * 内部数据类型：页面组件
@@ -53,6 +54,14 @@ public class InternalDataType_PageWidget implements IInternalDataType {
 		CmsPageWidget pageWidget = pageWidgetService.getById(data.getDataId());
 		Assert.notNull(pageWidget, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", data.getDataId()));
 		
-		return this.publishService.getPageWidgetPageData(pageWidget, data.getPublishPipeCode(), data.isPreview());
+		return this.publishService.getPageWidgetPageData(pageWidget, data);
+	}
+
+	@Override
+	public void processPageData(RequestData data, Writer writer) throws TemplateException, IOException {
+		CmsPageWidget pageWidget = pageWidgetService.getById(data.getDataId());
+		Assert.notNull(pageWidget, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", data.getDataId()));
+
+		this.publishService.processPageWidget(pageWidget, data, writer);
 	}
 }

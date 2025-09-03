@@ -17,11 +17,9 @@ package com.chestnut.customform.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.customform.domain.CmsCustomForm;
-import com.chestnut.customform.domain.dto.CustomFormAddDTO;
-import com.chestnut.customform.domain.dto.CustomFormEditDTO;
+import com.chestnut.customform.domain.dto.CreateCustomFormRequest;
+import com.chestnut.customform.domain.dto.UpdateCustomFormRequest;
 import com.chestnut.customform.rule.ICustomFormLimitRule;
-import com.chestnut.xmodel.domain.XModel;
-import com.chestnut.xmodel.dto.XModelDTO;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,7 +34,7 @@ public interface ICustomFormService extends IService<CmsCustomForm> {
 	 * @param dto
 	 * @return
 	 */
-	void addCustomForm(CustomFormAddDTO dto);
+	void addCustomForm(CreateCustomFormRequest dto);
 	
 	/**
 	 * 编辑自定义表单
@@ -44,7 +42,7 @@ public interface ICustomFormService extends IService<CmsCustomForm> {
 	 * @param dto
 	 * @return
 	 */
-	void editCustomForm(CustomFormEditDTO dto);
+	void editCustomForm(UpdateCustomFormRequest dto);
 	
 	/**
 	 * 删除自定义表单

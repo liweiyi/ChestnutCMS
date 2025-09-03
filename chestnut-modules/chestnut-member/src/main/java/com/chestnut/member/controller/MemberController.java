@@ -26,16 +26,20 @@ import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.Member;
-import com.chestnut.member.domain.dto.MemberDTO;
+import com.chestnut.member.domain.dto.CreateMemberRequest;
+import com.chestnut.member.domain.dto.ResetMemberPasswordRequest;
+import com.chestnut.member.domain.dto.UpdateMemberRequest;
 import com.chestnut.member.domain.vo.MemberListVO;
 import com.chestnut.member.fixed.config.EncryptMemberPhoneAndEmail;
+import com.chestnut.member.fixed.dict.MemberStatus;
 import com.chestnut.member.permission.MemberPriv;
 import com.chestnut.member.service.IMemberService;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -51,9 +55,13 @@ public class MemberController extends BaseRestController {
 	private final IMemberService memberService;
 
 	@GetMapping
-	public R<?> getPageList(@RequestParam(required = false) String userName,
-			@RequestParam(required = false) String nickName, @RequestParam(required = false) String email,
-			@RequestParam(required = false) String phoneNumber, @RequestParam(required = false) String status) {
+	public R<?> getPageList(
+			@RequestParam(required = false) @Length(max = 30) String userName,
+			@RequestParam(required = false) @Length(max = 30) String nickName,
+			@RequestParam(required = false) @Length(max = 50) String email,
+			@RequestParam(required = false) @Length(max = 20) String phoneNumber,
+			@RequestParam(required = false) @Length(max = 1) @Dict(MemberStatus.TYPE) String status
+	) {
 		PageRequest pr = this.getPageRequest();
 		Page<Member> page = this.memberService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(userName), Member::getUserName, userName)
@@ -61,6 +69,7 @@ public class MemberController extends BaseRestController {
 				.like(StringUtils.isNotEmpty(email), Member::getEmail, email)
 				.like(StringUtils.isNotEmpty(phoneNumber), Member::getPhoneNumber, phoneNumber)
 				.eq(StringUtils.isNotEmpty(status), Member::getStatus, status)
+				.orderByDesc(Member::getMemberId)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
 		List<MemberListVO> list = page.getRecords().stream().map(m -> {
 			MemberListVO vo = new MemberListVO();
@@ -85,17 +94,15 @@ public class MemberController extends BaseRestController {
 
 	@Log(title = "新增会员", businessType = BusinessType.INSERT, isSaveRequestData = false)
 	@PostMapping
-	public R<?> addMember(@RequestBody @Validated MemberDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.memberService.addMember(dto);
+	public R<?> addMember(@RequestBody @Validated CreateMemberRequest req) {
+		this.memberService.addMember(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑会员", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> updateMember(@RequestBody @Validated MemberDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.memberService.updateMember(dto);
+	public R<?> updateMember(@RequestBody @Validated UpdateMemberRequest req) {
+		this.memberService.updateMember(req);
 		return R.ok();
 	}
 
@@ -108,9 +115,8 @@ public class MemberController extends BaseRestController {
 
 	@Log(title = "重置会员密码", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PutMapping("/resetPassword")
-	public R<?> resetPassword(@RequestBody @Validated MemberDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.memberService.resetPwd(dto);
+	public R<?> resetPassword(@RequestBody @Validated ResetMemberPasswordRequest req) {
+		this.memberService.resetPwd(req);
 		return R.ok();
 	}
 }

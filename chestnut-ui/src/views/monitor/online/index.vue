@@ -111,7 +111,7 @@ export default {
     /** 强退按钮操作 */
     handleForceLogout(row) {
       this.$modal.confirm(this.$t('Monitor.Online.ConfirmForceExit', [ row.userName ])).then(function() {
-        return forceLogout(row.tokenId);
+        return forceLogout([ row.tokenId ]);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess(this.$t('Common.Success'));

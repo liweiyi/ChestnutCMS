@@ -29,7 +29,9 @@ import com.chestnut.vote.domain.Vote;
 import com.chestnut.vote.domain.VoteLog;
 import com.chestnut.vote.domain.VoteSubject;
 import com.chestnut.vote.domain.VoteSubjectItem;
-import com.chestnut.vote.domain.dto.VoteSubmitDTO;
+import com.chestnut.vote.domain.dto.CreateVoteRequest;
+import com.chestnut.vote.domain.dto.UpdateVoteRequest;
+import com.chestnut.vote.domain.dto.VoteSubmitRequest;
 import com.chestnut.vote.domain.vo.VoteSubjectItemVO;
 import com.chestnut.vote.domain.vo.VoteSubjectVO;
 import com.chestnut.vote.domain.vo.VoteVO;
@@ -45,6 +47,7 @@ import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -173,41 +176,45 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 	}
 
 	@Override
-	public void addVote(Vote vote) {
-		this.checkUnique(vote);
+	public void addVote(CreateVoteRequest req) {
+		this.checkUnique(req.getCode(), null);
 
+		Vote vote = new Vote();
+		BeanUtils.copyProperties(req, vote);
 		vote.setVoteId(IdUtils.getSnowflakeId());
 		vote.setTotal(0);
+		vote.createBy(req.getOperator().getUsername());
 
 		this.applicationContext.publishEvent(new BeforeVoteAddEvent(this, vote));
 		this.save(vote);
 	}
 
 	@Override
-	public void updateVote(Vote vote) {
-		Vote db = this.getById(vote.getVoteId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("voteId", vote.getVoteId()));
+	public void updateVote(UpdateVoteRequest req) {
+		Vote db = this.getById(req.getVoteId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("voteId", req.getVoteId()));
 
-		this.checkUnique(db);
+		this.checkUnique(req.getCode(), req.getVoteId());
 
-		db.setTitle(vote.getTitle());
-		db.setCode(vote.getCode());
+		db.setTitle(req.getTitle());
+		db.setCode(req.getCode());
 		db.setUserType(null);
-		db.setDayLimit(vote.getDayLimit());
-		db.setTotalLimit(vote.getTotalLimit());
-		db.setViewType(vote.getViewType());
-		db.setStartTime(vote.getStartTime());
-		db.setEndTime(vote.getEndTime());
-		db.setStatus(vote.getStatus());
-		db.setRemark(vote.getRemark());
+		db.setDayLimit(req.getDayLimit());
+		db.setTotalLimit(req.getTotalLimit());
+		db.setViewType(req.getViewType());
+		db.setStartTime(req.getStartTime());
+		db.setEndTime(req.getEndTime());
+		db.setStatus(req.getStatus());
+		db.setRemark(req.getRemark());
+		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
 		// 更新缓存
 		this.clearVoteCache(db.getVoteId());
 	}
 
-	private void checkUnique(Vote vote) {
-		boolean unique = this.lambdaQuery().eq(Vote::getCode, vote.getCode())
-				.ne(IdUtils.validate(vote.getVoteId()), Vote::getVoteId, vote.getVoteId()).count() == 0;
+	private void checkUnique(String code, Long voteId) {
+		boolean unique = this.lambdaQuery().eq(Vote::getCode, code)
+				.ne(IdUtils.validate(voteId), Vote::getVoteId, voteId).count() == 0;
 		Assert.isTrue(unique, () -> CommonErrorCode.DATA_CONFLICT.exception("code"));
 	}
 
@@ -241,12 +248,12 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 			// 单选/多选主题选项票数+1
 			vote.getSubjects().forEach(subject -> {
 				if (!VoteSubjectType.isInput(subject.getType())) {
-					List<VoteSubmitDTO.SubjectResult> subjectResults = voteLog.getResult();
-					Optional<VoteSubmitDTO.SubjectResult> opt = subjectResults.stream()
+					List<VoteSubmitRequest.SubjectResult> subjectResults = voteLog.getResult();
+					Optional<VoteSubmitRequest.SubjectResult> opt = subjectResults.stream()
 							.filter(r -> subject.getSubjectId().equals(r.getSubjectId()) && subject.getType().equals(r.getType()))
 							.findFirst();
 					if (opt.isPresent()) {
-						VoteSubmitDTO.SubjectResult result = opt.get();
+						VoteSubmitRequest.SubjectResult result = opt.get();
 						for (String itemIdStr : result.getResult()) {
 							Long itemId = Long.parseLong(itemIdStr);
 							this.itemMapper.increaseVoteSubjectItemTotal(itemId, 1);
@@ -278,11 +285,11 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 					Map<Long, Integer> itemTotalMap = new HashMap<>();
 					List<Long> itemIds = subject.getItems().stream().map(VoteSubjectItemVO::getItemId).toList();
 					for (VoteLog voteLog : voteLogs) {
-						Optional<VoteSubmitDTO.SubjectResult> opt = voteLog.getResult().stream().filter(r ->
+						Optional<VoteSubmitRequest.SubjectResult> opt = voteLog.getResult().stream().filter(r ->
 								r.getSubjectId().equals(subject.getSubjectId()) && r.getType().equals(subject.getTitle())
 						).findFirst();
 						if (opt.isPresent()) {
-							VoteSubmitDTO.SubjectResult result = opt.get();
+							VoteSubmitRequest.SubjectResult result = opt.get();
 							for (String itemIdStr : result.getResult()) {
 								long itemId = Long.parseLong(itemIdStr);
 								if (itemIds.contains(itemId)) {

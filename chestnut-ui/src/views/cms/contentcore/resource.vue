@@ -206,7 +206,7 @@ export default {
       // 表单校验
       rules: {
         name: [
-          { required: true, message: this.$t('CMS.Resource.RuleTips.Name'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ]
       },
       // 上传参数

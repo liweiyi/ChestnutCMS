@@ -24,6 +24,8 @@ import com.chestnut.member.cache.MemberExpOpMonitoredCache;
 import com.chestnut.member.domain.MemberExpConfig;
 import com.chestnut.member.domain.MemberLevel;
 import com.chestnut.member.domain.MemberLevelExpLog;
+import com.chestnut.member.domain.dto.CreateMemberExpConfigRequest;
+import com.chestnut.member.domain.dto.UpdateMemberExpConfigRequest;
 import com.chestnut.member.exception.MemberErrorCode;
 import com.chestnut.member.level.IExpOperation;
 import com.chestnut.member.level.LevelManager;
@@ -35,6 +37,7 @@ import com.chestnut.member.service.IMemberLevelService;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,28 +82,31 @@ public class MemberExpConfigServiceImpl extends ServiceImpl<MemberExpConfigMappe
 	}
 
 	@Override
-	public void addExpOperation(MemberExpConfig expOp) {
-		IExpOperation expOperation = this.getExpOperation(expOp.getOpType());
+	public void addExpOperation(CreateMemberExpConfigRequest req) {
+		IExpOperation expOperation = this.getExpOperation(req.getOpType());
 
 		Long count = this.lambdaQuery().eq(MemberExpConfig::getOpType, expOperation.getId())
-				.eq(MemberExpConfig::getLevelType, expOp.getLevelType()).count();
+				.eq(MemberExpConfig::getLevelType, req.getLevelType()).count();
 		Assert.isTrue(count == 0,
-				() -> MemberErrorCode.EXP_CONFIG_EXIST.exception(expOp.getOpType() + "=" + expOp.getLevelType()));
+				() -> MemberErrorCode.EXP_CONFIG_EXIST.exception(req.getOpType() + "=" + req.getLevelType()));
 
-		expOp.setConfigId(IdUtils.getSnowflakeId());
-		expOp.createBy(expOp.getCreateBy());
-		this.save(expOp);
+		MemberExpConfig config = new MemberExpConfig();
+		BeanUtils.copyProperties(req, config);
+		config.setConfigId(IdUtils.getSnowflakeId());
+		config.createBy(req.getOperator().getUsername());
+		this.save(config);
 	}
 
 	@Override
-	public void updateExpOperation(MemberExpConfig expOp) {
-		MemberExpConfig db = this.getById(expOp.getConfigId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("configId", expOp.getConfigId()));
+	public void updateExpOperation(UpdateMemberExpConfigRequest req) {
+		MemberExpConfig db = this.getById(req.getConfigId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("configId", req.getConfigId()));
 
-		db.setExp(expOp.getExp());
-		db.setDayLimit(expOp.getDayLimit());
-		db.setTotalLimit(expOp.getTotalLimit());
-		db.updateBy(expOp.getUpdateBy());
+		db.setExp(req.getExp());
+		db.setDayLimit(req.getDayLimit());
+		db.setTotalLimit(req.getTotalLimit());
+		db.setRemark(req.getRemark());
+		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
 		this.expOpCache.clear(db);
 	}

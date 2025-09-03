@@ -22,6 +22,8 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysSecurityConfig;
+import com.chestnut.system.domain.dto.CreateSecurityConfigRequest;
+import com.chestnut.system.domain.dto.UpdateSecurityConfigRequest;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.fixed.dict.PasswordRetryStrategy;
@@ -34,6 +36,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,20 +64,23 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 	}
 
 	@Override
-	public void addConfig(SysSecurityConfig config) {
+	public void addConfig(CreateSecurityConfigRequest req) {
+		SysSecurityConfig config = new SysSecurityConfig();
+		BeanUtils.copyProperties(req, config);
 		config.setConfigId(IdUtils.getSnowflakeId());
 		config.setStatus(EnableOrDisable.DISABLE); // 默认不开启
-		config.createBy(config.getOperator().getUsername());
+		config.createBy(req.getOperator().getUsername());
 		this.save(config);
 	}
 
 	@Override
-	public void saveConfig(SysSecurityConfig config) {
-		SysSecurityConfig dbConfig = this.getById(config.getConfigId());
-		Assert.notNull(dbConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(config.getConfigId()));
+	public void saveConfig(UpdateSecurityConfigRequest req) {
+		SysSecurityConfig dbConfig = this.getById(req.getConfigId());
+		Assert.notNull(dbConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getConfigId()));
 
-		config.updateBy(config.getOperator().getUsername());
-		this.updateById(config);
+		BeanUtils.copyProperties(req, dbConfig);
+		dbConfig.updateBy(req.getOperator().getUsername());
+		this.updateById(dbConfig);
 		// 清除安全配置缓存，实际使用的时候重新缓存
 		this.redisCache.deleteObject(CACHE_KEY_CONFIG);
 	}

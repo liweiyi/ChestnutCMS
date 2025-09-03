@@ -23,7 +23,9 @@ import com.chestnut.common.utils.SortUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
-import com.chestnut.word.domain.dto.BatchAddTagDTO;
+import com.chestnut.word.domain.dto.BatchAddTagRequest;
+import com.chestnut.word.domain.dto.CreateTagWordRequest;
+import com.chestnut.word.domain.dto.UpdateTagWordRequest;
 import com.chestnut.word.mapper.TagWordGroupMapper;
 import com.chestnut.word.mapper.TagWordMapper;
 import com.chestnut.word.service.ITagWordService;
@@ -42,27 +44,34 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> implements ITagWordService {
 
+	private static final String LOCK_TAG_WORD = "CC-TagWord";
+
 	private final RedissonClient redissonClient;
 
 	private final TagWordGroupMapper tagWordGroupMapper;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void addTagWord(TagWord tagWord) {
-		RLock lock = redissonClient.getLock("TagWord");
+	public void addTagWord(CreateTagWordRequest req) {
+		RLock lock = redissonClient.getLock(LOCK_TAG_WORD);
 		lock.lock();
 		try {
-			boolean checkUnique = checkUnique(tagWord.getGroupId(), null, tagWord.getWord());
+			boolean checkUnique = checkUnique(req.getGroupId(), null, req.getWord());
 			Assert.isTrue(checkUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("word"));
 
-			TagWordGroup tagWordGroup = tagWordGroupMapper.selectById(tagWord.getGroupId());
-			Assert.notNull(tagWordGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", tagWord.getGroupId()));
+			TagWordGroup tagWordGroup = tagWordGroupMapper.selectById(req.getGroupId());
+			Assert.notNull(tagWordGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", req.getGroupId()));
 
+			TagWord tagWord = new TagWord();
 			tagWord.setWordId(IdUtils.getSnowflakeId());
 			tagWord.setOwner(tagWordGroup.getOwner());
-			if (Objects.isNull(tagWord.getSortFlag())) {
-				tagWord.setSortFlag(SortUtils.getDefaultSortValue());
-			}
+			tagWord.setGroupId(req.getGroupId());
+			tagWord.setOwner(req.getOwner());
+			tagWord.setWord(req.getWord());
+			tagWord.setLogo(req.getLogo());
+			tagWord.setSortFlag(Objects.requireNonNullElse(req.getSortFlag(), SortUtils.getDefaultSortValue()));
+			tagWord.setRemark(req.getRemark());
+			tagWord.createBy(req.getOperator().getUsername());
 			this.save(tagWord);
 
 			tagWordGroup.setWordTotal(tagWordGroup.getWordTotal() + 1);
@@ -73,26 +82,26 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 	}
 
 	@Override
-	public void batchAddTagWord(BatchAddTagDTO dto) {
-		RLock lock = redissonClient.getLock("TagWord");
+	public void batchAddTagWord(BatchAddTagRequest req) {
+		RLock lock = redissonClient.getLock(LOCK_TAG_WORD);
 		lock.lock();
 		try {
-			TagWordGroup tagWordGroup = tagWordGroupMapper.selectById(dto.getGroupId());
-			Assert.notNull(tagWordGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", dto.getGroupId()));
+			TagWordGroup tagWordGroup = tagWordGroupMapper.selectById(req.getGroupId());
+			Assert.notNull(tagWordGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", req.getGroupId()));
 
-			for (String word : dto.getWords()) {
-				boolean checkUnique = checkUnique(dto.getGroupId(), null, word);
+			for (String word : req.getWords()) {
+				boolean checkUnique = checkUnique(req.getGroupId(), null, word);
 				Assert.isTrue(checkUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("word"));
 			}
 
-			List<TagWord> list = dto.getWords().stream().filter(StringUtils::isNotBlank).map(word -> {
+			List<TagWord> list = req.getWords().stream().filter(StringUtils::isNotBlank).map(word -> {
 				TagWord tagWord = new TagWord();
 				tagWord.setWordId(IdUtils.getSnowflakeId());
-				tagWord.setGroupId(dto.getGroupId());
+				tagWord.setGroupId(req.getGroupId());
 				tagWord.setOwner(tagWordGroup.getOwner());
 				tagWord.setWord(word);
 				tagWord.setSortFlag(SortUtils.getDefaultSortValue());
-				tagWord.createBy(dto.getOperator().getUsername());
+				tagWord.createBy(req.getOperator().getUsername());
 				return tagWord;
 			}).toList();
 
@@ -106,25 +115,25 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 	}
 
 	@Override
-	public void editTagWord(TagWord tagWord) {
-		TagWord dbTagWord = this.getById(tagWord.getWordId());
-		Assert.notNull(dbTagWord, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("wordId", tagWord.getWordId()));
+	public void editTagWord(UpdateTagWordRequest req) {
+		TagWord dbTagWord = this.getById(req.getWordId());
+		Assert.notNull(dbTagWord, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("wordId", req.getWordId()));
 
-		boolean checkUnique = checkUnique(tagWord.getGroupId(), tagWord.getWordId(), tagWord.getWord());
+		boolean checkUnique = checkUnique(dbTagWord.getGroupId(), dbTagWord.getWordId(), req.getWord());
 		Assert.isTrue(checkUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("word"));
 
-		dbTagWord.setWord(tagWord.getWord());
-		dbTagWord.setLogo(tagWord.getLogo());
-		dbTagWord.setSortFlag(tagWord.getSortFlag());
-		dbTagWord.setRemark(tagWord.getRemark());
-		dbTagWord.updateBy(tagWord.getUpdateBy());
-		this.updateById(tagWord);
+		dbTagWord.setWord(req.getWord());
+		dbTagWord.setLogo(req.getLogo());
+		dbTagWord.setSortFlag(req.getSortFlag());
+		dbTagWord.setRemark(req.getRemark());
+		dbTagWord.updateBy(req.getOperator().getUsername());
+		this.updateById(dbTagWord);
     }
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteTagWords(List<Long> tagWordIds) {
-		RLock lock = redissonClient.getLock("TagWord");
+		RLock lock = redissonClient.getLock(LOCK_TAG_WORD);
 		lock.lock();
 		try {
 			List<TagWord> tagWords = this.listByIds(tagWordIds);
@@ -145,7 +154,7 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 
 	private boolean checkUnique(Long groupId, Long wordId, String word) {
 		return this.lambdaQuery().eq(TagWord::getGroupId, groupId)
-				.ne(wordId != null && wordId > 0, TagWord::getWordId, wordId)
+				.ne(IdUtils.validate(wordId), TagWord::getWordId, wordId)
 				.eq(TagWord::getWord, word)
 				.count() == 0;
 	}

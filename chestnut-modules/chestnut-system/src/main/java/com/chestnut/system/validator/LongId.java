@@ -30,7 +30,7 @@ import jakarta.validation.Payload;
 @Constraint(validatedBy = LongIdValidator.class)
 public @interface LongId {
 
-	String message() default "{VALIDATOR.SYSTEM.INVALID_LONG_ID}";
+	String message() default "{VALID.SYS.INVALID_LONG_ID}";
 
 	Class<?>[] groups() default { };
 

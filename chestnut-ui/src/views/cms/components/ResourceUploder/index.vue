@@ -105,7 +105,7 @@ export default {
   },
   data () {
     return {
-      fileList: this.path,
+      fileList: [],
       openResourceDialog: false,
       showImageViewer: false,
       curIndex: -1,

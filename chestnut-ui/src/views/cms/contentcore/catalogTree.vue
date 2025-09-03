@@ -147,6 +147,7 @@
   </div>
 </template>
 <script>
+import { codeValidator, pathValidator } from '@/utils/validate';
 import { getCatalogTypes, getCatalogTreeData, addCatalog, batchAddCatalog, publishCatalog, sortCatalog, generateAliasAndPath } from "@/api/contentcore/catalog";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
@@ -199,16 +200,21 @@ export default {
       // 表单校验
       rules: {
         name: [
-          { required: true, message: this.$t('CMS.Catalog.RuleTips.Name'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, messag: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         alias: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('CMS.Catalog.RuleTips.Alias'), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
+          { max: 100, messag: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         path: [
-          { required: true, pattern: "^[A-Za-z0-9_\/]+$", message: this.$t('CMS.Catalog.RuleTips.Path'), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { validator: pathValidator, trigger: "change" },
+          { max: 255, messag: this.$t('Common.RuleTips.MaxLength', [ 255 ]), trigger: "change" }
         ],
         catalogType: [
-          { required: true, message: this.$t('CMS.Catalog.RuleTips.CatalogType'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ]
       },
       openBatchAdd: false,

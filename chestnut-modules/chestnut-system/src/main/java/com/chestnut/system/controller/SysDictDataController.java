@@ -26,13 +26,17 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDictData;
+import com.chestnut.system.domain.dto.CreateDictDataRequest;
+import com.chestnut.system.domain.dto.QueryDictDataRequest;
+import com.chestnut.system.domain.dto.UpdateDictDataRequest;
 import com.chestnut.system.fixed.FixedDictUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysDictDataService;
 import com.chestnut.system.service.ISysDictTypeService;
+import com.chestnut.system.validator.LongId;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -59,12 +63,11 @@ public class SysDictDataController extends BaseRestController {
 	@ExcelExportable(SysDictData.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
 	@GetMapping("/list")
-	public R<?> list(SysDictData dictData) {
+	public R<?> list(@Validated QueryDictDataRequest req) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysDictData> page = dictDataService.lambdaQuery()
-				.like(StringUtils.isNotEmpty(dictData.getDictLabel()), SysDictData::getDictLabel,
-						dictData.getDictLabel())
-				.eq(StringUtils.isNotEmpty(dictData.getDictType()), SysDictData::getDictType, dictData.getDictType())
+				.like(StringUtils.isNotEmpty(req.getDictValue()), SysDictData::getDictValue, req.getDictValue())
+				.eq(StringUtils.isNotEmpty(req.getDictType()), SysDictData::getDictType, req.getDictType())
 				.orderByAsc(SysDictData::getDictSort)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize()));
 		page.getRecords().forEach(dt -> {
@@ -79,7 +82,7 @@ public class SysDictDataController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
 	@GetMapping(value = "/{dictCode}")
-	public R<?> getInfo(@PathVariable Long dictCode) {
+	public R<?> getInfo(@PathVariable @LongId Long dictCode) {
 		SysDictData data = dictDataService.getById(dictCode);
 		I18nUtils.replaceI18nFields(data);
 		return R.ok(data);
@@ -90,7 +93,7 @@ public class SysDictDataController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping(value = "/type/{dictType}")
-	public R<?> getDictDatasByType(@PathVariable String dictType) {
+	public R<?> getDictDatasByType(@PathVariable @NotBlank String dictType) {
 		List<SysDictData> datas = dictTypeService.selectDictDatasByType(dictType);
 		I18nUtils.replaceI18nFields(datas);
 		return R.ok(datas);
@@ -102,9 +105,8 @@ public class SysDictDataController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictAdd)
 	@Log(title = "字典数据", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@Validated @RequestBody SysDictData dict) {
-		dict.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
-		dictDataService.insertDictData(dict);
+	public R<?> add(@Validated @RequestBody CreateDictDataRequest req) {
+		dictDataService.insertDictData(req);
 		return R.ok();
 	}
 
@@ -114,9 +116,8 @@ public class SysDictDataController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictEdit)
 	@Log(title = "字典数据", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody SysDictData dict) {
-		dict.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		dictDataService.updateDictData(dict);
+	public R<?> edit(@Validated @RequestBody UpdateDictDataRequest req) {
+		dictDataService.updateDictData(req);
 		return R.ok();
 	}
 

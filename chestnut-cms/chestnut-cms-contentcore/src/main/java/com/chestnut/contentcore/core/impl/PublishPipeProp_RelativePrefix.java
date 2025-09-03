@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.core.impl;
 
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IPublishPipeProp;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
@@ -59,7 +60,10 @@ public class PublishPipeProp_RelativePrefix implements IPublishPipeProp {
 
 	public static String getValue(String publishPipeCode, Map<String, Map<String, Object>> publishPipeProps) {
 		if (Objects.nonNull(publishPipeProps)) {
-			return MapUtils.getString(publishPipeProps.get(publishPipeCode), KEY);
+			String v = MapUtils.getString(publishPipeProps.get(publishPipeCode), KEY);
+			if (StringUtils.isNotBlank(v)) {
+				return v;
+			}
 		}
 		return DEFAULT_VALUE;
 	}

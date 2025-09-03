@@ -15,51 +15,48 @@
  */
 package com.chestnut.member.service;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.member.domain.Member;
-import com.chestnut.member.domain.dto.MemberDTO;
+import com.chestnut.member.domain.dto.CreateMemberRequest;
+import com.chestnut.member.domain.dto.ResetMemberPasswordRequest;
+import com.chestnut.member.domain.dto.UpdateMemberRequest;
+
+import java.io.IOException;
+import java.util.List;
 
 public interface IMemberService extends IService<Member> {
 
 	/**
 	 * 添加会员信息
 	 * 
-	 * @param dto
-	 * @return
+	 * @param req 会员信息
 	 */
-	void addMember(MemberDTO dto);
+	void addMember(CreateMemberRequest req);
 
 	/**
 	 * 修改会员信息
 	 * 
-	 * @param dto
-	 * @return
+	 * @param req 会员信息
 	 */
-	void updateMember(MemberDTO dto);
+	void updateMember(UpdateMemberRequest req);
 	
 	/**
 	 * 删除会员信息
 	 * 
-	 * @param memberIds
+	 * @param memberIds 会员ID列表
 	 */
 	void deleteMembers(List<Long> memberIds);
 
 	/**
 	 * 重置用户密码
-	 * 
-	 * @param dto 用户信息
-	 * @return 结果
 	 */
-	void resetPwd(MemberDTO dto);
+	void resetPwd(ResetMemberPasswordRequest req);
 
 	/**
 	 * 上传用户头像
 	 *
-	 * @param memberId
-	 * @param image
+	 * @param memberId 会员ID
+	 * @param image 图片
 	 */
     String uploadAvatarByBase64(Long memberId, String image) throws IOException;
 }

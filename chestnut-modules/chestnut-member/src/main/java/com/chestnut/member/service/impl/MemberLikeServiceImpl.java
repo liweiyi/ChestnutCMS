@@ -15,10 +15,10 @@
  */
 package com.chestnut.member.service.impl;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.member.domain.MemberFavorites;
 import com.chestnut.member.domain.MemberLike;
 import com.chestnut.member.exception.MemberErrorCode;
 import com.chestnut.member.listener.event.AfterMemberCancelLikeEvent;
@@ -27,6 +27,7 @@ import com.chestnut.member.listener.event.BeforeMemberLikeEvent;
 import com.chestnut.member.mapper.MemberLikeMapper;
 import com.chestnut.member.service.IMemberLikeService;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -87,19 +88,18 @@ public class MemberLikeServiceImpl extends ServiceImpl<MemberLikeMapper, MemberL
     }
 
     @Override
-    public List<MemberLike> getMemberLikes(Long memberId, String dataType, Integer limit, Long offset) {
-        List<MemberLike> list = this.lambdaQuery()
+    public List<MemberLike> getMemberLikes(Long memberId, String dataType, Integer limit, Long lastLogId) {
+        return this.lambdaQuery()
                 .eq(MemberLike::getDataType, dataType)
                 .eq(MemberLike::getMemberId, memberId)
-                .lt(IdUtils.validate(offset), MemberLike::getLogId, offset)
+                .lt(IdUtils.validate(lastLogId), MemberLike::getLogId, lastLogId)
                 .orderByDesc(MemberLike::getLogId)
-                .last("limit " + limit)
-                .list();
-        return list;
+                .page(new Page<>(1, limit, false))
+                .getRecords();
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 }

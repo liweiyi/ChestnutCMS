@@ -4,21 +4,19 @@
 
 	<groupId>com.chestnut</groupId>
 	<artifactId>chestnut</artifactId>
-	<version>1.5.7</version>
+	<version>1.5.8</version>
 	<packaging>pom</packaging>
 
 	<name>ChestnutCMS</name>
 	<description>栗子内容管理系统</description>
 
 	<properties>
-		<chestnut.version>1.5.7</chestnut.version>
+		<chestnut.version>1.5.8</chestnut.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
 		<lombok.version>1.18.38</lombok.version>
 		<mysql.version>8.4.0</mysql.version>
-		<postgres.version>42.7.7</postgres.version>
-		<dameng.version>8.1.3.140</dameng.version>
 		<spring-boot.version>3.4.5</spring-boot.version>
 		<spring-boot-admin.version>3.4.5</spring-boot-admin.version>
 		<mybatis-plus.version>3.5.12</mybatis-plus.version>
@@ -67,19 +65,6 @@
 				<artifactId>mysql-connector-j</artifactId>
 				<version>${mysql.version}</version>
 			</dependency>
-
-			<!-- PostgreSQL JDBC Driver
-			<dependency>
-				<groupId>org.postgresql</groupId>
-				<artifactId>postgresql</artifactId>
-				<version>${postgres.version}</version>
-			</dependency> -->
-			<!-- 达梦 JDBC Driver
-			<dependency>
-				<groupId>com.dameng</groupId>
-				<artifactId>DmJdbcDriver18</artifactId>
-				<version>${dameng.version}</version>
-			</dependency> -->
 			
 			<!-- cglib动态代理 -->
 			<dependency>
@@ -571,7 +556,7 @@
 		<module>chestnut-modules</module>
 		<module>chestnut-cms</module>
 		<module>chestnut-admin</module>
-    </modules>
+	</modules>
 
 	<dependencies>
 		<!-- lombok -->
@@ -584,16 +569,6 @@
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 		</dependency>
-		<!-- Postgresql驱动包
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency> -->
-		<!-- 达梦 JDBC Driver
-		<dependency>
-			<groupId>com.dameng</groupId>
-			<artifactId>DmJdbcDriver18</artifactId>
-		</dependency> -->
 		<!-- 配置文件脱敏 -->
 		<dependency>
 		    <groupId>com.github.ulisesbocchio</groupId>

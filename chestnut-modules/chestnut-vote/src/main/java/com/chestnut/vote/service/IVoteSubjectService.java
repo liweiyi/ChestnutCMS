@@ -15,13 +15,14 @@
  */
 package com.chestnut.vote.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.vote.domain.VoteSubject;
-import com.chestnut.vote.domain.dto.SaveSubjectItemsDTO;
-
+import com.chestnut.vote.domain.dto.CreateVoteSubjectRequest;
+import com.chestnut.vote.domain.dto.SaveSubjectItemsRequest;
+import com.chestnut.vote.domain.dto.UpdateVoteSubjectRequest;
 import jakarta.validation.constraints.NotEmpty;
+
+import java.util.List;
 
 public interface IVoteSubjectService extends IService<VoteSubject> {
 
@@ -36,29 +37,29 @@ public interface IVoteSubjectService extends IService<VoteSubject> {
 	/**
 	 * 添加问卷调查主题数据
 	 * 
-	 * @param voteSubject
+	 * @param req 主题信息
 	 */
-	void addVoteSubject(VoteSubject voteSubject);
+	void addVoteSubject(CreateVoteSubjectRequest req);
 
 	/**
 	 * 更新问卷调查主题数据
 	 * 
-	 * @param voteSubject
+	 * @param req 主题信息
 	 */
-	void updateVoteSubject(VoteSubject voteSubject);
+	void updateVoteSubject(UpdateVoteSubjectRequest req);
 
 	/**
 	 * 删除问卷调查主题数据
 	 * 
-	 * @param subjectIds
+	 * @param subjectIds 主题ID列表
 	 */
 	void deleteVoteSubjects(@NotEmpty List<Long> subjectIds);
 
 	/**
 	 * 保存主题选项列表
 	 * 
-	 * @param dto
+	 * @param req 主题选项信息
 	 */
-	void saveSubjectItems(SaveSubjectItemsDTO dto);
+	void saveSubjectItems(SaveSubjectItemsRequest req);
 
 }

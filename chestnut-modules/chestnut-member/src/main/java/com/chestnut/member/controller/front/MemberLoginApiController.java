@@ -29,6 +29,7 @@ import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.dto.*;
 import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.domain.vo.MemberMenuVO;
+import com.chestnut.member.exception.MemberTips;
 import com.chestnut.member.security.MemberLoginService;
 import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.security.StpMemberUtil;
@@ -38,7 +39,6 @@ import com.chestnut.member.util.MemberUtils;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISecurityConfigService;
 import com.chestnut.system.service.ISysLogininforService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +46,7 @@ import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.validation.annotation.Validated;
@@ -105,7 +106,7 @@ public class MemberLoginApiController extends BaseRestController {
 
 	@IgnoreDemoMode
 	@PostMapping("/login")
-	public R<?> login(@RequestBody MemberLoginDTO dto) {
+	public R<?> login(@RequestBody @Validated MemberLoginRequest dto) {
 		dto.setUserAgent(ServletUtils.getUserAgent());
 		dto.setIp(ServletUtils.getIpAddr(ServletUtils.getRequest()));
 		String token = memberLoginService.login(dto);
@@ -114,7 +115,7 @@ public class MemberLoginApiController extends BaseRestController {
 
 	@IgnoreDemoMode
 	@PostMapping("/register")
-	public R<?> resgiter(@RequestBody MemberRegisterDTO dto, HttpServletRequest request) {
+	public R<?> resgiter(@RequestBody @Validated MemberRegisterRequest dto, HttpServletRequest request) {
 		String uuid = ServletUtils.getHeader(request, "uuid");
 		String authCode = this.redisCache.getCacheObject(SMS_CODE_CACHE_PREFIX + uuid, String.class);
 		if (StringUtils.isEmpty(authCode) || !dto.getAuthCode().equals(authCode)) {
@@ -144,16 +145,16 @@ public class MemberLoginApiController extends BaseRestController {
 
 	@Priv(type = MemberUserType.TYPE)
 	@PutMapping("/reset_pwd")
-	public R<?> resetMemberPassword(@RequestBody @Validated ResetMemberPasswordDTO dto) {
+	public R<?> resetMemberPassword(@RequestBody @Validated ModifyMemberPasswordRequest req) {
 		Member member = this.memberService.getById(StpMemberUtil.getLoginIdAsLong());
-		if (!SecurityUtils.matches(dto.getPassword(), member.getPassword())) {
-			return R.fail("密码错错误");
+		if (!SecurityUtils.matches(req.getPassword(), member.getPassword())) {
+			return R.fail(MemberTips.WRONG_PASSWORD.locale(LocaleContextHolder.getLocale()));
 		}
 		// 密码规则校验
-		this.securityConfigService.validPassword(member, dto.getNewPassword());
+		this.securityConfigService.validPassword(member, req.getNewPassword());
 
 		boolean update = this.memberService.lambdaUpdate()
-				.set(Member::getPassword, SecurityUtils.passwordEncode(dto.getNewPassword()))
+				.set(Member::getPassword, SecurityUtils.passwordEncode(req.getNewPassword()))
 				.eq(Member::getMemberId, member.getMemberId())
 				.update();
 		return update ? R.ok() : R.fail();
@@ -215,7 +216,7 @@ public class MemberLoginApiController extends BaseRestController {
 
 	@Priv(type = MemberUserType.TYPE)
 	@PutMapping("/change_email")
-	public R<?> changeMemberEmail(@RequestBody @Validated ChangeMemberEmailDTO dto) {
+	public R<?> changeMemberEmail(@RequestBody @Validated ChangeMemberEmailRequest dto) {
 		String authCode = this.redisCache.getCacheObject(SMS_CODE_CACHE_PREFIX + StpMemberUtil.getLoginIdAsLong(), String.class);
 		if (StringUtils.isEmpty(authCode) || !dto.getAuthCode().equals(authCode)) {
 			return R.fail("验证码错误");
@@ -232,21 +233,21 @@ public class MemberLoginApiController extends BaseRestController {
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@PutMapping("/info")
-	public R<?> saveMemberInfo(@RequestBody @Validated MemberInfoDTO dto) {
+	public R<?> saveMemberInfo(@RequestBody @Validated ModifyMemberInfoRequest req) {
 		LoginUser loginUser = StpMemberUtil.getLoginUser();
 		Member member = (Member) loginUser.getUser();
 
-		boolean update = this.memberService.lambdaUpdate().set(Member::getNickName, dto.getNickName())
-				.set(Member::getSlogan, dto.getSlogan())
-				.set(Member::getDescription, dto.getDescription())
+		boolean update = this.memberService.lambdaUpdate().set(Member::getNickName, req.getNickName())
+				.set(Member::getSlogan, req.getSlogan())
+				.set(Member::getDescription, req.getDescription())
 				.eq(Member::getMemberId, member.getMemberId())
 				.update();
 		if (!update) {
 			return R.fail();
 		}
-		member.setNickName(dto.getNickName());
-		member.setSlogan(dto.getSlogan());
-		member.setDescription(dto.getDescription());
+		member.setNickName(req.getNickName());
+		member.setSlogan(req.getSlogan());
+		member.setDescription(req.getDescription());
 		StpMemberUtil.setLoginUser(loginUser);
 
 		this.memberStatDataService.removeMemberCache(member.getMemberId());

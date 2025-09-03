@@ -36,8 +36,7 @@ import com.chestnut.system.domain.SysDept;
 import com.chestnut.system.domain.SysPost;
 import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.SysUser;
-import com.chestnut.system.domain.dto.AuthRoleDTO;
-import com.chestnut.system.domain.dto.UserImportData;
+import com.chestnut.system.domain.dto.*;
 import com.chestnut.system.domain.vo.UserInfoVO;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.mapper.SysUserRoleMapper;
@@ -53,6 +52,7 @@ import com.chestnut.system.user.preference.IUserPreference;
 import com.chestnut.system.validator.LongId;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -91,13 +91,15 @@ public class SysUserController extends BaseRestController {
 
 	protected final Validator validator;
 
+	private final List<IUserPreference> userPreferenceList;
+
 	/**
 	 * 获取用户列表
 	 */
 	@ExcelExportable(SysUser.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping("/list")
-	public R<?> list(SysUser user) {
+	public R<?> list(@Validated QueryUserRequest user) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysUser> page = userService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(user.getUserName()), SysUser::getUserName, user.getUserName())
@@ -125,6 +127,7 @@ public class SysUserController extends BaseRestController {
 		readListener.setOperator(StpAdminUtil.getLoginUser().getUsername());
 		readListener.setUpdateSupport(updateSupport);
 		readListener.setLogWriter(logWriter);
+		readListener.setLocale(LocaleContextHolder.getLocale());
 		EasyExcel.read(file.getInputStream(), UserImportData.class, readListener)
 				.locale(LocaleContextHolder.getLocale()).doReadAll();
 		return R.ok(logWriter.toString());
@@ -163,8 +166,7 @@ public class SysUserController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserAdd)
 	@Log(title = "用户管理", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@Validated @RequestBody SysUser user) {
-		user.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
+	public R<?> add(@Validated @RequestBody CreateUserRequest user) {
 		userService.insertUser(user);
 		return R.ok();
 	}
@@ -175,8 +177,7 @@ public class SysUserController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserEdit)
 	@Log(title = "用户管理", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody SysUser user) {
-		user.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
+	public R<?> edit(@Validated @RequestBody UpdateUserRequest user) {
 		userService.updateUser(user);
 		return R.ok();
 	}
@@ -198,8 +199,8 @@ public class SysUserController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserResetPwd)
 	@Log(title = "用户管理", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PutMapping("/resetPwd")
-	public R<?> resetPwd(@RequestBody SysUser user) {
-		userService.resetPwd(user);
+	public R<?> resetPwd(@RequestBody @Validated ResetUserPwdRequest req) {
+		userService.resetPwd(req);
 		return R.ok();
 	}
 
@@ -224,8 +225,8 @@ public class SysUserController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserEdit)
 	@Log(title = "用户管理", businessType = BusinessType.GRANT)
 	@PutMapping("/authRole")
-	public R<?> insertAuthRole(@Validated @RequestBody AuthRoleDTO dto) {
-		userService.insertUserAuth(dto.getUserId(), dto.getRoleIds());
+	public R<?> insertAuthRole(@Validated @RequestBody AuthRoleRequest req) {
+		userService.insertUserAuth(req.getUserId(), req.getRoleIds());
 		return R.ok();
 	}
 
@@ -234,13 +235,11 @@ public class SysUserController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping("/deptTree")
-	public R<?> deptTree(SysDept dept) {
+	public R<?> deptTree(@Validated QueryDeptRequest req) {
 		List<SysDept> depts = this.deptService.list(new LambdaQueryWrapper<SysDept>()
-				.like(StringUtils.isNotEmpty(dept.getDeptName()), SysDept::getDeptName, dept.getDeptName()));
+				.like(StringUtils.isNotEmpty(req.getDeptName()), SysDept::getDeptName, req.getDeptName()));
 		return R.ok(deptService.buildDeptTreeSelect(depts));
 	}
-
-	private final List<IUserPreference> userPreferenceList;
 
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/getPreferences")
@@ -251,7 +250,7 @@ public class SysUserController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/preference")
-	public R<?> getUserPreference(@RequestParam("id") @NotEmpty String id) {
+	public R<?> getUserPreference(@RequestParam("id") @NotBlank String id) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		SysUser user = (SysUser) loginUser.getUser();
 		Optional<IUserPreference> findFirst = this.userPreferenceList.stream().filter(up -> up.getId().equals(id))

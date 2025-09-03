@@ -22,7 +22,6 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.search.domain.SearchLog;
 import com.chestnut.search.domain.SearchWord;
-import com.chestnut.search.domain.dto.SearchLogDTO;
 import com.chestnut.search.mapper.SearchLogMapper;
 import com.chestnut.search.service.ISearchLogService;
 import com.chestnut.search.service.ISearchWordHourStatService;
@@ -42,27 +41,6 @@ public class SearchLogServiceImpl extends ServiceImpl<SearchLogMapper, SearchLog
 	private final ISearchWordService searchWordStatService;
 
 	private final ISearchWordHourStatService searchWordHourStatService;
-
-	@Override
-	public void addSearchLog(SearchLogDTO dto) {
-		asyncTaskManager.execute(() -> {
-			SearchLog sLog = new SearchLog();
-			sLog.setLogId(IdUtils.getSnowflakeId());
-			sLog.setWord(dto.getWord());
-			sLog.setIp(dto.getIp());
-			sLog.setLocation(IP2RegionUtils.ip2Region(dto.getIp()));
-			sLog.setLogTime(dto.getLogTime());
-			sLog.setUserAgent(dto.getUserAgent());
-			sLog.setReferer(dto.getReferer());
-			sLog.setSource(dto.getSource());
-			sLog.setClientType(ServletUtils.getDeviceType(dto.getUserAgent()));
-			this.save(sLog);
-
-			SearchWord searchWord = searchWordStatService.getSearchWord(sLog.getWord(), sLog.getSource());
-			searchWordStatService.increaseSearchCount(searchWord);
-			searchWordHourStatService.handleSearchLog(searchWord, sLog.getLogTime());
-		});
-	}
 
 	@Override
 	public void addSearchLog(String source, String query, HttpServletRequest request) {

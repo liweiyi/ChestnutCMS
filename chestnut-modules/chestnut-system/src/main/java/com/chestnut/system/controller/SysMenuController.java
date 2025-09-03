@@ -27,7 +27,11 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysMenu;
+import com.chestnut.system.domain.dto.CreateMenuRequest;
+import com.chestnut.system.domain.dto.QueryMenuRequest;
+import com.chestnut.system.domain.dto.UpdateMenuRequest;
 import com.chestnut.system.enums.MenuType;
+import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
@@ -55,17 +59,14 @@ public class SysMenuController extends BaseRestController {
 
 	private final ISysMenuService menuService;
 
-	private final ISysPermissionService permissionService;
-
 	/**
 	 * 获取菜单列表
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuList)
 	@GetMapping("/list")
-	public R<?> list(SysMenu menu) {
+	public R<?> list(@Validated QueryMenuRequest req) {
 		LambdaQueryWrapper<SysMenu> q = new LambdaQueryWrapper<SysMenu>()
-				.like(StringUtils.isNotEmpty(menu.getMenuName()), SysMenu::getMenuName, menu.getMenuName())
-				.eq(StringUtils.isNotEmpty(menu.getStatus()), SysMenu::getStatus, menu.getStatus())
+				.eq(StringUtils.isNotEmpty(req.getStatus()), SysMenu::getStatus, req.getStatus())
 				.orderByAsc(SysMenu::getOrderNum);
 		List<SysMenu> menus = this.menuService.list(q);
 		I18nUtils.replaceI18nFields(menus, LocaleContextHolder.getLocale());
@@ -77,7 +78,7 @@ public class SysMenuController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuList)
 	@GetMapping(value = "/{menuId}")
-	public R<?> getInfo(@PathVariable Long menuId) {
+	public R<?> getInfo(@PathVariable @LongId Long menuId) {
 		SysMenu menu = menuService.getById(menuId);
 		Assert.notNull(menu, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(menuId));
 		I18nUtils.replaceI18nFields(menu);
@@ -89,11 +90,8 @@ public class SysMenuController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/treeselect")
-	public R<?> treeselect(SysMenu menu) {
-		List<SysMenu> menus = this.menuService.lambdaQuery()
-				.like(StringUtils.isNotEmpty(menu.getMenuName()), SysMenu::getMenuName, menu.getMenuName())
-				.eq(StringUtils.isNotEmpty(menu.getStatus()), SysMenu::getStatus, menu.getStatus())
-				.orderByAsc(SysMenu::getOrderNum).list();
+	public R<?> treeselect() {
+		List<SysMenu> menus = this.menuService.lambdaQuery().orderByAsc(SysMenu::getOrderNum).list();
 		// 国际化翻译
 		I18nUtils.replaceI18nFields(menus, LocaleContextHolder.getLocale());
 		List<TreeNode<Long>> buildMenuTreeSelect = menuService.buildMenuTreeSelect(menus);
@@ -126,9 +124,8 @@ public class SysMenuController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuAdd)
 	@Log(title = "菜单管理", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@Validated @RequestBody SysMenu menu) {
-		menu.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
-		menuService.insertMenu(menu);
+	public R<?> add(@Validated @RequestBody CreateMenuRequest req) {
+		menuService.insertMenu(req);
 		return R.ok();
 	}
 
@@ -138,9 +135,8 @@ public class SysMenuController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuEdit)
 	@Log(title = "菜单管理", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody SysMenu menu) {
-		menu.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		menuService.updateMenu(menu);
+	public R<?> edit(@Validated @RequestBody UpdateMenuRequest req) {
+		menuService.updateMenu(req);
 		return R.ok();
 	}
 

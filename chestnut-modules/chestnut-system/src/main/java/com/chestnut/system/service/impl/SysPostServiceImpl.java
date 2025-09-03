@@ -25,6 +25,8 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysPost;
 import com.chestnut.system.domain.SysUserPost;
+import com.chestnut.system.domain.dto.CreatePostRequest;
+import com.chestnut.system.domain.dto.UpdatePostRequest;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.mapper.SysPostMapper;
 import com.chestnut.system.mapper.SysUserPostMapper;
@@ -32,7 +34,6 @@ import com.chestnut.system.service.ISysPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -79,36 +80,12 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 		return this.listByIds(postIds);
 	}
 
-	/**
-	 * 校验岗位名称是否唯一
-	 * 
-	 * @param post
-	 *            岗位信息
-	 * @return 结果
-	 */
-	@Override
-	public boolean checkPostNameUnique(SysPost post) {
-		return this.checkPostUnique(post);
-	}
-
-	/**
-	 * 校验岗位编码是否唯一
-	 * 
-	 * @param post
-	 *            岗位信息
-	 * @return 结果
-	 */
-	@Override
-	public boolean checkPostCodeUnique(SysPost post) {
-		return this.checkPostUnique(post);
-	}
-
-	private boolean checkPostUnique(SysPost post) {
+	private boolean checkPostUnique(String postCode, String postName, Long postId) {
 		LambdaQueryWrapper<SysPost> q = new LambdaQueryWrapper<SysPost>()
 				.and(wrapper -> wrapper
-						.eq(StringUtils.isNotEmpty(post.getPostName()), SysPost::getPostName, post.getPostName()).or()
-						.eq(StringUtils.isNotEmpty(post.getPostCode()), SysPost::getPostCode, post.getPostCode()))
-				.ne(IdUtils.validate(post.getPostId()), SysPost::getPostId, post.getPostId());
+						.eq(StringUtils.isNotEmpty(postName), SysPost::getPostName, postName).or()
+						.eq(StringUtils.isNotEmpty(postCode), SysPost::getPostCode, postCode))
+				.ne(IdUtils.validate(postId), SysPost::getPostId, postId);
 		return this.count(q) == 0;
 	}
 
@@ -130,36 +107,35 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 		this.removeByIds(postIds);
 	}
 
-	/**
-	 * 新增保存岗位信息
-	 * 
-	 * @param post 岗位信息
-	 */
 	@Override
-	public void insertPost(SysPost post) {
-		boolean checkPostUnique = this.checkPostUnique(post);
+	public void insertPost(CreatePostRequest req) {
+		boolean checkPostUnique = this.checkPostUnique(req.getPostCode(), req.getPostName(), null);
 		Assert.isTrue(checkPostUnique, CommonErrorCode.DATA_CONFLICT::exception);
 
+		SysPost post = new SysPost();
 		post.setPostId(IdUtils.getSnowflakeId());
-		post.setCreateTime(LocalDateTime.now());
+		post.setPostCode(req.getPostCode());
+		post.setPostName(req.getPostName());
+		post.setPostSort(req.getPostSort());
+		post.setStatus(req.getStatus());
+		post.createBy(req.getOperator().getUsername());
 		this.save(post);
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + post.getPostCode());
 	}
 
-	/**
-	 * 修改保存岗位信息
-	 * 
-	 * @param post 岗位信息
-	 */
 	@Override
-	public void updatePost(SysPost post) {
-		SysPost db = this.getById(post.getPostId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(post.getPostId()));
-		boolean checkPostUnique = this.checkPostUnique(post);
+	public void updatePost(UpdatePostRequest req) {
+		SysPost db = this.getById(req.getPostId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getPostId()));
+		boolean checkPostUnique = this.checkPostUnique(req.getPostCode(), req.getPostName(), req.getPostId());
 		Assert.isTrue(checkPostUnique, CommonErrorCode.DATA_CONFLICT::exception);
 
-		post.setUpdateTime(LocalDateTime.now());
-		this.updateById(post);
-		this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + post.getPostCode());
+		db.setPostCode(req.getPostCode());
+		db.setPostName(req.getPostName());
+		db.setPostSort(req.getPostSort());
+		db.setStatus(req.getStatus());
+		db.updateBy(req.getOperator().getUsername());
+		this.updateById(db);
+		this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + db.getPostCode());
 	}
 }

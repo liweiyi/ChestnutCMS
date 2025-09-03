@@ -16,8 +16,9 @@
 package com.chestnut.contentcore.core;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.utils.*;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
@@ -30,7 +31,6 @@ import com.chestnut.contentcore.listener.event.AfterContentSaveEvent;
 import com.chestnut.contentcore.listener.event.BeforeContentSaveEvent;
 import com.chestnut.contentcore.listener.event.OnContentCopyEvent;
 import com.chestnut.contentcore.listener.event.OnContentMoveEvent;
-import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.properties.PublishedContentEditProperty;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
@@ -40,7 +40,6 @@ import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.ContentLogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
-import com.chestnut.system.permission.PermissionUtils;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
@@ -73,7 +72,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	@Setter
 	private Map<String, Object> params;
 
-	private LoginUser operator;
+	private Operator operator;
 
 	@Override
 	public CmsSite getSite() {
@@ -122,12 +121,12 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	}
 
 	@Override
-	public LoginUser getOperator() {
+	public Operator getOperator() {
 		return this.operator;
 	}
 
 	@Override
-	public void setOperator(LoginUser operator) {
+	public void setOperator(Operator operator) {
 		this.operator = operator;
 	}
 
@@ -274,9 +273,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 				this.getContentEntity().getTitle())) {
 			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
 		}
-		// 校验权限
-		PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.AddContent.getPermissionKey(toCatalog.getCatalogId()), this.getOperator());
-
 		CmsContent newContent = new CmsContent();
 		BeanUtils.copyProperties(this.getContentEntity(), newContent, "contentId", "template", "staticPath", "topFlag",
 				"topDate", "isLock", "lockUser");
@@ -316,8 +312,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 				this.getContentEntity().getTitle())) {
 			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
 		}
-		// 校验权限
-		PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.AddContent.getPermissionKey(toCatalog.getCatalogId()), this.getOperator());
 
 		CmsCatalog fromCatalog = this.getCatalogService().getCatalog(content.getCatalogId());
 		// 重置内容信息
@@ -377,12 +371,12 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		}
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
 				.eq(CmsContent::getCatalogId, next.getCatalogId()).gt(CmsContent::getSortFlag, next.getSortFlag())
-				.orderByAsc(CmsContent::getSortFlag).last("limit 1");
-		CmsContent prev = this.getContentService().dao().getOne(q);
-		if (prev == null) {
+				.orderByAsc(CmsContent::getSortFlag);
+		Page<CmsContent> prev = this.getContentService().dao().page(Page.of(1, 1, false), q);
+		if (prev.getRecords().isEmpty()) {
 			this.content.setSortFlag(SortUtils.getDefaultSortValue());
 		} else {
-			this.content.setSortFlag((next.getSortFlag() + prev.getSortFlag()) / 2);
+			this.content.setSortFlag((next.getSortFlag() + prev.getRecords().get(0).getSortFlag()) / 2);
 		}
 		this.getContentEntity().updateBy(this.getOperatorUName());
 		this.getContentService().dao().updateById(content);

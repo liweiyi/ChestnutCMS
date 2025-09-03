@@ -23,7 +23,10 @@ import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.core.impl.PublishPipeProp_PrefixMode;
+import com.chestnut.contentcore.core.impl.PublishPipeProp_RelativePrefix;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.enums.SitePrefixMode;
 import com.chestnut.contentcore.properties.EnableSSIProperty;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
@@ -160,13 +163,25 @@ public class CmsIncludeTag extends AbstractTag {
 				}
 			}
 			if (ssi) {
-				String prefix = SiteUtils.getPublishPipePrefix(site, context.getPublishPipeCode(), context.isPreview());
+				String prefix = getIncludePathPrefix(context.getPublishPipeCode(), site);
 				env.getOut().write(StringUtils.messageFormat(SSI_INCLUDE_TAG, prefix + staticFilePath));
 			} else {
 				env.getOut().write(staticContent);
 			}
 		}
 		return null;
+	}
+
+	public static String getIncludePathPrefix(String publishPipeCode, CmsSite site) {
+		String prefix = null;
+		String prefixMode = PublishPipeProp_PrefixMode.getValue(publishPipeCode, site.getPublishPipeProps());
+		if (SitePrefixMode.isRelative(prefixMode)) {
+			prefix = PublishPipeProp_RelativePrefix.getValue(publishPipeCode, site.getPublishPipeProps());
+		}
+		if (StringUtils.isEmpty(prefix)) {
+			prefix = "/";
+		}
+		return prefix;
 	}
 
 	private Map<String, String> mergeRequestVariable(Environment env, Map<String, String> params) throws TemplateModelException {

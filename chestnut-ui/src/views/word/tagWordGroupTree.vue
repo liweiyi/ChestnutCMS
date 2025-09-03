@@ -74,6 +74,7 @@
   </div>
 </template>
 <script>
+import { codeValidator } from '@/utils/validate';
 import { getTagWordGroupTreeData, addTagWordGroup, editTagWordGroup, deleteTagWordGroup } from "@/api/word/tagWord";
 import CMSLogoView from '@/views/cms/components/LogoView';
 import Treeselect from "@riophae/vue-treeselect";
@@ -119,7 +120,8 @@ export default {
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         code: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('Common.RuleTips.Code'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
         ]
       }
     };

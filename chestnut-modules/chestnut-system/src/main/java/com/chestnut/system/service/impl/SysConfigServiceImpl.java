@@ -25,7 +25,8 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysConfig;
-import com.chestnut.system.domain.SysI18nDict;
+import com.chestnut.system.domain.dto.CreateConfigRequest;
+import com.chestnut.system.domain.dto.UpdateConfigRequest;
 import com.chestnut.system.fixed.FixedConfigUtils;
 import com.chestnut.system.mapper.SysConfigMapper;
 import com.chestnut.system.service.ISysConfigService;
@@ -36,7 +37,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -53,12 +53,6 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 
 	private final ISysI18nDictService i18nDictService;
 
-	/**
-	 * 根据键名查询参数配置信息
-	 * 
-	 * @param configKey 参数key
-	 * @return 参数键值
-	 */
 	@Override
 	public String selectConfigByKey(String configKey) {
         return redisCache.getCacheObject(getCacheKey(configKey), String.class, () -> {
@@ -67,59 +61,55 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 		});
 	}
 
-	/**
-	 * 新增参数配置
-	 * 
-	 * @param config 参数配置信息
-	 */
 	@Override
 	@Transactional(rollbackFor = Throwable.class)
-	public void insertConfig(SysConfig config) {
-		boolean checkConfigKeyUnique = this.checkConfigKeyUnique(config);
-		Assert.isTrue(checkConfigKeyUnique, () -> CommonErrorCode.DATA_CONFLICT.exception(config.getConfigKey()));
+	public void insertConfig(CreateConfigRequest req) {
+		boolean checkConfigKeyUnique = this.checkConfigKeyUnique(req.getConfigKey(), null);
+		Assert.isTrue(checkConfigKeyUnique, () -> CommonErrorCode.DATA_CONFLICT.exception(req.getConfigKey()));
 
+		SysConfig config = new SysConfig();
 		config.setConfigId(IdUtils.getSnowflakeId());
-		config.setCreateTime(LocalDateTime.now());
+		config.setConfigKey(req.getConfigKey());
+		config.setConfigName(req.getConfigName());
+		config.setConfigValue(req.getConfigValue());
+		config.setRemark(req.getRemark());
+		config.createBy(req.getOperator().getUsername());
 		this.save(config);
 
-		SysI18nDict i18nDict = new SysI18nDict();
-		i18nDict.setLangKey("CONFIG." + config.getConfigKey());
-		i18nDict.setLangTag(LocaleContextHolder.getLocale().toLanguageTag());
-		i18nDict.setLangValue(config.getConfigName());
-		i18nDictService.batchSaveI18nDicts(List.of(i18nDict));
-
-		redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+		i18nDictService.saveOrUpdate(LocaleContextHolder.getLocale().toLanguageTag(),
+				langKey(req.getConfigKey()), req.getConfigName());
+		redisCache.setCacheObject(getCacheKey(req.getConfigKey()), req.getConfigValue());
 	}
 
-	/**
-	 * 修改参数配置
-	 * 
-	 * @param config 参数配置信息
-	 */
 	@Override
-	public void updateConfig(SysConfig config) {
-		SysConfig dbConfig = this.getById(config.getConfigId());
-		Assert.notNull(dbConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("configId", config.getConfigId()));
+	@Transactional(rollbackFor = Throwable.class)
+	public void updateConfig(UpdateConfigRequest req) {
+		SysConfig dbConfig = this.getById(req.getConfigId());
+		Assert.notNull(dbConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("configId", req.getConfigId()));
 		// 系统固定配置参数不能修改键名
 		String oldConfigKey = dbConfig.getConfigKey();
-		if (FixedConfigUtils.isFixedConfig(oldConfigKey) && !StringUtils.equals(oldConfigKey, config.getConfigKey())) {
+		if (FixedConfigUtils.isFixedConfig(oldConfigKey) && !StringUtils.equals(oldConfigKey, req.getConfigKey())) {
 			throw CommonErrorCode.FIXED_CONFIG_UPDATE.exception(oldConfigKey);
 		}
 		// 键名是否重复
-		boolean checkConfigKeyUnique = this.checkConfigKeyUnique(config);
-		Assert.isTrue(checkConfigKeyUnique, () -> CommonErrorCode.DATA_CONFLICT.exception(config.getConfigKey()));
+		boolean checkConfigKeyUnique = this.checkConfigKeyUnique(req.getConfigKey(), req.getConfigId());
+		Assert.isTrue(checkConfigKeyUnique, () -> CommonErrorCode.DATA_CONFLICT.exception(req.getConfigKey()));
 
-		config.setUpdateTime(LocalDateTime.now());
-		if (this.updateById(config)) {
-			redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+		dbConfig.setConfigKey(req.getConfigKey());
+		dbConfig.setConfigName(req.getConfigName());
+		dbConfig.setConfigValue(req.getConfigValue());
+		dbConfig.setRemark(req.getRemark());
+		dbConfig.updateBy(req.getOperator().getUsername());
+		if (this.updateById(dbConfig)) {
+			redisCache.setCacheObject(getCacheKey(dbConfig.getConfigKey()), dbConfig.getConfigValue());
+			if (!StringUtils.equals(oldConfigKey, dbConfig.getConfigKey())) {
+				redisCache.deleteObject(getCacheKey(oldConfigKey));
+				i18nDictService.changeLangKey(langKey(oldConfigKey),
+						langKey(dbConfig.getConfigKey()), false);
+			}
 		}
 	}
 
-	/**
-	 * 批量删除参数信息
-	 * 
-	 * @param configIds 需要删除的参数ID
-	 */
 	@Override
 	@Transactional(rollbackFor = Throwable.class)
 	public void deleteConfigByIds(List<Long> configIds) {
@@ -131,13 +121,14 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 			this.removeById(configId);
 			redisCache.deleteObject(getCacheKey(config.getConfigKey()));
 			// 删除国际化配置
-			this.i18nDictService.remove(new LambdaQueryWrapper<SysI18nDict>().eq(SysI18nDict::getLangKey, "CONFIG." + config.getConfigKey()));
+			this.i18nDictService.deleteByLangKey(langKey(config.getConfigKey()), false);
 		}
 	}
 
-	/**
-	 * 加载参数缓存数据
-	 */
+	private String langKey(String configKey) {
+		return "CONFIG." + configKey;
+	}
+
 	@Override
 	public void loadingConfigCache() {
 		this.list().forEach(config -> {
@@ -145,42 +136,24 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 		});
 	}
 
-	/**
-	 * 清空参数缓存数据
-	 */
 	@Override
 	public void clearConfigCache() {
 		Collection<String> keys = redisCache.keys(SysConstants.CACHE_SYS_CONFIG_KEY + "*");
 		redisCache.deleteObjects(keys);
 	}
 
-	/**
-	 * 重置参数缓存数据
-	 */
 	@Override
 	public void resetConfigCache() {
 		clearConfigCache();
 		loadingConfigCache();
 	}
 
-	/**
-	 * 校验参数键名是否唯一
-	 * 
-	 * @param config 参数配置信息
-	 * @return 结果
-	 */
-	private boolean checkConfigKeyUnique(SysConfig config) {
-		long count = this.count(new LambdaQueryWrapper<SysConfig>().eq(SysConfig::getConfigKey, config.getConfigKey())
-				.ne(IdUtils.validate(config.getConfigId()), SysConfig::getConfigId, config.getConfigId()));
+	private boolean checkConfigKeyUnique(String configKey, Long configId) {
+		long count = this.count(new LambdaQueryWrapper<SysConfig>().eq(SysConfig::getConfigKey, configKey)
+				.ne(IdUtils.validate(configId), SysConfig::getConfigId, configId));
 		return count == 0;
 	}
 
-	/**
-	 * 设置cache key
-	 * 
-	 * @param configKey 参数键
-	 * @return 缓存键key
-	 */
 	private String getCacheKey(String configKey) {
 		return SysConstants.CACHE_SYS_CONFIG_KEY + configKey;
 	}
@@ -204,5 +177,4 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 			}
 		});
 	}
-
 }

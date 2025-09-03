@@ -26,14 +26,18 @@ import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.domain.SearchWordHourStat;
-import com.chestnut.search.domain.dto.SearchWordToppingDTO;
+import com.chestnut.search.domain.dto.CreateSearchWordRequest;
+import com.chestnut.search.domain.dto.SearchWordToppingRequest;
+import com.chestnut.search.domain.dto.UpdateSearchWordRequest;
 import com.chestnut.search.service.ISearchWordHourStatService;
 import com.chestnut.search.service.ISearchWordService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
-import jakarta.validation.constraints.Min;
+import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -51,7 +55,7 @@ public class SearchWordController extends BaseRestController {
 	private final ISearchWordHourStatService searchWordHourStatService;
 	
 	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<SearchWord> page = this.searchWordStatService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(query), SearchWord::getWord, query)
@@ -62,7 +66,7 @@ public class SearchWordController extends BaseRestController {
 
 	@GetMapping("/trend")
 	public R<?> getTrendStatData(
-			@RequestParam @Min(1) Long wordId,
+			@RequestParam @LongId Long wordId,
 			@RequestParam LocalDateTime beginTime,
 			@RequestParam LocalDateTime endTime
 	) {
@@ -96,25 +100,22 @@ public class SearchWordController extends BaseRestController {
 
 	@Log(title = "新增搜索词", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> addWord(@RequestBody SearchWord wordStat) {
-		wordStat.createBy(StpAdminUtil.getLoginUser().getUsername());
-		this.searchWordStatService.addWord(wordStat);
+	public R<?> addWord(@RequestBody CreateSearchWordRequest req) {
+		this.searchWordStatService.addWord(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑搜索词", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> editWord(@RequestBody SearchWord wordStat) {
-		wordStat.updateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.searchWordStatService.editWord(wordStat);
+	public R<?> editWord(@RequestBody @Validated UpdateSearchWordRequest req) {
+		this.searchWordStatService.editWord(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑搜索词", businessType = BusinessType.UPDATE)
 	@PutMapping("/set_top")
-	public R<?> setTop(@RequestBody SearchWordToppingDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.searchWordStatService.setTop(dto);
+	public R<?> setTop(@RequestBody SearchWordToppingRequest req) {
+		this.searchWordStatService.setTop(req);
 		return R.ok();
 	}
 

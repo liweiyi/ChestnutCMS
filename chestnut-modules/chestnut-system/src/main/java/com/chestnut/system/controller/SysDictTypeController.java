@@ -26,13 +26,15 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDictType;
+import com.chestnut.system.domain.dto.CreateDictTypeRequest;
+import com.chestnut.system.domain.dto.QueryDictTypeRequest;
+import com.chestnut.system.domain.dto.UpdateDictTypeRequest;
 import com.chestnut.system.fixed.FixedDictUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysDictTypeService;
-import jakarta.servlet.http.HttpServletResponse;
+import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -56,12 +58,11 @@ public class SysDictTypeController extends BaseRestController {
 
 	@ExcelExportable(SysDictType.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
-	@GetMapping("/list")
-	public R<?> list(SysDictType dictType) {
+	@GetMapping(value = "/list")
+	public R<?> list(@Validated QueryDictTypeRequest req) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysDictType> page = dictTypeService.lambdaQuery()
-				.like(StringUtils.isNotEmpty(dictType.getDictName()), SysDictType::getDictName, dictType.getDictName())
-				.like(StringUtils.isNotEmpty(dictType.getDictType()), SysDictType::getDictType, dictType.getDictType())
+				.like(StringUtils.isNotEmpty(req.getDictType()), SysDictType::getDictType, req.getDictType())
 				.orderByDesc(SysDictType::getDictType)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize()));
 		page.getRecords().forEach(dt -> {
@@ -76,7 +77,7 @@ public class SysDictTypeController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
 	@GetMapping(value = "/{dictId}")
-	public R<?> getInfo(@PathVariable Long dictId) {
+	public R<?> getInfo(@PathVariable @LongId Long dictId) {
 		SysDictType dictType = dictTypeService.getById(dictId);
 		I18nUtils.replaceI18nFields(dictType);
 		return R.ok(dictType);
@@ -88,9 +89,8 @@ public class SysDictTypeController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictAdd)
 	@Log(title = "字典类型", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@Validated @RequestBody SysDictType dict) {
-		dict.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
-		dictTypeService.insertDictType(dict);
+	public R<?> add(@Validated @RequestBody CreateDictTypeRequest req) {
+		dictTypeService.insertDictType(req);
 		return R.ok();
 	}
 
@@ -100,9 +100,8 @@ public class SysDictTypeController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictEdit)
 	@Log(title = "字典类型", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody SysDictType dict) {
-		dict.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		dictTypeService.updateDictType(dict);
+	public R<?> edit(@Validated @RequestBody UpdateDictTypeRequest req) {
+		dictTypeService.updateDictType(req);
 		return R.ok();
 	}
 

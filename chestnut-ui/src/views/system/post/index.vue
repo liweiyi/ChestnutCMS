@@ -164,6 +164,7 @@
 </template>
 
 <script>
+import { codeValidator } from '@/utils/validate';
 import { listPost, getPost, delPost, addPost, updatePost } from "@/api/system/post";
 
 export default {
@@ -202,13 +203,19 @@ export default {
       // 表单校验
       rules: {
         postName: [
-          { required: true, message: this.$t('System.Post.RuleTips.PostName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: "blur" }
         ],
         postCode: [
-          { required: true, message: this.$t('System.Post.RuleTips.PostCode'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
+          { max: 64, message: this.$t('Common.RuleTips.MaxLength', [ 64 ]), trigger: "blur" },
         ],
         postSort: [
-          { required: true, message: this.$t('System.Post.RuleTips.PostSort'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: "blur" },
         ]
       }
     };

@@ -32,6 +32,7 @@ import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IResourceType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
+import com.chestnut.contentcore.core.impl.ResourceType_Image;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.ResourceUploadDTO;
@@ -118,7 +119,11 @@ public class ResourceController extends BaseRestController {
 				if (r.getPath().startsWith("http://") || r.getPath().startsWith("https://")) {
 					r.setSrc(r.getPath());
 				} else {
-					resourceService.dealDefaultThumbnail(site, r.getInternalUrl(), r::setSrc);
+					if (ResourceType_Image.isImage(r.getResourceType())) {
+						resourceService.dealDefaultThumbnail(site, r.getInternalUrl(), r::setSrc);
+					} else {
+						r.setSrc(InternalUrlUtils.getActualPreviewUrl(r.getInternalUrl()));
+					}
 				}
 			});
 		}
@@ -192,7 +197,7 @@ public class ResourceController extends BaseRestController {
 		return R.ok(resource);
 	}
 
-	@GetMapping("/downlad/{resourceId}")
+	@GetMapping("/download/{resourceId}")
 	public void downloadResourceFile(@PathVariable @LongId Long resourceId, HttpServletResponse response) {
 		CmsResource resource = this.resourceService.getById(resourceId);
 		Assert.notNull(resource, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("resourceId", resourceId));

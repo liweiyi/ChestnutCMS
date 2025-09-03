@@ -32,10 +32,10 @@ import com.chestnut.exmodel.CmsExtendMetaModelType;
 import com.chestnut.exmodel.permission.EXModelPriv;
 import com.chestnut.exmodel.service.ExModelService;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
 import com.chestnut.xmodel.domain.XModel;
-import com.chestnut.xmodel.dto.XModelDTO;
+import com.chestnut.xmodel.dto.CreateXModelRequest;
+import com.chestnut.xmodel.dto.UpdateXModelRequest;
 import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 import com.chestnut.xmodel.service.IModelService;
 import jakarta.validation.constraints.NotEmpty;
@@ -95,29 +95,26 @@ public class EXModelController extends BaseRestController {
 	@Log(title = "新增扩展模型", businessType = BusinessType.INSERT)
 	@Priv(type = AdminUserType.TYPE, value = EXModelPriv.Add)
 	@PostMapping
-	public R<?> add(@RequestBody @Validated XModelDTO dto) {
+	public R<?> add(@RequestBody @Validated CreateXModelRequest req) {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
-		dto.setOwnerType(CmsExtendMetaModelType.TYPE);
-		dto.setOwnerId(site.getSiteId().toString());
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.modelService.addModel(dto);
+		req.setOwnerType(CmsExtendMetaModelType.TYPE);
+		req.setOwnerId(site.getSiteId().toString());
+		this.modelService.addModel(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑扩展模板", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { EXModelPriv.Add, EXModelPriv.Edit })
 	@PutMapping
-	public R<?> edit(@RequestBody @Validated XModelDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.modelService.editModel(dto);
+	public R<?> edit(@RequestBody @Validated UpdateXModelRequest req) {
+		this.modelService.editModel(req);
 		return R.ok();
 	}
 
 	@Log(title = "删除扩展模型", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE, value = EXModelPriv.Delete)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @Validated @NotEmpty List<XModelDTO> dtoList) {
-		List<Long> modelIds = dtoList.stream().map(XModelDTO::getModelId).toList();
+	public R<?> remove(@RequestBody @Validated @NotEmpty List<Long> modelIds) {
 		this.modelService.deleteModel(modelIds);
 		return R.ok();
 	}

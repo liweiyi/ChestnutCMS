@@ -15,12 +15,14 @@
  */
 package com.chestnut.member.service.impl;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.member.domain.MemberLevelConfig;
-import com.chestnut.member.domain.dto.LevelConfigDTO;
+import com.chestnut.member.domain.dto.CreateLevelConfigRequest;
+import com.chestnut.member.domain.dto.UpdateLevelConfigRequest;
 import com.chestnut.member.exception.MemberErrorCode;
 import com.chestnut.member.level.ILevelType;
 import com.chestnut.member.level.LevelManager;
@@ -46,40 +48,52 @@ public class MemberLevelConfigServiceImpl extends ServiceImpl<MemberLevelConfigM
 	private static final Map<String, LevelManager> levelManagerMap = new HashMap<>();
 
 	@Override
-	public void addLevelConfig(LevelConfigDTO dto) {
-		ILevelType levelType = this.getLevelType(dto.getLevelType());
+	public void addLevelConfig(CreateLevelConfigRequest req) {
+		ILevelType levelType = this.getLevelType(req.getLevelType());
 
 		Long count = this.lambdaQuery().eq(MemberLevelConfig::getLevelType, levelType.getId())
-				.eq(MemberLevelConfig::getLevel, dto.getLevel()).count();
+				.eq(MemberLevelConfig::getLevel, req.getLevel()).count();
 		Assert.isTrue(count == 0,
-				() -> MemberErrorCode.LEVEL_CONFIG_EXIST.exception(dto.getLevelType() + "=" + dto.getLevel()));
+				() -> MemberErrorCode.LEVEL_CONFIG_EXIST.exception(req.getLevelType() + "=" + req.getLevel()));
+		checkNextNeedExp(req.getLevel(), req.getNextNeedExp());
 
 		MemberLevelConfig lvConfig = new MemberLevelConfig();
 		lvConfig.setConfigId(IdUtils.getSnowflakeId());
 		lvConfig.setLevelType(levelType.getId());
-		lvConfig.setLevel(dto.getLevel());
-		lvConfig.setName(dto.getName());
-		lvConfig.setIcon(dto.getIcon());
-		lvConfig.setNextNeedExp(dto.getNextNeedExp());
-		lvConfig.setRemark(dto.getRemark());
-		lvConfig.createBy(dto.getOperator().getUsername());
+		lvConfig.setLevel(req.getLevel());
+		lvConfig.setName(req.getName());
+		lvConfig.setIcon(req.getIcon());
+		lvConfig.setNextNeedExp(req.getNextNeedExp());
+		lvConfig.setRemark(req.getRemark());
+		lvConfig.createBy(req.getOperator().getUsername());
 		this.save(lvConfig);
 
 		this.onLevelConfigChange(levelType);
 	}
 
-	@Override
-	public void updateLevelConfig(LevelConfigDTO dto) {
-		ILevelType levelType = this.getLevelType(dto.getLevelType());
-		MemberLevelConfig lvConfig = this.lambdaQuery().eq(MemberLevelConfig::getLevelType, levelType.getId())
-				.eq(MemberLevelConfig::getLevel, dto.getLevel()).one();
-		Assert.notNull(lvConfig, CommonErrorCode.DATA_NOT_FOUND::exception);
+	private void checkNextNeedExp(Integer level, Long nextNeedExp) {
+		Page<MemberLevelConfig> page = this.lambdaQuery().lt(MemberLevelConfig::getLevel, level)
+				.orderByDesc(MemberLevelConfig::getLevel)
+				.page(Page.of(1, 1, false));
+		if (!page.getRecords().isEmpty()) {
+			MemberLevelConfig prev = page.getRecords().get(0);
+			Assert.isTrue(prev.getNextNeedExp() < nextNeedExp, MemberErrorCode.LEVEL_CONFIG_EXP::exception);
+		}
+	}
 
-		lvConfig.setName(dto.getName());
-		lvConfig.setIcon(dto.getIcon());
-		lvConfig.setNextNeedExp(dto.getNextNeedExp());
-		lvConfig.setRemark(dto.getRemark());
-		lvConfig.updateBy(dto.getOperator().getUsername());
+	@Override
+	public void updateLevelConfig(UpdateLevelConfigRequest req) {
+		ILevelType levelType = this.getLevelType(req.getLevelType());
+		MemberLevelConfig lvConfig = this.lambdaQuery().eq(MemberLevelConfig::getLevelType, levelType.getId())
+				.eq(MemberLevelConfig::getLevel, req.getLevel()).one();
+		Assert.notNull(lvConfig, CommonErrorCode.DATA_NOT_FOUND::exception);
+		checkNextNeedExp(lvConfig.getLevel(), req.getNextNeedExp());
+
+		lvConfig.setName(req.getName());
+		lvConfig.setIcon(req.getIcon());
+		lvConfig.setNextNeedExp(req.getNextNeedExp());
+		lvConfig.setRemark(req.getRemark());
+		lvConfig.updateBy(req.getOperator().getUsername());
 		this.updateById(lvConfig);
 		
 		this.onLevelConfigChange(levelType);

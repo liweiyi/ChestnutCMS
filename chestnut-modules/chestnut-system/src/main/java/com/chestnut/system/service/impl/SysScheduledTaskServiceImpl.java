@@ -24,7 +24,8 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.domain.SysScheduledTask;
 import com.chestnut.system.domain.SysScheduledTaskLog;
-import com.chestnut.system.domain.dto.ScheduledTaskDTO;
+import com.chestnut.system.domain.dto.CreateScheduledTaskRequest;
+import com.chestnut.system.domain.dto.UpdateScheduledTaskRequest;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
@@ -153,7 +154,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
     }
 
     @Override
-    public void insertTask(ScheduledTaskDTO dto) {
+    public void insertTask(CreateScheduledTaskRequest dto) {
         long count = this.lambdaQuery().eq(SysScheduledTask::getTaskType, dto.getTaskType()).count();
         Assert.isTrue(count == 0, SysErrorCode.SCHEDULED_TASK_EXISTS::exception);
 
@@ -173,7 +174,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
     }
 
     @Override
-    public void updateTask(ScheduledTaskDTO dto) {
+    public void updateTask(UpdateScheduledTaskRequest dto) {
         SysScheduledTask task = this.getById(dto.getTaskId());
         Assert.notNull(task, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("taskId", task.getTaskId()));
         Assert.isTrue(EnableOrDisable.isDisable(task.getStatus()), SysErrorCode.SCHEDULED_TASK_UPDATE_ERR::exception);

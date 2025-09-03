@@ -29,6 +29,7 @@ import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
+import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.CmsTemplate;
 import com.chestnut.contentcore.domain.dto.TemplateAddDTO;
@@ -182,7 +183,7 @@ public class TemplateController extends BaseRestController {
 		fileName = FileExUtils.normalizePath(fileName);
 		String[] split = fileName.substring(0, fileName.indexOf(suffix)).split("/");
 		for (String item : split) {
-			if (StringUtils.isEmpty(item) || !Pattern.matches("^[a-zA-Z0-9_]+$", item)) {
+			if (StringUtils.isEmpty(item) || !Pattern.matches(RegexConsts.REGEX_CODE, item)) {
 				return false;
 			}
 		}

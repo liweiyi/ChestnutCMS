@@ -22,12 +22,14 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.word.domain.ErrorProneWord;
+import com.chestnut.word.domain.dto.CreateErrorProneWordRequest;
+import com.chestnut.word.domain.dto.UpdateErrorProneWordRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.IErrorProneWordService;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,8 +52,8 @@ public class ErrorProneWordController extends BaseRestController {
 	private final IErrorProneWordService errorProneWordService;
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	@GetMapping("/list")
+	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<ErrorProneWord> page = this.errorProneWordService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(query), ErrorProneWord::getWord, query)
@@ -60,18 +62,16 @@ public class ErrorProneWordController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@PostMapping
-	public R<?> add(@RequestBody @Validated ErrorProneWord errorProneWord) {
-		errorProneWord.createBy(StpAdminUtil.getLoginUser().getUsername());
-		this.errorProneWordService.addErrorProneWord(errorProneWord);
+	@PostMapping("/add")
+	public R<?> add(@RequestBody @Validated CreateErrorProneWordRequest req) {
+		this.errorProneWordService.addErrorProneWord(req);
 		return R.ok();
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@PutMapping
-	public R<String> edit(@RequestBody @Validated ErrorProneWord errorProneWord) {
-		errorProneWord.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.errorProneWordService.updateErrorProneWord(errorProneWord);
+	@PutMapping("/update")
+	public R<String> edit(@RequestBody @Validated UpdateErrorProneWordRequest req) {
+		this.errorProneWordService.updateErrorProneWord(req);
 		return R.ok();
 	}
 

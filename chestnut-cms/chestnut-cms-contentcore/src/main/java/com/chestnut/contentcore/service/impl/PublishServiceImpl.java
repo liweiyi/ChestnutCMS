@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
@@ -61,6 +62,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.*;
 
 @Service
@@ -92,6 +94,14 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	@Override
 	public String getSitePageData(CmsSite site, IInternalDataType.RequestData requestData)
 			throws IOException, TemplateException {
+		try (StringWriter writer = new StringWriter()) {
+			processSitePage(site, requestData, writer);
+			return writer.toString();
+		}
+	}
+
+	@Override
+	public void processSitePage(CmsSite site, IInternalDataType.RequestData requestData, Writer writer) throws TemplateException, IOException {
 		String indexTemplate = site.getIndexTemplate(requestData.getPublishPipeCode());
 		File templateFile = this.templateService.findTemplateFile(site, indexTemplate, requestData.getPublishPipeCode());
 		if (Objects.isNull(templateFile)) {
@@ -108,9 +118,8 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		templateType.initTemplateData(site.getSiteId(), context);
 
 		long s = System.currentTimeMillis();
-		try (StringWriter writer = new StringWriter()) {
+		try {
 			this.staticizeService.process(context, writer);
-			return writer.toString();
 		} finally {
 			logger.debug("[{}]Parse index template: {}\t, cost: {}ms", requestData.getPublishPipeCode(), site.getName(), System.currentTimeMillis() - s);
 		}
@@ -126,7 +135,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	}
 
 	@Override
-	public AsyncTask publishAll(CmsSite site, final String contentStatus, final LoginUser operator) {
+	public AsyncTask publishAll(CmsSite site, final String contentStatus, final Operator operator) {
 		AsyncTask asyncTask = new AsyncTask() {
 
 			@Override
@@ -162,7 +171,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 							content.setContentEntity(xContent);
 							content.setOperator(operator);
 							Boolean published = transactionTemplate.execute(callback -> content.publish());
-							if (published) {
+							if (Boolean.TRUE.equals(published)) {
 								applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
 							}
 							this.checkInterrupt();
@@ -199,6 +208,15 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 
 	@Override
 	public String getCatalogPageData(CmsCatalog catalog, IInternalDataType.RequestData requestData, boolean listFlag)
+			throws IOException, TemplateException {
+		try (StringWriter writer = new StringWriter()) {
+			this.processCatalogPage(catalog, requestData, listFlag, writer);
+			return writer.toString();
+		}
+	}
+
+	@Override
+	public void processCatalogPage(CmsCatalog catalog, IInternalDataType.RequestData requestData, boolean listFlag, Writer writer)
 			throws IOException, TemplateException {
 		if (CatalogType_Link.ID.equals(catalog.getCatalogType())) {
 			throw new RuntimeException("链接类型栏目无独立页面：" + catalog.getName());
@@ -240,9 +258,8 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			templateContext.setFirstFileName(catalogLink);
 			templateContext.setOtherFileName(TemplateUtils.appendPageIndexParam(catalogLink, TemplateContext.PlaceHolder_PageNo));
 		}
-		try (StringWriter writer = new StringWriter()) {
+		try {
 			this.staticizeService.process(templateContext, writer);
-			return writer.toString();
 		} finally {
 			logger.debug("[{}]栏目页模板解析：{}，耗时：{}ms", requestData.getPublishPipeCode(), catalog.getName(),
 					(System.currentTimeMillis() - s));
@@ -251,7 +268,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 
 	@Override
 	public AsyncTask publishCatalog(CmsCatalog catalog, boolean publishChild, boolean publishDetail,
-			final String publishStatus, final LoginUser operator) {
+			final String publishStatus, final Operator operator) {
 		List<CmsPublishPipe> publishPipes = publishPipeService.getPublishPipes(catalog.getSiteId());
 		Assert.isTrue(!publishPipes.isEmpty(), ContentCoreErrorCode.NO_PUBLISHPIPE::exception);
 
@@ -296,7 +313,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 								content.setContentEntity(xContent);
 								content.setOperator(operator);
 								Boolean published = transactionTemplate.execute(callback -> content.publish());
-								if (published) {
+								if (Boolean.TRUE.equals(published)) {
 									applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
 								}
 								this.checkInterrupt();
@@ -386,10 +403,51 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			templateContext.setFirstFileName(contentLink);
 			templateContext.setOtherFileName(TemplateUtils.appendPageIndexParam(contentLink, TemplateContext.PlaceHolder_PageNo));
 			// staticize
-			this.staticizeService.process(templateContext, writer);
+			this.processContentPage(content, requestData, writer);
 			logger.debug("[{}][{}]内容模板解析：{}，耗时：{}", requestData.getPublishPipeCode(), contentType.getId(), content.getTitle(),
 					System.currentTimeMillis() - s);
 			return writer.toString();
+		}
+	}
+
+	@Override
+	public String processContentPage(CmsContent content, IInternalDataType.RequestData requestData, Writer writer)
+			throws IOException, TemplateException {
+		CmsSite site = this.siteService.getById(content.getSiteId());
+		CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());
+		if (content.isLinkContent()) {
+			throw new RuntimeException("标题内容：" + content.getTitle() + "，跳转链接：" + content.getRedirectUrl());
+		}
+		// 查找模板
+		final String detailTemplate = getDetailTemplate(site, catalog, content, requestData.getPublishPipeCode());
+		File templateFile = this.templateService.findTemplateFile(site, detailTemplate, requestData.getPublishPipeCode());
+		Assert.notNull(templateFile,
+				() -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(requestData.getPublishPipeCode(), detailTemplate));
+
+		IContentType contentType = ContentCoreUtils.getContentType(content.getContentType());
+		long s = System.currentTimeMillis();
+		// 生成静态页面
+		try {
+			// 模板ID = 通道:站点目录:模板文件名
+			String templateKey = SiteUtils.getTemplateKey(site, requestData.getPublishPipeCode(), detailTemplate);
+			TemplateContext templateContext = new TemplateContext(templateKey, requestData.isPreview(), requestData.getPublishPipeCode());
+			templateContext.setPageIndex(requestData.getPageIndex());
+			templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, Objects.requireNonNullElse(requestData.getParams(), Map.of()));
+			// init template datamode
+			TemplateUtils.initGlobalVariables(site, templateContext);
+			// init templateType data to datamode
+			ITemplateType templateType = this.templateService.getTemplateType(ContentTemplateType.TypeId);
+			templateType.initTemplateData(content.getContentId(), templateContext);
+			// 分页链接
+			String contentLink = this.contentService.getContentLink(content, 1, requestData.getPublishPipeCode(), requestData.isPreview());
+			templateContext.setFirstFileName(contentLink);
+			templateContext.setOtherFileName(TemplateUtils.appendPageIndexParam(contentLink, TemplateContext.PlaceHolder_PageNo));
+			// staticize
+			this.staticizeService.process(templateContext, writer);
+			return writer.toString();
+		} finally {
+			logger.debug("[{}][{}]内容模板解析：{}，耗时：{}", requestData.getPublishPipeCode(), contentType.getId(), content.getTitle(),
+					System.currentTimeMillis() - s);
 		}
 	}
 
@@ -397,12 +455,12 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	 * 内容发布
 	 */
 	@Override
-	public AsyncTask publishContents(List<CmsContent> contents, LoginUser operator) {
+	public AsyncTask publishContents(List<CmsContent> contents, LoginUser loginUser) {
 		Locale locale = LocaleContextHolder.getLocale();
 		AsyncTask task = new AsyncTask() {
 			@Override
 			public void run0() {
-				publishContents0(contents, operator, locale);
+				publishContents0(contents, Operator.of(loginUser), locale);
 			}
 		};
 		task.setType("PublishContents");
@@ -411,11 +469,11 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	}
 
 	@Override
-	public void publishContent(CmsContent content, LoginUser operator) {
+	public void publishContent(CmsContent content, Operator operator) {
 		publishContents0(List.of(content), operator, null);
 	}
 
-	private void publishContents0(List<CmsContent> contents, LoginUser operator, Locale locale) {
+	private void publishContents0(List<CmsContent> contents, Operator operator, Locale locale) {
 		if (contents.isEmpty()) {
 			return;
 		}
@@ -427,7 +485,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			IContent<?> content = contentType.loadContent(cmsContent);
 			content.setOperator(operator);
 			Boolean published = transactionTemplate.execute(callback -> content.publish());
-			if (published) {
+			if (Boolean.TRUE.equals(published)) {
 				applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
 			}
 			catalogIds.add(cmsContent.getCatalogId());
@@ -517,20 +575,29 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	}
 
 	@Override
-	public String getPageWidgetPageData(CmsPageWidget pageWidget, String publishPipeCode, boolean isPreview)
+	public String getPageWidgetPageData(CmsPageWidget pageWidget, IInternalDataType.RequestData data)
+			throws IOException, TemplateException {
+		try (StringWriter writer = new StringWriter()) {
+			processPageWidget(pageWidget, data, writer);
+			return writer.toString();
+		}
+	}
+
+	@Override
+	public void processPageWidget(CmsPageWidget pageWidget, IInternalDataType.RequestData data, Writer writer)
 			throws IOException, TemplateException {
 		CmsSite site = this.siteService.getById(pageWidget.getSiteId());
-		String template = MapUtils.getString(pageWidget.getTemplates(), publishPipeCode, "");
+		String template = MapUtils.getString(pageWidget.getTemplates(), data.getPublishPipeCode(), "");
 		File templateFile = this.templateService.findTemplateFile(site, template,
-				publishPipeCode);
+				data.getPublishPipeCode());
 		Assert.notNull(templateFile, () -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(template));
 
 		// 生成静态页面
-		try (StringWriter writer = new StringWriter()) {
-			long s = System.currentTimeMillis();
+		long s = System.currentTimeMillis();
+		try {
 			// 模板ID = 通道:站点目录:模板文件名
-			String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, template);
-			TemplateContext templateContext = new TemplateContext(templateKey, isPreview, publishPipeCode);
+			String templateKey = SiteUtils.getTemplateKey(site, data.getPublishPipeCode(), template);
+			TemplateContext templateContext = new TemplateContext(templateKey, data.isPreview(), data.getPublishPipeCode());
 			// init template global variables
 			TemplateUtils.initGlobalVariables(site, templateContext);
 			templateContext.getVariables().put(TemplateUtils.TemplateVariable_PageWidget, pageWidget);
@@ -539,9 +606,9 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			templateType.initTemplateData(site.getSiteId(), templateContext);
 			// staticize
 			this.staticizeService.process(templateContext, writer);
-			logger.debug("[{}]页面部件【{}#{}】模板解析耗时：{}ms", publishPipeCode, pageWidget.getName(),
+		} finally {
+			logger.debug("[{}]页面部件【{}#{}】模板解析耗时：{}ms", data.getPublishPipeCode(), pageWidget.getName(),
 					pageWidget.getCode(), System.currentTimeMillis() - s);
-			return writer.toString();
 		}
 	}
 

@@ -22,6 +22,7 @@ import com.chestnut.common.security.IUserType;
 import com.chestnut.common.security.SecurityService;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.anno.Priv;
+import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.security.exception.SecurityErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ServletUtils;
@@ -99,6 +100,15 @@ public class SaCheckAspect {
 
             StpLogic stpLogic = SaManager.getStpLogic(priv.type(), false);
             stpLogic.checkLogin();
+            // Auto fill operator to args
+            Object[] args = joinPoint.getArgs();
+            if (Objects.nonNull(args)) {
+                for (Object arg : args) {
+                    if (arg instanceof BaseDTO baseDTO) {
+                        baseDTO.setOperator(ut.getLoginUser());
+                    }
+                }
+            }
             if (!SecurityUtils.isSuperAdmin(stpLogic.getLoginIdAsLong()) && priv.value().length > 0) {
                 String[] perms = this.parsePerms(priv.value(), joinPoint.getTarget(), method, joinPoint.getArgs());
                 if (priv.mode() == SaMode.AND) {

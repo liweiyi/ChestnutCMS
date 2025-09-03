@@ -57,6 +57,8 @@ public class TagWordGroup extends BaseEntity {
     @XComment("{CC.TAG_WORD_GROUP.CODE}")
     private String code;
 
+    private String logo;
+
     @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 

@@ -15,13 +15,9 @@
  */
 package com.chestnut.system.domain;
 
-import org.hibernate.validator.constraints.Length;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,21 +44,15 @@ public class SysI18nDict {
 	/**
 	 * 各国语言环境简称字符串，例如：zh-CN=中文（简体），en-US=英文（美国）
 	 */
-	@NotBlank
-	@Length(max = 10)
 	private String langTag;
 
 	/**
 	 * 需要翻译的字符串唯一标识
 	 */
-	@NotBlank
-	@Length(max = 100)
 	private String langKey;
 
 	/**
 	 * 当前语言黄精langId对应的翻译
 	 */
-	@NotBlank
-	@Length(max = 100)
 	private String langValue;
 }

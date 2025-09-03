@@ -151,7 +151,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item :label="$t('System.Notice.Status')">
+            <el-form-item :label="$t('System.Notice.Status')" prop="status">
               <el-radio-group v-model="form.status">
                 <el-radio
                   v-for="dict in dict.type.NoticeStatus"
@@ -162,7 +162,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item :label="$t('System.Notice.NoticeContent')">
+            <el-form-item :label="$t('System.Notice.NoticeContent')" prop="noticeContent">
               <editor v-model="form.noticeContent" :min-height="192"/>
             </el-form-item>
           </el-col>
@@ -215,10 +215,17 @@ export default {
       // 表单校验
       rules: {
         noticeTitle: [
-          { required: true, message: this.$t('System.Notice.RuleTips.NoticeTitle'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: "blur" }
         ],
         noticeType: [
-          { required: true, message: this.$t('System.Notice.RuleTips.NoticeType'), trigger: "change" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        status: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        noticeContent: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ]
       }
     };
@@ -307,7 +314,7 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       const noticeIds = row.noticeId ? [ row.noticeId ] : this.ids
-      this.$modal.confirm(this.$t('System.Notice.ConfirmDelete', [ noticeIds ])).then(function() {
+      this.$modal.confirm(this.$t('Common.ConfirmDelete')).then(function() {
         return delNotice(noticeIds);
       }).then(() => {
         this.getList();

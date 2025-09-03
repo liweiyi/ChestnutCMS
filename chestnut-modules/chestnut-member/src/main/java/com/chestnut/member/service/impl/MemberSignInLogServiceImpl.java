@@ -15,45 +15,41 @@
  */
 package com.chestnut.member.service.impl;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.member.domain.MemberSignInLog;
+import com.chestnut.member.domain.dto.MemberComplementHistoryRequest;
+import com.chestnut.member.exception.MemberErrorCode;
 import com.chestnut.member.level.impl.SignInExpOperation;
+import com.chestnut.member.mapper.MemberSignInLogMapper;
 import com.chestnut.member.service.IMemberExpConfigService;
+import com.chestnut.member.service.IMemberSignInLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.common.security.domain.LoginUser;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.member.domain.MemberSignInLog;
-import com.chestnut.member.domain.dto.MemberComplementHistoryDTO;
-import com.chestnut.member.exception.MemberErrorCode;
-import com.chestnut.member.mapper.MemberSignInLogMapper;
-import com.chestnut.member.service.IMemberSignInLogService;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class MemberSignInLogServiceImpl extends ServiceImpl<MemberSignInLogMapper, MemberSignInLog>
 		implements IMemberSignInLogService {
 
-	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
-
 	private final IMemberExpConfigService memberExpConfigService;
 
 	@Override
-	public void doSignIn(LoginUser loginUser) {
+	public void doSignIn(Long memberId) {
 		LocalDateTime now = LocalDateTime.now();
-		Integer signInKey = Integer.valueOf(now.format(FORMATTER));
+		Integer signInKey = Integer.valueOf(now.format(DateUtils.FORMAT_YYYYMMDD));
 
-		Long count = this.lambdaQuery().eq(MemberSignInLog::getMemberId, loginUser.getUserId())
+		Long count = this.lambdaQuery().eq(MemberSignInLog::getMemberId, memberId)
 				.eq(MemberSignInLog::getSignInKey, signInKey).count();
 		Assert.isTrue(count == 0, MemberErrorCode.SIGN_IN_COMPLETED::exception);
 		
 		MemberSignInLog signInLog = new MemberSignInLog();
 		signInLog.setLogId(IdUtils.getSnowflakeId());
-		signInLog.setMemberId(loginUser.getUserId());
+		signInLog.setMemberId(memberId);
 		signInLog.setSignInKey(signInKey);
 		signInLog.setLogTime(now);
 		this.save(signInLog);
@@ -62,17 +58,17 @@ public class MemberSignInLogServiceImpl extends ServiceImpl<MemberSignInLogMappe
 	}
 
 	@Override
-	public void complementHistory(MemberComplementHistoryDTO dto) {
-		LocalDateTime signInDay = LocalDateTime.of(dto.getYear(), dto.getMonth(), dto.getDay(), 0, 0, 0);
-		Integer signInKey = Integer.valueOf(signInDay.format(FORMATTER));
+	public void complementHistory(MemberComplementHistoryRequest req) {
+		LocalDateTime signInDay = LocalDateTime.of(req.getYear(), req.getMonth(), req.getDay(), 0, 0, 0);
+		Integer signInKey = Integer.valueOf(signInDay.format(DateUtils.FORMAT_YYYYMMDD));
 
-		Long count = this.lambdaQuery().eq(MemberSignInLog::getMemberId, dto.getOperator().getUserId())
+		Long count = this.lambdaQuery().eq(MemberSignInLog::getMemberId, req.getOperator().getUserId())
 				.eq(MemberSignInLog::getSignInKey, signInKey).count();
 		Assert.isTrue(count == 0, MemberErrorCode.SIGN_IN_COMPLETED::exception);
 		
 		MemberSignInLog signInLog = new MemberSignInLog();
 		signInLog.setLogId(IdUtils.getSnowflakeId());
-		signInLog.setMemberId(dto.getOperator().getUserId());
+		signInLog.setMemberId(req.getOperator().getUserId());
 		signInLog.setSignInKey(signInKey);
 		signInLog.setLogTime(LocalDateTime.now());
 		this.save(signInLog);

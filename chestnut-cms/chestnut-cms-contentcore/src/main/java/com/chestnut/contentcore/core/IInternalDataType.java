@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Map;
 
 /**
@@ -92,6 +93,8 @@ public interface IInternalDataType {
 	default String getPageData(RequestData requestData) throws IOException, TemplateException {
 		return StringUtils.EMPTY;
 	}
+
+	default void processPageData(RequestData requestData, Writer writer) throws TemplateException, IOException {}
 
 	/**
 	 * 访问链接

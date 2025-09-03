@@ -17,6 +17,9 @@ package com.chestnut.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysRole;
+import com.chestnut.system.domain.dto.CreateRoleRequest;
+import com.chestnut.system.domain.dto.UpdateRoleRequest;
+import com.chestnut.system.domain.dto.UpdateRoleStatusRequest;
 
 import java.util.List;
 
@@ -53,21 +56,21 @@ public interface ISysRoleService extends IService<SysRole> {
 	 * 
 	 * @param role 角色信息
 	 */
-	void insertRole(SysRole role);
+	void insertRole(CreateRoleRequest role);
 
 	/**
 	 * 修改保存角色信息
 	 * 
 	 * @param role 角色信息
 	 */
-	void updateRole(SysRole role);
+	void updateRole(UpdateRoleRequest role);
 
 	/**
 	 * 修改角色状态
 	 * 
-	 * @param role 角色信息
+	 * @param req 角色信息
 	 */
-	void updateRoleStatus(SysRole role);
+	void updateRoleStatus(UpdateRoleStatusRequest req);
 
 	/**
 	 * 批量删除角色信息

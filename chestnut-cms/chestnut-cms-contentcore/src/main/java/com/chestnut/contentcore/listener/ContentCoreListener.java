@@ -60,8 +60,6 @@ public class ContentCoreListener {
 
 	private final IPublishService publishService;
 
-	private final AsyncTaskManager asyncTaskManager;
-
 	@EventListener
 	public void beforeSiteDelete(BeforeSiteDeleteEvent event) {
 		CmsSite site = event.getSite();
@@ -74,27 +72,37 @@ public class ContentCoreListener {
 		// 删除内容数据
 		try {
 			long total = this.contentService.dao().countBySiteId(site.getSiteId());
+			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除内容数据：" + (i * pageSize) + "/" + total);
-				List<Long> contentIds = this.contentService.dao()
-						.pageBySiteId(
-								new Page<>(0, pageSize, false),
-								site.getSiteId(),
-								List.of(CmsContent::getContentId)
-						).getRecords().stream().map(CmsContent::getContentId).toList();
-				this.contentService.dao().removeBatchByIds(contentIds);
+				Page<CmsContent> page = this.contentService.dao().lambdaQuery()
+						.select(CmsContent::getContentId)
+						.eq(CmsContent::getSiteId, site.getSiteId())
+						.gt(CmsContent::getContentId, lastId)
+						.orderByAsc(CmsContent::getContentId)
+						.page(Page.of(0, pageSize, false));
+				if (!page.getRecords().isEmpty()) {
+					List<Long> contentIds = page.getRecords().stream().map(CmsContent::getContentId).toList();
+					this.contentService.dao().removeBatchByIds(contentIds);
+					lastId = contentIds.get(contentIds.size() - 1);
+				}
 			}
 			// 删除备份内容数据
 			total = this.contentService.dao().countBackupBySiteId(site.getSiteId());
+			lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除内容备份数据：" + (i * pageSize) + "/" + total);
-				List<Long> backupIds = this.contentService.dao()
-						.pageBackupBySiteId(
-								new Page<>(0, pageSize, false),
-								site.getSiteId(),
-								List.of(BCmsContent::getContentId)
-						).getRecords().stream().map(BCmsContent::getBackupId).toList();
-				this.contentService.dao().removeBackupBatchByIds(backupIds);
+				Page<BCmsContent> page = this.contentService.dao().getBackupMapper()
+						.selectPage(Page.of(0, pageSize, false), new LambdaQueryWrapper<BCmsContent>()
+								.select(BCmsContent::getBackupId)
+								.eq(BCmsContent::getSiteId, site.getSiteId())
+								.gt(BCmsContent::getBackupId, lastId)
+								.orderByAsc(BCmsContent::getBackupId));
+				if (!page.getRecords().isEmpty()) {
+					List<Long> backupIds = page.getRecords().stream().map(BCmsContent::getBackupId).toList();
+					this.contentService.dao().removeBackupBatchByIds(backupIds);
+					lastId = backupIds.get(backupIds.size() - 1);
+				}
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除内容错误：" + e.getMessage());
@@ -104,10 +112,20 @@ public class ContentCoreListener {
 		try {
 			long total = this.resourceService
 					.count(new LambdaQueryWrapper<CmsResource>().eq(CmsResource::getSiteId, site.getSiteId()));
+			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除资源数据：" + (i * pageSize) + "/" + total);
-				this.resourceService.remove(new LambdaQueryWrapper<CmsResource>()
-						.eq(CmsResource::getSiteId, site.getSiteId()).last("limit " + pageSize));
+				Page<CmsResource> resources = this.resourceService.lambdaQuery()
+						.select(CmsResource::getResourceId)
+						.eq(CmsResource::getSiteId, site.getSiteId())
+						.gt(CmsResource::getResourceId, lastId)
+						.orderByAsc(CmsResource::getResourceId)
+						.page(Page.of(0, pageSize, false));
+				if (!resources.getRecords().isEmpty()) {
+					List<Long> resourceIds = resources.getRecords().stream().map(CmsResource::getResourceId).toList();
+					this.resourceService.removeBatchByIds(resourceIds);
+					lastId = resourceIds.get(resourceIds.size() - 1);
+				}
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除资源数据错误：" + e.getMessage());
@@ -117,10 +135,20 @@ public class ContentCoreListener {
 		try {
 			long total = this.catalogService
 					.count(new LambdaQueryWrapper<CmsCatalog>().eq(CmsCatalog::getSiteId, site.getSiteId()));
+			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除栏目数据：" + (i * pageSize) + "/" + total);
-				this.catalogService.remove(new LambdaQueryWrapper<CmsCatalog>()
-						.eq(CmsCatalog::getSiteId, site.getSiteId()).last("limit " + pageSize));
+				Page<CmsCatalog> catalogs = this.catalogService.lambdaQuery()
+						.select(CmsCatalog::getCatalogId)
+						.eq(CmsCatalog::getSiteId, site.getSiteId())
+						.gt(CmsCatalog::getCatalogId, lastId)
+						.orderByAsc(CmsCatalog::getCatalogId)
+						.page(Page.of(0, pageSize, false));
+				if (!catalogs.getRecords().isEmpty()) {
+					List<Long> catalogIds = catalogs.getRecords().stream().map(CmsCatalog::getCatalogId).toList();
+					this.catalogService.removeBatchByIds(catalogIds);
+					lastId = catalogIds.get(catalogIds.size() - 1);
+				}
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除栏目数据错误：" + e.getMessage());
@@ -130,10 +158,20 @@ public class ContentCoreListener {
 		try {
 			long total = this.sitePropertyService
 					.count(new LambdaQueryWrapper<CmsSiteProperty>().eq(CmsSiteProperty::getSiteId, site.getSiteId()));
+			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除站点扩展属性数据：" + (i * pageSize) + "/" + total);
-				this.sitePropertyService.remove(new LambdaQueryWrapper<CmsSiteProperty>()
-						.eq(CmsSiteProperty::getSiteId, site.getSiteId()).last("limit " + pageSize));
+				Page<CmsSiteProperty> siteProperties = this.sitePropertyService.lambdaQuery()
+						.select(CmsSiteProperty::getPropertyId)
+						.eq(CmsSiteProperty::getSiteId, site.getSiteId())
+						.gt(CmsSiteProperty::getPropertyId, lastId)
+						.orderByAsc(CmsSiteProperty::getPropertyId)
+						.page(Page.of(0, pageSize, false));
+				if (!siteProperties.getRecords().isEmpty()) {
+					List<Long> ids = siteProperties.getRecords().stream().map(CmsSiteProperty::getPropertyId).toList();
+					this.sitePropertyService.removeBatchByIds(ids);
+					lastId = ids.get(ids.size() - 1);
+				}
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除站点扩展属性错误：" + e.getMessage());
@@ -143,10 +181,20 @@ public class ContentCoreListener {
 		try {
 			long total = this.templateService
 					.count(new LambdaQueryWrapper<CmsTemplate>().eq(CmsTemplate::getSiteId, site.getSiteId()));
+			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除模板数据：" + (i * pageSize) + "/" + total);
-				this.templateService.remove(new LambdaQueryWrapper<CmsTemplate>()
-						.eq(CmsTemplate::getSiteId, site.getSiteId()).last("limit " + pageSize));
+				Page<CmsTemplate> templates = this.templateService.lambdaQuery()
+						.select(CmsTemplate::getTemplateId)
+						.eq(CmsTemplate::getSiteId, site.getSiteId())
+						.gt(CmsTemplate::getTemplateId, lastId)
+						.orderByAsc(CmsTemplate::getTemplateId)
+						.page(Page.of(0, pageSize, false));
+				if (!templates.getRecords().isEmpty()) {
+					List<Long> ids = templates.getRecords().stream().map(CmsTemplate::getTemplateId).toList();
+					this.templateService.removeBatchByIds(ids);
+					lastId = ids.get(ids.size() - 1);
+				}
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除模板数据错误：" + e.getMessage());
@@ -156,10 +204,21 @@ public class ContentCoreListener {
 		try {
 			long total = this.contentRelaService
 					.count(new LambdaQueryWrapper<CmsContentRela>().eq(CmsContentRela::getSiteId, site.getSiteId()));
+			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
-				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在内容关联表数据：" + (i * pageSize) + "/" + total);
-				this.contentRelaService.remove(new LambdaQueryWrapper<CmsContentRela>()
-						.eq(CmsContentRela::getSiteId, site.getSiteId()).last("limit " + pageSize));
+				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total),
+						"正在内容关联表数据：" + (i * pageSize) + "/" + total);
+				Page<CmsContentRela> templates = this.contentRelaService.lambdaQuery()
+						.select(CmsContentRela::getRelaContentId)
+						.eq(CmsContentRela::getSiteId, site.getSiteId())
+						.gt(CmsContentRela::getRelaContentId, lastId)
+						.orderByAsc(CmsContentRela::getRelaContentId)
+						.page(Page.of(0, pageSize, false));
+				if (!templates.getRecords().isEmpty()) {
+					List<Long> ids = templates.getRecords().stream().map(CmsContentRela::getRelaContentId).toList();
+					this.contentRelaService.removeBatchByIds(ids);
+					lastId = ids.get(ids.size() - 1);
+				}
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除内容关联表数据错误：" + e.getMessage());

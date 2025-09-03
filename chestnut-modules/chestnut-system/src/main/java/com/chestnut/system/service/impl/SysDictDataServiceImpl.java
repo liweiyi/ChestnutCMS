@@ -24,18 +24,19 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysDictData;
-import com.chestnut.system.domain.SysI18nDict;
+import com.chestnut.system.domain.dto.CreateDictDataRequest;
+import com.chestnut.system.domain.dto.UpdateDictDataRequest;
 import com.chestnut.system.fixed.FixedDictType;
 import com.chestnut.system.fixed.FixedDictUtils;
 import com.chestnut.system.mapper.SysDictDataMapper;
 import com.chestnut.system.service.ISysDictDataService;
 import com.chestnut.system.service.ISysI18nDictService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -53,9 +54,6 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
 
 	private final ISysI18nDictService i18nDictService;
 
-	/**
-	 * 批量删除字典数据信息
-	 */
 	@Override
 	@Transactional(rollbackFor = Throwable.class)
 	public void deleteDictDataByIds(List<Long> dictDataIds) {
@@ -67,95 +65,78 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
 		// 删除缓存
 		list.stream().map(SysDictData::getDictType).distinct().forEach(dictType -> {
 			this.redisCache.deleteObject(SysConstants.CACHE_SYS_DICT_KEY + dictType);
-			// 删除国际化配置
-			this.i18nDictService.remove(new LambdaQueryWrapper<SysI18nDict>()
-					.likeRight(SysI18nDict::getLangKey, "DICT." + dictType + "."));
 		});
+		// 删除国际化配置
+		for (SysDictData data : list) {
+			this.i18nDictService.deleteByLangKey(langKey(data.getDictType(), data.getDictValue()), false);
+		}
 	}
 
-	/**
-	 * 是否系统固定字典数据
-	 *
-	 * @param data
-	 * @return
-	 */
 	private boolean isFixed(SysDictData data) {
 		FixedDictType dictType = FixedDictUtils.getFixedDictType(data.getDictType());
 		return dictType != null && dictType.getDataList().stream().anyMatch(d -> d.getValue().equals(data.getDictValue()));
 	}
 
-	/**
-	 * 新增保存字典数据信息
-	 *
-	 * @param data 字典数据信息
-	 * @return 结果
-	 */
 	@Override
 	@Transactional(rollbackFor = Throwable.class)
-	public void insertDictData(SysDictData data) {
-		Assert.isTrue(this.checkDictValueUnique(data),
-				() -> CommonErrorCode.DATA_CONFLICT.exception("dictValue:" + data.getDictType()));
+	public void insertDictData(CreateDictDataRequest req) {
+		Assert.isTrue(this.checkDictValueUnique(req.getDictType(), req.getDictValue(), null),
+				() -> CommonErrorCode.DATA_CONFLICT.exception("dictValue:" + req.getDictType()));
 
-		FixedDictType dictType = FixedDictUtils.getFixedDictType(data.getDictType());
+		FixedDictType dictType = FixedDictUtils.getFixedDictType(req.getDictType());
 		if (Objects.nonNull(dictType) && !dictType.isAllowAdd()) {
 			throw CommonErrorCode.FIXED_DICT_NOT_ALLOW_ADD.exception();
 		}
+		SysDictData dictData = new SysDictData();
+		BeanUtils.copyProperties(req, dictData);
+		dictData.setDictCode(IdUtils.getSnowflakeId());
+		dictData.createBy(req.getOperator().getUsername());
+		this.save(dictData);
 
-		data.setDictCode(IdUtils.getSnowflakeId());
-		data.setCreateTime(LocalDateTime.now());
-		this.save(data);
-
-		SysI18nDict i18nDict = new SysI18nDict();
-		i18nDict.setLangKey("DICT." + data.getDictType() + "." + data.getDictValue());
-		i18nDict.setLangTag(LocaleContextHolder.getLocale().toLanguageTag());
-		i18nDict.setLangValue(data.getDictLabel());
-		i18nDictService.batchSaveI18nDicts(List.of(i18nDict));
-
-		this.redisCache.deleteObject(SysConstants.CACHE_SYS_DICT_KEY + data.getDictType());
+		i18nDictService.saveOrUpdate(LocaleContextHolder.getLocale().toLanguageTag(),
+				langKey(req.getDictType(), req.getDictValue()), req.getDictLabel());
+		this.redisCache.deleteObject(SysConstants.CACHE_SYS_DICT_KEY + req.getDictType());
 	}
 
-	/**
-	 * 修改保存字典数据信息
-	 *
-	 * @param data 字典数据信息
-	 * @return 结果
-	 */
 	@Override
-	public void updateDictData(SysDictData data) {
-		SysDictData dbData = this.getById(data.getDictCode());
+	public void updateDictData(UpdateDictDataRequest req) {
+		SysDictData dbData = this.getById(req.getDictCode());
 		// 是否存在
-		Assert.notNull(dbData, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("dictCode", data.getDictCode()));
+		Assert.notNull(dbData, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("dictCode", req.getDictCode()));
 		// 是否系统固定字典数据，固定数据不允许修改字典数据值
-		Assert.isFalse(isFixed(dbData) && !StringUtils.equals(dbData.getDictValue(), data.getDictValue()),
+		Assert.isFalse(isFixed(dbData) && !StringUtils.equals(dbData.getDictValue(), req.getDictValue()),
 				CommonErrorCode.FIXED_DICT::exception);
 		// 字典数据值是否冲突
-		Assert.isTrue(this.checkDictValueUnique(data),
-				() -> CommonErrorCode.DATA_CONFLICT.exception("dictValue:" + data.getDictValue()));
+		Assert.isTrue(this.checkDictValueUnique(req.getDictType(), req.getDictValue(), req.getDictCode()),
+				() -> CommonErrorCode.DATA_CONFLICT.exception("dictValue:" + req.getDictValue()));
 
-		dbData.setDictValue(data.getDictValue());
-		dbData.setDictLabel(data.getDictLabel());
-		dbData.setDictSort(data.getDictSort());
-		dbData.setIsDefault(data.getIsDefault());
-		dbData.setCssClass(data.getCssClass());
-		dbData.setListClass(data.getListClass());
-		dbData.setRemark(data.getRemark());
-		dbData.setUpdateTime(LocalDateTime.now());
+		String oldDictValue = dbData.getDictValue();
+		dbData.setDictValue(req.getDictValue());
+		dbData.setDictLabel(req.getDictLabel());
+		dbData.setDictSort(req.getDictSort());
+		dbData.setIsDefault(req.getIsDefault());
+		dbData.setCssClass(req.getCssClass());
+		dbData.setListClass(req.getListClass());
+		dbData.setRemark(req.getRemark());
+		dbData.updateBy(req.getOperator().getUsername());
 
 		if (this.updateById(dbData)) {
-			this.redisCache.deleteObject(SysConstants.CACHE_SYS_DICT_KEY + data.getDictType());
+			this.redisCache.deleteObject(SysConstants.CACHE_SYS_DICT_KEY + dbData.getDictType());
+			if (!StringUtils.equals(oldDictValue, dbData.getDictValue())) {
+				i18nDictService.changeLangKey(langKey(dbData.getDictType(), oldDictValue),
+						langKey(dbData.getDictType(), dbData.getDictValue()), false);
+			}
 		}
 	}
 
-	/**
-	 * 校验字典数据项值是否冲突
-	 *
-	 * @param data
-	 * @return
-	 */
-	public boolean checkDictValueUnique(SysDictData data) {
+	public boolean checkDictValueUnique(String dictType, String dictValue, Long dictCode) {
 		long result = this.count(new LambdaQueryWrapper<SysDictData>()
-				.eq(SysDictData::getDictValue, data.getDictValue()).eq(SysDictData::getDictType, data.getDictType())
-				.ne(IdUtils.validate(data.getDictCode()), SysDictData::getDictCode, data.getDictCode()));
+				.eq(SysDictData::getDictValue, dictValue).eq(SysDictData::getDictType, dictType)
+				.ne(IdUtils.validate(dictCode), SysDictData::getDictCode, dictCode));
 		return result == 0;
+	}
+
+	private String langKey(String dictType, String dictValue) {
+		return "DICT." + dictType + "." + dictValue;
 	}
 }

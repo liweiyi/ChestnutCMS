@@ -16,7 +16,7 @@
 package com.chestnut.contentcore.util;
 
 import com.chestnut.common.async.AsyncTaskManager;
-import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
@@ -39,7 +39,7 @@ public class ContentLogUtils {
 
     private static final AsyncTaskManager asyncTaskManager = SpringUtils.getBean(AsyncTaskManager.class);
 
-    public static void addLog(String opType, CmsContent content, LoginUser operator) {
+    public static void addLog(String opType, CmsContent content, Operator operator) {
         addLog(opType, content, null, operator.getUserType(), operator.getUsername());
     }
 

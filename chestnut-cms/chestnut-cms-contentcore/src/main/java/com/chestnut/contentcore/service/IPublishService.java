@@ -17,6 +17,7 @@ package com.chestnut.contentcore.service;
 
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.IPageWidget;
@@ -27,6 +28,7 @@ import com.chestnut.contentcore.domain.CmsSite;
 import freemarker.template.TemplateException;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 
 public interface IPublishService {
@@ -50,7 +52,7 @@ public interface IPublishService {
      * @param contentStatus 内容状态
      * @return 结果
      */
-    AsyncTask publishAll(CmsSite site, final String contentStatus, final LoginUser operator);
+    AsyncTask publishAll(CmsSite site, final String contentStatus, final Operator operator);
 
     /**
      * 站点首页页面内容
@@ -63,6 +65,8 @@ public interface IPublishService {
      */
     String getSitePageData(CmsSite site, IInternalDataType.RequestData requestData)
             throws IOException, TemplateException;
+
+    void processSitePage(CmsSite site, IInternalDataType.RequestData requestData, Writer writer) throws TemplateException, IOException;
 
     /**
      * 获取栏目模板页面内容
@@ -77,6 +81,9 @@ public interface IPublishService {
     String getCatalogPageData(CmsCatalog catalog, IInternalDataType.RequestData requestData, boolean listFlag)
             throws IOException, TemplateException;
 
+    void processCatalogPage(CmsCatalog catalog, IInternalDataType.RequestData requestData, boolean listFlag, Writer writer)
+            throws IOException, TemplateException;
+
     /**
      * 发布栏目，异步任务
      *
@@ -87,7 +94,7 @@ public interface IPublishService {
      * @return 结果
      */
     AsyncTask publishCatalog(CmsCatalog catalog, boolean publishChild, boolean publishDetail,
-                             String publishStatus, final LoginUser operator);
+                             String publishStatus, final Operator operator);
 
     /**
      * 获取内容模板页面结果
@@ -108,6 +115,9 @@ public interface IPublishService {
      */
     void asyncStaticizeContent(IContent<?> content);
 
+    String processContentPage(CmsContent content, IInternalDataType.RequestData requestData, Writer writer)
+            throws IOException, TemplateException;
+
     /**
      * 发布内容
      *
@@ -116,7 +126,7 @@ public interface IPublishService {
      */
     AsyncTask publishContents(List<CmsContent> contents, LoginUser operator);
 
-    void publishContent(CmsContent content, LoginUser operator);
+    void publishContent(CmsContent content, Operator operator);
 
     /**
      * 获取内容扩展模板解析内容
@@ -135,13 +145,15 @@ public interface IPublishService {
      * 获取页面部件模板解析内容
      *
      * @param pageWidget 页面部件
-     * @param publishPipeCode 发布通道编码
-     * @param isPreview 是否预览
+     * @param data 请求数据
      * @return 结果
      * @throws IOException e1
      * @throws TemplateException e2
      */
-    String getPageWidgetPageData(CmsPageWidget pageWidget, String publishPipeCode, boolean isPreview) throws IOException, TemplateException;
+    String getPageWidgetPageData(CmsPageWidget pageWidget, IInternalDataType.RequestData data) throws IOException, TemplateException;
+
+    void processPageWidget(CmsPageWidget pageWidget, IInternalDataType.RequestData data, Writer writer)
+            throws IOException, TemplateException;
 
     /**
      * 页面部件静态化

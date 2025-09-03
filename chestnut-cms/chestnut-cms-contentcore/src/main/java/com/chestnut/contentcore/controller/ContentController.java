@@ -25,6 +25,7 @@ import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.IdUtils;
@@ -171,12 +172,11 @@ public class ContentController extends BaseRestController {
 	@PostMapping
 	public R<?> addContent(@RequestParam("contentType") String contentType, HttpServletRequest request)
 			throws IOException {
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		IContentType ct = ContentCoreUtils.getContentType(contentType);
-
 		IContent<?> content = ct.readFrom(request.getInputStream());
-		content.setOperator(StpAdminUtil.getLoginUser());
-		PermissionUtils.checkPermission(CatalogPrivItem.AddContent.getPermissionKey(content.getCatalogId()),
-				content.getOperator());
+		PermissionUtils.checkPermission(CatalogPrivItem.AddContent.getPermissionKey(content.getCatalogId()), loginUser);
+		content.setOperator(Operator.of(loginUser));
 
 		AsyncTask task = this.contentService.addContent(content);
 		return R.ok(Map.of("taskId", task.getTaskId()));
@@ -187,12 +187,13 @@ public class ContentController extends BaseRestController {
 	@PutMapping
 	public R<?> saveContent(@RequestParam("contentType") String contentType, HttpServletRequest request)
 			throws IOException {
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		IContentType ct = ContentCoreUtils.getContentType(contentType);
 
 		IContent<?> content = ct.readFrom(request.getInputStream());
-		content.setOperator(StpAdminUtil.getLoginUser());
+		content.setOperator(Operator.of(loginUser));
 		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(content.getCatalogId()),
-				content.getOperator());
+				StpAdminUtil.getLoginUser());
 
 		AsyncTask task = this.contentService.saveContent(content);
 		return R.ok(Map.of("taskId", task.getTaskId()));

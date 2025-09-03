@@ -17,27 +17,36 @@ package com.chestnut.common.security.aspectj;
 
 import cn.idev.excel.EasyExcel;
 import cn.idev.excel.ExcelWriter;
+import cn.idev.excel.metadata.Head;
+import cn.idev.excel.write.handler.CellWriteHandler;
 import cn.idev.excel.write.metadata.WriteSheet;
+import cn.idev.excel.write.metadata.holder.WriteSheetHolder;
+import cn.idev.excel.write.metadata.holder.WriteTableHolder;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.common.utils.StringUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Row;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.mvc.condition.HeadersRequestCondition;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -54,13 +63,11 @@ public class ExcelExportAspect {
 
     public static final String CONDITION_HEADER = "cc-export";
 
-    private static final HeadersRequestCondition CONDITION = new HeadersRequestCondition(CONDITION_HEADER);
-
     @Around("@annotation(exportable)")
     public Object around(ProceedingJoinPoint joinPoint, ExcelExportable exportable) throws Throwable {
         Object obj = joinPoint.proceed();
-        if (Objects.nonNull(CONDITION.getMatchingCondition(ServletUtils.getRequest()))
-            && ServletUtils.getRequest().getMethod().equalsIgnoreCase(HttpMethod.POST.name())) {
+        HttpServletRequest request = ServletUtils.getRequest();
+        if (Objects.nonNull(request.getHeader(CONDITION_HEADER)) && HttpMethod.POST.matches(request.getMethod())) {
             boolean flag = (obj instanceof R<?> r) && r.getData() instanceof TableData;
             Assert.isTrue(flag, () -> new RuntimeException("Unsupported returnType except `R<TableData<?>>` for excel export."));
 
@@ -77,12 +84,32 @@ public class ExcelExportAspect {
         String fileName = "Export_" + clazz.getSimpleName() + "_" + DateUtils.dateTimeNow("yyyyMMddHHmmss");
         response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
 
-        try (ExcelWriter writer = EasyExcel.write(response.getOutputStream(), clazz).build()) {
+        try (ExcelWriter writer = EasyExcel.write(response.getOutputStream(), clazz)
+                .registerWriteHandler(new I18nCellWriteHandler(LocaleContextHolder.getLocale()))
+                .build()) {
             WriteSheet sheet = EasyExcel.writerSheet(clazz.getSimpleName()).build();
             writer.write(list, sheet);
             response.setStatus(HttpStatus.OK.value());
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @RequiredArgsConstructor
+    static class I18nCellWriteHandler implements CellWriteHandler {
+
+        private final Locale locale;
+
+
+        @Override
+        public void beforeCellCreate(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Head head, Integer columnIndex, Integer relativeRowIndex, Boolean isHead) {
+            if (isHead) {
+                List<String> headNameList = head.getHeadNameList();
+                if (StringUtils.isNotEmpty(headNameList)) {
+                    List<String> newHeadNameList = headNameList.stream().map(headName -> I18nUtils.get(headName, locale)).toList();
+                    head.setHeadNameList(newHeadNameList);
+                }
+            }
         }
     }
 }

@@ -13,15 +13,6 @@
           </el-col>
           <el-col :span="1.5">
             <el-button 
-              type="success"
-              icon="el-icon-edit"
-              size="mini"
-              plain
-              :disabled="single"
-              @click="handleEdit">{{ $t('Common.Edit') }}</el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button 
               type="danger"
               icon="el-icon-delete"
               size="mini"

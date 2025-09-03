@@ -28,6 +28,11 @@ public enum MemberErrorCode implements ErrorCode {
 	 * 等级配置“{0}”已存在
 	 */
 	LEVEL_CONFIG_EXIST,
+
+	/**
+	 * 等级升级经验不能小于上一级
+	 */
+	LEVEL_CONFIG_EXP,
 	
 	/**
 	 * 已完成签到

@@ -23,12 +23,15 @@ import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.system.validator.LongId;
 import com.chestnut.word.domain.HotWord;
+import com.chestnut.word.domain.dto.CreateHotWordRequest;
+import com.chestnut.word.domain.dto.UpdateHotWordRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.IHotWordService;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,9 +53,9 @@ public class HotWordController extends BaseRestController {
     
 	private final IHotWordService hotWordService;
     
-    @GetMapping
-    public R<?> getPageList(@RequestParam("groupId") @Min(1) Long groupId,
-    		@RequestParam(value = "query", required = false) String query) {
+    @GetMapping("/list")
+    public R<?> getPageList(@RequestParam("groupId") @LongId Long groupId,
+    		@RequestParam(required = false) @Length(max = 255) String query) {
     	PageRequest pr = this.getPageRequest();
     	Page<HotWord> page = this.hotWordService.lambdaQuery().eq(HotWord::getGroupId, groupId)
 				.like(StringUtils.isNotEmpty(query), HotWord::getWord, query)
@@ -60,17 +63,15 @@ public class HotWordController extends BaseRestController {
     	return this.bindDataTable(page);
     }
 
-	@PostMapping
-	public R<?> add(@RequestBody @Validated HotWord hotWord) {
-    	hotWord.createBy(StpAdminUtil.getLoginUser().getUsername());
-    	this.hotWordService.addHotWord(hotWord);
+	@PostMapping("/add")
+	public R<?> add(@RequestBody @Validated CreateHotWordRequest req) {
+    	this.hotWordService.addHotWord(req);
     	return R.ok();
 	}
 
-	@PutMapping
-	public R<String> edit(@RequestBody @Validated HotWord hotWord) {
-		hotWord.updateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.hotWordService.editHotWord(hotWord);
+	@PutMapping("/update")
+	public R<String> edit(@RequestBody @Validated UpdateHotWordRequest req) {
+		this.hotWordService.editHotWord(req);
     	return R.ok();
 	}
 

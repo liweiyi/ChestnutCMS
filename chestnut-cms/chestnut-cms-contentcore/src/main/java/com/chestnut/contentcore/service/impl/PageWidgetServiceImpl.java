@@ -15,12 +15,12 @@
  */
 package com.chestnut.contentcore.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.contentcore.cache.PageWidgetMonitoredCache;
 import com.chestnut.contentcore.core.IPageWidget;
 import com.chestnut.contentcore.core.IPageWidgetType;
@@ -76,11 +76,10 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
 
     @Override
     public boolean checkCodeUnique(Long siteId, String code, Long pageWidgetId) {
-        LambdaQueryWrapper<CmsPageWidget> q = new LambdaQueryWrapper<CmsPageWidget>().eq(CmsPageWidget::getCode, code)
+        return this.lambdaQuery().eq(CmsPageWidget::getCode, code)
                 .eq(CmsPageWidget::getSiteId, siteId)
-                .ne(pageWidgetId != null && pageWidgetId > 0, CmsPageWidget::getPageWidgetId, pageWidgetId)
-                .last("limit 1");
-        return this.count(q) == 0;
+                .ne(IdUtils.validate(pageWidgetId), CmsPageWidget::getPageWidgetId, pageWidgetId)
+                .count() == 0;
     }
 
     @Override

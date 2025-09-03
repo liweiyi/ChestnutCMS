@@ -52,7 +52,7 @@ public class SysRegisterService {
 	 * 注册
 	 */
 	public void register(RegisterBody registerBody) {
-		Assert.isTrue(SysRegistEnable.isEnable(), SysErrorCode.REGIST_DISABELD::exception);
+		Assert.isTrue(SysRegistEnable.isEnable(), SysErrorCode.REGISTER_DISABLED::exception);
 		// 验证码开关
 		if (SysCaptchaEnable.isEnable()) {
 			validateCaptcha(registerBody.getUsername(), registerBody.getCaptcha());

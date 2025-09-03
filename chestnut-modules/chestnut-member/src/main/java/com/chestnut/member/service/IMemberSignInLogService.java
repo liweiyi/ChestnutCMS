@@ -16,23 +16,22 @@
 package com.chestnut.member.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.member.domain.MemberSignInLog;
-import com.chestnut.member.domain.dto.MemberComplementHistoryDTO;
+import com.chestnut.member.domain.dto.MemberComplementHistoryRequest;
 
 public interface IMemberSignInLogService extends IService<MemberSignInLog> {
 
 	/**
 	 * 签到
 	 * 
-	 * @param loginUser
+	 * @param memberId 签到会员ID
 	 */
-	void doSignIn(LoginUser loginUser);
+	void doSignIn(Long memberId);
 	
 	/**
 	 * 补签
 	 * 
-	 * @param dto
+	 * @param req 补签信息
 	 */
-	void complementHistory(MemberComplementHistoryDTO dto);
+	void complementHistory(MemberComplementHistoryRequest req);
 }

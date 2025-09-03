@@ -65,7 +65,8 @@ public class CmsContentDAO extends BackupServiceImpl<CmsContentMapper, CmsConten
         }
         LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
                 .select(StringUtils.isNotEmpty(columns), columns)
-                .eq(CmsContent::getSiteId, siteId);
+                .eq(CmsContent::getSiteId, siteId)
+                .orderByAsc(CmsContent::getContentId);
         return this.page(page, q);
     }
 
@@ -83,7 +84,8 @@ public class CmsContentDAO extends BackupServiceImpl<CmsContentMapper, CmsConten
         }
         return this.getBackupMapper().selectPage(page, new LambdaQueryWrapper<BCmsContent>()
                 .select(StringUtils.isNotEmpty(columns), columns)
-                .eq(BCmsContent::getSiteId, siteId));
+                .eq(BCmsContent::getSiteId, siteId)
+                .orderByAsc(BCmsContent::getBackupId));
     }
 
     public void removeBackupBatchByIds(List<Long> backupIds) {

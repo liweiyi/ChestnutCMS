@@ -41,8 +41,6 @@ public interface SysMenuPriv {
 	
 	String SysConfigList = "system:config:view";
 
-	String SysConfigExport = "system:config:export";
-
 	String SysConfigAdd = "system:config:add";
 
 	String SysConfigEdit = "system:config:edit";
@@ -59,8 +57,6 @@ public interface SysMenuPriv {
 
 	String SysDictList = "system:dict:view";
 
-	String SysDictExport = "system:dict:export";
-
 	String SysDictAdd = "system:dict:add";
 
 	String SysDictEdit = "system:dict:edit";
@@ -68,8 +64,6 @@ public interface SysMenuPriv {
 	String SysDictRemove = "system:dict:remove";
 
 	String SysI18NDictList = "system:i18ndict:view";
-
-	String SysI18NDictExport = "system:i18ndict:export";
 
 	String SysI18NDictAdd = "system:i18ndict:add";
 
@@ -95,8 +89,6 @@ public interface SysMenuPriv {
 	
 	String SysPostList = "system:post:view";
 	
-	String SysPostExport = "system:post:export";
-	
 	String SysPostAdd = "system:post:add";
 	
 	String SysPostEdit = "system:post:edit";
@@ -104,8 +96,6 @@ public interface SysMenuPriv {
 	String SysPostRemove = "system:post:remove";
 	
 	String SysRoleList = "system:role:view";
-	
-	String SysRoleExport = "system:role:export";
 	
 	String SysRoleAdd = "system:role:add";
 	
@@ -117,8 +107,6 @@ public interface SysMenuPriv {
 	
 	String SysUserList = "system:user:view";
 	
-	String SysUserExport = "system:user:export";
-	
 	String SysUserAdd = "system:user:add";
 	
 	String SysUserEdit = "system:user:edit";
@@ -128,4 +116,6 @@ public interface SysMenuPriv {
 	String SysUserResetPwd = "system:user:resetPwd";
 
 	String SysWeChatConfigView = "system:wechat:view";
+
+	String SysApiView = "system:api:view";
 }

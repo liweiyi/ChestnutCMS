@@ -23,7 +23,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
     <el-row v-show="showSearch">
-      <el-form :model="queryParams" ref="queryForm" size="small" class="el-form-search mb12" :inline="true">
+      <el-form :model="queryParams" ref="queryForm" :rules="queryRules" size="small" class="el-form-search mb12" :inline="true">
         <el-form-item :label="$t('System.Dept.DeptName')" prop="deptName">
           <el-input
             v-model="queryParams.deptName"
@@ -137,19 +137,19 @@
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('System.Dept.Phone')" prop="phone">
-              <el-input v-model="form.phone" :placeholder="$t('System.Dept.Placeholder.Phone')" maxlength="11" />
+              <el-input v-model="form.phone" :placeholder="$t('System.Dept.Placeholder.Phone')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('System.Dept.Email')" prop="email">
-              <el-input v-model="form.email" :placeholder="$t('System.Dept.Placeholder.Email')" maxlength="50" />
+              <el-input v-model="form.email" :placeholder="$t('System.Dept.Placeholder.Email')" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
             <el-form-item :label="$t('System.Dept.Leader')" prop="leader">
-              <el-input v-model="form.leader" :placeholder="$t('System.Dept.Placeholder.Leader')" maxlength="20" />
+              <el-input v-model="form.leader" :placeholder="$t('System.Dept.Placeholder.Leader')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -174,6 +174,7 @@
 </template>
 
 <script>
+import { emailValidator, phoneNumberValidator } from '@/utils/validate';
 import { listDept, getDept, delDept, addDept, updateDept } from "@/api/system/dept";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
@@ -205,46 +206,52 @@ export default {
         deptName: undefined,
         status: undefined
       },
+      queryRules: {
+        deptName: [
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: "change" }
+        ],
+      },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
         parentId: [
-          { required: true, message: this.$t('System.Dept.RuleTips.ParentDept'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         deptName: [
-          { required: true, message: this.$t('System.Dept.RuleTips.DeptName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: "change" }
         ],
         orderNum: [
-          { required: true, message: this.$t('System.Dept.RuleTips.Sort'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         email: [
-          {
-            type: "email",
-            message: this.$t('System.Dept.RuleTips.Email'),
-            trigger: ["blur", "change"]
-          }
+          { validator: emailValidator, trigger: "change" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: "change" }
         ],
         phone: [
-          {
-            pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
-            message: this.$t('System.Dept.RuleTips.Phone'),
-            trigger: "blur"
-          }
+          { validator: phoneNumberValidator, trigger: "change" },
+          { max: 11, message: this.$t('Common.RuleTips.MaxLength', [ 11 ]), trigger: "change" }
+        ],
+        leader: [
+          { max: 20, message: this.$t('Common.RuleTips.MaxLength', [ 20 ]), trigger: "change" }
         ]
       }
     };
   },
-  created() {
+  mounted() {
     this.getList();
   },
   methods: {
-    /** 查询部门列表 */
     getList() {
-      this.loading = true;
-      listDept(this.queryParams).then(response => {
-        this.deptList = this.handleTree(response.data.rows, '0', "deptId");
-        this.loading = false;
+      this.$refs["queryForm"].validate(valid => {
+        if (valid) {
+          this.loading = true;
+          listDept(this.queryParams).then(response => {
+            this.deptList = this.handleTree(response.data.rows, '0', "deptId");
+            this.loading = false;
+          });
+        }
       });
     },
     /** 转换部门数据结构 */
@@ -337,7 +344,7 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      this.$modal.confirm(this.$t('System.Dept.ConfirmDelete', [ row.deptName ])).then(function() {
+      this.$modal.confirm(this.$t('Common.ConfirmDelete', [ row.deptName ])).then(function() {
         return delDept(row.deptId);
       }).then(() => {
         this.getList();

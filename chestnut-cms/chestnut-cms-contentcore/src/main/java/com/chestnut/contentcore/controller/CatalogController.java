@@ -28,6 +28,7 @@ import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.*;
 import com.chestnut.contentcore.core.ICatalogType;
@@ -270,7 +271,7 @@ public class CatalogController extends BaseRestController {
 			throw ContentCoreErrorCode.CATALOG_CANNOT_PUBLISH.exception();
 		}
 		AsyncTask task = this.publishService.publishCatalog(catalog, dto.getPublishChild(), dto.getPublishDetail(),
-				dto.getPublishStatus(), StpAdminUtil.getLoginUser());
+				dto.getPublishStatus(), Operator.of(StpAdminUtil.getLoginUser()));
 		return R.ok(task.getTaskId());
 	}
 

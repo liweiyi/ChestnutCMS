@@ -15,11 +15,12 @@
  */
 package com.chestnut.word.service;
 
-import java.util.List;
-import java.util.Set;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.word.domain.SensitiveWord;
+import com.chestnut.word.domain.dto.CreateSensitiveWordRequest;
+
+import java.util.List;
+import java.util.Set;
 
 public interface ISensitiveWordService extends IService<SensitiveWord> {
 	
@@ -35,18 +36,10 @@ public interface ISensitiveWordService extends IService<SensitiveWord> {
 	/**
 	 * 添加敏感词
 	 * 
-	 * @param word
+	 * @param req
 	 * @return
 	 */
-	void addWord(SensitiveWord word);
-
-	/**
-	 * 编辑敏感词
-	 * 
-	 * @param sensitiveWord
-	 * @return
-	 */
-	void editWord(SensitiveWord sensitiveWord);
+	void addWord(CreateSensitiveWordRequest req);
 
 	/**
 	 * 删除敏感词

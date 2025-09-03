@@ -15,12 +15,13 @@
  */
 package com.chestnut.xmodel.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.xmodel.core.MetaModel;
 import com.chestnut.xmodel.domain.XModel;
-import com.chestnut.xmodel.dto.XModelDTO;
+import com.chestnut.xmodel.dto.CreateXModelRequest;
+import com.chestnut.xmodel.dto.UpdateXModelRequest;
+
+import java.util.List;
 
 public interface IModelService extends IService<XModel> {
 
@@ -30,7 +31,7 @@ public interface IModelService extends IService<XModel> {
 	 * @param dto
 	 * @return
 	 */
-	void addModel(XModelDTO dto);
+	void addModel(CreateXModelRequest dto);
 	
 	/**
 	 * 编辑扩展模型
@@ -38,7 +39,7 @@ public interface IModelService extends IService<XModel> {
 	 * @param dto
 	 * @return
 	 */
-	void editModel(XModelDTO dto);
+	void editModel(UpdateXModelRequest dto);
 	
 	/**
 	 * 删除扩展模型

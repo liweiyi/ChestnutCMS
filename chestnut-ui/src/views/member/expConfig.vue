@@ -249,7 +249,6 @@ export default {
       levelTypes: [],
       opTypes: [],
       selectorVisible: false,
-      okBtnDisabled: true,
       selectedOpType: undefined,
       selectedOpTypeName: undefined,
       // 表单参数
@@ -270,9 +269,17 @@ export default {
         ],
         totalLimit: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: [ "change", "blur" ] },
         ]
       }
     };
+  },
+  computed: {
+    okBtnDisabled: function () {
+			return !this.selectedOpType || this.selectedOpType.length == 0;
+		},
   },
   created () {
     this.getList();

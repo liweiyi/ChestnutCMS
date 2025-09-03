@@ -84,8 +84,8 @@ public class CatalogMonitoredCache implements IMonitoredCache<CmsCatalog> {
         return redisCache.getCacheObject(cacheKeyByAlias(siteId, alias), CmsCatalog.class, supplier);
     }
 
-    public void clear(CmsCatalog catalog) {
-        this.redisCache.deleteObject(cacheKeyById(catalog.getCatalogId()));
-        this.redisCache.deleteObject(cacheKeyByAlias(catalog.getSiteId(), catalog.getAlias()));
+    public void clear(Long siteId, Long catalogId, String catalogAlias) {
+        this.redisCache.deleteObject(cacheKeyById(catalogId));
+        this.redisCache.deleteObject(cacheKeyByAlias(siteId, catalogAlias));
     }
 }

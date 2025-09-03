@@ -17,6 +17,8 @@ package com.chestnut.word.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.word.domain.ErrorProneWord;
+import com.chestnut.word.domain.dto.CreateErrorProneWordRequest;
+import com.chestnut.word.domain.dto.UpdateErrorProneWordRequest;
 
 import java.util.Map;
 
@@ -32,12 +34,12 @@ public interface IErrorProneWordService extends IService<ErrorProneWord> {
 	/**
 	 * 添加易错词
 	 */
-	void addErrorProneWord(ErrorProneWord errorProneWord);
+	void addErrorProneWord(CreateErrorProneWordRequest req);
 
 	/**
 	 * 修改易错词
 	 */
-	void updateErrorProneWord(ErrorProneWord errorProneWord);
+	void updateErrorProneWord(UpdateErrorProneWordRequest req);
 
 	/**
 	 * 查找指定文本内容中的易错词

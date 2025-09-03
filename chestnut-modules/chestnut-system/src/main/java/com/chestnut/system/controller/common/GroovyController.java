@@ -25,8 +25,8 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.system.domain.SysGroovyScript;
-import com.chestnut.system.domain.dto.ExecGroovyScriptDTO;
-import com.chestnut.system.domain.dto.SaveGroovyScriptDTO;
+import com.chestnut.system.domain.dto.ExecGroovyScriptRequest;
+import com.chestnut.system.domain.dto.SaveGroovyScriptRequest;
 import com.chestnut.system.groovy.BaseGroovyScript;
 import com.chestnut.system.groovy.GroovyScriptFactory;
 import com.chestnut.system.mapper.SysGroovyScriptMapper;
@@ -59,7 +59,7 @@ public class GroovyController extends BaseRestController {
 
 	@Log(title = "执行Groovy脚本", businessType = BusinessType.UPDATE)
 	@PostMapping("/exec")
-	public R<?> execGroovyScript(@RequestBody @Validated ExecGroovyScriptDTO dto) {
+	public R<?> execGroovyScript(@RequestBody @Validated ExecGroovyScriptRequest dto) {
 		StringWriter writer = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(writer);
 		try {
@@ -80,7 +80,7 @@ public class GroovyController extends BaseRestController {
 
 	@Log(title = "保存Groovy脚本", businessType = BusinessType.INSERT)
 	@PostMapping("/save")
-	public R<?> saveGroovyScript(@RequestBody @Validated SaveGroovyScriptDTO dto) {
+	public R<?> saveGroovyScript(@RequestBody @Validated SaveGroovyScriptRequest dto) {
 		SysGroovyScript groovyScript = new SysGroovyScript();
 		groovyScript.setScriptId(IdUtils.getSnowflakeId());
 		groovyScript.setName(dto.getName());

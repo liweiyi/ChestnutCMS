@@ -31,8 +31,8 @@ import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.customform.domain.CmsCustomForm;
-import com.chestnut.customform.domain.dto.CustomFormAddDTO;
-import com.chestnut.customform.domain.dto.CustomFormEditDTO;
+import com.chestnut.customform.domain.dto.CreateCustomFormRequest;
+import com.chestnut.customform.domain.dto.UpdateCustomFormRequest;
 import com.chestnut.customform.domain.vo.CustomFormVO;
 import com.chestnut.customform.permission.CustomFormPriv;
 import com.chestnut.customform.rule.ICustomFormLimitRule;
@@ -109,27 +109,25 @@ public class CustomFormController extends BaseRestController {
     @Log(title = "新增自定义表单", businessType = BusinessType.INSERT)
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.Add)
     @PostMapping
-    public R<?> add(@RequestBody @Validated CustomFormAddDTO dto) {
+    public R<?> add(@RequestBody @Validated CreateCustomFormRequest req) {
         CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
-        dto.setOperator(StpAdminUtil.getLoginUser());
-        dto.setSiteId(site.getSiteId());
-        this.customFormService.addCustomForm(dto);
+        req.setSiteId(site.getSiteId());
+        this.customFormService.addCustomForm(req);
         return R.ok();
     }
 
     @Log(title = "编辑自定义表单", businessType = BusinessType.UPDATE)
     @Priv(type = AdminUserType.TYPE, value = {CustomFormPriv.Add, CustomFormPriv.Edit})
     @PutMapping
-    public R<?> edit(@RequestBody @Validated CustomFormEditDTO dto) {
-        dto.setOperator(StpAdminUtil.getLoginUser());
-        this.customFormService.editCustomForm(dto);
+    public R<?> edit(@RequestBody @Validated UpdateCustomFormRequest req) {
+        this.customFormService.editCustomForm(req);
         return R.ok();
     }
 
     @Log(title = "删除自定义表单", businessType = BusinessType.DELETE)
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.Delete)
     @PostMapping("/delete")
-    public R<?> remove(@RequestBody @Validated @NotEmpty List<Long> formIds) {
+    public R<?> remove(@RequestBody @NotEmpty List<Long> formIds) {
         this.customFormService.deleteCustomForm(formIds);
         return R.ok();
     }
@@ -137,7 +135,7 @@ public class CustomFormController extends BaseRestController {
     @Log(title = "发布自定义表单", businessType = BusinessType.UPDATE)
     @Priv(type = AdminUserType.TYPE, value = { CustomFormPriv.Add, CustomFormPriv.Edit })
     @PutMapping("/publish")
-    public R<?> publish(@RequestBody @Validated @NotEmpty List<Long> formIds) {
+    public R<?> publish(@RequestBody @NotEmpty List<Long> formIds) {
         this.customFormService.publishCustomForms(formIds, StpAdminUtil.getLoginUser().getUsername());
         return R.ok();
     }
@@ -145,7 +143,7 @@ public class CustomFormController extends BaseRestController {
     @Log(title = " 下线自定义表单", businessType = BusinessType.UPDATE)
     @Priv(type = AdminUserType.TYPE, value = { CustomFormPriv.Add, CustomFormPriv.Edit })
     @PutMapping("/offline")
-    public R<?> offline(@RequestBody @Validated @NotEmpty List<Long> formIds) throws IOException {
+    public R<?> offline(@RequestBody @NotEmpty List<Long> formIds) throws IOException {
         this.customFormService.offlineCustomForms(formIds, StpAdminUtil.getLoginUser().getUsername());
         return R.ok();
     }

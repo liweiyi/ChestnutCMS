@@ -15,30 +15,22 @@
  */
 package com.chestnut.member.controller.front;
 
+import com.chestnut.common.domain.R;
+import com.chestnut.common.security.anno.Priv;
+import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.member.domain.MemberSignInLog;
+import com.chestnut.member.domain.dto.MemberComplementHistoryRequest;
+import com.chestnut.member.security.MemberUserType;
+import com.chestnut.member.security.StpMemberUtil;
+import com.chestnut.member.service.IMemberSignInLogService;
+import com.chestnut.system.annotation.IgnoreDemoMode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-
-import com.chestnut.common.security.anno.Priv;
-import com.chestnut.member.security.MemberUserType;
-import com.chestnut.system.annotation.IgnoreDemoMode;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.chestnut.common.domain.R;
-import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.member.domain.MemberSignInLog;
-import com.chestnut.member.domain.dto.MemberComplementHistoryDTO;
-import com.chestnut.member.security.StpMemberUtil;
-import com.chestnut.member.service.IMemberSignInLogService;
-import com.chestnut.system.security.StpAdminUtil;
-
-import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
@@ -83,7 +75,8 @@ public class MemberSignInApiController extends BaseRestController {
 	@Priv(type = MemberUserType.TYPE)
 	@PostMapping
 	public R<?> signIn() {
-		this.memberSignInLogService.doSignIn(StpMemberUtil.getLoginUser());
+		long memberId = StpMemberUtil.getLoginIdAsLong();
+		this.memberSignInLogService.doSignIn(memberId);
 		return R.ok();
 	}
 
@@ -93,9 +86,8 @@ public class MemberSignInApiController extends BaseRestController {
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@PutMapping
-	public R<?> complementHistory(@RequestBody MemberComplementHistoryDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
-		this.memberSignInLogService.complementHistory(dto);
+	public R<?> complementHistory(@RequestBody @Validated MemberComplementHistoryRequest req) {
+		this.memberSignInLogService.complementHistory(req);
 		return R.ok();
 	}
 }

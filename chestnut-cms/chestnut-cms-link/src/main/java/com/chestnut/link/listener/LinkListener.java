@@ -16,6 +16,7 @@
 package com.chestnut.link.listener;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.listener.event.BeforeSiteDeleteEvent;
@@ -27,6 +28,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -45,20 +48,40 @@ public class LinkListener {
 			// 删除友链数据
 			long total = this.linkService
 					.count(new LambdaQueryWrapper<CmsLink>().eq(CmsLink::getSiteId, site.getSiteId()));
+			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
 						"正在删除友链数据：" + (i * pageSize) + "/" + total);
-				this.linkService.remove(new LambdaQueryWrapper<CmsLink>().eq(CmsLink::getSiteId, site.getSiteId())
-						.last("limit " + pageSize));
+				Page<CmsLink> links = this.linkService.lambdaQuery()
+						.select(CmsLink::getLinkId)
+						.eq(CmsLink::getSiteId, site.getSiteId())
+						.gt(CmsLink::getLinkId, lastId)
+						.orderByAsc(CmsLink::getLinkId)
+						.page(Page.of(1, pageSize, false));
+				if (!links.getRecords().isEmpty()) {
+					List<Long> linkIds = links.getRecords().stream().map(CmsLink::getLinkId).toList();
+					this.linkService.removeBatchByIds(linkIds);
+					lastId = linkIds.get(linkIds.size() - 1);
+				}
 			}
 			// 删除友链分组数据
 			total = this.linkGroupService
 					.count(new LambdaQueryWrapper<CmsLinkGroup>().eq(CmsLinkGroup::getSiteId, site.getSiteId()));
+			lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
 						"正在删除友链分组数据：" + (i * pageSize) + "/" + total);
-				this.linkGroupService.remove(new LambdaQueryWrapper<CmsLinkGroup>()
-						.eq(CmsLinkGroup::getSiteId, site.getSiteId()).last("limit " + pageSize));
+				Page<CmsLinkGroup> linkGroups = this.linkGroupService.lambdaQuery()
+						.select(CmsLinkGroup::getLinkGroupId)
+						.eq(CmsLinkGroup::getSiteId, site.getSiteId())
+						.gt(CmsLinkGroup::getLinkGroupId, lastId)
+						.orderByAsc(CmsLinkGroup::getLinkGroupId)
+						.page(Page.of(1, pageSize, false));
+				if (!linkGroups.getRecords().isEmpty()) {
+					List<Long> linkGroupIds = linkGroups.getRecords().stream().map(CmsLinkGroup::getLinkGroupId).toList();
+					this.linkGroupService.removeBatchByIds(linkGroupIds);
+					lastId = linkGroupIds.get(linkGroupIds.size() - 1);
+				}
 			}
 		} catch (Exception e) {
 			AsyncTaskManager.addErrMessage("删除友链数据错误：" + e.getMessage());

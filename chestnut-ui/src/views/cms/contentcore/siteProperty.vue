@@ -117,6 +117,7 @@
 <style scoped>
 </style>
 <script>
+import { codeValidator } from '@/utils/validate';
 import { getSitePropertyList, addSiteProperty, saveSiteProperty, deleteSiteProperty  } from "@/api/contentcore/site";
 
 export default {
@@ -147,10 +148,11 @@ export default {
       form: {},
       rules: {
         propName: [
-          { required: true, message: this.$t('CMS.Site.Property.RuleTips.PropName'), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
         ],
         propCode: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('CMS.Site.Property.RuleTips.PropCode'), trigger: "blur" }
+          { required: true, message: this.$t("Common.RuleTips.NotEmpty"), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" }
         ]
       }
     };

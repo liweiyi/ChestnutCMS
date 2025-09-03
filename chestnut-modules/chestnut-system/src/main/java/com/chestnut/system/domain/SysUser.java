@@ -15,15 +15,10 @@
  */
 package com.chestnut.system.domain;
 
-import java.io.Serial;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import cn.idev.excel.annotation.ExcelIgnore;
 import cn.idev.excel.annotation.ExcelProperty;
 import cn.idev.excel.annotation.write.style.ColumnWidth;
+import cn.idev.excel.converters.longconverter.LongStringConverter;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -39,12 +34,18 @@ import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.ISecurityUser;
 import com.chestnut.system.validator.Dict;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
+
+import java.io.Serial;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 用户对象 sys_user
@@ -62,8 +63,7 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 
 	public static final String TABLE_NAME = "sys_user";
 
-	/** 用户ID */
-	@ExcelProperty
+	@ExcelProperty(value = "{ENT.SYS.USER.ID}" ,converter = LongStringConverter.class)
 	@TableId(value = "user_id", type = IdType.INPUT)
 	private Long userId;
 
@@ -71,38 +71,45 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 	@ExcelIgnore
 	private Long deptId;
 
-	@ExcelProperty
+	@ExcelProperty("{ENT.SYS.USER.DEPT_NAME}")
 	@TableField(exist = false)
 	private String deptName;
 
 	/** 用户账号 */
-	@ExcelProperty
+	@ExcelProperty("{ENT.SYS.USER.USER_NAME}")
+	@NotBlank
+	@Length(max = 30)
+	@Pattern(regexp = "^[A-Za-z0-9_]+$")
 	private String userName;
 
 	/** 用户昵称 */
-	@ExcelProperty
+	@ExcelProperty("{ENT.SYS.USER.NICK_NAME}")
+	@Length(max = 30)
 	private String nickName;
 
 	/** 真实姓名 */
-	@ExcelProperty
+	@ExcelProperty("{ENT.SYS.USER.REAL_NAME}")
 	private String realName;
 
 	/** 用户邮箱 */
-	@ExcelProperty
+	@ExcelProperty("{ENT.SYS.USER.MAIL}")
+	@Email
+	@Length(max = 50)
 	private String email;
 
 	/** 手机号码 */
-	@ExcelProperty
+	@ExcelProperty("{ENT.SYS.USER.PHONE}")
+	@Length(max = 11)
 	private String phoneNumber;
 
 	/** 用户性别 */
-	@ExcelProperty(converter = DictConverter.class)
+	@ExcelProperty(value = "{ENT.SYS.USER.GENDER}", converter = DictConverter.class)
 	@ExcelDictField(Gender.TYPE)
-	@Dict(value = Gender.TYPE, message = "{VALIDATOR.SYSTEM.USER_GENDER}")
+	@Dict(value = Gender.TYPE)
 	private String sex;
 
 	/** 出生日期 */
-	@ExcelProperty
+	@ExcelProperty("{ENT.SYS.USER.BIRTHDAY}")
 	private LocalDateTime birthday;
 
 	/** 用户头像 */
@@ -115,39 +122,46 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 
 	/** 密码 */
 	@ExcelIgnore
+	@NotBlank
 	private String password;
 
 	/** 帐号状态 */
-	@ExcelProperty(converter = DictConverter.class)
+	@ExcelProperty(value = "{ENT.SYS.USER.STATUS}", converter = DictConverter.class)
 	@ExcelDictField(UserStatus.TYPE)
 	@Dict(UserStatus.TYPE)
 	private String status;
 
 	/** 最后登录IP */
-	@ExcelProperty
+	@ExcelProperty("{ENT.SYS.USER.LOGIN_IP}")
 	private String loginIp;
 
 	/** 最后登录时间 */
 	@ColumnWidth(16)
-	@ExcelProperty(converter = LocalDateTimeConverter.class)
+	@ExcelProperty(value = "{ENT.SYS.USER.LOGIN_TIME}", converter = LocalDateTimeConverter.class)
 	private LocalDateTime loginDate;
 
 	/**
 	 * 最近修改密码时间
 	 */
-	@ExcelIgnore
+	@ExcelProperty(value = "{ENT.SYS.USER.PWD_MODIFY_TIME}", converter = LocalDateTimeConverter.class)
 	private LocalDateTime passwordModifyTime;
 
 	/**
 	 * 是否需要登录修改密码标识
 	 */
-	@ExcelIgnore
+	@ExcelProperty("{ENT.SYS.USER.FORCE_MODIFY_PWD}")
 	private String forceModifyPassword;
 
-	@ColumnWidth(16)
-	@ExcelProperty(converter = LocalDateTimeConverter.class)
+	/**
+	 * 锁定结束时间
+	 */
+	@ExcelProperty(value = "{ENT.SYS.USER.LOCK_END_TIME}", converter = LocalDateTimeConverter.class)
 	private LocalDateTime lockEndTime;
 
+	/**
+	 * 用户偏好配置
+	 */
+	@ExcelIgnore
     @TableField(typeHandler = JacksonTypeHandler.class)
 	private Map<String, Object> preferences;
 
@@ -170,28 +184,6 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 	@ExcelIgnore
 	@TableField(exist = false)
 	private Long roleId;
-
-	@Size(min = 0, max = 30, message = "用户昵称长度不能超过30个字符")
-	public String getNickName() {
-		return nickName;
-	}
-
-	@NotBlank(message = "用户账号不能为空")
-	@Size(min = 0, max = 30, message = "用户账号长度不能超过30个字符")
-	public String getUserName() {
-		return userName;
-	}
-
-	@Email(message = "邮箱格式不正确")
-	@Size(min = 0, max = 50, message = "邮箱长度不能超过50个字符")
-	public String getEmail() {
-		return email;
-	}
-
-	@Size(min = 0, max = 11, message = "手机号码长度不能超过11个字符")
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
 	
 	public boolean checkForceModifyPassword() {
 		return YesOrNo.isYes(this.forceModifyPassword);

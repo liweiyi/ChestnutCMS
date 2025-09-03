@@ -23,8 +23,9 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.system.domain.SysI18nDict;
 import com.chestnut.system.domain.SysMenu;
+import com.chestnut.system.domain.dto.CreateMenuRequest;
+import com.chestnut.system.domain.dto.UpdateMenuRequest;
 import com.chestnut.system.domain.vo.MetaVO;
 import com.chestnut.system.domain.vo.RouterVO;
 import com.chestnut.system.enums.MenuComponentType;
@@ -40,7 +41,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -109,12 +109,6 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 		return routers;
 	}
 
-	/**
-	 * 构建前端所需要树结构
-	 *
-	 * @param menus 菜单列表
-	 * @return 树结构列表
-	 */
 	@Override
 	public List<SysMenu> buildMenuTree(List<SysMenu> menus) {
 		List<SysMenu> returnList = new ArrayList<SysMenu>();
@@ -136,12 +130,6 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 		return returnList;
 	}
 
-	/**
-	 * 构建前端所需要下拉树结构
-	 *
-	 * @param menus 菜单列表
-	 * @return 下拉树结构列表
-	 */
 	@Override
 	public List<TreeNode<Long>> buildMenuTreeSelect(List<SysMenu> menus) {
 		List<SysMenu> menuTrees = buildMenuTree(menus);
@@ -159,30 +147,23 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 		return node;
 	}
 
-	/**
-	 * 新增保存菜单信息
-	 *
-	 * @param menu 菜单信息
-	 * @return 结果
-	 */
 	@Override
 	@Transactional(rollbackFor = Throwable.class)
-	public void insertMenu(SysMenu menu) {
-		boolean checkFrameUrl = YesOrNo.isYes(menu.getIsFrame()) && !ServletUtils.isHttpUrl(menu.getPath());
-		Assert.isFalse(checkFrameUrl, () -> CommonErrorCode.SYSTEM_ERROR.exception("外链地址必须以http(s)://开头"));
+	public void insertMenu(CreateMenuRequest req) {
+		boolean checkFrameUrl = YesOrNo.isYes(req.getIsFrame()) && !ServletUtils.isHttpUrl(req.getPath());
+		Assert.isFalse(checkFrameUrl, () -> CommonErrorCode.SYSTEM_ERROR.exception("The path must start with http(s)://"));
 
-		boolean checkMenuUnique = this.checkMenuUnique(menu.getMenuName(), menu.getParentId(), null);
-		Assert.isTrue(checkMenuUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("菜单名称"));
+		boolean checkMenuUnique = this.checkMenuUnique(req.getMenuName(), req.getParentId(), null);
+		Assert.isTrue(checkMenuUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("menuName"));
 
+		SysMenu menu = new SysMenu();
+		BeanUtils.copyProperties(req, menu);
 		menu.setMenuId(IdUtils.getSnowflakeId());
-		menu.setCreateTime(LocalDateTime.now());
+		menu.createBy(req.getOperator().getUsername());
 		this.save(menu);
 
-		SysI18nDict i18nDict = new SysI18nDict();
-		i18nDict.setLangKey("MENU.NAME." + menu.getMenuId());
-		i18nDict.setLangTag(LocaleContextHolder.getLocale().toLanguageTag());
-		i18nDict.setLangValue(menu.getMenuName());
-		i18nDictService.batchSaveI18nDicts(List.of(i18nDict));
+		i18nDictService.saveOrUpdate(LocaleContextHolder.getLocale().toLanguageTag(),
+				langKey(menu.getMenuId()), menu.getMenuName());
 	}
 
 	private boolean checkMenuUnique(String menuName, Long parentId, Long menuId) {
@@ -191,50 +172,35 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 		return this.count(q) == 0;
 	}
 
-	/**
-	 * 修改保存菜单信息
-	 *
-	 * @param menu 菜单信息
-	 * @return 结果
-	 */
 	@Override
-	public void updateMenu(SysMenu menu) {
-		SysMenu db = this.getById(menu.getMenuId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(menu.getMenuId()));
-		Assert.isFalse(menu.getParentId().equals(menu.getMenuId()),
-				() -> CommonErrorCode.SYSTEM_ERROR.exception("父节点不能选择自己"));
-		boolean checkFrameUrl = YesOrNo.isYes(menu.getIsFrame()) && !ServletUtils.isHttpUrl(menu.getPath());
-		Assert.isFalse(checkFrameUrl, () -> CommonErrorCode.SYSTEM_ERROR.exception("外链地址必须以http(s)://开头"));
-		boolean checkMenuUnique = this.checkMenuUnique(menu.getMenuName(), menu.getParentId(), menu.getMenuId());
-		Assert.isTrue(checkMenuUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("菜单名称"));
+	public void updateMenu(UpdateMenuRequest req) {
+		SysMenu db = this.getById(req.getMenuId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getMenuId()));
+		Assert.isFalse(req.getParentId().equals(req.getMenuId()),
+				() -> CommonErrorCode.INVALID_REQUEST_ARG.exception("The parent cannot be it self."));
+		boolean checkFrameUrl = YesOrNo.isYes(req.getIsFrame()) && !ServletUtils.isHttpUrl(req.getPath());
+		Assert.isFalse(checkFrameUrl, () -> CommonErrorCode.SYSTEM_ERROR.exception("The path must start with http(s)://"));
+		boolean checkMenuUnique = this.checkMenuUnique(req.getMenuName(), req.getParentId(), req.getMenuId());
+		Assert.isTrue(checkMenuUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("menuName"));
 
-		BeanUtils.copyProperties(menu, db);
-		db.setUpdateTime(LocalDateTime.now());
+		BeanUtils.copyProperties(req, db);
+		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
 	}
 
-	/**
-	 * 删除菜单管理信息
-	 *
-	 * @param menuId 菜单ID
-	 * @return 结果
-	 */
 	@Override
 	public void deleteMenuById(Long menuId) {
 		boolean hasChild = this.count(new LambdaQueryWrapper<SysMenu>().eq(SysMenu::getParentId, menuId)) > 0;
 		Assert.isFalse(hasChild, SysErrorCode.MENU_DEL_CHILD_FIRST::exception);
 		this.removeById(menuId);
 		// 删除国际化配置
-		this.i18nDictService.remove(new LambdaQueryWrapper<SysI18nDict>()
-				.eq(SysI18nDict::getLangKey, "MENU.NAME." + menuId));
+		this.i18nDictService.deleteByLangKey(langKey(menuId), false);
 	}
 
-	/**
-	 * 获取路由名称
-	 *
-	 * @param menu 菜单信息
-	 * @return 路由名称
-	 */
+	private String langKey(Long menuId) {
+		return "MENU.NAME." + menuId;
+	}
+
 	public String getRouteName(SysMenu menu) {
 		if (StringUtils.isEmpty(menu.getComponent()) || isMenuFrame(menu)) {
 			return StringUtils.EMPTY;
@@ -243,16 +209,13 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	}
 
 	private String parseRouteName(SysMenu menu) {
+		if (StringUtils.isEmpty(menu.getComponent())) {
+			return StringUtils.EMPTY;
+		}
 		return Arrays.stream(menu.getComponent().split("/"))
 				.map(StringUtils::capitalize).collect(Collectors.joining(""));
 	}
 
-	/**
-	 * 获取路由地址
-	 *
-	 * @param menu 菜单信息
-	 * @return 路由地址
-	 */
 	public String getRouterPath(SysMenu menu) {
 		String routerPath = menu.getPath();
 		// 内链打开外网方式
@@ -271,12 +234,6 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 		return routerPath;
 	}
 
-	/**
-	 * 获取组件信息
-	 *
-	 * @param menu 菜单信息
-	 * @return 组件信息
-	 */
 	public String getComponent(SysMenu menu) {
 		String component = MenuComponentType.Layout.name();
 		if (StringUtils.isNotEmpty(menu.getComponent()) && !isMenuFrame(menu)) {
@@ -290,44 +247,19 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 		return component;
 	}
 
-	/**
-	 * 是否为菜单内部跳转
-	 *
-	 * @param menu 菜单信息
-	 * @return 结果
-	 */
 	public boolean isMenuFrame(SysMenu menu) {
 		return menu.getParentId().intValue() == 0 && MenuType.isMenu(menu.getMenuType())
 				&& YesOrNo.isNo(menu.getIsFrame());
 	}
 
-	/**
-	 * 是否为内链组件
-	 *
-	 * @param menu 菜单信息
-	 * @return 结果
-	 */
 	public boolean isInnerLink(SysMenu menu) {
 		return YesOrNo.isNo(menu.getIsFrame()) && ServletUtils.isHttpUrl(menu.getPath());
 	}
 
-	/**
-	 * 是否为parent_view组件
-	 *
-	 * @param menu 菜单信息
-	 * @return 结果
-	 */
 	public boolean isParentView(SysMenu menu) {
 		return menu.getParentId().intValue() != 0 && MenuType.isDirectory(menu.getMenuType());
 	}
 
-	/**
-	 * 根据父节点的ID获取所有子节点
-	 *
-	 * @param list     分类表
-	 * @param parentId 传入的父节点ID
-	 * @return String
-	 */
 	@Override
 	public List<SysMenu> getChildPerms(List<SysMenu> list, int parentId) {
 		List<SysMenu> returnList = new ArrayList<>();

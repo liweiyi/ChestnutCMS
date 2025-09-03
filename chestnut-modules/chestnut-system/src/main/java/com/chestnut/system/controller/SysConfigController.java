@@ -29,12 +29,16 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysConfig;
+import com.chestnut.system.domain.dto.CreateConfigRequest;
+import com.chestnut.system.domain.dto.QueryConfigRequest;
+import com.chestnut.system.domain.dto.UpdateConfigRequest;
 import com.chestnut.system.fixed.FixedConfigUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysConfigService;
+import com.chestnut.system.validator.LongId;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -61,11 +65,10 @@ public class SysConfigController extends BaseRestController {
 	@ExcelExportable(SysConfig.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigList)
 	@GetMapping("/list")
-	public R<?> list(SysConfig config) {
+	public R<?> list(@Validated QueryConfigRequest req) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysConfig> page = this.configService.lambdaQuery()
-				.like(StringUtils.isNotEmpty(config.getConfigKey()), SysConfig::getConfigKey, config.getConfigKey())
-				.like(StringUtils.isNotEmpty(config.getConfigName()), SysConfig::getConfigName, config.getConfigName())
+				.like(StringUtils.isNotEmpty(req.getConfigKey()), SysConfig::getConfigKey, req.getConfigKey())
 				.orderByDesc(SysConfig::getConfigKey)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize()));
 		page.getRecords().forEach(conf -> {
@@ -80,7 +83,7 @@ public class SysConfigController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigList)
 	@GetMapping(value = "/{configId}")
-	public R<?> getInfo(@PathVariable Long configId) {
+	public R<?> getInfo(@PathVariable @LongId Long configId) {
 		SysConfig config = this.configService.getById(configId);
 		I18nUtils.replaceI18nFields(config);
 		return R.ok(config);
@@ -91,7 +94,7 @@ public class SysConfigController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping(value = "/configKey/{configKey}")
-	public R<?> getConfigKey(@PathVariable String configKey) {
+	public R<?> getConfigKey(@PathVariable @NotBlank String configKey) {
 		return R.ok(configService.selectConfigByKey(configKey));
 	}
 
@@ -101,9 +104,8 @@ public class SysConfigController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigAdd)
 	@Log(title = "参数管理", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@Validated @RequestBody SysConfig config) {
-		config.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
-		configService.insertConfig(config);
+	public R<?> add(@Validated @RequestBody CreateConfigRequest req) {
+		configService.insertConfig(req);
 		return R.ok();
 	}
 
@@ -113,9 +115,8 @@ public class SysConfigController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigEdit)
 	@Log(title = "参数管理", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody SysConfig config) {
-		config.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		configService.updateConfig(config);
+	public R<?> edit(@Validated @RequestBody UpdateConfigRequest req) {
+		configService.updateConfig(req);
 		return R.ok();
 	}
 
@@ -126,7 +127,7 @@ public class SysConfigController extends BaseRestController {
 	@Log(title = "参数管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
 	public R<?> remove(@RequestBody @NotEmpty List<Long> configIds) {
-		Assert.isTrue(IdUtils.validate(configIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception());
+		Assert.isTrue(IdUtils.validate(configIds), CommonErrorCode.INVALID_REQUEST_ARG::exception);
 		configService.deleteConfigByIds(configIds);
 		return R.ok();
 	}

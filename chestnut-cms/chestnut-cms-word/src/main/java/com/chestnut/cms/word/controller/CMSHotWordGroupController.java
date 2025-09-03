@@ -26,8 +26,8 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.word.domain.HotWordGroup;
+import com.chestnut.word.domain.dto.CreateHotWordGroupRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.IHotWordGroupService;
 import lombok.RequiredArgsConstructor;
@@ -72,11 +72,7 @@ public class CMSHotWordGroupController extends BaseRestController {
 		List<HotWordGroup> list = this.hotWordGroupService.lambdaQuery()
 				.eq(HotWordGroup::getOwner, currentSite.getSiteId().toString())
 				.list();
-		List<Map<String, Object>> options = new ArrayList<>();
-		list.forEach(g -> {
-			options.add(Map.of("code", g.getCode(), "name", g.getName()));
-		});
-		return this.bindDataTable(options);
+        return this.bindSelectOptions(list, HotWordGroup::getCode, HotWordGroup::getName);
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
@@ -99,10 +95,9 @@ public class CMSHotWordGroupController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping
-	public R<?> add(@RequestBody @Validated HotWordGroup group) {
+	public R<?> add(@RequestBody @Validated CreateHotWordGroupRequest req) {
 		CmsSite site = siteService.getCurrentSite(ServletUtils.getRequest());
-		group.setOwner(site.getSiteId().toString());
-		group.createBy(StpAdminUtil.getLoginUser().getUsername());
-		return R.ok(this.hotWordGroupService.addHotWordGroup(group));
+		req.setOwner(site.getSiteId().toString());
+		return R.ok(this.hotWordGroupService.addHotWordGroup(req));
 	}
 }

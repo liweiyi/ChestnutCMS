@@ -26,13 +26,14 @@ import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.system.validator.LongId;
 import com.chestnut.vote.core.IVoteItemType;
 import com.chestnut.vote.core.IVoteUserType;
 import com.chestnut.vote.domain.Vote;
+import com.chestnut.vote.domain.dto.CreateVoteRequest;
+import com.chestnut.vote.domain.dto.UpdateVoteRequest;
 import com.chestnut.vote.permission.VotePriv;
 import com.chestnut.vote.service.IVoteService;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -63,7 +64,7 @@ public class VoteController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
 	@GetMapping("/{voteId}")
-	public R<?> getVoteDetail(@PathVariable @Min(1) Long voteId) {
+	public R<?> getVoteDetail(@PathVariable @LongId Long voteId) {
 		Vote vote = this.voteService.getById(voteId);
 		Assert.notNull(vote, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("voteId", voteId));
 		return R.ok(vote);
@@ -84,18 +85,16 @@ public class VoteController extends BaseRestController {
 	@Log(title = "新增问卷调查", businessType = BusinessType.INSERT)
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.Add)
 	@PostMapping
-	public R<?> add(@RequestBody @Validated Vote vote) {
-		vote.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.voteService.addVote(vote);
+	public R<?> add(@RequestBody @Validated CreateVoteRequest req) {
+		this.voteService.addVote(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑问卷调查", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
 	@PutMapping
-	public R<?> update(@RequestBody @Validated Vote vote) {
-		vote.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.voteService.updateVote(vote);
+	public R<?> update(@RequestBody @Validated UpdateVoteRequest req) {
+		this.voteService.updateVote(req);
 		return R.ok();
 	}
 

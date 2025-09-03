@@ -15,14 +15,16 @@
  */
 package com.chestnut.system.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.chestnut.system.domain.SysDictData;
+import com.chestnut.system.domain.SysDictType;
+import com.chestnut.system.domain.dto.CreateDictTypeRequest;
+import com.chestnut.system.domain.dto.UpdateDictTypeRequest;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.chestnut.system.domain.SysDictData;
-import com.chestnut.system.domain.SysDictType;
 
 /**
  * 字典 业务层
@@ -74,26 +76,25 @@ public interface ISysDictTypeService extends IService<SysDictType> {
     /**
      * 新增保存字典类型信息
      * 
-     * @param dictType 字典类型信息
-     * @return 结果
+     * @param req 字典类型信息
      */
-    void insertDictType(SysDictType dictType);
+    void insertDictType(CreateDictTypeRequest req);
 
     /**
      * 修改保存字典类型信息
      * 
-     * @param dictType 字典类型信息
-     * @return 结果
+     * @param req 字典类型信息
      */
-    void updateDictType(SysDictType dictType);
+    void updateDictType(UpdateDictTypeRequest req);
 
     /**
      * 校验字典类型称是否唯一
      * 
      * @param dictType 字典类型
+     * @param dictId 字典ID
      * @return 结果
      */
-    boolean checkDictTypeUnique(SysDictType dictType);
+    boolean checkDictTypeUnique(String dictType, Long dictId);
 
     /**
      * 格式化列表指定字段字典数据

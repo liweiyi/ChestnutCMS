@@ -15,7 +15,7 @@
  */
 package com.chestnut.vote.service;
 
-import com.chestnut.vote.domain.dto.VoteSubmitDTO;
+import com.chestnut.vote.domain.dto.VoteSubmitRequest;
 import com.chestnut.vote.domain.vo.VoteVO;
 
 /**
@@ -39,5 +39,5 @@ public interface IVoteApiService {
 	 * 
 	 * @param dto
 	 */
-	void submitVote(VoteSubmitDTO dto);
+	void submitVote(VoteSubmitRequest dto);
 }

@@ -19,14 +19,15 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.member.domain.MemberFavorites;
-import com.chestnut.member.domain.dto.FavoriteDTO;
+import com.chestnut.member.domain.dto.FavoriteRequest;
 import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberFavoritesService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.validator.LongId;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,7 +50,7 @@ public class MemberFavoritesApiController extends BaseRestController {
 	 */
 	@IgnoreDemoMode
 	@GetMapping("/check")
-	public R<?> isFavorited(@RequestParam @NotEmpty String dataType, @RequestParam @LongId Long dataId) {
+	public R<?> isFavorited(@RequestParam @NotBlank @Length(max = 100) String dataType, @RequestParam @LongId Long dataId) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		Long count = this.memberFavoritesService.lambdaQuery()
 				.eq(MemberFavorites::getMemberId, memberId)
@@ -64,9 +65,9 @@ public class MemberFavoritesApiController extends BaseRestController {
 	 */
 	@IgnoreDemoMode
 	@PostMapping
-	public R<?> favorite(@RequestBody @Validated FavoriteDTO dto) {
+	public R<?> favorite(@RequestBody @Validated FavoriteRequest req) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
-		this.memberFavoritesService.favorite(memberId, dto.getDataType(), dto.getDataId());
+		this.memberFavoritesService.favorite(memberId, req.getDataType(), req.getDataId());
 		return R.ok();
 	}
 
@@ -75,16 +76,16 @@ public class MemberFavoritesApiController extends BaseRestController {
 	 */
 	@IgnoreDemoMode
 	@PostMapping("/cancel")
-	public R<?> cancelFavorite(@RequestBody @Validated FavoriteDTO dto) {
+	public R<?> cancelFavorite(@RequestBody @Validated FavoriteRequest req) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
-		this.memberFavoritesService.cancelFavorite(memberId, dto.getDataType(), dto.getDataId());
+		this.memberFavoritesService.cancelFavorite(memberId, req.getDataType(), req.getDataId());
 		return R.ok();
 	}
 
 	@IgnoreDemoMode
 	@DeleteMapping
 	@Deprecated(since = "1.5.7", forRemoval = true)
-	public R<?> cancelFavorite2(@RequestBody @Validated FavoriteDTO dto) {
-		return cancelFavorite(dto);
+	public R<?> cancelFavorite2(@RequestBody @Validated FavoriteRequest req) {
+		return cancelFavorite(req);
 	}
 }

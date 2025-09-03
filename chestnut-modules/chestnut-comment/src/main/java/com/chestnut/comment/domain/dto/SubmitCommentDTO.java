@@ -16,12 +16,12 @@
 package com.chestnut.comment.domain.dto;
 
 import com.chestnut.common.security.domain.BaseDTO;
-
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
@@ -30,30 +30,36 @@ public class SubmitCommentDTO extends BaseDTO {
     /**
      * 评论目标类型
      */
-    @NotEmpty
+    @NotBlank
+    @Length(max = 20)
     private String sourceType;
 
     /**
      * 评论目标ID
      */
-    @NotEmpty
+    @NotBlank
+    @Length(max = 64)
     private String sourceId;
 
     /**
      * 回复的评论ID
      */
     @Min(0)
+    @NotNull
     private Long commentId;
 
     /**
      * 回复的用户UID
      */
+    @Min(0)
+    @NotNull
     private Long replyUid;
 
     /**
      * 评论内容
      */
     @NotBlank
+    @Length(max = 2000)
     private String content;
 
     /**

@@ -27,6 +27,8 @@ import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.SysUser;
+import com.chestnut.system.domain.dto.CreateSecurityConfigRequest;
+import com.chestnut.system.domain.dto.UpdateSecurityConfigRequest;
 import com.chestnut.system.domain.vo.SecurityCheckVO;
 import com.chestnut.system.fixed.dict.PasswordRule;
 import com.chestnut.system.permission.SysMenuPriv;
@@ -68,7 +70,7 @@ public class SysSecurityController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@GetMapping("/{id}")
-	public R<?> getConfig(@PathVariable Long id) {
+	public R<?> getConfig(@PathVariable @LongId Long id) {
 		SysSecurityConfig securityConfig = securityConfigService.getById(id);
 		Assert.notNull(securityConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(id));
 		return R.ok(securityConfig);
@@ -89,18 +91,16 @@ public class SysSecurityController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> addConfig(@Validated @RequestBody SysSecurityConfig config) {
-		config.setOperator(StpAdminUtil.getLoginUser());
-		this.securityConfigService.addConfig(config);
+	public R<?> addConfig(@Validated @RequestBody CreateSecurityConfigRequest req) {
+		this.securityConfigService.addConfig(req);
 		return R.ok();
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> saveConfig(@Validated @RequestBody SysSecurityConfig config) {
-		config.setOperator(StpAdminUtil.getLoginUser());
-		this.securityConfigService.saveConfig(config);
+	public R<?> saveConfig(@Validated @RequestBody UpdateSecurityConfigRequest req) {
+		this.securityConfigService.saveConfig(req);
 		return R.ok();
 	}
 

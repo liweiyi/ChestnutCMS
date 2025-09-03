@@ -17,7 +17,9 @@ package com.chestnut.search.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.search.domain.SearchWord;
-import com.chestnut.search.domain.dto.SearchWordToppingDTO;
+import com.chestnut.search.domain.dto.CreateSearchWordRequest;
+import com.chestnut.search.domain.dto.SearchWordToppingRequest;
+import com.chestnut.search.domain.dto.UpdateSearchWordRequest;
 
 import java.util.List;
 
@@ -31,12 +33,12 @@ public interface ISearchWordService extends IService<SearchWord> {
 	/**
 	 * 创建搜索词数据
 	 */
-	void addWord(SearchWord word);
+	void addWord(CreateSearchWordRequest req);
 
 	/**
 	 * 编辑搜索词数据
 	 */
-	void editWord(SearchWord word);
+	void editWord(UpdateSearchWordRequest req);
 
 	/**
 	 * 删除搜索词数据
@@ -46,7 +48,7 @@ public interface ISearchWordService extends IService<SearchWord> {
 	/**
 	 * 搜索词置顶
 	 */
-	void setTop(SearchWordToppingDTO dto);
+	void setTop(SearchWordToppingRequest dto);
 
 	/**
 	 * 搜索词取消置顶

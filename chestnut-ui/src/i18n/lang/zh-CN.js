@@ -104,8 +104,12 @@ export default {
       NotEmpty: "不能为空",
       Email: "Email格式错误",
       Url: "URL链接格式错误，必须以http(s)://开头",
-      Code: "只能使用大小写字母、数字和下划线",
-      PhoneNumber: "手机号码格式错误"
+      Code: "只能使用英文字母、数字和下划线",
+      Path: "只能使用英文字母、数字、下划线和斜杠",
+      UserName: "必须以字母开头，且只能使用字母、数字和下划线",
+      PhoneNumber: "手机号码格式错误",
+      MaxLength: "长度不能超过{0}",
+      LengthRange: "长度必须介于 {0} 和 {1} 之间",
     }
   },
   Error: {
@@ -157,20 +161,12 @@ export default {
     Gender: '性别',
     GenderMale: '男',
     GenderFemale: '女',
-    NickNameEmptyTip: '用户昵称不能为空',
-    EmailEmptyTip: '邮箱地址不能为空',
-    EmailRuleTip: '请输入正确的邮箱地址',
-    PhoneNumEmptyTip: '手机号码不能为空',
-    PhoneNumRuleTip: '请输入正确的手机号码',
     OldPwd: '旧密码',
     NewPwd: '新密码',
     ConfirmPwd: '确认密码',
     OldPwdPlaceHolder: '请输入旧密码',
     NewPwdPlaceHolder: '请输入新密码',
     ConfirmPwdPlaceHolder: '请确认新密码',
-    OldPwdEmptyTip: '旧密码不能为空',
-    NewPwdEmptyTip: '新密码不能为空',
-    ConfirmPwdEmptyTip: '确认新密码不能为空',
     NewPwdLenTip: '长度必须在 {0} 到 {1} 个字符',
     NewPwdSensitiveTip: '不能包含用户信息敏感字符',
     NewPwdTip: '新密码不合符安全规则',
@@ -302,15 +298,6 @@ export default {
         Status: "用户状态",
         Post: "请选择用户岗位",
         Role: "请选择用户角色"
-      },
-      RuleTips: {
-        UserName1: "用户名称不能为空",
-        UserName2: "用户名称长度必须介于 2 和 20 之间",
-        DeptId: "所属机构不能为空",
-        NickName: "用户昵称不能为空",
-        Password1: "用户密码不能为空",
-        Email: "请输入正确的邮箱地址",
-        PhoneNumber: "请输入正确的手机号码"
       }
     },
     UserPreference: {
@@ -333,7 +320,6 @@ export default {
       RoleId: "角色ID",
       RoleName: "角色名称",
       RoleKey: "角色编码",
-      RoleKeyTips: "不能为空且只能使用字母、数字和下划线",
       Sort: "显示顺序",
       Status: "状态",
       UserSetting: "分配用户",
@@ -353,11 +339,6 @@ export default {
         RoleName: "请输入角色名称",
         RoleKey: "请输入角色编码",
         Status: "角色状态"
-      },
-      RuleTips: {
-        RoleName: "角色名称不能为空",
-        RoleKey: "角色编码不能为空",
-        Sort: "排序字段不能为空"
       }
     },
     Permission: {
@@ -409,11 +390,6 @@ export default {
         Perms: "请输入权限字符",
         RouterParams: "请输入路由参数",
       },
-      RuleTips: {
-        MenuName: "菜单名称不能为空",
-        Sort: "菜单顺序不能为空",
-        RouterLink: "路由地址不能为空"
-      },
       Shortcut: "快捷方式"
     },
     Dept: {
@@ -424,7 +400,6 @@ export default {
       Leader: "负责人",
       Phone: "联系电话",
       Email: "邮箱地址",
-      ConfirmDelete: '是否确认删除名称为"{0}"的数据项？',
       Dialog: {
         Add: "添加部门信息",
         Edit: "编辑部门信息"
@@ -436,13 +411,6 @@ export default {
         Leader: "请输入负责人",
         Phone: "请输入联系电话",
         Email: "请输入邮箱地址"
-      },
-      RuleTips: {
-        DeptName: "部门名称不能为空",
-        ParentDept: "上级部门不能为空",
-        Sort: "显示排序不能为空",
-        Email: "请输入正确的邮箱地址",
-        Phone: "请输入正确的手机号码"
       }
     },
     Post: {
@@ -460,11 +428,6 @@ export default {
         PostCode: "请输入岗位编码",
         PostName: "请输入岗位名称",
         Status: "岗位状态"
-      },
-      RuleTips: {
-        PostName: "岗位名称不能为空",
-        PostCode: "岗位编码不能为空",
-        PostSort: "岗位顺序不能为空"
       }
     },
     Dict: {
@@ -496,14 +459,6 @@ export default {
         DictValue: "请输入字典项值",
         CssClass: "请输入样式属性",
         Status: "字典状态"
-      },
-      RuleTips: {
-        DictName: "字典名称不能为空",
-        DictType: "字典类型不能为空",
-        DictCode: "字典项编码不能为空",
-        DictLabel: "字典项标签不能为空",
-        DictValue: "字典项值不能为空",
-        DictSort: "字典顺序不能为空",
       }
     },
     Config: {
@@ -522,11 +477,6 @@ export default {
         ConfigKey: "请输入参数键名",
         ConfigValue: "请输入参数键值",
         ConfigType: "固定配置",
-      },
-      RuleTips: {
-        ConfigName: "参数名称不能为空",
-        ConfigKey: "参数键名不能为空",
-        ConfigValue: "参数键值不能为空",
       }
     },
     Notice: {
@@ -538,10 +488,6 @@ export default {
       Dialog: {
         Add: "添加公告",
         Edit: "修改公告"
-      },
-      RuleTips: {
-        NoticeTitle: "公告标题不能为空",
-        NoticeType: "公告类型不能为空"
       }
     },
     I18n: {
@@ -552,25 +498,6 @@ export default {
       Dialog: {
         Add: "添加国际化配置",
         Edit: "修改国际化配置"
-      },
-      RuleTips: {
-        LangTag: "语言标签不能为空",
-        LangKey: "国家化键名不能为空",
-        LangValue: "国家化键值不能为空",
-      }
-    },
-    IPRule: {
-      Type: "类型",
-      ExpireTime: "过期时间",
-      CIDR: "掩码（CIDR）",
-      Dialog: {
-        Add: "添加IP规则信息",
-        Edit: "修改IP规则信息",
-      },
-      RuleTips: {
-        IP: "IP地址不能为空",
-        Type: "类型不能为空",
-        CIDR: "掩码（CIDR）不能为空"
       }
     },
     OpLog: {
@@ -688,11 +615,6 @@ export default {
       },
       Placeholder: {
         InvokeTarget: "请输入调用目标字符串"
-      },
-      RuleTips: {
-        JobName: "任务名称不能为空",
-        InvokeTaget: "调用目标字符串不能为空",
-        CronExpression: "cron执行表达式不能为空"
       }
     },
     ScheduledTask: {
@@ -878,7 +800,6 @@ export default {
         AlignLeft: "左对齐",
         AlignRight: "右对齐",
         RuleTips: {
-          Code: "不能为空",
           IframeSrc: "嵌入代码的<iframe>标签缺少src属性！"
         }
       },
@@ -962,9 +883,6 @@ export default {
       PrefixMode_Relative: "相对路径",
       RelativePrefix: "相对路径前缀",
       ErrPageLink: "错误页面",
-      Dashboard: {
-        MissingSiteUrl: "站点域名未配置！"
-      },
       Tab: {
         Basic: "基础信息",
         Extend: "扩展配置",
@@ -973,10 +891,6 @@ export default {
       },
       Dialog: {
         AddTitle: "新建站点"
-      },
-      RuleTips: {
-        Name: "站点名称不能为空",
-        Path: "不能为空且只能使用大小写字母和数字"
       },
       Extend: {
         BasicCardTitle: "基础配置",
@@ -1019,6 +933,8 @@ export default {
         SensitiveWordEnable: "开启文章保存敏感词替换",
         ErrorProneWordEnable: "开启文章保存易错词替换",
         HotWordGroup: "热词分组",
+        HotWordMaxReplaceCount: "替换数量限制",
+        HotWordMaxReplaceCountTip: "每篇文章替换热词数量限制，0表示不限制数量。",
         StatConfCardTitle: "统计配置",
         BaiduApiKey: "百度统计ApiKey",
         BaiduSecretKey: "百度统计SecretKey",
@@ -1047,10 +963,6 @@ export default {
         PropName: "属性名称",
         PropCode: "属性编码",
         PropValue: "属性值",
-        RuleTips: {
-          PropName: "不能为空",
-          PropCode: "不能为空且只能使用字母、数字和下划线"
-        }
       },
       DefaultTemplate: {
         Title: "默认模板配置",
@@ -1071,6 +983,7 @@ export default {
         MemberContribute: "会员文章投稿页模板",
       },
       Dashboard: {
+        MissingSiteUrl: "站点域名未配置！",
         DataCountCard: "数据统计",
         Catalog: "栏目数",
         Content: "内容数",
@@ -1125,12 +1038,6 @@ export default {
       ExportCatalogTree: "导出栏目结构",
       NoSitePermissions: "无任何站点权限",
       ContentPathRule: "内容路径规则",
-      RuleTips: {
-        Name: "栏目名称不能为空",
-        Alias: "不能为空且只能使用字母、数字和下划线",
-        Path: "不能为空且只能使用字母、数字和下划线",
-        CatalogType: "栏目类型不能为空"
-      },
       SelectCatalogFirst: "请先选择一个栏目",
       PublishProgressTitle: "发布栏目",
       DeleteProgressTitle: "删除栏目",
@@ -1150,6 +1057,8 @@ export default {
         ContentConfig: "内容配置",
         WordConfig: "词汇配置",
         HotWordGroup: "热词分组",
+        HotWordMaxReplaceCount: "替换数量限制",
+        HotWordMaxReplaceCountTip: "每篇文章替换热词数量限制，0表示不限制数量。",
         EnableContribute: "是否允许投稿"
       }
     },
@@ -1222,9 +1131,6 @@ export default {
       PublishPipe: "发布通道",
       StaticPath: "独立路径",
       Template: "独立模板",
-      RuleTips:  {
-        Title: "标题不能为空"
-      },
       PublishProgressTitle: "发布内容中",
       OfflineProgressTitle: "下线内容中",
       CopyProgressTitle: "复制内容中",
@@ -1348,11 +1254,6 @@ export default {
       CloseChapterEditorTip: "章节数据未保存，确认关闭吗？",
       Route: {
         EditChapter: "编辑章节"
-      },
-      RuleTips: {
-        Title: "标题不能为空",
-        Content: "章节内容不能为空",
-        PublishDate: "发布时间不能为空"
       }
     },
     PageWidget: {
@@ -1365,13 +1266,6 @@ export default {
       InvalidPageWidgetId: "页面部件ID错误：{0}",
       Placeholder: {
         Type: "选择类型"
-      },
-      RuleTips: {
-        Type: "类型不能为空",
-        Name: "名称不能为空",
-        Code: "不能为空且只能使用字母、数字和下划线",
-        PublishPipe: "发布通道不能为空",
-        Path: "不能为空且只能使用字母、数字和下划线"
       },
       AddTitle: "添加页面部件",
     },
@@ -1391,13 +1285,6 @@ export default {
       GoBack: "返回上一页",
       AdMaterials: "广告素材",
       RedirectUrl: "跳转链接",
-      RuleTips: {
-        Type: "类型不能为空",
-        Name: "名称不能为空",
-        Weight: "权重不能为空",
-        OnlineDate: "上线时间不能为空",
-        OfflineDate: "下线时间不能为空"
-      }
     },
     Block: {
       Basic: "基础属性",
@@ -1424,9 +1311,6 @@ export default {
       AddDialogTitle: "添加资源",
       EditDialogTitle: "编辑资源",
       FileTypeErrMsg: "文件格式错误，请上传图片类型,如：.jpg，.png后缀的文件。",
-      RuleTips: {
-        Name: "资源名称不能为空"
-      },
       SelectorTitle: "素材库",
       LocalUpload: "本地上传",
       RemoteLink: "网络链接",
@@ -1453,12 +1337,6 @@ export default {
       Status: "状态",
       AddDialogTitle: "添加发布通道",
       EditDialogTitle: "编辑发布通道",
-      RuleTips: {
-        Name: "名称不能为空",
-        Code: "不能为空且只能使用字母、数字和下划线",
-        Status: "状态不能为空",
-        Sort: "排序值不能为空"
-      }
     },
     File: {
       Upload: "上传",
@@ -1475,9 +1353,6 @@ export default {
       UploadTitle: "上传文件",
       UploadTip: "将文件拖到此处，或点击上传",
       ResourceRoot: "站点资源目录",
-      RuleTips: {
-        FileName: "不能为空且只能使用字母、数字和下划线"
-      }
     },
     Template: {
       Name: "模板名称",
@@ -1564,18 +1439,6 @@ export default {
       Placeholder: {
         Query: "输入模型名称/编码查询",
         FieldQuery: "字段名称/编码查询"
-      },
-      RuleTips: {
-        Name: "名称不能为空",
-        Code: "编码不能为空且只能使用字母、数字和下划线",
-        TableName: "数据表不能为空",
-        FieldName: "名称不能为空",
-        FieldCode: "编码不能为空",
-        FieldControlType: "控件类型不能为空",
-        FieldMandatory: "是否必填不能为空",
-        FieldType: "字段类型不能为空",
-        FieldMappingName: "数据表字段不能为空",
-        FieldMappingUsed: "数据表字段已被占用",
       }
     },
     FriendLink: {
@@ -1627,6 +1490,9 @@ export default {
       IP: "IP数",
       AvgVisitTime: "平均访问时长",
       Rate: "占比",
+      PVRate: "PV占比",
+      UVRate: "UV占比",
+      IPRate: "IP占比",
       Hour: "小时",
       Day: "按天",
       Week: "按周",
@@ -1912,12 +1778,6 @@ export default {
       Regex: "输入正则表达式"
     },
     RuleTips: {
-      FieldName: "名称不能为空",
-      FieldCode: "编码不能为空",
-      FieldControlType: "控件类型不能为空",
-      FieldMandatory: "是否必填不能为空",
-      FieldType: "字段类型不能为空",
-      FieldMappingName: "数据表字段不能为空",
       FieldMappingUsed: "数据表字段已被占用",
     }
   },

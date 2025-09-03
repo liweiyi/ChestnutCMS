@@ -75,7 +75,7 @@
     </el-row>
     <el-row class="art-editor-container" :gutter="10" v-loading="loading">
       <el-form ref="form" :model="form" :rules="rules" label-width="110px">
-        <el-col :span="16">
+        <el-col :lg="16" :md="24">
           <el-row>
             <el-col class="pr10">
               <el-card shadow="always" class="card-title">
@@ -191,7 +191,7 @@
             </el-col>
           </el-row>
         </el-col>
-        <el-col :span="8">
+        <el-col :lg="8" :md="24">
           <div class="bg-purple-white">
             <el-card shadow="always">
               <el-tabs v-model="activeName" @tab-click="handleTabClick">
@@ -403,7 +403,7 @@ export default {
       initDataStr: undefined, // 初始化数据jsonString
       publishPipeProps: [],
       rules: {
-        title: [{ required: true, message: this.$t('CMS.Content.RuleTips.Title'), trigger: "blur" }]
+        title: [{ required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }]
       },
       summaryInputSize: { minRows: 3, maxRows: 6 },
       openTemplateSelector: false, // 模板选择弹窗

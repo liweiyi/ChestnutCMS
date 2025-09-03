@@ -132,8 +132,14 @@
         </div>
         <el-form-item :label="$t('CMS.Catalog.Extend.HotWordGroup')" prop="HotWordGroups">
           <el-checkbox-group v-model="form_extend.HotWordGroups">
-            <el-checkbox v-for="group in hotWordGroups" :label="group.code" :key="group.code">{{ group.name }}</el-checkbox>
+            <el-checkbox v-for="group in hotWordGroups" :label="group.value" :key="group.value">{{ group.label }}</el-checkbox>
           </el-checkbox-group>
+        </el-form-item>
+        <el-form-item :label="$t('CMS.Catalog.Extend.HotWordMaxReplaceCount')" prop="HotWordMaxReplaceCount">
+          <el-input-number v-model="form_extend.HotWordMaxReplaceCount" controls-position="right" :min="0"></el-input-number>
+          <div style="color: #909399;font-size:12px;line-height: 30px;">
+            <i class="el-icon-info mr5"></i>{{ $t('CMS.Catalog.Extend.HotWordMaxReplaceCountTip') }}
+          </div>
         </el-form-item>
       </el-card>
     </el-form>
@@ -213,7 +219,7 @@ export default {
     },
     loadHotWordGroups() {
       getHotWordGroupOptions().then(response => {
-        this.hotWordGroups = response.data.rows;
+        this.hotWordGroups = response.data;
       });
     },
     handleSaveExtends () {

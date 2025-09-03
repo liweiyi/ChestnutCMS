@@ -27,6 +27,8 @@ import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.MemberExpConfig;
+import com.chestnut.member.domain.dto.CreateMemberExpConfigRequest;
+import com.chestnut.member.domain.dto.UpdateMemberExpConfigRequest;
 import com.chestnut.member.domain.vo.ExpOperationVO;
 import com.chestnut.member.level.IExpOperation;
 import com.chestnut.member.level.ILevelType;
@@ -34,10 +36,10 @@ import com.chestnut.member.permission.MemberPriv;
 import com.chestnut.member.service.IMemberExpConfigService;
 import com.chestnut.member.service.IMemberLevelConfigService;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,8 +56,8 @@ public class MemberExpConfigController extends BaseRestController {
 	private final IMemberExpConfigService memberExpOperationService;
 
 	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "opType", required = false) String opType,
-			@RequestParam(value = "levelType", required = false) String levelType) {
+	public R<?> getPageList(@RequestParam(value = "opType", required = false) @Length(max = 50) String opType,
+			@RequestParam(value = "levelType", required = false) @Length(max = 30) String levelType) {
 		PageRequest pr = this.getPageRequest();
 		Page<MemberExpConfig> page = this.memberExpOperationService.lambdaQuery()
 				.eq(StringUtils.isNotEmpty(opType), MemberExpConfig::getOpType, opType)
@@ -89,17 +91,15 @@ public class MemberExpConfigController extends BaseRestController {
 
 	@Log(title = "新增会员经验配置", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> addMemberExpOperation(@RequestBody @Validated MemberExpConfig expOp) {
-		expOp.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.memberExpOperationService.addExpOperation(expOp);
+	public R<?> addMemberExpOperation(@RequestBody @Validated CreateMemberExpConfigRequest req) {
+		this.memberExpOperationService.addExpOperation(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑会员经验配置", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> updateMemberExpOperation(@RequestBody @Validated MemberExpConfig expOp) {
-		expOp.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		this.memberExpOperationService.updateExpOperation(expOp);
+	public R<?> updateMemberExpOperation(@RequestBody @Validated UpdateMemberExpConfigRequest req) {
+		this.memberExpOperationService.updateExpOperation(req);
 		return R.ok();
 	}
 

@@ -55,7 +55,7 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
     <el-row v-show="showSearch">
-      <el-form :model="queryParams" ref="queryForm" size="small" class="el-form-search mb12" :inline="true">
+      <el-form :model="queryParams" ref="queryForm" :rules="queryRules" size="small" class="el-form-search mb12" :inline="true">
         <el-form-item :label="$t('System.Dict.DictType')" prop="dictType">
           <el-select v-model="queryParams.dictType" style="width:200px">
             <el-option
@@ -66,10 +66,10 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item :label="$t('System.Dict.DictLabel')" prop="dictLabel">
+        <el-form-item :label="$t('System.Dict.DictValue')" prop="dictValue">
           <el-input
-            v-model="queryParams.dictLabel"
-            :placeholder="$t('System.Dict.Placeholder.DictLabel')"
+            v-model="queryParams.dictValue"
+            :placeholder="$t('System.Dict.Placeholder.DictValue')"
             clearable
             @keyup.enter.native="handleQuery"
           />
@@ -97,11 +97,6 @@
       <el-table-column :label="$t('System.Dict.SystemFixed')" align="center" prop="fixed">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.YesOrNo" :value="scope.row.fixed"/>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('System.Dict.Status')" align="center" prop="status">
-        <template slot-scope="scope">
-          <dict-tag :options="dict.type.EnableOrDisable" :value="scope.row.status"/>
         </template>
       </el-table-column>
       <el-table-column :label="$t('Common.Remark')" align="center" prop="remark" :show-overflow-tooltip="true" />
@@ -142,7 +137,7 @@
       @pagination="getList"
     />
 
-    <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="600px" :close-on-click-modal="false" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-form-item :label="$t('System.Dict.DictType')">
           <el-input v-model="form.dictType" :disabled="true" />
@@ -249,27 +244,42 @@ export default {
       queryParams: {
         pageNum: 1,
         pageSize: 10,
-        dictName: undefined,
+        dictValue: undefined,
         dictType: undefined,
-        status: undefined
+      },
+      queryRules: {
+        dictType: [
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
+        ],
+        dictLabel: [
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
+        ]
       },
       // 表单参数
       form: {},
       // 表单校验
       rules: {
         dictLabel: [
-          { required: true, message: this.$t('System.Dict.RuleTips.DictLabel'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         dictValue: [
-          { required: true, message: this.$t('System.Dict.RuleTips.DictValue'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
         ],
         dictSort: [
-          { required: true, message: this.$t('System.Dict.RuleTips.DictSort'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        cssClass: [
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: "change" }
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: "change" }
         ]
       }
     };
   },
-  created() {
+  mounted() {
     const dictId = this.$route.params && this.$route.params.dictId;
     this.getType(dictId);
     this.getTypeList();
@@ -291,11 +301,15 @@ export default {
     },
     /** 查询字典数据列表 */
     getList() {
-      this.loading = true;
-      listData(this.queryParams).then(response => {
-        this.dataList = response.data.rows;
-        this.total = parseInt(response.data.total);
-        this.loading = false;
+      this.$refs["queryForm"].validate(valid => {
+        if (valid) {
+          this.loading = true;
+          listData(this.queryParams).then(response => {
+            this.dataList = response.data.rows;
+            this.total = parseInt(response.data.total);
+            this.loading = false;
+          });
+        }
       });
     },
     // 取消按钮
@@ -312,7 +326,6 @@ export default {
         cssClass: undefined,
         listClass: 'default',
         dictSort: 0,
-        status: "0",
         remark: undefined
       };
       this.resetForm("form");

@@ -27,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Objects;
 
 /**
@@ -56,6 +57,14 @@ public class InternalDataType_Content implements IInternalDataType {
         Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", requestData.getDataId()));
 
         return this.publishService.getContentPageData(content, requestData);
+    }
+
+    @Override
+    public void processPageData(RequestData requestData, Writer writer) throws TemplateException, IOException {
+        CmsContent content = contentService.dao().getById(requestData.getDataId());
+        Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", requestData.getDataId()));
+
+        this.publishService.processContentPage(content, requestData, writer);
     }
 
     @Override

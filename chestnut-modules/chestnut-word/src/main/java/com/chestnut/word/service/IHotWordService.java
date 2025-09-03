@@ -18,6 +18,8 @@ package com.chestnut.word.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.word.cache.HotWordMonitoredCache;
 import com.chestnut.word.domain.HotWord;
+import com.chestnut.word.domain.dto.CreateHotWordRequest;
+import com.chestnut.word.domain.dto.UpdateHotWordRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -26,9 +28,9 @@ import java.util.Map;
 public interface IHotWordService extends IService<HotWord> {
 
 	@Transactional(rollbackFor = Exception.class)
-	void addHotWord(HotWord hotWord);
+	void addHotWord(CreateHotWordRequest req);
 
-	void editHotWord(HotWord hotWord);
+	void editHotWord(UpdateHotWordRequest req);
 
 	@Transactional(rollbackFor = Exception.class)
     void deleteHotWords(List<Long> hotWordIds);
@@ -46,8 +48,9 @@ public interface IHotWordService extends IService<HotWord> {
 	 * @param text 待处理文本
 	 * @param owner 热词分组所有者
 	 * @param groupCodes 热词分组编码列表
+     * @param replaceCount 替换热词数量
 	 * @param target 热词链接跳转方式
 	 * @param replacementTemplate 自定义替换模板
 	 */
-	String replaceHotWords(String text, String owner, String[] groupCodes, String target, String replacementTemplate);
+	String replaceHotWords(String text, String owner, String[] groupCodes, int replaceCount, String target, String replacementTemplate);
 }

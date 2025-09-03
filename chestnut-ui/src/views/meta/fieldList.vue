@@ -117,9 +117,9 @@
           <el-select v-model="form.controlType">
             <el-option
               v-for="control in controlOptions"
-              :key="control.id"
-              :label="control.name"
-              :value="control.id"
+              :key="control.value"
+              :label="control.label"
+              :value="control.value"
             />
           </el-select>
         </el-form-item>
@@ -175,6 +175,7 @@
   </div>
 </template>
 <script>
+import { isBlank, codeValidator } from '@/utils/validate';
 import { optionselect as getDictOptions } from "@/api/system/dict/type";
 import { getControlOptions, getModel, addModelField, editModelField, deleteModelField, listModelField, listModelTableFields } from "@/api/meta/model";
 
@@ -219,18 +220,23 @@ export default {
       // 表单校验
       rules: {
         name: [
-          { required: true, message: this.$t('MetaModel.RuleTips.FieldName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: [ "change", "blur" ] }
         ],
         code: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('MetaModel.RuleTips.FieldCode'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: [ "change", "blur" ] },
+          { validator: codeValidator, trigger: "change" }
         ],
         controlType: [
-          { required: true, message: this.$t('MetaModel.RuleTips.FieldControlType'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 20, message: this.$t('Common.RuleTips.MaxLength', [ 20 ]), trigger: [ "change", "blur" ] },
         ],
         fieldType: [
-          { required: true, validator: (rule, value, callback) => {
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: (rule, value, callback) => {
                 if (this.model.isDefaultTable && (!value || value == null || value == '')) {
-                  return callback(new Error(this.$t('MetaModel.RuleTips.FieldType')));
+                  return callback(new Error(this.$t('Common.RuleTips.NotEmpty')));
                 }
                 callback();
               }, trigger: "blur" }
@@ -238,8 +244,8 @@ export default {
         fieldName: [
           { required: true, validator: (rule, value, callback) => {
                 if (!this.model.isDefaultTable) {
-                  if (!value || value == null || value == '') {
-                    return callback(new Error(this.$t('MetaModel.RuleTips.FieldMappingName')));
+                  if (isBlank(value)) {
+                    return callback(new Error(this.$t('Common.RuleTips.NotEmpty')));
                   }
                   for(let i = 0; i < this.fieldList.length; i++) {
                     if (this.fieldList[i].fieldName == value && this.fieldList[i].fieldId != this.form.fieldId) {
@@ -249,6 +255,18 @@ export default {
                 }
                 callback();
               }, trigger: "blur" }
+        ],
+        controlType: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+        ],
+        defaultValue: [
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: [ "change", "blur" ] }
+        ],
+        sortFlag: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: [ "change", "blur" ] }
         ]
       }
     };

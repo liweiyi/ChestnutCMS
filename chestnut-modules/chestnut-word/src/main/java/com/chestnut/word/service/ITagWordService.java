@@ -15,42 +15,41 @@
  */
 package com.chestnut.word.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.word.domain.TagWord;
-import com.chestnut.word.domain.dto.BatchAddTagDTO;
+import com.chestnut.word.domain.dto.BatchAddTagRequest;
+import com.chestnut.word.domain.dto.CreateTagWordRequest;
+import com.chestnut.word.domain.dto.UpdateTagWordRequest;
+
+import java.util.List;
 
 public interface ITagWordService extends IService<TagWord> {
 
 	/**
 	 * 添加TAG词
 	 * 
-	 * @param tagWord
-	 * @return
+	 * @param req
 	 */
-	void addTagWord(TagWord tagWord);
+	void addTagWord(CreateTagWordRequest req);
 
 	/**
 	 * 批量添加TAG词
 	 *
 	 * @param dto
 	 */
-    void batchAddTagWord(BatchAddTagDTO dto);
+    void batchAddTagWord(BatchAddTagRequest dto);
 
     /**
 	 * 编辑TAG词
 	 * 
-	 * @param tagWord
-	 * @return
+	 * @param req
 	 */
-	void editTagWord(TagWord tagWord);
+	void editTagWord(UpdateTagWordRequest req);
 
 	/**
 	 * 删除TAG词
 	 * 
 	 * @param tagWordIds
-	 * @return
 	 */
 	void deleteTagWords(List<Long> tagWordIds);
 }

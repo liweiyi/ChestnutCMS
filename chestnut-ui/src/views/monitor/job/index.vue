@@ -340,13 +340,13 @@ export default {
       // 表单校验
       rules: {
         jobName: [
-          { required: true, message: this.$t('Monitor.Job.RuleTips.JobName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         invokeTarget: [
-          { required: true, message: this.$t('Monitor.Job.RuleTips.InvokeTarget'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         cronExpression: [
-          { required: true, message: this.$t('Monitor.Job.RuleTips.CronExpression'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ]
       }
     };

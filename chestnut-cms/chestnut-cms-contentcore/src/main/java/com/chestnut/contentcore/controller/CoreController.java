@@ -89,13 +89,13 @@ public class CoreController extends BaseRestController {
 		IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(dataType);
 		Assert.notNull(internalDataType, () -> ContentCoreErrorCode.UNSUPPORTED_INTERNAL_DATA_TYPE.exception(dataType));
 
+		IInternalDataType.RequestData data = new IInternalDataType.RequestData(dataId, pageIndex, publishPipe,
+				true, ServletUtils.getParamMap(ServletUtils.getRequest()));
 		try {
-			IInternalDataType.RequestData data = new IInternalDataType.RequestData(dataId, pageIndex, publishPipe,
-					true, ServletUtils.getParamMap(ServletUtils.getRequest()));
-			String pageData = internalDataType.getPageData(data);
-			response.getWriter().write(pageData);
+			internalDataType.processPageData(data, response.getWriter());
 		} catch (Exception e) {
-			response.getWriter().write(e.getMessage());
+			// Ignore
+			e.printStackTrace(response.getWriter());
 		}
 	}
 

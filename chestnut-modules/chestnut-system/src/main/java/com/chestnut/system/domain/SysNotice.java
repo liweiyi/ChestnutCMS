@@ -19,9 +19,6 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.db.domain.BaseEntity;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -58,11 +55,5 @@ public class SysNotice extends BaseEntity {
 
 	/** 公告状态（0正常 1关闭） */
 	private String status;
-
-	@NotBlank(message = "公告标题不能为空")
-	@Size(min = 0, max = 50, message = "公告标题不能超过50个字符")
-	public String getNoticeTitle() {
-		return noticeTitle;
-	}
 
 }

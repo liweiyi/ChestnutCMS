@@ -15,8 +15,7 @@
  */
 package com.chestnut.contentcore.template.exception;
 
-import com.chestnut.common.utils.StringUtils;
-
+import com.chestnut.common.i18n.I18nUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 
@@ -24,7 +23,7 @@ public class CatalogNotFoundException extends TemplateException {
 
 	private static final long serialVersionUID = 1L;
 
-	public CatalogNotFoundException(String tag, long catalogId, String alias, Environment env) {
-		super(StringUtils.messageFormat("<@{0}>[id: {1}, alias: {2}]", tag, catalogId, alias), env);
+	public CatalogNotFoundException(long catalogId, String alias, Environment env) {
+		super(I18nUtils.parse("FREEMARKER.ERR.CatalogNotFound", env.getLocale(), catalogId, alias), env);
 	}
 }

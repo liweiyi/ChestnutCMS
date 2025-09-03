@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
+import com.chestnut.common.validation.RegexConsts;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
@@ -55,7 +56,7 @@ public class CmsSiteProperty extends BaseEntity {
     private String propName;
 
     @XComment("属性编码")
-    @Pattern(regexp = "[A-Za-z0-9_]+", message = "{VALIDATOR.CMS.SITE_PROPERTY.REGEXP_ERR}")
+    @Pattern(regexp = RegexConsts.REGEX_CODE)
     private String propCode;
 
     @XComment("属性值")

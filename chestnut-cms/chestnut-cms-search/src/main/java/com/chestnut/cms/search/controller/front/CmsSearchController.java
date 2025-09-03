@@ -19,7 +19,9 @@ import com.chestnut.cms.search.impl.SearchDynamicPageType;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.service.impl.DynamicPageService;
+import com.chestnut.system.validator.LongId;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
@@ -44,11 +46,11 @@ public class CmsSearchController extends BaseRestController {
     private final DynamicPageService dynamicPageService;
 
     @GetMapping(SearchDynamicPageType.REQUEST_PATH)
-    public void searchPage(@RequestParam(value ="q", required = false, defaultValue = "") @Length(max = 50) String query,
-                              @RequestParam("sid") Long siteId,
-                              @RequestParam("pp") String publishPipeCode,
+    public void searchPage(@RequestParam(value ="q", required = false, defaultValue = "") @Length(max = 200) String query,
+                              @RequestParam("sid") @LongId Long siteId,
+                              @RequestParam("pp") @NotBlank @Length(max = 50) String publishPipeCode,
                               @RequestParam(value = "ot", required = false ,defaultValue = "false") Boolean onlyTitle,
-                              @RequestParam(value = "ct", required = false) String contentType,
+                              @RequestParam(value = "ct", required = false) @Length(max = 20) String contentType,
                               @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
                               @RequestParam(required = false, defaultValue = "false") Boolean preview,
                               HttpServletResponse response)

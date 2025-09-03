@@ -18,17 +18,17 @@ package com.chestnut.xmodel.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.db.DBService;
-import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.db.domain.DBTable;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.ArrayUtils;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.domain.XModel;
 import com.chestnut.xmodel.domain.XModelField;
-import com.chestnut.xmodel.dto.XModelFieldDTO;
+import com.chestnut.xmodel.dto.CreateXModelFieldRequest;
+import com.chestnut.xmodel.dto.UpdateXModelFieldRequest;
 import com.chestnut.xmodel.exception.MetaErrorCode;
 import com.chestnut.xmodel.fixed.dict.MetaFieldType;
 import com.chestnut.xmodel.mapper.XModelFieldMapper;
@@ -52,91 +52,86 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 	private final DBService dbService;
 
 	@Override
-	public void addModelField(XModelFieldDTO dto) {
-		XModel model = this.modelService.getById(dto.getModelId());
-		Assert.notNull(model, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("modelId", dto.getModelId()));
+	public void addModelField(CreateXModelFieldRequest req) {
+		XModel model = this.modelService.getById(req.getModelId());
+		Assert.notNull(model, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("modelId", req.getModelId()));
+		this.checkFieldCodeUnique(req.getModelId(), req.getCode(), null);
 
-		dto.setFieldId(null);
-		if (!this.checkFieldCodeUnique(dto)) {
-			throw CommonErrorCode.DATA_CONFLICT.exception("code");
-		}
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getOwnerType());
 		boolean isDefaultTable = mmt.getDefaultTable().equals(model.getTableName());
-		String[] usedFields = this.getUsedFields(model.getModelId(), dto.getFieldType(), isDefaultTable);
+		String[] usedFields = this.getUsedFields(model.getModelId(), req.getFieldType(), isDefaultTable);
 		if (isDefaultTable) {
-			int fieldTypeLimit = MetaFieldType.getFieldTypeLimit(dto.getFieldType());
+			int fieldTypeLimit = MetaFieldType.getFieldTypeLimit(req.getFieldType());
 			Assert.isTrue(fieldTypeLimit > usedFields.length,
-					() -> MetaErrorCode.FIELD_LIMIT.exception(dto.getFieldType()));
+					() -> MetaErrorCode.FIELD_LIMIT.exception(req.getFieldType()));
 
 			for (int i = 1; i <= fieldTypeLimit; i++) {
-				if (!ArrayUtils.contains(dto.getFieldType() + i, usedFields)) {
-					dto.setFieldName(dto.getFieldType() + i);
+				if (!ArrayUtils.contains(req.getFieldType() + i, usedFields)) {
+					req.setFieldName(req.getFieldType() + i);
 					break;
 				}
 			}
 		} else {
 			List<String> fixedFields = mmt.getFixedFields().stream().map(MetaModelField::getFieldName).toList();
-			if (fixedFields.contains(dto.getFieldName())) {
-				throw MetaErrorCode.META_FIELD_CONFLICT.exception(dto.getFieldName());
+			if (fixedFields.contains(req.getFieldName())) {
+				throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
 			}
-			if (ArrayUtils.contains(dto.getFieldName(), usedFields)) {
-				throw MetaErrorCode.META_FIELD_CONFLICT.exception(dto.getFieldName());
+			if (ArrayUtils.contains(req.getFieldName(), usedFields)) {
+				throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
 			}
-			if (!isTableContainsColumn(model.getTableName(), dto.getFieldName())) {
-				throw MetaErrorCode.DB_FIELD_NOT_EXISTS.exception(dto.getFieldName());
+			if (!isTableContainsColumn(model.getTableName(), req.getFieldName())) {
+				throw MetaErrorCode.DB_FIELD_NOT_EXISTS.exception(req.getFieldName());
 			}
 		}
 		XModelField xModelField = new XModelField();
-		BeanUtils.copyProperties(dto, xModelField, "fieldId");
+		BeanUtils.copyProperties(req, xModelField);
 		xModelField.setFieldId(IdUtils.getSnowflakeId());
-		xModelField.createBy(dto.getOperator().getUsername());
+		xModelField.createBy(req.getOperator().getUsername());
 		this.save(xModelField);
 
 		this.modelService.clearMetaModelCache(model.getModelId());
 	}
 
 	@Override
-	public void editModelField(XModelFieldDTO dto) {
-		XModelField modelField = this.getById(dto.getFieldId());
-		Assert.notNull(modelField, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("fieldId", dto.getFieldId()));
+	public void editModelField(UpdateXModelFieldRequest req) {
+		XModelField modelField = this.getById(req.getFieldId());
+		Assert.notNull(modelField, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("fieldId", req.getFieldId()));
+		this.checkFieldCodeUnique(req.getModelId(), req.getCode(), req.getFieldId());
 
-		if (!this.checkFieldCodeUnique(dto)) {
-			throw CommonErrorCode.DATA_CONFLICT.exception("code");
-		}
 		String oldFieldName = modelField.getFieldName();
 		String oldFieldType = modelField.getFieldType();
 
-		XModel model = this.modelService.getById(dto.getModelId());
+		XModel model = this.modelService.getById(modelField.getModelId());
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getOwnerType());
 		boolean isDefaultTable = mmt.getDefaultTable().equals(model.getTableName());
-		if (isDefaultTable && !dto.getFieldType().equals(oldFieldType)) {
+		if (isDefaultTable && !req.getFieldType().equals(oldFieldType)) {
 			// 字段种类变更，重新计算是否有可用字段
-			String[] usedFields = this.getUsedFields(model.getModelId(), dto.getFieldType(), true);
-			int fieldTypeLimit = MetaFieldType.getFieldTypeLimit(dto.getFieldType());
+			String[] usedFields = this.getUsedFields(model.getModelId(), req.getFieldType(), true);
+			int fieldTypeLimit = MetaFieldType.getFieldTypeLimit(req.getFieldType());
 			Assert.isTrue(fieldTypeLimit > usedFields.length,
-					() -> MetaErrorCode.FIELD_LIMIT.exception(dto.getFieldType()));
+					() -> MetaErrorCode.FIELD_LIMIT.exception(req.getFieldType()));
 
 			for (int i = 1; i <= fieldTypeLimit; i++) {
-				if (!ArrayUtils.contains(dto.getFieldType() + i, usedFields)) {
-					dto.setFieldName(dto.getFieldType() + i);
+				if (!ArrayUtils.contains(req.getFieldType() + i, usedFields)) {
+					req.setFieldName(req.getFieldType() + i);
 					break;
 				}
 			}
-		} else if (!isDefaultTable && !dto.getFieldName().equals(oldFieldName)) {
+		} else if (!isDefaultTable && !req.getFieldName().equals(oldFieldName)) {
 			List<String> fixedFields = mmt.getFixedFields().stream().map(MetaModelField::getFieldName).toList();
-			if (fixedFields.contains(dto.getFieldName())) {
-				throw MetaErrorCode.META_FIELD_CONFLICT.exception(dto.getFieldName());
+			if (fixedFields.contains(req.getFieldName())) {
+				throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
 			}
-			String[] usedFields = this.getUsedFields(model.getModelId(), dto.getFieldType(), false);
-			if (ArrayUtils.contains(dto.getFieldName(), usedFields)) {
-				throw MetaErrorCode.META_FIELD_CONFLICT.exception(dto.getFieldName());
+			String[] usedFields = this.getUsedFields(model.getModelId(), req.getFieldType(), false);
+			if (ArrayUtils.contains(req.getFieldName(), usedFields)) {
+				throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
 			}
-			if (!isTableContainsColumn(model.getTableName(), dto.getFieldName())) {
-				throw MetaErrorCode.DB_FIELD_NOT_EXISTS.exception(dto.getFieldName());
+			if (!isTableContainsColumn(model.getTableName(), req.getFieldName())) {
+				throw MetaErrorCode.DB_FIELD_NOT_EXISTS.exception(req.getFieldName());
 			}
 		}
-		BeanUtils.copyProperties(dto, modelField, "fieldId", "modelId");
-		modelField.updateBy(dto.getOperator().getUsername());
+		BeanUtils.copyProperties(req, modelField, "modelId");
+		modelField.updateBy(req.getOperator().getUsername());
 		this.updateById(modelField);
 
 		this.modelService.clearMetaModelCache(model.getModelId());
@@ -185,11 +180,11 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 	/**
 	 * 校验字段编码是否已存在
 	 */
-	private boolean checkFieldCodeUnique(XModelFieldDTO dto) {
+	private void checkFieldCodeUnique(Long modelId, String code, Long fieldId) {
 		LambdaQueryWrapper<XModelField> q = new LambdaQueryWrapper<XModelField>()
-				.eq(XModelField::getModelId, dto.getModelId())
-				.eq(XModelField::getCode, dto.getCode())
-				.ne(dto.getFieldId() != null && dto.getFieldId() > 0, XModelField::getFieldId, dto.getFieldId());
-		return this.count(q) == 0;
+				.eq(XModelField::getModelId, modelId)
+				.eq(XModelField::getCode, code)
+				.ne(IdUtils.validate(fieldId), XModelField::getFieldId, fieldId);
+		Assert.isTrue(this.count(q) == 0, () -> CommonErrorCode.DATA_CONFLICT.exception("code"));
 	}
 }

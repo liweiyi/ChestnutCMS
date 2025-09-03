@@ -105,7 +105,11 @@ export default {
       Email: "Email格式錯誤",
       Url: "URL連結格式錯誤，必須以http(s)://開頭",
       Code: "只能使用大小寫字母、數字和下劃線",
-      PhoneNumber: "手機號碼格式錯誤"
+      Path: "只能使用大小寫字母、數字、下劃線和斜杠",
+      UserName: "必須以字母開頭，且只能使用大小寫字母、數字和下劃線",
+      PhoneNumber: "手機號碼格式錯誤",
+      MaxLength: "長度不能超過{0}",
+      LengthRange: "長度必須介於 {0} 和 {1} 之間",
     }
   },
   Error: {
@@ -113,14 +117,14 @@ export default {
     Forbidden: "未通過認證",
     ForbiddenTip: "對不起，您尚未通過系統認證，請嘗試重新登錄。",
     GoLogin: "去登錄",
-    Err403: "【403】權限校驗失敗！",
-    NoPermission: "無訪問權限！",
-    NoPermissionTip: "對不起，您沒有訪問權限，請向系統管理者申請相關資源訪問權限！",
+    Err403: "【403】許可權校驗失敗！",
+    NoPermission: "無訪問許可權！",
+    NoPermissionTip: "對不起，您沒有訪問許可權，請向系統管理者申請相關資源訪問許可權！",
     GoHome: "回首頁",
     Err404: "【404】訪問資源不存在！",
     Err404Tip: "對不起，您正在尋找的頁面不存在。嘗試檢查URL的錯誤，然後按瀏覽器上的刷新按鈕或嘗試在我們的應用程序中找到其他內容。",
     PageNotFound: "找不到網頁！",
-    Unknown: '系統未知錯誤，請反饋給管理員！'
+    Unknown: '系統未知錯誤，請反饋給管理員'
   },
   Router: {
     Home: '首頁',
@@ -157,20 +161,12 @@ export default {
     Gender: '性別',
     GenderMale: '男',
     GenderFemale: '女',
-    NickNameEmptyTip: '用戶昵稱不能為空',
-    EmailEmptyTip: '郵箱地址不能為空',
-    EmailRuleTip: '請輸入正確的郵箱地址',
-    PhoneNumEmptyTip: '手機號碼不能為空',
-    PhoneNumRuleTip: '請輸入正確的手機號碼',
     OldPwd: '舊密碼',
     NewPwd: '新密碼',
     ConfirmPwd: '確認密碼',
     OldPwdPlaceHolder: '請輸入舊密碼',
     NewPwdPlaceHolder: '請輸入新密碼',
     ConfirmPwdPlaceHolder: '請確認新密碼',
-    OldPwdEmptyTip: '舊密碼不能為空',
-    NewPwdEmptyTip: '新密碼不能為空',
-    ConfirmPwdEmptyTip: '確認新密碼不能為空',
     NewPwdLenTip: '長度必須在 {0} 到 {1} 個字元',
     NewPwdSensitiveTip: '不能包含用戶資訊敏感字元',
     NewPwdTip: '新密碼不合符安全規則',
@@ -293,7 +289,7 @@ export default {
         DeptName: "請輸入部門名稱",
         UserName: "請輸入用戶名稱",
         NickName: "請輸入用戶昵稱",
-        RealName: "请输入真實姓名",
+        RealName: "請輸入真實姓名",
         PhoneNumber: "請輸入手機號碼",
         Dept: "請選擇所屬部門",
         Email: "請輸入用戶郵箱",
@@ -302,15 +298,6 @@ export default {
         Status: "用戶狀態",
         Post: "請選擇用戶崗位",
         Role: "請選擇用戶角色"
-      },
-      RuleTips: {
-        UserName1: "用戶名稱不能為空",
-        UserName2: "用戶名稱長度必須介於 2 和 20 之間",
-        DeptId: "所屬機構不能為空",
-        NickName: "用戶昵稱不能為空",
-        Password1: "用戶密碼不能為空",
-        Email: "請輸入正確的郵箱地址",
-        PhoneNumber: "請輸入正確的手機號碼"
       }
     },
     UserPreference: {
@@ -333,7 +320,6 @@ export default {
       RoleId: "角色ID",
       RoleName: "角色名稱",
       RoleKey: "角色編碼",
-      RoleKeyTips: "不能為空且只能使用字母、數字和下劃線",
       Sort: "顯示順序",
       Status: "狀態",
       UserSetting: "分配用戶",
@@ -353,11 +339,6 @@ export default {
         RoleName: "請輸入角色名稱",
         RoleKey: "請輸入角色編碼",
         Status: "角色狀態"
-      },
-      RuleTips: {
-        RoleName: "角色名稱不能為空",
-        RoleKey: "角色編碼不能為空",
-        Sort: "排序欄位不能為空"
       }
     },
     Permission: {
@@ -409,11 +390,6 @@ export default {
         Perms: "請輸入許可權字元",
         RouterParams: "請輸入路由參數",
       },
-      RuleTips: {
-        MenuName: "菜單名稱不能為空",
-        Sort: "菜單順序不能為空",
-        RouterLink: "路由地址不能為空"
-      },
       Shortcut: "快捷方式"
     },
     Dept: {
@@ -424,7 +400,6 @@ export default {
       Leader: "負責人",
       Phone: "聯繫電話",
       Email: "郵箱地址",
-      ConfirmDelete: '是否確認刪除名稱為"{0}"的數據項？',
       Dialog: {
         Add: "添加部門資訊",
         Edit: "編輯部門資訊"
@@ -436,13 +411,6 @@ export default {
         Leader: "請輸入負責人",
         Phone: "請輸入聯繫電話",
         Email: "請輸入郵箱地址"
-      },
-      RuleTips: {
-        DeptName: "部門名稱不能為空",
-        ParentDept: "上級部門不能為空",
-        Sort: "顯示排序不能為空",
-        Email: "請輸入正確的郵箱地址",
-        Phone: "請輸入正確的手機號碼"
       }
     },
     Post: {
@@ -460,11 +428,6 @@ export default {
         PostCode: "請輸入崗位編碼",
         PostName: "請輸入崗位名稱",
         Status: "崗位狀態"
-      },
-      RuleTips: {
-        PostName: "崗位名稱不能為空",
-        PostCode: "崗位編碼不能為空",
-        PostSort: "崗位順序不能為空"
       }
     },
     Dict: {
@@ -496,14 +459,6 @@ export default {
         DictValue: "請輸入字典項值",
         CssClass: "請輸入樣式屬性",
         Status: "字典狀態"
-      },
-      RuleTips: {
-        DictName: "字典名稱不能為空",
-        DictType: "字典類型不能為空",
-        DictCode: "字典項編碼不能為空",
-        DictLabel: "字典項標籤不能為空",
-        DictValue: "字典項值不能為空",
-        DictSort: "字典順序不能為空",
       }
     },
     Config: {
@@ -522,11 +477,6 @@ export default {
         ConfigKey: "請輸入參數鍵名",
         ConfigValue: "請輸入參數鍵值",
         ConfigType: "固定配置",
-      },
-      RuleTips: {
-        ConfigName: "參數名稱不能為空",
-        ConfigKey: "參數鍵名不能為空",
-        ConfigValue: "參數鍵值不能為空",
       }
     },
     Notice: {
@@ -538,10 +488,6 @@ export default {
       Dialog: {
         Add: "添加公告",
         Edit: "修改公告"
-      },
-      RuleTips: {
-        NoticeTitle: "公告標題不能為空",
-        NoticeType: "公告類型不能為空"
       }
     },
     I18n: {
@@ -552,25 +498,6 @@ export default {
       Dialog: {
         Add: "添加國際化配置",
         Edit: "修改國際化配置"
-      },
-      RuleTips: {
-        LangTag: "語言標籤不能為空",
-        LangKey: "國家化鍵名不能為空",
-        LangValue: "國家化鍵值不能為空",
-      }
-    },
-    IPRule: {
-      Type: "類型",
-      ExpireTime: "過期時間",
-      CIDR: "掩碼（CIDR）",
-      Dialog: {
-        Add: "添加IP規則資訊",
-        Edit: "修改IP規則資訊",
-      },
-      RuleTips: {
-        IP: "IP地址不能為空",
-        Type: "類型不能為空",
-        CIDR: "掩碼（CIDR）不能為空"
       }
     },
     OpLog: {
@@ -688,11 +615,6 @@ export default {
       },
       Placeholder: {
         InvokeTarget: "請輸入調用目標字元串"
-      },
-      RuleTips: {
-        JobName: "任務名稱不能為空",
-        InvokeTaget: "調用目標字元串不能為空",
-        CronExpression: "cron執行表達式不能為空"
       }
     },
     ScheduledTask: {
@@ -772,8 +694,8 @@ export default {
       DiskLeftSize: "可用大小",
       DiskUsedSize: "已用大小",
       DiskUsedPercent: "已用百分比",
-      DbInfo: "資料庫信息",
-      DbPoolName: "資料來源",
+      DbInfo: "資料庫資訊",
+      DbPoolName: "數據源",
       DbDriverClass: "資料庫驅動",
       DbUrl: "資料庫連接",
       DbUserName: "用戶名"
@@ -799,7 +721,7 @@ export default {
       MemoryCost: "記憶體消耗",
       CacheList: "緩存列表",
       CacheName: "緩存名稱",
-      CachePrefix: "緩存鍵名（前綴）",
+      CachePrefix: "緩存鍵名（首碼）",
       CacheKeyList: "鍵名列表",
       CacheKey: "緩存鍵名",
       CacheValue: "緩存內容",
@@ -819,7 +741,7 @@ export default {
   },
   CMS: {
     Dashboard: {
-      PublishStrategy: "發佈策略",
+      PublishStrategy: "發布策略",
       ResourceRoot: "資源目錄"
     },
     ContentCore: {
@@ -878,21 +800,20 @@ export default {
         AlignLeft: "左對齊",
         AlignRight: "右對齊",
         RuleTips: {
-          Code: "不能為空",
           IframeSrc: "嵌入代碼的<iframe>標籤缺少src屬性！"
         }
       },
       VideoModifier: {
-        DialogTitle: "視頻信息",
+        DialogTitle: "視頻資訊",
         Cover: "封面",
         UploadCover: "上傳",
         FrameCover: "幀截圖",
         FrameCoverSeconds: "視頻截圖時間點（單位：秒）",
         Screenshot: "截圖",
         Controls: "顯示控制條",
-        Loop: "循環播放",
+        Loop: "迴圈播放",
         AutoPlay: "自動播放",
-        Preload: "預加載方式",
+        Preload: "預載入方式",
         PreloadNone: "不緩存",
         PreloadMeta: "元數據",
         PreloadAuto: "自動",
@@ -955,16 +876,13 @@ export default {
       SitemapUrlLimit: "Sitemap連結數量",
       GenSitemap: "生成Sitemap",
       SitemapProgressTitle: "生成Sitemap任務",
-      Domain: "站點域名",
+      Domain: "站點功能變數名稱",
       UEditorCss: "文章編輯器CSS",
       PrefixMode: "路徑模式",
       PrefixMode_Absolute: "絕對路徑",
       PrefixMode_Relative: "相對路徑",
-      RelativePrefix: "相對路徑前綴",
+      RelativePrefix: "相對路徑首碼",
       ErrPageLink: "錯誤頁面",
-      Dashboard: {
-        MissingSiteUrl: "站點域名未配置！"
-      },
       Tab: {
         Basic: "基礎資訊",
         Extend: "擴展配置",
@@ -973,10 +891,6 @@ export default {
       },
       Dialog: {
         AddTitle: "新建站點"
-      },
-      RuleTips: {
-        Name: "站點名稱不能為空",
-        Path: "不能為空且只能使用大小寫字母和數字"
       },
       Extend: {
         BasicCardTitle: "基礎配置",
@@ -1002,7 +916,7 @@ export default {
         ThumbnailHeight: "預設縮略圖高度",
         ThumbnailSizeTip: "縮略圖寬/高為0時預設不生成縮略圖",
         StorageType: "存儲策略",
-        StorageTip: "更換存儲策略後，原資源庫的資源文件需要手動同步到新的存儲庫。",
+        StorageTip: "更換存儲策略後，原資源庫的資源檔案需要手動同步到新的存儲庫。",
         Local: "本地",
         AliyunOSS: "阿里雲OSS",
         TencentCOS: "騰訊雲COS",
@@ -1019,6 +933,8 @@ export default {
         SensitiveWordEnable: "開啟文章保存敏感詞替換",
         ErrorProneWordEnable: "開啟文章保存易錯詞替換",
         HotWordGroup: "熱詞分組",
+        HotWordMaxReplaceCount: "替換數量限制",
+        HotWordMaxReplaceCountTip: "每篇文章替換熱詞數量限制，0表示不限制數量。",
         StatConfCardTitle: "統計配置",
         BaiduApiKey: "百度統計ApiKey",
         BaiduSecretKey: "百度統計SecretKey",
@@ -1035,11 +951,11 @@ export default {
         BaiduPushAccessSecret: "百度收錄API秘鑰",
         DownloadRemoteImage: "開啟文章遠程圖片下載",
         EnableSiteDeleteBackup: "開啟站點刪除備份",
-        MemberResourceUrl: "會員資源訪問域名",
+        MemberResourceUrl: "會員資源訪問功能變數名稱",
         ShortTitleLabel: "短標題自定義表單名",
         SubTitleLabel: "副標題自定義表單名",
         EnableStat: "開啟站點訪問統計",
-        EnableDynamicStatScript: "啟用動態統計腳本",
+        EnableDynamicStatScript: "啟用動態統計指令碼或直譯式程式",
         EnableHyperLogLog: "啟用HyperLogLog",
       },
       Property: {
@@ -1047,10 +963,6 @@ export default {
         PropName: "屬性名稱",
         PropCode: "屬性編碼",
         PropValue: "屬性值",
-        RuleTips: {
-          PropName: "不能為空",
-          PropCode: "不能為空且只能使用字母、數字和下劃線"
-        }
       },
       DefaultTemplate: {
         Title: "預設模板配置",
@@ -1071,6 +983,7 @@ export default {
         MemberContribute: "會員文章投稿頁模板",
       },
       Dashboard: {
+        MissingSiteUrl: "站點功能變數名稱未配置！",
         DataCountCard: "數據統計",
         Catalog: "欄目數",
         Content: "內容數",
@@ -1120,22 +1033,16 @@ export default {
       MappingContentTip: "映射內容：僅生成基礎資訊，獨立頁面，擴展內容共用自源內容。",
       SortUp: "上移",
       SortDown: "下移",
-      Merge: "合併",
+      Merge: "合并",
       Clear: "清空",
       ExportCatalogTree: "導出欄目結構",
-      NoSitePermissions: "無任何站點權限",
+      NoSitePermissions: "無任何站點許可權",
       ContentPathRule: "內容路徑規則",
-      RuleTips: {
-        Name: "欄目名稱不能為空",
-        Alias: "不能為空且只能使用字母、數字和下劃線",
-        Path: "不能為空且只能使用字母、數字和下劃線",
-        CatalogType: "欄目類型不能為空"
-      },
       SelectCatalogFirst: "請先選擇一個欄目",
       PublishProgressTitle: "發布欄目",
       DeleteProgressTitle: "刪除欄目",
       MoveProgressTitle: "轉移欄目",
-      MergeProgressTitle: "合併欄目",
+      MergeProgressTitle: "合并欄目",
       ClearProgressTitle: "清空欄目",
       ClearTip: "清空欄目會刪除欄目下所有內容數據，確認清空嗎？",
       TemplateConfig: "模板配置",
@@ -1150,6 +1057,8 @@ export default {
         ContentConfig: "內容配置",
         WordConfig: "辭彙配置",
         HotWordGroup: "熱詞分組",
+        HotWordMaxReplaceCount: "替換數量限制",
+        HotWordMaxReplaceCountTip: "每篇文章替換熱詞數量限制，0表示不限制數量。",
         EnableContribute: "是否允許投稿"
       }
     },
@@ -1161,7 +1070,7 @@ export default {
       },
       Placeholder: {
         Title: "輸入內容標題",
-        ImportCSS: "選擇發佈通道樣式",
+        ImportCSS: "選擇發布通道樣式",
       },
       Title: "標題",
       SubTitle: "副標題",
@@ -1222,10 +1131,7 @@ export default {
       PublishPipe: "發布通道",
       StaticPath: "獨立路徑",
       Template: "獨立模板",
-      RuleTips:  {
-        Title: "標題不能為空"
-      },
-      PublishProgressTitle: "發佈內容中",
+      PublishProgressTitle: "發布內容中",
       OfflineProgressTitle: "下線內容中",
       CopyProgressTitle: "複製內容中",
       MoveProgressTitle: "移動內容中",
@@ -1242,11 +1148,11 @@ export default {
       RelaContent: "相關內容",
       PushToBaidu: "推送到百度",
       PushToBaiduResult: "【{0}】成功 {1} 條，剩餘 {2} 條。<br/>",
-      ImportCSSTip: "應用站點/欄目發佈通道設置的文章編輯器CSS",
+      ImportCSSTip: "應用站點/欄目發布通道設置的文章編輯器CSS",
       OpLog: "操作記錄"
     },
     ContentOpLog: {
-      Type: "類型",
+      Type: "操作類型",
       OperatorType: "操作人類型",
       Operator: "操作人",
       Details: "操作明細",
@@ -1256,13 +1162,13 @@ export default {
       Format: "文檔格式",
       Markdown: {
         Placeholder: "輸入內容...",
-        AddImageLink: "添加圖片鏈接",
+        AddImageLink: "添加圖片連結",
         UploadImage: "上傳圖片",
         UploadVideo: "上傳視頻",
         UploadAudio: "上傳音頻",
-        UploadFile: "上傳文件",
+        UploadFile: "上傳檔案",
         ImageText: "圖片描述",
-        ImageLink: "圖片鏈接",
+        ImageLink: "圖片連結",
       }
     },
     Image: {
@@ -1319,7 +1225,7 @@ export default {
       SetLogo: "設為視頻集封面"
     },
     Book: {
-      Basic: "圖書信息",
+      Basic: "圖書資訊",
       PublicationDate: "出版時間",
       Publisher: "出版社",
       NumberOfPages: "頁數",
@@ -1335,24 +1241,19 @@ export default {
       InputChapterTitle: "輸入章節標題",
       SortAsc: "順序",
       SortDesc: "倒序",
-      PublishDate: "發佈時間",
-      PublishImmediately: "立即發佈",
+      PublishDate: "發布時間",
+      PublishImmediately: "立即發布",
       ChapterTitle: "章節標題",
-      Publish: "發佈",
-      ToPublish: "定時發佈",
+      Publish: "發布",
+      ToPublish: "定時發布",
       Offline: "下線",
-      ToPublishDialogTitle: "定時發佈",
-      PublishSuccess: "發佈成功",
+      ToPublishDialogTitle: "定時發布",
+      PublishSuccess: "發布成功",
       OfflineSuccess: "下線成功",
-      ToPublishSuccess: "定時發佈成功",
+      ToPublishSuccess: "定時發布成功",
       CloseChapterEditorTip: "章節數據未保存，確認關閉嗎？",
       Route: {
         EditChapter: "編輯章節"
-      },
-      RuleTips: {
-        Title: "標題不能為空",
-        Content: "章節內容不能為空",
-        PublishDate: "發佈時間不能為空"
       }
     },
     PageWidget: {
@@ -1365,13 +1266,6 @@ export default {
       InvalidPageWidgetId: "頁面部件ID錯誤：{0}",
       Placeholder: {
         Type: "選擇類型"
-      },
-      RuleTips: {
-        Type: "類型不能為空",
-        Name: "名稱不能為空",
-        Code: "不能為空且只能使用字母、數字和下劃線",
-        PublishPipe: "發布通道不能為空",
-        Path: "不能為空且只能使用字母、數字和下劃線"
       },
       AddTitle: "添加頁面部件",
     },
@@ -1391,17 +1285,10 @@ export default {
       GoBack: "返回上一頁",
       AdMaterials: "廣告素材",
       RedirectUrl: "跳轉連結",
-      RuleTips: {
-        Type: "類型不能為空",
-        Name: "名稱不能為空",
-        Weight: "權重不能為空",
-        OnlineDate: "上線時間不能為空",
-        OfflineDate: "下線時間不能為空"
-      }
     },
     Block: {
       Basic: "基礎屬性",
-      PublishPipeProp: "發佈通道配置",
+      PublishPipeProp: "發布通道配置",
       ManualList: "自定義列表",
       Title: "標題",
       AddRow: "添加行",
@@ -1424,9 +1311,6 @@ export default {
       AddDialogTitle: "添加資源",
       EditDialogTitle: "編輯資源",
       FileTypeErrMsg: "檔案格式錯誤，請上傳圖片類型,如：.jpg，.png尾碼的檔案。",
-      RuleTips: {
-        Name: "資源名稱不能為空"
-      },
       SelectorTitle: "素材庫",
       LocalUpload: "本地上傳",
       RemoteLink: "網路連結",
@@ -1453,12 +1337,6 @@ export default {
       Status: "狀態",
       AddDialogTitle: "添加發布通道",
       EditDialogTitle: "編輯發布通道",
-      RuleTips: {
-        Name: "名稱不能為空",
-        Code: "不能為空且只能使用字母、數字和下劃線",
-        Status: "狀態不能為空",
-        Sort: "排序值不能為空"
-      }
     },
     File: {
       Upload: "上傳",
@@ -1475,9 +1353,6 @@ export default {
       UploadTitle: "上傳檔案",
       UploadTip: "將檔案拖到此處，或點擊上傳",
       ResourceRoot: "站點資源目錄",
-      RuleTips: {
-        FileName: "不能為空且只能使用字母、數字和下劃線"
-      }
     },
     Template: {
       Name: "模板名稱",
@@ -1504,7 +1379,7 @@ export default {
       TagAttrMandatory: "是否必填",
       TagAttrOptions: "可用值",
       TagAttrDesc: "描述",
-      DataField: "數據字段",
+      DataField: "數據欄位",
       DeprecatedTag: "已棄用",
       DeprecatedTip: "已棄用（棄用版本：{0}, 未來是否刪除：{1}）",
       Func: "模板函數",
@@ -1564,18 +1439,6 @@ export default {
       Placeholder: {
         Query: "輸入模型名稱/編碼查詢",
         FieldQuery: "欄位名稱/編碼查詢"
-      },
-      RuleTips: {
-        Name: "名稱不能為空",
-        Code: "編碼不能為空且只能使用字母、數字和下劃線",
-        TableName: "數據表不能為空",
-        FieldName: "名稱不能為空",
-        FieldCode: "編碼不能為空",
-        FieldControlType: "控制項類型不能為空",
-        FieldMandatory: "是否必填不能為空",
-        FieldType: "欄位類型不能為空",
-        FieldMappingName: "數據表欄位不能為空",
-        FieldMappingUsed: "數據表欄位已被佔用",
       }
     },
     FriendLink: {
@@ -1624,21 +1487,24 @@ export default {
     StatPro: {
       PV: "瀏覽量（PV）",
       UV: "訪客量（UV）",
-      IP: "IP数",
+      IP: "IP數",
       AvgVisitTime: "平均訪問時長",
       Rate: "佔比",
+      PVRate: "PV佔比",
+      UVRate: "UV佔比",
+      IPRate: "IP佔比",
       Hour: "小時",
       Day: "按天",
       Week: "按周",
       Month: "按月",
-      OS: "操作系統",
+      OS: "作業系統",
       Browser: "瀏覽器",
-      DisplaySize: "屏幕分辨率",
+      DisplaySize: "屏幕解析度",
       ColorDepth: "屏幕色深",
-      NetworkOp: "網絡運營商",
+      NetworkOp: "網路運營商",
       Lang: "語言",
-      SupportedCookie: "是否支持Cookie",
-      SupportedJava: "是否支持Java",
+      SupportedCookie: "是否支援Cookie",
+      SupportedJava: "是否支援Java",
       VisitorType: "訪客類型",
       NewVisitor: "新訪客",
       OldVisitor: "老訪客",
@@ -1663,7 +1529,7 @@ export default {
         Province: "省份",
         ByProvince: "按省",
         ByCountry: "按國家",
-        MapChart: "地域分佈圖",
+        MapChart: "地域分布圖",
         District: "地區"
       },
       Source: {
@@ -1680,7 +1546,7 @@ export default {
       Status: "狀態",
       Enable: "啟用",
       Disable: "停用",
-      Publish: "發佈",
+      Publish: "發布",
       AddTitle: "新建站點事件",
       EditTitle: "編輯站點事件"
     }
@@ -1707,7 +1573,7 @@ export default {
         InputGroupName: "輸入分組名稱",
         SelectParentGroup: "選擇上級分組",
         InputTAG: "輸入TAG詞查詢",
-        BatchAdd: "輸入多個TAG词，每行一個"
+        BatchAdd: "輸入多個TAG詞，每行一個"
       }
     },
     HotWord: {
@@ -1748,7 +1614,7 @@ export default {
       Placeholder: {
         InputWord: "輸入易錯詞查詢"
       }
-    }
+    },
   },
   Stat: {
     Site: {
@@ -1912,12 +1778,6 @@ export default {
       Regex: "輸入正則表達式"
     },
     RuleTips: {
-      FieldName: "名稱不能為空",
-      FieldCode: "編碼不能為空",
-      FieldControlType: "控制項類型不能為空",
-      FieldMandatory: "是否必填不能為空",
-      FieldType: "欄位類型不能為空",
-      FieldMappingName: "數據表欄位不能為空",
       FieldMappingUsed: "數據表欄位已被佔用",
     }
   },
@@ -1997,24 +1857,24 @@ export default {
       Status: "狀態",
       Design: "設計",
       Suspend: "掛起",
-      Resume: "恢復",
+      Resume: "恢複",
       Category: "所屬分類",
       AddModelTitle: "新建模型",
-      DesignTitle: "設計流程",
+      DesignTitle: "流程設計",
       Placeholder: {
-        ModelKey: "輸入模型唯一標識",
+        ModelKey: "輸入模型標識",
         ModelName: "輸入模型名稱"
       }
     }
   },
   GroovyScript: {
     Exec: "執行",
-    SaveScript: "保存腳本",
+    SaveScript: "保存指令碼或直譯式程式",
     Name: "名稱"
   },
   Deploy: {
     Cert: {
-      Domain: "域名",
+      Domain: "功能變數名稱",
       RR: "主機記錄",
       Issuer: "證書頒發機構",
       IssueTime: "簽發時間",
@@ -2027,32 +1887,32 @@ export default {
       Locality: "地區",
       Organization: "組織機構",
       AuthChallenge: "證書申請驗證",
-      DownloadHttp01File: "下載HTTP01驗證文件",
-      AddDomain: "新增域名",
-      EditDomain: "修改域名信息",
+      DownloadHttp01File: "下載HTTP01驗證檔案",
+      AddDomain: "新增功能變數名稱",
+      EditDomain: "修改功能變數名稱資訊",
       ConfirmApply: "確認發起證書申請嗎？",
       Applying: "正在提交證書申請，請稍等...",
       Authroizating: "正在驗證，請稍等...",
-      Servers: "同步服務器",
+      Servers: "同步伺服器",
       SyncToServer: "同步",
-      Syncing: "正在同步證書到遠程服務器，請稍等...",
+      Syncing: "正在同步證書到遠程伺服器，請稍等...",
       Placeholder: {
-        Domain: "輸入域名查詢"
+        Domain: "輸入功能變數名稱查詢"
       }
     },
     ServerMachine: {
-      Name: "服务器名称",
-      RemoteAddress: "服务器地址",
-      Host: "域名/IP地址",
-      Port: "端口",
-      UserName: "登录用户名",
-      KeyFile: "登录秘钥",
-      Passphrase: "秘钥密码",
-      AddTitle: "添加服务器信息",
-      EditTitle: "编辑服务器信息",
-      TestConnection: "测试连接",
-      ConnectionSuccess: "连接成功",
-      TestConnectionLoading: "正在尝试链接...",
+      Name: "伺服器名稱",
+      RemoteAddress: "伺服器地址",
+      Host: "功能變數名稱/IP地址",
+      Port: "通信埠",
+      UserName: "登錄用戶名",
+      KeyFile: "登錄秘鑰",
+      Passphrase: "秘鑰密碼",
+      AddTitle: "添加伺服器資訊",
+      EditTitle: "編輯伺服器資訊",
+      TestConnection: "測試連接",
+      ConnectionSuccess: "連接成功",
+      TestConnectionLoading: "正在嘗試連結..."
     },
     NginxConfig: {
       Name: "名稱",
@@ -2061,10 +1921,10 @@ export default {
       ConfigText: "自定義配置",
       Status: "狀態",
       Sync: "同步配置",
-      ConfirmSync: "確認將配置`{0}`同步到關聯服務器節點嗎？",
+      ConfirmSync: "確認將配置`{0}`同步到關聯伺服器節點嗎？",
       NginxNode: "部署節點",
       AddTitle: "添加配置",
-      EditTitle: "編輯配置信息",
+      EditTitle: "編輯配置資訊",
     }
   }
 };

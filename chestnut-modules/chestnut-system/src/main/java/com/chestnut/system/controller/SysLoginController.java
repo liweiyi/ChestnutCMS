@@ -25,6 +25,7 @@ import com.chestnut.system.config.SystemConfig;
 import com.chestnut.system.domain.SysMenu;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.LoginBody;
+import com.chestnut.system.domain.vo.LoginUserInfoVO;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
 import com.chestnut.system.security.AdminUserType;
@@ -35,6 +36,7 @@ import com.chestnut.system.service.ISysMenuService;
 import com.chestnut.system.service.ISysPermissionService;
 import com.chestnut.system.service.ISysRoleService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,7 +45,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 登录验证
@@ -51,6 +52,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class SysLoginController extends BaseRestController {
@@ -76,18 +78,22 @@ public class SysLoginController extends BaseRestController {
 		return R.ok(token);
 	}
 
-	@PostMapping("logout")
+	@PostMapping("/logout")
 	public void logout() {
+		if (!StpAdminUtil.isLogin()) {
+			return;
+		}
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		try {
-			if (StpAdminUtil.isLogin()) {
-				LoginUser loginUser = StpAdminUtil.getLoginUser();
-				StpAdminUtil.logout();
-				this.logininfoService.recordLogininfor(loginUser.getUserType(),
-						loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.SUCCESS,
-						StringUtils.EMPTY);
-			}
+			StpAdminUtil.logout();
+			this.logininfoService.recordLogininfor(loginUser.getUserType(),
+					loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.SUCCESS,
+					StringUtils.EMPTY);
 		} catch (Exception e) {
-
+			this.logininfoService.recordLogininfor(loginUser.getUserType(),
+					loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.FAIL,
+					e.getMessage());
+			log.error("Logout fail.", e);
 		}
 	}
 
@@ -97,7 +103,7 @@ public class SysLoginController extends BaseRestController {
 	 * @return 用户信息
 	 */
 	@Priv(type = AdminUserType.TYPE)
-	@GetMapping("getInfo")
+	@GetMapping("/getInfo")
 	public R<?> getInfo() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		SysUser user = (SysUser) loginUser.getUser();
@@ -106,7 +112,11 @@ public class SysLoginController extends BaseRestController {
 		List<String> roles = this.roleService.selectRoleKeysByUserId(user.getUserId());
 		// 权限集合
 		List<String> permissions = loginUser.getPermissions();
-		return R.ok(Map.of("user", user, "roles", roles, "permissions", permissions));
+		LoginUserInfoVO vo = new LoginUserInfoVO();
+		vo.setUser(user);
+		vo.setRoles(roles);
+		vo.setPermissions(permissions);
+		return R.ok(vo);
 	}
 
 	/**
@@ -115,7 +125,7 @@ public class SysLoginController extends BaseRestController {
 	 * @return 路由信息
 	 */
 	@Priv(type = AdminUserType.TYPE)
-	@GetMapping("getRouters")
+	@GetMapping("/getRouters")
 	public R<?> getRouters() {
 		List<SysMenu> menus = this.menuService.lambdaQuery().orderByAsc(SysMenu::getOrderNum).list();
 

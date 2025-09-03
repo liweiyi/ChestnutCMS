@@ -336,6 +336,7 @@
 </template>
 
 <script>
+import { userNameValidator, emailValidator, phoneNumberValidator } from '@/utils/validate';
 import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, changeUserStatus, deptTreeSelect, getAuthRole, updateAuthRole } from "@/api/system/user";
 import { getToken } from "@/utils/auth";
 import Treeselect from "@riophae/vue-treeselect";
@@ -423,34 +424,33 @@ export default {
       // 表单校验
       rules: {
         userName: [
-          { required: true, message: this.$t('System.User.RuleTips.UserName1'), trigger: "blur" },
-          { min: 2, max: 20, message: this.$t('System.User.RuleTips.UserName2'), trigger: 'blur' }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: userNameValidator, trigger: [ "blur", "change" ] },
+          { min: 2, max: 20, message: this.$t('Common.RuleTips.LengthRange', [ 2, 20 ]), trigger: 'blur' }
         ],
         deptId: [
-          { required: true, message: this.$t('System.User.RuleTips.DeptId'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         nickName: [
-          { required: true, message: this.$t('System.User.RuleTips.NickName'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: "change" }
+        ],
+        realName: [
+          { max: 30, message: this.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: "change" }
         ],
         password: [
-          { required: true, message: this.$t('System.User.RuleTips.Password1'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         sex: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         email: [
-          {
-            type: "email",
-            message: this.$t('System.User.RuleTips.Email'),
-            trigger: ["blur", "change"]
-          }
+          { validator: emailValidator, trigger: [ "blur", "change" ] },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: "change" }
         ],
-        phoneNumber: [
-          {
-            pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
-            message: this.$t('System.User.RuleTips.PhoneNumber'),
-            trigger: "blur"
-          }
+        phoneNumber: [,
+          { validator: phoneNumberValidator, trigger: [ "blur", "change" ] },
+          { max: 20, message: this.$t('Common.RuleTips.MaxLength', [ 20 ]), trigger: "change" }
         ]
       }
     };

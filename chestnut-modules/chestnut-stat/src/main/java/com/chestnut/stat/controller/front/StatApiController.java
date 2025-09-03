@@ -22,7 +22,9 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.stat.core.StatEvent;
 import com.chestnut.stat.service.impl.StatEventService;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,7 +47,7 @@ public class StatApiController extends BaseRestController {
 	 * 统计API
 	 */
 	@GetMapping("/api/stat/evt")
-	public void statEvent(@RequestParam("t") String type, @RequestParam(required = false) String data) {
+	public void statEvent(@RequestParam("t") @NotBlank @Length(max = 20) String type, @RequestParam(required = false) String data) {
 		StatEvent evt = new StatEvent();
 		evt.setType(type);
 		if (StringUtils.isNotEmpty(data)) {

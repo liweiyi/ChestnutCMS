@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.domain.dto;
 
 import com.chestnut.common.security.domain.BaseDTO;
+import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.Dict;
@@ -54,14 +55,14 @@ public class CatalogUpdateDTO extends BaseDTO {
      * 栏目别名
      */
     @NotBlank
-    @Pattern(regexp = "^[A-Za-z0-9_]+$", message = "栏目别名只能使用大小写字母、数字、下划线组合")
+    @Pattern(regexp = RegexConsts.REGEX_CODE, message = "栏目别名只能使用大小写字母、数字、下划线组合")
     private String alias;
 
     /**
      * 栏目目录
      */
     @NotBlank
-    @Pattern(regexp = "^[A-Za-z0-9_\\/]+$", message = "栏目路径只能使用大小写字母、数字、下划线组合")
+    @Pattern(regexp = RegexConsts.REGEX_PATH, message = "栏目路径只能使用大小写字母、数字、下划线组合")
     private String path;
 
     /*

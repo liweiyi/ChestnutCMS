@@ -121,20 +121,17 @@ pipeline {
 	                dir('./ChestnutCMS') {
 		            	withCredentials([usernamePassword(credentialsId: 'ALIYUN-DOCKER-REGISTRY-LWY', passwordVariable: 'DOCKERPWD', usernameVariable: 'DOCKERUSER')]) {
 		            	    sh '''
-		            	    cp -f bin/docker-deploy.sh ${APP_PATH}
-		            	    
+		            	    cp -f bin/docker-deploy.sh ${APP_PATH}/docker-deploy.sh
+		                    cp -f docker/docker-compose_${DEPLOY_ENV}.yml ${APP_PATH}/docker-compose.yml
+
             	    		cd ${APP_PATH}
-		                    
-		                    cp -f ../bin/docker-deploy.sh docker-deploy.sh
 		                    
 		                    sed -i "s/{{DOCKERUSER}}/${DOCKERUSER}/g" docker-deploy.sh
 							sed -i "s/{{DOCKERPWD}}/${DOCKERPWD}/g" docker-deploy.sh
 							sed -i "s/{{DOCKER_HUB_URL}}/${DOCKER_HUB_URL}/g" docker-deploy.sh
 							sed -i "s/{{IMAGE_REPOSITORY}}/${DOCKER_HUB_WORKSPACE}\\/${APP_NAME}/g" docker-deploy.sh
 							sed -i "s/{{IMAGE_TAG}}/${IMAGE_TAG}/g" docker-deploy.sh
-										
-		                    cp -f docker/docker-compose_${DEPLOY_ENV}.yml docker-compose.yml
-		                    
+
 							sed -i "s/{{DOCKER_IMAGE}}/${DOCKER_HUB_URL}\\/${DOCKER_HUB_WORKSPACE}\\/${APP_NAME}:${IMAGE_TAG}/g" docker-compose.yml
 		            	    '''
 							sshPublisher(publishers: [sshPublisherDesc(configName: 'GameCluster', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
@@ -203,7 +200,6 @@ pipeline {
 										usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true)])
 					sh 'rm -f ui.zip'
 				}
-
 	        }
 	    }
     }

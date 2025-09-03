@@ -43,31 +43,31 @@ public abstract class BaseEntity implements Serializable {
 	public static final String Field_updateTime = "update_time";
 
 	@XComment("{CC.ENTITY.CREATE_BY}")
-	@ExcelProperty("创建者")
+	@ExcelProperty("{CC.ENTITY.CREATE_BY}")
 	@TableField("create_by")
 	private String createBy;
 
 	@XComment("{CC.ENTITY.CREATE_TIME}")
 	@ColumnWidth(16)
-	@ExcelProperty(value = "创建时间", converter = LocalDateTimeConverter.class)
+	@ExcelProperty(value = "{CC.ENTITY.CREATE_TIME}", converter = LocalDateTimeConverter.class)
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@TableField(Field_createTime)
 	private LocalDateTime createTime;
 
 	@XComment("{CC.ENTITY.UPDATE_BY}")
-	@ExcelProperty("更新者")
+	@ExcelProperty("{CC.ENTITY.UPDATE_BY}")
 	@TableField("update_by")
 	private String updateBy;
 
 	@XComment("{CC.ENTITY.UPDATE_TIME}")
 	@ColumnWidth(16)
-	@ExcelProperty(value = "更新时间", converter = LocalDateTimeConverter.class)
+	@ExcelProperty(value = "{CC.ENTITY.UPDATE_TIME}", converter = LocalDateTimeConverter.class)
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@TableField(Field_updateTime)
 	private LocalDateTime updateTime;
 
 	@XComment("{CC.ENTITY.REMARK}")
-	@ExcelProperty("备注")
+	@ExcelProperty("{CC.ENTITY.REMARK}")
 	private String remark;
 
 	@TableField(exist = false)

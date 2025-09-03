@@ -17,6 +17,9 @@ package com.chestnut.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysUser;
+import com.chestnut.system.domain.dto.CreateUserRequest;
+import com.chestnut.system.domain.dto.ResetUserPwdRequest;
+import com.chestnut.system.domain.dto.UpdateUserRequest;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -74,7 +77,7 @@ public interface ISysUserService extends IService<SysUser> {
 	 * 
 	 * @param user 用户信息
 	 */
-	void insertUser(SysUser user);
+	void insertUser(CreateUserRequest user);
 
 	/**
 	 * 注册用户信息
@@ -88,7 +91,7 @@ public interface ISysUserService extends IService<SysUser> {
 	 * 
 	 * @param user 用户信息
 	 */
-	void updateUser(SysUser user);
+	void updateUser(UpdateUserRequest user);
 
 	/**
 	 * 用户授权角色
@@ -102,10 +105,8 @@ public interface ISysUserService extends IService<SysUser> {
 
 	/**
 	 * 重置用户密码
-	 * 
-	 * @param user 用户信息
 	 */
-	void resetPwd(SysUser user);
+	void resetPwd(ResetUserPwdRequest req);
 
 	/**
 	 * 批量删除用户信息

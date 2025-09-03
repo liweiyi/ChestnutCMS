@@ -15,14 +15,9 @@
  */
 package com.chestnut.common.utils.image.op;
 
-import org.apache.commons.io.FilenameUtils;
-
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 /**
  * 图片翻转

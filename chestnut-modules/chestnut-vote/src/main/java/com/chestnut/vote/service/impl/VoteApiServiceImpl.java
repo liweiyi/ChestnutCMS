@@ -22,7 +22,7 @@ import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.vote.core.IVoteUserType;
 import com.chestnut.vote.domain.VoteLog;
-import com.chestnut.vote.domain.dto.VoteSubmitDTO;
+import com.chestnut.vote.domain.dto.VoteSubmitRequest;
 import com.chestnut.vote.domain.vo.VoteVO;
 import com.chestnut.vote.exception.VoteErrorCode;
 import com.chestnut.vote.service.IVoteApiService;
@@ -55,7 +55,7 @@ public class VoteApiServiceImpl implements IVoteApiService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void submitVote(VoteSubmitDTO dto) {
+	public void submitVote(VoteSubmitRequest dto) {
 		VoteVO vote = this.getVote(dto.getVoteId());
 		Assert.notNull(vote, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("voteId", dto.getVoteId()));
 

@@ -7,10 +7,7 @@
                 @click="handleEdit"
                 fit="scale-down">
       </el-image>
-      <el-image-viewer v-if="showImageViewer" 
-                       :on-close="handleImageViewerClose"
-                       :url-list="imageViewerList">
-      </el-image-viewer>
+      <el-image-viewer v-if="showImageViewer" :z-index="zIndexImageViewer" :on-close="handleImageViewerClose" :url-list="imageViewerList"></el-image-viewer>
       <div class="toolbar">
          <el-tooltip class="item" effect="dark" :content="$t('Common.View')" placement="top">
           <i class="el-icon-search" @click="handleView" />
@@ -143,6 +140,7 @@ export default {
       originalSrc: this.src,
       openResourceDialog: false,
       showImageViewer: false,
+      zIndexImageViewer: 2002,
       imageViewerList: [],
       currentSiteId: '0',
     };

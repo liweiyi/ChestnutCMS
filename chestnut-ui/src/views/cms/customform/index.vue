@@ -152,10 +152,10 @@
       append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="130px">
         <el-form-item :label="$t('CMS.CustomForm.Name')" prop="name">
-          <el-input v-model="form.name" :maxlength="30" />
+          <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item :label="$t('CMS.CustomForm.Code')" prop="code">
-          <el-input v-model="form.code" :maxlength="30" />
+          <el-input v-model="form.code" />
         </el-form-item>
         <el-form-item v-if="!form.formId || form.formId == 0" :label="$t('CMS.CustomForm.TableName')" prop="tableName">
           <el-select v-model="form.tableName" filterable>
@@ -218,6 +218,7 @@
   </div>
 </template>
 <script>
+import { codeValidator } from '@/utils/validate';
 import { listModelDataTables } from "@/api/meta/model";
 import { getLimitRules, listCustomForms, getCustomForm, addCustomForm, editCustomForm, deleteCustomForms, publishCustomForm, offlineCustomForm } from "@/api/customform/customform";
 
@@ -254,16 +255,23 @@ export default {
       },
       rules: {
         name: [
-          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: [ "change", "blur" ] }
         ],
         code: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('Common.RuleTips.Code'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 50, message: this.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: [ "change", "blur" ] },
+          { validator: codeValidator, trigger: "change" }
         ],
         tableName: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { max: 100, message: this.$t('Common.RuleTips.MaxLength', [ 100 ]), trigger: [ "change", "blur" ] }
         ],
         ruleLimit: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+        ],
+        remark: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: [ "change", "blur" ] }
         ]
       },
       limitRuleOptions: [],

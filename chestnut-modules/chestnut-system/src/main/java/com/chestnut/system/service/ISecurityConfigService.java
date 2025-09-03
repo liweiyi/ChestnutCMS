@@ -15,42 +15,39 @@
  */
 package com.chestnut.system.service;
 
-import java.util.List;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysSecurityConfig;
+import com.chestnut.system.domain.dto.CreateSecurityConfigRequest;
+import com.chestnut.system.domain.dto.UpdateSecurityConfigRequest;
 import com.chestnut.system.security.ISecurityUser;
+
+import java.util.List;
 
 public interface ISecurityConfigService extends IService<SysSecurityConfig> {
 	
 	/**
 	 * 获取安全配置信息
-	 * 
-	 * @return
 	 */
 	SysSecurityConfig getSecurityConfig();
 	
 	/**
 	 * 添加安全配置信息
 	 * 
-	 * @param config
-	 * @return
+	 * @param req 安全配置数据
 	 */
-	void addConfig(SysSecurityConfig config);
+	void addConfig(CreateSecurityConfigRequest req);
 
 	/**
 	 * 保存安全配置信息
 	 * 
-	 * @param config
-	 * @return
+	 * @param req 安全配置数据
 	 */
-	void saveConfig(SysSecurityConfig config);
+	void saveConfig(UpdateSecurityConfigRequest req);
 	
 	/**
 	 * 删除安全配置信息
 	 * 
-	 * @param configIds
-	 * @param operator
+	 * @param configIds 配置ID列表
 	 */
 	void deleteConfigs(List<Long> configIds);
 	
@@ -58,10 +55,9 @@ public interface ISecurityConfigService extends IService<SysSecurityConfig> {
 	 * 密码错误处理，如果触发了安全策略返回false。
 	 * 
 	 * @param user
-	 * @param password
-	 * @return
+	 * @return 结果
 	 */
-	public boolean processLoginPasswordError(ISecurityUser user);
+	boolean processLoginPasswordError(ISecurityUser user);
 
 	/**
 	 * 登录成功处理

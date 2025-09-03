@@ -18,7 +18,7 @@ package com.chestnut.system.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.system.domain.SysPermission;
-import com.chestnut.system.domain.dto.SysPermissionDTO;
+import com.chestnut.system.domain.dto.SavePermissionRequest;
 import jakarta.annotation.Nullable;
 
 import java.util.Set;
@@ -59,7 +59,7 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	 * 
 	 * @param dto
 	 */
-	void saveMenuPermissions(SysPermissionDTO dto);
+	void saveMenuPermissions(SavePermissionRequest dto);
 
 	/**
 	 * 获取指定类型权限列表

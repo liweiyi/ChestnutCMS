@@ -36,8 +36,8 @@ import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.customform.CmsCustomFormMetaModelType;
 import com.chestnut.customform.CustomFormConsts;
 import com.chestnut.customform.domain.CmsCustomForm;
-import com.chestnut.customform.domain.dto.CustomFormAddDTO;
-import com.chestnut.customform.domain.dto.CustomFormEditDTO;
+import com.chestnut.customform.domain.dto.CreateCustomFormRequest;
+import com.chestnut.customform.domain.dto.UpdateCustomFormRequest;
 import com.chestnut.customform.fixed.dict.CustomFormStatus;
 import com.chestnut.customform.mapper.CustomFormMapper;
 import com.chestnut.customform.publishpipe.PublishPipeProp_CustomFormTemplate;
@@ -84,7 +84,7 @@ public class CustomFormServiceImpl extends ServiceImpl<CustomFormMapper, CmsCust
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void addCustomForm(CustomFormAddDTO dto) {
+	public void addCustomForm(CreateCustomFormRequest dto) {
 		CmsCustomForm customForm = new CmsCustomForm();
 		customForm.setFormId(IdUtils.getSnowflakeId());
 		customForm.setSiteId(dto.getSiteId());
@@ -111,7 +111,7 @@ public class CustomFormServiceImpl extends ServiceImpl<CustomFormMapper, CmsCust
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void editCustomForm(CustomFormEditDTO dto) {
+	public void editCustomForm(UpdateCustomFormRequest dto) {
 		CmsCustomForm form = this.getById(dto.getFormId());
 		Assert.notNull(form, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("formId", dto.getFormId()));
 

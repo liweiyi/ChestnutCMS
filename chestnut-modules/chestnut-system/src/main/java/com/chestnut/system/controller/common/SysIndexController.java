@@ -16,12 +16,10 @@
 package com.chestnut.system.controller.common;
 
 import com.chestnut.common.config.properties.ChestnutProperties;
+import com.chestnut.common.i18n.I18nUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.chestnut.common.utils.StringUtils;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * 首页
@@ -40,6 +38,6 @@ public class SysIndexController {
 	 */
 	@RequestMapping("/")
 	public String index() {
-		return StringUtils.messageFormat("欢迎使用{0}，当前版本：v{1}，请通过前端地址访问。", properties.getName(), properties.getVersion());
+		return I18nUtils.parse("TIPS.SYS.WELCOME", properties.getName(), properties.getVersion());
 	}
 }

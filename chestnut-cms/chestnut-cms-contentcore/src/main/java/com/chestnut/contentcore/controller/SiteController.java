@@ -26,6 +26,7 @@ import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
@@ -257,7 +258,7 @@ public class SiteController extends BaseRestController {
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", dto.getSiteId()));
 
         if (!dto.isPublishIndex()) {
-            AsyncTask task = publishService.publishAll(site, dto.getContentStatus(), StpAdminUtil.getLoginUser());
+            AsyncTask task = publishService.publishAll(site, dto.getContentStatus(), Operator.of(StpAdminUtil.getLoginUser()));
             return R.ok(task.getTaskId());
         }
         publishService.publishSiteIndex(site);

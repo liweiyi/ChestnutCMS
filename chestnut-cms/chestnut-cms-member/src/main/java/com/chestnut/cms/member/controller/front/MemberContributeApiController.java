@@ -19,7 +19,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.article.ArticleContent;
 import com.chestnut.article.ArticleContentType;
+import com.chestnut.article.IArticleBodyFormat;
 import com.chestnut.article.domain.CmsArticleDetail;
+import com.chestnut.article.format.ArticleBodyFormat_RichText;
 import com.chestnut.article.service.IArticleService;
 import com.chestnut.cms.member.domain.dto.ArticleContributeDTO;
 import com.chestnut.cms.member.domain.vo.MemberContentVO;
@@ -27,7 +29,7 @@ import com.chestnut.cms.member.properties.EnableContributeProperty;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -71,6 +73,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.chestnut.common.utils.SortUtils.getDefaultSortValue;
 
@@ -111,13 +114,14 @@ public class MemberContributeApiController extends BaseRestController implements
 		if (!ContentStatus.isDraft(xContent.getStatus())) {
 			return R.fail("只能删除待审核的初稿");
 		}
-		if (xContent.getContributorId() != StpMemberUtil.getLoginIdAsLong()) {
+		Operator operator = Operator.of(StpMemberUtil.getLoginUser());
+		if (!Objects.equals(xContent.getContributorId(), operator.getUserId())) {
 			return R.fail("内容ID错误");
 		}
 
 		IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
 		IContent<?> content = contentType.loadContent(xContent);
-		content.setOperator(StpMemberUtil.getLoginUser());
+		content.setOperator(operator);
 		transactionTemplate.executeWithoutResult(transactionStatus -> content.delete());
 		applicationContext.publishEvent(new AfterContentDeleteEvent(this, content));
 		return R.ok();
@@ -144,10 +148,10 @@ public class MemberContributeApiController extends BaseRestController implements
 		if (!EnableContributeProperty.getValue(catalog.getConfigProps())) {
 			return R.fail("参数`catalogId`异常：" + dto.getCatalogId());
 		}
-		LoginUser loginUser = StpMemberUtil.getLoginUser();
+		Operator operator = Operator.of(StpMemberUtil.getLoginUser());
 		if (IdUtils.validate(dto.getContentId())) {
 			CmsContent cmsContent = this.contentService.dao().getById(dto.getContentId());
-			if (!loginUser.getUserId().equals(cmsContent.getContributorId())) {
+			if (!operator.getUserId().equals(cmsContent.getContributorId())) {
 				return R.fail("内容ID错误");
 			}
 			if (!ContentStatus.isDraft(cmsContent.getStatus())) {
@@ -163,7 +167,7 @@ public class MemberContributeApiController extends BaseRestController implements
 			cmsContent.setTags(dto.getTags().toArray(String[]::new));
 			// 重置发布状态
 			cmsContent.setStatus(ContentStatus.DRAFT);
-			cmsContent.updateBy(loginUser.getUsername());
+			cmsContent.updateBy(operator.getUsername());
 			if (!dto.getCatalogId().equals(cmsContent.getCatalogId())) {
 				CmsCatalog fromCatalog = this.catalogService.getCatalog(cmsContent.getCatalogId());
 				CmsCatalog toCatalog = this.catalogService.getCatalog(dto.getCatalogId());
@@ -178,11 +182,16 @@ public class MemberContributeApiController extends BaseRestController implements
 			}
 			CmsArticleDetail articleDetail = this.articleService.dao().getById(cmsContent.getContentId());
 			articleDetail.setContentHtml(dto.getContentHtml());
+			IArticleBodyFormat articleBodyFormat = articleService.getArticleBodyFormat(dto.getFormat());
+			if (Objects.isNull(articleBodyFormat)) {
+				dto.setFormat(ArticleBodyFormat_RichText.ID);
+			}
+			articleDetail.setFormat(dto.getFormat());
 
 			ArticleContent content = new ArticleContent();
 			content.setContentEntity(cmsContent);
 			content.setExtendEntity(articleDetail);
-			content.setOperator(loginUser);
+			content.setOperator(operator);
 			applicationContext.publishEvent(new BeforeContentSaveEvent(this, content, false));
 			content.save();
 			applicationContext.publishEvent(new AfterContentSaveEvent(this, content, false));
@@ -218,7 +227,7 @@ public class MemberContributeApiController extends BaseRestController implements
 			if (content.hasExtendEntity() && StringUtils.isEmpty(extendEntity.getContentHtml())) {
 				throw CommonErrorCode.NOT_EMPTY.exception("contentHtml");
 			}
-			content.setOperator(StpMemberUtil.getLoginUser());
+			content.setOperator(operator);
 			applicationContext.publishEvent(new BeforeContentSaveEvent(this, content, true));
 			content.add();
 			applicationContext.publishEvent(new AfterContentSaveEvent(this, content, true));

@@ -25,7 +25,9 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.domain.SearchWordHourStat;
-import com.chestnut.search.domain.dto.SearchWordToppingDTO;
+import com.chestnut.search.domain.dto.CreateSearchWordRequest;
+import com.chestnut.search.domain.dto.SearchWordToppingRequest;
+import com.chestnut.search.domain.dto.UpdateSearchWordRequest;
 import com.chestnut.search.mapper.SearchWordMapper;
 import com.chestnut.search.service.ISearchWordHourStatService;
 import com.chestnut.search.service.ISearchWordService;
@@ -68,27 +70,31 @@ public class SearchWordServiceImpl extends ServiceImpl<SearchWordMapper, SearchW
 	}
 
 	@Override
-	public void addWord(SearchWord word) {
-		Long count = this.lambdaQuery().eq(SearchWord::getWord, word.getWord()).count();
-		Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception("word"));
+	public void addWord(CreateSearchWordRequest req) {
+		Long count = this.lambdaQuery().eq(SearchWord::getWord, req.getWord()).count();
+		Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception("req"));
 
-		word.setWordId(IdUtils.getSnowflakeId());
-		word.setTopFlag(0L);
-		this.save(word);
+		SearchWord searchWord = new SearchWord();
+		searchWord.setWordId(IdUtils.getSnowflakeId());
+		searchWord.setTopFlag(0L);
+		searchWord.setWord(req.getWord());
+		searchWord.setSearchTotal(req.getSearchTotal());
+		searchWord.createBy(req.getOperator().getUsername());
+		this.save(searchWord);
 	}
 
 	@Override
-	public void editWord(SearchWord word) {
-		Long count = this.lambdaQuery().eq(SearchWord::getWord, word.getWord())
-				.ne(SearchWord::getWord, word.getWord()).count();
-		Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception("word"));
+	public void editWord(UpdateSearchWordRequest req) {
+		Long count = this.lambdaQuery().eq(SearchWord::getWord, req.getWord())
+				.ne(SearchWord::getWord, req.getWord()).count();
+		Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception("req"));
 
-		SearchWord dbWord = this.getById(word.getWordId());
-		dbWord.setWord(word.getWord());
-		dbWord.setSearchTotal(word.getSearchTotal());
-		dbWord.setTopFlag(word.getTopFlag());
-		dbWord.setTopDate(word.getTopDate());
-		dbWord.updateBy(word.getUpdateBy());
+		SearchWord dbWord = this.getById(req.getWordId());
+		Assert.notNull(dbWord, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("wordId", req.getWordId()));
+
+		dbWord.setWord(req.getWord());
+		dbWord.setSearchTotal(req.getSearchTotal());
+		dbWord.updateBy(req.getOperator().getUsername());
 		this.updateById(dbWord);
 	}
 
@@ -104,12 +110,12 @@ public class SearchWordServiceImpl extends ServiceImpl<SearchWordMapper, SearchW
 	}
 
 	@Override
-	public void setTop(SearchWordToppingDTO dto) {
-		List<SearchWord> wordStats = this.listByIds(dto.getWordIds());
+	public void setTop(SearchWordToppingRequest req) {
+		List<SearchWord> wordStats = this.listByIds(req.getWordIds());
 		for (SearchWord wordStat : wordStats) {
 			wordStat.setTopFlag(Instant.now().toEpochMilli());
-			wordStat.setTopDate(dto.getTopEndTime());
-			wordStat.updateBy(dto.getOperator().getUsername());
+			wordStat.setTopDate(req.getTopEndTime());
+			wordStat.updateBy(req.getOperator().getUsername());
 		}
 		this.updateBatchById(wordStats);
 	}

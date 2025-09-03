@@ -61,6 +61,7 @@
   </div>
 </template>
 <script>
+import { codeValidator } from '@/utils/validate';
 import { getHotWordGroupTreeData, addHotWordGroup, editHotWordGroup, deleteHotWordGroup } from "@/api/word/hotWord";
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
@@ -95,10 +96,11 @@ export default {
       },
       rules: {
         name: [
-          { required: true, message: this.$t('Common.NotEmpty'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         code: [
-          { required: true, pattern: "^[A-Za-z0-9_]+$", message: this.$t('Common.RuleTips.Code'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
         ]
       }
     };

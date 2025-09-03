@@ -17,7 +17,6 @@ package com.chestnut.common.utils.image;
 
 import java.awt.*;
 import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
 
 /**
@@ -43,6 +42,8 @@ public interface ImageProcessor {
     ImageOp flip(boolean horizontal);
 
     ImageOp textWatermark(String text, Font font, Color color, float opacity, WatermarkPosition position);
+
+    ImageOp textWatermark(String text, Font font, Color color, float opacity, TextWatermarkProperties point);
 
     ImageOp imageWatermark(File watermarkImageFile, float ratio, float opacity, WatermarkPosition position);
 

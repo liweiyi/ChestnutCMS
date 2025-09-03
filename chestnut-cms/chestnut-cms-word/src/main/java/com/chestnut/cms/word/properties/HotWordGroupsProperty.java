@@ -65,12 +65,19 @@ public class HotWordGroupsProperty implements IProperty {
 		}
 		return EMPTY_VALUE;
 	}
-	
-	public static String[] getHotWordGroupCodes(Map<String, String> firstProps, Map<String, String> secondProps) {
-		String propValue = ConfigPropertyUtils.getStringValue(ID, firstProps, secondProps);
-		if (StringUtils.isNotEmpty(propValue)) {
-			return JacksonUtils.from(propValue, String[].class);
-		}
-		return EMPTY_VALUE;
-	}
+
+    public static String[] getHotWordGroupCodes(Map<String, String> firstProps, Map<String, String> secondProps) {
+        String propValue = ConfigPropertyUtils.getStringValue(ID, firstProps);
+        if (StringUtils.isNotEmpty(propValue)) {
+            String[] hotGroupIds = JacksonUtils.from(propValue, String[].class);
+            if (hotGroupIds.length > 0) {
+                return hotGroupIds;
+            }
+        }
+        propValue = ConfigPropertyUtils.getStringValue(ID, secondProps);
+        if (StringUtils.isNotEmpty(propValue)) {
+            return JacksonUtils.from(propValue, String[].class);
+        }
+        return EMPTY_VALUE;
+    }
 }

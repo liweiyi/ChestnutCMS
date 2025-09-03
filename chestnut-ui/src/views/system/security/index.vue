@@ -214,6 +214,24 @@ export default {
         passwordLenMin: [
           { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
+        passwordLenMax: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        passwordRule: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        passwordExpireSeconds: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        passwordRetryLimit: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        passwordRetryStrategy: [
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+        ],
+        weakPasswords: [
+          { max: 500, message: this.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: "blur" }
+        ]
       }
     };
   },

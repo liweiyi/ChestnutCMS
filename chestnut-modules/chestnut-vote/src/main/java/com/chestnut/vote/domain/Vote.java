@@ -15,25 +15,25 @@
  */
 package com.chestnut.vote.domain;
 
-import java.io.Serial;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
+import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.system.validator.Dict;
 import com.chestnut.vote.fixed.dict.VoteStatus;
-
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serial;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 问卷调查表
@@ -59,7 +59,7 @@ public class Vote extends BaseEntity {
 	 * 唯一标识编码
 	 */
 	@XComment("{CC.VOTE.CODE}")
-	@Pattern(regexp = "^[A-Za-z0-9_]+$", message = "编码不能为空且只能使用大小写字母及数字组合")
+	@Pattern(regexp = RegexConsts.REGEX_CODE)
 	private String code;
 
 	/**

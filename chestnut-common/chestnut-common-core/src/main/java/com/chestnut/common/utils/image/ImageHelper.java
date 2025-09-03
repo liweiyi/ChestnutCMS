@@ -305,6 +305,13 @@ public class ImageHelper {
         return this;
     }
 
+    public ImageHelper textWatermark(String text, Font font, Color color, float opacity, TextWatermarkProperties point) {
+        ImageOp op = ImageUtils.getImageProcessor().textWatermark(text, font, color, opacity, point);
+        op.validate();
+        this.imageOps.add(op);
+        return this;
+    }
+
     /**
      * 转换图片格式
      *

@@ -39,7 +39,7 @@ public class LogController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping
-	public R<?> getMenus() throws Exception {
+	public R<?> getMenus() {
 		return this.bindDataTable(this.logMenus);
 	}
 }

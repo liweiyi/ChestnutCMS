@@ -15,14 +15,15 @@
  */
 package com.chestnut.member.service;
 
-import java.util.List;
-import java.util.Map;
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.member.domain.MemberLevelConfig;
-import com.chestnut.member.domain.dto.LevelConfigDTO;
+import com.chestnut.member.domain.dto.CreateLevelConfigRequest;
+import com.chestnut.member.domain.dto.UpdateLevelConfigRequest;
 import com.chestnut.member.level.ILevelType;
 import com.chestnut.member.level.LevelManager;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 会员等级配置 服务类
@@ -33,16 +34,16 @@ public interface IMemberLevelConfigService extends IService<MemberLevelConfig> {
 	/**
 	 * 新增等级配置
 	 * 
-	 * @param dto
+	 * @param req
 	 */
-	void addLevelConfig(LevelConfigDTO dto);
+	void addLevelConfig(CreateLevelConfigRequest req);
 	
 	/**
 	 * 更新等级配置
 	 * 
-	 * @param dto
+	 * @param req
 	 */
-	void updateLevelConfig(LevelConfigDTO dto);
+	void updateLevelConfig(UpdateLevelConfigRequest req);
 	
 	/**
 	 * 删除等级配置

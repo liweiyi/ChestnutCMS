@@ -20,12 +20,9 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.chestnut.common.db.domain.BaseEntity;
-import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.fixed.dict.YesOrNo;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -118,10 +115,6 @@ public class SysSecurityConfig extends BaseEntity {
 	 * 密码重试安全策略锁定时长，单位：秒
 	 */
 	private Integer passwordRetryLockSeconds;
-	
-	@JsonIgnore
-	@TableField(exist = false)
-	private LoginUser operator;
 	
 	public boolean isEnable() {
 		return EnableOrDisable.isEnable(this.status);

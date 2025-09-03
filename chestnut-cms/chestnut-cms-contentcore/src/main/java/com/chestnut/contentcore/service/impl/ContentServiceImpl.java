@@ -21,6 +21,7 @@ import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -40,6 +41,7 @@ import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.*;
+import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.properties.RepeatTitleCheckProperty;
 import com.chestnut.contentcore.publish.IContentPathRule;
@@ -104,20 +106,16 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public void deleteContent(CmsContent cmsContent, LoginUser operator, Map<String, Object> params) {
+	public void deleteContent(CmsContent cmsContent, LoginUser loginUser, Map<String, Object> params) {
 		boolean canDelete = ContentStatus.isDraft(cmsContent.getStatus()) || ContentStatus.isOffline(cmsContent.getStatus());
 		Assert.isTrue(canDelete, ContentCoreErrorCode.DEL_CONTENT_ERR::exception);
 
 		IContentType contentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
 		IContent<?> content = contentType.loadContent(cmsContent);
-		content.setOperator(operator);
+		content.setOperator(Operator.of(loginUser));
 		content.setParams(params);
 		transactionTemplate.executeWithoutResult(transactionStatus -> deleteContent0(content));
 		SpringUtils.publishEvent(new AfterContentDeleteEvent(this, content));
-	}
-
-	private void deleteContent0(IContent<?> content) {
-		content.delete();
 		// 删除映射内容
 		List<CmsContent> mappingList = this.dao().lambdaQuery()
 				.eq(CmsContent::getCopyType, ContentCopyType.Mapping)
@@ -126,15 +124,21 @@ public class ContentServiceImpl implements IContentService {
 		for (CmsContent mappingContent : mappingList) {
 			log.debug("CC.Content[{}].delete: mapping content delete", content.getContentEntity().getContentId());
 			try {
-				deleteContent(mappingContent, content.getOperator(), Map.of(
-						IContent.PARAM_IS_DELETE_BY_CATALOG, content.getParams().get(IContent.PARAM_IS_DELETE_BY_CATALOG)
-				));
+				IContentType mappingContentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
+				IContent<?> mappingIContent = mappingContentType.loadContent(cmsContent);
+				mappingIContent.setOperator(Operator.of(loginUser));
+				mappingIContent.setParams(params);
+				transactionTemplate.executeWithoutResult(transactionStatus -> deleteContent0(mappingIContent));
+				SpringUtils.publishEvent(new AfterContentDeleteEvent(this, mappingIContent));
 			} catch (Exception e) {
 				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.DELETING_MAPPING_CONTENT.locale(
 						mappingContent.getTitle(), mappingContent.getContentId()));
 			}
 		}
-		// 删除相关内容
+	}
+
+	private void deleteContent0(IContent<?> content) {
+		content.delete();
 		contentRelaService.onContentDelete(content.getContentEntity().getContentId());
 		// TODO 删除内容历史版本？
 	}
@@ -170,13 +174,13 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public void deleteContentsByCatalog(CmsCatalog catalog, boolean includeChild, LoginUser operator) {
+	public void deleteContentsByCatalog(CmsCatalog catalog, boolean includeChild, LoginUser loginUser) {
 		long pageSize = 100;
 		long total = this.dao().lambdaQuery()
 				.eq(!includeChild, CmsContent::getCatalogId, catalog.getCatalogId())
 				.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors())
 				.count();
-
+		Operator operator = Operator.of(loginUser);
 		for (int i = 0; i * pageSize < total; i++) {
 			AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize / total),
 					"正在栏目删除内容：" + (i * pageSize) + " / " + total);
@@ -307,6 +311,8 @@ public class ContentServiceImpl implements IContentService {
 					CmsContent cmsContent = dao().getById(contentId);
 					if (Objects.nonNull(cmsContent)) {
 						for (CmsCatalog catalog : catalogs) {
+							// 校验权限
+							PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.AddContent.getPermissionKey(catalog.getCatalogId()), dto.getOperator());
                             CmsContent copyContent = copy0(cmsContent, catalog, dto.getCopyType(), dto.getOperator());
 							SpringUtils.publishEvent(new AfterContentCopyEvent(this, cmsContent, copyContent));
 						}
@@ -321,12 +327,12 @@ public class ContentServiceImpl implements IContentService {
 
 	}
 
-	private CmsContent copy0(CmsContent cmsContent, CmsCatalog toCatalog, Integer copyType, LoginUser operator) {
+	private CmsContent copy0(CmsContent cmsContent, CmsCatalog toCatalog, Integer copyType, LoginUser loginUser) {
 		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.COPYING_CONTENT.locale(AsyncTaskManager.getLocale(),
 				cmsContent.getTitle(), toCatalog.getName()));
 		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 		IContent<?> content = ct.loadContent(cmsContent);
-		content.setOperator(operator);
+		content.setOperator(Operator.of(loginUser));
 		return transactionTemplate.execute(transactionStatus -> content.copyTo(toCatalog, copyType));
 	}
 
@@ -357,7 +363,9 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public void moveContent(CmsContent cmsContent, CmsCatalog toCatalog, LoginUser operator) {
+	public void moveContent(CmsContent cmsContent, CmsCatalog toCatalog, LoginUser loginUser) {
+		// 校验权限
+		PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.AddContent.getPermissionKey(toCatalog.getCatalogId()), loginUser);
 		if (cmsContent.getCatalogId().equals(toCatalog.getCatalogId())) {
 			log.warn("Cannot move content to source catalog!");
 			return;
@@ -366,7 +374,7 @@ public class ContentServiceImpl implements IContentService {
 				cmsContent.getTitle(), toCatalog.getName()));
 		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 		IContent<?> content = ct.loadContent(cmsContent);
-		content.setOperator(operator);
+		content.setOperator(Operator.of(loginUser));
 		transactionTemplate.executeWithoutResult(transactionStatus -> content.moveTo(toCatalog));
 	}
 
@@ -376,7 +384,7 @@ public class ContentServiceImpl implements IContentService {
 		for (CmsContent c : contents) {
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
-			content.setOperator(dto.getOperator());
+			content.setOperator(Operator.of(dto.getOperator()));
 			transactionTemplate.executeWithoutResult(transactionStatus -> content.setTop(dto.getTopEndTime()));
 			SpringUtils.publishEvent(new AfterContentTopSetEvent(this, content));
 		}
@@ -391,7 +399,7 @@ public class ContentServiceImpl implements IContentService {
 		for (CmsContent c : contents) {
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
-			content.setOperator(operator);
+			content.setOperator(Operator.of(operator));
 			transactionTemplate.executeWithoutResult(transactionStatus -> content.cancelTop());
 			SpringUtils.publishEvent(new AfterContentTopCancelEvent(this, content));
 		}
@@ -420,11 +428,11 @@ public class ContentServiceImpl implements IContentService {
 		offline0(cmsContent, operator, LocaleContextHolder.getLocale());
 	}
 
-	private void offline0(CmsContent cmsContent, LoginUser operator, Locale locale) {
+	private void offline0(CmsContent cmsContent, LoginUser loginUser, Locale locale) {
 		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.OFFLINE_CONTENT.locale(locale, cmsContent.getTitle()));
 		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 		IContent<?> content = ct.loadContent(cmsContent);
-		content.setOperator(operator);
+		content.setOperator(Operator.of(loginUser));
 		transactionTemplate.executeWithoutResult(transactionStatus -> content.offline());
 		// 映射关联内容同步下线
 		if (!cmsContent.isLinkContent() && !ContentCopyType.isMapping(cmsContent.getCopyType())) {
@@ -435,7 +443,7 @@ public class ContentServiceImpl implements IContentService {
 			for (CmsContent c : mappingList) {
 				log.debug("CC.Content[{}].offline: mapping content offline", cmsContent.getContentId());
 				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.OFFLINE_MAPPING_CONTENT.locale(locale, c.getTitle()));
-				offline0(c, operator, locale);
+				offline0(c, loginUser, locale);
 			}
 		}
 		SpringUtils.publishEvent(new AfterContentOfflineEvent(this, content));
@@ -447,7 +455,7 @@ public class ContentServiceImpl implements IContentService {
 		CmsContent c = this.dao().getById(dto.getContentId());
 		IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 		IContent<?> content = ct.loadContent(c);
-		content.setOperator(dto.getOperator());
+		content.setOperator(Operator.of(dto.getOperator()));
 		content.sort(dto.getTargetContentId());
 	}
 
@@ -460,10 +468,10 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public void toPublish(CmsContent cmsContent, LoginUser operator) {
+	public void toPublish(CmsContent cmsContent, LoginUser loginUser) {
 		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 		IContent<?> content = ct.loadContent(cmsContent);
-		content.setOperator(operator);
+		content.setOperator(Operator.of(loginUser));
 		transactionTemplate.executeWithoutResult(transactionStatus -> content.toPublish());
 		SpringUtils.publishEvent(new AfterContentToPublishEvent(this, content));
 	}

@@ -22,8 +22,10 @@ import com.chestnut.common.captcha.ICaptchaType;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.system.annotation.IgnoreDemoMode;
+import com.chestnut.system.domain.dto.CheckCaptchaRequest;
 import com.chestnut.system.fixed.config.SysCaptchaEnable;
 import com.chestnut.system.fixed.config.SysCaptchaType;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,9 +41,8 @@ public class CaptchaController extends BaseRestController {
 
 	private final CaptchaService captchaService;
 
-
 	@GetMapping("/get")
-	public R<?> getCaptcha(@RequestParam String type) {
+	public R<?> getCaptcha(@RequestParam @NotBlank String type) {
 		ICaptchaType captchaType = captchaService.getCaptchaType(type);
 		Object o = captchaType.create(new CaptchaData(type));
 		return R.ok(o);
@@ -49,9 +50,13 @@ public class CaptchaController extends BaseRestController {
 
 	@IgnoreDemoMode
 	@PostMapping("/check")
-	public R<?> checkCaptcha(@RequestParam String type, @RequestBody CaptchaData captchaData) {
+	public R<?> checkCaptcha(@RequestParam @NotBlank String type, @RequestBody CheckCaptchaRequest req) {
 		ICaptchaType captchaType = captchaService.getCaptchaType(type);
         try {
+			CaptchaData captchaData = new CaptchaData();
+			captchaData.setType(type);
+			captchaData.setToken(req.getToken());
+			captchaData.setData(req.getData());
 			CaptchaCheckResult result = captchaType.check(captchaData);
 			return R.ok(result);
 		} catch (Exception e) {

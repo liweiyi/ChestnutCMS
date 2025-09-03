@@ -109,7 +109,7 @@ public class CmsContentTag extends AbstractListTag {
 		}
 		String level = MapUtils.getString(attrs, ATTR_LEVEL);
 		if (!LevelTagAttr.isRoot(level) && Objects.isNull(catalog)) {
-			throw new CatalogNotFoundException(getTagName(), catalogId, alias, env);
+			throw new CatalogNotFoundException(catalogId, alias, env);
 		}
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 		String status = MapUtils.getString(attrs, ATTR_STATUS, ContentStatus.PUBLISHED);

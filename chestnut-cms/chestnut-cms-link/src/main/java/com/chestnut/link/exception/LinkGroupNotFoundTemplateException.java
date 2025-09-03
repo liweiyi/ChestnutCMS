@@ -28,6 +28,6 @@ import freemarker.template.TemplateException;
 public class LinkGroupNotFoundTemplateException extends TemplateException {
 
     public LinkGroupNotFoundTemplateException(String linkGroupCode, Environment env) {
-        super(I18nUtils.get("FREEMARKER.ERR.LinkGroupNotFound"), env);
+        super(I18nUtils.parse("FREEMARKER.ERR.LinkGroupNotFound", env.getLocale(), linkGroupCode), env);
     }
 }

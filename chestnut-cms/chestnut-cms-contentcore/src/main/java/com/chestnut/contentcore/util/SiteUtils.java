@@ -21,6 +21,7 @@ import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Site;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_PrefixMode;
+import com.chestnut.contentcore.core.impl.PublishPipeProp_RelativePrefix;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.enums.SitePrefixMode;
 import com.chestnut.system.fixed.config.BackendContext;
@@ -48,7 +49,7 @@ public class SiteUtils {
         }
         String pathMode = PublishPipeProp_PrefixMode.getValue(publishPipeCode, site.getPublishPipeProps());
         if (SitePrefixMode.isRelative(pathMode)) {
-            return "/";
+            return PublishPipeProp_RelativePrefix.getValue(publishPipeCode, site.getPublishPipeProps());
         }
         return site.getUrl(publishPipeCode);
     }
@@ -81,7 +82,7 @@ public class SiteUtils {
     }
 
     /**
-     * 获取站点资源文件访问链接前缀
+     * 获取站点资源文件访问链接前缀，非预览模式为设置资源域名则使用指定发布通道域名
      *
      * @param site 站点
      * @param publishPipeCode 发布通道编码

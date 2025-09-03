@@ -19,14 +19,15 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.member.domain.MemberLike;
-import com.chestnut.member.domain.dto.LikeDTO;
+import com.chestnut.member.domain.dto.LikeRequest;
 import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberLikeService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.validator.LongId;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,7 +49,7 @@ public class MemberLikeApiController extends BaseRestController {
 	 * 点赞内容
 	 */
 	@GetMapping("/check")
-	public R<?> checkLike(@RequestParam @NotEmpty String dataType, @RequestParam @LongId Long dataId) {
+	public R<?> checkLike(@RequestParam @NotBlank @Length(max = 100) String dataType, @RequestParam @LongId Long dataId) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		Long count = this.memberLikeService.lambdaQuery()
 				.eq(MemberLike::getMemberId, memberId)
@@ -63,9 +64,9 @@ public class MemberLikeApiController extends BaseRestController {
 	 */
 	@IgnoreDemoMode
 	@PostMapping
-	public R<?> likeContent(@RequestBody @Validated LikeDTO dto) {
+	public R<?> likeContent(@RequestBody @Validated LikeRequest req) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
-		this.memberLikeService.like(memberId, dto.getDataType(), dto.getDataId());
+		this.memberLikeService.like(memberId, req.getDataType(), req.getDataId());
 		return R.ok();
 	}
 
@@ -74,16 +75,16 @@ public class MemberLikeApiController extends BaseRestController {
 	 */
 	@IgnoreDemoMode
 	@PostMapping("/cancel")
-	public R<?> cancelFavorite(@RequestBody @Validated LikeDTO dto) {
+	public R<?> cancelLike(@RequestBody @Validated LikeRequest req) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
-		this.memberLikeService.cancelLike(memberId, dto.getDataType(), dto.getDataId());
+		this.memberLikeService.cancelLike(memberId, req.getDataType(), req.getDataId());
 		return R.ok();
 	}
 
 	@IgnoreDemoMode
 	@DeleteMapping
 	@Deprecated(since = "1.5.7", forRemoval = true)
-	public R<?> cancelFavorite2(@RequestBody @Validated LikeDTO dto) {
-		return cancelFavorite(dto);
+	public R<?> cancelFavorite2(@RequestBody @Validated LikeRequest req) {
+		return cancelLike(req);
 	}
 }

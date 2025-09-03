@@ -17,8 +17,6 @@ package com.chestnut.common.security.config;
 
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.config.properties.SecurityProperties;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,13 +31,6 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
     public SaTokenConfig(SecurityProperties securityProperties) {
         SecurityUtils.setSecurityProperties(securityProperties);
-    }
-
-    @Autowired
-    public void rewriteGetAnnotationSaStrategy() {
-        // 重写Sa-Token的注解处理器，增加注解合并功能
-//        SaStrategy.me.getAnnotation = (element, annotationClass) ->
-//                AnnotatedElementUtils.getMergedAnnotation(element, annotationClass);
     }
 
     /**

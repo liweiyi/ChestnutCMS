@@ -28,6 +28,7 @@ import com.chestnut.search.service.ISearchLogService;
 import com.chestnut.system.security.AdminUserType;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class SearchLogController extends BaseRestController {
 	
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<SearchLog> page = this.searchLogService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(query), SearchLog::getWord, query)

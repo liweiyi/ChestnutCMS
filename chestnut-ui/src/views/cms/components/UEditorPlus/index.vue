@@ -685,7 +685,30 @@ export default {
                 'Sorry, your browser unsupport embedded audios.' +
                 '</audio></p>';
             } else {
-              html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank" class="art-body-' + r.resourceType + '">' + r.name + '</a></p>'
+              if (r.resourceType == 'unknown' && r.src.lastIndexOf(".") > -1) {
+                // 网络地址处理，尝试根据后缀读取文件类型
+                var index = r.src.lastIndexOf(".");
+                var ext = r.src.substring(index + 1).toLowerCase();
+                if ([ 'jpg', 'jpeg', 'png', 'gif', 'webp', 'ico', 'svg' ].indexOf(ext) > -1) {
+                  html += '<p style="text-align:center;"><img src="' + r.src + '" class="art-body-img" /></p>'
+                } else if([ "mp4", "mpg", "mpeg", "rmvb", "rm", "avi", "wmv", "mov", "flv" ].indexOf(ext) > -1) {
+                  html += '<p class="cc-video-wrap" style="text-align:center;">' +
+                    '<video class="art-body-video edui-video-video" controls="true">' +
+                    '<source src="' + r.src + '" type="video/' + ext + '" />' +
+                    'Sorry, your browser unsupport embedded videos.' +
+                    '</video></p>';
+                } else if([ "mp3", "wav", "wma", "ogg", "aiff", "aac", "flac", "mid" ].indexOf(ext) > -1) {
+                  html += '<p class="cc-audio-wrap" style="text-align:center;">' +
+                    '<audio class="edui-audio-audio" controls="true">' +
+                    '<source src="' + r.src + '" type="audio/mpeg" />' +
+                    'Sorry, your browser unsupport embedded audios.' +
+                    '</audio></p>';
+                } else {
+                  html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank" class="art-body-' + r.resourceType + '">' + r.name + '</a></p>'
+                }
+              } else {
+                html += '<p><a href="' + r.src + '" iurl="' + r.path + '" target="_blank" class="art-body-' + r.resourceType + '">' + r.name + '</a></p>'
+              }
             }
           });
           if (html && html.length > 0) {
@@ -880,7 +903,7 @@ export default {
         });
         editor.registerCommand('xy-replace-word',{
           execCommand:function(cmdName, list){
-            editor.onXyWordReplace(cmdName, words)
+            editor.onXyWordReplace(cmdName, list)
           }
         });
         editor.registerCommand('xy-replace-word2',{

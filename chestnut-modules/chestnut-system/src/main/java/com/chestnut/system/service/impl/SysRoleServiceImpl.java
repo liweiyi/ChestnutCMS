@@ -25,16 +25,19 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.SysUserRole;
+import com.chestnut.system.domain.dto.CreateRoleRequest;
+import com.chestnut.system.domain.dto.UpdateRoleRequest;
+import com.chestnut.system.domain.dto.UpdateRoleStatusRequest;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.mapper.SysRoleMapper;
 import com.chestnut.system.mapper.SysUserRoleMapper;
 import com.chestnut.system.service.ISysRoleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -99,43 +102,43 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void insertRole(SysRole role) {
-		boolean checkRoleUnique = this.checkRoleUnique(role.getRoleName(), role.getRoleKey(), null);
+	public void insertRole(CreateRoleRequest req) {
+		boolean checkRoleUnique = this.checkRoleUnique(req.getRoleName(), req.getRoleKey(), null);
 		Assert.isTrue(checkRoleUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("RoleName,RoleKey"));
-		
-		// 新增角色信息
+
+		SysRole role = new SysRole();
+		BeanUtils.copyProperties(req, role);
 		role.setRoleId(IdUtils.getSnowflakeId());
-		role.setCreateTime(LocalDateTime.now());
+		role.createBy(req.getOperator().getUsername());
 		this.save(role);
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + role.getRoleKey());
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateRole(SysRole role) {
-		SysRole db = this.getById(role.getRoleId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(role.getRoleId()));
-		boolean checkRoleUnique = this.checkRoleUnique(role.getRoleName(), role.getRoleKey(), role.getRoleId());
+	public void updateRole(UpdateRoleRequest req) {
+		SysRole db = this.getById(req.getRoleId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getRoleId()));
+		boolean checkRoleUnique = this.checkRoleUnique(req.getRoleName(), req.getRoleKey(), req.getRoleId());
 		Assert.isTrue(checkRoleUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("RoleName,RoleKey"));
 		
-		// 修改角色信息
-		db.setRoleName(role.getRoleName());
-		db.setRoleKey(role.getRoleKey());
-		db.setStatus(role.getStatus());
-		db.setRoleSort(role.getRoleSort());
-		db.setRemark(role.getRemark());
-		db.setUpdateTime(LocalDateTime.now());
+		db.setRoleName(req.getRoleName());
+		db.setRoleKey(req.getRoleKey());
+		db.setStatus(req.getStatus());
+		db.setRoleSort(req.getRoleSort());
+		db.setRemark(req.getRemark());
+		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
-		this.redisCache.deleteObject(SysConstants.CACHE_SYS_ROLE_KEY + role.getRoleKey());
+		this.redisCache.deleteObject(SysConstants.CACHE_SYS_ROLE_KEY + req.getRoleKey());
 	}
 
 	@Override
-	public void updateRoleStatus(SysRole role) {
-		SysRole db = this.getById(role.getRoleId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(role.getRoleId()));
+	public void updateRoleStatus(UpdateRoleStatusRequest req) {
+		SysRole db = this.getById(req.getRoleId());
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getRoleId()));
 		
-		db.setStatus(role.getStatus());
-		db.setUpdateTime(LocalDateTime.now());
+		db.setStatus(req.getStatus());
+		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_ROLE_KEY + db.getRoleKey());
 	}
@@ -143,10 +146,10 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteRoleByIds(List<Long> roleIds) {
-		for (Long roleId : roleIds) {
-			SysRole role = this.getById(roleId);
+		List<SysRole> roles = listByIds(roleIds);
+		for (SysRole role : roles) {
 			Long userCount = userRoleMapper
-					.selectCount(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, roleId));
+					.selectCount(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, role.getRoleId()));
 			Assert.isTrue(userCount == 0, () -> SysErrorCode.ROLE_USER_NOT_EMPTY.exception(role.getRoleKey()));
 			this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + role.getRoleKey());
 		}

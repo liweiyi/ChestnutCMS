@@ -21,7 +21,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.domain.DictWord;
-import com.chestnut.search.domain.dto.DictWordDTO;
+import com.chestnut.search.domain.dto.CreateDictWordRequest;
 import com.chestnut.search.exception.SearchErrorCode;
 import com.chestnut.search.mapper.DictWordMapper;
 import com.chestnut.search.service.IDictWordService;
@@ -46,9 +46,9 @@ public class DictWordServiceImpl extends ServiceImpl<DictWordMapper, DictWord> i
 	private final RedisCache redisCache;
 
 	@Override
-	public void batchAddDictWords(DictWordDTO dto) {
+	public void batchAddDictWords(CreateDictWordRequest req) {
 		List<DictWord> dictWords = new ArrayList<>();
-		for (String word : dto.getWords()) {
+		for (String word : req.getWords()) {
 			if (StringUtils.isBlank(word)) {
 				continue;
 			}
@@ -57,13 +57,13 @@ public class DictWordServiceImpl extends ServiceImpl<DictWordMapper, DictWord> i
 			
 			DictWord dictWord = new DictWord();
 			dictWord.setWordId(IdUtils.getSnowflakeId());
-			dictWord.setWordType(dto.getWordType());
+			dictWord.setWordType(req.getWordType());
 			dictWord.setWord(word);
-			dictWord.createBy(dto.getOperator().getUsername());
+			dictWord.createBy(req.getOperator().getUsername());
 			dictWords.add(dictWord);
 		}
 		this.saveBatch(dictWords);
-		this.redisCache.setCacheObject(MODIFY_CACHE_KEY + dto.getWordType(), LocalDateTime.now().format(FORMATTER));
+		this.redisCache.setCacheObject(MODIFY_CACHE_KEY + req.getWordType(), LocalDateTime.now().format(FORMATTER));
 	}
 
 	@Override

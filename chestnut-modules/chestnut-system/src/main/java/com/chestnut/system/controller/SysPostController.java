@@ -26,10 +26,12 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysPost;
+import com.chestnut.system.domain.dto.CreatePostRequest;
+import com.chestnut.system.domain.dto.QueryPostRequest;
+import com.chestnut.system.domain.dto.UpdatePostRequest;
 import com.chestnut.system.domain.vo.SysPostSelectVO;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysPostService;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
@@ -56,12 +58,12 @@ public class SysPostController extends BaseRestController {
 	@ExcelExportable(SysPost.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostList)
 	@GetMapping("/list")
-	public R<?> list(SysPost post) {
+	public R<?> list(@Validated QueryPostRequest req) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysPost> q = new LambdaQueryWrapper<SysPost>()
-				.like(StringUtils.isNotEmpty(post.getPostName()), SysPost::getPostName, post.getPostName())
-				.like(StringUtils.isNotEmpty(post.getPostCode()), SysPost::getPostCode, post.getPostCode())
-				.eq(StringUtils.isNotEmpty(post.getStatus()), SysPost::getStatus, post.getStatus())
+				.like(StringUtils.isNotEmpty(req.getPostName()), SysPost::getPostName, req.getPostName())
+				.like(StringUtils.isNotEmpty(req.getPostCode()), SysPost::getPostCode, req.getPostCode())
+				.eq(StringUtils.isNotEmpty(req.getStatus()), SysPost::getStatus, req.getStatus())
 				.orderByAsc(SysPost::getPostSort);
 		Page<SysPost> page = postService.page(new Page<>(pr.getPageNumber(), pr.getPageSize()), q);
 		return bindDataTable(page);
@@ -82,9 +84,8 @@ public class SysPostController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostAdd)
 	@Log(title = "岗位管理", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> add(@Validated @RequestBody SysPost post) {
-		post.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
-		postService.insertPost(post);
+	public R<?> add(@Validated @RequestBody CreatePostRequest req) {
+		postService.insertPost(req);
 		return R.ok();
 	}
 
@@ -94,9 +95,8 @@ public class SysPostController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostEdit)
 	@Log(title = "岗位管理", businessType = BusinessType.UPDATE)
 	@PutMapping
-	public R<?> edit(@Validated @RequestBody SysPost post) {
-		post.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
-		postService.updatePost(post);
+	public R<?> edit(@Validated @RequestBody UpdatePostRequest req) {
+		postService.updatePost(req);
 		return R.ok();
 	}
 

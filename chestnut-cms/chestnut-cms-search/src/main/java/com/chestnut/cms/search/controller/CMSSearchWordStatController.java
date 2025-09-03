@@ -28,10 +28,11 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.search.domain.SearchWord;
+import com.chestnut.search.domain.dto.CreateSearchWordRequest;
 import com.chestnut.search.service.ISearchWordService;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Priv(type = AdminUserType.TYPE)
@@ -45,7 +46,7 @@ public class CMSSearchWordStatController extends BaseRestController {
 	private final ISearchWordService searchWordStatService;
 	
 	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	public R<?> getPageList(@RequestParam(required = false) String query) {
 		PageRequest pr = this.getPageRequest();
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
 		Page<SearchWord> page = this.searchWordStatService.lambdaQuery()
@@ -58,11 +59,10 @@ public class CMSSearchWordStatController extends BaseRestController {
 
 	@Log(title = "新增搜索词", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> addWord(@RequestBody SearchWord wordStat) {
+	public R<?> addWord(@RequestBody @Validated CreateSearchWordRequest req) {
 		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
-		wordStat.setSource(CmsSearchConstants.generateSearchSource(site.getSiteId()));
-		wordStat.createBy(StpAdminUtil.getLoginUser().getUsername());
-		this.searchWordStatService.addWord(wordStat);
+		req.setSource(CmsSearchConstants.generateSearchSource(site.getSiteId()));
+		this.searchWordStatService.addWord(req);
 		return R.ok();
 	}
 }

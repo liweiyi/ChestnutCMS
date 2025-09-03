@@ -44,7 +44,7 @@ public class CmsCustomFormData extends BaseModelData implements Serializable {
     public static final String TABLE_NAME = "cms_cfd_default";
 
     @TableId(value = "data_id", type = IdType.INPUT)
-    private Long dataId;
+    private String dataId;
 
     /**
      * 关联表单ID（元数据模型ID）
@@ -74,7 +74,7 @@ public class CmsCustomFormData extends BaseModelData implements Serializable {
     @Override
     public void setFieldValue(String fieldName, Object fieldValue) {
         switch(fieldName) {
-            case "data_id" -> this.setDataId(ConvertUtils.toLong(fieldValue));
+            case "data_id" -> this.setDataId(ConvertUtils.toStr(fieldValue));
             case "model_id" -> this.setModelId(ConvertUtils.toLong(fieldValue));
             case "site_id" -> this.setSiteId(ConvertUtils.toLong(fieldValue));
             case "client_ip" -> this.setClientIp(ConvertUtils.toStr(fieldValue));

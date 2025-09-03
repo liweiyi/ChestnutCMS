@@ -25,10 +25,16 @@ import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.vo.TagContentVO;
+import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
+import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
+import com.chestnut.contentcore.template.exception.CatalogNotFoundException;
+import com.chestnut.contentcore.util.CatalogUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +43,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -47,35 +54,82 @@ public class CmsContentClosestTag extends AbstractListTag {
 	public final static String DESC = "{FREEMARKER.TAG." + TAG_NAME + ".DESC}";
 	public final static String ATTR_USAGE_CONTENT_ID = "{FREEMARKER.TAG." + TAG_NAME + ".contentId}";
 	public final static String ATTR_USAGE_TYPE = "{FREEMARKER.TAG." + TAG_NAME + ".type}";
-	public final static String ATTR_USAGE_SORT = "{FREEMARKER.TAG." + TAG_NAME + ".sort}";
 	public final static String ATTR_OPTION_TYPE_PREV = "{FREEMARKER.TAG." + TAG_NAME + ".type.Prev}";
 	public final static String ATTR_OPTION_TYPE_NEXT = "{FREEMARKER.TAG." + TAG_NAME + ".type.Next}";
 
 	final static String ATTR_CONTENT_ID = "contentid";
-
-	final static String ATTR_SORT = "sort";
-
 	final static String ATTR_TYPE = "type";
+	public final static String ATTR_CATALOG_ID = "catalogid";
+	public final static String ATTR_CATALOG_ALIAS = "catalogalias";
+	public final static String ATTR_LEVEL = "level";
+	public final static String ATTR_SORT = "sort";
+	public final static String ATTR_HAS_ATTRIBUTE = "hasattribute";
+	public final static String ATTR_NO_ATTRIBUTE = "noattribute";
+	public final static String ATTR_STATUS = "status";
+	public final static String ATTR_TOP_FLAG = "topflag";
+
+	private final ICatalogService catalogService;
 
 	private final IContentService contentService;
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
 		boolean isNext = TypeTagAttr.isNext(attrs.get(ATTR_TYPE));
-		String sort = attrs.get(ATTR_SORT);
 		Long contentId = MapUtils.getLong(attrs, ATTR_CONTENT_ID);
 
 		CmsContent content = this.contentService.dao().getById(contentId);
 		Assert.notNull(content, () -> new TemplateException(StringUtils.messageFormat("Tag attr[contentid={0}] data not found.", contentId), env));
 
-		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
-				.eq(CmsContent::getCatalogId, content.getCatalogId())
-				.eq(CmsContent::getStatus, ContentStatus.PUBLISHED);
-		if (CmsContentTag.SortTagAttr.isRecent(sort)) {
+		CmsCatalog catalog = null;
+		long catalogId = MapUtils.getLongValue(attrs, ATTR_CATALOG_ID);
+		if (catalogId > 0) {
+			catalog = this.catalogService.getCatalog(catalogId);
+		}
+		long siteId = TemplateUtils.evalSiteId(env);
+		String alias = MapUtils.getString(attrs, ATTR_CATALOG_ALIAS);
+		if (Objects.isNull(catalog) && StringUtils.isNotEmpty(alias)) {
+			catalog = this.catalogService.getCatalogByAlias(siteId, alias);
+		}
+		String level = MapUtils.getString(attrs, ATTR_LEVEL);
+		if (!CmsContentTag.LevelTagAttr.isRoot(level) && Objects.isNull(catalog)) {
+			throw new CatalogNotFoundException(catalogId, alias, env);
+		}
+		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+		String status = MapUtils.getString(attrs, ATTR_STATUS, ContentStatus.PUBLISHED);
+
+		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<>();
+		q.eq(CmsContent::getSiteId, siteId).eq(!"-1".equals(status), CmsContent::getStatus, status);
+		if (Objects.nonNull(catalog)) {
+			if (CmsContentTag.LevelTagAttr.isCurrent(level)) {
+				q.eq(CmsContent::getCatalogId, catalog.getCatalogId());
+			} else if (CmsContentTag.LevelTagAttr.isChild(level)) {
+				q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors() + CatalogUtils.ANCESTORS_SPLITER);
+			} else if (CmsContentTag.LevelTagAttr.isCurrentAndChild(level)) {
+				q.likeRight(CmsContent::getCatalogAncestors, catalog.getAncestors());
+			}
+		}
+		String hasAttribute = MapUtils.getString(attrs, ATTR_HAS_ATTRIBUTE);
+		if (StringUtils.isNotEmpty(hasAttribute)) {
+			int attrTotal = ContentAttribute.convertInt(hasAttribute.split(","));
+			q.apply(attrTotal > 0, "attributes&{0}={1}", attrTotal, attrTotal);
+		}
+		String noAttribute = MapUtils.getString(attrs, ATTR_NO_ATTRIBUTE);
+		if (StringUtils.isNotEmpty(noAttribute)) {
+			String[] contentAttrs = noAttribute.split(",");
+			int attrTotal = ContentAttribute.convertInt(contentAttrs);
+			for (String attr : contentAttrs) {
+				int bit = ContentAttribute.bit(attr);
+				q.apply(bit > 0, "attributes&{0}<>{1}", attrTotal, bit);
+			}
+		}
+		q.apply(StringUtils.isNotEmpty(condition), condition);
+		String sortType = MapUtils.getString(attrs, ATTR_SORT);
+		q.orderByDesc(MapUtils.getBooleanValue(attrs, ATTR_TOP_FLAG, true), CmsContent::getTopFlag);
+		if (CmsContentTag.SortTagAttr.isRecent(sortType)) {
 			q.gt(isNext, CmsContent::getPublishDate, content.getPublishDate());
 			q.lt(!isNext, CmsContent::getPublishDate, content.getPublishDate());
 			q.orderBy(true, isNext, CmsContent::getPublishDate);
-		} else if(CmsContentTag.SortTagAttr.isViews(sort)) {
+		} else if(CmsContentTag.SortTagAttr.isViews(sortType)) {
 			q.gt(isNext, CmsContent::getViewCount, content.getViewCount());
 			q.lt(!isNext, CmsContent::getViewCount, content.getViewCount());
 			q.orderBy(true, isNext, CmsContent::getViewCount);
@@ -120,11 +174,18 @@ public class CmsContentClosestTag extends AbstractListTag {
 
 	@Override
 	public List<TagAttr> getTagAttrs() {
-		return List.of(
-				new TagAttr(ATTR_CONTENT_ID, true, TagAttrDataType.INTEGER, ATTR_USAGE_CONTENT_ID),
-				new TagAttr(ATTR_TYPE, true, TagAttrDataType.STRING, ATTR_USAGE_TYPE, TypeTagAttr.toTagAttrOptions(), TypeTagAttr.Prev.name()),
-				new TagAttr(ATTR_SORT, false, TagAttrDataType.STRING, ATTR_USAGE_SORT, CmsContentTag.SortTagAttr.toTagAttrOptions(), CmsContentTag.SortTagAttr.Default.name())
-		);
+		List<TagAttr> tagAttrs = super.getTagAttrs();
+		tagAttrs.add(new TagAttr(ATTR_CONTENT_ID, true, TagAttrDataType.INTEGER, ATTR_USAGE_CONTENT_ID));
+		tagAttrs.add(new TagAttr(ATTR_TYPE, true, TagAttrDataType.STRING, ATTR_USAGE_TYPE, TypeTagAttr.toTagAttrOptions(), TypeTagAttr.Prev.name()));
+		tagAttrs.add(new TagAttr(ATTR_CATALOG_ID, false, TagAttrDataType.INTEGER, CmsContentTag.ATTR_USAGE_CATALOG_ID));
+		tagAttrs.add(new TagAttr(ATTR_CATALOG_ALIAS, false, TagAttrDataType.STRING, CmsContentTag.ATTR_USAGE_CATALOG_ALIAS));
+		tagAttrs.add(new TagAttr(ATTR_LEVEL, false, TagAttrDataType.STRING, CmsContentTag.ATTR_USAGE_LEVEL, CmsContentTag.LevelTagAttr.toTagAttrOptions(), CmsContentTag.LevelTagAttr.Current.name()));
+		tagAttrs.add(new TagAttr(ATTR_SORT, false, TagAttrDataType.STRING, CmsContentTag.ATTR_USAGE_SORT, CmsContentTag.SortTagAttr.toTagAttrOptions(), CmsContentTag.SortTagAttr.Default.name()));
+		tagAttrs.add(new TagAttr(ATTR_HAS_ATTRIBUTE, false, TagAttrDataType.STRING, CmsContentTag.ATTR_USAGE_HAS_ATTRIBUTE));
+		tagAttrs.add(new TagAttr(ATTR_NO_ATTRIBUTE, false, TagAttrDataType.STRING, CmsContentTag.ATTR_USAGE_NO_ATTRIBUTE));
+		tagAttrs.add(new TagAttr(ATTR_STATUS, false, TagAttrDataType.STRING, CmsContentTag.ATTR_USAGE_STATUS));
+		tagAttrs.add(new TagAttr(ATTR_TOP_FLAG, false, TagAttrDataType.BOOLEAN, CmsContentTag.ATTR_USAGE_TOP_FLAG, Boolean.TRUE.toString()));
+		return tagAttrs;
 	}
 
 	enum TypeTagAttr {

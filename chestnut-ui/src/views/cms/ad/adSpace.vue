@@ -142,6 +142,7 @@
   </div>
 </template>
 <script>
+import { codeValidator, pathValidator } from '@/utils/validate';
 import { getPublishPipeSelectData } from "@/api/contentcore/publishpipe";
 import { listAdSpaces, addAdSpace, editAdSpace, deleteAdSpace, publishAdSpace } from "@/api/advertisement/advertisement";
 import CMSTemplateSelector from '@/views/cms/contentcore/templateSelector';
@@ -170,16 +171,18 @@ export default {
       },
       rules: {
         name: [
-          { required: true, message: this.$t('CMS.PageWidget.RuleTips.Name'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         code: [
-          { required: true, pattern: "^[A-Za-z0-9_]*$", message: this.$t('CMS.PageWidget.RuleTips.Code'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: codeValidator, trigger: "change" },
         ],
         publishPipeCode: [
-          { required: true, message: this.$t('CMS.PageWidget.RuleTips.PublishPipe'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
         ],
         path: [
-          { required: true, pattern: "^[A-Za-z0-9_\/]+$", message: this.$t('CMS.PageWidget.RuleTips.Path'), trigger: "blur" }
+          { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+          { validator: pathValidator, trigger: "change" },
         ]
       },
       publishPipes: [],

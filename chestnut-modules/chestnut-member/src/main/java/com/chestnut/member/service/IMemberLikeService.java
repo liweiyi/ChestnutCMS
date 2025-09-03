@@ -25,20 +25,29 @@ public interface IMemberLikeService extends IService<MemberLike> {
     /**
      * 点赞
      *
-     * @param memberId
-     * @param dataType
-     * @param dataId
+     * @param memberId 会员ID
+     * @param dataType 点赞源类型
+     * @param dataId 点赞源ID
      */
     void like(Long memberId, String dataType, Long dataId);
 
     /**
      * 取消点赞
      *
-     * @param memberId
-     * @param dataType
-     * @param dataId
+     * @param memberId 会员ID
+     * @param dataType 点赞源类型
+     * @param dataId 点赞源ID
      */
     void cancelLike(Long memberId, String dataType, Long dataId);
 
-    List<MemberLike> getMemberLikes(Long memberId, String dataType, Integer limit, Long offset);
+    /**
+     * 获取点赞记录
+     *
+     * @param memberId 会员ID
+     * @param dataType 点赞源类型
+     * @param limit 读取数量
+     * @param lastLogId 偏移记录ID
+     * @return 点赞记录列表
+     */
+    List<MemberLike> getMemberLikes(Long memberId, String dataType, Integer limit, Long lastLogId);
 }
