@@ -102,8 +102,10 @@ public class ImageSizeFunction extends AbstractFunc {
 			return thumbnailUrl;
 		}
 		try {
-			resourceService.createThumbnailIfNotExists(internalUrl, width, height);
-			return thumbnailUrl;
+			if (resourceService.createThumbnailIfNotExists(internalUrl, width, height)) {
+                return thumbnailUrl;
+            }
+			return originalUrl;
 		} catch (Exception e) {
 			log.warn("Generate thumbnail failed: " + originalUrl, e);
 		}

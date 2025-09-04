@@ -45,6 +45,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Service;
 
@@ -374,33 +375,40 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 	}
 
 	@Override
-	public void createThumbnailIfNotExists(InternalURL internalUrl, int width, int height) throws Exception {
+	public boolean createThumbnailIfNotExists(InternalURL internalUrl, int width, int height) throws Exception {
 		if (!InternalDataType_Resource.ID.equals(internalUrl.getType())
 				|| !ResourceType_Image.isImage(internalUrl.getPath())) {
-			return;  // 非图片资源忽略
+			return false;  // 非图片资源忽略
 		}
+
 		Long siteId = MapUtils.getLong(internalUrl.getParams(), InternalDataType_Resource.InternalUrl_Param_SiteId);
 		CmsSite site = siteService.getSite(siteId);
 
 		String filePath = internalUrl.getPath();
 		String thumbnailPath = ImageUtils.getThumbnailFileName(filePath, width, height);
+        String extension = FilenameUtils.getExtension(thumbnailPath);
+        if ("svg".equalsIgnoreCase(extension)) {
+            return false; // 不处理svg图片
+        }
 
 		String storageTypeId = FileStorageTypeProperty.getValue(site.getConfigProps());
 		IFileStorageType fst = fileStorageService.getFileStorageType(storageTypeId);
 		FileStorageHelper storageHelper = FileStorageHelper.of(fst, site);
 		if (storageHelper.exists(thumbnailPath)) {
-			return;
+			return false;
 		}
 		CmsResource resource = this.getById(internalUrl.getId());
-		if (Objects.nonNull(resource)) {
-			try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-				try (InputStream is = storageHelper.read(resource.getPath())) {
-					String format = FileExUtils.getExtension(resource.getPath());
-					ImageHelper.of(is, format).resize(width, height).to(os);
-				}
-				storageHelper.write(thumbnailPath, os.toByteArray());
-			}
-		}
+        if (Objects.isNull(resource)) {
+            return false;
+        }
+        try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            try (InputStream is = storageHelper.read(resource.getPath())) {
+                String format = FileExUtils.getExtension(resource.getPath());
+                ImageHelper.of(is, format).resize(width, height).to(os);
+            }
+            storageHelper.write(thumbnailPath, os.toByteArray());
+        }
+        return true;
 	}
 
 	@Override
@@ -430,9 +438,15 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 				InternalURL internalURL = InternalUrlUtils.parseInternalUrl(iurl);
 				if (Objects.nonNull(internalURL)) {
 					// 先检查是否存在缩略图，如果不存在需要生成
-					createThumbnailIfNotExists(internalURL, w, h);
-					// 返回缩略图路径
-					return ImageUtils.getThumbnailFileName(InternalUrlUtils.getActualPreviewUrl(internalURL), w, h);
+                    boolean res = createThumbnailIfNotExists(internalURL, w, h);
+                    String actualPreviewUrl = InternalUrlUtils.getActualPreviewUrl(internalURL);
+                    if (res) {
+                        // 返回缩略图路径
+                        return ImageUtils.getThumbnailFileName(InternalUrlUtils.getActualPreviewUrl(internalURL), w, h);
+                    } else {
+                        // 返回源图路径
+                        return actualPreviewUrl;
+                    }
 				}
 				// 非内部链接返回原路径
 				return iurl;

@@ -87,7 +87,11 @@ public class ResourceType_Image implements IResourceType {
 
 	@Override
 	public List<File> process(CmsResource resource, File file) throws IOException {
-		CmsSite site = siteService.getSite(resource.getSiteId());
+        String extension = FilenameUtils.getExtension(file.getName());
+        if ("svg".equalsIgnoreCase(extension)) {
+            return List.of(); // 不处理svg图片
+        }
+        CmsSite site = siteService.getSite(resource.getSiteId());
 		boolean needWatermark = needWatermark(site);
 		boolean needThumbnail = needThumbnail(site);
 		if (!needWatermark && !needThumbnail) {
@@ -111,63 +115,6 @@ public class ResourceType_Image implements IResourceType {
 		}
 		return files;
 	}
-
-//	@Override
-//	public void asyncProcess(CmsResource resource) {
-//		CmsSite site = siteService.getSite(resource.getSiteId());
-//		boolean needWatermark = needWatermark(site);
-//		boolean needThumbnail = needThumbnail(site);
-//		if (!needWatermark && !needThumbnail) {
-//			return; // 不需要处理
-//		}
-//		asyncTaskManager.execute(() -> {
-//			String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());
-//			IFileStorageType fst = fileStorageTypeMap.get(IFileStorageType.BEAN_NAME_PREIFX + fileStorageType);
-//			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
-//			String tempDirectory = ResourceUtils.getResourceTempDirectory(site);
-//			File tempFile = new File(tempDirectory + resource.getPath());
-//			FileExUtils.mkdirs(tempFile.getParent());
-//			Map<String, File> paths = new HashMap<>();
-//			try (InputStream read = fileStorageHelper.read(resource.getPath())) {
-//				FileExUtils.transfer(read, tempFile);
-//				// 获取图片属性
-//				BufferedImage bi = ImageIO.read(tempFile);
-//				resource.setWidth(bi.getWidth());
-//				resource.setHeight(bi.getHeight());
-//				// 先处理图片水印
-//				if (needWatermark) {
-//					watermark(site, bi, tempFile);
-//					paths.put(resource.getPath(), tempFile);
-//					resource.setFileSize(tempFile.length());
-//				}
-//				// 默认缩略图处理
-//				thumbnail(site, resource, tempFile);
-//				// 更新文件
-//				for (Map.Entry<String, File> entry : paths.entrySet()) {
-//					try (FileInputStream is = new FileInputStream(entry.getValue())) {
-//						fileStorageHelper.write(entry.getKey(), is, entry.getValue().length());
-//					} catch (IOException e) {
-//						log.error("Write temp file to storage {} failed.", fst.getType(), e);
-//					}
-//				}
-//				if (needWatermark) {
-//					resourceService.updateById(resource);
-//				}
-//			} catch (IOException e) {
-//				log.error("Image resource process fail.", e);
-//			} finally {
-//				try {
-//					// 删除临时文件
-//					Files.deleteIfExists(tempFile.toPath());
-//                    for (File file : paths.values()) {
-//                        Files.deleteIfExists(file.toPath());
-//                    }
-//				} catch (IOException e) {
-//					log.error("Delete temp file failed.", e);
-//				}
-//			}
-//		});
-//	}
 
 	private boolean needWatermark(CmsSite site) {
 		if (!ImageWatermarkProperty.getValue(site.getConfigProps())) {

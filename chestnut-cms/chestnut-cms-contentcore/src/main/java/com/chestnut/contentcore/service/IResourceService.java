@@ -106,7 +106,7 @@ public interface IResourceService extends IService<CmsResource> {
 	 * @param width 缩略图宽度
 	 * @param height 缩略图高度
 	 */
-	void createThumbnailIfNotExists(InternalURL internalURL, int width, int height) throws Exception;
+	boolean createThumbnailIfNotExists(InternalURL internalURL, int width, int height) throws Exception;
 
 	/**
 	 * 处理默认缩略图
