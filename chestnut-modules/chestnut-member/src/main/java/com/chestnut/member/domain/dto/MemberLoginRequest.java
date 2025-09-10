@@ -33,9 +33,9 @@ public class MemberLoginRequest {
     /**
      * 登录方式（Email, 手机号， 手机验证码，用户名）
      */
-    @NotBlank
-    @Length(max = 20)
-    private String type;
+//    @NotBlank
+//    @Length(max = 20)
+//    private String type;
 
     @NotBlank
     @Length(max = 30)
