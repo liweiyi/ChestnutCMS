@@ -122,9 +122,9 @@ public class MemberLoginService {
 		// 查找用户
 		LambdaQueryWrapper<Member> q = new LambdaQueryWrapper<>();
 		if ("email".equals(dto.getType())) {
-			q.eq(Member::getEmail, dto.getUserName());
+			q.eq(Member::getEmail, dto.getEmail());
 		} else if ("phone".equals(dto.getType())) {
-			q.eq(Member::getPhoneNumber, dto.getUserName());
+			q.eq(Member::getPhoneNumber, dto.getPhonenumber());
 		} else {
 			q.eq(Member::getUserName, dto.getUserName());
 		}
@@ -139,10 +139,10 @@ public class MemberLoginService {
 		member.setMemberId(IdUtils.getSnowflakeId());
 		// TODO 抽象注册类型
 		if ("email".equals(dto.getType())) {
-			member.setEmail(dto.getUserName());
+			member.setEmail(dto.getEmail());
 			member.setUserName(member.getMemberId().toString());
 		} else if ("phone".equals(dto.getType())) {
-			member.setPhoneNumber(dto.getUserName());
+			member.setPhoneNumber(dto.getPhonenumber());
 			member.setUserName(member.getMemberId().toString());
 		} else {
 			member.setUserName(dto.getUserName());
