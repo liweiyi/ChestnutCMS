@@ -96,12 +96,15 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
 
         dbDynamicPage.setName(dynamicPage.getName());
         dbDynamicPage.setCode(dynamicPage.getCode());
+        dbDynamicPage.setPath(dynamicPage.getPath());
         dbDynamicPage.setDescription(dynamicPage.getDescription());
         dbDynamicPage.setInitDataTypes(dynamicPage.getInitDataTypes());
         dbDynamicPage.setTemplates(dynamicPage.getTemplates());
+        dbDynamicPage.setRemark(dynamicPage.getRemark());
         this.updateById(dbDynamicPage);
-        if (!oldPath.equals(dynamicPage.getCode()) || !oldPath.equals(dynamicPage.getPath())) {
-            unregisterDynamicPageMapping(oldCode, oldPath);
+        if (!oldCode.equals(dynamicPage.getCode()) || !oldPath.equals(dynamicPage.getPath())) {
+            this.unregisterDynamicPageMapping(oldCode, oldPath);
+            this.registerDynamicPageMapping(dynamicPage.getCode(), dynamicPage.getPath());
         }
         dynamicPageHelper.updateCache(dbDynamicPage);
     }
