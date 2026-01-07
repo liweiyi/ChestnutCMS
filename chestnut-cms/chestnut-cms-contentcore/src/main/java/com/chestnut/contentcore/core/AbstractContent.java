@@ -261,8 +261,8 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			this.getContentService().dao().updateById(content);
 			ContentLogUtils.addLog(ContentOpType.PUBLISH, this.getContentEntity(), this.getOperator());
 		}
-        ApplicationContext applicationContext = SpringUtils.getBean(ApplicationContext.class);
-        applicationContext.publishEvent(new AfterContentPublishEvent(this, this));
+//        ApplicationContext applicationContext = SpringUtils.getBean(ApplicationContext.class);
+//        applicationContext.publishEvent(new AfterContentPublishEvent(this, this));
 		return true;
 	}
 
