@@ -38,8 +38,7 @@ import com.chestnut.member.mapper.MemberMapper;
 import com.chestnut.member.mapper.MemberSignInLogMapper;
 import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberService;
-import com.chestnut.system.config.properties.SysProperties;
-import com.chestnut.system.exception.SysErrorCode;
+import com.chestnut.system.fixed.config.SysUploadImageTypes;
 import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISecurityConfigService;
@@ -158,24 +157,22 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 	/**
 	 * 校验用户名、手机号、邮箱是否已存在
 	 */
-	private void checkMemberUnique(String userName, String phonenumber, String email, Long memberId) {
+	private void checkMemberUnique(String userName, String phoneNumber, String email, Long memberId) {
 		Optional<Member> oneOpt = this.lambdaQuery()
 				.and(wrapper -> wrapper.eq(StringUtils.isNotEmpty(userName), Member::getUserName, userName).or()
-						.eq(StringUtils.isNotEmpty(phonenumber), Member::getPhoneNumber, phonenumber).or()
+						.eq(StringUtils.isNotEmpty(phoneNumber), Member::getPhoneNumber, phoneNumber).or()
 						.eq(StringUtils.isNotEmpty(email), Member::getEmail, email))
 				.ne(IdUtils.validate(memberId), Member::getMemberId, memberId).oneOpt();
 		if (oneOpt.isPresent()) {
 			Member member = oneOpt.get();
 			Assert.isFalse(StringUtils.isNotEmpty(userName) && userName.equals(member.getUserName()),
 					MemberErrorCode.USERNAME_CONFLICT::exception);
-			Assert.isFalse(StringUtils.isNotEmpty(phonenumber) && phonenumber.equals(member.getPhoneNumber()),
+			Assert.isFalse(StringUtils.isNotEmpty(phoneNumber) && phoneNumber.equals(member.getPhoneNumber()),
 					MemberErrorCode.PHONE_CONFLICT::exception);
 			Assert.isFalse(StringUtils.isNotEmpty(email) && email.equals(member.getEmail()),
 					MemberErrorCode.EMAIL_CONFLICT::exception);
 		}
 	}
-
-	private final SysProperties sysProperties;
 
 	@Override
 	public String uploadAvatarByBase64(Long memberId, String base64Data) throws IOException {
@@ -186,12 +183,12 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		byte[] imageBytes = Base64.getDecoder().decode(base64Str);
 
 		String suffix = base64Data.substring(11, base64Data.indexOf(";")).toLowerCase();
-		Assert.isTrue(sysProperties.getUpload().getImage().contains(suffix), SysErrorCode.UPLOAD_FILE_TYPE_LIMIT::exception);
+        SysUploadImageTypes.check(suffix);
 
 		String path = "avatar/" + memberId + "." + suffix;
 		FileUtils.writeByteArrayToFile(new File(MemberConfig.getUploadDir() + path), imageBytes);
 
-		log.info("upload avatar: " + path);
+        log.info("upload avatar: {}", path);
 		this.lambdaUpdate().set(Member::getAvatar, path).eq(Member::getMemberId, memberId).update();
 		return path;
 	}

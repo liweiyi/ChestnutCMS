@@ -30,36 +30,36 @@
             <el-divider content-position="left">{{ $t('CMS.Site.DefaultTemplate.StaticizePageConfig') }}</el-divider>
             <el-form-item 
               :label="$t('CMS.Site.DefaultTemplate.CatalogList')"
-              prop="defaultListTemplate">
-              <el-input class="mr5" v-model="pp.props.defaultListTemplate">
+              prop="listTemplate">
+              <el-input class="mr5" v-model="pp.props.listTemplate">
                 <el-button 
                   slot="append"
                   type="primary"
-                  @click="handleSelectTemplate('defaultListTemplate')">{{ $t("Common.Select") }}</el-button>
+                  @click="handleSelectTemplate('listTemplate')">{{ $t("Common.Select") }}</el-button>
               </el-input>
               <el-button 
                 icon="el-icon-finished" 
                 type="primary" 
                 plain 
-                @click="handleApplyToCatalog('defaultListTemplate')">{{ $t('CMS.ContentCore.ApplyToCatalog') }}</el-button>
+                @click="handleApplyToCatalog('listTemplate')">{{ $t('CMS.ContentCore.ApplyToCatalog') }}</el-button>
             </el-form-item>
             <el-form-item 
               v-for="ct of contentTypes" 
               :key="ct.id" 
               :command="ct"
               :label="ct.name + $t('CMS.Site.DefaultTemplate.ContentDetail')"
-              :prop="`defaultDetailTemplate_${ct.id}`">
-              <el-input class="mr5" v-model="pp.props[`defaultDetailTemplate_${ct.id}`]">
+              :prop="`detailTemplate_${ct.id}`">
+              <el-input class="mr5" v-model="pp.props[`detailTemplate_${ct.id}`]">
                 <el-button 
                   slot="append"
                   type="primary"
-                  @click="handleSelectTemplate(`defaultDetailTemplate_${ct.id}`)">{{ $t("Common.Select") }}</el-button>
+                  @click="handleSelectTemplate(`detailTemplate_${ct.id}`)">{{ $t("Common.Select") }}</el-button>
               </el-input>
               <el-button 
                 icon="el-icon-finished" 
                 type="primary" 
                 plain 
-                @click="handleApplyToCatalog(`defaultDetailTemplate_${ct.id}`)">{{ $t('CMS.ContentCore.ApplyToCatalog') }}</el-button>
+                @click="handleApplyToCatalog(`detailTemplate_${ct.id}`)">{{ $t('CMS.ContentCore.ApplyToCatalog') }}</el-button>
             </el-form-item>
             <el-form-item 
               :label="$t('CMS.Site.DefaultTemplate.CustomForm')"
@@ -218,7 +218,7 @@ export default {
       this.form.publishPipeProps.forEach(item => {
         if (item.pipeCode == this.publishPipeActiveName) {
           data.publishPipeProps = [{ pipeCode: item.pipeCode, props: {} }];
-          data.publishPipeProps[0].props[this.templatePropKey] = "";
+          data.publishPipeProps[0].props[this.templatePropKey] = item.props[this.templatePropKey];
         }
       });
       applyDefaultTemplate(data).then(res => {

@@ -29,8 +29,11 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.domain.Operator;
-import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.*;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.ChineseSpelling;
+import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.core.ICatalogType;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IProperty.UseType;
@@ -41,15 +44,13 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.*;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.vo.CatalogVO;
+import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.user.preference.CatalogTreeExpandModePreference;
-import com.chestnut.contentcore.util.CmsPrivUtils;
-import com.chestnut.contentcore.util.ConfigPropertyUtils;
-import com.chestnut.contentcore.util.InternalUrlUtils;
-import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.contentcore.util.*;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
@@ -75,7 +76,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/catalog")
-public class CatalogController extends BaseRestController {
+public class CatalogController extends CmsRestController {
 
 	private final ISiteService siteService;
 
@@ -97,7 +98,7 @@ public class CatalogController extends BaseRestController {
 	 * 查询栏目数据列表
 	 */
 	@Priv(type = AdminUserType.TYPE, value = ContentCorePriv.CatalogView)
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> list() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		List<CmsCatalog> list = catalogService.lambdaQuery().list().stream().filter(c ->
@@ -109,7 +110,7 @@ public class CatalogController extends BaseRestController {
 	 * 查询栏目详情数据
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:View:${#catalogId}")
-	@GetMapping("/{catalogId}")
+	@GetMapping("/detail/{catalogId}")
 	public R<?> catalogInfo(@PathVariable @LongId Long catalogId) {
 		CmsCatalog catalog = catalogService.getById(catalogId);
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalogId));
@@ -132,15 +133,14 @@ public class CatalogController extends BaseRestController {
 	 */
 	@Priv(
 		type = AdminUserType.TYPE,
-		value = { ContentCorePriv.ResourceView, "Site:AddCatalog:${#_header['CurrentSite']}"},
+		value = { ContentCorePriv.ResourceView, "Site:AddCatalog:${#_header['" + ContentCoreConsts.Header_CurrentSite + "']}"},
 		mode = SaMode.AND
 	)
 	@Log(title = "新增栏目", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addCatalog(@RequestBody @Validated CatalogAddDTO dto) {
-		CmsSite currentSite = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite currentSite = this.getCurrentSite();
 		dto.setSiteId(currentSite.getSiteId());
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		return R.ok(this.catalogService.addCatalog(dto));
 	}
 
@@ -149,15 +149,14 @@ public class CatalogController extends BaseRestController {
 	 */
 	@Priv(
 			type = AdminUserType.TYPE,
-			value = { ContentCorePriv.ResourceView, "Site:AddCatalog:${#_header['CurrentSite']}"},
+			value = { ContentCorePriv.ResourceView, "Site:AddCatalog:${#_header[" + ContentCoreConsts.Header_CurrentSite + "]}"},
 			mode = SaMode.AND
 	)
 	@Log(title = "批量新增栏目", businessType = BusinessType.INSERT)
 	@PostMapping("/batchAdd")
 	public R<?> batchAddCatalog(@RequestBody @Validated CatalogBatchAddDTO dto) {
-		CmsSite currentSite = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite currentSite = this.getCurrentSite();
 		dto.setSiteId(currentSite.getSiteId());
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.catalogService.batchAddCatalog(dto);
 		return R.ok();
 	}
@@ -167,9 +166,8 @@ public class CatalogController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#dto.catalogId}")
 	@Log(title = "编辑栏目", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> editCatalog(@RequestBody @Validated CatalogUpdateDTO dto) throws IOException {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.catalogService.editCatalog(dto);
 		return R.ok();
 	}
@@ -195,6 +193,7 @@ public class CatalogController extends BaseRestController {
 				list.forEach(c -> {
 					catalogService.deleteCatalog(c, operator);
 				});
+                this.setProgressInfo(100, ContentTips.DELETE_SUCCESS);
 			}
 		};
 		this.asyncTaskManager.execute(task);
@@ -206,7 +205,7 @@ public class CatalogController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:ShowHide:${#dto.catalogId}")
 	@Log(title = "显隐栏目", businessType = BusinessType.UPDATE)
-	@PutMapping("/visible")
+	@PostMapping("/visible")
 	public R<String> changeVisible(@RequestBody @Validated ChangeCatalogVisibleDTO dto) {
 		catalogService.changeVisible(dto.getCatalogId(), dto.getVisible());
 		return R.ok();
@@ -218,7 +217,7 @@ public class CatalogController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@GetMapping("/treeData")
 	public R<?> treeData(@RequestParam(required = false, defaultValue = "false") Boolean disableLink) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		List<CmsCatalog> catalogs = this.catalogService.lambdaQuery().eq(CmsCatalog::getSiteId, site.getSiteId())
 				.orderByAsc(CmsCatalog::getSortFlag).list().stream().filter(c -> loginUser
@@ -297,7 +296,7 @@ public class CatalogController extends BaseRestController {
 	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#catalogId}")
 	@Log(title = "栏目扩展", businessType = BusinessType.UPDATE, isSaveRequestData = false)
-	@PutMapping("/extends/{catalogId}")
+	@PostMapping("/extends/{catalogId}")
 	public R<?> saveCatalogExtends(@PathVariable("catalogId") @LongId Long catalogId,
 			@RequestBody @NotNull Map<String, String> configs) {
 		CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
@@ -312,12 +311,11 @@ public class CatalogController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#dto.catalogId}")
 	@Log(title = "扩展配置2子栏目", businessType = BusinessType.UPDATE)
-	@PutMapping("/apply_children/config_props")
+	@PostMapping("/apply_children/config_props")
 	public R<?> applyConfigPropsToChildren(@RequestBody @Validated CatalogApplyConfigPropsDTO dto) {
 		CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", dto.getCatalogId()));
 
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.catalogService.applyConfigPropsToChildren(dto);
 		return R.ok();
 	}
@@ -327,12 +325,11 @@ public class CatalogController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#dto.catalogId}")
 	@Log(title = "发布通道配置2子栏目", businessType = BusinessType.UPDATE)
-	@PutMapping("/apply_children/publish_pipe")
+	@PostMapping("/apply_children/publish_pipe")
 	public R<?> applyPublishPipePropsToChildren(@RequestBody @Validated CatalogApplyPublishPipeDTO dto) {
 		CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", dto.getCatalogId()));
 
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.catalogService.applyPublishPipePropsToChildren(dto);
 		return R.ok();
 	}
@@ -367,7 +364,7 @@ public class CatalogController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Sort:${#dto.catalogId}")
 	@Log(title = "栏目排序", businessType = BusinessType.UPDATE)
-	@PutMapping("/sort")
+	@PostMapping("/sort")
 	public R<?> sortCatalog(@RequestBody @Validated SortCatalogDTO dto) {
 		if (dto.getSort() == 0) {
 			return R.fail("排序数值不能为0");
@@ -393,7 +390,7 @@ public class CatalogController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/tree")
 	public R<String> getCatalogTree(@RequestParam Long catalogId, HttpServletRequest request) {
-		CmsSite site = siteService.getCurrentSite(request);
+		CmsSite site = getCurrentSite();
 		CmsCatalog parent = null;
 		if (IdUtils.validate(catalogId)) {
 			parent = catalogService.getCatalog(catalogId);
@@ -418,8 +415,6 @@ public class CatalogController extends BaseRestController {
 	@Log(title = "清空", businessType = BusinessType.UPDATE)
 	@PostMapping("/clear")
 	public R<String> clearCatalog(@RequestBody ClearCatalogDTO dto) {
-		LoginUser operator = StpAdminUtil.getLoginUser();
-		dto.setOperator(operator);
 		AsyncTask task = catalogService.clearCatalog(dto);
 		return R.ok(task.getTaskId());
 	}
@@ -428,8 +423,6 @@ public class CatalogController extends BaseRestController {
 	@Log(title = "合并", businessType = BusinessType.UPDATE)
 	@PostMapping("/merge")
 	public R<String> mergeCatalog(@RequestBody MergeCatalogDTO dto) {
-		LoginUser operator = StpAdminUtil.getLoginUser();
-		dto.setOperator(operator);
 		AsyncTask task = catalogService.mergeCatalogs(dto);
 		return R.ok(task.getTaskId());
 	}

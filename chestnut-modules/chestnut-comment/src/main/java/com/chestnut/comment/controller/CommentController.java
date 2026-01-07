@@ -31,7 +31,6 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +49,7 @@ public class CommentController extends BaseRestController {
 	private final ICommentLikeService commentLikeService;
 
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.View)
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getCommentList(@RequestParam(required = false) String sourceType,
 							   @RequestParam(required = false) String sourceId,
 							   @RequestParam(required = false) Long uid,
@@ -90,9 +89,8 @@ public class CommentController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.Audit)
-	@PutMapping("/audit")
+	@PostMapping("/audit")
 	public R<?> auditComment(@RequestBody AuditCommentDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.commentService.auditComment(dto);
 		return R.ok();
 	}
@@ -104,4 +102,12 @@ public class CommentController extends BaseRestController {
 		this.commentService.deleteComments(commentIds);
 		return R.ok();
 	}
+
+    @Priv(type = AdminUserType.TYPE, value = CommentPriv.Delete)
+    @PostMapping("/recover")
+    public R<?> recoverComment(@RequestBody @NotEmpty List<Long> commentIds) {
+        Assert.isTrue(IdUtils.validate(commentIds), CommonErrorCode.INVALID_REQUEST_ARG::exception);
+        this.commentService.recoverComment(commentIds);
+        return R.ok();
+    }
 }

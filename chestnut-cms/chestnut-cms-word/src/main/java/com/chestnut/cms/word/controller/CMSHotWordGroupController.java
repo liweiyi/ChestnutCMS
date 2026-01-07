@@ -15,16 +15,16 @@
  */
 package com.chestnut.cms.word.controller;
 
+import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.word.domain.HotWordGroup;
 import com.chestnut.word.domain.dto.CreateHotWordGroupRequest;
@@ -34,9 +34,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 热词分组前端控制器
@@ -47,17 +45,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/hotword/group")
-public class CMSHotWordGroupController extends BaseRestController {
+public class CMSHotWordGroupController extends CmsRestController {
 
 	private final IHotWordGroupService hotWordGroupService;
 
-	private final ISiteService siteService;
-
-	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
+            mode = SaMode.AND
+    )
 	@GetMapping
 	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
 		PageRequest pr = this.getPageRequest();
-		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite currentSite = getCurrentSite();
 		Page<HotWordGroup> page = this.hotWordGroupService.lambdaQuery()
 				.eq(HotWordGroup::getOwner, currentSite.getSiteId().toString())
 				.like(StringUtils.isNotEmpty(query), HotWordGroup::getName, query)
@@ -65,38 +65,42 @@ public class CMSHotWordGroupController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
-	@Priv(type = AdminUserType.TYPE)
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
+            mode = SaMode.AND
+    )
 	@GetMapping("/options")
 	public R<?> getOptions() {
-		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite currentSite = getCurrentSite();
 		List<HotWordGroup> list = this.hotWordGroupService.lambdaQuery()
 				.eq(HotWordGroup::getOwner, currentSite.getSiteId().toString())
 				.list();
         return this.bindSelectOptions(list, HotWordGroup::getCode, HotWordGroup::getName);
 	}
 
-	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
+            mode = SaMode.AND
+    )
 	@GetMapping("/treedata")
 	public R<?> getTreeData() {
-		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
-		List<HotWordGroup> groups = this.hotWordGroupService.lambdaQuery()
-				.eq(HotWordGroup::getOwner, currentSite.getSiteId().toString()).list();
-		List<TreeNode<String>> list = new ArrayList<>();
-		if (StringUtils.isNotEmpty(groups)) {
-			groups.forEach(c -> {
-				TreeNode<String> treeNode = new TreeNode<>(String.valueOf(c.getGroupId()), "", c.getName(), true);
-				treeNode.setProps(Map.of("code", c.getCode()));
-				list.add(treeNode);
-			});
-		}
-		List<TreeNode<String>> treeData = TreeNode.build(list);
+		CmsSite currentSite = getCurrentSite();
+        List<TreeNode<String>> treeData = this.hotWordGroupService.getGroupTreeData(q -> {
+            q.eq(HotWordGroup::getOwner, currentSite.getSiteId().toString());
+        });
 		return R.ok(treeData);
 	}
 
-	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
+            mode = SaMode.AND
+    )
 	@PostMapping
 	public R<?> add(@RequestBody @Validated CreateHotWordGroupRequest req) {
-		CmsSite site = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = getCurrentSite();
 		req.setOwner(site.getSiteId().toString());
 		return R.ok(this.hotWordGroupService.addHotWordGroup(req));
 	}

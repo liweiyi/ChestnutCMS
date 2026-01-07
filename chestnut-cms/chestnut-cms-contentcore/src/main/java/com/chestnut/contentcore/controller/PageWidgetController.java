@@ -24,12 +24,11 @@ import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.core.IPageWidget;
 import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsCatalog;
@@ -46,8 +45,8 @@ import com.chestnut.contentcore.perms.SitePermissionType;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.IPublishPipeService;
-import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import freemarker.template.TemplateException;
@@ -71,9 +70,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/pagewidget")
-public class PageWidgetController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class PageWidgetController extends CmsRestController {
 
 	private final ICatalogService catalogService;
 
@@ -95,13 +92,13 @@ public class PageWidgetController extends BaseRestController {
 			value = { ContentCorePriv.ContentView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER },
 			mode = SaMode.AND
 	)
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> listData(@RequestParam(name = "catalogId", required = false) Long catalogId,
 			@RequestParam(name = "name", required = false) String name,
 			@RequestParam(name = "type", required = false) String type,
 			@RequestParam(name = "state", required = false) Integer state) {
 		PageRequest pr = this.getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		LambdaQueryWrapper<CmsPageWidget> q = new LambdaQueryWrapper<CmsPageWidget>()
 				.eq(CmsPageWidget::getSiteId, site.getSiteId())
 //				.eq(catalogId != null && catalogId > 0, CmsPageWidget::getCatalogId, catalogId)
@@ -129,7 +126,7 @@ public class PageWidgetController extends BaseRestController {
 			value = { ContentCorePriv.ContentView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER },
 			mode = SaMode.AND
 	)
-	@GetMapping("/{pageWidgetId}")
+	@GetMapping("/detail/{pageWidgetId}")
 	public R<PageWidgetVO> getInfo(@PathVariable("pageWidgetId") Long pageWidgetId) {
 		CmsPageWidget pageWidget = this.pageWidgetService.getById(pageWidgetId);
 		Assert.notNull(pageWidget, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", pageWidgetId));
@@ -153,16 +150,16 @@ public class PageWidgetController extends BaseRestController {
 
 	@Priv(
 			type = AdminUserType.TYPE,
-			value = { ContentCorePriv.ContentView, SitePermissionType.ID + ":AddPageWidget:${#_header['CurrentSite']}" },
+			value = { ContentCorePriv.ContentView, SitePermissionType.ID + ":AddPageWidget:${#_header['" + ContentCoreConsts.Header_CurrentSite + "']}" },
 			mode = SaMode.AND
 	)
 	@Log(title = "新增页面组件", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addPageWidget(@RequestBody @Validated PageWidgetAddDTO dto) {
 		IPageWidgetType pwt = this.pageWidgetService.getPageWidgetType(dto.getType());
 		Assert.notNull(pwt, () -> ContentCoreErrorCode.UNSUPPORTED_PAGE_WIDGET_TYPE.exception(dto.getType()));
 
-		CmsSite site = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = getCurrentSite();
 		CmsPageWidget pageWidget= new CmsPageWidget();
 		BeanUtils.copyProperties(dto, pageWidget);
 		pageWidget.setSiteId(site.getSiteId());
@@ -181,7 +178,7 @@ public class PageWidgetController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE)
 	@Log(title = "编辑页面组件", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> editPageWidget(@RequestBody @Validated PageWidgetEditDTO dto) {
 		CmsPageWidget pageWidget = this.pageWidgetService.getById(dto.getPageWidgetId());
 		Assert.notNull(dto.getPageWidgetId(), () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", dto.getPageWidgetId()));
@@ -207,10 +204,18 @@ public class PageWidgetController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE)
-	@Log(title = "发布页面组件", businessType = BusinessType.OTHER)
+	@Log(title = "页面组件", businessType = BusinessType.OTHER)
 	@PostMapping("/publish")
 	public R<?> publishPageWidgets(@RequestBody @NotEmpty List<Long> pageWidgetIds) throws TemplateException, IOException {
 		this.pageWidgetService.publishPageWidgets(pageWidgetIds, StpAdminUtil.getLoginUser());
 		return R.ok();
 	}
+
+    @Priv(type = AdminUserType.TYPE)
+    @Log(title = "页面组件", businessType = BusinessType.OTHER)
+    @PostMapping("/offline")
+    public R<?> offlinePageWidgets(@RequestBody @NotEmpty List<Long> pageWidgetIds) throws TemplateException, IOException {
+        this.pageWidgetService.offlinePageWidgets(pageWidgetIds, StpAdminUtil.getLoginUser());
+        return R.ok();
+    }
 }

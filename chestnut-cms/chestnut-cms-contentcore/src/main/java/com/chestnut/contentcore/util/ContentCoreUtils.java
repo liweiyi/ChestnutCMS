@@ -15,12 +15,16 @@
  */
 package com.chestnut.contentcore.util;
 
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.contentcore.core.*;
+import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.publish.IContentPathRule;
+import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.template.ITemplateType;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Collection;
 import java.util.List;
@@ -69,6 +73,11 @@ public class ContentCoreUtils {
 	 */
 	private static final Map<String, IContentPathRule> ContentPathRules = SpringUtils.getBeanMap(IContentPathRule.class);
 
+    private static final ISiteService siteService = SpringUtils.getBean(ISiteService.class);
+
+    public static CmsSite getCurrentSite(HttpServletRequest request, LoginUser loginUser) {
+        return siteService.getCurrentSite(request, loginUser);
+    }
 
 	public static IContentPathRule getContentPathRule(String typeId) {
         return ContentPathRules.get(IContentPathRule.BEAN_PREFIX + typeId);

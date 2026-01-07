@@ -5,7 +5,7 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.5.8
+  version: 1.5.9
   # 版权年份
   copyrightYear: 2022-2025
   system:
@@ -188,6 +188,9 @@ spring:
           service-host-type: IP
         username: chestnut
         password: 123456
+springdoc:
+  api-docs:
+    enabled: false
 
 # SaToken配置           
 sa-token: 

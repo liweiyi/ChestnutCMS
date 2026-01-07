@@ -16,6 +16,7 @@
 package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
@@ -33,6 +34,7 @@ import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.service.ISysLogininforService;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,8 +63,17 @@ public class SysLogininforController extends BaseRestController {
 				.like(StringUtils.isNotEmpty(logininfor.getIpaddr()), SysLogininfor::getIpaddr, logininfor.getIpaddr())
 				.eq(StringUtils.isNotEmpty(logininfor.getStatus()), SysLogininfor::getStatus, logininfor.getStatus())
 				.ge(Objects.nonNull(logininfor.getParams().get("beginTime")), SysLogininfor::getLoginTime, logininfor.getParams().get("beginTime"))
-				.le(Objects.nonNull(logininfor.getParams().get("endTime")), SysLogininfor::getLoginTime, logininfor.getParams().get("endTime"))
-				.orderByDesc(SysLogininfor::getInfoId);
+				.le(Objects.nonNull(logininfor.getParams().get("endTime")), SysLogininfor::getLoginTime, logininfor.getParams().get("endTime"));
+        if (StringUtils.isNotEmpty(pr.getSorts())) {
+            pr.getSorts().forEach(sort -> {
+                SFunction<SysLogininfor, ?> sf = SysLogininfor.MAP_PARAMS.get(sort.getColumn());
+                if (Objects.nonNull(sf)) {
+                    q.orderBy(true, sort.getDirection() == Sort.Direction.ASC, sf);
+                }
+            });
+        } else {
+            q.orderByDesc(SysLogininfor::getInfoId);
+        }
 		Page<SysLogininfor> page = logininforService.page(new Page<>(pr.getPageNumber(), pr.getPageSize()), q);
 		LoginLogType.decode(page.getRecords(), SysLogininfor::getLogType, SysLogininfor::setLogType);
 		return bindDataTable(page);

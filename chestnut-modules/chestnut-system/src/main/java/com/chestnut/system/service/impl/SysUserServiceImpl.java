@@ -21,22 +21,20 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.SecurityUtils;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.DateUtils;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.common.validation.BeanValidators;
+import com.chestnut.system.SysConstants;
 import com.chestnut.system.config.SystemConfig;
 import com.chestnut.system.domain.*;
-import com.chestnut.system.domain.dto.CreateUserRequest;
-import com.chestnut.system.domain.dto.ResetUserPwdRequest;
-import com.chestnut.system.domain.dto.UpdateUserRequest;
-import com.chestnut.system.domain.dto.UserImportData;
+import com.chestnut.system.domain.dto.*;
 import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.exception.SystemUserTips;
+import com.chestnut.system.fixed.dict.EnableOrDisable;
+import com.chestnut.system.fixed.dict.Gender;
 import com.chestnut.system.fixed.dict.UserStatus;
+import com.chestnut.system.listener.event.AfterSysUserAddEvent;
 import com.chestnut.system.mapper.*;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.*;
@@ -47,10 +45,10 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -82,6 +80,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	private final ISecurityConfigService securityConfigService;
 
 	private final SysPermissionMapper permissionMapper;
+
+    private final SysDeptMapper deptMapper;
+
+    private final ApplicationContext applicationContext;
 
 	@Override
 	public String selectUserRoleGroup(Long userId) {
@@ -153,14 +155,43 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		this.securityConfigService.validPassword(user, req.getPassword());
 		// 强制首次登陆修改密码
 		this.securityConfigService.forceModifyPwdAfterUserAdd(user);
-		// 密码家吗
 		user.setUserId(IdUtils.getSnowflakeId());
 		user.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
 		user.createBy(req.getOperator().getUsername());
 		this.save(user);
 		// 新增用户岗位关联
 		syncUserPost(user.getUserId(), req.getPostIds(), false);
+        applicationContext.publishEvent(new AfterSysUserAddEvent(this, user));
 	}
+
+    @Override
+    public SysUser createBindingUser(CreateBindingUserRequest req) {
+        // 获取微信用户信息
+        SysUser user = new SysUser();
+        user.setUserId(IdUtils.getSnowflakeId());
+        user.setUserName(req.getUserName());
+        user.setNickName(req.getNickName());
+        if (StringUtils.isNotEmpty(req.getAvatar())) {
+            try {
+                // 保存头像图片到本地
+                byte[] bytes  = HttpUtils.syncDownload(req.getAvatar(), true);
+                String avatar = this.uploadAvatar(user.getUserId(), bytes);
+                user.setAvatar(avatar);
+            } catch (Exception e) {
+                // DO NOTHING
+                log.warn("Download avatar failed.", e);
+            }
+        }
+        user.setSex(StringUtils.defaultIfEmpty(req.getSex(), Gender.UNKNOWN));
+        // 默认顶级机构
+        SysDept topDept = this.deptMapper.selectOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getParentId, 0L));
+        user.setDeptId(topDept.getDeptId());
+        user.setStatus(EnableOrDisable.ENABLE);
+        user.createBy(SysConstants.SYS_OPERATOR);
+        this.save(user);
+        applicationContext.publishEvent(new AfterSysUserAddEvent(this, user));
+        return user;
+    }
 
 	@Override
 	public void registerUser(SysUser user) {
@@ -180,25 +211,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	public void updateUser(UpdateUserRequest req) {
 		SysUser db = this.getById(req.getUserId());
 		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getUserId()));
-		boolean checkUserUnique = this.checkUserUnique(req.getUserName(), req.getPhoneNumber(), req.getEmail(), req.getUserId());
+		boolean checkUserUnique = this.checkUserUnique(db.getUserName(), req.getPhoneNumber(), req.getEmail(), req.getUserId());
 		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phoneNumber,email]"));
 
 		String oldStatus = db.getStatus();
-
-		db.setNickName(req.getNickName());
-		db.setRealName(req.getRealName());
-		db.setDeptId(req.getDeptId());
-		db.setPhoneNumber(req.getPhoneNumber());
-		db.setEmail(req.getEmail());
-		db.setSex(req.getSex());
-		db.setStatus(req.getStatus());
+        BeanUtils.copyProperties(req, db);
 		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
 		// 用户与岗位关联
 		syncUserPost(db.getUserId(), req.getPostIds(), true);
 		// 变更未封禁或锁定状态时注销登录状态
 		if (!StringUtils.equals(db.getStatus(), oldStatus)
-				&& (UserStatus.isDisbale(db.getStatus()) || UserStatus.isLocked(db.getStatus()))) {
+				&& (UserStatus.isDisable(db.getStatus()) || UserStatus.isLocked(db.getStatus()))) {
 			StpAdminUtil.logout(req.getUserId());
 		}
 	}
@@ -275,26 +299,21 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	}
 
 	@Override
-	public String uploadAvatar(Long userId, MultipartFile file) {
+	public String uploadAvatar(Long userId, byte[] fileBytes) {
 		try {
-			SysUser user = this.getById(userId);
-			Assert.notNull(user, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(userId));
 			// 文件后缀名
-			String ext = FileExUtils.getExtension(file.getBytes());
+			String ext = FileExUtils.getExtension(fileBytes);
 			// 上传相对路径
 			String path = "avatar/" + DateUtils.datePath() + "/" + userId + "." + ext;
 			// 写入文件
-			FileUtils.writeByteArrayToFile(new File(SystemConfig.getUploadDir() + path), file.getBytes());
-			// 设置用户头像
-			user.setAvatar(path);
-			this.lambdaUpdate().set(SysUser::getAvatar, path).eq(SysUser::getUserId, userId).update();
+			FileUtils.writeByteArrayToFile(new File(SystemConfig.getUploadDir() + path), fileBytes);
 			return path;
 		} catch (IOException e) {
 			throw CommonErrorCode.SYSTEM_ERROR.exception(e.getMessage());
 		}
 	}
 
-	@RequiredArgsConstructor
+    @RequiredArgsConstructor
 	public static class SysUserReadListener implements ReadListener<UserImportData> {
 
 		private final ISysUserService userService;
@@ -310,6 +329,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		@Setter
 		private Validator validator;
 
+        @Setter
 		private boolean isUpdateSupport;
 
 		@Setter
@@ -403,10 +423,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		@Override
 		public void doAfterAllAnalysed(AnalysisContext context) {
 			logWriter.append(SystemUserTips.IMPORT_FAIL.locale(locale, successCount, failCount));
-		}
-
-		public void setUpdateSupport(boolean isUpdateSupport) {
-			this.isUpdateSupport = isUpdateSupport;
 		}
 	}
 }

@@ -384,6 +384,7 @@ import CMSProgress from '@/views/components/Progress';
 import CMSLogoView from '@/views/cms/components/LogoView';
 import CMSEXModelEditor from '@/views/cms/components/EXModelEditor';
 import CMSFileSelector from '@/views/cms/components/FileSelector';
+import { CACHE_LAST_SELECTED_CATALOG, CACHE_PUBLISH_FLAG } from '@/utils/constants';
 
 export default {
   name: "CMSCatalogInfo",
@@ -577,7 +578,7 @@ export default {
         this.progressTitle = this.$t('CMS.Catalog.PublishProgressTitle');
         this.progressType = "Publish";
         this.openProgress = true;
-        this.$cache.local.set('publish_flag', "true")
+        this.$cache.local.set(CACHE_PUBLISH_FLAG, "true")
       }); 
     },
     handleDelete () {
@@ -592,7 +593,7 @@ export default {
           this.progressType = "Delete";
           this.openProgress = true;
           
-          this.$cache.local.set("LastSelectedCatalogId", this.form_info.parentId);
+          this.$cache.local.set(CACHE_LAST_SELECTED_CATALOG, this.form_info.parentId);
         }
       });
     },

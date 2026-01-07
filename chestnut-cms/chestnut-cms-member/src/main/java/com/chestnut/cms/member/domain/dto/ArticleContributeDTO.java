@@ -23,6 +23,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文章投稿 DTO
@@ -74,4 +75,9 @@ public class ArticleContributeDTO {
      * 文章格式
      */
     private String format;
+
+    /**
+     * 扩展数据
+     */
+    private Map<String, Object> params;
 }

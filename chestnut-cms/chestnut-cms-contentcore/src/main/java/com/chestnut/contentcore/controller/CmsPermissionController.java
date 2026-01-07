@@ -111,7 +111,7 @@ public class CmsPermissionController extends BaseRestController {
 		return R.ok(Map.of("sitePrivs", sitePrivs, "sitePrivItems", siteSubPrivs));
 	}
 
-	@PutMapping("/site")
+	@PostMapping("/site")
 	public R<?> saveSitePermissions(@RequestBody @Validated SaveSitePermissionDTO dto) {
 		Set<String> perms = new HashSet<>();
 		dto.getPerms().forEach(vo -> {
@@ -198,7 +198,7 @@ public class CmsPermissionController extends BaseRestController {
 		return result;
 	}
 
-	@PutMapping("/catalog")
+	@PostMapping("/catalog")
 	public R<?> saveCatalogPermissions(@RequestBody @Validated SaveCatalogPermissionDTO dto) {
 		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner());
 		Set<String> permissionKeys = new HashSet<>();
@@ -268,7 +268,7 @@ public class CmsPermissionController extends BaseRestController {
 		return R.ok(Map.of("pageWidgetPrivs", pageWidgetPrivs, "privItems", pageWidgetPrivItems));
 	}
 
-	@PutMapping("/pageWidget")
+	@PostMapping("/pageWidget")
 	public R<?> savePageWidgetPermissions(@RequestBody @Validated SavePageWidgetPermissionDTO dto) {
 		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner());
 		Set<String> permissionKeys = new HashSet<>();

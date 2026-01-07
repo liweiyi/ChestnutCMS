@@ -27,10 +27,7 @@ import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
-import com.chestnut.contentcore.listener.event.AfterContentSaveEvent;
-import com.chestnut.contentcore.listener.event.BeforeContentSaveEvent;
-import com.chestnut.contentcore.listener.event.OnContentCopyEvent;
-import com.chestnut.contentcore.listener.event.OnContentMoveEvent;
+import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.properties.PublishedContentEditProperty;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
@@ -44,6 +41,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.ApplicationContext;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -263,6 +261,8 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			this.getContentService().dao().updateById(content);
 			ContentLogUtils.addLog(ContentOpType.PUBLISH, this.getContentEntity(), this.getOperator());
 		}
+        ApplicationContext applicationContext = SpringUtils.getBean(ApplicationContext.class);
+        applicationContext.publishEvent(new AfterContentPublishEvent(this, this));
 		return true;
 	}
 

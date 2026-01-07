@@ -15,14 +15,13 @@
  */
 package com.chestnut.system.fixed.config;
 
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.FixedConfig;
 import com.chestnut.system.service.ISysConfigService;
+import org.springframework.stereotype.Component;
 
 /**
  * 系统模块通用文件上传类型限制
@@ -37,8 +36,14 @@ public class SysUploadTypeLimit extends FixedConfig {
 	/**
 	 * 默认上传文件类型
 	 */
-	private static final String[] DEFAULT_VALUE = { "jpg", "jpeg", "gif", "png", "xls", "xlsx", "doc", "docx", "ppt", "pptx", "pdf", "html", "txt", "zip" };
-	
+	private static final String[] DEFAULT_VALUE = { "jpg", "jpeg", "png", "gif", "webp", "bmp",
+            "mp4", "mpg", "mpeg", "rmvb", "rm", "avi", "wmv", "mov", "flv",
+            "mp3", "wav", "wma", "ogg", "aiff", "aac", "flac", "mid",
+            "psd", "ai", "tif", "tiff", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf",
+            "fla", "swf", "js", "css", "shtml", "html", "htm", "txt", "ttf", "eot",
+            "rar", "zip", "gz", "bz2", "z", "iso", "cab", "jar"
+    };
+
 	public SysUploadTypeLimit() {
 		super(ID, "{CONFIG." + ID + "}", String.join(",", DEFAULT_VALUE), null);
 	}
@@ -51,6 +56,6 @@ public class SysUploadTypeLimit extends FixedConfig {
 		} else {
 			flag = StringUtils.containsAnyIgnoreCase(ext, configValue.split(","));
 		}
-		Assert.isTrue(flag, () -> SysErrorCode.UPLOAD_FILE_TYPE_LIMIT.exception());
+		Assert.isTrue(flag, SysErrorCode.UPLOAD_FILE_TYPE_LIMIT::exception);
 	}
 }

@@ -69,7 +69,7 @@ public class SysDeptController extends BaseRestController {
 	 * 根据部门编号获取详细信息
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptList)
-	@GetMapping(value = "/{deptId}")
+	@GetMapping(value = "/detail/{deptId}")
 	public R<?> getInfo(@PathVariable @LongId Long deptId) {
 		SysDept dept = deptService.getById(deptId);
 		Assert.notNull(dept, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(deptId));
@@ -82,7 +82,7 @@ public class SysDeptController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptAdd)
 	@Log(title = "部门管理", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateDeptRequest req) {
 		deptService.insertDept(req);
 		return R.ok();
@@ -93,7 +93,7 @@ public class SysDeptController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptEdit)
 	@Log(title = "部门管理", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateDeptRequest req) {
 		deptService.updateDept(req);
 		return R.ok();

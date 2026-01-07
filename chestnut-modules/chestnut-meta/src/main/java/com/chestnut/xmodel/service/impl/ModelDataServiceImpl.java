@@ -228,7 +228,13 @@ public class ModelDataServiceImpl implements IModelDataService {
 		model.getFields().forEach(f -> {
 			Object v = map.get(f.getFieldName());
 			IMetaControlType controlType = getControlType(f.getControlType());
-			Object objectV = controlType.stringAsValue(ObjectUtils.nonNullOrElseAsString(v, Object::toString));
+            if (Objects.isNull(v)) {
+				v = StringUtils.EMPTY;
+			}
+            Object objectV = v;
+            if (v instanceof String) {
+			    objectV = controlType.stringAsValue(v.toString());
+            }
 			dataMap.put(f.getCode(), objectV);
 		});
 		return dataMap;

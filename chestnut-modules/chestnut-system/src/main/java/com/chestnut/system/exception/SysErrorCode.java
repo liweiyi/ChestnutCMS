@@ -232,7 +232,12 @@ public enum SysErrorCode implements ErrorCode {
 	/**
 	 * 未配置日志输出器
 	 */
-	MISSING_CONSOLE_APPENDER;
+	MISSING_CONSOLE_APPENDER,
+
+    /**
+     * 不支持的登录类型：{0}
+     */
+    UNSUPPORTED_LOGIN_TYPE;
 	
 	@Override
 	public String value() {

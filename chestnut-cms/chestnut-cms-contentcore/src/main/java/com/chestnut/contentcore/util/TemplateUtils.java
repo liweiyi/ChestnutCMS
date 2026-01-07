@@ -23,7 +23,10 @@ import com.chestnut.common.utils.ReflectASMUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.core.IProperty.UseType;
+import com.chestnut.contentcore.core.IPublishPipeProp;
+import com.chestnut.contentcore.core.impl.PublishPipeProp_ContentTemplate;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.fixed.config.TemplateSuffix;
 import com.chestnut.contentcore.properties.SiteApiUrlProperty;
@@ -34,8 +37,11 @@ import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
 import freemarker.template.TemplateNumberModel;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Component
@@ -297,6 +303,22 @@ public class TemplateUtils {
 		if (StringUtils.isNotEmpty(config.getTokenPrefix())) {
 			token = config.getTokenPrefix() + " " + token;
 		}
-		return appendParam(url, config.getTokenName(), token);
+		return appendParam(url, config.getTokenName(), URLEncoder.encode(token, StandardCharsets.UTF_8));
 	}
+
+    public static String getDetailTemplate(CmsSite site, CmsCatalog catalog, CmsContent content, String publishPipeCode) {
+        String detailTemplate = PublishPipeProp_ContentTemplate.getValue(publishPipeCode,
+                content.getPublishPipeProps());
+        if (StringUtils.isEmpty(detailTemplate)) {
+            // 无内容独立模板取栏目配置
+            Map<String, Object> props = catalog.getPublishPipeProps(publishPipeCode);
+            detailTemplate = MapUtils.getString(props, IPublishPipeProp.DetailTemplatePropPrefix + content.getContentType());
+            if (StringUtils.isEmpty(detailTemplate)) {
+                // 无栏目配置去站点默认模板配置
+                props = site.getPublishPipeProps(publishPipeCode);
+                detailTemplate = MapUtils.getString(props, IPublishPipeProp.DetailTemplatePropPrefix + content.getContentType());
+            }
+        }
+        return detailTemplate;
+    }
 }

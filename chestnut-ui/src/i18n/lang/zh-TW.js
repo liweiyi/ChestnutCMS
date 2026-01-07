@@ -65,6 +65,8 @@ export default {
     CheckAll: '全選',
     CheckInverse: '全不選',
     TreeLinkage: '父子聯動',
+    MoveUp: "上移",
+    MoveDown: "下移",
     ConfirmDelete: '是否確認刪除？',
     Today: '今天',
     Yesterday: '昨天',
@@ -91,6 +93,7 @@ export default {
     DownloadTimeout: "下載超時",
     Others: "其他",
     Unknown: "未知",
+    Recover: "恢復",
     Unit: {
       Year: "年",
       Month: "月",
@@ -565,7 +568,11 @@ export default {
       AddTitle: "添加安全配置",
       EditTitle: "編輯安全配置",
       ForceModifyPwd: "首次登錄或重置密碼後需要修改密碼！",
-      PwdExpired: "密碼已過期，為了您的賬號安全請立即修改密碼！"
+      PwdExpired: "密碼已過期，為了您的賬號安全請立即修改密碼！",
+      CaptchaEnable: "啟用驗證碼",
+      CaptchaType: "驗證碼類型",
+      CaptchaExpireSeconds: "驗證碼過期時長（單位：秒）",
+      CaptchaRetryDuration: "驗證碼重試時長（單位：秒）",
     },
     WeChat: {
       Backend: "後台登錄",
@@ -909,6 +916,7 @@ export default {
         CatalogPageSizeTip: "值為0時系統預設取值10",
         ContentConfCardTitle: "內容配置",
         AutoArticleLogo: "正文首圖作為封面",
+        AutoArticleVersion: "自動保存文章版本",
         RecycleKeepDays: "資源回收筒內容保留天數",
         RecycleKeepDaysTip: "永久保留填0",
         ResourceConfCardTitle: "素材庫",
@@ -1149,7 +1157,19 @@ export default {
       PushToBaidu: "推送到百度",
       PushToBaiduResult: "【{0}】成功 {1} 條，剩餘 {2} 條。<br/>",
       ImportCSSTip: "應用站點/欄目發布通道設置的文章編輯器CSS",
-      OpLog: "操作記錄"
+      OpLog: "操作記錄",
+      Version: "版本記錄",
+      VersionNo: "版本編號",
+      Compare: "對比",
+      CompareToLatest: "與最新版本對比",
+      SaveNewVersion: "保存新版本",
+      LatestVersion: "最新版本",
+      VersionDiff: "版本對比",
+      VersionDiffTip: {
+        Replace: "替換",
+        Add: "新增",
+        Remove: "刪除"
+      }
     },
     ContentOpLog: {
       Type: "操作類型",
@@ -1223,6 +1243,10 @@ export default {
       UploadCover: "上傳視頻封面圖",
       ScreenshotDialog: "視頻封面截圖",
       SetLogo: "設為視頻集封面"
+    },
+    FileContent: {
+      Preview: "預覽",
+      Intro: "文件介紹"
     },
     Book: {
       Basic: "圖書資訊",

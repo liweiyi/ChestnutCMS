@@ -73,7 +73,7 @@ public class SysNoticeController extends BaseRestController {
 	 * 根据通知公告编号获取详细信息
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeList)
-	@GetMapping(value = "/{noticeId}")
+	@GetMapping(value = "/detail/{noticeId}")
 	public R<?> getInfo(@PathVariable @LongId Long noticeId) {
 		Assert.isTrue(IdUtils.validate(noticeId), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("noticeId: " + noticeId));
 		return R.ok(noticeService.getById(noticeId));
@@ -85,7 +85,7 @@ public class SysNoticeController extends BaseRestController {
 	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeAdd)
 	@Log(title = "通知公告", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateNoticeRequest req) {
 		noticeService.insertNotice(req);
 		return R.ok();
@@ -97,7 +97,7 @@ public class SysNoticeController extends BaseRestController {
 	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeEdit)
 	@Log(title = "通知公告", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateNoticeRequest req) {
 		noticeService.updateNotice(req);
 		return R.ok();

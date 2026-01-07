@@ -189,11 +189,11 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 		return YesOrNo.isYes(this.forceModifyPassword);
 	}
 
-	public boolean isAccountNonLocked() {
-		// 状态未锁定状态，并且锁定解锁时间未空或者未过期
-		return !UserStatus.isLocked(this.status) || (Objects.nonNull(this.getLockEndTime()) && LocalDateTime.now().isAfter(this.getLockEndTime()));
+	public boolean isLocked() {
+		// 状态为锁定状态，并且锁定解锁时间为空或者未过期
+		return UserStatus.isLocked(this.status) && (Objects.isNull(this.getLockEndTime()) || LocalDateTime.now().isBefore(this.getLockEndTime()));
 	}
-	
+
 	/**
 	 * 数据变更标识
 	 */

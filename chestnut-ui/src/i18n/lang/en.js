@@ -65,6 +65,8 @@ export default {
     CheckAll: 'Check All',
     CheckInverse: 'Inverse',
     TreeLinkage: 'Linkage',
+    MoveUp: "Move Up",
+    MoveDown: "Move Down",
     ConfirmDelete: 'Are you sure to delete?',
     Today: 'Today',
     Yesterday: 'Yesterday',
@@ -91,6 +93,7 @@ export default {
     DownloadTimeout: "Download timeout.",
     Others: "Others",
     Unknown: "Unknown",
+    Recover: "Recover",
     Unit: {
       Year: "yr",
       Month: "mo",
@@ -565,7 +568,11 @@ export default {
       AddTitle: "Add Security Configuration",
       EditTitle: "Edit Security Configuration",
       ForceModifyPwd: "Password needs to be changed after first login or password reset!",
-      PwdExpired: "Your password has expired. For the security of your account, please change the password immediately!"
+      PwdExpired: "Your password has expired. For the security of your account, please change the password immediately!",
+      CaptchaEnable: "Enable Captcha",
+      CaptchaType: "Captcha Type",
+      CaptchaExpireSeconds: "Captcha Expire Seconds",
+      CaptchaRetryDuration: "Captcha Retry Duration",
     },
     WeChat: {
       Backend: "Backend",
@@ -909,6 +916,7 @@ export default {
         CatalogPageSizeTip: "When the value is 0, the system defaults to 10",
         ContentConfCardTitle: "Content",
         AutoArticleLogo: "Auto Article Cover",
+        AutoArticleVersion: "Auto Article Version",
         RecycleKeepDays: "Recycle expire days",
         RecycleKeepDaysTip: "Keep forever with 0",
         ResourceConfCardTitle: "Resource Storage",
@@ -1149,7 +1157,19 @@ export default {
       PushToBaidu: "Push To Baidu",
       PushToBaiduResult: "[ {0} ] Success: {1}, remain: {2}.<br/>",
       ImportCSSTip: "Import site/catalog publish-pipe prop 'UEditor CSS'.",
-      OpLog: "Logs"
+      OpLog: "Logs",
+      Version: "Version",
+      VersionNo: "Version",
+      Compare: "Compare",
+      CompareToLatest: "Compare To Latest",
+      SaveNewVersion: "Save New Version",
+      LatestVersion: "Latest Version",
+      VersionDiff: "Version Diff",
+      VersionDiffTip: {
+        Replace: "Replace",
+        Add: "Add",
+        Remove: "Remove"
+      }
     },
     ContentOpLog: {
       Type: "Type",
@@ -1223,6 +1243,10 @@ export default {
       UploadCover: "Upload",
       ScreenshotDialog: "Video Screenshot",
       SetLogo: "Set Album Cover"
+    },
+    FileContent: {
+      Preview: "Preview",
+      Intro: "Introduce"
     },
     Book: {
       Basic: "Book Info",

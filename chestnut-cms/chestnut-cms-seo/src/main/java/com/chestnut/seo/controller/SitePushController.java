@@ -17,10 +17,8 @@ package com.chestnut.seo.controller;
 
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.seo.service.BaiduPushService;
 import com.chestnut.system.security.AdminUserType;
 import jakarta.validation.constraints.NotEmpty;
@@ -43,16 +41,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/cms/seo")
 @RequiredArgsConstructor
-public class SitePushController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class SitePushController extends CmsRestController {
 
 	private final BaiduPushService baiduPushService;
 
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/baidu_push")
 	public R<?> generateSitemap(@RequestBody @NotEmpty List<Long> contentIds) {
-		CmsSite site = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = getCurrentSite();
 
 		List<BaiduPushService.BaiduPushResult> results = baiduPushService.pushContents(site, contentIds);
 

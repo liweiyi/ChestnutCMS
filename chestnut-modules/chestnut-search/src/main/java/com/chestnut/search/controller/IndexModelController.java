@@ -23,11 +23,11 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.search.SearchConsts;
 import com.chestnut.search.domain.IndexModel;
 import com.chestnut.search.domain.dto.SearchModelDTO;
 import com.chestnut.search.service.IIndexModelService;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Priv(type = AdminUserType.TYPE)
+@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.MODEL_VIEW)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/search/model")
@@ -56,7 +56,6 @@ public class IndexModelController extends BaseRestController {
 	@Log(title = "新增索引模型", businessType = BusinessType.INSERT)
 	@PostMapping
 	public R<?> addIndexModel(@RequestBody @Validated SearchModelDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.indexModelService.addIndexModel(dto);
 		return R.ok();
 	}

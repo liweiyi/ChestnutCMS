@@ -20,8 +20,6 @@ import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.contentcore.core.IPublishPipeProp;
-import com.chestnut.contentcore.core.impl.PublishPipeProp_ContentTemplate;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
@@ -78,9 +76,10 @@ public class ContentStaticizeType implements IStaticizeType {
         Long contentId = Long.valueOf(dataId);
         if (IdUtils.validate(contentId)) {
             CmsContent content = this.contentService.dao().getById(contentId);
-            if (Objects.nonNull(content)) {
-                this.contentStaticize(content);
+            if (Objects.isNull(content)) {
+                logger.warn("Content not found: {}", contentId);
             }
+            this.contentStaticize(content);
         }
     }
 
@@ -107,7 +106,7 @@ public class ContentStaticizeType implements IStaticizeType {
                     catalog.getName(), content.getTitle());
             return; // 标题内容不需要静态化
         }
-        final String detailTemplate = getDetailTemplate(site, catalog, content, publishPipeCode);
+        final String detailTemplate = TemplateUtils.getDetailTemplate(site, catalog, content, publishPipeCode);
         File templateFile = this.templateService.findTemplateFile(site, detailTemplate, publishPipeCode);
         if (templateFile == null) {
             logger.warn(AsyncTaskManager.addErrMessage(
@@ -213,23 +212,5 @@ public class ContentStaticizeType implements IStaticizeType {
             logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}] 内容扩展模板解析失败 [{1}#{2}]：{3}",
                     publishPipeCode, site.getName(), catalog.getName(), content.getTitle())), e);
         }
-    }
-
-    private String getDetailTemplate(CmsSite site, CmsCatalog catalog, CmsContent content, String publishPipeCode) {
-        String detailTemplate = PublishPipeProp_ContentTemplate.getValue(publishPipeCode,
-                content.getPublishPipeProps());
-        if (StringUtils.isEmpty(detailTemplate)) {
-            // 无内容独立模板取栏目配置
-            detailTemplate = this.publishPipeService.getPublishPipePropValue(
-                    IPublishPipeProp.DetailTemplatePropPrefix + content.getContentType(), publishPipeCode,
-                    catalog.getPublishPipeProps());
-            if (StringUtils.isEmpty(detailTemplate)) {
-                // 无栏目配置去站点默认模板配置
-                detailTemplate = this.publishPipeService.getPublishPipePropValue(
-                        IPublishPipeProp.DefaultDetailTemplatePropPrefix + content.getContentType(), publishPipeCode,
-                        site.getPublishPipeProps());
-            }
-        }
-        return detailTemplate;
     }
 }

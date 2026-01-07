@@ -19,11 +19,13 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.storage.local.LocalFileStorageType;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.properties.FileStorageTypeProperty;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -90,12 +92,12 @@ public class VideoServiceImpl implements IVideoService {
 			throw new RuntimeException("InternalUrl parse failed.");
 		}
 		String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
-        String storageType = internalURL.getParams().get(InternalUrl_Param_StorageType);
-		if (LocalFileStorageType.TYPE.equals(storageType)) {
-			videoPath = siteResourceRoot + internalURL.getPath();
+        String storageType = FileStorageTypeProperty.getValue(site.getConfigProps());
+		if (StringUtils.isNotEmpty(storageType) && !LocalFileStorageType.TYPE.equals(storageType)) {
+            IInternalDataType idt = ContentCoreUtils.getInternalDataType(InternalDataType_Resource.ID);
+            videoPath = idt.getLink(internalURL, 1, "", false);
 		} else {
-			IInternalDataType idt = ContentCoreUtils.getInternalDataType(InternalDataType_Resource.ID);
-			videoPath = idt.getLink(internalURL, 1, "", false);
+            videoPath = siteResourceRoot + internalURL.getPath();
 		}
 		File screenshotFile = new File(siteResourceRoot + "tmp/video_screenshot/" + IdUtils.simpleUUID() + ".jpg");
 		FileUtils.forceMkdirParent(screenshotFile);

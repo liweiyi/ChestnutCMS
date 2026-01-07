@@ -27,6 +27,7 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.search.SearchConsts;
 import com.chestnut.search.domain.DictWord;
 import com.chestnut.search.domain.dto.CreateDictWordRequest;
 import com.chestnut.search.domain.dto.WordAnalyzeRequest;
@@ -55,7 +56,7 @@ public class DictWordController extends BaseRestController {
 
 	private final ElasticsearchClient esClient;
 
-	@Priv(type = AdminUserType.TYPE)
+	@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.DICT_VIEW)
 	@GetMapping
 	public R<?> getPageList(@RequestParam(required = false) @Length(max = 100) String query) {
 		PageRequest pr = this.getPageRequest();
@@ -66,7 +67,7 @@ public class DictWordController extends BaseRestController {
 	}
 
 	@Log(title = "新增检索词", businessType = BusinessType.UPDATE)
-	@Priv(type = AdminUserType.TYPE)
+	@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.DICT_VIEW)
 	@PostMapping
 	public R<?> add(@RequestBody @Validated CreateDictWordRequest req) {
 		this.dictWordService.batchAddDictWords(req);
@@ -74,7 +75,7 @@ public class DictWordController extends BaseRestController {
 	}
 
 	@Log(title = "删除检索词", businessType = BusinessType.DELETE)
-	@Priv(type = AdminUserType.TYPE)
+	@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.DICT_VIEW)
 	@PostMapping("/delete")
 	public R<String> delete(@RequestBody @NotEmpty List<Long> dictWordIds) {
 		this.dictWordService.removeByIds(dictWordIds);

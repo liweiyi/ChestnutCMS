@@ -26,13 +26,14 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.LoginBody;
 import com.chestnut.system.exception.SysErrorCode;
-import com.chestnut.system.fixed.config.SysCaptchaEnable;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
 import com.chestnut.system.fixed.dict.UserStatus;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.service.*;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.RequiredArgsConstructor;
@@ -72,21 +73,22 @@ public class SysLoginService {
 	 * @return 结果
 	 */
 	public String login(LoginBody loginBody) {
-		// 验证码开关
-		if (SysCaptchaEnable.isEnable()) {
-			validateCaptcha(loginBody.getUsername(), loginBody.getCaptcha());
-		}
+		// 验证码校验
+        validateCaptcha(loginBody.getUsername(), loginBody.getCaptcha());
 		// 查找用户
 		SysUser user = this.userService.lambdaQuery().eq(SysUser::getUserName, loginBody.getUsername()).one();
 		if (Objects.isNull(user)) {
 			throw SysErrorCode.USER_NOT_EXISTS.exception();
 		}
-		if (!user.isAccountNonLocked()) {
+		if (user.isLocked()) {
 			throw SysErrorCode.USER_LOCKED
 					.exception(Objects.isNull(user.getLockEndTime()) ? "forever" : user.getLockEndTime().toString());
-		} else if (UserStatus.isDisbale(user.getStatus())) {
+		} else if (UserStatus.isDisable(user.getStatus())) {
 			throw SysErrorCode.USER_DISABLED.exception();
 		}
+        if (StringUtils.isEmpty(user.getPassword())) {
+            throw SysErrorCode.PASSWORD_ERROR.exception(); // 第三方登录账号可能无密码
+        }
 		// 密码校验
 		if (!SecurityUtils.matches(loginBody.getPassword(), user.getPassword())) {
 			// 密码错误处理策略
@@ -100,21 +102,25 @@ public class SysLoginService {
 			throw SysErrorCode.PASSWORD_ERROR.exception();
 		}
 		this.securityConfigService.onLoginSuccess(user);
-		// 记录用户最近登录时间和ip地址
-		user.setLoginIp(ServletUtils.getIpAddr(ServletUtils.getRequest()));
-		user.setLoginDate(LocalDateTime.now());
-		userService.updateById(user);
-		deptService.getDept(user.getDeptId()).ifPresent(d -> user.setDeptName(d.getDeptName()));
-		// 生成token
-		LoginUser loginUser = createLoginUser(user);
-		StpAdminUtil.login(user.getUserId(), DeviceType.PC.value());
-		loginUser.setToken(StpAdminUtil.getTokenValueByLoginId(user.getUserId()));
-		StpAdminUtil.getTokenSession().set(SaSession.USER, loginUser);
-		// 日志
-		this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
-				loginUser.getUsername(), LoginLogType.LOGIN, SuccessOrFail.SUCCESS, StringUtils.EMPTY);
-		return StpAdminUtil.getTokenValue();
+        return this.userLogin(user);
 	}
+
+    public String userLogin(SysUser user) {
+        // 记录用户最近登录时间和ip地址
+        user.setLoginIp(ServletUtils.getIpAddr(ServletUtils.getRequest()));
+        user.setLoginDate(LocalDateTime.now());
+        userService.updateById(user);
+        deptService.getDept(user.getDeptId()).ifPresent(d -> user.setDeptName(d.getDeptName()));
+        // 生成token
+        LoginUser loginUser = createLoginUser(user);
+        StpAdminUtil.login(user.getUserId(), DeviceType.PC.value());
+        loginUser.setToken(StpAdminUtil.getTokenValueByLoginId(user.getUserId()));
+        StpAdminUtil.getTokenSession().set(SaSession.USER, loginUser);
+        // 日志
+        this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
+                loginUser.getUsername(), LoginLogType.LOGIN, SuccessOrFail.SUCCESS, StringUtils.EMPTY);
+        return StpAdminUtil.getTokenValue();
+    }
 
 	public LoginUser createLoginUser(SysUser user) {
 		LoginUser loginUser = new LoginUser();
@@ -142,9 +148,13 @@ public class SysLoginService {
 	 * @param captcha 验证码
 	 */
 	public void validateCaptcha(String username, CaptchaData captcha) {
-		Assert.notNull(captcha, SysErrorCode.CAPTCHA_ERR::exception);
+        SysSecurityConfig securityConfig = securityConfigService.getSecurityConfig();
+        if (Objects.isNull(securityConfig) || !YesOrNo.isYes(securityConfig.getCaptchaEnable())) {
+            return;
+        }
+        Assert.notNull(captcha, SysErrorCode.CAPTCHA_ERR::exception);
 
-		ICaptchaType captchaType = captchaService.getCaptchaType(captcha.getType());
+		ICaptchaType captchaType = captchaService.getCaptchaType(securityConfig.getCaptchaType());
 		boolean validated = captchaType.isTokenValidated(captcha);
 		if (!validated) {
 			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,

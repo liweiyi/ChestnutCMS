@@ -76,7 +76,7 @@ public class TagWordController extends BaseRestController {
 		return R.ok();
 	}
 
-	@PutMapping("/update")
+	@PostMapping("/update")
 	public R<?> edit(@RequestBody @Validated UpdateTagWordRequest req) {
 		this.tagWordService.editTagWord(req);
 		return R.ok();

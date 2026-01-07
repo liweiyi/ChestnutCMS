@@ -24,10 +24,12 @@ import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.staticize.StaticizeService;
-import com.chestnut.common.utils.*;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.DateUtils;
+import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -43,6 +45,7 @@ import com.chestnut.contentcore.perms.SitePermissionType;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -68,7 +71,7 @@ import java.util.regex.Pattern;
 @RestController
 @RequestMapping("/cms/template")
 @RequiredArgsConstructor
-public class TemplateController extends BaseRestController {
+public class TemplateController extends CmsRestController {
 
 	private final ITemplateService templateService;
 
@@ -84,13 +87,13 @@ public class TemplateController extends BaseRestController {
 			value = { CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
 			mode = SaMode.AND
 	)
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getTemplateList(@RequestParam(value = "publishPipeCode", required = false) String publishPipeCode,
 								@RequestParam(value = "siteId", required = false, defaultValue = "0") Long siteId,
 								@RequestParam(value = "filename", required = false) String filename,
 								HttpServletRequest request) {
 		PageRequest pr = this.getPageRequest();
-		CmsSite site = siteService.getSiteOrCurrent(siteId, request);
+		CmsSite site = siteService.getSiteOrCurrent(siteId, request, StpAdminUtil.getLoginUser());
 		this.templateService.scanTemplates(site);
 		Page<CmsTemplate> page = this.templateService.lambdaQuery().eq(CmsTemplate::getSiteId, site.getSiteId())
 				.eq(StringUtils.isNotEmpty(publishPipeCode), CmsTemplate::getPublishPipeCode, publishPipeCode)
@@ -118,9 +121,9 @@ public class TemplateController extends BaseRestController {
 			value = { ContentCorePriv.TemplateView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
 			mode = SaMode.AND
 	)
-	@GetMapping("/{templateId}")
+	@GetMapping("/detail/{templateId}")
 	public R<?> getTemplateDetail(@PathVariable("templateId") @LongId Long templateId) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		this.templateService.scanTemplates(site);
 
 		CmsTemplate template = this.templateService.getById(templateId);
@@ -141,12 +144,11 @@ public class TemplateController extends BaseRestController {
 	)
 	@Log(title = "新增模板", businessType = BusinessType.INSERT)
 	@XssIgnore
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@RequestBody @Validated TemplateAddDTO dto) throws IOException {
-		Assert.isTrue(validTemplateName(dto.getPath()), ContentCoreErrorCode.INVALID_TEMPLATE_NAME::exception);
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		validTemplateName(dto.getPath());
+		CmsSite site = this.getCurrentSite();
 		dto.setSiteId(site.getSiteId());
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.templateService.addTemplate(dto);
 		return R.ok();
 	}
@@ -162,12 +164,12 @@ public class TemplateController extends BaseRestController {
 	@Log(title = "重命名模板", businessType = BusinessType.UPDATE)
 	@PostMapping("/rename")
 	public R<?> rename(@RequestBody @Validated TemplateRenameDTO dto) throws IOException {
-		Assert.isTrue(validTemplateName(dto.getPath()), ContentCoreErrorCode.INVALID_TEMPLATE_NAME::exception);
+        validTemplateName(dto.getPath());
 		CmsTemplate template = this.templateService.getById(dto.getTemplateId());
 		Assert.notNull(template,
 				() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("templateId", dto.getTemplateId()));
 
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		Assert.isTrue(Objects.equals(template.getSiteId(), site.getSiteId()),
 				() -> new NotPermissionException(SitePermissionType.SitePrivItem.View.getPermissionKey(site.getSiteId())));
 
@@ -175,19 +177,18 @@ public class TemplateController extends BaseRestController {
 		return R.ok();
 	}
 
-	private static boolean validTemplateName(String fileName) {
+	private static void validTemplateName(String fileName) {
 		String suffix = TemplateSuffix.getValue();
 		if (StringUtils.isEmpty(fileName) || !fileName.endsWith(suffix)) {
-			return false;
+			throw ContentCoreErrorCode.INVALID_TEMPLATE_NAME.exception(suffix);
 		}
 		fileName = FileExUtils.normalizePath(fileName);
 		String[] split = fileName.substring(0, fileName.indexOf(suffix)).split("/");
 		for (String item : split) {
 			if (StringUtils.isEmpty(item) || !Pattern.matches(RegexConsts.REGEX_CODE, item)) {
-				return false;
+                throw ContentCoreErrorCode.INVALID_TEMPLATE_NAME.exception(suffix);
 			}
 		}
-		return true;
 	}
 
 	/**
@@ -200,17 +201,16 @@ public class TemplateController extends BaseRestController {
 	)
 	@Log(title = "编辑模板", businessType = BusinessType.UPDATE)
 	@XssIgnore
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> save(@RequestBody @Validated TemplateUpdateDTO dto) throws IOException {
 		CmsTemplate template = this.templateService.getById(dto.getTemplateId());
 		Assert.notNull(template,
 				() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("templateId", dto.getTemplateId()));
 
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		Assert.isTrue(Objects.equals(template.getSiteId(), site.getSiteId()),
 				() -> new NotPermissionException(SitePermissionType.SitePrivItem.View.getPermissionKey(site.getSiteId())));
 
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.templateService.saveTemplate(template, dto);
 		return R.ok();
 	}
@@ -227,7 +227,7 @@ public class TemplateController extends BaseRestController {
 	@PostMapping("/delete")
 	public R<?> delete(@RequestBody @NotEmpty List<Long> templateIds) throws IOException {
 		Assert.isTrue(IdUtils.validate(templateIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("templateIds"));
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		this.templateService.deleteTemplates(site, templateIds);
 		return R.ok();
 	}

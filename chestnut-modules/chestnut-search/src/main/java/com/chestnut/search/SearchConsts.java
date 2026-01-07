@@ -24,4 +24,10 @@ package com.chestnut.search;
 public interface SearchConsts {
 
     String IKAnalyzeType_Smart = "ik_smart";
+
+    interface SearchPriv {
+        String DICT_VIEW = "search:dict:view";
+        String MODEL_VIEW = "search:model:view";
+        String LOG_VIEW = "search:log:view";
+    }
 }

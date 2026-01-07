@@ -22,6 +22,7 @@ import com.chestnut.system.domain.SysDictData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +33,7 @@ import java.util.Map;
  */
 @Component(IMonitoredCache.BEAN_PREFIX + SysDictDataMonitoredCache.ID)
 @RequiredArgsConstructor
-public class SysDictDataMonitoredCache implements IMonitoredCache<Map<String, SysDictData>> {
+public class SysDictDataMonitoredCache implements IMonitoredCache<List<SysDictData>> {
 
     public static final String ID = "SysDictData";
 
@@ -49,8 +50,8 @@ public class SysDictDataMonitoredCache implements IMonitoredCache<Map<String, Sy
     }
 
     @Override
-    public Map<String, SysDictData> getCache(String cacheKey) {
-        return redisCache.getCacheMap(cacheKey, SysDictData.class);
+    public List<SysDictData> getCache(String cacheKey) {
+        return redisCache.getCacheList(cacheKey, SysDictData.class);
     }
 
     @Override

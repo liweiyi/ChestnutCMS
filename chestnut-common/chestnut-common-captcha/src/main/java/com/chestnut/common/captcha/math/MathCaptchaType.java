@@ -17,11 +17,9 @@ package com.chestnut.common.captcha.math;
 
 import com.chestnut.common.captcha.*;
 import com.chestnut.common.captcha.config.properties.CaptchaProperties;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.image.ImageUtils;
 import jakarta.validation.Validator;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -43,8 +41,6 @@ public class MathCaptchaType implements ICaptchaType {
     public final static String TYPE = "Math";
     private final static String IMAGE_TYPE_GIF = "gif";
 
-    private final static String CACHE_KEY_GET = "cc:captcha:math:"; // 待验证缓存
-
     private final MathKaptchaProducer mathKaptchaProducer;
 
     private final ICaptchaStorage captchaStorage;
@@ -59,21 +55,23 @@ public class MathCaptchaType implements ICaptchaType {
     }
 
     @Override
+    public String getName() {
+        return "{CAPTCHA.TYPE." + TYPE + "}";
+    }
+
+    @Override
     public Object create(CaptchaData captchaData) {
+        Assert.notEmpty(captchaData.getToken(), CaptchaErrorCode.CAPTCHA_TOKEN_NOT_EMPTY::exception);
         try {
             String capText = mathKaptchaProducer.createText();
             String capStr = capText.substring(0, capText.lastIndexOf("@"));
             String code = capText.substring(capText.lastIndexOf("@") + 1);
             BufferedImage image = mathKaptchaProducer.createImage(capStr);
             String imageBase64Str = ImageUtils.imageToBase64(image, IMAGE_TYPE_GIF);
-            String token = captchaData.getToken();
-            if (StringUtils.isEmpty(token)) {
-                token = IdUtils.simpleUUID();
-            }
             // 写入缓存
-            captchaStorage.set(CACHE_KEY_GET + token, code, captchaProperties.getExpireSeconds());
+            captchaStorage.set(this.getCacheKey(captchaData.getToken()), code, captchaProperties.getExpireSeconds());
             // 返回客户端
-            return new MathCaptchaVO(token, imageBase64Str);
+            return new MathCaptchaVO(captchaData.getToken(), imageBase64Str);
         } catch (IOException e) {
             throw CaptchaErrorCode.GENERATE_CAPTCHA_FAILED.exception(TYPE);
         }
@@ -87,12 +85,13 @@ public class MathCaptchaType implements ICaptchaType {
             }
             return CaptchaCheckResult.success();
         } finally {
-            this.captchaStorage.delete(CACHE_KEY_GET + captchaData.getToken());
+            this.captchaStorage.delete(this.getCacheKey(captchaData.getToken()));
         }
     }
 
     private boolean validate(String token, String code) {
-        String cacheKey = CACHE_KEY_GET + token;
+        Assert.notEmpty(token, CaptchaErrorCode.CAPTCHA_TOKEN_NOT_EMPTY::exception);
+        String cacheKey = this.getCacheKey(token);
         if (!this.captchaStorage.has(cacheKey)) {
             return false;
         }

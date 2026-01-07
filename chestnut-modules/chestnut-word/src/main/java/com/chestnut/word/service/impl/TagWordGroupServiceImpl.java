@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -101,13 +102,21 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 	}
 
 	@Override
-	public List<TreeNode<String>> buildTreeData(List<TagWordGroup> groups) {
+	public List<TreeNode<String>> buildTreeData(Consumer<LambdaQueryWrapper<TagWordGroup>> consumer) {
+        LambdaQueryWrapper<TagWordGroup> q = new LambdaQueryWrapper<TagWordGroup>().orderByAsc(TagWordGroup::getSortFlag);
+        consumer.accept(q);
+        List<TagWordGroup> groups = this.list(q);
 		List<TreeNode<String>> list = new ArrayList<>();
-		if (groups != null && !groups.isEmpty()) {
+		if (StringUtils.isNotEmpty(groups)) {
 			groups.forEach(c -> {
 				TreeNode<String> treeNode = new TreeNode<>(String.valueOf(c.getGroupId()),
 						String.valueOf(c.getParentId()), c.getName(), c.getParentId() == 0);
-				Map<String, Object> props = Map.of("code", c.getCode());
+				Map<String, Object> props = Map.of(
+                        "code", c.getCode(),
+                        "sort", c.getSortFlag(),
+                        "logo", Objects.requireNonNullElse(c.getLogo(), ""),
+                        "remark", Objects.requireNonNullElse(c.getRemark(), "")
+                );
 				treeNode.setProps(props);
 				list.add(treeNode);
 			});

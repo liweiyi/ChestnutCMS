@@ -128,7 +128,7 @@ public class MemberContributeApiController extends BaseRestController implements
 	}
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
-	@DeleteMapping
+    @DeleteMapping
 	@Deprecated(since = "1.5.7", forRemoval = true)
 	public R<?> deleteContribute2(@RequestParam("cid") @LongId Long contentId) {
 		return deleteContribute(contentId);
@@ -192,6 +192,7 @@ public class MemberContributeApiController extends BaseRestController implements
 			content.setContentEntity(cmsContent);
 			content.setExtendEntity(articleDetail);
 			content.setOperator(operator);
+            content.setParams(dto.getParams());
 			applicationContext.publishEvent(new BeforeContentSaveEvent(this, content, false));
 			content.save();
 			applicationContext.publishEvent(new AfterContentSaveEvent(this, content, false));
@@ -224,6 +225,7 @@ public class MemberContributeApiController extends BaseRestController implements
 			ArticleContent content = new ArticleContent();
 			content.setContentEntity(contentEntity);
 			content.setExtendEntity(extendEntity);
+            content.setParams(dto.getParams());
 			if (content.hasExtendEntity() && StringUtils.isEmpty(extendEntity.getContentHtml())) {
 				throw CommonErrorCode.NOT_EMPTY.exception("contentHtml");
 			}

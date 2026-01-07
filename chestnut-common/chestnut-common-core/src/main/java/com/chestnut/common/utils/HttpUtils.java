@@ -16,6 +16,7 @@
 package com.chestnut.common.utils;
 
 import org.apache.commons.lang3.RandomUtils;
+import org.springframework.http.HttpHeaders;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -151,7 +152,7 @@ public class HttpUtils {
 	public static byte[] syncDownload(String uri, boolean ignoreSSL) throws Exception {
 		HttpClient httpClient = buildHttpClient(ignoreSSL);
 		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
-				.setHeader("User-Agent", randomUserAgent())
+				.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
 				.GET().build();
 		return httpClient.send(httpRequest, BodyHandlers.ofByteArray()).body();
     }
@@ -163,7 +164,7 @@ public class HttpUtils {
 	public static InputStream syncDownloadInputStream(String uri, boolean ignoreSSL) throws Exception {
 		HttpClient httpClient = buildHttpClient(ignoreSSL);
 		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
-				.setHeader("User-Agent", randomUserAgent())
+				.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
 				.GET().build();
 		return httpClient.send(httpRequest, BodyHandlers.ofInputStream()).body();
 	}
@@ -177,7 +178,7 @@ public class HttpUtils {
 	public static void asyncDownload(String uri, Path destPath) throws Exception {
 		HttpClient httpClient = buildHttpClient(true);
 		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
-				.setHeader("User-Agent", randomUserAgent())
+				.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
 				.GET().build();
 		httpClient.sendAsync(httpRequest, BodyHandlers.ofFile(destPath));
 	}
@@ -192,7 +193,7 @@ public class HttpUtils {
 	 * @param uri
 	 */
 	public static String getDiscardingContentType(String uri) throws Exception {
-		return getDiscardingHeader(uri, "content-type");
+		return getDiscardingHeader(uri, HttpHeaders.CONTENT_TYPE);
 	}
 
 	/**
@@ -204,7 +205,7 @@ public class HttpUtils {
 	public static String getDiscardingHeader(String uri, String headerName) throws Exception {
 		HttpClient httpClient = buildHttpClient(true);
 		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
-				.setHeader("User-Agent", randomUserAgent())
+				.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
 				.GET().build();
 		Optional<String> headerValue = httpClient.send(httpRequest, BodyHandlers.discarding()).headers().firstValue(headerName);
         return headerValue.orElse(null);

@@ -56,4 +56,6 @@ public interface IPageWidget {
 	void delete();
 
 	void publish();
+
+    void offline();
 }

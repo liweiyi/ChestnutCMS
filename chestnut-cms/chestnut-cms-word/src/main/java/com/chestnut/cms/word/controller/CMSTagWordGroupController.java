@@ -15,13 +15,13 @@
  */
 package com.chestnut.cms.word.controller;
 
+import cn.dev33.satoken.annotation.SaMode;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.domain.dto.CreateTagWordGroupRequest;
@@ -42,27 +42,32 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/tagword/group")
-public class CMSTagWordGroupController extends BaseRestController {
+public class CMSTagWordGroupController extends CmsRestController {
 
 	private final ITagWordGroupService tagWordGroupService;
 
-	private final ISiteService siteService;
-
-	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
+            mode = SaMode.AND
+    )
 	@GetMapping("/treedata")
 	public R<?> getTreeData() {
-		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
-		List<TagWordGroup> groups = this.tagWordGroupService.lambdaQuery()
-				.eq(TagWordGroup::getOwner, currentSite.getSiteId().toString())
-				.list();
-		List<TreeNode<String>> treeData = this.tagWordGroupService.buildTreeData(groups);
+		CmsSite currentSite = getCurrentSite();
+		List<TreeNode<String>> treeData = this.tagWordGroupService.buildTreeData(q -> {
+            q.eq(TagWordGroup::getOwner, currentSite.getSiteId().toString());
+        });
 		return R.ok(treeData);
 	}
 
-	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
+            mode = SaMode.AND
+    )
 	@PostMapping
 	public R<?> add(@RequestBody @Validated CreateTagWordGroupRequest req) {
-		CmsSite currentSite = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite currentSite = getCurrentSite();
 		req.setOwner(currentSite.getSiteId().toString());
 		return R.ok(this.tagWordGroupService.addTagWordGroup(req));
 	}

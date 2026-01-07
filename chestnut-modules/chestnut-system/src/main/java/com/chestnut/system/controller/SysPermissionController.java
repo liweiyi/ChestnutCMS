@@ -15,7 +15,9 @@
  */
 package com.chestnut.system.controller;
 
+import cn.dev33.satoken.annotation.SaMode;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
@@ -25,11 +27,12 @@ import com.chestnut.system.domain.SysPermission;
 import com.chestnut.system.domain.dto.SavePermissionRequest;
 import com.chestnut.system.domain.vo.GetMenuPermissionVO;
 import com.chestnut.system.permission.MenuPermissionType;
+import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysMenuService;
 import com.chestnut.system.service.ISysPermissionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,10 +58,10 @@ public class SysPermissionController extends BaseRestController {
 	
 	private final MenuPermissionType menuPermissionType;
 
+    @Priv(type = AdminUserType.TYPE, value = { SysMenuPriv.SysUserGrant, SysMenuPriv.SysRoleGrant },  mode = SaMode.OR)
 	@Log(title = "权限设置", businessType = BusinessType.UPDATE)
 	@PostMapping
 	public R<?> saveMenuPermission(@Validated @RequestBody SavePermissionRequest dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.permissionService.saveMenuPermissions(dto);
 		return R.ok();
 	}
@@ -66,6 +69,7 @@ public class SysPermissionController extends BaseRestController {
 	@GetMapping("/menu")
 	public R<?> getMenuPerms(@RequestParam String ownerType, @RequestParam String owner) {
 		List<SysMenu> menus = this.menuService.lambdaQuery().orderByAsc(SysMenu::getOrderNum).list();
+        I18nUtils.replaceI18nFields(menus, LocaleContextHolder.getLocale());
 		SysPermission permission = this.permissionService.getPermission(ownerType, owner);
 		Set<String> perms = Set.of();
 		if (Objects.nonNull(permission)) {

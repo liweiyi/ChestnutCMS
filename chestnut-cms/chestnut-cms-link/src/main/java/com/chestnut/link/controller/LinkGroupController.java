@@ -21,14 +21,12 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.SortUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.link.domain.CmsLinkGroup;
 import com.chestnut.link.domain.dto.LinkGroupDTO;
 import com.chestnut.link.permission.FriendLinkPriv;
@@ -54,16 +52,14 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cms/link_group")
-public class LinkGroupController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class LinkGroupController extends CmsRestController {
 
 	private final ILinkGroupService linkGroupService;
 
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.View)
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<CmsLinkGroup> q = new LambdaQueryWrapper<CmsLinkGroup>()
 				.eq(CmsLinkGroup::getSiteId, site.getSiteId())
@@ -75,9 +71,9 @@ public class LinkGroupController extends BaseRestController {
 
 	@Log(title = "新增友链分组", businessType = BusinessType.INSERT)
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.Add)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@RequestBody @Validated LinkGroupDTO dto) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		if (this.linkGroupService.lambdaQuery().eq(CmsLinkGroup::getSiteId, site.getSiteId())
 				.eq(CmsLinkGroup::getCode, dto.getCode()).count() > 0) {
 			return R.fail("友链分组编码重复");
@@ -94,9 +90,9 @@ public class LinkGroupController extends BaseRestController {
 
 	@Log(title = "编辑友链分组", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { FriendLinkPriv.Add, FriendLinkPriv.Edit })
-	@PutMapping
+	@PostMapping("/update")
 	public R<String> edit(@RequestBody @Validated LinkGroupDTO dto) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		if (this.linkGroupService.lambdaQuery().eq(CmsLinkGroup::getSiteId, site.getSiteId())
 				.eq(CmsLinkGroup::getCode, dto.getCode()).ne(CmsLinkGroup::getLinkGroupId, dto.getLinkGroupId())
 				.count() > 0) {

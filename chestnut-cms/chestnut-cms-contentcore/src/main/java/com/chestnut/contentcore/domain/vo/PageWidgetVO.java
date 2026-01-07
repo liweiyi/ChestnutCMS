@@ -88,6 +88,11 @@ public class PageWidgetVO {
      * 编辑页面路由地址
      */
     private String route;
+
+    /*
+     * 备注
+     */
+    private String remark;
 	
 	public static PageWidgetVO newInstance(CmsPageWidget cmsPageWidget) {
 		PageWidgetVO vo = new PageWidgetVO();

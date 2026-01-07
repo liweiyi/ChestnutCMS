@@ -37,6 +37,7 @@ import com.chestnut.system.domain.dto.UpdateUserProfileRequest;
 import com.chestnut.system.domain.vo.DashboardUserVO;
 import com.chestnut.system.domain.vo.ShortcutVO;
 import com.chestnut.system.domain.vo.UserProfileVO;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.*;
@@ -80,7 +81,7 @@ public class SysProfileController extends BaseRestController {
 		return R.ok(new UserProfileVO(user, roleGroup, postGroup));
 	}
 
-	@PutMapping
+	@PostMapping("/updateInfo")
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE)
 	public R<?> updateProfile(@RequestBody @Validated UpdateUserProfileRequest req) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
@@ -113,24 +114,30 @@ public class SysProfileController extends BaseRestController {
 	}
 
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE, isSaveRequestData = false)
-	@PutMapping("/updatePwd")
+	@PostMapping("/updatePwd")
 	public R<?> updatePwd(String oldPassword, String newPassword) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		SysUser user = userService.getById(loginUser.getUserId());
-		if (!SecurityUtils.matches(oldPassword, user.getPassword())) {
-			return R.fail("修改密码失败，旧密码错误");
-		}
-		if (SecurityUtils.matches(newPassword, user.getPassword())) {
-			return R.fail("新密码不能与旧密码相同");
-		}
+        // 三方登录可能没有旧密码
+        if (StringUtils.isNotEmpty(user.getPassword())) {
+            if (!SecurityUtils.matches(oldPassword, user.getPassword())) {
+                return R.fail("修改密码失败，旧密码错误");
+            }
+            if (SecurityUtils.matches(newPassword, user.getPassword())) {
+                return R.fail("新密码不能与旧密码相同");
+            }
+        }
 		// 密码安全规则校验
 		this.securityConfigService.validPassword(user, newPassword);
-
-		boolean update = this.userService.lambdaUpdate()
-				.set(SysUser::getPassword, SecurityUtils.passwordEncode(newPassword))
-				.set(SysUser::getPasswordModifyTime, LocalDateTime.now())
-				.eq(SysUser::getUserId, loginUser.getUserId()).update();
-		return update ? R.ok() : R.fail();
+        user.setPassword(SecurityUtils.passwordEncode(newPassword));
+        user.setPasswordModifyTime(LocalDateTime.now());
+        if (YesOrNo.isYes(user.getForceModifyPassword())) {
+            user.setForceModifyPassword(YesOrNo.NO);
+        }
+        this.userService.updateById(user);
+        loginUser.setUser(user);
+        StpAdminUtil.setLoginUser(loginUser);
+        return R.ok();
 	}
 
 	@IgnoreDemoMode
@@ -141,12 +148,15 @@ public class SysProfileController extends BaseRestController {
 			return R.fail("上传图片异常，请联系管理员");
 		}
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
-		String avatar = this.userService.uploadAvatar(loginUser.getUserId(), file);
-		// 更新缓存用户头像
+		String avatarPath = this.userService.uploadAvatar(loginUser.getUserId(), file.getBytes());
+        // 更新数据库
+        this.userService.lambdaUpdate().set(SysUser::getAvatar, avatarPath)
+                .eq(SysUser::getUserId, loginUser.getUserId()).update();
+        // 更新缓存用户头像
 		SysUser user = (SysUser) loginUser.getUser();
-		user.setAvatar(avatar);
+		user.setAvatar(avatarPath);
 		StpAdminUtil.setLoginUser(loginUser);
-		return R.ok(SystemConfig.getResourcePrefix() + avatar);
+		return R.ok(SystemConfig.getResourcePrefix() + avatarPath);
 	}
 
 	/**

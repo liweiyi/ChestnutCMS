@@ -19,14 +19,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.customform.CmsCustomFormMetaModelType;
 import com.chestnut.customform.permission.CustomFormPriv;
@@ -53,16 +51,14 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/cms/customform/data")
 @RequiredArgsConstructor
-public class CustomFormDataController extends BaseRestController {
-
-    private final ISiteService siteService;
+public class CustomFormDataController extends CmsRestController {
 
     private final IModelDataService modelDataService;
 
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.View)
-    @GetMapping
+    @GetMapping("/list")
     public R<?> getList(@RequestParam @LongId Long formId, @RequestParam(required = false) String ip) {
-        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        CmsSite site = this.getCurrentSite();
         PageRequest pr = this.getPageRequest();
         IPage<Map<String, Object>> page = this.modelDataService.selectModelDataPage(formId,
                 new Page<>(pr.getPageNumber(), pr.getPageSize(), true), sqlBuilder -> {
@@ -98,9 +94,9 @@ public class CustomFormDataController extends BaseRestController {
         return R.ok(dataMap);
     }
 
-    @PostMapping
+    @PostMapping("/add")
     public R<?> addCustomFormData(@RequestParam @LongId Long formId, @RequestBody Map<String, Object> data) {
-        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        CmsSite site = this.getCurrentSite();
 
         data.put(CmsCustomFormMetaModelType.FIELD_DATA_ID.getCode(), IdUtils.getSnowflakeId());
         data.put(CmsCustomFormMetaModelType.FIELD_MODEL_ID.getCode(), formId);
@@ -112,7 +108,7 @@ public class CustomFormDataController extends BaseRestController {
         return R.ok();
     }
 
-    @PutMapping
+    @PostMapping("/update")
     public R<?> editCustomFormData(@RequestParam @LongId Long formId, @RequestBody Map<String, Object> data) {
         this.modelDataService.updateModelData(formId, data);
         return R.ok();

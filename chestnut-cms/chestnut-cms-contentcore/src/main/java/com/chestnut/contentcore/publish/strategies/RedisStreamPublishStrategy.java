@@ -45,9 +45,9 @@ public class RedisStreamPublishStrategy implements IPublishStrategy {
 
     public static final String ID = "RedisStream";
 
-    public static final String PublishStreamName = "ChestnutCMSPublishStream";
+    public static final String PUBLISH_STREAM_NAME = "ChestnutCMSPublishStream";
 
-    public static final String PublishConsumerGroup = "ChestnutCMSPublishConsumerGroup";
+    public static final String PUBLISH_CONSUMER_GROUP = "ChestnutCMSPublishConsumerGroup";
 
     private final CMSPublishProperties properties;
 
@@ -62,7 +62,7 @@ public class RedisStreamPublishStrategy implements IPublishStrategy {
 
     @Override
     public void publish(String dataType, String dataId) {
-        MapRecord<String, String, String> record = MapRecord.create(PublishStreamName, Map.of(
+        MapRecord<String, String, String> record = MapRecord.create(PUBLISH_STREAM_NAME, Map.of(
                 "type", dataType,
                 "id", dataId
         ));
@@ -71,16 +71,28 @@ public class RedisStreamPublishStrategy implements IPublishStrategy {
 
     @Override
     public long getTaskCount() {
-        StreamInfo.XInfoStream info = redisTemplate.opsForStream().info(PublishStreamName);
+        StreamInfo.XInfoStream info = redisTemplate.opsForStream().info(PUBLISH_STREAM_NAME);
         return info.streamLength();
     }
 
     @Override
     public void cleanTasks() {
 		try {
-            redisTemplate.delete(PublishStreamName);
-			redisTemplate.opsForStream().createGroup(PublishStreamName, PublishConsumerGroup);
-		} catch (Exception ignored) {
+            // 先删除消费者组
+            try {
+                redisTemplate.opsForStream().destroyGroup(PUBLISH_STREAM_NAME, PUBLISH_CONSUMER_GROUP);
+            } catch (Exception e) {
+                log.debug("Publish task consumer group does not exist or delete failed: {}", e.getMessage());
+            }
+            // 删除stream
+            redisTemplate.delete(PUBLISH_STREAM_NAME);
+            // 等待一下确保删除完成
+            Thread.sleep(100);
+            // 重新创建消费者组
+            redisTemplate.opsForStream().createGroup(PUBLISH_STREAM_NAME, PUBLISH_CONSUMER_GROUP);
+            log.info("Publish task consumer group created: {}", PUBLISH_CONSUMER_GROUP);
+		} catch (Exception e) {
+			log.error("Failed to clean publish tasks", e);
 		}
     }
 
@@ -88,37 +100,41 @@ public class RedisStreamPublishStrategy implements IPublishStrategy {
     public StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer() {
         // 启动清理消息队列数据
         if (properties.isClearOnStart()) {
-            redisTemplate.delete(PublishStreamName);
+            redisTemplate.delete(PUBLISH_STREAM_NAME);
         }
         // 监听容器配置
         StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, MapRecord<String, String, String>> streamMessageListenerContainerOptions = StreamMessageListenerContainer.StreamMessageListenerContainerOptions
                 .builder()
                 .batchSize(10) // 一次拉取消息数量
-                .pollTimeout(Duration.ofSeconds(2)) // 拉取消息超时时间
-                .executor(cmsPublishThreadPoolTaskExecutor())
+                .pollTimeout(Duration.ofSeconds(3)) // 拉取消息超时时间
+                .executor(createThreadPoolTaskExecutor())
                 .build();
         // 创建监听容器
         StreamMessageListenerContainer<String, MapRecord<String, String, String>> container = StreamMessageListenerContainer
                 .create(redisTemplate.getRequiredConnectionFactory(), streamMessageListenerContainerOptions);
         //创建消费者组
         try {
-            redisTemplate.opsForStream().createGroup(PublishStreamName, PublishConsumerGroup);
+            redisTemplate.opsForStream().createGroup(PUBLISH_STREAM_NAME, PUBLISH_CONSUMER_GROUP);
+            log.info("Publish task consumer group created: {}", PUBLISH_CONSUMER_GROUP);
         } catch (Exception e) {
-            log.info("消费者组:{} 已存在", PublishConsumerGroup);
+            log.info("Publish task consumer group:{} already exists", PUBLISH_CONSUMER_GROUP);
         }
         // 添加消费者
         for (int i = 0; i < properties.getConsumerCount(); i++) {
-            Consumer consumer = Consumer.from(PublishConsumerGroup, "cms-publish-consumer-" + i);
+            Consumer consumer = Consumer.from(PUBLISH_CONSUMER_GROUP, "cms-publish-consumer-" + i);
             PublishTaskReceiver publishTaskReceiver = new PublishTaskReceiver(cmsStaticizeService, redisTemplate);
             publishTaskReceiver.setConsumer(consumer);
-            container.receive(consumer, StreamOffset.create(PublishStreamName, ReadOffset.lastConsumed()), publishTaskReceiver);
+            
+            // 使用lastConsumed()：会先读取pending消息（已消费但未确认），然后读取新消息
+            // 这样可以确保pending消息被优先处理，同时也能处理新消息
+            container.receive(consumer, StreamOffset.create(PUBLISH_STREAM_NAME, ReadOffset.lastConsumed()), publishTaskReceiver);
+            log.info("Start publish task consumer: {} (listen pending and new messages)", consumer.getName());
         }
         container.start();
         return container;
     }
 
-    @Bean
-    ThreadPoolTaskExecutor cmsPublishThreadPoolTaskExecutor() {
+    private ThreadPoolTaskExecutor createThreadPoolTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setThreadNamePrefix(properties.getPool().getThreadNamePrefix());
         executor.setCorePoolSize(properties.getPool().getCoreSize());

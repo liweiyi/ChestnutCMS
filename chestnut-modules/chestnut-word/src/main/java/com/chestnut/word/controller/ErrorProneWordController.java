@@ -69,7 +69,7 @@ public class ErrorProneWordController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@PutMapping("/update")
+	@PostMapping("/update")
 	public R<String> edit(@RequestBody @Validated UpdateErrorProneWordRequest req) {
 		this.errorProneWordService.updateErrorProneWord(req);
 		return R.ok();

@@ -122,6 +122,9 @@ public class FileExUtils {
 	 * @return 后缀名
 	 */
 	public static String getExtension(String path) {
+        if (StringUtils.isBlank(path)) {
+            return path;
+        }
 		if (path.contains("://")) {
 			path = HtmlUtils.htmlUnescape(path);
 			String queryString = StringUtils.substringAfter(path, "?");

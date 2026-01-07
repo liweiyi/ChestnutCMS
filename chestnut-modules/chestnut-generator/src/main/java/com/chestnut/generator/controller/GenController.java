@@ -129,7 +129,7 @@ public class GenController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = GenMenuPriv.Edit)
 	@Log(title = "代码生成", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> editSave(@Validated @RequestBody GenTable genTable) {
 		genTableService.validateEdit(genTable);
 		genTableService.updateGenTable(genTable);

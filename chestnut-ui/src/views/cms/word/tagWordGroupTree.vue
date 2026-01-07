@@ -77,6 +77,7 @@
   </div>
 </template>
 <script>
+import { CACHE_LAST_SELECTED_TAG_WORD_GROUP } from '@/utils/constants';
 import { codeValidator } from '@/utils/validate';
 import { getTagWordGroupTreeData, addTagWordGroup } from "@/api/contentcore/word";
 import { getTagWordGroupData, editTagWordGroup, deleteTagWordGroup } from "@/api/word/tagWord";
@@ -145,7 +146,7 @@ export default {
       getTagWordGroupTreeData().then(response => {
         this.groupOptions = response.data;
         this.$nextTick(() => {
-          this.selectedGroupId = this.$cache.local.get("LastSelectedGroupId");
+          this.selectedGroupId = this.$cache.local.get(CACHE_LAST_SELECTED_TAG_WORD_GROUP);
           if (this.selectedGroupId && this.$refs.tree) {
             this.$refs.tree.setCurrentKey(this.selectedGroupId);
             this.treeExpandedKeys = [this.selectedGroupId];
@@ -164,14 +165,14 @@ export default {
     // 根节点点击事件
     handleTreeRootClick() {
       this.selectedGroupId = undefined;
-      this.$cache.local.remove("LastSelectedGroupId");
+      this.$cache.local.remove(CACHE_LAST_SELECTED_TAG_WORD_GROUP);
       this.$refs.tree.setCurrentKey(null);
       this.$emit("node-click", null);
     },
     // 节点单击事件
     handleNodeClick (data) {
       this.selectedGroupId = data.id;
-      this.$cache.local.set("LastSelectedGroupId", this.selectedGroupId);
+      this.$cache.local.set(CACHE_LAST_SELECTED_TAG_WORD_GROUP, this.selectedGroupId);
       this.$emit("node-click", data);
     },
     // 取消按钮
@@ -212,7 +213,7 @@ export default {
             });
           } else {
             addTagWordGroup(this.form).then(response => {
-              this.$cache.local.set("LastSelectedGroupId", response.data.groupId);
+              this.$cache.local.set(CACHE_LAST_SELECTED_TAG_WORD_GROUP, response.data.groupId);
               this.diagOpen = false;
               this.$modal.msgSuccess(response.msg);
               this.loadGroupTreeData();

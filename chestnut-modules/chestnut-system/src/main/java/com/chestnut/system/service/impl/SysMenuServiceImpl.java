@@ -141,6 +141,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 		if (MenuType.Directory.value().equals(menu.getMenuType())) {
 			node.setDefaultExpanded(true);
 		}
+        node.setProps(Map.of("type", menu.getMenuType()));
 		List<TreeNode<Long>> children = menu.getChildren().stream().map(this::buildTreeSelect)
 				.collect(Collectors.toList());
 		node.setChildren(children);

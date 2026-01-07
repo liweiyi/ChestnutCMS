@@ -53,12 +53,10 @@ public class CreateMenuRequest extends BaseDTO {
 	private String query;
 
 	/** 是否为外链 YesOrNo */
-	@NotNull
 	@Dict(YesOrNo.TYPE)
 	private String isFrame;
 
 	/** 是否缓存 YesOrNo */
-	@NotNull
 	@Dict(YesOrNo.TYPE)
 	private String isCache;
 
@@ -67,12 +65,10 @@ public class CreateMenuRequest extends BaseDTO {
 	private String menuType;
 
 	/** 显示状态 YesOrNo */
-	@NotNull
 	@Dict(YesOrNo.TYPE)
 	private String visible;
 
 	/** 菜单状态 EnableOrDisbale */
-	@NotNull
 	@Dict(EnableOrDisable.TYPE)
 	private String status;
 

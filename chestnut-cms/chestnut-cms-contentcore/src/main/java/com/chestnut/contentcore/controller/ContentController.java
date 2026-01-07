@@ -26,10 +26,8 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.domain.Operator;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
@@ -48,6 +46,7 @@ import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.user.preference.IncludeChildContentPreference;
 import com.chestnut.contentcore.user.preference.ShowContentSubTitlePreference;
 import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.security.AdminUserType;
@@ -78,7 +77,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/content")
-public class ContentController extends BaseRestController {
+public class ContentController extends CmsRestController {
 
 	private final ISiteService siteService;
 
@@ -108,7 +107,7 @@ public class ContentController extends BaseRestController {
 			return this.bindDataTable(List.of());
 		}
 		PageRequest pr = getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		boolean includeChild = IncludeChildContentPreference.getValue(StpAdminUtil.getLoginUser());
 
 		LambdaQueryChainWrapper<CmsContent> q = this.contentService.dao().lambdaQuery()
@@ -169,7 +168,7 @@ public class ContentController extends BaseRestController {
 
 	@Log(title = "新增内容", businessType = BusinessType.INSERT)
 	@XssIgnore
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addContent(@RequestParam("contentType") String contentType, HttpServletRequest request)
 			throws IOException {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
@@ -184,7 +183,7 @@ public class ContentController extends BaseRestController {
 
 	@Log(title = "编辑内容", businessType = BusinessType.UPDATE)
 	@XssIgnore
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> saveContent(@RequestParam("contentType") String contentType, HttpServletRequest request)
 			throws IOException {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
@@ -247,7 +246,6 @@ public class ContentController extends BaseRestController {
 	@Log(title = "复制内容", businessType = BusinessType.UPDATE)
 	@PostMapping("/copy")
 	public R<?> copy(@RequestBody @Validated CopyContentDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		AsyncTask task = this.contentService.copy(dto);
 		return R.ok(task.getTaskId());
 	}
@@ -258,7 +256,6 @@ public class ContentController extends BaseRestController {
 	@Log(title = "转移内容", businessType = BusinessType.UPDATE)
 	@PostMapping("/move")
 	public R<?> move(@RequestBody @Validated MoveContentDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		AsyncTask task = this.contentService.move(dto);
 		return R.ok(task.getTaskId());
 	}
@@ -269,7 +266,6 @@ public class ContentController extends BaseRestController {
 	@Log(title = "置顶", businessType = BusinessType.UPDATE)
 	@PostMapping("/set_top")
 	public R<?> setTop(@RequestBody @Validated SetTopContentDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.contentService.setTop(dto);
 		return R.ok();
 	}
@@ -290,7 +286,6 @@ public class ContentController extends BaseRestController {
 	@Log(title = "内容排序", businessType = BusinessType.UPDATE)
 	@PostMapping("/sort")
 	public R<?> sort(@RequestBody @Validated SortContentDTO dto) {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.contentService.sort(dto);
 		return R.ok();
 	}

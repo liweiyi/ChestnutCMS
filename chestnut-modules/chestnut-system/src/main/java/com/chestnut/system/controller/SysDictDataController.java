@@ -81,7 +81,7 @@ public class SysDictDataController extends BaseRestController {
 	 * 查询字典数据详细
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
-	@GetMapping(value = "/{dictCode}")
+	@GetMapping(value = "/detail/{dictCode}")
 	public R<?> getInfo(@PathVariable @LongId Long dictCode) {
 		SysDictData data = dictDataService.getById(dictCode);
 		I18nUtils.replaceI18nFields(data);
@@ -104,7 +104,7 @@ public class SysDictDataController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictAdd)
 	@Log(title = "字典数据", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateDictDataRequest req) {
 		dictDataService.insertDictData(req);
 		return R.ok();
@@ -115,7 +115,7 @@ public class SysDictDataController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictEdit)
 	@Log(title = "字典数据", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateDictDataRequest req) {
 		dictDataService.updateDictData(req);
 		return R.ok();

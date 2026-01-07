@@ -165,7 +165,7 @@ public class RedisCache {
 				this.setCacheObject(cacheKey, cacheValue);
 			}
 		}
-		return clazz.cast(cacheValue);
+		return Objects.nonNull(cacheValue) ? clazz.cast(cacheValue) : null;
 	}
 
 	public <T> T getCacheObjectWithExpiresIn(String cacheKey, Class<T> clazz, Supplier<CacheObject<T>> supplier) {
@@ -214,18 +214,6 @@ public class RedisCache {
 	}
 
 	/**
-	 * 追加数据到List缓存末尾
-	 *
-	 * @param key      缓存的键值
-	 * @param dataList 待缓存的List数据
-	 */
-	public <T> void rightPushCacheList(final String key, final List<T> dataList) {
-		if (StringUtils.isNotEmpty(dataList)) {
-			redisTemplate.opsForList().rightPushAll(key, dataList);
-		}
-	}
-
-	/**
 	 * 获得缓存的list对象
 	 *
 	 * @param key 缓存的键值
@@ -243,7 +231,7 @@ public class RedisCache {
 		return objects;
 	}
 
-	public <T> void setCacheList(final String key, Collection<T> list) {
+	public <T> void listRightPush(final String key, Collection<T> list) {
 		if (Objects.isNull(list)) {
 			return;
 		}
@@ -258,14 +246,17 @@ public class RedisCache {
 			if (Objects.nonNull(supplier)) {
 				List<T> list = supplier.get();
 				if (Objects.nonNull(list)) {
-					setCacheList(key, list);
+                    listRightPush(key, list);
 					return list;
 				}
 			}
 			return List.of();
 		}
 		List<Object> cacheValue = redisTemplate.opsForList().range(key, 0, -1);
-		ArrayList<T> objects = new ArrayList<>(cacheValue.size());
+        if (Objects.isNull(cacheValue)) {
+            return List.of();
+        }
+        ArrayList<T> objects = new ArrayList<>(cacheValue.size());
 		for (Object obj : cacheValue) {
 			objects.add(clazz.cast(obj));
 		}

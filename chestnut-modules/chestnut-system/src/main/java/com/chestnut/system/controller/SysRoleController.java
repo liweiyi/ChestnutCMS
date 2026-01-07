@@ -78,7 +78,7 @@ public class SysRoleController extends BaseRestController {
 	 * 根据角色编号获取详细信息
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
-	@GetMapping(value = "/{roleId}")
+	@GetMapping(value = "/detail/{roleId}")
 	public R<?> getInfo(@PathVariable @LongId Long roleId) {
 		return R.ok(roleService.getById(roleId));
 	}
@@ -88,7 +88,7 @@ public class SysRoleController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleAdd)
 	@Log(title = "角色管理", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateRoleRequest role) {
 		roleService.insertRole(role);
 		return R.ok();
@@ -99,7 +99,7 @@ public class SysRoleController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateRoleRequest role) {
 		roleService.updateRole(role);
 		return R.ok();
@@ -110,7 +110,7 @@ public class SysRoleController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.UPDATE)
-	@PutMapping("/changeStatus")
+	@PostMapping("/changeStatus")
 	public R<?> changeStatus(@RequestBody @Validated UpdateRoleStatusRequest req) {
 		roleService.updateRoleStatus(req);
 		return R.ok();
@@ -168,7 +168,7 @@ public class SysRoleController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.GRANT)
-	@PutMapping("/authUser/cancel")
+	@PostMapping("/authUser/cancel")
 	public R<?> cancelAuthUserAll(@LongId Long roleId, @RequestBody @NotEmpty List<Long> userIds) {
 		roleService.deleteAuthUsers(roleId, userIds);
 		return R.ok();
@@ -179,7 +179,7 @@ public class SysRoleController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.GRANT)
-	@PutMapping("/authUser/grant")
+	@PostMapping("/authUser/grant")
 	public R<?> grantAuthUserAll(@LongId Long roleId, @RequestBody @NotEmpty List<Long> userIds) {
 		roleService.insertAuthUsers(roleId, userIds);
 		return R.ok();

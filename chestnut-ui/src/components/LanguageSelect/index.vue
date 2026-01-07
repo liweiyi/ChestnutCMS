@@ -13,6 +13,7 @@
 
 <script>
 import { listLangOptions } from '@/api/system/i18nDict'
+import { CACHE_LANGUAGE } from '@/utils/constants';
 
 export default {
   name: "LanguageSelect",
@@ -52,7 +53,7 @@ export default {
       })
     },
     handleSetLanguage(lang) {
-      this.$cache.local.set('lang', lang)
+      this.$cache.local.set(CACHE_LANGUAGE, lang)
       this.$i18n.locale = lang;
       window.location.reload();
       this.$message({

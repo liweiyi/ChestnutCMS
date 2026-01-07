@@ -26,7 +26,7 @@ public interface CmsAdHourStatMapper extends BaseMapper<CmsAdHourStat> {
 
 	@Select("""
 			<script>
-			SELECT advertisement_id, sum(click) click, sum(view) view FROM `cms_ad_hour_stat`
+			SELECT advertisement_id, sum(click) click, sum(view_total) view FROM `cms_ad_hour_stat`
 			WHERE site_id = #{siteId}
 			<if test='begin != null'> AND hour &gt;= #{begin} </if>
 			<if test='end != null'> AND hour &lt;= #{end} </if>

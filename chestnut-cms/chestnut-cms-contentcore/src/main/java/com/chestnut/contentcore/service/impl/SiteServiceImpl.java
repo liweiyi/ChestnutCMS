@@ -29,9 +29,10 @@ import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IProperty;
 import com.chestnut.contentcore.core.IPublishPipeProp;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
 import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
+import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.listener.event.AfterSiteAddEvent;
 import com.chestnut.contentcore.listener.event.AfterSiteDeleteEvent;
@@ -47,7 +48,6 @@ import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.FileStorageHelper;
 import com.chestnut.contentcore.util.SiteUtils;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysPermissionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -92,36 +92,62 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		return site;
 	}
 
-	@Override
-	public CmsSite getSiteOrCurrent(Long siteId, HttpServletRequest request) {
-		CmsSite site = null;
-		if (IdUtils.validate(siteId)) {
-			site = getSite(siteId);
-		}
-		if (Objects.isNull(site)) {
-			site = getCurrentSite(request);
-		}
-		return site;
-	}
+    @Override
+    public CmsSite getCurrentSiteOrDefault(HttpServletRequest request, LoginUser loginUser) {
+        CmsSite site = null;
+        Long siteId = ConvertUtils.toLong(ServletUtils.getHeader(request, ContentCoreConsts.Header_CurrentSite));
+        log.info("header[cc_current_site]: {}", siteId);
+        if (IdUtils.validate(siteId) && loginUser.hasPermission(SitePrivItem.View.getPermissionKey(siteId))) {
+            site = this.getSite(siteId);
+        }
+        // 无当前站点或当前站点无权限则取数据库查找一条有权限的站点数据作为当前站点
+        if (Objects.isNull(site)) {
+            Optional<CmsSite> opt = this.lambdaQuery().list().stream().filter(s ->
+                    loginUser.hasPermission(SitePrivItem.View.getPermissionKey(s.getSiteId()))).findFirst();
+            if (opt.isPresent()) {
+                site = opt.get();
+            }
+        }
+        Assert.notNull(site, ContentCoreErrorCode.NO_SITE::exception);
+        return site;
+    }
 
 	@Override
-	public CmsSite getCurrentSite(HttpServletRequest request) {
-		LoginUser loginUser = StpAdminUtil.getLoginUser();
+	public CmsSite getSiteOrCurrent(Long siteId, HttpServletRequest request, LoginUser loginUser) {
 		CmsSite site = null;
+        // siteId有效以siteId为准
+		if (IdUtils.validate(siteId) && loginUser.hasPermission(SitePrivItem.View.getPermissionKey(siteId))) {
+			site = getSite(siteId);
+            Assert.notNull(site, ContentCoreErrorCode.NO_SITE::exception);
+            return site;
+		}
+        // 未指定siteId时获取当前站点
+        siteId = ConvertUtils.toLong(ServletUtils.getHeader(request, ContentCoreConsts.Header_CurrentSite));
+        if (!IdUtils.validate(siteId)) {
+            throw ContentCoreErrorCode.MISSING_CURRENT_SITE_ID.exception();
+        }
+        boolean hasPriv = loginUser.hasPermission(SitePrivItem.View.getPermissionKey(siteId));
+        if (!hasPriv) {
+            throw ContentCoreErrorCode.NO_CURRENT_SITE_PRIV.exception(siteId);
+        }
+        site = this.getSite(siteId);
+        Assert.notNull(site, ContentCoreErrorCode.NO_SITE::exception);
+        return site;
+	}
+
+    @Override
+	public CmsSite getCurrentSite(HttpServletRequest request, LoginUser loginUser) {
+		CmsSite site;
 		Long siteId = ConvertUtils.toLong(ServletUtils.getHeader(request, ContentCoreConsts.Header_CurrentSite));
-		if (IdUtils.validate(siteId)
-				&& loginUser.hasPermission(SitePrivItem.View.getPermissionKey(siteId))) {
-			site = this.getSite(siteId);
-		}
-		// 无当前站点或当前站点无权限则取数据库查找一条有权限的站点数据作为当前站点
-		if (Objects.isNull(site)) {
-			Optional<CmsSite> opt = this.lambdaQuery().list().stream().filter(s ->
-					loginUser.hasPermission(SitePrivItem.View.getPermissionKey(s.getSiteId()))).findFirst();
-			if (opt.isPresent()) {
-				site = opt.get();
-			}
-		}
-		Assert.notNull(site, ContentCoreErrorCode.NO_SITE::exception);
+        if (!IdUtils.validate(siteId)) {
+            throw ContentCoreErrorCode.MISSING_CURRENT_SITE_ID.exception();
+        }
+        boolean hasPriv = loginUser.hasPermission(SitePrivItem.View.getPermissionKey(siteId));
+        if (!hasPriv) {
+            throw ContentCoreErrorCode.NO_CURRENT_SITE_PRIV.exception(siteId);
+        }
+        site = this.getSite(siteId);
+        Assert.notNull(site, ContentCoreErrorCode.NO_SITE::exception);
 		return site;
 	}
 
@@ -194,7 +220,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 
 		applicationContext.publishEvent(new BeforeSiteDeleteEvent(this, site));
 
-		AsyncTaskManager.setTaskMessage("正在删除站点数据");
+		AsyncTaskManager.setTaskMessage(ContentTips.DELETING_SITE.locale(AsyncTaskManager.getLocale(), site.getName()));
 		this.removeById(site.getSiteId());
 		this.clearCache(site.getSiteId());
 

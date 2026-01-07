@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.system.validator.LongId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,5 +29,6 @@ import lombok.Setter;
 @Setter
 public class UpdateSecurityConfigRequest extends CreateSecurityConfigRequest {
 
+    @LongId
     private Long configId;
 }

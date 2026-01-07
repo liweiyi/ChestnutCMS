@@ -213,19 +213,19 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	/**
 	 * 获取符合条件的第一个字符串
 	 *
-	 * @param predicate
-	 * @param strArr
-	 * @return
+	 * @param predicate 条件函数
+	 * @param strArr 字符串数组
+	 * @return 结果
 	 */
 	public static String filterFirst(Predicate<String> predicate, String... strArr) {
 		if (isEmpty(strArr)) {
 			return null;
 		}
-		for (int i = 0; i < strArr.length; i++) {
-			if (predicate.test(strArr[i])) {
-				return strArr[i];
-			}
-		}
+        for (String s : strArr) {
+            if (predicate.test(s)) {
+                return s;
+            }
+        }
 		return null;
 	}
 
@@ -307,7 +307,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	 *            分隔符
 	 * @return set集合
 	 */
-	public static final Set<String> str2Set(String str, String sep) {
+	public static Set<String> str2Set(String str, String sep) {
 		return new HashSet<String>(str2List(str, sep, true, false));
 	}
 
@@ -324,8 +324,8 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	 *            去掉首尾空白
 	 * @return list集合
 	 */
-	public static final List<String> str2List(String str, String sep, boolean filterBlank, boolean trim) {
-		List<String> list = new ArrayList<String>();
+	public static List<String> str2List(String str, String sep, boolean filterBlank, boolean trim) {
+		List<String> list = new ArrayList<>();
 		if (StringUtils.isEmpty(str)) {
 			return list;
 		}

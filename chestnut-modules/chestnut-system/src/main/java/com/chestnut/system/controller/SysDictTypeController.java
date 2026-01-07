@@ -76,7 +76,7 @@ public class SysDictTypeController extends BaseRestController {
 	 * 查询字典类型详细
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
-	@GetMapping(value = "/{dictId}")
+	@GetMapping(value = "/detail/{dictId}")
 	public R<?> getInfo(@PathVariable @LongId Long dictId) {
 		SysDictType dictType = dictTypeService.getById(dictId);
 		I18nUtils.replaceI18nFields(dictType);
@@ -88,7 +88,7 @@ public class SysDictTypeController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictAdd)
 	@Log(title = "字典类型", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateDictTypeRequest req) {
 		dictTypeService.insertDictType(req);
 		return R.ok();
@@ -99,7 +99,7 @@ public class SysDictTypeController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictEdit)
 	@Log(title = "字典类型", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateDictTypeRequest req) {
 		dictTypeService.updateDictType(req);
 		return R.ok();

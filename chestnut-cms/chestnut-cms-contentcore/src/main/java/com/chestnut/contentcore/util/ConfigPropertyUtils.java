@@ -185,4 +185,33 @@ public class ConfigPropertyUtils {
 		}
 		return intV;
 	}
+
+    public static Long getLongValue(String propertyKey, Map<String, String> props) {
+        return getLongValue(propertyKey, props, null);
+    }
+
+    public static Long getLongValue(String propertyKey, Map<String, String> firstProps, Map<String, String> secondProps) {
+        IProperty prop = getConfigProperty(propertyKey);
+        long longV = 0;
+        if (prop != null) {
+            String v = MapUtils.getString(firstProps, prop.getId());
+            if (Objects.isNull(v) && Objects.nonNull(secondProps)) {
+                v = MapUtils.getString(secondProps, prop.getId());
+            }
+            if (NumberUtils.isCreatable(v)) {
+                longV = NumberUtils.toLong(v);
+            } else {
+                Object defaultV = prop.defaultValue();
+                if (defaultV instanceof Long defaultIntV) {
+                    longV = defaultIntV;
+                } else {
+                    v = defaultV.toString();
+                    if (NumberUtils.isCreatable(v)) {
+                        longV = NumberUtils.toLong(v);
+                    }
+                }
+            }
+        }
+        return longV;
+    }
 }

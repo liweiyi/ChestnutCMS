@@ -21,12 +21,12 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.domain.SysScheduledTask;
 import com.chestnut.system.domain.SysScheduledTaskLog;
 import com.chestnut.system.domain.dto.CreateScheduledTaskRequest;
 import com.chestnut.system.domain.dto.UpdateScheduledTaskRequest;
 import com.chestnut.system.exception.SysErrorCode;
+import com.chestnut.system.fixed.config.SysScheduleLogEnable;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
 import com.chestnut.system.fixed.dict.YesOrNo;
@@ -65,8 +65,6 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
         implements ISysScheduledTaskService, CommandLineRunner {
 
     private static final ConcurrentHashMap<Long, ScheduledTask> taskMap = new ConcurrentHashMap<>();
-
-    private final SysProperties sysProperties;
 
     private final SysScheduledTaskLogMapper taskLogMapper;
 
@@ -126,7 +124,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
 
     @Override
     public void addTaskLog(ScheduledTask task) {
-        if (!sysProperties.isScheduleLog()) {
+        if (!SysScheduleLogEnable.isEnable()) {
             return;
         }
         SysScheduledTaskLog taskLog = new SysScheduledTaskLog();

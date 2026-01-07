@@ -90,6 +90,7 @@ public class CommonController extends BaseRestController {
 	public void resourceDownload(String path, HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 		try {
+            path = FileExUtils.normalizePath(path);
 			response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
 			String downloadName = StringUtils.substringAfterLast(path, "/");
 			

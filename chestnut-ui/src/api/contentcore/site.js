@@ -9,6 +9,14 @@ export function listSite(query) {
   })
 }
 
+export function getSelectSites(query) {
+  return request({
+    url: '/cms/site/selectList',
+    method: 'get',
+    params: query
+  })
+}
+
 export function getSiteOptions() {
   return request({
     url: '/cms/site/options',

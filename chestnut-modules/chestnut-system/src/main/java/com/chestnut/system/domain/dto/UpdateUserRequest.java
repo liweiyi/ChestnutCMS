@@ -15,9 +15,18 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.security.domain.BaseDTO;
+import com.chestnut.system.fixed.dict.Gender;
+import com.chestnut.system.fixed.dict.UserStatus;
+import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
+
+import java.time.LocalDateTime;
 
 /**
  * UpdateUserRequest
@@ -27,8 +36,38 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class UpdateUserRequest extends CreateUserRequest {
+public class UpdateUserRequest extends BaseDTO {
 
     @LongId
     private Long userId;
+
+    @LongId
+    private Long deptId;
+
+    @Length(max = 30)
+    private String nickName;
+
+    @Length(max = 30)
+    private String realName;
+
+    @Email
+    @Length(max = 50)
+    private String email;
+
+    @Length(max = 20)
+    private String phoneNumber;
+
+    @NotBlank
+    @Dict(value = Gender.TYPE)
+    private String sex;
+
+    private LocalDateTime birthday;
+
+    @Dict(UserStatus.TYPE)
+    private String status;
+
+    private Long[] postIds;
+
+    @Length(max = 500)
+    private String remark;
 }

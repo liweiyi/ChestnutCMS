@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serial;
+import java.util.List;
 
 /**
  * 安全配置
@@ -115,6 +116,32 @@ public class SysSecurityConfig extends BaseEntity {
 	 * 密码重试安全策略锁定时长，单位：秒
 	 */
 	private Integer passwordRetryLockSeconds;
+
+    /**
+	 * 验证码是否启用
+	 */
+    private String captchaEnable;
+
+    /**
+	 * 验证码类型
+     */
+    private String captchaType;
+
+    /**
+	 * 验证码过期时长，单位：秒
+	 */
+    private Integer captchaExpires;
+
+    /**
+	 * 验证码重新生成间隔时长，单位：秒
+	 */
+    private Integer captchaDuration;
+
+    /**
+	 * 第三方登录配置ID，多个用逗号分隔
+	 */
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<Long> loginTypeConfigIds;
 	
 	public boolean isEnable() {
 		return EnableOrDisable.isEnable(this.status);

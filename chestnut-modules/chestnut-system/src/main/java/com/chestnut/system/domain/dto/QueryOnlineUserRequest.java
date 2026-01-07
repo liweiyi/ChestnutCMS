@@ -30,6 +30,9 @@ import org.hibernate.validator.constraints.Length;
 public class QueryOnlineUserRequest {
 
     @Length(max = 100)
+    private String tokenId;
+
+    @Length(max = 100)
     private String ipaddr;
 
     @Length(max = 30)

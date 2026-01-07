@@ -52,11 +52,11 @@ public class MetaControlType_Date implements IMetaControlType {
             return null;
         }
         if (obj instanceof LocalDateTime ldt) {
-            ldt.format(DateUtils.FORMAT_YYYY_MM_DD);
+            return ldt.format(DateUtils.FORMAT_YYYY_MM_DD);
         } else if(obj instanceof LocalDate ldt) {
-            ldt.format(DateUtils.FORMAT_YYYY_MM_DD);
+            return ldt.format(DateUtils.FORMAT_YYYY_MM_DD);
         } else if (obj instanceof Date date) {
-            return DateUtils.parseDateToStr(DateUtils.YYYY_MM_DD_HH_MM_SS, date);
+            return DateUtils.parseDateToStr(DateUtils.YYYY_MM_DD, date);
         }
         return IMetaControlType.super.valueAsString(obj);
     }
@@ -64,8 +64,7 @@ public class MetaControlType_Date implements IMetaControlType {
     @Override
     public Object stringAsValue(String valueStr) {
         try {
-            Date date = DateUtils.parseDate(valueStr);
-            return DateUtils.parseDateToStr(DateUtils.YYYY_MM_DD_HH_MM_SS, date);
+            return LocalDate.parse(valueStr);
         } catch (Exception e) {
             return StringUtils.EMPTY;
         }

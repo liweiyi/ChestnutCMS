@@ -49,14 +49,14 @@ public class VoteSubjectController extends BaseRestController {
 	private final IVoteSubjectItemService voteSubjectItemService;
 
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getVoteSubjects(@RequestParam @LongId Long voteId) {
 		List<VoteSubject> subjects = this.voteSubjectService.getVoteSubjectList(voteId);
 		return this.bindDataTable(subjects);
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
-	@GetMapping("/{subjectId}")
+	@GetMapping("/detail/{subjectId}")
 	public R<?> getVoteSubjectDetail(@PathVariable @LongId Long subjectId) {
 		VoteSubject subject = this.voteSubjectService.getById(subjectId);
 		Assert.notNull(subject, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("subjectId", subjectId));
@@ -65,7 +65,7 @@ public class VoteSubjectController extends BaseRestController {
 
 	@Log(title = "新增调查主题", businessType = BusinessType.INSERT)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@RequestBody @Validated CreateVoteSubjectRequest req) {
 		this.voteSubjectService.addVoteSubject(req);
 		return R.ok();
@@ -73,7 +73,7 @@ public class VoteSubjectController extends BaseRestController {
 
 	@Log(title = "编辑调查主题", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> update(@RequestBody @Validated UpdateVoteSubjectRequest req) {
 		this.voteSubjectService.updateVoteSubject(req);
 		return R.ok();

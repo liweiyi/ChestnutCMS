@@ -23,6 +23,7 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.search.SearchConsts;
 import com.chestnut.search.domain.SearchLog;
 import com.chestnut.search.service.ISearchLogService;
 import com.chestnut.system.security.AdminUserType;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.LOG_VIEW)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/search/log")
@@ -40,7 +42,6 @@ public class SearchLogController extends BaseRestController {
 
 	private final ISearchLogService searchLogService;
 	
-	@Priv(type = AdminUserType.TYPE)
 	@GetMapping
 	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
 		PageRequest pr = this.getPageRequest();
@@ -52,7 +53,6 @@ public class SearchLogController extends BaseRestController {
 	}
 
 	@Log(title = "删除检索日志", businessType = BusinessType.DELETE)
-	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/delete")
 	public R<?> delete(@RequestBody @NotEmpty List<String> logIds) {
 		this.searchLogService.removeByIds(logIds);

@@ -1,0 +1,16 @@
+/* 警告提示样式 */
+span.warning_tip {
+  border-top: 1px dashed #ffba00;
+  border-bottom: 1px dashed #ffba00;
+  background-color: #ffba005c;
+}
+
+/* 组图占位样式 */
+.img-group-placeholder {
+  width: 100%;
+  height: 80px;
+  display: block;
+  margin: 0 auto;
+  border: 1px dashed #ccc;
+  background: url(default/images/img-group.png) no-repeat center center;
+}

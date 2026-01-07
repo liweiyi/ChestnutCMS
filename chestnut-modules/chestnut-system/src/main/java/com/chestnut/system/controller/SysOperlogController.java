@@ -16,6 +16,7 @@
 package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
@@ -31,6 +32,7 @@ import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.service.ISysOperLogService;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,11 +59,20 @@ public class SysOperlogController extends BaseRestController {
 		LambdaQueryWrapper<SysOperLog> q = new LambdaQueryWrapper<SysOperLog>()
 				.like(StringUtils.isNotEmpty(operLog.getTitle()), SysOperLog::getTitle, operLog.getTitle())
 				.like(StringUtils.isNotEmpty(operLog.getOperName()), SysOperLog::getOperName, operLog.getOperName())
-				.eq(Objects.nonNull(operLog.getOperatorType()), SysOperLog::getOperatorType, operLog.getOperatorType())
+				.eq(Objects.nonNull(operLog.getBusinessType()), SysOperLog::getBusinessType, operLog.getBusinessType())
 				.eq(Objects.nonNull(operLog.getResponseCode()), SysOperLog::getResponseCode, operLog.getResponseCode())
 				.ge(Objects.nonNull(operLog.getParams().get("beginTime")), SysOperLog::getOperTime, operLog.getParams().get("beginTime"))
-				.le(Objects.nonNull(operLog.getParams().get("endTime")), SysOperLog::getOperTime, operLog.getParams().get("endTime"))
-				.orderByDesc(SysOperLog::getOperId);
+				.le(Objects.nonNull(operLog.getParams().get("endTime")), SysOperLog::getOperTime, operLog.getParams().get("endTime"));
+        if (StringUtils.isNotEmpty(pr.getSorts())) {
+            pr.getSorts().forEach(sort -> {
+                SFunction<SysOperLog, ?> sf = SysOperLog.MAP_PARAMS.get(sort.getColumn());
+                if (Objects.nonNull(sf)) {
+                    q.orderBy(true, sort.getDirection() == Sort.Direction.ASC, sf);
+                }
+            });
+        } else {
+            q.orderByDesc(SysOperLog::getOperId);
+        }
 		Page<SysOperLog> page = operLogService.page(new Page<>(pr.getPageNumber(), pr.getPageSize()), q);
 		return bindDataTable(page);
 	}

@@ -17,12 +17,10 @@ package com.chestnut.contentcore.controller;
 
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.vo.SiteStatVO;
-import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ISiteStatService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,15 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cms/dashboard")
-public class SiteStatController extends BaseRestController {
+public class SiteStatController extends CmsRestController {
 
-	private final ISiteService siteService;
-	
 	private final ISiteStatService siteStatService;
 	
 	@GetMapping("/stat")
 	public R<?> getSiteStat() {
-		CmsSite site = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		SiteStatVO siteStat = siteStatService.getSiteStat(site);
 		return R.ok(siteStat);
 	}

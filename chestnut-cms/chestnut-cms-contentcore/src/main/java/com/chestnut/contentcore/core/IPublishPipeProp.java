@@ -15,9 +15,9 @@
  */
 package com.chestnut.contentcore.core;
 
-import java.util.List;
-
 import com.chestnut.common.utils.StringUtils;
+
+import java.util.List;
 
 /**
  * 发布通道属性
@@ -31,8 +31,6 @@ public interface IPublishPipeProp {
 	
 	String DetailTemplatePropPrefix = "detailTemplate_";
 	
-	String DefaultDetailTemplatePropPrefix = "defaultDetailTemplate_";
-
 	/**
 	 * 属性唯一标识键名
 	 */

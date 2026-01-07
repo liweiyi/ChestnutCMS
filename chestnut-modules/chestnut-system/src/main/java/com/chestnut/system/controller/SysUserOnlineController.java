@@ -59,11 +59,26 @@ public class SysUserOnlineController extends BaseRestController {
 	@GetMapping("/list")
 	public R<?> list(@Validated QueryOnlineUserRequest req) {
 		String keyPrefix = StpAdminUtil.getStpLogic().getConfigOrGlobal().getTokenName() + ":" + AdminUserType.TYPE + ":token:";
+        if (StringUtils.isNotEmpty(req.getTokenId())) {
+            try {
+                SaSession tokenSessionByToken = StpAdminUtil.getTokenSessionByToken(req.getTokenId());
+                LoginUser loginUser = tokenSessionByToken.getModel(SaSession.USER, LoginUser.class);
+                SysUserOnline sysUserOnline = userOnlineService.loginUserToUserOnline(loginUser);
+                return bindDataTable(List.of(sysUserOnline));
+            } catch (Exception e) {
+                return bindDataTable(List.of());
+            }
+        }
+        // 最多查询100条
 		Set<String> keys = redisCache.scanKeys(keyPrefix + "*", 100);
 		List<SysUserOnline> userOnlineList = keys.stream().map(key -> {
-			SaSession tokenSession = StpAdminUtil.getTokenSessionByToken(key.substring(key.lastIndexOf(":") + 1));
-			LoginUser loginUser = tokenSession.getModel(SaSession.USER, LoginUser.class);
-			return userOnlineService.loginUserToUserOnline(loginUser);
+            try {
+                SaSession tokenSession = StpAdminUtil.getTokenSessionByToken(key.substring(key.lastIndexOf(":") + 1));
+                LoginUser loginUser = tokenSession.getModel(SaSession.USER, LoginUser.class);
+                return userOnlineService.loginUserToUserOnline(loginUser);
+            } catch (Exception e) {
+                return null;
+            }
 		}).filter(online -> {
 			if (Objects.isNull(online)) {
 				return false;

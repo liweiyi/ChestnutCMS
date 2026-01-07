@@ -1,0 +1,67 @@
+{
+  "name": "ChestnutCMS",
+  "version": "1.5.8",
+  "description": "ChestnutCMS[栗子内容管理系统]",
+  "author": "兮玥 - 190785909@qq.com",
+  "license": "Apache-2.0",
+  "copyright": "Copyright © 2022-2025 ChestnutCMS (1000mz.com) All Rights Reserved.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build:prod": "vite build",
+    "build:stage": "vite build --mode staging",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/liweiyi/ChestnutCMS.git"
+  },
+  "dependencies": {
+    "@codemirror/lang-html": "^6.4.11",
+    "@codemirror/lang-json": "^6.0.2",
+    "@element-plus/icons-vue": "2.3.1",
+    "@vueup/vue-quill": "1.2.0",
+    "@vueuse/core": "13.3.0",
+    "@worstone/vue-aplayer": "^1.0.7",
+    "axios": "1.9.0",
+    "clipboard": "2.0.11",
+    "cropperjs": "^1.6.2",
+    "echarts": "5.6.0",
+    "element-plus": "2.11.4",
+    "file-saver": "2.0.5",
+    "fuse.js": "6.6.2",
+    "install": "^0.13.0",
+    "js-beautify": "1.14.11",
+    "js-cookie": "3.0.5",
+    "jsencrypt": "3.3.2",
+    "mavon-editor": "^3.0.2",
+    "npm": "^11.6.2",
+    "nprogress": "0.2.0",
+    "pinia": "3.0.2",
+    "simple-uploader.js": "^0.6.0",
+    "spark-md5": "^3.0.2",
+    "splitpanes": "4.0.4",
+    "video.js": "^8.23.4",
+    "vue": "3.5.16",
+    "vue-baidu-map-3x": "^1.0.40",
+    "vue-codemirror6": "^1.4.1",
+    "vue-cropper": "^1.1.4",
+    "vue-i18n": "^11.1.6",
+    "vue-router": "4.5.1",
+    "vuedraggable": "4.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "5.2.4",
+    "mockjs": "^1.1.0",
+    "sass-embedded": "1.89.1",
+    "unplugin-auto-import": "0.18.6",
+    "unplugin-vue-setup-extend-plus": "1.0.1",
+    "vite": "6.3.5",
+    "vite-plugin-compression": "0.5.1",
+    "vite-plugin-mock": "^3.0.2",
+    "vite-plugin-svg-icons": "2.0.1"
+  },
+  "overrides": {
+    "quill": "2.0.2"
+  }
+}

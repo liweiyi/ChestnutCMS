@@ -144,7 +144,13 @@ public class PageBarTag extends AbstractTag {
 		endPage = Math.min(startPage + 6, pageCount);
 
 		String firstPageLink = FreeMarkerUtils.evalStringVariable(env, StaticizeConstants.TemplateVariable_FirstPage);
+        if (StringUtils.isEmpty(firstPageLink)) {
+            throw new TemplateException("Missing page variable " + StaticizeConstants.TemplateVariable_FirstPage, env);
+        }
 		String otherPageLink = FreeMarkerUtils.evalStringVariable(env, StaticizeConstants.TemplateVariable_OtherPage);
+        if (StringUtils.isEmpty(otherPageLink)) {
+            throw new TemplateException("Missing page variable " + StaticizeConstants.TemplateVariable_OtherPage, env);
+        }
 		if (StringUtils.isNotEmpty(params)) {
 			firstPageLink += (firstPageLink.contains("?") ? "&" : "?") + params;
 			otherPageLink += (otherPageLink.contains("?") ? "&" : "?") + params;

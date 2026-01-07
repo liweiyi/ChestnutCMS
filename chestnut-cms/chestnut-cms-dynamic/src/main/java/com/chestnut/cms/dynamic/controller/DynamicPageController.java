@@ -25,14 +25,12 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
@@ -55,9 +53,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/dynamic_page")
-public class DynamicPageController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class DynamicPageController extends CmsRestController {
 
 	private final IDynamicPageService dynamicPageService;
 
@@ -65,7 +61,7 @@ public class DynamicPageController extends BaseRestController {
 
 	@GetMapping("/list")
 	public R<?> bindList(@RequestParam(required = false) String query) {
-		CmsSite site = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = getCurrentSite();
 		PageRequest pr = getPageRequest();
 		Page<CmsDynamicPage> page = this.dynamicPageService.lambdaQuery()
 				.eq(CmsDynamicPage::getSiteId, site.getSiteId())
@@ -84,7 +80,7 @@ public class DynamicPageController extends BaseRestController {
 		return R.ok(list);
 	}
 
-	@GetMapping("/{pageId}")
+	@GetMapping("/detail/{pageId}")
 	public R<?> getDynamicPageInfo(@PathVariable @LongId Long pageId) {
 		CmsDynamicPage dynamicPage = this.dynamicPageService.getById(pageId);
 		Assert.notNull(dynamicPage, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageId", pageId));
@@ -92,9 +88,9 @@ public class DynamicPageController extends BaseRestController {
 	}
 
 	@Log(title = "新增自定动态模板页面", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addSave(@RequestBody @Validated CmsDynamicPage dynamicPage) {
-		CmsSite site = siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = getCurrentSite();
 		dynamicPage.setSiteId(site.getSiteId());
 		dynamicPage.createBy(StpAdminUtil.getLoginUser().getUsername());
 		this.dynamicPageService.addDynamicPage(dynamicPage);
@@ -102,7 +98,7 @@ public class DynamicPageController extends BaseRestController {
 	}
 
 	@Log(title = "编辑自定动态模板页面", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> editSave(@RequestBody @Validated CmsDynamicPage dynamicPage) {
 		dynamicPage.updateBy(StpAdminUtil.getLoginUser().getUsername());
 		this.dynamicPageService.saveDynamicPage(dynamicPage);

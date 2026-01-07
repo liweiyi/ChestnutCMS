@@ -69,7 +69,7 @@ public class HotWordController extends BaseRestController {
     	return R.ok();
 	}
 
-	@PutMapping("/update")
+	@PostMapping("/update")
 	public R<String> edit(@RequestBody @Validated UpdateHotWordRequest req) {
 		this.hotWordService.editHotWord(req);
     	return R.ok();

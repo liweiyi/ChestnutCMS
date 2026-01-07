@@ -145,7 +145,7 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
     }
 
     @Override
-    public void publishPageWidgets(List<Long> pageWidgetIds, LoginUser operator) throws TemplateException, IOException {
+    public void publishPageWidgets(List<Long> pageWidgetIds, LoginUser operator) {
         List<CmsPageWidget> pageWidgets = this.listByIds(pageWidgetIds);
         for (CmsPageWidget pageWidget : pageWidgets) {
             this.checkPermission(PageWidgetPermissionType.PageWidgetPrivItem.Publish, pageWidget.getPageWidgetId(), operator);
@@ -153,6 +153,18 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
             IPageWidget pw = pwt.loadPageWidget(pageWidget);
             pw.setOperator(StpAdminUtil.getLoginUser());
             pw.publish();
+        }
+    }
+
+    @Override
+    public void offlinePageWidgets(List<Long> pageWidgetIds, LoginUser operator) {
+        List<CmsPageWidget> pageWidgets = this.listByIds(pageWidgetIds);
+        for (CmsPageWidget pageWidget : pageWidgets) {
+            this.checkPermission(PageWidgetPermissionType.PageWidgetPrivItem.Offline, pageWidget.getPageWidgetId(), operator);
+            IPageWidgetType pwt = this.getPageWidgetType(pageWidget.getType());
+            IPageWidget pw = pwt.loadPageWidget(pageWidget);
+            pw.setOperator(operator);
+            pw.offline();
         }
     }
 

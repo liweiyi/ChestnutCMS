@@ -53,7 +53,7 @@ public class VoteController extends BaseRestController {
 	private final List<IVoteItemType> itemTypes;
 
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getPageList(@RequestParam(required = false) String title, @RequestParam(required = false) String status) {
 		PageRequest pr = this.getPageRequest();
 		Page<Vote> page = this.voteService.lambdaQuery().like(StringUtils.isNotEmpty(title), Vote::getTitle, title)
@@ -63,7 +63,7 @@ public class VoteController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
-	@GetMapping("/{voteId}")
+	@GetMapping("/detail/{voteId}")
 	public R<?> getVoteDetail(@PathVariable @LongId Long voteId) {
 		Vote vote = this.voteService.getById(voteId);
 		Assert.notNull(vote, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("voteId", voteId));
@@ -84,7 +84,7 @@ public class VoteController extends BaseRestController {
 
 	@Log(title = "新增问卷调查", businessType = BusinessType.INSERT)
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.Add)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@RequestBody @Validated CreateVoteRequest req) {
 		this.voteService.addVote(req);
 		return R.ok();
@@ -92,7 +92,7 @@ public class VoteController extends BaseRestController {
 
 	@Log(title = "编辑问卷调查", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> update(@RequestBody @Validated UpdateVoteRequest req) {
 		this.voteService.updateVote(req);
 		return R.ok();

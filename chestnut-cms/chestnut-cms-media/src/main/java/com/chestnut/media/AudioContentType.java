@@ -21,6 +21,7 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
@@ -129,6 +130,7 @@ public class AudioContentType implements IContentType {
 					.orderByAsc(CmsAudio::getSortFlag).list();
 			list.forEach(audio -> {
 				audio.setSrc(InternalUrlUtils.getActualPreviewUrl(audio.getPath()));
+                audio.setCoverSrc(InternalUrlUtils.getActualPreviewUrl(audio.getCover()));
 				audio.setFileSizeName(FileUtils.byteCountToDisplaySize(audio.getFileSize()));
 			});
 			vo = AudioAlbumVO.newInstance(contentEntity, list);

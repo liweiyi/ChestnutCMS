@@ -22,7 +22,6 @@ import com.chestnut.comment.domain.dto.AuditCommentDTO;
 import com.chestnut.comment.fixed.dict.CommentAuditStatus;
 import com.chestnut.comment.mapper.CommentMapper;
 import com.chestnut.comment.service.ICommentService;
-import com.chestnut.common.db.DBConstants;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,4 +49,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 		this.lambdaUpdate().set(Comment::getDelFlag, CommentConsts.DELETE_FLAG).in(Comment::getCommentId, commentIds)
 				.update();
 	}
+
+    @Override
+    public void recoverComment(List<Long> commentIds) {
+        this.lambdaUpdate().set(Comment::getDelFlag, 0).in(Comment::getCommentId, commentIds)
+                .update();
+    }
 }

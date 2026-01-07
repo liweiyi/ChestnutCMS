@@ -22,17 +22,15 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.FileAddDTO;
 import com.chestnut.contentcore.domain.dto.FileOperateDTO;
 import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.IFileService;
-import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -58,9 +56,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/file")
-public class FileController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class FileController extends CmsRestController {
 
 	private final IFileService fileService;
 
@@ -73,7 +69,7 @@ public class FileController extends BaseRestController {
 	@GetMapping("/list")
 	public R<?> getFileList(@RequestParam @NotEmpty String filePath,
 							@RequestParam(required = false, defaultValue = "") String fileName) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		return this.fileService.getSiteFileList(site, filePath, fileName);
 	}
 
@@ -82,7 +78,7 @@ public class FileController extends BaseRestController {
 	 */
 	@GetMapping("/directoryTreeData")
 	public R<?> getDirectoryTree() {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		List<TreeNode<String>> list = this.fileService.getSiteDirectoryTreeData(site);
 		return R.ok(Map.of("tree", list, "resourceRoot", CMSConfig.getResourceRoot()));
 	}
@@ -97,7 +93,7 @@ public class FileController extends BaseRestController {
 	@Log(title = "文件重命名", businessType = BusinessType.UPDATE)
 	@PostMapping("/rename")
 	public R<?> renameFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		this.fileService.renameFile(site, dto.getFilePath(), dto.getRename());
 		return R.ok();
 	}
@@ -112,7 +108,7 @@ public class FileController extends BaseRestController {
 	@Log(title = "新建文件", businessType = BusinessType.UPDATE)
 	@PostMapping("/add")
 	public R<?> addFile(@RequestBody @Validated FileAddDTO dto) throws IOException {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		this.fileService.addFile(site, dto);
 		return R.ok();
 	}
@@ -129,7 +125,7 @@ public class FileController extends BaseRestController {
 			throws IOException {
 		Assert.notNull(multipartFile, () -> CommonErrorCode.NOT_EMPTY.exception("file"));
 
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		this.fileService.uploadFile(site, dir, multipartFile);
 		return R.ok();
 	}
@@ -144,7 +140,7 @@ public class FileController extends BaseRestController {
 	@Log(title = "读取文件", businessType = BusinessType.OTHER)
 	@PostMapping("/read")
 	public R<?> readFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		return R.ok(this.fileService.readFile(site, dto.getFilePath()));
 	}
 
@@ -158,7 +154,7 @@ public class FileController extends BaseRestController {
 	@Log(title = "修改文件", businessType = BusinessType.UPDATE)
 	@PostMapping("/edit")
 	public R<?> editFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		this.fileService.editFile(site, dto.getFilePath(), dto.getFileContent());
 		return R.ok();
 	}
@@ -173,7 +169,7 @@ public class FileController extends BaseRestController {
 	@Log(title = "删除文件", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
 	public R<?> deleteFile(@RequestBody @NotEmpty List<FileOperateDTO> dtoList) throws IOException {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		String[] filePathArr = dtoList.stream().map(FileOperateDTO::getFilePath).toArray(String[]::new);
 		this.fileService.deleteFiles(site, filePathArr);
 		return R.ok();

@@ -102,9 +102,11 @@ public interface SysMenuPriv {
 	String SysRoleEdit = "system:role:edit";
 	
 	String SysRoleRemove = "system:role:remove";
-	
+
+    String SysRoleGrant = "system:role:grant";
+
 	String SysSecurityList = "system:security:view";
-	
+
 	String SysUserList = "system:user:view";
 	
 	String SysUserAdd = "system:user:add";
@@ -115,7 +117,5 @@ public interface SysMenuPriv {
 	
 	String SysUserResetPwd = "system:user:resetPwd";
 
-	String SysWeChatConfigView = "system:wechat:view";
-
-	String SysApiView = "system:api:view";
+    String SysUserGrant = "system:user:grant";
 }

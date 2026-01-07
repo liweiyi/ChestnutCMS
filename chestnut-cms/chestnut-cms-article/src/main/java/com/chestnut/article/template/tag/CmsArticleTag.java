@@ -101,6 +101,7 @@ public class CmsArticleTag extends AbstractTag {
 			if (context.isPaged()) {
 				throw new DuplicatePageFlagException(env);
 			}
+            context.setPageSize(1);
 			context.setPaged(true);
 
 			String[] pageContents = contentHtml.split(PAGE_BREAK_SPLITER);
@@ -145,14 +146,14 @@ public class CmsArticleTag extends AbstractTag {
 	public static class ArticleTagData {
 
 		@XComment("{CMS.ARTICLE.FORMAT}")
-		private String Format;
+		private String format;
 
 		@XComment("{CMS.ARTICLE.BODY_TEXT}")
-		private String ArticleContent;
+		private String articleContent;
 
 		public ArticleTagData(String format, String articleContent) {
-			this.Format = format;
-			this.ArticleContent = articleContent;
+			this.format = format;
+			this.articleContent = articleContent;
 		}
 	}
 }

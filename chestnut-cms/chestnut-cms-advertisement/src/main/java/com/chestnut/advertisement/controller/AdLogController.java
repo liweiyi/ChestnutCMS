@@ -26,12 +26,10 @@ import com.chestnut.advertisement.mapper.CmsAdViewLogMapper;
 import com.chestnut.advertisement.service.IAdvertisementService;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.DateUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -48,11 +46,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/ad/stat")
-public class AdLogController extends BaseRestController {
+public class AdLogController extends CmsRestController {
 	
 	private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMddHH");
-
-	private final ISiteService siteService;
 
 	private final IAdvertisementService advService;
 
@@ -65,7 +61,7 @@ public class AdLogController extends BaseRestController {
 	@GetMapping
 	public R<?> getAdStatSum(@RequestParam(required = false) Date beginTime,
 			@RequestParam(required = false) Date endTime) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        CmsSite site = this.getCurrentSite();
 		String begin = Objects.isNull(beginTime) ? null : FORMAT.format(beginTime);
 		String end = Objects.isNull(endTime) ? null : FORMAT.format(endTime);
 		List<CmsAdHourStat> list = this.advHourStatMapper.selectGroupByAdvId(site.getSiteId(), begin, end);
@@ -118,7 +114,7 @@ public class AdLogController extends BaseRestController {
 	@GetMapping("/click")
 	public R<?> listAdClickLogs() {
 		PageRequest pr = getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		LambdaQueryWrapper<CmsAdClickLog> q = new LambdaQueryWrapper<CmsAdClickLog>()
 				.eq(CmsAdClickLog::getSiteId, site.getSiteId()).orderByDesc(CmsAdClickLog::getLogId);
 		Page<CmsAdClickLog> page = adClickLogMapper.selectPage(new Page<>(pr.getPageNumber(), pr.getPageSize(), true),
@@ -133,7 +129,7 @@ public class AdLogController extends BaseRestController {
 	@GetMapping("/view")
 	public R<?> listAdViewLogs() {
 		PageRequest pr = getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        CmsSite site = this.getCurrentSite();
 		LambdaQueryWrapper<CmsAdViewLog> q = new LambdaQueryWrapper<CmsAdViewLog>()
 				.eq(CmsAdViewLog::getSiteId, site.getSiteId()).orderByDesc(CmsAdViewLog::getLogId);
 		Page<CmsAdViewLog> page = adViewLogMapper.selectPage(new Page<>(pr.getPageNumber(), pr.getPageSize(), true), q);

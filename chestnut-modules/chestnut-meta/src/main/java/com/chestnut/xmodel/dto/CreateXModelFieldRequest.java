@@ -44,7 +44,6 @@ public class CreateXModelFieldRequest extends BaseDTO {
     @Pattern(regexp = RegexConsts.REGEX_CODE)
     private String code;
 
-    @NotBlank
     @Length(max = 20)
     private String fieldType;
 

@@ -15,6 +15,7 @@
  */
 package com.chestnut.word.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.word.domain.TagWordGroup;
@@ -22,6 +23,7 @@ import com.chestnut.word.domain.dto.CreateTagWordGroupRequest;
 import com.chestnut.word.domain.dto.UpdateTagWordGroupRequest;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface ITagWordGroupService extends IService<TagWordGroup> {
 	
@@ -59,8 +61,8 @@ public interface ITagWordGroupService extends IService<TagWordGroup> {
 	/**
 	 * 生成分组树数据
 	 * 
-	 * @param groups
+	 * @param consumer
 	 * @return
 	 */
-	List<TreeNode<String>> buildTreeData(List<TagWordGroup> groups);
+	List<TreeNode<String>> buildTreeData(Consumer<LambdaQueryWrapper<TagWordGroup>> consumer);
 }

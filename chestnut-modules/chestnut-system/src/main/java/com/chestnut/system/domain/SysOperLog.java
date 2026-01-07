@@ -15,24 +15,24 @@
  */
 package com.chestnut.system.domain;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
 import cn.idev.excel.annotation.ExcelIgnore;
 import cn.idev.excel.annotation.ExcelProperty;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.chestnut.common.utils.poi.converter.LocalDateTimeConverter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.chestnut.common.utils.poi.converter.LocalDateTimeConverter;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 操作日志记录表 oper_log
@@ -46,6 +46,10 @@ public class SysOperLog implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "sys_oper_log";
+
+    public static final Map<String, SFunction<SysOperLog, ?>> MAP_PARAMS = Map.of(
+            "operTime", SysOperLog::getOperTime
+    );
 
 	/** 日志主键 */
 	@ExcelProperty("日志ID")

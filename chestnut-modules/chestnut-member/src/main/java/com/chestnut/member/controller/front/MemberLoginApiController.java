@@ -144,7 +144,8 @@ public class MemberLoginApiController extends BaseRestController {
 	}
 
 	@Priv(type = MemberUserType.TYPE)
-	@PutMapping("/reset_pwd")
+	@PostMapping("/reset_pwd")
+    @PutMapping("/reset_pwd")
 	public R<?> resetMemberPassword(@RequestBody @Validated ModifyMemberPasswordRequest req) {
 		Member member = this.memberService.getById(StpMemberUtil.getLoginIdAsLong());
 		if (!SecurityUtils.matches(req.getPassword(), member.getPassword())) {
@@ -215,7 +216,7 @@ public class MemberLoginApiController extends BaseRestController {
 	}
 
 	@Priv(type = MemberUserType.TYPE)
-	@PutMapping("/change_email")
+	@PostMapping("/change_email")
 	public R<?> changeMemberEmail(@RequestBody @Validated ChangeMemberEmailRequest dto) {
 		String authCode = this.redisCache.getCacheObject(SMS_CODE_CACHE_PREFIX + StpMemberUtil.getLoginIdAsLong(), String.class);
 		if (StringUtils.isEmpty(authCode) || !dto.getAuthCode().equals(authCode)) {
@@ -232,7 +233,7 @@ public class MemberLoginApiController extends BaseRestController {
 
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
-	@PutMapping("/info")
+	@PostMapping("/info")
 	public R<?> saveMemberInfo(@RequestBody @Validated ModifyMemberInfoRequest req) {
 		LoginUser loginUser = StpMemberUtil.getLoginUser();
 		Member member = (Member) loginUser.getUser();

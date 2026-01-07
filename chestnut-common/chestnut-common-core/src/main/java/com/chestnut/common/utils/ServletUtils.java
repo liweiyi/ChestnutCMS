@@ -471,6 +471,70 @@ public class ServletUtils {
         return URLDecoder.decode(str, StandardCharsets.UTF_8);
     }
 
+    /**
+     * IP是否符合指定列表中的IP定义。
+     * 支持单个IP定义，如：192.168.1.1 匹配 192.168.1.1
+     * 支持IP段定义，如：10.0.0.0/8 匹配 10.0.0.0 - 10.255.255.255
+     *
+     * @param ipFilters IP列表
+     * @param searchIp 待匹配的IP
+     * @return 匹配结果
+     */
+    public static boolean isMatchIP(List<String> ipFilters, String searchIp) {
+        if (StringUtils.isEmpty(ipFilters) || StringUtils.isEmpty(searchIp)) {
+            return false;
+        }
+        return ipFilters.stream().filter(ipFilter -> !ipFilter.isEmpty()).anyMatch(ipFilter -> {
+            // 1. 处理CIDR 表达式 (如 192.168.1.0/24 或 10.0.0.0/8)
+            if (ipFilter.contains("/")) {
+                String[] parts = ipFilter.split("/");
+                if (parts.length == 2) {
+                    String ipPart = parts[0];
+                    int maskPart = Integer.parseInt(parts[1]);
+                    if (maskPart < 0 || maskPart > 32) {
+                        return false;
+                    }
+                    try {
+                        long ipVal = ipv4ToLong(ipPart);
+                        long searchVal = ipv4ToLong(searchIp);
+                        // 计算子网掩码
+                        long subnetMask = maskPart == 0 ? 0 : 0xFFFFFFFFL << (32 - maskPart);
+                        // 比较网络地址
+                        if ((ipVal & subnetMask) == (searchVal & subnetMask)) {
+                            return true;
+                        }
+                    } catch (Exception ignore) {
+                    }
+                }
+                return false;
+            } else {
+                return ipFilter.equals(searchIp);
+            }
+        });
+    }
+
+    /**
+     * 将IPv4字符串(如"192.168.0.1")转换为整数表示
+     */
+    public static long ipv4ToLong(String ipv4) {
+        if (Objects.isNull(ipv4)) {
+            throw new IllegalArgumentException("IPv4 address is empty");
+        }
+        String[] parts = ipv4.split("\\.");
+        if (parts.length != 4) {
+            throw new IllegalArgumentException("Invalid IPv4 address format: " + ipv4);
+        }
+        long result = 0;
+        for (int i = 0; i < 4; i++) {
+            int octet = Integer.parseInt(parts[i]);
+            if (octet < 0 || octet > 255) {
+                throw new IllegalArgumentException("Invalid IPv4 segment: " + parts[i]);
+            }
+            result = (result << 8) | octet;
+        }
+        return result & 0xFFFFFFFFL;
+    }
+
 	/**
 	 * 获取客户端IP
 	 *
@@ -563,7 +627,7 @@ public class ServletUtils {
 	 * @return 结果
 	 */
 	public static boolean isInternalIp(String ip) {
-		byte[] addr = textToNumericFormatV4(ip);
+		byte[] addr = ipv4ToBytes(ip);
 		return isInternalIp(addr) || "127.0.0.1".equals(ip);
 	}
 
@@ -610,7 +674,7 @@ public class ServletUtils {
 	 * @param text IPv4地址
 	 * @return byte 字节
 	 */
-	public static byte[] textToNumericFormatV4(String text) {
+	public static byte[] ipv4ToBytes(String text) {
 		if (text.isEmpty()) {
 			return null;
 		}
@@ -698,4 +762,31 @@ public class ServletUtils {
 		UserAgent ua = UserAgent.parseUserAgentString(userAgent);
 		return ua.getOperatingSystem().getDeviceType().getName();
 	}
+
+    public static String getUrlQueryString(String url) {
+        if (!url.contains("?")) {
+            return StringUtils.EMPTY;
+        }
+        int index = url.indexOf("?");
+        if (url.length() == index + 1) {
+            return StringUtils.EMPTY;
+        }
+        return url.substring(index + 1);
+    }
+
+    public static String appendUrlQueryParams(String url, Map<String, Object> params) {
+        String queryStr = StringUtils.mapToString(params, "&", "=");
+        return appendUrlQueryString(url, queryStr);
+    }
+
+    public static String appendUrlQueryString(String url, String queryString) {
+        if (!url.contains("?")) {
+            return url +  "?" + queryString;
+        }
+        int index = url.indexOf("?");
+        if (url.length() == index + 1) {
+            return url +  queryString;
+        }
+        return url + "&" + queryString;
+    }
 }

@@ -23,7 +23,7 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ServletUtils;
@@ -34,6 +34,7 @@ import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -56,11 +57,11 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/cms/publishpipe")
 @RequiredArgsConstructor
-public class PublishPipeController extends BaseRestController {
-
-    private final IPublishPipeService publishPipeService;
+public class PublishPipeController extends CmsRestController {
 
     private final ISiteService siteService;
+
+    private final IPublishPipeService publishPipeService;
 
     /**
      * 获取当前站点发布通道选择器数据
@@ -70,7 +71,7 @@ public class PublishPipeController extends BaseRestController {
     @Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
     @GetMapping("/selectData")
     public R<?> bindSelectData() {
-        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        CmsSite site = this.getCurrentSite();
         List<PublishPipeProps> datalist = this.publishPipeService.getPublishPipes(site.getSiteId())
                 .stream().map(p -> PublishPipeProps.newInstance(p.getCode(), p.getName(), null))
                 .collect(Collectors.toList());
@@ -90,7 +91,7 @@ public class PublishPipeController extends BaseRestController {
     @GetMapping("/list")
     public R<?> list() {
         PageRequest pr = this.getPageRequest();
-        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        CmsSite site = this.getCurrentSite();
         Page<CmsPublishPipe> page = publishPipeService.page(new Page<CmsPublishPipe>(pr.getPageNumber(), pr.getPageSize(), true)
                 , new LambdaQueryWrapper<CmsPublishPipe>().eq(CmsPublishPipe::getSiteId, site.getSiteId()).orderByAsc(CmsPublishPipe::getSort));
         return this.bindDataTable(page);
@@ -107,7 +108,7 @@ public class PublishPipeController extends BaseRestController {
             value = { ContentCorePriv.PublishPipeView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
             mode = SaMode.AND
     )
-    @GetMapping(value = "/{publishPipeId}")
+    @GetMapping(value = "/detail/{publishPipeId}")
     public R<?> getInfo(@PathVariable @LongId Long publishPipeId) {
         CmsPublishPipe publishPipe = publishPipeService.getById(publishPipeId);
         Assert.notNull(publishPipe, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("publishPipeId", publishPipeId));
@@ -127,9 +128,10 @@ public class PublishPipeController extends BaseRestController {
             mode = SaMode.AND
     )
     @Log(title = "新增发布通道", businessType = BusinessType.INSERT)
-    @PostMapping
+    @PostMapping("/add")
     public R<?> addSave(@RequestBody @Validated CmsPublishPipe publishPipe) throws IOException {
-        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        LoginUser loginUser = StpAdminUtil.getLoginUser();
+        CmsSite site = this.siteService.getSiteOrCurrent(publishPipe.getSiteId(), ServletUtils.getRequest(), loginUser);
         publishPipe.setSiteId(site.getSiteId());
         publishPipe.setCreateBy(StpAdminUtil.getLoginUser().getUsername());
         this.publishPipeService.addPublishPipe(publishPipe);
@@ -149,7 +151,7 @@ public class PublishPipeController extends BaseRestController {
             mode = SaMode.AND
     )
     @Log(title = "编辑发布通道", businessType = BusinessType.UPDATE)
-    @PutMapping
+    @PostMapping("/update")
     public R<?> editSave(@RequestBody @Validated CmsPublishPipe publishPipe) throws IOException {
         publishPipe.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
         this.publishPipeService.savePublishPipe(publishPipe);

@@ -65,7 +65,7 @@ public class XModelController extends BaseRestController {
 		return bindSelectOptions(controlTypes, IMetaControlType::getType, IMetaControlType::getName);
 	}
 
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getModelList(@RequestParam(required = false) @Length(max = 100) String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<XModel> page = this.modelService.lambdaQuery().like(StringUtils.isNotEmpty(query), XModel::getName, query)
@@ -88,7 +88,7 @@ public class XModelController extends BaseRestController {
 		return this.bindDataTable(list);
 	}
 
-	@GetMapping("/{modelId}")
+	@GetMapping("/detail/{modelId}")
 	public R<?> getModel(@PathVariable @LongId Long modelId) {
 		XModel model = this.modelService.getById(modelId);
 		Assert.notNull(model, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("modelId", modelId));
@@ -99,14 +99,14 @@ public class XModelController extends BaseRestController {
 	}
 
 	@Log(title = "新增元数据", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@RequestBody @Validated CreateXModelRequest req) {
 		this.modelService.addModel(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑元数据", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@RequestBody @Validated UpdateXModelRequest req) {
 		this.modelService.editModel(req);
 		return R.ok();

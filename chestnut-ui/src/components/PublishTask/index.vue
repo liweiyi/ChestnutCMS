@@ -13,6 +13,7 @@
 
 <script>
 import { getPublishTaskCount, clearPublishTask } from "@/api/contentcore/publish";
+import { CACHE_PUBLISH_FLAG } from '@/utils/constants';
 
 export default {
   name: "CMSPublishTask",
@@ -28,7 +29,7 @@ export default {
   },
   methods: {
     checkPublishFlag() {
-      if (this.$cache.local.get('publish_flag') === 'true') {
+      if (this.$cache.local.get(CACHE_PUBLISH_FLAG) === 'true') {
         if (!this.interval) {
           this.interval = setInterval(this.loadPublishTaskCount, 5000); 
           this.taskZeroTimes = 0;
@@ -46,7 +47,7 @@ export default {
         if (this.taskCount == 0) {
           this.taskZeroTimes++;
           if (this.taskZeroTimes == 3) {
-            this.$cache.local.set('publish_flag', '')
+            this.$cache.local.set(CACHE_PUBLISH_FLAG, '')
           }
         }
       })

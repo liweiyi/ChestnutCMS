@@ -22,6 +22,43 @@ import java.util.stream.Stream;
 
 public class ArrayUtils {
 
+    public static Set<String> union(Collection<Set<String>> colArray) {
+        Set<String> set = new HashSet<>();
+        if (colArray == null) {
+            return set;
+        }
+        for (Set<String> strings : colArray) {
+            set.addAll(strings);
+        }
+        return set;
+    }
+
+    public static boolean contains(String str, Collection<String> searchStrings, boolean ignoreCase) {
+        if (StringUtils.isEmpty(str) || StringUtils.isEmpty(searchStrings)) {
+            return false;
+        }
+        for (String testStr : searchStrings) {
+            if (ignoreCase) {
+                if (str.equalsIgnoreCase(testStr)) {
+                    return true;
+                }
+            } else {
+                if (str.equals( testStr)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean containsIgnoreCase(String str, Collection<String> searchStrings) {
+        return contains(str, searchStrings, true);
+    }
+
+    public static boolean contains(String str, Collection<String> searchStrings) {
+        return contains(str, searchStrings, false);
+    }
+
 	/**
 	 * 在数组arr中查找与searchStr值相等的第一个元素，返回元素所在位置索引
 	 * 

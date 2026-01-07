@@ -56,7 +56,7 @@ public class FreeMarkerConfig {
 	freemarker.template.Configuration staticizeFreeMarkerConfiguration(final FreeMarkerProperties properties,
 			final List<TemplateLoader> templateLoaders) throws TemplateException {
 		freemarker.template.Configuration cfg = new freemarker.template.Configuration(
-				freemarker.template.Configuration.VERSION_2_3_31);
+				freemarker.template.Configuration.VERSION_2_3_34);
 		cfg.setDefaultEncoding(properties.getDefaultEncoding());
 		// 模板加载路径
 		MultiTemplateLoader multiTemplateLoader = new MultiTemplateLoader(

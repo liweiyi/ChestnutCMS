@@ -79,9 +79,10 @@ public class CatalogStaticizeType implements IStaticizeType {
         Long catalogId = Long.valueOf(dataId);
         if (IdUtils.validate(catalogId)) {
             CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
-            if (Objects.nonNull(catalog)) {
-                this.catalogStaticize(catalog);
+            if (Objects.isNull(catalog)) {
+                logger.warn("Catalog not found: {}", catalogId);
             }
+            this.catalogStaticize(catalog);
         }
     }
 

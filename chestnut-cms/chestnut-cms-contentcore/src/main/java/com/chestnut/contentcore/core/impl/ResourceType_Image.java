@@ -110,7 +110,7 @@ public class ResourceType_Image implements IResourceType {
 			}
 			// 默认缩略图处理
 			thumbnail(site, resource, file, files);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error("Image resource process fail.", e);
 		}
 		return files;

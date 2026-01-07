@@ -18,25 +18,24 @@ package com.chestnut.advertisement.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.advertisement.AdSpacePageWidgetType;
+import com.chestnut.advertisement.domain.dto.CreateAdSpaceReq;
 import com.chestnut.advertisement.pojo.vo.AdSpaceVO;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IPageWidget;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.domain.dto.PageWidgetAddDTO;
 import com.chestnut.contentcore.domain.dto.PageWidgetEditDTO;
 import com.chestnut.contentcore.domain.vo.PageWidgetVO;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import freemarker.template.TemplateException;
@@ -61,7 +60,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/adspace")
-public class AdSpaceController extends BaseRestController {
+public class AdSpaceController extends CmsRestController {
 
 	private final ISiteService siteService;
 
@@ -71,12 +70,12 @@ public class AdSpaceController extends BaseRestController {
 
 	private final AdSpacePageWidgetType pageWidgetType;
 
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> listAdSpaces(@RequestParam(name = "catalogId", required = false) Long catalogId,
 			@RequestParam(name = "name", required = false) String name,
 			@RequestParam(name = "state", required = false) Integer state) {
 		PageRequest pr = getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		LambdaQueryWrapper<CmsPageWidget> q = new LambdaQueryWrapper<CmsPageWidget>()
 				.eq(CmsPageWidget::getSiteId, site.getSiteId())
 				.eq(catalogId != null && catalogId > 0, CmsPageWidget::getCatalogId, catalogId)
@@ -97,7 +96,7 @@ public class AdSpaceController extends BaseRestController {
 		return this.bindDataTable(list, (int) page.getTotal());
 	}
 
-	@GetMapping("/{adSpaceId}")
+	@GetMapping("/detail/{adSpaceId}")
 	public R<PageWidgetVO> getAdSpaceInfo(@PathVariable("adSpaceId") Long adSpaceId) {
 		CmsPageWidget pageWidget = this.pageWidgetService.getById(adSpaceId);
 		if (pageWidget == null) {
@@ -109,13 +108,13 @@ public class AdSpaceController extends BaseRestController {
 		return R.ok(vo);
 	}
 
-	@PostMapping
-	public R<?> addAdSpace(@RequestBody @Validated PageWidgetAddDTO dto) {
-		dto.setType(pageWidgetType.getId());
-
-		CmsSite site = siteService.getCurrentSite(ServletUtils.getRequest());
+	@PostMapping("/add")
+	public R<?> addAdSpace(@RequestBody @Validated CreateAdSpaceReq dto) {
+        CmsSite site = this.getCurrentSite();
 		CmsPageWidget pageWidget = new CmsPageWidget();
 		BeanUtils.copyProperties(dto, pageWidget);
+        pageWidget.setType(pageWidgetType.getId());
+        pageWidget.setCatalogId(0L);
 		pageWidget.setSiteId(site.getSiteId());
 		pageWidget.setTemplates(dto.getPublishPipeTemplateMap());
 
@@ -126,7 +125,7 @@ public class AdSpaceController extends BaseRestController {
 		return R.ok();
 	}
 
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> editAdSpace(@RequestBody @Validated PageWidgetEditDTO dto) {
 		CmsPageWidget pageWidget = new CmsPageWidget();
 		BeanUtils.copyProperties(dto, pageWidget);

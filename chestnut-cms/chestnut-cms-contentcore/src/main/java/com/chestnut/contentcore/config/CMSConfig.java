@@ -72,7 +72,7 @@ public class CMSConfig implements WebMvcConfigurer {
 		RESOURCE_ROOT = StringUtils.appendIfMissing(FileExUtils.normalizePath(RESOURCE_ROOT), "/");
 		FileExUtils.mkdirs(RESOURCE_ROOT);
 		properties.setResourceRoot(RESOURCE_ROOT);
-		log.info("ResourceRoot: " + RESOURCE_ROOT);
+        log.info("ResourceRoot: {}", RESOURCE_ROOT);
 		CachePrefix = properties.getCacheName();
 		
 		this.properties = properties;

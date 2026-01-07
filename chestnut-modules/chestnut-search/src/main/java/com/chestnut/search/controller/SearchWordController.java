@@ -24,6 +24,7 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.search.SearchConsts;
 import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.domain.SearchWordHourStat;
 import com.chestnut.search.domain.dto.CreateSearchWordRequest;
@@ -44,7 +45,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Priv(type = AdminUserType.TYPE)
+@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.LOG_VIEW)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/search/word")
@@ -54,7 +55,7 @@ public class SearchWordController extends BaseRestController {
 
 	private final ISearchWordHourStatService searchWordHourStatService;
 	
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<SearchWord> page = this.searchWordStatService.lambdaQuery()
@@ -99,28 +100,28 @@ public class SearchWordController extends BaseRestController {
 	}
 
 	@Log(title = "新增搜索词", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addWord(@RequestBody CreateSearchWordRequest req) {
 		this.searchWordStatService.addWord(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑搜索词", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> editWord(@RequestBody @Validated UpdateSearchWordRequest req) {
 		this.searchWordStatService.editWord(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑搜索词", businessType = BusinessType.UPDATE)
-	@PutMapping("/set_top")
+	@PostMapping("/set_top")
 	public R<?> setTop(@RequestBody SearchWordToppingRequest req) {
 		this.searchWordStatService.setTop(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑搜索词", businessType = BusinessType.UPDATE)
-	@PutMapping("/cancel_top")
+	@PostMapping("/cancel_top")
 	public R<?> cancelTop(@RequestBody @NotEmpty List<Long> wordIds) {
 		this.searchWordStatService.cancelTop(wordIds, StpAdminUtil.getLoginUser().getUsername());
 		return R.ok();

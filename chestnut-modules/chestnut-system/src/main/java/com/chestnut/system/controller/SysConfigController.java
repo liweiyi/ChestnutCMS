@@ -82,7 +82,7 @@ public class SysConfigController extends BaseRestController {
 	 * 根据参数编号获取详细信息
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigList)
-	@GetMapping(value = "/{configId}")
+	@GetMapping(value = "/detail/{configId}")
 	public R<?> getInfo(@PathVariable @LongId Long configId) {
 		SysConfig config = this.configService.getById(configId);
 		I18nUtils.replaceI18nFields(config);
@@ -103,7 +103,7 @@ public class SysConfigController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigAdd)
 	@Log(title = "参数管理", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateConfigRequest req) {
 		configService.insertConfig(req);
 		return R.ok();
@@ -114,7 +114,7 @@ public class SysConfigController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigEdit)
 	@Log(title = "参数管理", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateConfigRequest req) {
 		configService.updateConfig(req);
 		return R.ok();

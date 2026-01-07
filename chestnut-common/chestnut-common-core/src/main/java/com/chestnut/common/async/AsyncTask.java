@@ -17,8 +17,11 @@ package com.chestnut.common.async;
 
 import com.chestnut.common.async.enums.TaskStatus;
 import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.exception.TipMessage;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.Assert;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -27,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,6 +38,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 异步任务构造器
  */
 @Slf4j
+@Getter
+@Setter
 public abstract class AsyncTask implements Runnable {
 
 	/**
@@ -190,7 +196,7 @@ public abstract class AsyncTask implements Runnable {
 	/**
 	 * 检查中断标识，抛出异常中断任务执行，需要run0中自行调用中断任务。
 	 * 
-	 * @throws InterruptedException
+	 * @throws InterruptedException e
 	 */
 	public void checkInterrupt() throws InterruptedException {
 		Assert.isFalse(this.interrupt.get(), () -> new InterruptedException("The task is interrupted: " + this.taskId));
@@ -200,130 +206,48 @@ public abstract class AsyncTask implements Runnable {
 		return this.isEnd() && this.endTime.plusSeconds(expireSeconds).isBefore(LocalDateTime.now());
 	}
 
-	public String getTaskId() {
-		return taskId;
-	}
-
-	public void setTaskId(String taskId) {
-		this.taskId = taskId;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public TaskStatus getStatus() {
-		return status;
-	}
-
-	public void setStatus(TaskStatus status) {
-		this.status = status;
-	}
-
-	public LocalDateTime getStartTime() {
-		return startTime;
-	}
-
-	public LocalDateTime getEndTime() {
-		return endTime;
-	}
-
-	public void setEndTime(LocalDateTime endTime) {
-		this.endTime = endTime;
-	}
-
 	public long getCostTime() {
-		if (this.endTime != null) {
-			return Duration.between(this.startTime, this.endTime).getSeconds();
-		}
-		return Duration.between(this.startTime, LocalDateTime.now()).getSeconds();
-	}
-
-	public int getPercent() {
-		return percent;
-	}
-
-	public void setPercent(int percent) {
-		this.percent = percent;
-	}
+        return Duration.between(this.startTime, Objects.requireNonNullElseGet(this.endTime, LocalDateTime::now)).getSeconds();
+    }
 
 	public boolean isEnd() {
 		return this.status == TaskStatus.SUCCESS || this.status == TaskStatus.FAILED
 				|| this.status == TaskStatus.INTERRUPTED;
 	}
 
-	public String getProgressMessage() {
-		return progressMessage;
-	}
-
 	public void setProgressMessage(String progressInfo) {
 		this.progressMessage = progressInfo;
 	}
+
+    public void setProgressMessage(TipMessage message, Object... args) {
+        this.setProgressMessage(message.locale(this.getLocale(), args));
+    }
 
 	public void setProgressInfo(int percent, String progressMessage) {
 		this.percent = percent;
 		this.progressMessage = progressMessage;
 	}
 
-	public void addErrorMessage(String message) {
+    public void setProgressInfo(int percent, TipMessage message, Object... args) {
+        this.setProgressInfo(percent, message.locale(this.getLocale(), args));
+    }
+
+	public String addErrorMessage(String message) {
 		if (this.errMessages == null) {
 			this.errMessages = new ArrayList<>();
 		}
 		if (this.errMessages.size() >= 100) {
-			return; // 最多纪录100条错误信息
+			return message; // 最多纪录100条错误信息
 		}
 		this.errMessages.add((this.errMessages.size() + 1) + "." + message);
+        return message;
 	}
+
+    public String addErrorMessage(TipMessage message, Object... args) {
+        return this.addErrorMessage(message.locale(this.getLocale(), args));
+    }
 
 	public boolean isAlive() {
 		return this.getStatus() == TaskStatus.READY || this.getStatus() == TaskStatus.RUNNING;
-	}
-
-	public LocalDateTime getReadyTime() {
-		return readyTime;
-	}
-
-	public List<String> getErrMessages() {
-		return errMessages;
-	}
-
-	public void setErrMessages(List<String> errMessages) {
-		this.errMessages = errMessages;
-	}
-
-	public CompletableFuture<AsyncTask> getCallback() {
-		return callback;
-	}
-
-	public void setCallback(CompletableFuture<AsyncTask> callback) {
-		this.callback = callback;
-	}
-
-	public LocalDateTime getInterruptTime() {
-		return interruptTime;
-	}
-
-	public void setInterruptTime(LocalDateTime interruptTime) {
-		this.interruptTime = interruptTime;
-	}
-
-	public boolean isInterruptible() {
-		return interruptible;
-	}
-
-	public void setInterruptible(boolean interruptible) {
-		this.interruptible = interruptible;
-	}
-
-	public Locale getLocale() {
-		return locale;
-	}
-
-	public void setLocale(Locale locale) {
-		this.locale = locale;
 	}
 }

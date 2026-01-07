@@ -31,11 +31,11 @@
               <el-button plain type="primary" size="mini" icon="el-icon-takeaway-box" @click="handleOpLogs">{{ $t('CMS.Content.OpLog') }}</el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="420" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
+              <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="480" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
                 <el-row style="margin-bottom:20px;">
                   <el-divider content-position="left">{{ $t('CMS.Content.ContentType') }}</el-divider>
                   <el-radio-group v-model="addContentType">
-                    <el-radio-button 
+                    <el-radio-button
                       v-for="ct in contentTypeOptions"
                       :key="ct.id"
                       :label="ct.id"
@@ -43,7 +43,7 @@
                   </el-radio-group>
                   <el-divider v-if="addContentType=='article'" content-position="left">{{ $t('CMS.Article.Format') }}</el-divider>
                   <el-radio-group v-if="addContentType=='article'" v-model="addArticleBodyFormat">
-                    <el-radio-button 
+                    <el-radio-button
                       v-for="item in articleBodyFormatOptions"
                       :key="item.id"
                       :label="item.id"
@@ -51,13 +51,13 @@
                   </el-radio-group>
                 </el-row>
                 <el-row style="text-align:right;">
-                  <el-button 
+                  <el-button
                     plain
                     type="primary"
                     size="small"
                     @click="handleAdd">{{ $t('Common.Confirm') }}</el-button>
                 </el-row>
-                <el-button 
+                <el-button
                   type="primary"
                   slot="reference"
                   icon="el-icon-plus"
@@ -132,9 +132,9 @@
           <el-row v-if="xmodelVisible" class="mb10">
             <el-col class="pr10">
               <el-card shadow="always" class="card-exmodel">
-                <cms-exmodel-editor 
+                <cms-exmodel-editor
                   ref="EXModelEditor"
-                  :xmodel="form.catalogConfigProps.ContentExtendModel" 
+                  :xmodel="form.catalogConfigProps.ContentExtendModel"
                   type="content"
                   :id="form.contentId">
                 </cms-exmodel-editor>
@@ -160,7 +160,7 @@
                         <i class="el-icon-info" style="color:#909399;margin-right:16px;" />
                       </el-tooltip>
                       <el-select v-model="ueditorImportCss" :placeholder="$t('CMS.Content.Placeholder.ImportCSS')" clearable  @change="handleChangeUEditorCSS()">
-                        <el-option 
+                        <el-option
                           v-for="pp in publishPipeProps"
                           :key="pp.pipeCode"
                           :label="pp.pipeName"
@@ -182,12 +182,17 @@
           </el-row>
           <el-row v-if="this.form.linkFlag !== 'Y' && this.contentType === 'audio'">
             <el-col class="pr10">
-              <cms-audio-editor v-model="form.audioList" :logo="form.logoSrc" @choose="handleSetLogo"></cms-audio-editor>
+              <cms-audio-editor v-model="form.audioList" :logo="form.logoSrc"></cms-audio-editor>
             </el-col>
           </el-row>
           <el-row v-if="this.form.linkFlag !== 'Y' && this.contentType === 'video'">
             <el-col class="pr10">
-              <cms-video-editor v-model="form.videoList" @choose="handleSetLogo"></cms-video-editor>
+              <cms-video-editor v-model="form.videoList"></cms-video-editor>
+            </el-col>
+          </el-row>
+          <el-row v-if="this.form.linkFlag !== 'Y' && this.contentType === 'file'">
+            <el-col class="pr10">
+              <cms-file-editor v-model="form.file" :catalogId="catalogId"></cms-file-editor>
             </el-col>
           </el-row>
         </el-col>
@@ -251,10 +256,10 @@
                   <el-form-item :label="$t('CMS.Content.Template')">
                     <el-switch v-model="showTemplate" @change="handleShowTemplateChange" />
                   </el-form-item>
-                  <el-form-item v-show="showTemplate" 
-                                v-for="pp in publishPipeProps" 
-                                :label="pp.pipeName" 
-                                :key="pp.pipeCode" 
+                  <el-form-item v-show="showTemplate"
+                                v-for="pp in publishPipeProps"
+                                :label="pp.pipeName"
+                                :key="pp.pipeCode"
                                 :prop="'template_' + pp.value">
                     <el-input v-model="pp.props.template">
                       <el-button slot="append" icon="el-icon-folder-opened" @click="handleSelectTemplate(pp)"></el-button>
@@ -273,9 +278,9 @@
                     <el-input v-model="form.seoDescription" />
                   </el-form-item>
                   <el-divider content-position="left">{{ $t('CMS.Content.ExtendTemplate') }}</el-divider>
-                  <el-form-item v-for="pp in publishPipeProps" 
-                                :label="pp.pipeName" 
-                                :key="pp.pipeCode + '_ex'" 
+                  <el-form-item v-for="pp in publishPipeProps"
+                                :label="pp.pipeName"
+                                :key="pp.pipeCode + '_ex'"
                                 :prop="'contentExTemplate_' + pp.value">
                     <el-input v-model="pp.props.contentExTemplate">
                       <el-button slot="append" icon="el-icon-folder-opened" @click="handleSelectTemplate(pp, true)"></el-button>
@@ -289,7 +294,7 @@
       </el-form>
     </el-row>
     <!-- 模板选择组件 -->
-    <cms-template-selector :open="openTemplateSelector" 
+    <cms-template-selector :open="openTemplateSelector"
                        :publishPipeCode="publishPipeActiveName"
                        @ok="handleTemplateSelected"
                        @cancel="handleTemplateSelectorCancel" />
@@ -311,6 +316,7 @@
   </div>
 </template>
 <script>
+import { CACHE_PUBLISH_FLAG } from '@/utils/constants';
 import { getContentTypes } from "@/api/contentcore/catalog";
 import { getInitContentEditorData, addContent, saveContent, toPublishContent, publishContent, lockContent, unLockContent, moveContent } from "@/api/contentcore/content";
 import { getUEditorCSS, getArticleBodyFormats } from "@/api/contentcore/article"
@@ -338,7 +344,7 @@ export default {
   name: "CMSContentEditor",
   dicts: ['CMSContentAttribute'],
   components: {
-    Treeselect, 
+    Treeselect,
     Sticky,
     'ueditor': UEditor,
     'cms-template-selector': CMSTemplateSelector,
@@ -359,8 +365,8 @@ export default {
       return this.form.isLock === 'Y' && this.form.lockUser != '';
     },
     xmodelVisible() {
-      return this.form.catalogConfigProps 
-        && this.form.catalogConfigProps.ContentExtendModel != null 
+      return this.form.catalogConfigProps
+        && this.form.catalogConfigProps.ContentExtendModel != null
         && this.form.catalogConfigProps.ContentExtendModel.length > 0;
     }
   },
@@ -414,6 +420,7 @@ export default {
       publishing: false,
       openRelaContentDialog: false,
       openContentOpLogDialog: false,
+      openVersionDialog: false,
       ueditorImportCss: "",
       shortTitleLabel: this.$t('CMS.Content.ShortTitle'),
       subTitleLabel: this.$t('CMS.Content.SubTitle')
@@ -459,7 +466,7 @@ export default {
           this.contentId = this.form.contentId;
           this.contentType = this.form.contentType;
           this.publishPipeProps = this.form.publishPipeProps;
-          this.showOtherTitle = 'Y' === this.form.showSubTitle || (this.form.shortTitle && this.form.shortTitle.length > 0) 
+          this.showOtherTitle = 'Y' === this.form.showSubTitle || (this.form.shortTitle && this.form.shortTitle.length > 0)
             || (this.form.subTitle && this.form.subTitle.length > 0);
           this.publishPipeProps.forEach(pp => {
             if (pp.props.template && pp.props.template.length > 0) {
@@ -593,7 +600,7 @@ export default {
     },
     doPublishContent() {
       publishContent([ this.form.contentId ]).then(response => {
-          this.$cache.local.set('publish_flag', "true")
+          this.$cache.local.set(CACHE_PUBLISH_FLAG, "true")
           this.taskId = response.data;
           this.publishing = true;
           this.progressTitle = this.$t('CMS.Content.PublishProgressTitle')
@@ -605,7 +612,7 @@ export default {
         if (this.publishing) {
           this.publishing = false;
           return;
-        } 
+        }
         if (this.publishAfterSave) {
           this.publishAfterSave = false;
           this.doPublishContent();
@@ -716,7 +723,7 @@ export default {
         if (!this.form.summary || this.form.summary.length == 0) {
           this.form.summary = contents[0].summary;
         }
-        this.showOtherTitle = 'Y' === this.form.showSubTitle || (this.form.shortTitle && this.form.shortTitle.length > 0) 
+        this.showOtherTitle = 'Y' === this.form.showSubTitle || (this.form.shortTitle && this.form.shortTitle.length > 0)
           || (this.form.subTitle && this.form.subTitle.length > 0);
         this.openContentSelector = false;
       } else {
@@ -822,7 +829,7 @@ export default {
     width: 100%;
 }
 .content-editor-container .el-form-item {
-  margin-bottom: 12px;  
+  margin-bottom: 12px;
 }
 .content-editor-container .card-title {
   margin-bottom: 5px;

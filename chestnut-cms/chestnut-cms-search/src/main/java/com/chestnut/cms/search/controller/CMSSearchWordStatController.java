@@ -21,12 +21,10 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.domain.dto.CreateSearchWordRequest;
 import com.chestnut.search.service.ISearchWordService;
@@ -39,16 +37,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/search/word")
-public class CMSSearchWordStatController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class CMSSearchWordStatController extends CmsRestController {
 
 	private final ISearchWordService searchWordStatService;
 	
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getPageList(@RequestParam(required = false) String query) {
 		PageRequest pr = this.getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		Page<SearchWord> page = this.searchWordStatService.lambdaQuery()
 				.eq(SearchWord::getSource, CmsSearchConstants.generateSearchSource(site.getSiteId()))
 				.like(StringUtils.isNotEmpty(query), SearchWord::getWord, query)
@@ -58,9 +54,9 @@ public class CMSSearchWordStatController extends BaseRestController {
 	}
 
 	@Log(title = "新增搜索词", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addWord(@RequestBody @Validated CreateSearchWordRequest req) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		req.setSource(CmsSearchConstants.generateSearchSource(site.getSiteId()));
 		this.searchWordStatService.addWord(req);
 		return R.ok();

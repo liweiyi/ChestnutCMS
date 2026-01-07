@@ -32,6 +32,7 @@ import com.chestnut.system.mapper.SysPostMapper;
 import com.chestnut.system.mapper.SysUserPostMapper;
 import com.chestnut.system.service.ISysPostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -113,11 +114,8 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 		Assert.isTrue(checkPostUnique, CommonErrorCode.DATA_CONFLICT::exception);
 
 		SysPost post = new SysPost();
+        BeanUtils.copyProperties(req, post);
 		post.setPostId(IdUtils.getSnowflakeId());
-		post.setPostCode(req.getPostCode());
-		post.setPostName(req.getPostName());
-		post.setPostSort(req.getPostSort());
-		post.setStatus(req.getStatus());
 		post.createBy(req.getOperator().getUsername());
 		this.save(post);
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + post.getPostCode());
@@ -130,10 +128,7 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 		boolean checkPostUnique = this.checkPostUnique(req.getPostCode(), req.getPostName(), req.getPostId());
 		Assert.isTrue(checkPostUnique, CommonErrorCode.DATA_CONFLICT::exception);
 
-		db.setPostCode(req.getPostCode());
-		db.setPostName(req.getPostName());
-		db.setPostSort(req.getPostSort());
-		db.setStatus(req.getStatus());
+        BeanUtils.copyProperties(req, db);
 		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + db.getPostCode());

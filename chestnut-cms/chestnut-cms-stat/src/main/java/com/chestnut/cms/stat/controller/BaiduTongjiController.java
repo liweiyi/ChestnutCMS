@@ -27,12 +27,10 @@ import com.chestnut.cms.stat.properties.BaiduTjDomainProperty;
 import com.chestnut.cms.stat.service.ICmsStatService;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.DateUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
@@ -52,22 +50,20 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cms/stat/baidu")
-public class BaiduTongjiController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class BaiduTongjiController extends CmsRestController {
 
 	private final ICmsStatService cmsStatService;
 
-	@PutMapping("/refreshToken")
+	@PostMapping("/refreshToken")
 	public R<?> refreshAccessToken() {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		this.cmsStatService.refreshBaiduAccessToken(site);
 		return R.ok();
 	}
 
 	@GetMapping("/sites")
 	public R<?> getSiteList() {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		BaiduTongjiConfig config = BaiduTongjiConfig.read(site.getConfigProps());
 		if (StringUtils.isEmpty(config.getAccessToken())) {
 			return R.ok(List.of());
@@ -91,7 +87,7 @@ public class BaiduTongjiController extends BaseRestController {
 	@GetMapping("/trendOverview")
 	public R<?> getSiteOverviewTrendReport(@RequestParam Long bdSiteId, @RequestParam LocalDateTime startDate,
 										   @RequestParam LocalDateTime endDate) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();
@@ -117,7 +113,7 @@ public class BaiduTongjiController extends BaseRestController {
 	@GetMapping("/districtOverview")
 	public R<?> getSiteOverviewDistrctReport(@RequestParam Long bdSiteId, @RequestParam LocalDateTime startDate,
 											 @RequestParam LocalDateTime endDate) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();
@@ -141,7 +137,7 @@ public class BaiduTongjiController extends BaseRestController {
 	@GetMapping("/otherOverview")
 	public R<?> getSiteOtherOverviewDatas(@RequestParam Long bdSiteId, @RequestParam LocalDateTime startDate,
 										  @RequestParam LocalDateTime endDate) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();
@@ -157,19 +153,11 @@ public class BaiduTongjiController extends BaseRestController {
 			return R.fail(request.getError_msg());
 		}
 		return R.ok(request);
-//		Map<String, BaiduOverviewReportVO> siteOverviewOthers = BaiduTongjiUtils.getSiteOverviewOthers(accessToken,
-//				bdSiteId, startDate, endDate);
-//		Map<String, List<Map<String, Object>>> datas = siteOverviewOthers.entrySet().stream().map(e -> {
-//			Map<String, List<Map<String, Object>>> map = Map.of(e.getKey(),
-//					BaiduTongjiUtils.parseOverviewReportToTableData(e.getValue()));
-//			return map.entrySet().iterator().next();
-//		}).collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
-//		return R.ok(datas);
 	}
 
 	@GetMapping("/timeTrend")
 	public R<?> getSiteTimeTrend(@Validated BaiduTimeTrendDTO dto) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();
@@ -207,7 +195,7 @@ public class BaiduTongjiController extends BaseRestController {
 	 */
 	@GetMapping("/sourceAll")
 	public R<?> getSiteSourceAll(@Validated BaiduSourceAllDTO dto) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();
@@ -245,7 +233,7 @@ public class BaiduTongjiController extends BaseRestController {
 	 */
 	@GetMapping("/sourceEngine")
 	public R<?> getSiteSourceEngine(@Validated BaiduSourceEngineDTO dto) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();
@@ -283,7 +271,7 @@ public class BaiduTongjiController extends BaseRestController {
 	 */
 	@GetMapping("/sourceSearchWord")
 	public R<?> getSiteSourceSearchWord(@Validated BaiduSourceSearchWordDTO dto) {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
 		if (StringUtils.isBlank(accessToken)) {
 			return R.ok();

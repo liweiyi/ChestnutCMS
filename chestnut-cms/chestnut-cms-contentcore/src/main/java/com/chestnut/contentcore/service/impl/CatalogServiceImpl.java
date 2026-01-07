@@ -34,12 +34,12 @@ import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.core.impl.CatalogType_Common;
 import com.chestnut.contentcore.core.impl.CatalogType_Link;
 import com.chestnut.contentcore.core.impl.InternalDataType_Catalog;
-import com.chestnut.contentcore.dao.CmsContentDAO;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.*;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
+import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.mapper.CmsCatalogMapper;
@@ -58,6 +58,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -82,7 +83,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 
 	private final AsyncTaskManager asyncTaskManager;
 
-	private final CmsContentDAO contentDao;
+    private final TransactionTemplate transactionTemplate;
 
 	@Override
 	public CmsCatalog getCatalog(Long catalogId) {
@@ -205,6 +206,8 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 			catalog.setParentId(0L);
 			catalog.setTreeLevel(1);
 			catalog.setAlias(ChineseSpelling.getCapitalizedSpelling(catalog.getName()).toLowerCase());
+			catalog.setAlias(catalog.getAlias().replaceAll("[^A-Za-z0-9_]", "_"));
+
 			catalog.setPath(catalog.getAlias() + StringUtils.SLASH);
 			catalog.setChildCount(0);
 
@@ -311,7 +314,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		// 删除前事件发布
 		applicationContext.publishEvent(new BeforeCatalogDeleteEvent(this, catalog, operator));
 		// 删除栏目
-		AsyncTaskManager.setTaskMessage("正在删除栏目数据");
+		AsyncTaskManager.setTaskMessage(ContentTips.DELETING_CATALOG);
 		if (catalog.getParentId() > 0) {
 			CmsCatalog parentCatalog = getById(catalog.getParentId());
 			parentCatalog.setChildCount(parentCatalog.getChildCount() - 1);
@@ -336,6 +339,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 	}
 
 	@Override
+    @Transactional(rollbackFor = Exception.class)
 	public void applyConfigPropsToChildren(CatalogApplyConfigPropsDTO dto) {
 		CmsCatalog catalog = this.getCatalog(dto.getCatalogId());
 
@@ -361,6 +365,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 	}
 
 	@Override
+    @Transactional(rollbackFor = Exception.class)
 	public void applyPublishPipePropsToChildren(CatalogApplyPublishPipeDTO dto) {
 		CmsCatalog catalog = this.getCatalog(dto.getCatalogId());
 
@@ -379,6 +384,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 	}
 
 	@Override
+    @Transactional(rollbackFor = Exception.class)
 	public void applySiteDefaultTemplateToCatalog(SiteDefaultTemplateDTO dto) {
 		CmsSite site = this.siteService.getSite(dto.getSiteId());
 
@@ -441,7 +447,10 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 
 			@Override
 			public void run0() {
-				moveCatalog0(fromCatalog, toCatalog, children);
+                transactionTemplate.executeWithoutResult(transactionStatus -> {
+                    moveCatalog0(fromCatalog, toCatalog, children);
+                });
+
 			}
 		};
 		// 设置唯一任务ID避免同步执行，可能会导致数据错乱。
@@ -450,7 +459,6 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		return task;
 	}
 
-	@Transactional(rollbackFor = Throwable.class)
 	private void moveCatalog0(CmsCatalog fromCatalog, CmsCatalog toCatalog, List<CmsCatalog> children) {
 		Map<Long, CmsCatalog> invokedCatalogs = new HashMap<>();
 		AsyncTaskManager.setTaskPercent(10);

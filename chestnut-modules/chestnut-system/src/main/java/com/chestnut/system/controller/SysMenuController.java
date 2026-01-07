@@ -77,7 +77,7 @@ public class SysMenuController extends BaseRestController {
 	 * 根据菜单编号获取详细信息
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuList)
-	@GetMapping(value = "/{menuId}")
+	@GetMapping(value = "/detail/{menuId}")
 	public R<?> getInfo(@PathVariable @LongId Long menuId) {
 		SysMenu menu = menuService.getById(menuId);
 		Assert.notNull(menu, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(menuId));
@@ -123,7 +123,7 @@ public class SysMenuController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuAdd)
 	@Log(title = "菜单管理", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateMenuRequest req) {
 		menuService.insertMenu(req);
 		return R.ok();
@@ -134,7 +134,7 @@ public class SysMenuController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuEdit)
 	@Log(title = "菜单管理", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateMenuRequest req) {
 		menuService.updateMenu(req);
 		return R.ok();

@@ -59,7 +59,7 @@ public class SysSecurityController extends BaseRestController {
 	private final ISecurityConfigService securityConfigService;
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> listConfigs() {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysSecurityConfig> q = new LambdaQueryWrapper<SysSecurityConfig>()
@@ -69,7 +69,7 @@ public class SysSecurityController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
-	@GetMapping("/{id}")
+	@GetMapping("/detail/{id}")
 	public R<?> getConfig(@PathVariable @LongId Long id) {
 		SysSecurityConfig securityConfig = securityConfigService.getById(id);
 		Assert.notNull(securityConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(id));
@@ -90,7 +90,7 @@ public class SysSecurityController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addConfig(@Validated @RequestBody CreateSecurityConfigRequest req) {
 		this.securityConfigService.addConfig(req);
 		return R.ok();
@@ -98,7 +98,7 @@ public class SysSecurityController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> saveConfig(@Validated @RequestBody UpdateSecurityConfigRequest req) {
 		this.securityConfigService.saveConfig(req);
 		return R.ok();
@@ -114,7 +114,7 @@ public class SysSecurityController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.UPDATE)
-	@PutMapping("/changeStatus/{id}")
+	@PostMapping("/changeStatus/{id}")
 	public R<?> changeConfigStatus(@PathVariable @LongId Long id) {
 		this.securityConfigService.changeConfigStatus(id);
 		return R.ok();

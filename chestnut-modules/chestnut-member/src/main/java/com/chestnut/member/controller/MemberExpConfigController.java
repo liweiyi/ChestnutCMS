@@ -55,7 +55,7 @@ public class MemberExpConfigController extends BaseRestController {
 
 	private final IMemberExpConfigService memberExpOperationService;
 
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getPageList(@RequestParam(value = "opType", required = false) @Length(max = 50) String opType,
 			@RequestParam(value = "levelType", required = false) @Length(max = 30) String levelType) {
 		PageRequest pr = this.getPageRequest();
@@ -73,7 +73,7 @@ public class MemberExpConfigController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
-	@GetMapping("/{expOperationId}")
+	@GetMapping("/detail/{expOperationId}")
 	public R<?> getExpOperationDetail(@PathVariable("expOperationId") @LongId Long expOperationId) {
 		MemberExpConfig conf = this.memberExpOperationService.getById(expOperationId);
 		Assert.notNull(conf, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("id", expOperationId));
@@ -90,14 +90,14 @@ public class MemberExpConfigController extends BaseRestController {
 	}
 
 	@Log(title = "新增会员经验配置", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addMemberExpOperation(@RequestBody @Validated CreateMemberExpConfigRequest req) {
 		this.memberExpOperationService.addExpOperation(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑会员经验配置", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> updateMemberExpOperation(@RequestBody @Validated UpdateMemberExpConfigRequest req) {
 		this.memberExpOperationService.updateExpOperation(req);
 		return R.ok();

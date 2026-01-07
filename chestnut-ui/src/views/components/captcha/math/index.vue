@@ -1,6 +1,7 @@
 <template>
   <div class="math-captcha-container">
     <el-input
+      v-if="username && token"
       v-model="authCode"
       auto-complete="off"
       :placeholder="$t('Login.Captcha')"
@@ -9,7 +10,8 @@
     >
       <svg-icon slot="prefix" icon-class="validCode" class="el-input__icon input-icon" />
       <template slot="append" style="padding: 0;border: none;">
-        <img :src="codeImage" @click="reloadCaptcha" class="captcha-img" :style="{ width: `${imgWidth}` }" />
+        <img v-if="codeImage!=''" :src="codeImage" @click="reloadCaptcha" class="captcha-img" :style="{ width: `${imgWidth}` }" />
+        <el-link v-else icon="el-icon-refresh" :underline="false" @click="reloadCaptcha" :style="{ width: `${imgWidth}` }">刷新</el-link>
       </template>
     </el-input>
   </div>
@@ -24,6 +26,14 @@ export default {
       type: Number,
       default: 100,
       required: false,
+    },
+    username: {
+      type: String,
+      required: true,
+    },
+    token: {
+      type: String,
+      required: true,
     }
   },
   computed: {
@@ -55,7 +65,7 @@ export default {
     reloadCaptcha() {
       this.loading = true;
       this.authCode = ""; // 重置验证码
-      getCaptcha(this.captchaType).then(res => {
+      getCaptcha({ username: this.username, token: this.token }).then(res => {
         this.captcha = res.data;
         this.codeImage = "data:image/gif;base64," + this.captcha.image;
         this.loading = false;
@@ -64,6 +74,10 @@ export default {
           token: this.captcha.token,
           data: "",
         });
+      }).catch(err => {
+        this.captcha = {};
+        this.codeImage = "";
+        this.loading = false;
       })
     },
     handleCodeChanged () {

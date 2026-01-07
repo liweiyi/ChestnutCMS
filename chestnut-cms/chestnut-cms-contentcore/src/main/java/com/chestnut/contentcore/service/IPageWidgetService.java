@@ -78,4 +78,6 @@ public interface IPageWidgetService extends IService<CmsPageWidget> {
 	 * @return
 	 */
     CmsPageWidget getPageWidget(Long siteId, String code);
+
+    void offlinePageWidgets(List<Long> pageWidgetIds, LoginUser operator) throws TemplateException, IOException;
 }

@@ -81,7 +81,8 @@ public class CommentApiController extends BaseRestController {
 
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
-	@PutMapping("/like/{commentId}")
+	@PostMapping("/like/{commentId}")
+    @PutMapping("/like/{commentId}")
 	public R<?> likeComment(@PathVariable @LongId Long commentId) {
 		this.commentApiService.likeComment(commentId, StpMemberUtil.getLoginIdAsLong());
 		return R.ok();

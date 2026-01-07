@@ -41,7 +41,7 @@ public class CustomFormConsts {
     /**
      * uuid请求参数/header参数
      */
-    public static final String PARAMETER_UUID = "_cc_uuid";
+    public static final String PARAMETER_UUID = "cc-uuid";
 
     public static String getCustomFormActionUrl(CmsSite site, String publishPipeCode) {
         return SiteApiUrlProperty.getValue(site, publishPipeCode) + "api/customform/submit";

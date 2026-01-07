@@ -73,7 +73,7 @@ public class AdvertisementController extends BaseRestController {
 		return this.bindDataTable(list);
 	}
 
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> listAdvertisements(@RequestParam(name = "adSpaceId") @Min(1) Long adSpaceId,
 			@RequestParam(name = "name", required = false) String name,
 			@RequestParam(name = "state", required = false) Integer state) {
@@ -92,7 +92,7 @@ public class AdvertisementController extends BaseRestController {
 		return this.bindDataTable(page.getRecords(), (int) page.getTotal());
 	}
 
-	@GetMapping("/{advertisementId}")
+	@GetMapping("/detail/{advertisementId}")
 	public R<AdvertisementVO> getAdvertisementInfo(@PathVariable("advertisementId") @Min(1) Long advertisementId) {
 		CmsAdvertisement ad = this.advertisementService.getById(advertisementId);
 		Assert.notNull(ad, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("advertisementId", advertisementId));
@@ -104,17 +104,15 @@ public class AdvertisementController extends BaseRestController {
 	}
 
 	@Log(title = "新增广告", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addAdvertisement(@RequestBody AdvertisementDTO dto) throws IOException {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.advertisementService.addAdvertisement(dto);
 		return R.ok();
 	}
 
 	@Log(title = "编辑广告", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> editAdvertisement(@RequestBody AdvertisementDTO dto) throws IOException {
-		dto.setOperator(StpAdminUtil.getLoginUser());
 		this.advertisementService.saveAdvertisement(dto);
 		return R.ok();
 	}
@@ -130,7 +128,7 @@ public class AdvertisementController extends BaseRestController {
 	}
 
 	@Log(title = "启用广告", businessType = BusinessType.UPDATE)
-	@PutMapping("/enable")
+	@PostMapping("/enable")
 	public R<?> enableAdvertisements(@RequestBody List<Long> advertisementIds) {
 		if (StringUtils.isEmpty(advertisementIds)) {
 			return R.fail(StringUtils.messageFormat("参数[{0}]不能为空", "advertisementIds"));
@@ -141,7 +139,7 @@ public class AdvertisementController extends BaseRestController {
 	}
 
 	@Log(title = "禁用广告", businessType = BusinessType.UPDATE)
-	@PutMapping("/disable")
+	@PostMapping("/disable")
 	public R<?> disableAdvertisements(@RequestBody List<Long> advertisementIds) {
 		if (StringUtils.isEmpty(advertisementIds)) {
 			return R.fail(StringUtils.messageFormat("参数[{0}]不能为空", "advertisementIds"));

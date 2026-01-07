@@ -65,6 +65,8 @@ export default {
     CheckAll: '全选',
     CheckInverse: '全不选',
     TreeLinkage: '父子联动',
+    MoveUp: "上移",
+    MoveDown: "下移",
     ConfirmDelete: '是否确认删除？',
     Today: '今天',
     Yesterday: '昨天',
@@ -91,6 +93,7 @@ export default {
     DownloadTimeout: "下载超时",
     Others: "其他",
     Unknown: "未知",
+    Recover: "恢复",
     Unit: {
       Year: "年",
       Month: "月",
@@ -565,7 +568,11 @@ export default {
       AddTitle: "添加安全配置",
       EditTitle: "编辑安全配置",
       ForceModifyPwd: "首次登录或重置密码后需要修改密码！",
-      PwdExpired: "密码已过期，为了您的账号安全请立即修改密码！"
+      PwdExpired: "密码已过期，为了您的账号安全请立即修改密码！",
+      CaptchaEnable: "启用验证码",
+      CaptchaType: "验证码类型",
+      CaptchaExpireSeconds: "验证码过期时长（单位：秒）",
+      CaptchaRetryDuration: "验证码重试时长（单位：秒）",
     },
     WeChat: {
       Backend: "后台登录",
@@ -909,6 +916,7 @@ export default {
         CatalogPageSizeTip: "值为0时系统默认取值10",
         ContentConfCardTitle: "内容配置",
         AutoArticleLogo: "正文首图作为封面",
+        AutoArticleVersion: "自动保存文章版本",
         RecycleKeepDays: "回收站内容保留天数",
         RecycleKeepDaysTip: "永久保留填0",
         ResourceConfCardTitle: "素材库",
@@ -1149,7 +1157,19 @@ export default {
       PushToBaidu: "推送到百度",
       PushToBaiduResult: "【{0}】成功 {1} 条，剩余 {2} 条。<br/>",
       ImportCSSTip: "应用站点/栏目发布通道设置的文章编辑器CSS",
-      OpLog: "操作记录"
+      OpLog: "操作记录",
+      Version: "版本记录",
+      VersionNo: "版本编号",
+      Compare: "对比",
+      CompareToLatest: "与最新版本对比",
+      SaveNewVersion: "保存新版本",
+      LatestVersion: "最新版本",
+      VersionDiff: "版本对比",
+      VersionDiffTip: {
+        Replace: "替换",
+        Add: "新增",
+        Remove: "删除"
+      }
     },
     ContentOpLog: {
       Type: "操作类型",
@@ -1223,6 +1243,10 @@ export default {
       UploadCover: "上传视频封面图",
       ScreenshotDialog: "视频封面截图",
       SetLogo: "设为视频集封面"
+    },
+    FileContent: {
+      Preview: "预览",
+      Intro: "文件介绍"
     },
     Book: {
       Basic: "图书信息",
@@ -1330,6 +1354,22 @@ export default {
       Md5ing: "计算MD5中...",
       Paused: "暂停中...",
       Waiting: "等待中..."
+    },
+    ImageCropper: {
+      Preview: "预览",
+      TabCrop: "图片裁剪",
+      TabRotate: "旋转缩放",
+      FixedAspectRatio: "固定比例",
+      InitCropSize: "预设尺寸",
+      RotateLeft: "左转90°",
+      RotateRight: "右转90°",
+      Rotate: "旋转",
+      Zoom: "缩放",
+      FlipX: "水平翻转",
+      FlipY: "垂直翻转",
+      Apply: "应用",
+      OriginalRatio: "原比例",
+      AspectRatio: "比例",
     },
     PublishPipe: {
       Name: "名称",

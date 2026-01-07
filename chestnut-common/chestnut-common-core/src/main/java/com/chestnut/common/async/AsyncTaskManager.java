@@ -18,6 +18,7 @@ package com.chestnut.common.async;
 import com.chestnut.common.async.enums.TaskStatus;
 import com.chestnut.common.config.AsyncConfig;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.exception.TipMessage;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -154,6 +155,14 @@ public class AsyncTaskManager {
 		}
 		return message;
     }
+
+    public static String addErrMessage(TipMessage message, Object... args) {
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+            return task.addErrorMessage(message, args);
+		}
+		return message.locale(args);
+    }
     
     public static void setTaskPercent(int percent) {
 		AsyncTask task = CURRENT.get();
@@ -169,10 +178,24 @@ public class AsyncTaskManager {
 		}
     }
 
+    public static void setTaskMessage(TipMessage message, Object... args) {
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			task.setProgressMessage(message, args);
+		}
+    }
+
     public static void setTaskProgressInfo(int percent, String msg) {
 		AsyncTask task = CURRENT.get();
 		if (Objects.nonNull(task)) {
 			task.setProgressInfo(percent, msg);
+		}
+    }
+
+    public static void setTaskProgressInfo(int percent, TipMessage message, Object... args) {
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			task.setProgressInfo(percent, message, args);
 		}
     }
 
@@ -216,4 +239,10 @@ public class AsyncTaskManager {
 		}
 		return Objects.requireNonNullElse(locale, LocaleContextHolder.getLocale());
 	}
+
+    public void checkUniqueTask(String taskId) {
+        if (asyncTaskMap.containsKey(taskId)) {
+            throw CommonErrorCode.ASYNC_TASK_RUNNING.exception(taskId);
+        }
+    }
 }

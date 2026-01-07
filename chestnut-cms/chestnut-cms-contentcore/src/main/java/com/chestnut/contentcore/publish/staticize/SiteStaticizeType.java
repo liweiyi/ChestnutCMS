@@ -69,9 +69,10 @@ public class SiteStaticizeType implements IStaticizeType {
         Long siteId = Long.valueOf(dataId);
         if (IdUtils.validate(siteId)) {
             CmsSite site = this.siteService.getSite(siteId);
-            if (Objects.nonNull(site)) {
-                this.siteStaticize(site);
+            if (Objects.isNull(site)) {
+                logger.warn("Site not found: {}", siteId);
             }
+            this.siteStaticize(site);
         }
     }
 

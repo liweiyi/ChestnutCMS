@@ -282,6 +282,13 @@ public class JacksonUtils {
         }
     }
 
+    public static <V> V convertValue(Object obj, Class<V> clazz) {
+        if (Objects.isNull(obj)) {
+            return null;
+        }
+        return mapper.convertValue(obj, clazz);
+    }
+
     /**
      * JSON反序列化（List）
      */
@@ -711,6 +718,22 @@ public class JacksonUtils {
             return mapper.readTree(json);
         } catch (IOException e) {
             throw new JacksonException(StringUtils.messageFormat("jackson parse json to JsonNode error, json: {0}", json), e);
+        }
+    }
+
+    public static ObjectNode parseObjectNode(String json) {
+        try {
+            return mapper.readValue(json, ObjectNode.class);
+        } catch (IOException e) {
+            throw new JacksonException(StringUtils.messageFormat("jackson parse json to ObjectNode error, json: {0}", json), e);
+        }
+    }
+
+    public static ArrayNode parseArrayNode(String json) {
+        try {
+            return mapper.readValue(json, ArrayNode.class);
+        } catch (IOException e) {
+            throw new JacksonException(StringUtils.messageFormat("jackson parse json to ArrayNode error, json: {0}", json), e);
         }
     }
 }

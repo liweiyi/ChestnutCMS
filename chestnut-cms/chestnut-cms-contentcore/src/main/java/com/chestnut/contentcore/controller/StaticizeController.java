@@ -60,7 +60,7 @@ public class StaticizeController extends BaseRestController {
 					.tagName(tag.getTagName())
 					.description(I18nUtils.get(tag.getDescription()))
 					.tagAttrs(tag.getTagAttrs())
-					.demoLink("https://www.1000mz.com/docs/template/tags/" + tag.getTagName())
+					.demoLink("https://www.1000mz.com/docs/template/tags/" + tag.getTagName() + ".shtml")
 					.build();
 			vo.getTagAttrs().forEach(attr -> {
 				attr.setName(I18nUtils.get(attr.getName()));
@@ -87,7 +87,7 @@ public class StaticizeController extends BaseRestController {
 					.funcName(func.getFuncName())
 					.desc(I18nUtils.get(func.getDesc()))
 					.funcArgs(func.getFuncArgs())
-					.demoLink("https://www.1000mz.com/docs/template/functions/" + func.getFuncName())
+					.demoLink("https://www.1000mz.com/docs/template/functions/" + func.getFuncName() + ".shtml")
 					.build();
 			vo.getFuncArgs().forEach(arg -> {
 				arg.setName(I18nUtils.get(arg.getName()));

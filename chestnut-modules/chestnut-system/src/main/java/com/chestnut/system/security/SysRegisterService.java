@@ -20,17 +20,21 @@ import com.chestnut.common.captcha.CaptchaService;
 import com.chestnut.common.captcha.ICaptchaType;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.RegisterBody;
 import com.chestnut.system.exception.SysErrorCode;
-import com.chestnut.system.fixed.config.SysCaptchaEnable;
 import com.chestnut.system.fixed.config.SysRegistEnable;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
+import com.chestnut.system.fixed.dict.YesOrNo;
+import com.chestnut.system.service.ISecurityConfigService;
 import com.chestnut.system.service.ISysLogininforService;
 import com.chestnut.system.service.ISysUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 /**
  * 注册校验方法
@@ -48,15 +52,15 @@ public class SysRegisterService {
 
 	private final CaptchaService captchaService;
 
+    private final ISecurityConfigService securityConfigService;
+
 	/**
 	 * 注册
 	 */
 	public void register(RegisterBody registerBody) {
 		Assert.isTrue(SysRegistEnable.isEnable(), SysErrorCode.REGISTER_DISABLED::exception);
-		// 验证码开关
-		if (SysCaptchaEnable.isEnable()) {
-			validateCaptcha(registerBody.getUsername(), registerBody.getCaptcha());
-		}
+		// 验证码校验
+        validateCaptcha(registerBody.getUsername(), registerBody.getCaptcha());
 		SysUser user = new SysUser();
 		user.setUserName(registerBody.getUsername());
 		user.setPassword(registerBody.getPassword());
@@ -73,6 +77,10 @@ public class SysRegisterService {
 	 * @param captchaData 验证码
 	 */
 	public void validateCaptcha(String username, CaptchaData captchaData) {
+        SysSecurityConfig securityConfig = securityConfigService.getSecurityConfig();
+        if (Objects.isNull(securityConfig) || !YesOrNo.isYes(securityConfig.getCaptchaEnable())) {
+            return;
+        }
 		Assert.notNull(captchaData, SysErrorCode.CAPTCHA_ERR::exception);
 		ICaptchaType captchaType = captchaService.getCaptchaType(captchaData.getType());
 		boolean validated = captchaType.isTokenValidated(captchaData);

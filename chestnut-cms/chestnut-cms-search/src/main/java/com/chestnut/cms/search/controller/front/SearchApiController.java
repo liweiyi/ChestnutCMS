@@ -23,6 +23,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggestOption;
 import co.elastic.clients.elasticsearch.core.search.Suggestion;
 import com.chestnut.cms.search.CmsSearchConstants;
+import com.chestnut.cms.search.properties.EnableSearchLogProperty;
 import com.chestnut.cms.search.template.tag.CmsSearchContentTag;
 import com.chestnut.cms.search.vo.ESContentVO;
 import com.chestnut.common.domain.R;
@@ -32,8 +33,10 @@ import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
+import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.vo.ContentDynamicDataVO;
 import com.chestnut.contentcore.service.ICatalogService;
+import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.impl.ContentDynamicDataService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.search.SearchConsts;
@@ -69,6 +72,8 @@ public class SearchApiController extends BaseRestController {
 
 	private static final String SORT_SCORE = "1"; // 排序方式：相关度
 	private static final String SORT_PUBLISH_DATE = "2"; // 排序方式：发布时间
+
+    private final ISiteService siteService;
 
 	private final ICatalogService catalogService;
 
@@ -196,7 +201,10 @@ public class SearchApiController extends BaseRestController {
 			c.setCommentCount(cdd.getComments());
 		});
 		// 记录搜索日志
-		this.logService.addSearchLog(CmsSearchConstants.generateSearchSource(siteId), query, ServletUtils.getRequest());
+        CmsSite site = this.siteService.getSite(siteId);
+        if (EnableSearchLogProperty.getValue(site.getConfigProps(), null)) {
+            this.logService.addSearchLog(CmsSearchConstants.generateSearchSource(siteId), query, ServletUtils.getRequest());
+        }
 		return this.bindDataTable(list, Objects.isNull(sr.hits().total()) ? 0 : sr.hits().total().value());
 	}
 

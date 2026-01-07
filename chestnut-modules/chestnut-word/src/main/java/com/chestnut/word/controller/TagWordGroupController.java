@@ -65,8 +65,7 @@ public class TagWordGroupController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@GetMapping("/treedata")
 	public R<?> getTreeData() {
-		List<TagWordGroup> groups = this.tagWordGroupService.list();
-		List<TreeNode<String>> treeData = this.tagWordGroupService.buildTreeData(groups);
+		List<TreeNode<String>> treeData = this.tagWordGroupService.buildTreeData(q -> {});
 		return R.ok(treeData);
 	}
 
@@ -84,7 +83,7 @@ public class TagWordGroupController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@PutMapping("/update")
+	@PostMapping("/update")
 	public R<?> edit(@RequestBody @Validated UpdateTagWordGroupRequest req) {
 		this.tagWordGroupService.editTagWordGroup(req);
 		return R.ok();

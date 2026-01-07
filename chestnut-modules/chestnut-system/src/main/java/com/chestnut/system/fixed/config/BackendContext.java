@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 @Component(FixedConfig.BEAN_PREFIX + BackendContext.ID)
 public class BackendContext extends FixedConfig {
 
-	public static final String ID = "CMSBackendContext";
+	public static final String ID = "BackendContext";
 	
 	private static final ISysConfigService configService = SpringUtils.getBean(ISysConfigService.class);
 	

@@ -24,7 +24,7 @@ import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -42,6 +42,7 @@ import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.security.AdminUserType;
@@ -67,20 +68,16 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Priv(
-		type = AdminUserType.TYPE,
-		value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
-		mode = SaMode.AND
-)
 @RestController
 @RequestMapping("/cms/resource")
 @RequiredArgsConstructor
-public class ResourceController extends BaseRestController {
+public class ResourceController extends CmsRestController {
 
 	private final ISiteService siteService;
 
 	private final IResourceService resourceService;
 
+    @Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@GetMapping("/types")
 	public R<?> getResourceTypes() {
 		List<Map<String, String>> list = ContentCoreUtils.getResourceTypes().stream()
@@ -92,6 +89,19 @@ public class ResourceController extends BaseRestController {
 		return R.ok(list);
 	}
 
+    @Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
+    @GetMapping("/selectList")
+    public R<?> getSelectList(@RequestParam(value = "name", required = false) String name,
+                              @RequestParam(value = "resourceType", required = false) String resourceType,
+                              @RequestParam(value = "owner", required = false, defaultValue = "false") boolean owner,
+                              @RequestParam(value = "siteId", required = false, defaultValue = "0") Long siteId,
+                              @RequestParam(value = "beginTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date beginTime,
+                              @RequestParam(value = "endTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endTime,
+                              HttpServletRequest request) {
+        return listData(name, resourceType, owner, siteId, beginTime, endTime, request);
+    }
+
+    @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@GetMapping
 	public R<?> listData(@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "resourceType", required = false) String resourceType,
@@ -101,10 +111,13 @@ public class ResourceController extends BaseRestController {
 			@RequestParam(value = "endTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endTime,
 			HttpServletRequest request) {
 		PageRequest pr = this.getPageRequest();
-		CmsSite site = siteService.getSiteOrCurrent(siteId, request);
+        LoginUser loginUser = StpAdminUtil.getLoginUser();
+        CmsSite site = siteService.getSiteOrCurrent(siteId, request, loginUser);
 		LambdaQueryWrapper<CmsResource> q = new LambdaQueryWrapper<CmsResource>()
 				.eq(CmsResource::getSiteId, site.getSiteId())
-				.like(StringUtils.isNotEmpty(name), CmsResource::getFileName, name)
+                .and(StringUtils.isNotEmpty(name), and ->
+                        and.like(CmsResource::getName, name).or().like(CmsResource::getFileName, name))
+				.like(StringUtils.isNotEmpty(name), CmsResource::getName, name)
 				.eq(StringUtils.isNotEmpty(resourceType), CmsResource::getResourceType, resourceType)
 				.eq(owner, CmsResource::getCreateBy, StpAdminUtil.getLoginUser().getUsername())
 				.ge(beginTime != null, CmsResource::getCreateTime, beginTime)
@@ -114,11 +127,11 @@ public class ResourceController extends BaseRestController {
 			page.getRecords().forEach(r -> {
 				IResourceType rt = ContentCoreUtils.getResourceType(r.getResourceType());
 				r.setResourceTypeName(I18nUtils.get(rt.getName()));
-				r.setInternalUrl(InternalDataType_Resource.getInternalUrl(r));
 				r.setFileSizeName(FileUtils.byteCountToDisplaySize(r.getFileSize()));
-				if (r.getPath().startsWith("http://") || r.getPath().startsWith("https://")) {
+				if (ServletUtils.isHttpUrl(r.getPath())) {
 					r.setSrc(r.getPath());
 				} else {
+                    r.setInternalUrl(InternalDataType_Resource.getInternalUrl(r));
 					if (ResourceType_Image.isImage(r.getResourceType())) {
 						resourceService.dealDefaultThumbnail(site, r.getInternalUrl(), r::setSrc);
 					} else {
@@ -130,15 +143,18 @@ public class ResourceController extends BaseRestController {
 		return bindDataTable(page);
 	}
 
+    @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@GetMapping("/{resourceId}")
 	public R<CmsResource> getInfo(@PathVariable("resourceId") @LongId Long resourceId) {
 		CmsResource resource = this.resourceService.getById(resourceId);
-		if (resource == null) {
-			return R.fail("资源ID错误：" + resourceId);
-		}
+        Assert.notNull(resource, () -> ContentCoreErrorCode.RESOURCE_NOT_FOUND.exception());
+
+        String iurl = InternalDataType_Resource.getInternalUrl(resource);
+        resource.setSrc(InternalUrlUtils.getActualPreviewUrl(iurl));
 		return R.ok(resource);
 	}
 
+    @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@Log(title = "新增/编辑素材", businessType = BusinessType.INSERT)
 	@PostMapping
 	public R<CmsResource> addResource(
@@ -152,7 +168,7 @@ public class ResourceController extends BaseRestController {
 		Long acceptSize = ResourceUploadAcceptSize.getValue();
 		Assert.isTrue(acceptSize <= 0 || acceptSize >= resourceFile.getSize(), ContentCoreErrorCode.RESOURCE_ACCEPT_SIZE_LIMIT::exception);
 		try {
-			CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+			CmsSite site = this.getCurrentSite();
 			ResourceUploadDTO dto = ResourceUploadDTO.builder()
 					.resourceId(resourceId)
 					.site(site)
@@ -173,6 +189,7 @@ public class ResourceController extends BaseRestController {
 		}
 	}
 
+    @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@Log(title = "删除素材", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
 	public R<String> delResources(@RequestBody @NotEmpty List<Long> resourceIds) {
@@ -181,6 +198,7 @@ public class ResourceController extends BaseRestController {
 		return R.ok();
 	}
 
+    @Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@Log(title = "上传素材", businessType = BusinessType.INSERT)
 	@PostMapping("/upload")
 	public R<CmsResource> uploadFile(@RequestParam("file") MultipartFile multipartFile) throws Exception {
@@ -189,7 +207,7 @@ public class ResourceController extends BaseRestController {
 		Long acceptSize = ResourceUploadAcceptSize.getValue();
 		Assert.isTrue(acceptSize <= 0 || acceptSize >= multipartFile.getSize(), ContentCoreErrorCode.RESOURCE_ACCEPT_SIZE_LIMIT::exception);
 
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		ResourceUploadDTO dto = ResourceUploadDTO.builder().site(site).file(multipartFile).build();
 		dto.setOperator(StpAdminUtil.getLoginUser());
 		CmsResource resource = this.resourceService.addResource(dto);
@@ -197,6 +215,7 @@ public class ResourceController extends BaseRestController {
 		return R.ok(resource);
 	}
 
+    @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@GetMapping("/download/{resourceId}")
 	public void downloadResourceFile(@PathVariable @LongId Long resourceId, HttpServletResponse response) {
 		CmsResource resource = this.resourceService.getById(resourceId);

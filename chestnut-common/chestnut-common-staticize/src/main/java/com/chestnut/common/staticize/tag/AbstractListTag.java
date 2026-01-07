@@ -51,8 +51,10 @@ public abstract class AbstractListTag extends AbstractTag {
 			throws TemplateException {
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		boolean isPage = MapUtils.getBooleanValue(attrs, TagAttr.AttrName_Page);
-		int size = MapUtils.getIntValue(attrs, TagAttr.AttrName_PageSize,
-				context.getPageSize() < 1 ? PAGE_SIZE : context.getPageSize());
+        int size= MapUtils.getIntValue(attrs, TagAttr.AttrName_PageSize);
+        if (size < 1) {
+            size = PAGE_SIZE;
+        }
 		if (isPage) {
 			if (context.isPaged()) {
 				throw new DuplicatePageFlagException(env);

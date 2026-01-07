@@ -38,7 +38,24 @@ public enum CaptchaErrorCode implements ErrorCode {
 	/**
 	 * 验证码已失效，请重新获取
 	 */
-	INVALID_CAPTCHA;
+	INVALID_CAPTCHA,
+
+    /**
+     * 验证码标识不能为空
+     */
+    CAPTCHA_TOKEN_NOT_EMPTY,
+
+    /**
+     * 验证码请求繁忙，请稍后再试。
+     */
+    CAPTCHA_LIMIT,
+
+    /**
+     * 手机号码格式错误
+     */
+    INVALID_PHONE_NUMBER,
+
+    INVALID_SMS_CONFIG_ID;
 
 	@Override
 	public String value() {

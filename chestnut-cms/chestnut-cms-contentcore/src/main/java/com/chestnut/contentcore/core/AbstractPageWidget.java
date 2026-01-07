@@ -16,23 +16,28 @@
 package com.chestnut.contentcore.core;
 
 import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.fixed.dict.PageWidgetStatus;
 import com.chestnut.contentcore.service.*;
+import com.chestnut.contentcore.util.PageWidgetUtils;
 import com.chestnut.contentcore.util.SiteUtils;
+import freemarker.template.TemplateException;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.springframework.beans.BeanUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 @Slf4j
@@ -86,8 +91,6 @@ public abstract class AbstractPageWidget implements IPageWidget {
 	@Override
 	public void save() {
 		CmsPageWidget pageWidgetEntity = this.getPageWidgetEntity();
-		CmsPageWidget dbPageWidget = this.getPageWidgetService().getById(this.getPageWidgetEntity().getPageWidgetId());
-		BeanUtils.copyProperties(this.getPageWidgetEntity(), dbPageWidget);
 		pageWidgetEntity.setState(PageWidgetStatus.EDITING);
 		pageWidgetEntity.updateBy(this.getOperator().getUsername());
 		this.getPageWidgetService().updateById(pageWidgetEntity);
@@ -113,9 +116,41 @@ public abstract class AbstractPageWidget implements IPageWidget {
 		pageWidgetEntity.setState(PageWidgetStatus.PUBLISHED);
 		pageWidgetEntity.updateBy(this.getOperator().getUsername());
 		this.getPageWidgetService().updateById(pageWidgetEntity);
-		
-		this.getPublishService().pageWidgetStaticize(this);
-	}
+
+        this.getPublishService().pageWidgetStaticize(this);
+    }
+
+    @Override
+    public void offline() {
+        CmsPageWidget pageWidgetEntity = this.getPageWidgetEntity();
+        pageWidgetEntity.setState(PageWidgetStatus.OFFLINE);
+        pageWidgetEntity.updateBy(this.getOperator().getUsername());
+        this.getPageWidgetService().updateById(pageWidgetEntity);
+        // 删除静态化文件
+        CmsSite site = this.getSiteService().getSite(pageWidgetEntity.getSiteId());
+        List<CmsPublishPipe> publishPipes = this.getPublishPipeService().getPublishPipes(pageWidgetEntity.getSiteId());
+        for (CmsPublishPipe publishPipe : publishPipes) {
+            String publishPipeCode = publishPipe.getCode();
+            String dirPath = SiteUtils.getSiteRoot(site, publishPipeCode) + pageWidgetEntity.getPath();
+            String staticFileName = PageWidgetUtils.getStaticFileName(pageWidgetEntity, site.getStaticSuffix(publishPipeCode));
+            Path path = Path.of(dirPath, staticFileName);
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e) {
+                log.warn("Delete page widget static file failed: {}", path, e);
+            }
+        }
+        // 重新发布站点首页
+        try {
+            this.getPublishService().publishSiteIndex(site);
+        } catch (IOException | TemplateException e) {
+            log.warn("Publish site index fail when offline page widget.", e);
+        }
+        if (IdUtils.validate(pageWidgetEntity.getCatalogId())) {
+            CmsCatalog catalog = this.getCatalogService().getCatalog(pageWidgetEntity.getCatalogId());
+            this.getPublishService().publishCatalog(catalog, false, false, null, Operator.of(this.getOperator()));
+        }
+    }
 	
 	public String getStaticFilePath(String publishPipeCode) {
 		CmsSite site = this.getSiteService().getSite(this.getPageWidgetEntity().getSiteId());

@@ -52,7 +52,7 @@ public class UserStatus extends FixedDictType {
 		return ENABLE.equals(v);
 	}
 	
-	public static boolean isDisbale(String v) {
+	public static boolean isDisable(String v) {
 		return DISABLE.equals(v);
 	}
 	

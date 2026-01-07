@@ -2,7 +2,7 @@
   <div class="cms-content-list">
     <el-row :gutter="10" class="mb12">
       <el-col :span="1.5">
-        <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="420" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
+        <el-popover v-model="addPopoverVisible" class="btn-permi" placement="bottom-start" :width="480" trigger="click" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]">
           <el-row style="margin-bottom:20px;">
             <el-divider content-position="left">{{ $t('CMS.Content.ContentType') }}</el-divider>
             <el-radio-group v-model="addContentType">
@@ -344,6 +344,7 @@
   </div>
 </template>
 <script>
+import { CACHE_PUBLISH_FLAG } from '@/utils/constants';
 import { getUserPreference } from "@/api/system/user";
 import { getContentTypes } from "@/api/contentcore/catalog";
 import { getArticleBodyFormats } from "@/api/contentcore/article"
@@ -507,7 +508,7 @@ export default {
     },
     openEditor(catalogId, contentId, contentType, articleBodyFormat = "") {
       let queryParams = { type: contentType, catalogId: catalogId, id: contentId }
-      if (articleBodyFormat.length > 0) {
+      if (articleBodyFormat.length > 0 && contentType == 'article') {
         queryParams.format = articleBodyFormat;
       }
       if (this.openEditorW) {
@@ -541,7 +542,7 @@ export default {
       }
       publishContent(contentIds).then(response => {
         this.taskId = response.data;
-        this.$cache.local.set('publish_flag', "true")
+        this.$cache.local.set(CACHE_PUBLISH_FLAG, "true")
         this.progressType = "publish";
         this.progressTitle = this.$t('CMS.Content.PublishProgressTitle')
         this.openProgress = true;

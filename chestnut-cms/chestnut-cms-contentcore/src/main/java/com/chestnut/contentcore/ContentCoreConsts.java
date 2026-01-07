@@ -35,7 +35,7 @@ public interface ContentCoreConsts {
 	/**
 	 * 当前站点Header键名
 	 */
-	String Header_CurrentSite = "CurrentSite";
+	String Header_CurrentSite = "cc-current-site";
 
 	/**
 	 * 模板目录，固定在站点发布通道目录下的template目录中

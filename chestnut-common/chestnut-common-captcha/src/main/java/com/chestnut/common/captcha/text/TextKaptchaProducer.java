@@ -40,7 +40,7 @@ public class TextKaptchaProducer extends DefaultKaptcha implements CommandLineRu
 
         Properties properties = new Properties();
         // 是否有边框 默认为true 我们可以自己设置yes，no
-        properties.setProperty(KAPTCHA_BORDER, "yes");
+        properties.setProperty(KAPTCHA_BORDER, "no");
         // 验证码文本字符颜色 默认为Color.BLACK
         properties.setProperty(KAPTCHA_TEXTPRODUCER_FONT_COLOR, "black");
         // 验证码图片宽度 默认为200

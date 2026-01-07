@@ -17,15 +17,13 @@ package com.chestnut.contentcore.util;
 
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.perms.BitSetPrivItem;
 import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.perms.PageWidgetPermissionType;
 import com.chestnut.contentcore.perms.SitePermissionType;
-import com.chestnut.system.domain.SysPermission;
-import com.chestnut.system.enums.PermissionOwnerType;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * 内容核心权限工具类
@@ -38,9 +36,9 @@ public class CmsPrivUtils {
     /**
      * 注解`@Priv`权限验证判断站点权限用
      */
-    public static final String PRIV_SITE_VIEW_PLACEHOLDER = SitePermissionType.ID + ":View:${#_header['CurrentSite']}";
+    public static final String PRIV_SITE_VIEW_PLACEHOLDER = SitePermissionType.ID + ":View:${#_header['" + ContentCoreConsts.Header_CurrentSite + "']}";
 
-    public static final String PRIV_SITE_EDIT_PLACEHOLDER = SitePermissionType.ID + ":Edit:${#_header['CurrentSite']}";
+    public static final String PRIV_SITE_EDIT_PLACEHOLDER = SitePermissionType.ID + ":Edit:${#_header['" + ContentCoreConsts.Header_CurrentSite + "']}";
 
 
     /**

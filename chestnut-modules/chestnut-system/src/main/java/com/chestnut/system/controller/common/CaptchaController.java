@@ -15,21 +15,23 @@
  */
 package com.chestnut.system.controller.common;
 
-import com.chestnut.common.captcha.CaptchaCheckResult;
-import com.chestnut.common.captcha.CaptchaData;
-import com.chestnut.common.captcha.CaptchaService;
-import com.chestnut.common.captcha.ICaptchaType;
+import com.chestnut.common.captcha.*;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.system.annotation.IgnoreDemoMode;
+import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.dto.CheckCaptchaRequest;
-import com.chestnut.system.fixed.config.SysCaptchaEnable;
-import com.chestnut.system.fixed.config.SysCaptchaType;
+import com.chestnut.system.fixed.dict.YesOrNo;
+import com.chestnut.system.service.ISecurityConfigService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 验证码操作处理
@@ -41,20 +43,47 @@ public class CaptchaController extends BaseRestController {
 
 	private final CaptchaService captchaService;
 
+    private final ISecurityConfigService securityConfigService;
+
+    private final List<ICaptchaType> captchaTypes;
+
+    private final RedisCache redisCache;
+
+    @GetMapping("/options")
+    public R<?> getCaptchaOptions() {
+        return bindSelectOptions(captchaTypes, ICaptchaType::getType, ICaptchaType::getName);
+    }
+
 	@GetMapping("/get")
-	public R<?> getCaptcha(@RequestParam @NotBlank String type) {
-		ICaptchaType captchaType = captchaService.getCaptchaType(type);
-		Object o = captchaType.create(new CaptchaData(type));
+	public R<?> getCaptcha(@RequestParam @NotBlank String token) {
+        SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
+        if (Objects.isNull(securityConfig) ||  !YesOrNo.isYes(securityConfig.getCaptchaEnable())) {
+            return R.fail("The captcha not enabled.");
+        }
+        ICaptchaType captchaType = captchaService.getCaptchaType(securityConfig.getCaptchaType());
+        // 校验刷新间隔
+        if (securityConfig.getCaptchaDuration() > 0) {
+            String cacheKey = captchaType.getCacheKey(token);
+            long expire = this.redisCache.getExpire(cacheKey, TimeUnit.SECONDS);
+            if (expire > 0 && securityConfig.getCaptchaExpires() - expire < securityConfig.getCaptchaDuration()) {
+                throw CaptchaErrorCode.CAPTCHA_LIMIT.exception();
+            }
+        }
+		Object o = captchaType.create(new CaptchaData(securityConfig.getCaptchaType(), token));
 		return R.ok(o);
 	}
 
 	@IgnoreDemoMode
 	@PostMapping("/check")
-	public R<?> checkCaptcha(@RequestParam @NotBlank String type, @RequestBody CheckCaptchaRequest req) {
-		ICaptchaType captchaType = captchaService.getCaptchaType(type);
+	public R<?> checkCaptcha(@RequestBody CheckCaptchaRequest req) {
+        SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
+        if (Objects.isNull(securityConfig) ||  !YesOrNo.isYes(securityConfig.getCaptchaEnable())) {
+            return R.fail("The captcha not enabled.");
+        }
+		ICaptchaType captchaType = captchaService.getCaptchaType(securityConfig.getCaptchaType());
         try {
 			CaptchaData captchaData = new CaptchaData();
-			captchaData.setType(type);
+			captchaData.setType(securityConfig.getCaptchaType());
 			captchaData.setToken(req.getToken());
 			captchaData.setData(req.getData());
 			CaptchaCheckResult result = captchaType.check(captchaData);
@@ -66,9 +95,13 @@ public class CaptchaController extends BaseRestController {
 
 	@GetMapping("/config")
 	public R<?> getLoginCaptchaConfig() {
-		return R.ok(Map.of(
-				"type", SysCaptchaType.getValue(),
-				"enabled", SysCaptchaEnable.isEnable()
+        SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
+        boolean enabled = Objects.nonNull(securityConfig) && YesOrNo.isYes(securityConfig.getCaptchaEnable());
+        return R.ok(Map.of(
+				"enabled", enabled,
+				"type", enabled ? securityConfig.getCaptchaType() : "",
+                "expires", enabled ? securityConfig.getCaptchaExpires() : 0,
+                "duration", enabled ? securityConfig.getCaptchaDuration() : 0
 		));
 	}
 }

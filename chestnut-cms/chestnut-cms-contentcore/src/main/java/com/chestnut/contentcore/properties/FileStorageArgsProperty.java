@@ -15,11 +15,9 @@
  */
 package com.chestnut.contentcore.properties;
 
-import com.chestnut.common.serializer.DesensitizationJsonSerializer;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.MapUtils;

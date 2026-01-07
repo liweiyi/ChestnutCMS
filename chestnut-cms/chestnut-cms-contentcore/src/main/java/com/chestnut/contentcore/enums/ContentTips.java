@@ -15,13 +15,9 @@
  */
 package com.chestnut.contentcore.enums;
 
-import com.chestnut.common.i18n.I18nUtils;
-import org.springframework.context.i18n.LocaleContextHolder;
+import com.chestnut.common.exception.TipMessage;
 
-import java.util.Locale;
-import java.util.Objects;
-
-public enum ContentTips {
+public enum ContentTips implements TipMessage {
 
     /**
      * 正在删除关联映射内容：{0}，[ID:{1}]
@@ -81,16 +77,40 @@ public enum ContentTips {
     /**
      * 移动成功
      */
-    MOVE_CONTENT_SUCCESS;
+    MOVE_CONTENT_SUCCESS,
 
-    public String locale(Object... args) {
-        return locale(LocaleContextHolder.getLocale(), args);
-    }
+    /**
+     * 模板文件不存在：{0}
+     */
+    TEMPLATE_NOT_EXIST,
 
-    public String locale(Locale locale, Object... args) {
-        if (Objects.isNull(locale)) {
-            locale = LocaleContextHolder.getLocale();
-        }
-        return I18nUtils.parse("TIP.CMS.CORE." + this.name(), locale, args);
+    /**
+     * 链接内容无页面，内容标题：{0}, 跳转链接：{1}
+     */
+    PREVIEW_LINK_CONTENT,
+
+    /**
+     * 链接栏目无页面，栏目名称：{0}, 跳转链接：{1}
+     */
+    PREVIEW_LINK_CATALOG,
+
+    /**
+     * 正在删除站点
+     */
+    DELETING_SITE,
+
+    /**
+     * 正在删除栏目
+     */
+    DELETING_CATALOG,
+
+    /**
+     * 删除成功
+     */
+    DELETE_SUCCESS;
+
+    @Override
+    public String value() {
+        return "TIP.CMS.CORE." + this.name();
     }
 }

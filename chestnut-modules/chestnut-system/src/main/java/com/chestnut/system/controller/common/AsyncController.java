@@ -73,7 +73,7 @@ public class AsyncController extends BaseRestController {
 	 * 停止异步任务
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
-	@PutMapping("/task/stop")
+	@PostMapping("/task/stop")
 	public R<?> stopAsyncTask(@RequestBody @NotEmpty List<String> taskIds) {
 		for (String taskId : taskIds) {
 			AsyncTask task = this.asyncTaskManager.getTask(taskId);

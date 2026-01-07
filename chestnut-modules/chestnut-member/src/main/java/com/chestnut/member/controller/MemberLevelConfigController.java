@@ -51,7 +51,7 @@ public class MemberLevelConfigController extends BaseRestController {
 
 	private final IMemberLevelConfigService memberLevelConfigService;
 
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getPageList(@RequestParam(value = "levelType", required = false) String levelType,
 			@RequestParam(value = "level", required = false) Integer level) {
 		PageRequest pr = this.getPageRequest();
@@ -66,7 +66,7 @@ public class MemberLevelConfigController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
-	@GetMapping("/{configId}")
+	@GetMapping("/detail/{configId}")
 	public R<?> getLevelConfigDetail(@PathVariable("configId") @LongId Long configId) {
 		MemberLevelConfig lvConfig = this.memberLevelConfigService.getById(configId);
 		Assert.notNull(lvConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("id", configId));
@@ -81,14 +81,14 @@ public class MemberLevelConfigController extends BaseRestController {
 	}
 
 	@Log(title = "新增会员等级配置", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addMemberConfig(@RequestBody @Validated CreateLevelConfigRequest req) {
 		this.memberLevelConfigService.addLevelConfig(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑会员等级配置", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> updateMemberConfig(@RequestBody @Validated UpdateLevelConfigRequest req) {
 		this.memberLevelConfigService.updateLevelConfig(req);
 		return R.ok();

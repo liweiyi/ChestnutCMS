@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -125,4 +126,11 @@ public interface IResourceService extends IService<CmsResource> {
 	 * @param thumbnailConsumer 缩略图消费者
 	 */
 	void dealDefaultThumbnail(CmsSite site, String imageSrc, Consumer<String> thumbnailConsumer);
+
+    /**
+     * 读取资源流
+     *
+     * @param resource 资源
+     */
+    InputStream readResource(CmsResource resource);
 }

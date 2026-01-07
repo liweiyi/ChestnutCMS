@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueI18n from 'vue-i18n';
 import Cache from '@/plugins/cache'
+import { CACHE_LANGUAGE } from '@/utils/constants'
 
 // element-ui内置的语言包
 import locale from 'element-ui/lib/locale';
@@ -30,7 +31,7 @@ const messages = {
   }
 }
 
-export const defaultLang = Cache.local.get('lang') || 'zh-CN';
+export const defaultLang = Cache.local.get(CACHE_LANGUAGE) || 'zh-CN';
 
 const i18n = new VueI18n({
     locale: defaultLang, // 通过this.$i18n.locale的值实现语言切换

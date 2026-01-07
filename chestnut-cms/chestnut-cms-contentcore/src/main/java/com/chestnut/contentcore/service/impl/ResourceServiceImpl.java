@@ -457,7 +457,16 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		}).toList();
 	}
 
-	/**
+    @Override
+    public InputStream readResource(CmsResource resource) {
+        CmsSite site = siteService.getSite(resource.getSiteId());
+        String storageTypeId = FileStorageTypeProperty.getValue(site.getConfigProps());
+        IFileStorageType fst = fileStorageService.getFileStorageType(storageTypeId);
+        FileStorageHelper storageHelper = FileStorageHelper.of(fst, site);
+        return storageHelper.read(resource.getPath());
+    }
+
+    /**
 	 * 统计资源引用
 	 */
 	public void statResourceUsage(Long siteId) throws InterruptedException {

@@ -109,6 +109,7 @@ public class SysUserController extends BaseRestController {
 				.orderByDesc(SysUser::getUserId).page(new Page<>(pr.getPageNumber(), pr.getPageSize()));
 		page.getRecords().forEach(u -> {
 			this.deptService.getDept(u.getDeptId()).ifPresent(d -> u.setDeptName(d.getDeptName()));
+            u.setPassword("******");
 		});
 		return bindDataTable(page);
 	}
@@ -143,7 +144,7 @@ public class SysUserController extends BaseRestController {
 	 * 根据用户ID获取详细信息
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
-	@GetMapping(value = { "/", "/{userId}" })
+	@GetMapping(value = { "/detail", "/detail/{userId}" })
 	public R<?> getInfo(@PathVariable(value = "userId", required = false) Long userId) {
 		List<SysPost> posts = postService.list();
 		SysUser user = null;
@@ -165,7 +166,7 @@ public class SysUserController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserAdd)
 	@Log(title = "用户管理", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateUserRequest user) {
 		userService.insertUser(user);
 		return R.ok();
@@ -176,7 +177,7 @@ public class SysUserController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserEdit)
 	@Log(title = "用户管理", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateUserRequest user) {
 		userService.updateUser(user);
 		return R.ok();
@@ -198,7 +199,7 @@ public class SysUserController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserResetPwd)
 	@Log(title = "用户管理", businessType = BusinessType.UPDATE, isSaveRequestData = false)
-	@PutMapping("/resetPwd")
+	@PostMapping("/resetPwd")
 	public R<?> resetPwd(@RequestBody @Validated ResetUserPwdRequest req) {
 		userService.resetPwd(req);
 		return R.ok();
@@ -222,9 +223,9 @@ public class SysUserController extends BaseRestController {
 	/**
 	 * 用户授权角色
 	 */
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserEdit)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserGrant)
 	@Log(title = "用户管理", businessType = BusinessType.GRANT)
-	@PutMapping("/authRole")
+	@PostMapping("/authRole")
 	public R<?> insertAuthRole(@Validated @RequestBody AuthRoleRequest req) {
 		userService.insertUserAuth(req.getUserId(), req.getRoleIds());
 		return R.ok();
@@ -267,7 +268,7 @@ public class SysUserController extends BaseRestController {
 
 	@XssIgnore
 	@Priv(type = AdminUserType.TYPE)
-	@PutMapping("/savePreferences")
+	@PostMapping("/savePreferences")
 	public R<?> saveUserPreferences(@RequestBody @NotNull Map<String, Object> userPreferences) {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
 		Map<String, Object> map = this.userPreferenceList.stream().collect(Collectors.toMap(IUserPreference::getId,

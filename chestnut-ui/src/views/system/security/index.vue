@@ -169,6 +169,29 @@
             <el-input-number v-model="form.passwordRetryLockSeconds" controls-position="right" :min="0" :max="31536000"></el-input-number>
             <i class="el-icon-info tips">{{ $t('System.Security.PasswordRetryLockSecondsTip') }}</i>
           </el-form-item>
+          <el-form-item :label="$t('System.Security.CaptchaEnable')" prop="captchaEnable">
+            <el-switch
+              v-model="form.captchaEnable"
+              active-value="Y"
+              inactive-value="N">
+            </el-switch>
+          </el-form-item>
+          <el-form-item :label="$t('System.Security.CaptchaType')" prop="captchaType">
+            <el-select v-model="form.captchaType">
+              <el-option
+                v-for="item in captchaTypeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item :label="$t('System.Security.CaptchaExpireSeconds')" prop="captchaExpires">
+            <el-input-number v-model="form.captchaExpires" controls-position="right" :min="1" :max="3600"></el-input-number>
+          </el-form-item>
+          <el-form-item :label="$t('System.Security.CaptchaRetryDuration')" prop="captchaDuration">
+            <el-input-number v-model="form.captchaDuration" controls-position="right" :min="0"></el-input-number>
+          </el-form-item>
         </el-card>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -180,6 +203,7 @@
 </template>
 <script>
 import { listSecurityConfigs, getSecurityConfig, addSecurityConfig, saveSecurityConfig, deleteSecurityConfig, changeConfigStatus } from "@/api/system/security";
+import { getCaptchaTypeOptions } from "@/api/system/captcha";
 
 export default {
   name: "SysSecurityIndex",
@@ -204,6 +228,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
       },
+      captchaTypeOptions: [],
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -236,9 +261,15 @@ export default {
     };
   },
   created() {
+    this.loadCaptchaTypeOptions();
     this.getList();
   },
   methods: {
+    loadCaptchaTypeOptions() {
+      getCaptchaTypeOptions().then(response => {
+        this.captchaTypeOptions = response.data;
+      });
+    },
     getList () {
       this.loading = true;
       listSecurityConfigs().then(response => {
@@ -282,12 +313,14 @@ export default {
     },
     handleUpdate(row) {
       this.reset();
+      this.loading = true;
       const configId = row.configId || this.ids
       getSecurityConfig(configId).then(response => {
         this.form = response.data;
-        this.open = true;
-      this.title = this.$t('System.Security.EditTitle');
+        this.loading = false;
       });
+      this.title = this.$t('System.Security.EditTitle');
+      this.open = true;
     },
     submitForm: function() {
       this.$refs["form"].validate(valid => {

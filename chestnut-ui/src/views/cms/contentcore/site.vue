@@ -81,12 +81,6 @@
           </template>
         </el-table-column>
       </el-table>
-      <pagination 
-        v-show="siteTotal>0"
-        :total="siteTotal"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
-        @pagination="loadSiteList" />
     </el-row>
     <!-- 添加站点对话框 -->
     <el-dialog 
@@ -128,6 +122,7 @@
 <style scoped>
 </style>
 <script>
+import { CACHE_CURRENT_SITE } from '@/utils/constants';
 import { codeValidator } from '@/utils/validate';
 import { delSite, addSite, listSite, publishSite  } from "@/api/contentcore/site";
 import CMSProgress from '@/views/components/Progress';
@@ -236,8 +231,8 @@ export default {
       this.$modal.confirm(this.$t("Common.ConfirmDelete")).then(function () {
         return delSite(siteId);
       }).then(response => {
-        if (this.$cache.local.get("CurrentSite") == siteId) {
-          this.$cache.local.set("CurrentSite", "0")
+        if (this.$cache.local.get(CACHE_CURRENT_SITE) == siteId) {
+          this.$cache.local.set(CACHE_CURRENT_SITE, "0")
         }
         this.taskId = response.data;
         this.openProgress = true;

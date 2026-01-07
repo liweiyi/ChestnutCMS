@@ -24,8 +24,8 @@
         </el-input>
       </el-form-item>
       <el-form-item v-if="captchaConfig.enabled">
-        <text-captcha v-if="captchaConfig.type=='Text'" ref="TextCaptcha" @change="handleCaptchaSuccess"></text-captcha>
-        <math-captcha v-if="captchaConfig.type=='Math'" ref="MathCaptcha" @change="handleCaptchaSuccess"></math-captcha>
+        <text-captcha v-if="captchaConfig.type=='Text'" :username.sync="loginForm.username" :token.sync="loginForm.username" ref="TextCaptcha" @change="handleCaptchaSuccess"></text-captcha>
+        <math-captcha v-if="captchaConfig.type=='Math'" :username.sync="loginForm.username" :token.sync="loginForm.username" ref="MathCaptcha" @change="handleCaptchaSuccess"></math-captcha>
       </el-form-item>
       <el-checkbox v-model="loginForm.rememberMe" style="margin:0px 0px 25px 0px;">{{ $t('Login.RememberMe') }}</el-checkbox>
       <el-form-item style="width:100%;">

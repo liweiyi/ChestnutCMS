@@ -38,7 +38,7 @@ public interface RegexConsts {
     String REGEX_FILE_NAME = "^[A-Za-z0-9_\\.]+$";
 
     /**
-     * 通用文件名校验正则表达式
+     * 国内通用手机号校验正则表达式
      */
     String REGEX_PHONE = "^1[3|4|5|6|7|8|9][0-9]\\d{8}$";
 }

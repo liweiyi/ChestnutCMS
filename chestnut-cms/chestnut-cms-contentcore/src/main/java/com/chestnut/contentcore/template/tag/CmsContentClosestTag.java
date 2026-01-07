@@ -92,7 +92,10 @@ public class CmsContentClosestTag extends AbstractListTag {
 		}
 		String level = MapUtils.getString(attrs, ATTR_LEVEL);
 		if (!CmsContentTag.LevelTagAttr.isRoot(level) && Objects.isNull(catalog)) {
-			throw new CatalogNotFoundException(catalogId, alias, env);
+            catalog = this.catalogService.getCatalog(content.getCatalogId());
+            if (Objects.isNull(catalog)) {
+                throw new CatalogNotFoundException(catalogId, alias, env);
+            }
 		}
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 		String status = MapUtils.getString(attrs, ATTR_STATUS, ContentStatus.PUBLISHED);

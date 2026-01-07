@@ -59,7 +59,7 @@
             icon="el-icon-bottom"
             v-if="itemList.length > 1 && index < itemList.length - 1" 
             @click="moveDown(index)"
-          >{{ $t('CMS.Audio.MoveUp') }}</el-link>
+          >{{ $t('CMS.Audio.MoveDown') }}</el-link>
           <el-link icon="el-icon-edit" @click="editItem(index)">{{ $t('Common.Edit') }}</el-link>
           <el-link icon="el-icon-delete" @click="deleteImage(index)">{{ $t('Common.Delete') }}</el-link>
         </el-row>
@@ -169,9 +169,6 @@ export default {
         // this.itemList[index] = this.itemList[index + 1];
         this.$set(this.itemList, index, this.itemList[index + 1]);
         this.$set(this.itemList, index + 1, temp);
-    },
-    chooseImage (index) {
-        this.$emit("choose", this.itemList[index].path, this.itemList[index].src);
     }
   }
 };

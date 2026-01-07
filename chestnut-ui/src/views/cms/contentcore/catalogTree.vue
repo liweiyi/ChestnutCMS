@@ -152,6 +152,7 @@ import { getCatalogTypes, getCatalogTreeData, addCatalog, batchAddCatalog, publi
 import Treeselect from "@riophae/vue-treeselect";
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
 import CMSProgress from '@/views/components/Progress';
+import { CACHE_LAST_SELECTED_CATALOG, CACHE_PUBLISH_FLAG } from '@/utils/constants';
 
 export default {
   name: "CMSCatalogTree",
@@ -250,13 +251,13 @@ export default {
       getCatalogTreeData().then(response => {
         this.catalogOptions = response.data.rows;
         if (this.catalogOptions.length == 0) {
-          this.$cache.local.remove("LastSelectedCatalogId");
+          this.$cache.local.remove(CACHE_LAST_SELECTED_CATALOG);
         }
         this.siteName = response.data.siteName;
         this.expandMode = response.data.expandMode;
         this.loading = false;
         this.$nextTick(() => {
-          this.selectedCatalogId = this.$cache.local.get("LastSelectedCatalogId");
+          this.selectedCatalogId = this.$cache.local.get(CACHE_LAST_SELECTED_CATALOG);
           if (this.selectedCatalogId && this.$refs.tree) {
             this.$refs.tree.setCurrentKey(this.selectedCatalogId);
             this.treeExpandedKeys = [this.selectedCatalogId];
@@ -275,14 +276,14 @@ export default {
     // 根节点点击事件
     handleTreeRootClick() {
       this.selectedCatalogId = undefined;
-      this.$cache.local.remove("LastSelectedCatalogId");
+      this.$cache.local.remove(CACHE_LAST_SELECTED_CATALOG);
       this.$refs.tree.setCurrentKey(null);
       this.$emit("node-click", null);
     },
     // 节点单击事件
     handleNodeClick (data) {
       this.selectedCatalogId = data.id;
-      this.$cache.local.set("LastSelectedCatalogId", this.selectedCatalogId);
+      this.$cache.local.set(CACHE_LAST_SELECTED_CATALOG, this.selectedCatalogId);
       this.$emit("node-click", data);
     },
     // 取消按钮
@@ -324,7 +325,7 @@ export default {
             this.form.parentId = 0;
           }
           addCatalog(this.form).then(response => {
-              this.$cache.local.set("LastSelectedCatalogId", response.data.catalogId);
+              this.$cache.local.set(CACHE_LAST_SELECTED_CATALOG, response.data.catalogId);
               this.diagOpen = false;
               this.$modal.msgSuccess(this.$t('Common.AddSuccess'));
               this.loadCatalogTreeData();
@@ -386,7 +387,7 @@ export default {
         this.progressTitle = this.$t('CMS.Catalog.PublishProgressTitle');
         this.progressType = "Publish";
         this.openProgress = true;
-        this.$cache.local.set('publish_flag', "true")
+        this.$cache.local.set(CACHE_PUBLISH_FLAG, "true")
       }); 
       this.publishDialogVisible = false;
       this.publishChild = false;

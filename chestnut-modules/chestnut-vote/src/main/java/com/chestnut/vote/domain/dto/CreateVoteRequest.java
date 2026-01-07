@@ -102,6 +102,8 @@ public class CreateVoteRequest extends BaseDTO {
     @Dict(VoteViewType.TYPE)
     private String viewType;
 
+    private String source;
+
     @Length(max = 500)
     private String remark;
 }

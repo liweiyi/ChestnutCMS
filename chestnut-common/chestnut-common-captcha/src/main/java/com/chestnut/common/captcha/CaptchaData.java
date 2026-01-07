@@ -15,11 +15,10 @@
  */
 package com.chestnut.common.captcha;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Properties;
 
 /**
  * 验证码数据
@@ -50,7 +49,7 @@ public class CaptchaData {
 	/**
 	 * 验证码配置
 	 */
-	private Properties properties;
+	private ObjectNode properties;
 
 	public CaptchaData(String type) {
 		this.type = type;

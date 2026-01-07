@@ -37,7 +37,7 @@ public class Gender extends FixedDictType {
 	
 	public static final String FEMAIL = "1"; // 女
 	
-	public static final String UNKNOW = "2"; // 位置
+	public static final String UNKNOWN = "2"; // 位置
 	
 	private static final ISysDictTypeService dictTypeService = SpringUtils.getBean(ISysDictTypeService.class);
 	
@@ -45,7 +45,7 @@ public class Gender extends FixedDictType {
 		super(TYPE, "{DICT." + TYPE + "}", true);
 		super.addDictData("{DICT." + TYPE + "." + MALE + "}", MALE, 1);
 		super.addDictData("{DICT." + TYPE + "." + FEMAIL + "}", FEMAIL, 2);
-		super.addDictData("{DICT." + TYPE + "." + UNKNOW + "}", UNKNOW, 3);
+		super.addDictData("{DICT." + TYPE + "." + UNKNOWN + "}", UNKNOWN, 3);
 	}
 
 	public static <T> void decode(List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {

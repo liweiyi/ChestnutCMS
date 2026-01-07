@@ -37,6 +37,8 @@ import com.chestnut.system.mapper.SysDictTypeMapper;
 import com.chestnut.system.service.ISysDictTypeService;
 import com.chestnut.system.service.ISysI18nDictService;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -61,16 +63,22 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 
 	private final RedisCache redisCache;
 
+    private final RedissonClient redissonClient;
+
 	private final SysDictDataMapper dictDataMapper;
 
 	private final ISysI18nDictService i18nDictService;
 
 	@Override
 	public List<SysDictData> selectDictDatasByType(String dictType) {
-        return this.redisCache.getCacheList(SysConstants.CACHE_SYS_DICT_KEY + dictType, SysDictData.class,
-				() -> new LambdaQueryChainWrapper<>(this.dictDataMapper).eq(SysDictData::getDictType, dictType)
-						.orderByAsc(SysDictData::getDictSort).list());
-	}
+        Map<String, SysDictData> cacheMap = this.redisCache.getCacheMap(SysConstants.CACHE_SYS_DICT_KEY + dictType, SysDictData.class,
+                () -> {
+                    List<SysDictData> list = new LambdaQueryChainWrapper<>(this.dictDataMapper).eq(SysDictData::getDictType, dictType)
+                            .orderByAsc(SysDictData::getDictSort).list();
+                    return list.stream().collect(Collectors.toMap(SysDictData::getDictValue, data -> data));
+                });
+        return cacheMap.values().stream().toList();
+    }
 
 	@Override
 	public Optional<SysDictData> optDictData(String dictType, String dictValue) {
@@ -162,7 +170,10 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 		List<SysDictData> list = this.dictDataMapper.selectList(null);
 		Map<String, List<SysDictData>> collect = list.stream().sorted(Comparator.comparing(SysDictData::getDictSort))
 				.collect(Collectors.groupingBy(SysDictData::getDictType));
-		collect.forEach((k, v) -> this.redisCache.setCacheList(SysConstants.CACHE_SYS_DICT_KEY + k, v));
+		collect.forEach((k, v) -> {
+            Map<String, SysDictData> map = v.stream().collect(Collectors.toMap(SysDictData::getDictValue, data -> data));
+            this.redisCache.setCacheMap(SysConstants.CACHE_SYS_DICT_KEY + k, map);
+        });
 	}
 
 	@Override
@@ -200,40 +211,56 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 	 */
 	@Override
 	public void run(String... args) throws Exception {
-		this.resetDictCache();
-		// 初始化固定字典数据
-		FixedDictUtils.allFixedDicts().forEach(dict -> {
-			List<SysDictData> dictDatas = this.selectDictDatasByType(dict.getDictType());
-			if (dictDatas.isEmpty()) {
-				// 无字典数据，先添加字典类型
-				SysDictType dictType = this.lambdaQuery().eq(SysDictType::getDictType, dict.getDictType()).one();
-				if (Objects.isNull(dictType)) {
-					SysDictType dt = new SysDictType();
-					dt.setDictId(IdUtils.getSnowflakeId());
-					dt.setDictType(dict.getDictType());
-					dt.setDictName(I18nUtils.get(dict.getDictName()));
-					dt.setRemark(dict.getRemark());
-					dt.createBy(SysConstants.SYS_OPERATOR);
-					this.save(dt);
-				}
-			}
-			// 添加未存储的字典数据
-			dict.getDataList().forEach(d -> {
-				boolean contains = dictDatas.stream()
-						.anyMatch(d2 -> StringUtils.equals(d2.getDictValue(), d.getValue()));
-				if (!contains) {
-					SysDictData data = new SysDictData();
-					data.setDictCode(IdUtils.getSnowflakeId());
-					data.setDictType(dict.getDictType());
-					data.setDictValue(d.getValue());
-					data.setDictLabel(I18nUtils.get(d.getLabel()));
-					data.setDictSort(d.getSort());
-					data.setRemark(d.getRemark());
-					data.createBy(SysConstants.SYS_OPERATOR);
-					this.dictDataMapper.insert(data);
-				}
-			});
-			this.deleteCache(dict.getDictType());
-		});
-	}
+        RLock lock = redissonClient.getLock("cc:dict:init_fixed_dict");
+        lock.lock();
+        try {
+            this.resetDictCache();
+            // 初始化固定字典数据
+            FixedDictUtils.allFixedDicts().forEach(dict -> {
+                List<SysDictData> dictDatas = this.selectDictDatasByType(dict.getDictType());
+                if (dictDatas.isEmpty()) {
+                    // 无字典数据，先添加字典类型
+                    SysDictType dictType = this.lambdaQuery().eq(SysDictType::getDictType, dict.getDictType()).one();
+                    if (Objects.isNull(dictType)) {
+                        SysDictType dt = new SysDictType();
+                        dt.setDictId(IdUtils.getSnowflakeId());
+                        dt.setDictType(dict.getDictType());
+                        dt.setDictName(I18nUtils.get(dict.getDictName()));
+                        dt.setRemark(dict.getRemark());
+                        dt.createBy(SysConstants.SYS_OPERATOR);
+                        this.save(dt);
+                    }
+                }
+                // 添加未存储的字典数据
+                dict.getDataList().forEach(d -> {
+                    boolean contains = dictDatas.stream()
+                            .anyMatch(d2 -> StringUtils.equals(d2.getDictValue(), d.getValue()));
+                    if (!contains) {
+                        SysDictData data = new SysDictData();
+                        data.setDictCode(IdUtils.getSnowflakeId());
+                        data.setDictType(dict.getDictType());
+                        data.setDictValue(d.getValue());
+                        data.setDictLabel(I18nUtils.get(d.getLabel()));
+                        data.setDictSort(d.getSort());
+                        data.setRemark(d.getRemark());
+                        data.createBy(SysConstants.SYS_OPERATOR);
+                        this.dictDataMapper.insert(data);
+                    }
+                });
+                if (!dict.isAllowAdd()) {
+                    // 不允许添加字典项的要清理多余字典项
+                    dictDatas.forEach(data -> {
+                        boolean contains = dict.getDataList().stream()
+                                .anyMatch(d -> StringUtils.equals(d.getValue(), data.getDictValue()));
+                        if (!contains) {
+                            this.removeById(data.getDictCode());
+                        }
+                    });
+                }
+                this.deleteCache(dict.getDictType());
+            });
+        } finally {
+            lock.unlock();
+        }
+    }
 }

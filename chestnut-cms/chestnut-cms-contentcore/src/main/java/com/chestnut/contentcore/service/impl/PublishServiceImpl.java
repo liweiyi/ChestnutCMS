@@ -26,15 +26,18 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
-import com.chestnut.contentcore.core.*;
+import com.chestnut.contentcore.core.IContent;
+import com.chestnut.contentcore.core.IContentType;
+import com.chestnut.contentcore.core.IInternalDataType;
+import com.chestnut.contentcore.core.IPageWidget;
 import com.chestnut.contentcore.core.impl.CatalogType_Link;
-import com.chestnut.contentcore.core.impl.PublishPipeProp_ContentTemplate;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_DefaultListTemplate;
 import com.chestnut.contentcore.domain.*;
 import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
-import com.chestnut.contentcore.listener.event.AfterContentPublishEvent;
+import com.chestnut.contentcore.listener.event.AfterCatalogPublishEvent;
+import com.chestnut.contentcore.listener.event.AfterSitePublishEvent;
 import com.chestnut.contentcore.publish.IPublishStrategy;
 import com.chestnut.contentcore.publish.staticize.CatalogStaticizeType;
 import com.chestnut.contentcore.publish.staticize.ContentStaticizeType;
@@ -105,7 +108,8 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		String indexTemplate = site.getIndexTemplate(requestData.getPublishPipeCode());
 		File templateFile = this.templateService.findTemplateFile(site, indexTemplate, requestData.getPublishPipeCode());
 		if (Objects.isNull(templateFile)) {
-			throw ContentCoreErrorCode.TEMPLATE_EMPTY.exception(requestData.getPublishPipeCode(), indexTemplate);
+            writer.write(ContentTips.TEMPLATE_NOT_EXIST.locale(indexTemplate));
+            return;
 		}
 		// 模板ID = 通道:站点目录:模板文件名
 		String templateKey = SiteUtils.getTemplateKey(site, requestData.getPublishPipeCode(), indexTemplate);
@@ -170,10 +174,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 							IContent<?> content = contentType.newContent();
 							content.setContentEntity(xContent);
 							content.setOperator(operator);
-							Boolean published = transactionTemplate.execute(callback -> content.publish());
-							if (Boolean.TRUE.equals(published)) {
-								applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
-							}
+							transactionTemplate.execute(callback -> content.publish());
 							this.checkInterrupt();
 							count++;
 						}
@@ -204,6 +205,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 
 	private void asyncPublishSite(CmsSite site) {
 		publishStrategy.publish(SiteStaticizeType.TYPE, site.getSiteId().toString());
+        applicationContext.publishEvent(new AfterSitePublishEvent(this, site));
 	}
 
 	@Override
@@ -219,7 +221,8 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	public void processCatalogPage(CmsCatalog catalog, IInternalDataType.RequestData requestData, boolean listFlag, Writer writer)
 			throws IOException, TemplateException {
 		if (CatalogType_Link.ID.equals(catalog.getCatalogType())) {
-			throw new RuntimeException("链接类型栏目无独立页面：" + catalog.getName());
+            writer.write(ContentTips.PREVIEW_LINK_CONTENT.locale(catalog.getName(), catalog.getRedirectUrl()));
+            return;
 		}
 		String templateFilename = catalog.getListTemplate(requestData.getPublishPipeCode());
 		if (!listFlag && requestData.getPageIndex() == 1) {
@@ -239,7 +242,10 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		}
 		final String template = templateFilename;
 		File templateFile = this.templateService.findTemplateFile(site, template, requestData.getPublishPipeCode());
-		Assert.notNull(templateFile, () -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(requestData.getPublishPipeCode(), template));
+        if (Objects.isNull(templateFile)) {
+            writer.write(ContentTips.TEMPLATE_NOT_EXIST.locale(template));
+            return;
+        }
 
 		long s = System.currentTimeMillis();
 		// 生成静态页面
@@ -312,10 +318,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 								IContent<?> content = contentType.newContent();
 								content.setContentEntity(xContent);
 								content.setOperator(operator);
-								Boolean published = transactionTemplate.execute(callback -> content.publish());
-								if (Boolean.TRUE.equals(published)) {
-									applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
-								}
+								transactionTemplate.execute(callback -> content.publish());
 								this.checkInterrupt();
 								count++;
 							}
@@ -350,24 +353,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			return; // 链接栏目直接跳过
 		}
 		publishStrategy.publish(CatalogStaticizeType.TYPE, catalog.getCatalogId().toString());
-	}
-
-	private String getDetailTemplate(CmsSite site, CmsCatalog catalog, CmsContent content, String publishPipeCode) {
-		String detailTemplate = PublishPipeProp_ContentTemplate.getValue(publishPipeCode,
-				content.getPublishPipeProps());
-		if (StringUtils.isEmpty(detailTemplate)) {
-			// 无内容独立模板取栏目配置
-			detailTemplate = this.publishPipeService.getPublishPipePropValue(
-					IPublishPipeProp.DetailTemplatePropPrefix + content.getContentType(), publishPipeCode,
-					catalog.getPublishPipeProps());
-			if (StringUtils.isEmpty(detailTemplate)) {
-				// 无栏目配置去站点默认模板配置
-				detailTemplate = this.publishPipeService.getPublishPipePropValue(
-						IPublishPipeProp.DefaultDetailTemplatePropPrefix + content.getContentType(), publishPipeCode,
-						site.getPublishPipeProps());
-			}
-		}
-		return detailTemplate;
+        applicationContext.publishEvent(new AfterCatalogPublishEvent(this, catalog));
 	}
 
 	@Override
@@ -379,7 +365,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			throw new RuntimeException("标题内容：" + content.getTitle() + "，跳转链接：" + content.getRedirectUrl());
 		}
 		// 查找模板
-		final String detailTemplate = getDetailTemplate(site, catalog, content, requestData.getPublishPipeCode());
+		final String detailTemplate = TemplateUtils.getDetailTemplate(site, catalog, content, requestData.getPublishPipeCode());
 		File templateFile = this.templateService.findTemplateFile(site, detailTemplate, requestData.getPublishPipeCode());
 		Assert.notNull(templateFile,
 				() -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(requestData.getPublishPipeCode(), detailTemplate));
@@ -411,18 +397,21 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 	}
 
 	@Override
-	public String processContentPage(CmsContent content, IInternalDataType.RequestData requestData, Writer writer)
+	public void processContentPage(CmsContent content, IInternalDataType.RequestData requestData, Writer writer)
 			throws IOException, TemplateException {
 		CmsSite site = this.siteService.getById(content.getSiteId());
 		CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());
 		if (content.isLinkContent()) {
-			throw new RuntimeException("标题内容：" + content.getTitle() + "，跳转链接：" + content.getRedirectUrl());
+            writer.write(ContentTips.PREVIEW_LINK_CONTENT.locale(content.getTitle(), content.getRedirectUrl()));
+			return;
 		}
 		// 查找模板
-		final String detailTemplate = getDetailTemplate(site, catalog, content, requestData.getPublishPipeCode());
+		final String detailTemplate = TemplateUtils.getDetailTemplate(site, catalog, content, requestData.getPublishPipeCode());
 		File templateFile = this.templateService.findTemplateFile(site, detailTemplate, requestData.getPublishPipeCode());
-		Assert.notNull(templateFile,
-				() -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(requestData.getPublishPipeCode(), detailTemplate));
+        if (Objects.isNull(templateFile)) {
+            writer.write(ContentTips.TEMPLATE_NOT_EXIST.locale(detailTemplate));
+            return;
+        }
 
 		IContentType contentType = ContentCoreUtils.getContentType(content.getContentType());
 		long s = System.currentTimeMillis();
@@ -444,7 +433,6 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			templateContext.setOtherFileName(TemplateUtils.appendPageIndexParam(contentLink, TemplateContext.PlaceHolder_PageNo));
 			// staticize
 			this.staticizeService.process(templateContext, writer);
-			return writer.toString();
 		} finally {
 			logger.debug("[{}][{}]内容模板解析：{}，耗时：{}", requestData.getPublishPipeCode(), contentType.getId(), content.getTitle(),
 					System.currentTimeMillis() - s);
@@ -484,10 +472,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			IContentType contentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
 			IContent<?> content = contentType.loadContent(cmsContent);
 			content.setOperator(operator);
-			Boolean published = transactionTemplate.execute(callback -> content.publish());
-			if (Boolean.TRUE.equals(published)) {
-				applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
-			}
+			transactionTemplate.execute(callback -> content.publish());
 			catalogIds.add(cmsContent.getCatalogId());
 		}
 		// 发布关联栏目：内容所属栏目及其所有父级栏目
@@ -590,7 +575,10 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		String template = MapUtils.getString(pageWidget.getTemplates(), data.getPublishPipeCode(), "");
 		File templateFile = this.templateService.findTemplateFile(site, template,
 				data.getPublishPipeCode());
-		Assert.notNull(templateFile, () -> ContentCoreErrorCode.TEMPLATE_EMPTY.exception(template));
+        if (Objects.isNull(templateFile)) {
+            writer.write(ContentTips.TEMPLATE_NOT_EXIST.locale(template));
+            return;
+        }
 
 		// 生成静态页面
 		long s = System.currentTimeMillis();

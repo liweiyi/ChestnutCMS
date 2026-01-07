@@ -30,10 +30,28 @@ public class HtmlUtils extends org.springframework.web.util.HtmlUtils {
 	 * @return 清除标签后的文本
 	 */
 	public static String clean(String content) {
-		return Jsoup.clean(content, Safelist.none());
+		return clean(content, Safelist.none());
 	}
 
 	public static String clean(String content, Safelist safelist) {
+        if (StringUtils.isBlank(content)) {
+            return content;
+        }
 		return Jsoup.clean(content, safelist);
 	}
+
+    /**
+     * 清理HTML标签，保留标签内的内容及换行格式
+     */
+    public static String cleanAndKeepLines(String content) {
+        if (StringUtils.isBlank(content)) {
+            return content;
+        }
+        // 保留换行标签
+        String result = Jsoup.clean(content, (new Safelist()).addTags("br", "p"));
+        result = result.replaceAll("(?i)<br[^>]*>", "");
+        result = result.replaceAll("(?i)</p>", "");
+        result = result.replaceAll("(?i)<p[^>]*>", "");
+        return result;
+    }
 }

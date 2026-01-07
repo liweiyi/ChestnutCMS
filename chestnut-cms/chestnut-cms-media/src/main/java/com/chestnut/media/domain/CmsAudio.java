@@ -88,6 +88,17 @@ public class CmsAudio extends BaseEntity implements IBackupable<BCmsAudio> {
     private String src;
 
     /**
+     * 封面图
+     */
+    private String cover;
+
+    /**
+     * 封面图访问地址
+     */
+    @TableField(exist = false)
+    private String coverSrc;
+
+    /**
      * 音频文件大小
      */
     private Long fileSize;

@@ -20,6 +20,7 @@ import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.domain.SearchLog;
 import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.mapper.SearchLogMapper;
@@ -44,6 +45,9 @@ public class SearchLogServiceImpl extends ServiceImpl<SearchLogMapper, SearchLog
 
 	@Override
 	public void addSearchLog(String source, String query, HttpServletRequest request) {
+        if (StringUtils.isBlank(query)) {
+            return;
+        }
 		final String userAgent = ServletUtils.getUserAgent(request);
 		final String ip = ServletUtils.getIpAddr(request);
 		final String referer = ServletUtils.getReferer(request);

@@ -30,11 +30,9 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.JacksonUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
@@ -43,8 +41,8 @@ import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CatalogUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.search.SearchConsts;
 import com.chestnut.search.exception.SearchErrorCode;
@@ -69,9 +67,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/search")
-public class ContentIndexController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class ContentIndexController extends CmsRestController {
 
 	private final ICatalogService catalogService;
 
@@ -91,7 +87,7 @@ public class ContentIndexController extends BaseRestController {
 								   @RequestParam(value = "contentType", required = false) @Length(max = 20) String contentType) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
 		PageRequest pr = this.getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		String indexName = CmsSearchConstants.indexName(site.getSiteId().toString());
 		SearchResponse<ObjectNode> sr = esClient.search(s -> {
 			s.index(indexName) // 索引
@@ -167,7 +163,7 @@ public class ContentIndexController extends BaseRestController {
 	@GetMapping("/content/{contentId}")
 	public R<?> selectDocumentDetail(@PathVariable(value = "contentId") @LongId Long contentId) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		ESContent source = this.searchService.getContentDocDetail(site.getSiteId(), contentId);
 		return R.ok(source);
 	}
@@ -176,14 +172,14 @@ public class ContentIndexController extends BaseRestController {
 	@PostMapping("/contents/delete")
 	public R<?> deleteDocuments(@RequestBody @NotEmpty List<Long> contentIds) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		this.searchService.deleteContentDoc(site.getSiteId(), contentIds);
 		return R.ok();
 	}
 
 	@Log(title = "重建内容索引", businessType = BusinessType.UPDATE)
 	@PostMapping("/build/{contentId}")
-	public R<?> buildContentIndex(@PathVariable("contentId") @LongId Long contentId) throws IOException {
+	public R<?> buildContentIndex(@PathVariable("contentId") @LongId Long contentId) {
 		this.checkElasticSearchEnabled();
 		CmsContent content = this.contentService.dao().getById(contentId);
 		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
@@ -196,9 +192,9 @@ public class ContentIndexController extends BaseRestController {
 
 	@Log(title = "重建全站索引", businessType = BusinessType.UPDATE)
 	@PostMapping("/rebuild")
-	public R<?> rebuildAllIndex() throws IOException {
+	public R<?> rebuildAllIndex() {
 		this.checkElasticSearchEnabled();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		AsyncTask task = this.searchService.rebuildAll(site);
 		return R.ok(task.getTaskId());
 	}

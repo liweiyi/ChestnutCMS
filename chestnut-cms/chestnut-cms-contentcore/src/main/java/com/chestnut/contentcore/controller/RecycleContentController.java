@@ -22,10 +22,8 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.BCmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -33,6 +31,7 @@ import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import jakarta.validation.constraints.NotEmpty;
@@ -55,9 +54,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/content/recycle")
-public class RecycleContentController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class RecycleContentController extends CmsRestController {
 
 	private final IContentService contentService;
 
@@ -67,7 +64,7 @@ public class RecycleContentController extends BaseRestController {
 									  @RequestParam(name = "title", required = false) String title,
 									  @RequestParam(name = "status", required = false) String status) {
 		PageRequest pr = getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 
 		LambdaQueryWrapper<BCmsContent> q = new LambdaQueryWrapper<BCmsContent>().eq(BCmsContent::getSiteId, site.getSiteId())
 				.eq(IdUtils.validate(catalogId), BCmsContent::getCatalogId, catalogId)

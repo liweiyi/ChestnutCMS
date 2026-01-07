@@ -17,6 +17,8 @@ package com.chestnut.word.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chestnut.common.domain.R;
+import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -33,7 +35,11 @@ import com.chestnut.word.service.IHotWordGroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 @Service
 @RequiredArgsConstructor
@@ -68,6 +74,7 @@ public class HotWordGroupServiceImpl extends ServiceImpl<HotWordGroupMapper, Hot
 
 		db.setName(req.getName());
 		db.setCode(req.getCode());
+        db.setSortFlag(req.getSortFlag());
 		db.setRemark(req.getRemark());
 		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
@@ -89,4 +96,24 @@ public class HotWordGroupServiceImpl extends ServiceImpl<HotWordGroupMapper, Hot
 				.eq(HotWordGroup::getCode, code).count();
 		Assert.isTrue(count == 0, WordErrorCode.CONFLIECT_HOT_WORD_GROUP::exception);
 	}
+
+    @Override
+    public List<TreeNode<String>> getGroupTreeData(Consumer<LambdaQueryWrapper<HotWordGroup>> consumer) {
+        LambdaQueryWrapper<HotWordGroup> q = new LambdaQueryWrapper<HotWordGroup>().orderByAsc(HotWordGroup::getSortFlag);
+        consumer.accept(q);
+        List<HotWordGroup> groups = this.list(q);
+        List<TreeNode<String>> list = new ArrayList<>();
+        if (StringUtils.isNotEmpty(groups)) {
+            groups.forEach(c -> {
+                TreeNode<String> treeNode = new TreeNode<>(String.valueOf(c.getGroupId()), "", c.getName(), true);
+                treeNode.setProps(Map.of(
+                        "code", c.getCode(),
+                        "sort", c.getSortFlag(),
+                        "remark", Objects.requireNonNullElse(c.getRemark(), "")
+                ));
+                list.add(treeNode);
+            });
+        }
+        return TreeNode.build(list);
+    }
 }

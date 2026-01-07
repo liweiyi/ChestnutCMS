@@ -17,6 +17,7 @@ package com.chestnut.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysUser;
+import com.chestnut.system.domain.dto.CreateBindingUserRequest;
 import com.chestnut.system.domain.dto.CreateUserRequest;
 import com.chestnut.system.domain.dto.ResetUserPwdRequest;
 import com.chestnut.system.domain.dto.UpdateUserRequest;
@@ -79,7 +80,9 @@ public interface ISysUserService extends IService<SysUser> {
 	 */
 	void insertUser(CreateUserRequest user);
 
-	/**
+    SysUser createBindingUser(CreateBindingUserRequest req);
+
+    /**
 	 * 注册用户信息
 	 * 
 	 * @param user 用户信息
@@ -124,8 +127,8 @@ public interface ISysUserService extends IService<SysUser> {
 	 * 上传用户头像
 	 * 
 	 * @param userId 用户ID
-	 * @param file 头像文件
+	 * @param fileBytes 头像文件
 	 * @return 头像文件相对路径
 	 */
-	String uploadAvatar(Long userId, MultipartFile file);
+	String uploadAvatar(Long userId, byte[] fileBytes);
 }

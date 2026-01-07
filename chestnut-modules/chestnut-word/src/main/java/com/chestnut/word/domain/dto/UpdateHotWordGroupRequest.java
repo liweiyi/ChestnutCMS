@@ -19,6 +19,7 @@ import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,6 +52,12 @@ public class UpdateHotWordGroupRequest extends BaseDTO {
     @Length(max = 50)
     @Pattern(regexp = RegexConsts.REGEX_CODE)
     private String code;
+
+    /**
+     * 排序
+     */
+    @NotNull
+    private Long sortFlag;
 
     @Length(max = 500)
     private String remark;

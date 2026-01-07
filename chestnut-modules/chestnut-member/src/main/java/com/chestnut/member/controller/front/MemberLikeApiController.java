@@ -82,7 +82,7 @@ public class MemberLikeApiController extends BaseRestController {
 	}
 
 	@IgnoreDemoMode
-	@DeleteMapping
+    @DeleteMapping
 	@Deprecated(since = "1.5.7", forRemoval = true)
 	public R<?> cancelFavorite2(@RequestBody @Validated LikeRequest req) {
 		return cancelLike(req);

@@ -24,6 +24,16 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	 */
 	NO_SITE,
 
+    /**
+	 * 缺少当前站点ID
+	 */
+    MISSING_CURRENT_SITE_ID,
+
+    /**
+	 * 无当前站点权限：{0}
+	 */
+    NO_CURRENT_SITE_PRIV,
+
 	/**
 	 * 不支持的页面部件类型：{0}
 	 */
@@ -202,7 +212,12 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	/**
 	 * 不能合并包含子栏目的栏目
 	 */
-	MERGE_CATALOG_NOT_LEAF;
+	MERGE_CATALOG_NOT_LEAF,
+
+    /**
+	 * 资源数据不存在
+	 */
+    RESOURCE_NOT_FOUND;
 
 	@Override
 	public String value() {

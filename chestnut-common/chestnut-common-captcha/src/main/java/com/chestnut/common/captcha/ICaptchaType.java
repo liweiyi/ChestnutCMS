@@ -27,6 +27,12 @@ public interface ICaptchaType {
 
     String getType();
 
+    String getName();
+
+    default String getCacheKey(String token) {
+        return "cc:captcha:" + getType().toLowerCase() + ":" + token;
+    }
+
     /**
      * 创建验证码
      */

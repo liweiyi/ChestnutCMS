@@ -273,6 +273,7 @@
   </div>
 </template>
 <script>
+import { CACHE_PUBLISH_FLAG, CACHE_CURRENT_SITE } from '@/utils/constants';
 import { codeValidator } from '@/utils/validate';
 import { getToken } from "@/utils/auth";
 import { getSite, publishSite, updateSite, exportSiteTheme  } from "@/api/contentcore/site";
@@ -324,7 +325,7 @@ export default {
         // 是否禁用上传
         isUploading: false,
         // 设置上传的请求头部
-        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get("CurrentSite") },
+        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get(CACHE_CURRENT_SITE) },
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/cms/site/importTheme",
         // 上传的文件列表
@@ -436,7 +437,7 @@ export default {
             this.taskId = response.data;
             this.progressTitle = this.$t('CMS.ContentCore.PublishProgressTitle');
             this.openProgress = true;
-            this.$cache.local.set('publish_flag', "true")
+            this.$cache.local.set(CACHE_PUBLISH_FLAG, "true")
           }
         } else {
           this.$modal.msgError(response.msg);

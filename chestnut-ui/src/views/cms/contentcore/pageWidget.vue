@@ -138,6 +138,7 @@
   </div>
 </template>
 <script>
+import { CACHE_CURRENT_SITE } from '@/utils/constants';
 import { codeValidator, pathValidator } from '@/utils/validate';
 import { getPublishPipeSelectData } from "@/api/contentcore/publishpipe";
 import { listPageWidgetTypes, listPageWidgets, addPageWidget, deletePageWidget, publishPageWidgets } from "@/api/contentcore/pagewidget";
@@ -160,7 +161,7 @@ export default {
       selectedRows: [], // 表格选中行
       single: true,
       multiple: true,
-      siteId: this.$cache.local.get("CurrentSite"),
+      siteId: this.$cache.local.get(CACHE_CURRENT_SITE),
       catalogId: this.cid,
       dialogVisible: false,
       publishPipes: [],

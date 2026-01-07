@@ -118,7 +118,9 @@ public class PageWidgetPermissionType implements IPermissionType {
 
 		Delete(2, "删除"),
 
-		Publish(3, "发布");
+		Publish(3, "发布"),
+
+        Offline(4, "下线");
 
 		/**
 		 * 权限项在bitset中的位置序号，从0开始，不可随意变更，变更后会导致原权限信息错误

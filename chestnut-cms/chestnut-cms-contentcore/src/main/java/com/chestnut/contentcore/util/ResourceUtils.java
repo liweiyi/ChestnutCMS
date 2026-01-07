@@ -20,6 +20,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IResourceType;
 import com.chestnut.contentcore.core.impl.ResourceType_File;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.properties.FileStorageArgsProperty;
 import lombok.extern.slf4j.Slf4j;
 
@@ -59,6 +60,9 @@ public class ResourceUtils {
      */
     public static IResourceType getResourceTypeBySuffix(String suffix) {
         List<IResourceType> list = ContentCoreUtils.getResourceTypes().stream().filter(rt -> rt.check(suffix)).toList();
+        if (list.isEmpty()) {
+            throw ContentCoreErrorCode.UNSUPPORTED_RESOURCE_TYPE.exception(suffix);
+        }
         if (list.size() > 1) {
             for (IResourceType rt : list) {
                 if (!ResourceType_File.ID.equals(rt.getId())) {

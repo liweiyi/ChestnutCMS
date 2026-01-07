@@ -22,7 +22,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class UpdateXModelRequest extends BaseDTO {
+public class UpdateXModelRequest extends CreateXModelRequest {
 
     @LongId
     private Long modelId;

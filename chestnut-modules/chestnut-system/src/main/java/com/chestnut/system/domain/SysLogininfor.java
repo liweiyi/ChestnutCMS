@@ -27,6 +27,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.chestnut.common.utils.poi.converter.LocalDateTimeConverter;
@@ -46,6 +47,10 @@ public class SysLogininfor implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "sys_logininfor";
+
+    public static final Map<String, SFunction<SysLogininfor, ?>> MAP_PARAMS = Map.of(
+            "loginTime", SysLogininfor::getLoginTime,"userName", SysLogininfor::getUserName
+    );
 
 	/** ID */
 	@ExcelProperty("日志ID")

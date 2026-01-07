@@ -18,13 +18,14 @@ package com.chestnut.common.extend.xss;
 import com.chestnut.common.extend.annotation.XssIgnore;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 public class XssInterceptor implements HandlerInterceptor {
 	
 	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+	public boolean preHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) {
 		if (handler instanceof HandlerMethod handlerMethod) {
 			XssContextHolder.ignore(handlerMethod.hasMethodAnnotation(XssIgnore.class));
 		}

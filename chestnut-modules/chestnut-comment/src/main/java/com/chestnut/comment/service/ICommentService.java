@@ -35,4 +35,6 @@ public interface ICommentService extends IService<Comment> {
 	 * @return
 	 */
 	void deleteComments(List<Long> commentIds);
+
+    void recoverComment(List<Long> commentIds);
 }

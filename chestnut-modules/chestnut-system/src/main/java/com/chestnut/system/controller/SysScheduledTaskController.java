@@ -72,7 +72,7 @@ public class SysScheduledTaskController extends BaseRestController {
 		return bindSelectOptions(list, IScheduledHandler::getId, IScheduledHandler::getName);
 	}
 	
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> list(@RequestParam(required = false) String status) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysScheduledTask> page = this.taskService.lambdaQuery()
@@ -91,7 +91,7 @@ public class SysScheduledTaskController extends BaseRestController {
 		return bindDataTable(list, page.getTotal());
 	}
 
-	@GetMapping("/{taskId}")
+	@GetMapping("/detail/{taskId}")
 	public R<?> getInfo(@PathVariable @LongId Long taskId) {
 		SysScheduledTask task = this.taskService.getById(taskId);
 		Assert.notNull(task, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("taskId", taskId));
@@ -99,13 +99,13 @@ public class SysScheduledTaskController extends BaseRestController {
 		return R.ok(task);
 	}
 
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateScheduledTaskRequest dto) {
 		taskService.insertTask(dto);
 		return R.ok();
 	}
 
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateScheduledTaskRequest dto) {
 		taskService.updateTask(dto);
 		return R.ok();
@@ -117,13 +117,13 @@ public class SysScheduledTaskController extends BaseRestController {
 		return R.ok();
 	}
 
-	@PutMapping("/enable/{taskId}")
+	@PostMapping("/enable/{taskId}")
 	public R<?> enable(@PathVariable @LongId Long taskId) {
 		taskService.enableTask(taskId);
 		return R.ok();
 	}
 
-	@PutMapping("/disable/{taskId}")
+	@PostMapping("/disable/{taskId}")
 	public R<?> disable(@PathVariable @LongId Long taskId) {
 		taskService.disableTask(taskId);
 		return R.ok();

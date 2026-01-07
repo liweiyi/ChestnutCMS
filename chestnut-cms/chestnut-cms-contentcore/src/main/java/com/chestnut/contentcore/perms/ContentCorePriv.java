@@ -19,6 +19,8 @@ public interface ContentCorePriv {
 
 	String SiteView = "cms:site:view";
 
+    String SiteAdd = "cms:site:add";
+
 	String CatalogView = "cms:catalog:view";
 
 	String ContentView = "cms:content:view";

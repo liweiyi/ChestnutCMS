@@ -17,6 +17,7 @@ package com.chestnut.system.domain.dto;
 
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.Dict;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -42,6 +43,9 @@ public class CreateRoleRequest extends BaseDTO {
 	@NotBlank
 	@Dict(EnableOrDisable.TYPE)
 	private String status;
+
+    @Dict(YesOrNo.TYPE)
+    private String defaultFlag;
 
 	@Length(max = 500)
 	private String remark;

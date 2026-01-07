@@ -85,7 +85,8 @@ public class MemberSignInApiController extends BaseRestController {
 	 */
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
-	@PutMapping
+	@PostMapping("/retroactive")
+    @PutMapping
 	public R<?> complementHistory(@RequestBody @Validated MemberComplementHistoryRequest req) {
 		this.memberSignInLogService.complementHistory(req);
 		return R.ok();

@@ -73,7 +73,7 @@ public class SysPostController extends BaseRestController {
 	 * 根据岗位编号获取详细信息
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostList)
-	@GetMapping(value = "/{postId}")
+	@GetMapping(value = "/detail/{postId}")
 	public R<?> getInfo(@PathVariable @LongId Long postId) {
 		return R.ok(postService.getById(postId));
 	}
@@ -83,7 +83,7 @@ public class SysPostController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostAdd)
 	@Log(title = "岗位管理", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreatePostRequest req) {
 		postService.insertPost(req);
 		return R.ok();
@@ -94,7 +94,7 @@ public class SysPostController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostEdit)
 	@Log(title = "岗位管理", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdatePostRequest req) {
 		postService.updatePost(req);
 		return R.ok();

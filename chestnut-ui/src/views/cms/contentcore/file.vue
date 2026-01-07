@@ -176,6 +176,7 @@
   </div>
 </template>
 <script>
+import { CACHE_CURRENT_SITE } from '@/utils/constants';
 import { fileNameValidator } from '@/utils/validate';
 import { getToken } from "@/utils/auth";
 import { isImage, getFileSvgIconClass } from "@/utils/chestnut";
@@ -230,7 +231,7 @@ export default {
         // 设置上传的请求头部
         headers: { 
           Authorization: "Bearer " + getToken(),
-          CurrentSite: this.$cache.local.get("CurrentSite")
+          CurrentSite: this.$cache.local.get(CACHE_CURRENT_SITE)
         },
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/cms/file/upload",

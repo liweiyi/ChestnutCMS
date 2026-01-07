@@ -150,9 +150,10 @@
   </div>
 </template>
 <script>
+import { CACHE_CURRENT_SITE } from '@/utils/constants';
 import { isImage, getFileSvgIconClass } from "@/utils/chestnut";
 import { getToken } from "@/utils/auth";
-import { getResrouceList, getResourceTypes } from "@/api/contentcore/resource";
+import { getResourceSelectList, getResourceTypes } from "@/api/contentcore/resource";
 import { getConfigKey } from "@/api/system/config";
 export default {
   name: "CMSResourceDialog",
@@ -188,14 +189,14 @@ export default {
       },
       tagInputVisible: false,
       tagInputValue: '',
-      currentSiteId: this.$cache.local.get("CurrentSite"),
+      currentSiteId: this.$cache.local.get(CACHE_CURRENT_SITE),
       // 上传参数
       upload: {
         isUploading: false, // 上传按钮loading
         accept: "", // 文件类型限制
         acceptSize: 0,
         limit: this.uploadLimit, // 文件数限制
-        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get("CurrentSite") },
+        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get(CACHE_CURRENT_SITE) },
         url: process.env.VUE_APP_BASE_API + "/cms/resource/upload", // 上传的地址
         fileList: [], // 上传的文件列表
         data : {} // 附带参数
@@ -310,7 +311,7 @@ export default {
         this.filterQuery.endTime = this.dateRange[1];
       }
       this.filterQuery.resourceType = this.rtype || ''
-      getResrouceList(this.filterQuery).then(response => {
+      getResourceSelectList(this.filterQuery).then(response => {
         this.resourceList = response.data.rows;
         this.resourceList.forEach(r => this.$set(r,'selected',false));
         this.resourceTotal = parseInt(response.data.total);

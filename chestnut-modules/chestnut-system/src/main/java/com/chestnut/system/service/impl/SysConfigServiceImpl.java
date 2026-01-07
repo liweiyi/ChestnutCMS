@@ -32,6 +32,8 @@ import com.chestnut.system.mapper.SysConfigMapper;
 import com.chestnut.system.service.ISysConfigService;
 import com.chestnut.system.service.ISysI18nDictService;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -50,6 +52,8 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 		implements ISysConfigService, CommandLineRunner {
 
 	private final RedisCache redisCache;
+
+    private final RedissonClient redissonClient;
 
 	private final ISysI18nDictService i18nDictService;
 
@@ -160,21 +164,27 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 
 	@Override
 	public void run(String... args) throws Exception {
-		this.resetConfigCache();
-		// 不包含在keys中的需要保存进数据库
-		FixedConfigUtils.allConfigs().forEach(fc -> {
-			if (!this.redisCache.hasKey(getCacheKey(fc.getKey()))) {
-				SysConfig config = new SysConfig();
-				config.setConfigId(IdUtils.getSnowflakeId());
-				config.setConfigKey(fc.getKey());
-				config.setConfigName(I18nUtils.get(fc.getName()));
-				config.setConfigValue(fc.getDefaultValue());
-				config.setRemark(fc.getRemark());
-				config.createBy(SysConstants.SYS_OPERATOR);
-				this.save(config);
-				// 更新缓存
-				redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
-			}
-		});
+        RLock lock = redissonClient.getLock("cc:dict:init_fixed_dict");
+        lock.lock();
+        try {
+            this.resetConfigCache();
+            // 不包含在keys中的需要保存进数据库
+            FixedConfigUtils.allConfigs().forEach(fc -> {
+                if (!this.redisCache.hasKey(getCacheKey(fc.getKey()))) {
+                    SysConfig config = new SysConfig();
+                    config.setConfigId(IdUtils.getSnowflakeId());
+                    config.setConfigKey(fc.getKey());
+                    config.setConfigName(I18nUtils.get(fc.getName()));
+                    config.setConfigValue(fc.getDefaultValue());
+                    config.setRemark(fc.getRemark());
+                    config.createBy(SysConstants.SYS_OPERATOR);
+                    this.save(config);
+                    // 更新缓存
+                    redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
+                }
+            });
+        } finally {
+            lock.unlock();
+        }
 	}
 }

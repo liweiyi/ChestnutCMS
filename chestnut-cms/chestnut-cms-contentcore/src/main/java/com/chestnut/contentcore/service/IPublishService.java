@@ -115,7 +115,14 @@ public interface IPublishService {
      */
     void asyncStaticizeContent(IContent<?> content);
 
-    String processContentPage(CmsContent content, IInternalDataType.RequestData requestData, Writer writer)
+    /**
+     * 处理内容模板页面结果
+     *
+     * @param content 内容
+     * @param requestData 请求数据
+     * @param writer 写入流
+     */
+    void processContentPage(CmsContent content, IInternalDataType.RequestData requestData, Writer writer)
             throws IOException, TemplateException;
 
     /**

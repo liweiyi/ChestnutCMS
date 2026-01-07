@@ -19,12 +19,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.search.domain.SearchLog;
 import com.chestnut.search.service.ISearchLogService;
 import com.chestnut.system.security.AdminUserType;
@@ -37,9 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/search/log")
-public class CMSSearchLogController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class CMSSearchLogController extends CmsRestController {
 
 	private final ISearchLogService searchLogService;
 	
@@ -47,7 +43,7 @@ public class CMSSearchLogController extends BaseRestController {
 	@GetMapping
 	public R<?> getPageList(@RequestParam(required = false) String query) {
 		PageRequest pr = this.getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		Page<SearchLog> page = this.searchLogService.lambdaQuery()
 				.eq(SearchLog::getSource, CmsSearchConstants.generateSearchSource(site.getSiteId()))
 				.like(StringUtils.isNotEmpty(query), SearchLog::getWord, query)

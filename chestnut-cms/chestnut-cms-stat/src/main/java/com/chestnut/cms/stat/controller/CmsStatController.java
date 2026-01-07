@@ -29,16 +29,14 @@ import com.chestnut.cms.stat.mapper.CmsSiteVisitLogMapper;
 import com.chestnut.cms.stat.mapper.CmsUserContentStatMapper;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -62,9 +60,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cms/stat")
-public class CmsStatController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class CmsStatController extends CmsRestController {
 
 	private final ICatalogService catalogService;
 
@@ -79,7 +75,7 @@ public class CmsStatController extends BaseRestController {
 	@GetMapping
 	public R<?> getSiteVisitLogList() {
 		PageRequest pr = this.getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		Page<CmsSiteVisitLog> page = new LambdaQueryChainWrapper<>(this.siteVisitLogMapper)
 				.eq(CmsSiteVisitLog::getSiteId, site.getSiteId()).orderByDesc(CmsSiteVisitLog::getEvtTime)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
@@ -89,7 +85,7 @@ public class CmsStatController extends BaseRestController {
 	@GetMapping("/contentDynamicData")
 	public R<?> getContentDynamicData(@RequestParam(name = "query", required = false, defaultValue = "") String title) {
 		PageRequest pr = getPageRequest();
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 
 		LambdaQueryChainWrapper<CmsContent> q = this.contentService.dao().lambdaQuery()
 				.eq(CmsContent::getSiteId, site.getSiteId())
@@ -111,7 +107,7 @@ public class CmsStatController extends BaseRestController {
 
 	@GetMapping("/contentStatByCatalog")
 	public R<?> getContentStatByCatalog() {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		List<CmsCatalogContentStat> stats = this.contentStatByCatalogMapper
 				.selectList(new LambdaQueryWrapper<CmsCatalogContentStat>().eq(CmsCatalogContentStat::getSiteId, site.getSiteId()));
 		Map<Long, CmsCatalogContentStat> dataMap = stats.stream().collect(Collectors.toMap(CmsCatalogContentStat::getCatalogId, stat -> stat));
@@ -124,7 +120,7 @@ public class CmsStatController extends BaseRestController {
 
 	@GetMapping("/contentStatByUser")
 	public R<?> getContentStatByUser() {
-		CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+		CmsSite site = this.getCurrentSite();
 		List<CmsUserContentStat> list = contentStatByUserMapper
 				.selectList(new LambdaQueryWrapper<CmsUserContentStat>().eq(CmsUserContentStat::getSiteId, site.getSiteId()));
 		return R.ok(list);

@@ -22,29 +22,32 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.config.SystemConfig;
+import com.chestnut.system.domain.SysLoginConfig;
 import com.chestnut.system.domain.SysMenu;
+import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.LoginBody;
+import com.chestnut.system.domain.vo.LoginConfig;
 import com.chestnut.system.domain.vo.LoginUserInfoVO;
+import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
+import com.chestnut.system.fixed.dict.UserStatus;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.security.SysLoginService;
-import com.chestnut.system.service.ISysLogininforService;
-import com.chestnut.system.service.ISysMenuService;
-import com.chestnut.system.service.ISysPermissionService;
-import com.chestnut.system.service.ISysRoleService;
+import com.chestnut.system.service.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 登录验证
@@ -65,6 +68,32 @@ public class SysLoginController extends BaseRestController {
 
 	private final ISysLogininforService logininfoService;
 
+    private final ISysUserService userService;
+
+    private final ILoginConfigService loginConfigService;
+
+    private final ISecurityConfigService securityConfigService;
+
+    @GetMapping("/checkUsername")
+    public R<?> checkUsername(@RequestParam @NotBlank String username) {
+        // 先校验用户名
+        Optional<SysUser> opt = this.userService.lambdaQuery().eq(SysUser::getUserName, username).oneOpt();
+        if (opt.isEmpty()) {
+            throw SysErrorCode.USER_NOT_EXISTS.exception();
+        }
+        SysUser user = opt.get();
+        if (user.isLocked()) {
+            throw SysErrorCode.USER_LOCKED.exception(Objects.isNull(user.getLockEndTime()) ? "forever" : user.getLockEndTime().toString());
+        } else if (UserStatus.isDisable(user.getStatus())) {
+            throw SysErrorCode.USER_DISABLED.exception();
+        }
+        // 生成令牌
+        if (this.userService.lambdaQuery().eq(SysUser::getUserName, username).count() == 0) {
+            throw SysErrorCode.USER_NOT_EXISTS.exception();
+        }
+        return R.ok();
+    }
+
 	/**
 	 * 登录方法
 	 * 
@@ -79,22 +108,22 @@ public class SysLoginController extends BaseRestController {
 	}
 
 	@PostMapping("/logout")
-	public void logout() {
-		if (!StpAdminUtil.isLogin()) {
-			return;
-		}
-		LoginUser loginUser = StpAdminUtil.getLoginUser();
-		try {
-			StpAdminUtil.logout();
-			this.logininfoService.recordLogininfor(loginUser.getUserType(),
-					loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.SUCCESS,
-					StringUtils.EMPTY);
-		} catch (Exception e) {
-			this.logininfoService.recordLogininfor(loginUser.getUserType(),
-					loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.FAIL,
-					e.getMessage());
-			log.error("Logout fail.", e);
-		}
+	public R<?> logout() {
+		if (StpAdminUtil.isLogin()) {
+            LoginUser loginUser = StpAdminUtil.getLoginUser();
+            try {
+                StpAdminUtil.logout();
+                this.logininfoService.recordLogininfor(loginUser.getUserType(),
+                        loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.SUCCESS,
+                        StringUtils.EMPTY);
+            } catch (Exception e) {
+                this.logininfoService.recordLogininfor(loginUser.getUserType(),
+                        loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.FAIL,
+                        e.getMessage());
+                log.error("Logout fail.", e);
+            }
+        }
+        return R.ok();
 	}
 
 	/**
@@ -141,4 +170,30 @@ public class SysLoginController extends BaseRestController {
 		menus = menuService.getChildPerms(menus, 0);
 		return R.ok(menuService.buildRouters(menus));
 	}
+
+
+    @GetMapping("/login/config")
+    public R<?> getLoginConfig() {
+        SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
+        LoginConfig loginConfig = new LoginConfig();
+        loginConfig.getCaptcha().setEnabled(false);
+        loginConfig.setThirds(List.of());
+        if (Objects.nonNull(securityConfig)) {
+            loginConfig.getCaptcha().setEnabled(YesOrNo.isYes(securityConfig.getCaptchaEnable()));
+            if (loginConfig.getCaptcha().isEnabled()) {
+                loginConfig.getCaptcha().setType(securityConfig.getCaptchaType());
+                loginConfig.getCaptcha().setExpires(Objects.requireNonNullElse(securityConfig.getCaptchaExpires(), 0));
+                loginConfig.getCaptcha().setDuration(Objects.requireNonNullElse(securityConfig.getCaptchaDuration(), 0));
+            }
+            List<LoginConfig.ThirdLogin> thirdLogins = securityConfig.getLoginTypeConfigIds().stream().map(configId -> {
+                SysLoginConfig config = this.loginConfigService.getLoginConfig(configId);
+                LoginConfig.ThirdLogin thirdLogin = new LoginConfig.ThirdLogin();
+                thirdLogin.setType(config.getType());
+                thirdLogin.setId(configId);
+                return thirdLogin;
+            }).toList();
+            loginConfig.setThirds(thirdLogins);
+        }
+        return R.ok(loginConfig);
+    }
 }

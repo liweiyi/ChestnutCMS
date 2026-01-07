@@ -17,17 +17,13 @@ package com.chestnut.media.controller;
 
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.service.ISiteService;
-import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.media.domain.dto.VideoScreenshotDTO;
 import com.chestnut.media.service.IVideoService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,7 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ws.schild.jave.EncoderException;
 
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * <p>
@@ -50,17 +45,15 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/cms/video")
 @RequiredArgsConstructor
-public class VideoController extends BaseRestController {
-
-	private final ISiteService siteService;
+public class VideoController extends CmsRestController {
 
 	private final IVideoService videoService;
 
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/screenshot")
-	public R<?> screenshot(@RequestBody  @Validated VideoScreenshotDTO dto, HttpServletRequest request)
+	public R<?> screenshot(@RequestBody  @Validated VideoScreenshotDTO dto)
 			throws EncoderException, IOException {
-		CmsSite site = this.siteService.getCurrentSite(request);
+		CmsSite site = this.getCurrentSite();
 		CmsResource cmsResource = this.videoService.videoScreenshot(site, dto.getPath(),
 				dto.getTimestamp(), StpAdminUtil.getLoginUser());
 		return R.ok(cmsResource);

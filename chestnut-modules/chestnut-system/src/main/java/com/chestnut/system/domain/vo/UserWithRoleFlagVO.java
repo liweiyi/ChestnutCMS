@@ -51,6 +51,16 @@ public class UserWithRoleFlagVO {
 	 */
 	private String phoneNumber;
 
+    /**
+     * email
+     */
+    private String email;
+
+    /**
+     * 状态
+     */
+    private String status;
+
 	/**
 	 * 创建时间
 	 */
@@ -72,6 +82,8 @@ public class UserWithRoleFlagVO {
 		vo.setUserName(user.getUserName());
 		vo.setNickName(user.getNickName());
 		vo.setPhoneNumber(user.getPhoneNumber());
+        vo.setEmail(user.getEmail());
+        vo.setStatus(user.getStatus());
 		vo.setCreateTime(user.getCreateTime());
 		vo.setRoleId(roleId);
 		vo.setAllocated(allocated);

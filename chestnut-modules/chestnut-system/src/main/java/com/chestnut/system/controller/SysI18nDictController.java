@@ -92,7 +92,7 @@ public class SysI18nDictController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictList)
-	@GetMapping(value = "/{i18nDictId}")
+	@GetMapping(value = "/detail/{i18nDictId}")
 	public R<?> getInfo(@PathVariable @LongId Long i18nDictId) {
 		return R.ok(this.i18nDictService.getById(i18nDictId));
 	}
@@ -120,7 +120,7 @@ public class SysI18nDictController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictAdd)
 	@Log(title = "国际化管理", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@Validated @RequestBody CreateI18nDictRequest req) {
 		i18nDictService.insertI18nDict(req);
 		return R.ok();
@@ -128,7 +128,7 @@ public class SysI18nDictController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictEdit)
 	@Log(title = "国际化管理", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@Validated @RequestBody UpdateI18nDictRequest req) {
 		i18nDictService.updateI18nDict(req);
 		return R.ok();
@@ -136,7 +136,7 @@ public class SysI18nDictController extends BaseRestController {
 
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictEdit)
 	@Log(title = "国际化管理", businessType = BusinessType.UPDATE)
-	@PutMapping("/batch")
+	@PostMapping("/batch")
 	public R<?> batchSave(@RequestBody @NotEmpty @Validated List<BatchSaveI18nDictRequest> i18nDicts) {
 		i18nDictService.batchSaveI18nDicts(i18nDicts);
 		return R.ok();

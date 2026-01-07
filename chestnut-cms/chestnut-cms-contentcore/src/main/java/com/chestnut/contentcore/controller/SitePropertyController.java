@@ -80,7 +80,7 @@ public class SitePropertyController extends BaseRestController {
 	 * @return
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
-	@GetMapping(value = "/{siteId}")
+	@GetMapping(value = "/detail/{propertyId}")
 	public R<?> getInfo(@PathVariable @LongId Long propertyId) {
 		CmsSiteProperty siteProperty = sitePropertyService.getById(propertyId);
 		if (siteProperty == null) {
@@ -98,7 +98,7 @@ public class SitePropertyController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
 	@Log(title = "新增站点属性", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<String> addSiteProperty(@RequestBody @Validated CmsSiteProperty siteProperty) throws IOException {
 		siteProperty.createBy(StpAdminUtil.getLoginUser().getUsername());
 		return this.sitePropertyService.addSiteProperty(siteProperty);
@@ -113,7 +113,7 @@ public class SitePropertyController extends BaseRestController {
 	 */
 	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
 	@Log(title = "编辑站点属性", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<String> editSiteProperty(@RequestBody @Validated CmsSiteProperty siteProperty) throws IOException {
 		siteProperty.updateBy(StpAdminUtil.getLoginUser().getUsername());
 		return this.sitePropertyService.saveSiteProperty(siteProperty);

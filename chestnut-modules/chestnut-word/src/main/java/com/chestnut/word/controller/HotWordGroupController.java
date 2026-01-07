@@ -35,7 +35,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * <p>
@@ -72,15 +71,7 @@ public class HotWordGroupController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@GetMapping("/treedata")
 	public R<?> getTreeData() {
-		List<HotWordGroup> groups = this.hotWordGroupService.list();
-		if (StringUtils.isEmpty(groups)) {
-			return R.ok(List.of());
-		}
-		List<TreeNode<String>> treeData = groups.stream().map(c -> {
-			TreeNode<String> treeNode = new TreeNode<>(String.valueOf(c.getGroupId()), "", c.getName(), true);
-			treeNode.setProps(Map.of("code", c.getCode()));
-			return treeNode;
-		}).toList();
+		List<TreeNode<String>> treeData = this.hotWordGroupService.getGroupTreeData(q -> {});
 		return R.ok(treeData);
 	}
 
@@ -91,7 +82,7 @@ public class HotWordGroupController extends BaseRestController {
 	}
 
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
-	@PutMapping("/update")
+	@PostMapping("/update")
 	public R<String> edit(@RequestBody @Validated UpdateHotWordGroupRequest req) {
 		this.hotWordGroupService.updateHotWordGroup(req);
 		return R.ok();

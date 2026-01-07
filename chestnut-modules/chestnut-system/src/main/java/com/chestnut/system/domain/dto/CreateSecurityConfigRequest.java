@@ -21,13 +21,12 @@ import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.PasswordRetryStrategy;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.Dict;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+
+import java.util.List;
 
 /**
  * CreateSecurityConfigRequest
@@ -112,4 +111,31 @@ public class CreateSecurityConfigRequest extends BaseDTO {
     @Min(0)
     @Max(31536000)
     private Integer passwordRetryLockSeconds;
+
+    /**
+     * 验证码是否启用
+     */
+    @Dict(YesOrNo.TYPE)
+    private String captchaEnable;
+
+    /**
+     * 验证码类型
+     */
+    private String captchaType;
+
+    /**
+     * 验证码过期时长，单位：秒
+     */
+    @Min(10)
+    @Max(3600)
+    private Integer captchaExpires;
+
+    /**
+     * 验证码重新生成间隔时长，单位：秒
+     */
+    @Min(0)
+    private Integer captchaDuration;
+
+    @NotNull
+    private List<Long> loginTypeConfigIds;
 }

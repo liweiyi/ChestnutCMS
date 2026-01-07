@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
 import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
@@ -37,18 +38,32 @@ public interface ISiteService extends IService<CmsSite> {
 	boolean checkSiteUnique(String siteName, String sitePath, Long siteId);
 
 	/**
-	 * 获取指定id站点数据，如果不存在则返回当前站点数据
+	 * 获取指定id站点数据，如果id<=0则返回当前站点数据
 	 *
-	 * @param siteId
-	 * @param request
-	 * @return
+	 * @param siteId 站点id
+	 * @param request 请求对象
+     * @param loginUser 登录用户
+	 * @return 站点数据
 	 */
-	CmsSite getSiteOrCurrent(Long siteId, HttpServletRequest request);
+	CmsSite getSiteOrCurrent(Long siteId, HttpServletRequest request, LoginUser loginUser);
 
 	/**
-     * 获取当前站点，保存在token中
+     * 获取当前站点
+     *
+     * @param request 请求对象
+     * @param loginUser 登录用户
+     * @return 站点数据
      */
-    CmsSite getCurrentSite(HttpServletRequest request);
+    CmsSite getCurrentSite(HttpServletRequest request, LoginUser loginUser);
+
+    /**
+     * 获取当前站点，如果不存在则返回默认站点
+     *
+     * @param request 请求对象
+     * @param loginUser 登录用户
+     * @return 站点数据
+     */
+    CmsSite getCurrentSiteOrDefault(HttpServletRequest request, LoginUser loginUser);
 
 	/**
 	 * 获取站点数据

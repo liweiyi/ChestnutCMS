@@ -30,6 +30,7 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.customform.domain.CmsCustomForm;
 import com.chestnut.customform.domain.dto.CreateCustomFormRequest;
 import com.chestnut.customform.domain.dto.UpdateCustomFormRequest;
@@ -59,7 +60,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/cms/customform")
 @RequiredArgsConstructor
-public class CustomFormController extends BaseRestController {
+public class CustomFormController extends CmsRestController {
 
     private final ISiteService siteService;
 
@@ -76,11 +77,11 @@ public class CustomFormController extends BaseRestController {
     }
 
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.View)
-    @GetMapping
+    @GetMapping("/list")
     public R<?> getList(@RequestParam(value = "query", required = false) String query,
                         @RequestParam(required = false) String status) {
         PageRequest pr = this.getPageRequest();
-        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        CmsSite site = this.getCurrentSite();
         Page<CmsCustomForm> page = this.customFormService.lambdaQuery()
                 .eq(CmsCustomForm::getSiteId, site.getSiteId())
                 .eq(StringUtils.isNotEmpty(status), CmsCustomForm::getStatus, status)
@@ -90,7 +91,7 @@ public class CustomFormController extends BaseRestController {
     }
 
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.View)
-    @GetMapping("/{formId}")
+    @GetMapping("/detail/{formId}")
     public R<?> getDetail(@PathVariable @LongId Long formId) {
         CmsCustomForm form = this.customFormService.getById(formId);
         Assert.notNull(form, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("formId", formId));
@@ -108,9 +109,9 @@ public class CustomFormController extends BaseRestController {
 
     @Log(title = "新增自定义表单", businessType = BusinessType.INSERT)
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.Add)
-    @PostMapping
+    @PostMapping("/add")
     public R<?> add(@RequestBody @Validated CreateCustomFormRequest req) {
-        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        CmsSite site = this.getCurrentSite();
         req.setSiteId(site.getSiteId());
         this.customFormService.addCustomForm(req);
         return R.ok();
@@ -118,7 +119,7 @@ public class CustomFormController extends BaseRestController {
 
     @Log(title = "编辑自定义表单", businessType = BusinessType.UPDATE)
     @Priv(type = AdminUserType.TYPE, value = {CustomFormPriv.Add, CustomFormPriv.Edit})
-    @PutMapping
+    @PostMapping("/update")
     public R<?> edit(@RequestBody @Validated UpdateCustomFormRequest req) {
         this.customFormService.editCustomForm(req);
         return R.ok();
@@ -134,7 +135,7 @@ public class CustomFormController extends BaseRestController {
 
     @Log(title = "发布自定义表单", businessType = BusinessType.UPDATE)
     @Priv(type = AdminUserType.TYPE, value = { CustomFormPriv.Add, CustomFormPriv.Edit })
-    @PutMapping("/publish")
+    @PostMapping("/publish")
     public R<?> publish(@RequestBody @NotEmpty List<Long> formIds) {
         this.customFormService.publishCustomForms(formIds, StpAdminUtil.getLoginUser().getUsername());
         return R.ok();
@@ -142,7 +143,7 @@ public class CustomFormController extends BaseRestController {
 
     @Log(title = " 下线自定义表单", businessType = BusinessType.UPDATE)
     @Priv(type = AdminUserType.TYPE, value = { CustomFormPriv.Add, CustomFormPriv.Edit })
-    @PutMapping("/offline")
+    @PostMapping("/offline")
     public R<?> offline(@RequestBody @NotEmpty List<Long> formIds) throws IOException {
         this.customFormService.offlineCustomForms(formIds, StpAdminUtil.getLoginUser().getUsername());
         return R.ok();

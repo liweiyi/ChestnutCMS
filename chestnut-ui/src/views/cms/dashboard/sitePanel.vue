@@ -69,6 +69,7 @@
   </div>
 </template>
 <script>
+import { CACHE_PUBLISH_FLAG } from '@/utils/constants';
 import { getDashboardSiteInfo, publishSite } from "@/api/contentcore/site";
 import CMSProgress from '@/views/components/Progress';
 
@@ -123,7 +124,7 @@ export default {
             this.taskId = response.data;
             this.progressTitle = this.$t('CMS.ContentCore.PublishProgressTitle');
             this.openProgress = true;
-            this.$cache.local.set('publish_flag', "true")
+            this.$cache.local.set(CACHE_PUBLISH_FLAG, "true")
           }
         } else {
           this.$modal.msgError(response.msg);

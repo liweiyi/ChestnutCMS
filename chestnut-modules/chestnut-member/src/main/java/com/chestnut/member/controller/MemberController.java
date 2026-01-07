@@ -54,7 +54,7 @@ public class MemberController extends BaseRestController {
 
 	private final IMemberService memberService;
 
-	@GetMapping
+	@GetMapping("/list")
 	public R<?> getPageList(
 			@RequestParam(required = false) @Length(max = 30) String userName,
 			@RequestParam(required = false) @Length(max = 30) String nickName,
@@ -83,7 +83,7 @@ public class MemberController extends BaseRestController {
 		return this.bindDataTable(list, page.getTotal());
 	}
 
-	@GetMapping("/{memberId}")
+	@GetMapping("/detail/{memberId}")
 	public R<?> getMemberDetail(@PathVariable @LongId Long memberId) {
 		Member member = this.memberService.getById(memberId);
 		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", memberId));
@@ -93,14 +93,14 @@ public class MemberController extends BaseRestController {
 	}
 
 	@Log(title = "新增会员", businessType = BusinessType.INSERT, isSaveRequestData = false)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> addMember(@RequestBody @Validated CreateMemberRequest req) {
 		this.memberService.addMember(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑会员", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> updateMember(@RequestBody @Validated UpdateMemberRequest req) {
 		this.memberService.updateMember(req);
 		return R.ok();
@@ -114,7 +114,7 @@ public class MemberController extends BaseRestController {
 	}
 
 	@Log(title = "重置会员密码", businessType = BusinessType.UPDATE, isSaveRequestData = false)
-	@PutMapping("/resetPassword")
+	@PostMapping("/resetPassword")
 	public R<?> resetPassword(@RequestBody @Validated ResetMemberPasswordRequest req) {
 		this.memberService.resetPwd(req);
 		return R.ok();

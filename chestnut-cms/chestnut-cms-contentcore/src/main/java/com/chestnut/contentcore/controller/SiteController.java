@@ -15,8 +15,6 @@
  */
 package com.chestnut.contentcore.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
@@ -27,8 +25,6 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.domain.Operator;
-import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
@@ -48,6 +44,7 @@ import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.perms.SitePermissionType.SitePrivItem;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.service.impl.SiteThemeService;
+import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
@@ -58,6 +55,7 @@ import freemarker.template.TemplateException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -87,7 +85,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/cms/site")
 @RequiredArgsConstructor
-public class SiteController extends BaseRestController {
+public class SiteController extends CmsRestController {
 
     private final ISiteService siteService;
 
@@ -106,19 +104,20 @@ public class SiteController extends BaseRestController {
     /**
      * 获取当前站点数据
      *
-     * @apiNote 读取request.header['CurrentSite']中的siteId，如果无header或无站点则取数据库第一条站点数据
+     * @apiNote 读取request.header['cc-current-site']中的siteId，如果无header或无站点则取数据库第一条站点数据
      */
     @Priv(type = AdminUserType.TYPE)
     @GetMapping("/getCurrentSite")
-    public R<Map<String, Object>> getCurrentSite() {
-        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+    public R<Map<String, Object>> getCurrentSiteOrDefault() {
+        LoginUser loginUser = StpAdminUtil.getLoginUser();
+        CmsSite site = this.siteService.getCurrentSiteOrDefault(ServletUtils.getRequest(), loginUser);
         return R.ok(Map.of("siteId", site.getSiteId(), "siteName", site.getName()));
     }
 
     @Priv(type = AdminUserType.TYPE)
     @GetMapping("/getDashboardSiteInfo")
     public R<SiteDashboardVO> getDashboardSiteInfo() {
-        CmsSite site = this.siteService.getCurrentSite(ServletUtils.getRequest());
+        CmsSite site = this.getCurrentSite();
         List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(site.getSiteId());
         return R.ok(SiteDashboardVO.create(site, publishPipes));
     }
@@ -136,6 +135,12 @@ public class SiteController extends BaseRestController {
         return R.ok(Map.of("siteId", site.getSiteId(), "siteName", site.getName()));
     }
 
+    @Priv(type = AdminUserType.TYPE)
+    @GetMapping("/selectList")
+    public R<?> selectList(@RequestParam(value = "siteName", required = false) String siteName) {
+        return this.list(siteName);
+    }
+
     /**
      * 查询站点数据列表
      *
@@ -144,12 +149,10 @@ public class SiteController extends BaseRestController {
     @Priv(type = AdminUserType.TYPE, value = ContentCorePriv.SiteView)
     @GetMapping("/list")
     public R<?> list(@RequestParam(value = "siteName", required = false) String siteName) {
-        PageRequest pr = this.getPageRequest();
-        LambdaQueryWrapper<CmsSite> q = new LambdaQueryWrapper<CmsSite>().like(StringUtils.isNotEmpty(siteName),
-                CmsSite::getName, siteName);
-        Page<CmsSite> page = siteService.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true), q);
         LoginUser loginUser = StpAdminUtil.getLoginUser();
-        List<CmsSite> list = page.getRecords().stream()
+        List<CmsSite> list = siteService.lambdaQuery()
+                .like(StringUtils.isNotEmpty(siteName), CmsSite::getName, siteName)
+                .list().stream()
                 .filter(site -> loginUser.hasPermission(SitePrivItem.View.getPermissionKey(site.getSiteId())))
                 .toList();
         list.forEach(site -> {
@@ -157,7 +160,7 @@ public class SiteController extends BaseRestController {
                 site.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(site.getLogo()));
             }
         });
-        return this.bindDataTable(list, page.getTotal());
+        return this.bindDataTable(list);
     }
 
     /**
@@ -166,7 +169,7 @@ public class SiteController extends BaseRestController {
      * @param siteId 站点ID
      */
     @Priv(type = AdminUserType.TYPE, value = "Site:View:${#siteId}")
-    @GetMapping(value = "/{siteId}")
+    @GetMapping(value = "/detail/{siteId}")
     public R<?> getInfo(@PathVariable @LongId Long siteId) {
         CmsSite site = siteService.getById(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
@@ -202,11 +205,10 @@ public class SiteController extends BaseRestController {
     /**
      * 新增站点数据
      */
-    @Priv(type = AdminUserType.TYPE, value = ContentCorePriv.SiteView)
+    @Priv(type = AdminUserType.TYPE, value = ContentCorePriv.SiteAdd)
     @Log(title = "新增站点", businessType = BusinessType.INSERT)
-    @PostMapping
+    @PostMapping("/add")
     public R<?> addSave(@RequestBody @Validated SiteDTO dto) throws IOException {
-        dto.setOperator(StpAdminUtil.getLoginUser());
         CmsSite site = this.siteService.addSite(dto);
         return R.ok(site);
     }
@@ -216,9 +218,8 @@ public class SiteController extends BaseRestController {
      */
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#dto.siteId}")
     @Log(title = "编辑站点", businessType = BusinessType.UPDATE)
-    @PutMapping
+    @PostMapping("/update")
     public R<?> editSave(@RequestBody @Validated SiteDTO dto) throws IOException {
-        dto.setOperator(StpAdminUtil.getLoginUser());
         this.siteService.saveSite(dto);
         return R.ok();
     }
@@ -242,6 +243,7 @@ public class SiteController extends BaseRestController {
                 siteService.deleteSite(siteId);
             }
         };
+        task.setLocale(LocaleContextHolder.getLocale());
         task.setTaskId("DeleteSite_" + siteId);
         this.asyncTaskManager.execute(task);
         return R.ok(task.getTaskId());
@@ -329,7 +331,6 @@ public class SiteController extends BaseRestController {
         CmsSite site = this.siteService.getSite(dto.getSiteId());
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", dto.getSiteId()));
 
-        dto.setOperator(StpAdminUtil.getLoginUser());
         this.siteService.saveSiteDefaultTemplate(dto);
         return R.ok();
     }
@@ -346,7 +347,6 @@ public class SiteController extends BaseRestController {
         CmsSite site = this.siteService.getSite(dto.getSiteId());
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", dto.getSiteId()));
 
-        dto.setOperator(StpAdminUtil.getLoginUser());
         this.catalogService.applySiteDefaultTemplateToCatalog(dto);
         return R.ok();
     }
@@ -381,8 +381,7 @@ public class SiteController extends BaseRestController {
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
     @Log(title = "导入主题模板", businessType = BusinessType.UPDATE)
     @PostMapping("/importTheme")
-    public R<?> importSiteTheme(@RequestParam("siteId") @LongId Long siteId,
-                           @RequestParam("file") @NotNull MultipartFile multipartFile) throws Exception {
+    public R<?> importSiteTheme(@RequestParam("siteId") @LongId Long siteId, @RequestParam("file") @NotNull MultipartFile multipartFile) {
         try {
             CmsSite site = this.siteService.getSite(siteId);
             Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));

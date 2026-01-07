@@ -92,6 +92,7 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 				dbAudio.setAuthor(audio.getAuthor());
 				dbAudio.setDescription(audio.getDescription());
 				dbAudio.setSortFlag(i);
+                dbAudio.setCover(audio.getCover());
 				if (dbAudio.getPath().equals(audio.getPath())) {
 					dbAudio.setPath(audio.getPath());
 					dbAudio.setType(FileExUtils.getExtension(audio.getPath()).toUpperCase());

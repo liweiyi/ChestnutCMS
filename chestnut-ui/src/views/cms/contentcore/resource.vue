@@ -165,9 +165,10 @@
   </div>
 </template>
 <script>
+import { CACHE_CURRENT_SITE } from '@/utils/constants';
 import { getFileSvgIconClass } from "@/utils/chestnut";
 import { getToken } from "@/utils/auth";
-import { getResourceTypes, getResrouceList, getResourceDetail, delResource } from "@/api/contentcore/resource";
+import { getResourceTypes, getResourceList, getResourceDetail, delResource } from "@/api/contentcore/resource";
 import { getConfigKey } from "@/api/system/config";
 
 export default {
@@ -216,7 +217,7 @@ export default {
         accept: "",
         acceptSize: 0,
         // 设置上传的请求头部
-        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get("CurrentSite") },
+        headers: { Authorization: "Bearer " + getToken(), CurrentSite: this.$cache.local.get(CACHE_CURRENT_SITE) },
         // 上传的地址
         url: process.env.VUE_APP_BASE_API + "/cms/resource",
         // 上传的文件列表
@@ -257,7 +258,7 @@ export default {
         this.queryParams.beginTime = this.dateRange[0];
         this.queryParams.endTime = this.dateRange[1];
       }
-      getResrouceList(this.queryParams).then(response => {
+      getResourceList(this.queryParams).then(response => {
         this.resourceList = response.data.rows;
         this.resourceList.forEach(r => r.iconClass = getFileSvgIconClass(r.name))
         this.total = parseInt(response.data.total);

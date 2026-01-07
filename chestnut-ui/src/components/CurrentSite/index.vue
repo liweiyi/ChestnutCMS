@@ -45,12 +45,6 @@
         </el-table-column>
         <el-table-column :label="$t('CMS.Site.Path')" width="260" prop="path" />
       </el-table>
-      <pagination 
-        v-show="total>0"
-        :total="total"
-        :page.sync="queryParams.pageNum"
-        :limit.sync="queryParams.pageSize"
-        @pagination="loadSiteList" />
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleChangeCurrentSite">{{ $t("Common.Confirm") }}</el-button>
         <el-button @click="cancel">{{ $t("Common.Cancel") }}</el-button>
@@ -63,8 +57,9 @@
   #current-site .el-form-item { margin-bottom: 0; }
 </style>
 <script>
-import { listSite, getCurrentSite, setCurrentSite } from "@/api/contentcore/site";
+import { getSelectSites, getCurrentSite, setCurrentSite } from "@/api/contentcore/site";
 import { getConfigKey } from "@/api/system/config";
+import { CACHE_CURRENT_SITE } from '@/utils/constants';
 
 export default {
   data() {
@@ -81,7 +76,7 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
-      currentSite: this.$cache.local.get("CurrentSite"),
+      currentSite: this.$cache.local.get(CACHE_CURRENT_SITE),
       currentSiteName: undefined,
       showCurrentSite: false,
       queryParams: {
@@ -106,7 +101,7 @@ export default {
           this.currentSite = response.data.siteId;
           this.currentSiteName = response.data.siteName;
           this.$ELEMENT.currentSite = this.currentSite;
-          this.$cache.local.set("CurrentSite", this.currentSite);
+          this.$cache.local.set(CACHE_CURRENT_SITE, this.currentSite);
           this.showCurrentSite = true;
       });
     },
@@ -116,7 +111,7 @@ export default {
             this.currentSite = response.data.siteId;
             this.currentSiteName = response.data.siteName;
             this.$ELEMENT.currentSite = this.currentSite;
-            this.$cache.local.set("CurrentSite", this.currentSite);
+            this.$cache.local.set(CACHE_CURRENT_SITE, this.currentSite);
             this.showCurrentSite = true;
             if (changed) {
               this.open = false;
@@ -141,7 +136,7 @@ export default {
     },
     loadSiteList () {
       this.loading = true;
-      listSite(this.queryParams).then(response => {
+      getSelectSites(this.queryParams).then(response => {
         this.siteList = response.data.rows;
         this.total = parseInt(response.data.total);
         this.loading = false;

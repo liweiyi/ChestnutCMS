@@ -19,7 +19,7 @@ export function validUsername(str) {
 
 export function userNameValidator(rule, value, callback) {
   if (!isBlank(value)) {
-    if (!validCode(value)) {
+    if (!validUsername(value)) {
       callback(new Error(i18n.t('Common.RuleTips.UserName')));
     } else {
       callback();

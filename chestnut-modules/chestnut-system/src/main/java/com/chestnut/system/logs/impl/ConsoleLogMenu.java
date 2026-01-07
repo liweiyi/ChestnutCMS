@@ -17,8 +17,9 @@ package com.chestnut.system.logs.impl;
 
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.system.logs.ILogMenu;
+import org.springframework.stereotype.Component;
 
-//@Component
+@Component
 public class ConsoleLogMenu implements ILogMenu {
 
 	@Override

@@ -15,12 +15,15 @@
  */
 package com.chestnut.word.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.chestnut.common.domain.TreeNode;
 import com.chestnut.word.domain.HotWordGroup;
 import com.chestnut.word.domain.dto.CreateHotWordGroupRequest;
 import com.chestnut.word.domain.dto.UpdateHotWordGroupRequest;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public interface IHotWordGroupService extends IService<HotWordGroup> {
 
@@ -53,4 +56,12 @@ public interface IHotWordGroupService extends IService<HotWordGroup> {
 	 * @param code
 	 */
     void checkUnique(String owner, Long groupId, String code);
+
+    /**
+     * 获取分组树数据
+     *
+     * @param consumer
+     * @return
+     */
+    List<TreeNode<String>> getGroupTreeData(Consumer<LambdaQueryWrapper<HotWordGroup>> consumer);
 }

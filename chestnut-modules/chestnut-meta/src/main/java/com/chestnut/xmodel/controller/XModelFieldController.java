@@ -84,14 +84,14 @@ public class XModelFieldController extends BaseRestController {
 	}
 
 	@Log(title = "新增元数据字段", businessType = BusinessType.INSERT)
-	@PostMapping
+	@PostMapping("/add")
 	public R<?> add(@RequestBody @Validated CreateXModelFieldRequest req) {
 		this.modelFieldService.addModelField(req);
 		return R.ok();
 	}
 
 	@Log(title = "编辑元数据字段", businessType = BusinessType.UPDATE)
-	@PutMapping
+	@PostMapping("/update")
 	public R<?> edit(@RequestBody @Validated UpdateXModelFieldRequest req) {
 		this.modelFieldService.editModelField(req);
 		return R.ok();

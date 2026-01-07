@@ -71,11 +71,13 @@ public class SearchWordServiceImpl extends ServiceImpl<SearchWordMapper, SearchW
 
 	@Override
 	public void addWord(CreateSearchWordRequest req) {
-		Long count = this.lambdaQuery().eq(SearchWord::getWord, req.getWord()).count();
+		Long count = this.lambdaQuery().eq(SearchWord::getWord, req.getWord())
+                .eq(StringUtils.isNotEmpty(req.getSource()), SearchWord::getSource, req.getSource()).count();
 		Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception("req"));
 
 		SearchWord searchWord = new SearchWord();
 		searchWord.setWordId(IdUtils.getSnowflakeId());
+        searchWord.setSource(req.getSource());
 		searchWord.setTopFlag(0L);
 		searchWord.setWord(req.getWord());
 		searchWord.setSearchTotal(req.getSearchTotal());
