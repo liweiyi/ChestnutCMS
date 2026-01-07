@@ -23,7 +23,6 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
-import com.chestnut.contentcore.listener.event.AfterContentPublishEvent;
 import com.chestnut.contentcore.publish.IPublishStrategy;
 import com.chestnut.contentcore.publish.staticize.CatalogStaticizeType;
 import com.chestnut.contentcore.publish.staticize.SiteStaticizeType;
@@ -103,9 +102,7 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 					for (CmsContent xContent : page.getRecords()) {
 						IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
 						IContent<?> content = contentType.loadContent(xContent);
-						if (content.publish()) {
-							applicationContext.publishEvent(new AfterContentPublishEvent(contentType, content));
-						}
+                        content.publish();
 					}
 				}
 				if (total > 0) {

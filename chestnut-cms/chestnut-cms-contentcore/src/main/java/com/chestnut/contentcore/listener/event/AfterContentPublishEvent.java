@@ -15,16 +15,16 @@
  */
 package com.chestnut.contentcore.listener.event;
 
-import com.chestnut.contentcore.core.IContent;
+import com.chestnut.contentcore.domain.CmsContent;
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;
 
 @Getter
 public class AfterContentPublishEvent extends ApplicationEvent {
 
-	private final IContent<?> content;
+	private final CmsContent content;
 	
-	public AfterContentPublishEvent(Object source, IContent<?> content) {
+	public AfterContentPublishEvent(Object source, CmsContent content) {
 		super(source);
 		this.content = content;
 	}

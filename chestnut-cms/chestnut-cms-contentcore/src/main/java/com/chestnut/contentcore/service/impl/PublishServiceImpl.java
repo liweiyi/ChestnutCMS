@@ -37,6 +37,7 @@ import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.listener.event.AfterCatalogPublishEvent;
+import com.chestnut.contentcore.listener.event.AfterContentPublishEvent;
 import com.chestnut.contentcore.listener.event.AfterSitePublishEvent;
 import com.chestnut.contentcore.publish.IPublishStrategy;
 import com.chestnut.contentcore.publish.staticize.CatalogStaticizeType;
@@ -474,6 +475,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			content.setOperator(operator);
 			transactionTemplate.execute(callback -> content.publish());
 			catalogIds.add(cmsContent.getCatalogId());
+            applicationContext.publishEvent(new AfterContentPublishEvent(this, cmsContent));
 		}
 		// 发布关联栏目：内容所属栏目及其所有父级栏目
 		Map<Long, CmsCatalog> catalogMap = new HashMap<>();
