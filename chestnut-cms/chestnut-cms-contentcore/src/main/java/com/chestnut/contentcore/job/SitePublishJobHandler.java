@@ -17,6 +17,7 @@ package com.chestnut.contentcore.job;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.security.domain.Operator;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.domain.CmsCatalog;
@@ -28,17 +29,15 @@ import com.chestnut.contentcore.publish.staticize.CatalogStaticizeType;
 import com.chestnut.contentcore.publish.staticize.SiteStaticizeType;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
+import com.chestnut.contentcore.service.IPublishService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.system.schedule.IScheduledHandler;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.RequiredArgsConstructor;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -55,7 +54,7 @@ import java.util.Set;
  */
 @RequiredArgsConstructor
 @Component(IScheduledHandler.BEAN_PREFIX + SitePublishJobHandler.JOB_NAME)
-public class SitePublishJobHandler extends IJobHandler implements IScheduledHandler, ApplicationContextAware {
+public class SitePublishJobHandler extends IJobHandler implements IScheduledHandler {
 	
 	static final String JOB_NAME = "SitePublishJobHandler";
 
@@ -67,7 +66,9 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 
 	private final IPublishStrategy publishStrategy;
 
-	private ApplicationContext applicationContext;
+    private final IPublishService publishService;
+
+    private final TransactionTemplate transactionTemplate;
 
 	@Override
 	public String getId() {
@@ -100,9 +101,11 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 				for (int i = 0; i * pageSize < total; i++) {
 					Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
 					for (CmsContent xContent : page.getRecords()) {
-						IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
-						IContent<?> content = contentType.loadContent(xContent);
-                        content.publish();
+                        IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
+                        IContent<?> content = contentType.loadContent(xContent);
+                        content.setOperator(Operator.defalutOperator());
+                        transactionTemplate.execute(callback -> content.publish());
+                        publishService.asyncStaticizeContent(content);
 					}
 				}
 				if (total > 0) {
@@ -133,10 +136,5 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 	@XxlJob(JOB_NAME)
 	public void execute() throws Exception {
 		this.exec();
-	}
-
-	@Override
-	public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 	}
 }

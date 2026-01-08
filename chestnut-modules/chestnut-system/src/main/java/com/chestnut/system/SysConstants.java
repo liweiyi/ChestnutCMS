@@ -27,16 +27,6 @@ public interface SysConstants {
 	 */
 	String RESOURCE_PREFIX = "/profile/";
 
-	/**
-	 * 验证码 redis key
-	 */
-	String CAPTCHA_CODE_KEY = "captcha_codes:";
-
-	/**
-	 * 验证码有效期（分钟）
-	 */
-	Integer CAPTCHA_EXPIRATION = 2;
-
     /**
      * 参数管理 cache key
      */

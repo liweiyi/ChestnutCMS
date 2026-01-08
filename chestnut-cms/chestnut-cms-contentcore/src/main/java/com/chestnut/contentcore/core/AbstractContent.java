@@ -27,10 +27,7 @@ import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
-import com.chestnut.contentcore.listener.event.AfterContentSaveEvent;
-import com.chestnut.contentcore.listener.event.BeforeContentSaveEvent;
-import com.chestnut.contentcore.listener.event.OnContentCopyEvent;
-import com.chestnut.contentcore.listener.event.OnContentMoveEvent;
+import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.properties.PublishedContentEditProperty;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
@@ -263,8 +260,14 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			this.getContentService().dao().updateById(content);
 			ContentLogUtils.addLog(ContentOpType.PUBLISH, this.getContentEntity(), this.getOperator());
 		}
+        this.publish0();
+        SpringUtils.publishEvent(new AfterContentPublishEvent(this, this));
 		return true;
 	}
+
+    protected void publish0() {
+        // override this method to process your logic if need.
+    }
 
 	@Override
 	public CmsContent copyTo(CmsCatalog toCatalog, Integer copyType) {

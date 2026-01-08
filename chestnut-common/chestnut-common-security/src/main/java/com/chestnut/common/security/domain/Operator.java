@@ -65,4 +65,12 @@ public class Operator {
         operator.setDeptId(deptId);
         return operator;
     }
+
+    public static Operator defalutOperator() {
+        Operator operator = new Operator();
+        operator.setUserId(0L);
+        operator.setUsername("_cc_system");
+        operator.setUserType(null);
+        return operator;
+    }
 }

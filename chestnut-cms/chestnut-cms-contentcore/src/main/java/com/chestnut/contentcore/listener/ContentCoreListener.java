@@ -319,12 +319,6 @@ public class ContentCoreListener {
 	}
 
 	@EventListener
-	public void afterContentPublish(AfterContentPublishEvent event) {
-		// 静态化
-		this.publishService.asyncStaticizeContent(event.getContent());
-	}
-
-	@EventListener
 	public void afterContentSetTopEvent(AfterContentTopSetEvent event) {
 		if (ContentStatus.isPublished(event.getContent().getContentEntity().getStatus())) {
 			this.publishService.publishContent(event.getContent().getContentEntity(), event.getContent().getOperator());
