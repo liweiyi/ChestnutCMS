@@ -174,6 +174,7 @@ const handleUpdate = (row) => {
   reset()
   const publishpipeId = row.publishpipeId || selectedIds.value
   getPublishPipeData(publishpipeId).then(response => {
+    response.data.sort = parseInt(response.data.sort)
     form.value = response.data
     open.value = true
     title.value = proxy.$t('CMS.PublishPipe.EditDialogTitle')

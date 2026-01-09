@@ -21,7 +21,7 @@ export function getPublishPipeSelectData(query) {
 // 查询发布通道详情
 export function getPublishPipeData(id) {
   return request({
-    url: '/cms/publishpipe/detail' + id,
+    url: '/cms/publishpipe/detail/' + id,
     method: 'get'
   })
 }
