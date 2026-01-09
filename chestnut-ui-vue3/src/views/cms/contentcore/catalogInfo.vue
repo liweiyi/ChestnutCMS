@@ -410,6 +410,7 @@
 <script setup name="CMSCatalogInfo">
 import { codeValidator, pathValidator } from '@/utils/validate';
 import * as catalogApi from "@/api/contentcore/catalog";
+import * as cdnApi from '@/api/contentcore/cdn';
 import CmsCatalogSelector from "@/views/cms/contentcore/catalogSelector";
 import CmsContentSelector from "@/views/cms/contentcore/contentSelector";
 import CmsTemplateSelector from '@/views/cms/contentcore/templateSelector';
@@ -805,6 +806,11 @@ const clipboardSuccess = () => {
   proxy.$modal.msgSuccess(proxy.$t('Common.CopySuccess'));
 }
 
+const handleRefreshCdn = (refreshAll) => {
+  cdnApi.refreshCatalog(props.cid, refreshAll).then(res => {
+    proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'));
+  });
+}
 </script>
 <style scoped>
 .el-form-item {

@@ -329,9 +329,10 @@
 </template>
 <script setup name="CMSSiteInfo">
 import { codeValidator } from '@/utils/validate';
-import { getSite, publishSite, updateSite, exportSiteTheme, setCurrentSite  } from "@/api/contentcore/site";
+import { getSite, publishSite, updateSite, exportSiteTheme  } from "@/api/contentcore/site";
 import { addPublishPipe } from "@/api/contentcore/publishpipe";
 import { genSitemap  } from "@/api/seo/sitemap";
+import * as cdnApi from '@/api/contentcore/cdn';
 import CmsTemplateSelector from '@/views/cms/contentcore/templateSelector';
 import CmsProgress from '@/views/components/Progress';
 import CmsLogoView from '@/views/cms/components/LogoView';
@@ -627,6 +628,11 @@ const submitFormPublishPipe = () => {
   });
 }
 
+const handleRefreshCdn = (refreshAll) => {
+  cdnApi.refreshSite(formInfo.value.siteId, refreshAll).then(res => {
+    proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'));
+  });
+}
 </script>
 <style scoped>
 .siteinfo-container .el-form-item {

@@ -392,6 +392,20 @@
 				<version>${chestnut.version}</version>
 			</dependency>
 
+            <!-- 云服务 -->
+            <dependency>
+                <groupId>com.chestnut</groupId>
+                <artifactId>chestnut-common-cloud</artifactId>
+                <version>${chestnut.version}</version>
+            </dependency>
+
+            <!-- 云服务-火山云 -->
+            <dependency>
+                <groupId>com.chestnut</groupId>
+                <artifactId>chestnut-common-cloud-volc</artifactId>
+                <version>${chestnut.version}</version>
+            </dependency>
+
 			<!-- 代码生成 -->
 			<dependency>
 				<groupId>com.chestnut</groupId>
@@ -454,6 +468,13 @@
 				<artifactId>chestnut-comment</artifactId>
 				<version>${chestnut.version}</version>
 			</dependency>
+
+            <!-- 云服务模块 -->
+            <dependency>
+                <groupId>com.chestnut</groupId>
+                <artifactId>chestnut-cloud</artifactId>
+                <version>${chestnut.version}</version>
+            </dependency>
 
 			<!-- CMS Modules Start -->
 			<!-- 内容核心 -->
@@ -587,6 +608,7 @@
                 <artifactId>chestnut-cms-cdn</artifactId>
                 <version>${chestnut.version}</version>
             </dependency>
+
 			<!-- CMS Modules End -->
 		</dependencies>
 	</dependencyManagement>

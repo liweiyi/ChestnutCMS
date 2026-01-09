@@ -156,6 +156,14 @@
 			<groupId>com.chestnut</groupId>
 			<artifactId>chestnut-cms-dynamic</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-cloud</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-cms-cdn</artifactId>
+        </dependency>
 
 	</dependencies>
 

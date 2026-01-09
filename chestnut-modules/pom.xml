@@ -23,5 +23,6 @@
 		<module>chestnut-vote</module>
 		<module>chestnut-word</module>
         <module>chestnut-monitor</module>
+        <module>chestnut-cloud</module>
     </modules>
 </project>

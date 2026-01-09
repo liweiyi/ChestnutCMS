@@ -331,6 +331,10 @@
                   icon="Search" 
                   @click.native="handleCreateIndex(scope.row)"
                 >{{ $t('CMS.Content.GenIndex') }}</el-dropdown-item>
+                <el-dropdown-item 
+                  icon="Refresh" 
+                    @click.native="handleRefreshCdn(scope.row)"
+                  >{{ $t('CMS.ContentCore.RefreshCdn') }}</el-dropdown-item>
                 <!-- <el-dropdown-item icon="Document" @click.native="handleArchive(scope.row)">{{ $t('CMS.Content.Archive') }}</el-dropdown-item> -->
               </el-dropdown-menu>
             </template>
@@ -473,6 +477,11 @@
             @click="handleCreateIndex(data)">
             <el-icon><Search /></el-icon>{{ $t('CMS.Content.GenIndex') }}
           </li>
+          <li 
+            v-if="data.status == '30'"
+            @click="handleRefreshCdn(data)">
+            <el-icon><Refresh /></el-icon>{{ $t('CMS.ContentCore.RefreshCdn') }}
+          </li>
         </ul>
       </template>
     </context-menu>
@@ -483,6 +492,7 @@ import { getUserPreference } from "@/api/system/user";
 import { getContentTypes } from "@/api/contentcore/catalog";
 import { getArticleBodyFormats } from "@/api/contentcore/article"
 import * as contentApi from "@/api/contentcore/content";
+import * as cdnApi from "@/api/contentcore/cdn";
 import CmsCatalogSelector from "@/views/cms/contentcore/catalogSelector";
 import CmsContentSort from "@/views/cms/contentcore/contentSortDialog";
 import CmsProgress from '@/views/components/Progress';
@@ -901,6 +911,12 @@ function handleProgressClose (result) {
   if (result.status == 'SUCCESS') {
     loadContentList();
   }
+}
+
+function handleRefreshCdn(row) {
+  cdnApi.refreshContent(row.contentId).then(res => {
+    proxy.$modal.msgSuccess(proxy.$t("Common.OpSuccess"));
+  })
 }
 
 
