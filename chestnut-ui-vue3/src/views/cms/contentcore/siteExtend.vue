@@ -433,7 +433,7 @@ import { getHotWordGroupOptions } from "@/api/contentcore/word";
 import { listXModelOptions } from "@/api/contentcore/exmodel";
 import { refreshBdTongjiToken } from "@/api/stat/baidu";
 import SimpleImageViewer from '@/views/cms/components/SimpleImageViewer';
-import * as cloudConfigApi from "@/api/system/cloudConfig";
+import * as cloudConfigApi from "@/api/cloud/config";
 
 const { proxy } = getCurrentInstance();
 
