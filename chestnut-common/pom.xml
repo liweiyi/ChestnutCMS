@@ -22,6 +22,8 @@
 		<module>chestnut-common-log</module>
 		<module>chestnut-common-extend</module>
 		<module>chestnut-common-captcha</module>
+        <module>chestnut-common-cloud</module>
+        <module>chestnut-common-cloud-volc</module>
     </modules>
 	
 	<dependencyManagement>

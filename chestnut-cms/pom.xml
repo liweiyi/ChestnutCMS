@@ -30,6 +30,7 @@
         <module>chestnut-cms-member</module>
         <module>chestnut-cms-seo</module>
         <module>chestnut-cms-dynamic</module>
+        <module>chestnut-cms-cdn</module>
     </modules>
 	
 	<properties>
