@@ -17,6 +17,7 @@ package com.chestnut.common.staticize.tag;
 
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
+import com.chestnut.common.staticize.exception.InvalidTagAttrNameException;
 import com.chestnut.common.staticize.exception.InvalidTagAttrTypeException;
 import com.chestnut.common.staticize.exception.InvalidTagAttrValueException;
 import com.chestnut.common.staticize.exception.MissionTagAttributeException;
@@ -31,6 +32,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 自定义标签会作为共享变量添加到Configuration中。非线程安全！！！
@@ -107,35 +109,41 @@ public abstract class AbstractTag implements ITag, TemplateDirectiveModel {
 	 * @throws TemplateException 模板异常
 	 */
 	Map<String, String> validTagAttributes(Environment env, Map<String, TemplateModel> _attrs) throws TemplateException {
-		CaseInsensitiveMap<String, String> map = null;
 		List<TagAttr> tagAttrs = this.getTagAttrs();
-		if (tagAttrs != null) {
-			CaseInsensitiveMap<String, TemplateModel> attrs = new CaseInsensitiveMap<>();
-			attrs.putAll(_attrs);
-			map = new CaseInsensitiveMap<>();
-			for (TagAttr tagAttr : tagAttrs) {
-				String attrValue = FreeMarkerUtils.getStringFrom(attrs, tagAttr.getName());
-				if (tagAttr.isMandatory() && StringUtils.isEmpty(attrValue)) {
-					throw new MissionTagAttributeException(this.getTagName(), tagAttr.getName(), env);
-				}
-				if (tagAttr.getDataType() == TagAttrDataType.INTEGER && StringUtils.isNotEmpty(attrValue)
-						&& !NumberUtils.isCreatable(attrValue)) {
-					throw new InvalidTagAttrTypeException(this.getTagName(), tagAttr.getName(),
-							tagAttr.getDataType(), attrValue, env);
-				}
-				if (tagAttr.getOptions() != null && StringUtils.isNotEmpty(attrValue)) {
-					String[] optionValues = tagAttr.getOptions().stream().map(TagAttrOption::lowerCaseValue).toArray(String[]::new);
-					if (!ArrayUtils.contains(optionValues, attrValue.toLowerCase())) {
-						throw new InvalidTagAttrValueException(this.getTagName(), tagAttr.getName(), attrValue,
-								Arrays.toString(optionValues), env);
-					}
-				}
-				if (StringUtils.isEmpty(attrValue) && StringUtils.isNotEmpty(tagAttr.getDefaultValue())) {
-					attrValue = tagAttr.getDefaultValue();
-				}
-				map.put(tagAttr.getName(), attrValue);
-			}
-		}
+        if (Objects.isNull(tagAttrs)) {
+            return Map.of();
+        }
+        List<String> availableAttrNames = tagAttrs.stream().map(ta -> ta.getName().toLowerCase()).toList();
+        for (String attrName : _attrs.keySet()) {
+            if (!availableAttrNames.contains(attrName.toLowerCase())) {
+                throw new InvalidTagAttrNameException(this.getTagName(), attrName, env);
+            }
+        }
+        CaseInsensitiveMap<String, TemplateModel> attrs = new CaseInsensitiveMap<>();
+        attrs.putAll(_attrs);
+        CaseInsensitiveMap<String, String> map = new CaseInsensitiveMap<>();
+        for (TagAttr tagAttr : tagAttrs) {
+            String attrValue = FreeMarkerUtils.getStringFrom(attrs, tagAttr.getName());
+            if (tagAttr.isMandatory() && StringUtils.isEmpty(attrValue)) {
+                throw new MissionTagAttributeException(this.getTagName(), tagAttr.getName(), env);
+            }
+            if (tagAttr.getDataType() == TagAttrDataType.INTEGER && StringUtils.isNotEmpty(attrValue)
+                    && !NumberUtils.isCreatable(attrValue)) {
+                throw new InvalidTagAttrTypeException(this.getTagName(), tagAttr.getName(),
+                        tagAttr.getDataType(), attrValue, env);
+            }
+            if (tagAttr.getOptions() != null && StringUtils.isNotEmpty(attrValue)) {
+                String[] optionValues = tagAttr.getOptions().stream().map(TagAttrOption::lowerCaseValue).toArray(String[]::new);
+                if (!ArrayUtils.contains(optionValues, attrValue.toLowerCase())) {
+                    throw new InvalidTagAttrValueException(this.getTagName(), tagAttr.getName(), attrValue,
+                            Arrays.toString(optionValues), env);
+                }
+            }
+            if (StringUtils.isEmpty(attrValue) && StringUtils.isNotEmpty(tagAttr.getDefaultValue())) {
+                attrValue = tagAttr.getDefaultValue();
+            }
+            map.put(tagAttr.getName(), attrValue);
+        }
 		return map;
 	}
 

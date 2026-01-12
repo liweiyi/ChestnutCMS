@@ -1,11 +1,8 @@
 ## 前端运行
 
 ```bash
-# 克隆项目
-git clone https://github.com/yangzongzhuan/RuoYi-Vue3.git
-
 # 进入项目目录
-cd RuoYi-Vue3
+cd chestnut-ui-vue3
 
 # 安装依赖
 npm i --registry=https://registry.npmmirror.com

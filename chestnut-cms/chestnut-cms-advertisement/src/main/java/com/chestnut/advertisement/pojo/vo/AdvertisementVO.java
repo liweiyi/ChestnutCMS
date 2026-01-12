@@ -74,6 +74,9 @@ public class AdvertisementVO {
     
     @XComment("{CMS.AD.RESOURCE_SRC}")
     private String resourceSrc;
+
+    @XComment("{CC.ENTITY.REMARK}")
+    private String remark;
     
     @XComment("{CC.ENTITY.CREATE_BY}")
     private String createBy;
@@ -93,6 +96,7 @@ public class AdvertisementVO {
     	this.offlineDate = ad.getOfflineDate();
     	this.redirectUrl = ad.getRedirectUrl();
     	this.resourcePath = ad.getResourcePath();
+        this.remark = ad.getRemark();
     	this.createBy = ad.getCreateBy();
     	this.createTime = ad.getCreateTime();
     }

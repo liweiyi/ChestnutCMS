@@ -141,29 +141,6 @@ onMounted(() => {
   }, 1000);
 })
 
-function wxLogin() {
-  wxLoginObj.value = new WxLogin({
-    self_redirect: true,
-    id:"login-container", 
-    appid: "wx82da3cc8f5c503e4", 
-    scope: "snsapi_login", 
-    redirect_uri: "http://localhost:89/admin/",
-    state: "123456",
-    style: "white",
-    fast_login: true,
-    onReady: function(isReady){
-      console.log(isReady);
-      if (!isReady) {
-        proxy.$modal.msgError("Load wechat login failed.");
-      }
-    },
-    onQRCodeReady: function(){
-      console.log("QRCode ready.");
-    }
-  });
-  console.log(wxLoginObj.value);
-}
-
 function handleLogin() {
   if (loginConfig.value.captcha.enabled) {
     loginForm.value.captcha = captchaData.value;

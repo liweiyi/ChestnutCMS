@@ -23,6 +23,7 @@ import com.chestnut.common.security.domain.BaseDTO;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
@@ -86,4 +87,7 @@ public class AdvertisementDTO extends BaseDTO {
      */
     @NotNull
     private String resourcePath;
+
+    @Length(max = 255)
+    private String remark;
 }

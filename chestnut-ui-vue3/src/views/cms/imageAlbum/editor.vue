@@ -78,6 +78,7 @@
 import { ElImageViewer } from "element-plus"
 import CmsResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import useAppStore from "@/store/modules/app";
+import { watch } from "vue";
 const appStore = useAppStore();
 
 const { proxy } = getCurrentInstance();
@@ -101,6 +102,10 @@ const imageList = ref([]);
 
 watch(() => model.value, (newVal) => {
   imageList.value = newVal;
+});
+
+watch(imageList, (newVal) => {
+  model.value = newVal;
 });
 
 function handleImageViewerClose() {
