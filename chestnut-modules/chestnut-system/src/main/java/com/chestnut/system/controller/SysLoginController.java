@@ -185,14 +185,18 @@ public class SysLoginController extends BaseRestController {
                 loginConfig.getCaptcha().setExpires(Objects.requireNonNullElse(securityConfig.getCaptchaExpires(), 0));
                 loginConfig.getCaptcha().setDuration(Objects.requireNonNullElse(securityConfig.getCaptchaDuration(), 0));
             }
-            List<LoginConfig.ThirdLogin> thirdLogins = securityConfig.getLoginTypeConfigIds().stream().map(configId -> {
-                SysLoginConfig config = this.loginConfigService.getLoginConfig(configId);
-                LoginConfig.ThirdLogin thirdLogin = new LoginConfig.ThirdLogin();
-                thirdLogin.setType(config.getType());
-                thirdLogin.setId(configId);
-                return thirdLogin;
-            }).toList();
-            loginConfig.setThirds(thirdLogins);
+            if (Objects.nonNull(securityConfig.getLoginTypeConfigIds())) {
+                List<LoginConfig.ThirdLogin> thirdLogins = securityConfig.getLoginTypeConfigIds().stream().map(configId -> {
+                    SysLoginConfig config = this.loginConfigService.getLoginConfig(configId);
+                    LoginConfig.ThirdLogin thirdLogin = new LoginConfig.ThirdLogin();
+                    thirdLogin.setType(config.getType());
+                    thirdLogin.setId(configId);
+                    return thirdLogin;
+                }).toList();
+                loginConfig.setThirds(thirdLogins);
+            } else {
+                loginConfig.setThirds(List.of());
+            }
         }
         return R.ok(loginConfig);
     }
