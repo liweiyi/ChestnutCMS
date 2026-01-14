@@ -200,8 +200,8 @@ public class ContentStaticizeType implements IStaticizeType {
             // 静态化文件地址
             String siteRoot = SiteUtils.getSiteRoot(site, publishPipeCode);
             IContentPathRule rule = ContentCoreUtils.getContentPathRule(catalog.getDetailNameRule());
-            String dir = rule.getDirectory(site, catalog, content);
-            templateContext.setDirectory(siteRoot + dir);
+            String path = Objects.isNull(rule) ? catalog.getPath() : rule.getDirectory(site, catalog, content);
+            templateContext.setDirectory(siteRoot + path);
             String fileName = ContentUtils.getContextExFileName(content.getContentId(), site.getStaticSuffix(publishPipeCode));
             templateContext.setFirstFileName(fileName);
             // 静态化
