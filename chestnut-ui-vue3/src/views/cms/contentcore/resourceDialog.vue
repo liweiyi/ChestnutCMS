@@ -41,10 +41,10 @@
                 <template #default>
                   <el-icon><Plus /></el-icon>
                 </template>
-                <template #file="{file}">
+                <template #file="{file}" style="width: 68px;height: 68px;">
                   <div class="preview-wrap">
                   <div class="image-wrap">
-                    <img v-if="isImageResource(file.name)" :src="file.url" />
+                    <img v-if="isImageResource(file.name)" :src="file.url" style="max-width: 100%;max-height: 100%;" />
                     <svg-icon v-else :icon-class="getResourceFileIconClass(file.name)" />
                   </div>
                   <span class="el-upload-list__item-actions">
@@ -497,83 +497,94 @@ onMounted(() => {
   });
 });
 </script>
-<style scoped>
-.resource-dialog .el-upload-list__item .svg-icon {
-  width: 66px;
-  height: 66px;
+<style scoped lang="scss">
+.resource-dialog {
+
+  .el-header {
+    padding: 5px;
+    background-color: #f7f7f7;
+  }
+
+  .el-aside {
+    height: 500px;
+  }
+
+  .el-main {
+    overflow-y: hidden;
+    background-color: #fff;
+    padding: 0 4px;
+  }
+
+  .el-card {
+    width: 148px;
+    text-align: center;
+    float: left;
+    border: none;
+    padding: 0;
+
+    .el-card__body {
+      padding: 15px;
+
+      .r-name {
+        height: 28px;
+        line-height: 28px;
+        overflow: hidden;
+      }
+
+      .item-img {
+        width: 120px;
+        height: 120px;
+        background-color: #f7f7f7;
+        cursor: pointer;
+      }
+
+      .item-svg {
+        width: 120px;
+        height: 120px;
+        background-color: #f7f7f7;
+        cursor: pointer;
+        padding: 20px;
+      }
+    }
+  }
+
+  .el-upload-list__item  {
+    .svg-icon {
+      width: 66px;
+      height: 66px;
+    }
+    .preview-wrap {
+      .image-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 66px;
+        height: 66px;
+      }
+    }
+  }
+
+  .el-tag {
+    margin-right: 10px;
+  }
+
+  .button-new-tag {
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .input-new-tag {
+    width: 120px;
+    vertical-align: bottom;
+  }
 }
-.resource-dialog .el-aside {
-  height: 500px;
-}
-.resource-dialog .el-header {
-  padding: 5px;
-  background-color: #f7f7f7;
-}
-.resource-dialog .el-main {
-  overflow-y: hidden;
-  background-color: #fff;
-  padding: 0 4px;
-}
-.resource-dialog .el-card {
-  width: 148px;
-  text-align: center;
-  float: left;
-  border: none;
-  padding: 0;
-}
-.resource-dialog .el-card__body {
-  padding: 15px;
-}
-.resource-dialog .el-card .r-name {
-  height: 28px;
-  line-height: 28px;
-  overflow: hidden;
-}
-.resource-dialog .el-card .item-img {
-  width: 120px;
-  height: 120px;
-  background-color: #f7f7f7;
-  cursor: pointer;
-}
-.resource-dialog .el-card .item-svg {
-  width: 120px;
-  height: 120px;
-  background-color: #f7f7f7;
-  cursor: pointer;
-  padding: 20px;
-}
-.resource-dialog .el-tag {
-  margin-right: 10px;
-}
-.resource-dialog .button-new-tag {
-  height: 32px;
-  line-height: 30px;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-.resource-dialog .input-new-tag {
-  width: 120px;
-  vertical-align: bottom;
-}
-:deep(.resource-dialog .el-upload-list--picture-card .el-upload-list__item) {
+:deep(.el-upload-list__item) {
   width: 68px;
   height: 68px;
 }
-:deep(.resource-dialog .el-upload-list--picture-card .el-upload-list__item .preview-wrap) {
-  /* line-height: normal;     */
-}
-:deep(.resource-dialog .el-upload-list--picture-card .el-upload-list__item .preview-wrap .image-wrap) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 66px;
-  width: 66px;
-}
-:deep(.resource-dialog .el-upload-list--picture-card .el-upload-list__item .preview-wrap .image-wrap img) {
-  max-width: 66px;
-  max-height: 66px;
-}
-:deep(.resource-dialog .el-upload--picture-card) {
+:deep(.el-upload.el-upload--picture-card) {
   line-height: 78px;
   width: 68px;
   height: 68px;
