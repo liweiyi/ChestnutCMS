@@ -383,7 +383,7 @@ function handleDialogOk() {
   if (addItem.value) {
     form.value.content[current.value.row].items.splice(current.value.col, 0, formItem.value);
   } else {
-    proxy.$set(form.value.content[current.value.row].items, current.value.col, formItem.value);
+    form.value.content[current.value.row].items[current.value.col] = formItem.value;
   }
   dialogVisible.value = false;
 }
