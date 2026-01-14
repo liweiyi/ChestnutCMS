@@ -183,9 +183,6 @@
           <div v-if="form.linkFlag !== 'Y' && contentType === 'video'">
             <cms-video-editor v-model="form.videoList" @choose="handleSetLogo"></cms-video-editor>
           </div>
-          <div v-if="form.linkFlag !== 'Y' && contentType === 'file'">
-            <cms-file-editor v-model="form.file" @choose="handleSetLogo" :catalogId="catalogId"></cms-file-editor>
-          </div>
         </el-col>
         <el-col :span="8">
           <div class="bg-purple-white">

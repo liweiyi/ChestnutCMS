@@ -10,7 +10,7 @@ const useAppStore = defineStore(
         hide: false
       },
       device: 'desktop',
-      isFree: false, // 是否是免费版
+      isFree: true
       size: Cookies.get('size') || 'default'
     }),
     actions: {
