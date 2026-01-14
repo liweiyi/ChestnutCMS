@@ -248,7 +248,7 @@ function getResourceFileIconClass(path) {
 }
 
 function handleTabClick(tab, event) {
-  if (activeName.value == "resources" && !resourcesLoaded.value) {
+  if (tab.paneName == "resources" && !resourcesLoaded.value) {
     loadResources();
   }
 }
@@ -289,6 +289,7 @@ function loadMyResources() {
 }
 
 function loadResources() {
+
   loadingList.value = true;
   if (dateRange.value && dateRange.value.length == 2) {
     filterQuery.beginTime = dateRange.value[0];
@@ -300,6 +301,7 @@ function loadResources() {
     resourceList.value.forEach(r => r.selected = false);
     resourceTotal.value = parseInt(response.data.total);
     loadingList.value = false;
+    resourcesLoaded.value = true;
   });
 }
 
