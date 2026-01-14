@@ -10,7 +10,7 @@ const useAppStore = defineStore(
         hide: false
       },
       device: 'desktop',
-      isFree: true
+      isFree: true,
       size: Cookies.get('size') || 'default'
     }),
     actions: {
