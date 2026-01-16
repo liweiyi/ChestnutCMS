@@ -15,10 +15,15 @@
  */
 package com.chestnut.customform.domain.dto;
 
+import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
+import com.chestnut.system.fixed.dict.YesOrNo;
+import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
 
@@ -30,10 +35,51 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class UpdateCustomFormRequest extends CreateCustomFormRequest {
+public class UpdateCustomFormRequest extends BaseDTO {
 
     @LongId
     private Long formId;
+
+    /**
+     * 名称
+     */
+    @NotBlank
+    @Length(max = 100)
+    private String name;
+
+    /**
+     * 编码
+     */
+    @NotBlank
+    @Length(max = 50)
+    private String code;
+
+    /**
+     * 是否需要验证码
+     */
+    @NotBlank
+    @Dict(YesOrNo.TYPE)
+    private String needCaptcha;
+
+    /**
+     * 是否需要会员登录
+     */
+    @NotBlank
+    @Dict(YesOrNo.TYPE)
+    private String needLogin;
+
+    /**
+     * 提交用户唯一性限制（无限制、IP、浏览器指纹）
+     */
+    @NotBlank
+    @Length(max = 20)
+    private String ruleLimit;
+
+    /**
+     * 备注
+     */
+    @Length(max = 500)
+    private String remark;
 
     /**
      * 模板配置

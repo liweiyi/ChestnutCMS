@@ -20,6 +20,8 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.service.ISysDictTypeService;
+import com.chestnut.xmodel.core.IMetaControlType;
+import com.chestnut.xmodel.core.IMetaFieldValidation;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.dto.FieldOptions;
@@ -42,12 +44,28 @@ public class XModelUtils {
 
 	private static final Map<String, IMetaModelType> metaModelTypeMap = SpringUtils.getBeanMap(IMetaModelType.class);
 
+    private static final Map<String, IMetaControlType> metaControlTypeMap = SpringUtils.getBeanMap(IMetaControlType.class);
+
+    private static final Map<String, IMetaFieldValidation> metaFieldValidationMap = SpringUtils.getBeanMap(IMetaFieldValidation.class);
+
 	private static final ISysDictTypeService dictService = SpringUtils.getBean(ISysDictTypeService.class);
 
 	public static IMetaModelType getMetaModelType(String type) {
 		IMetaModelType iMetaModelType = metaModelTypeMap.get(IMetaModelType.BEAN_PREFIX + type);
 		Assert.notNull(iMetaModelType, () -> MetaErrorCode.UNSUPPORTED_META_MODEL_TYPE.exception(type));
 		return iMetaModelType;
+	}
+
+    public static IMetaControlType getMetaControlType(String type) {
+		IMetaControlType iMetaControlType = metaControlTypeMap.get(IMetaControlType.BEAN_PREFIX + type);
+		Assert.notNull(iMetaControlType, () -> MetaErrorCode.UNSUPPORTED_META_CONTROL_TYPE.exception(type));
+		return iMetaControlType;
+	}
+
+    public static IMetaFieldValidation getMetaFieldValidation(String type) {
+		IMetaFieldValidation iMetaFieldValidation = metaFieldValidationMap.get(IMetaFieldValidation.BEAN_PREFIX + type);
+		Assert.notNull(iMetaFieldValidation, () -> MetaErrorCode.UNSUPPORTED_META_FIELD_VALIDATION.exception(type));
+		return iMetaFieldValidation;
 	}
 
 	public static void validateMetaModelTypes() {

@@ -66,11 +66,17 @@ public class MetaControlType_CmsResource implements IMetaControlType {
         if (StringUtils.isBlank(valueStr)) {
             return List.of();
         }
-        List<CmsResourceMetaValue> metaValue = JacksonUtils.fromList(valueStr, CmsResourceMetaValue.class);
-        if (Objects.nonNull(metaValue)) {
-            metaValue.forEach(item -> item.setSrc(InternalUrlUtils.getActualPreviewUrl(item.getPath())));
+        if (JacksonUtils.isJson(valueStr)) {
+            List<CmsResourceMetaValue> metaValue = JacksonUtils.fromList(valueStr, CmsResourceMetaValue.class);
+            if (Objects.nonNull(metaValue)) {
+                metaValue.forEach(item -> item.setSrc(InternalUrlUtils.getActualPreviewUrl(item.getPath())));
+            }
+            return metaValue;
+        } else {
+            CmsResourceMetaValue metaValue = new CmsResourceMetaValue();
+            metaValue.setPath(valueStr);
+            return List.of(metaValue);
         }
-        return metaValue;
     }
 
     @Setter

@@ -19,11 +19,11 @@ public interface CustomFormPriv {
 
 	String Prefix = "cms:customform:";
 
-	public String View = Prefix + "view";
+	String View = Prefix + "view";
 
-	public String Add = Prefix + "add";
+	String Add = Prefix + "add";
 
-	public String Edit = Prefix + "edit";
+	String Edit = Prefix + "edit";
 
-	public String Delete = Prefix + "delete";
+	String Delete = Prefix + "delete";
 }

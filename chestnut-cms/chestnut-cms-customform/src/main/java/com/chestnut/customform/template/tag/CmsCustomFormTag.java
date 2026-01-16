@@ -115,10 +115,12 @@ public class CmsCustomFormTag extends AbstractTag {
 			String staticFileName = form.getCode() + "." + site.getStaticSuffix(context.getPublishPipeCode());
 			String staticFilePath = CustomFormConsts.STATICIZE_DIRECTORY + staticFileName;
 
-			String staticContent = templateService.getTemplateStaticContentCache(templateKey);
+            String cacheKey =  TemplateUtils.getStaticCacheKey(site.getSiteId()
+                    + ":" + context.getPublishPipeCode()  + ":" + form.getCode());
+			String staticContent = templateService.getTemplateStaticContentCache(cacheKey);
 			if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
 				staticContent = this.processTemplate(env, form, site, context.getPublishPipeCode(), templateKey);
-				this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
+				this.templateService.setTemplateStaticContentCache(cacheKey, staticContent);
 				if (ssi) {
 					FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
 				}

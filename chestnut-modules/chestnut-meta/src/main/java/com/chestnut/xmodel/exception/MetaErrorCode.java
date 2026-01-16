@@ -49,6 +49,16 @@ public enum MetaErrorCode implements ErrorCode {
 	 */
 	UNSUPPORTED_META_MODEL_TYPE,
 
+    /**
+	 * 不支持的元数据控件类型：{0}
+	 */
+    UNSUPPORTED_META_CONTROL_TYPE,
+
+    /**
+	 * 不支持的元数据字段验证规则：{0}
+	 */
+    UNSUPPORTED_META_FIELD_VALIDATION,
+
 	/**
 	 * 元数据模型不存在
 	 */

@@ -15,10 +15,10 @@
         </div>
         <div class="toolbar">
           <el-tooltip class="item" effect="dark" :content="$t('Common.Edit')" placement="top">
-            <i class="el-icon-edit" @click="handleEdit(index)"></i>
+            <el-icon @click="handleEdit(index)"><Edit /></el-icon>
           </el-tooltip>
           <el-tooltip class="item" effect="dark" :content="$t('Common.Remove')" placement="top">
-            <i class="el-icon-delete" @click="handleRemove(index)"></i>
+            <el-icon @click="handleRemove(index)"><Delete /></el-icon>
           </el-tooltip>
         </div>
       </div>
@@ -44,7 +44,10 @@ import useAppStore from "@/store/modules/app"
 const appStore = useAppStore()
 const { proxy } = getCurrentInstance()
 
-const model = defineModel();
+const model = defineModel({
+  type: Array,
+  default: () => [],
+});
 
 const props = defineProps({
   type: {
@@ -89,7 +92,6 @@ const showAdd = computed(() => {
 });
 
 const openResourceDialog = ref(false);
-const showImageViewer = ref(false);
 const curIndex = ref(-1);
 
 function handleResourceDialogOk (results) {
@@ -150,7 +152,7 @@ function isImageResource (index) {
   float: left;
 }
 .file-uploder .file-wrap:hover .toolbar {
-  display: block;
+  display: flex;
 }
 .file-uploder .el-image {
   background-color: #E7E7E7;
@@ -174,22 +176,25 @@ function isImageResource (index) {
 }
 .file-uploder .toolbar {
   position: absolute;
-  text-align: center;
   width: 100%;
+  height: 1.5rem;
   bottom: 0;
   z-index: 100;
   color: #eee;
-  background-color: #000;
-  transition: opacity .3s;
-  opacity: 0.8;
+  background-color: rgba(0,0,0,.5);
+  transition: opacity 0.3s;
+  opacity: 80;
   display: none;
+  align-items: center;
+  justify-content: space-around;
 }
-.file-uploder .toolbar i {
-  font-size: 16px;
-  padding: 7px;
+.file-uploder .toolbar .el-icon {
+  font-size: 1rem;
+  width: 1rem;
+  height: 1rem;
   cursor: pointer;
 }
-.file-uploder .toolbar i:hover {
+.file-uploder .toolbar .el-icon:hover {
   color: #409EFF;
 }
 .file-uploder .no-picture {
@@ -198,6 +203,9 @@ function isImageResource (index) {
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px dashed #a7a7a7;
+  margin-bottom: 5px;
+  margin-right: 5px;
 }
 .file-uploder .no-picture:hover {
   color: #409EFF;

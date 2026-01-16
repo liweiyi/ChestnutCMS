@@ -136,7 +136,7 @@
 
     <el-dialog 
       :title="title" 
-      v-model:open="open"
+      v-model="open"
       :close-on-click-modal="false" 
       width="600px" 
       append-to-body>
@@ -203,7 +203,7 @@
     </el-dialog>
     <!-- 模板选择组件 -->
     <cms-template-selector 
-      :open="openTemplateSelector" 
+      v-model:open="openTemplateSelector" 
       :publishPipeCode="publishPipe" 
       @ok="handleTemplateSelected"
       @cancel="handleTemplateSelectorCancel" />
@@ -263,7 +263,7 @@ const objects = reactive({
     ]
   }
 })
-const { queryParams, form } = toRefs(objects)
+const { queryParams, form, rules } = toRefs(objects)
 
 onMounted(() => {
   loadLimitRules();
@@ -352,9 +352,9 @@ function handleEdit (row) {
   const formId = row.formId ? row.formId : ids.value[0];
   getCustomForm(formId).then(response => {
     form.value = response.data;
-    open.value = true;
-    title.value = proxy.$t('CMS.CustomForm.EditTitle');
   }).catch(() => {});
+  title.value = proxy.$t('CMS.CustomForm.EditTitle');
+  open.value = true;
 }
 
 function handleCancel () {

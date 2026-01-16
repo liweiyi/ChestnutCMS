@@ -175,13 +175,13 @@ export const constantRoutes = [
         path: 'customform/fields',
         component: () => import('@/views/meta/fieldList'),
         name: 'CmsCustomFields',
-        meta: { noCache: true, title: i18n.global.t('CMS.CustomForm.RouteFieldList'), activeMenu: '/operations/customform'}
+        meta: { title: i18n.global.t('CMS.CustomForm.RouteFieldList'), activeMenu: '/operations/customform'}
       },
       {
         path: 'customform/data',
         component: () => import('@/views/cms/customform/data'),
-        name: 'CmsCustomData',
-        meta: { noCache: true, title: i18n.global.t('CMS.CustomForm.RouteData'), activeMenu: '/operations/customform'}
+        name: 'CmsCustomformData',
+        meta: { title: i18n.global.t('CMS.CustomForm.RouteData'), activeMenu: '/operations/customform'}
       }
     ]
   }

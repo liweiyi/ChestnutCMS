@@ -30,15 +30,17 @@ import com.chestnut.customform.CmsCustomFormMetaModelType;
 import com.chestnut.customform.permission.CustomFormPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
+import com.chestnut.xmodel.core.IMetaControlType;
+import com.chestnut.xmodel.core.MetaModel;
+import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.service.IModelDataService;
+import com.chestnut.xmodel.service.IModelService;
+import com.chestnut.xmodel.util.XModelUtils;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * <p>
@@ -55,6 +57,8 @@ public class CustomFormDataController extends CmsRestController {
 
     private final IModelDataService modelDataService;
 
+    private final IModelService modelService;
+
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.View)
     @GetMapping("/list")
     public R<?> getList(@RequestParam @LongId Long formId, @RequestParam(required = false) String ip) {
@@ -67,13 +71,17 @@ public class CustomFormDataController extends CmsRestController {
                 sqlBuilder.and().eq(CmsCustomFormMetaModelType.FIELD_CLIENT_IP.getFieldName(), ip);
             }
         });
+        MetaModel metaModel = modelService.getMetaModel(formId);
         List<Map<String, Object>> dataList = page.getRecords().stream().map(data -> {
             Map<String, Object> map = new HashMap<>();
             data.forEach((k, v)  -> {
-                if (Objects.nonNull(v) && InternalUrlUtils.isInternalUrl(v.toString())) {
-                    map.put(k + "_src", InternalUrlUtils.getActualPreviewUrl(v.toString()));
+                Optional<MetaModelField> first = metaModel.getFields().stream().filter(field -> field.getCode().equals(k)).findFirst();
+                if (first.isPresent()) {
+                    IMetaControlType metaControlType = XModelUtils.getMetaControlType(first.get().getControlType());
+                    map.put(k, metaControlType.stringAsValue(v.toString()));
+                } else {
+                    map.put(k, v);
                 }
-                map.put(k, v);
             });
             return map;
         }).toList();

@@ -15,7 +15,7 @@
     </el-input>
     <!-- 内容选择组件 -->
     <cms-content-selector
-      :open="openContentSelector"
+      v-model:open="openContentSelector"
       @ok="handleContentSelectorOk"
       @close="handleContentSelectorClose"></cms-content-selector>
   </div>
@@ -23,13 +23,18 @@
 <script setup name="CmsContentSelector">
 import CmsContentSelector from "@/views/cms/contentcore/contentSelector";
 
-const model = defineModel();
+const model = defineModel({
+  type: [ String, Object ],
+  default: {},
+  required: true,
+});
 
 const props = defineProps({
   selected: {
-    type: [ String, Object ],
-    default: {},
-    required: true,
+    default: {
+      contentId: '',
+      title: '',
+    },
   },
   width: {
     type: String,

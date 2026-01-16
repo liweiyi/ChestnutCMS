@@ -252,7 +252,7 @@
     </el-dialog>
   </div>
 </template>
-<script setup name="CmsFile">
+<script setup name="CmsContentcoreFile">
 import { fileNameValidator } from "@/utils/validate";
 import { isImage, getFileSvgIconClass } from "@/utils/chestnut";
 import {

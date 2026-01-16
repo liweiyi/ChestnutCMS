@@ -21,15 +21,12 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
-import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.contentcore.service.IPublishPipeService;
-import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.customform.domain.CmsCustomForm;
 import com.chestnut.customform.domain.dto.CreateCustomFormRequest;
@@ -61,8 +58,6 @@ import java.util.List;
 @RequestMapping("/cms/customform")
 @RequiredArgsConstructor
 public class CustomFormController extends CmsRestController {
-
-    private final ISiteService siteService;
 
     private final IPublishPipeService publishPipeService;
 
