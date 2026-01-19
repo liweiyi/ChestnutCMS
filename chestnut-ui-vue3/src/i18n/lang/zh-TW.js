@@ -1,6 +1,7 @@
 const zhTW = {
   APP: {
-    TITLE: '栗子內容管理系統'
+    TITLE: '栗子內容管理系統',
+    Copyright: 'Copyright © 2022-2026 ChestnutCMS. All Rights Reserved.'
   },
   Common: {
     Search: '搜索',

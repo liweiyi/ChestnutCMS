@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,10 +148,9 @@ public class CmsIncludeTag extends AbstractTag {
 					+ "&t=" + templateFile + "&" + params;
 			env.getOut().write(StringUtils.messageFormat(SSI_INCLUDE_VIRTUAL_TAG, virtualPath));
 		} else {
-			String cacheKey = includeTemplateKey + (StringUtils.isEmpty(params) ? "" : ("?" + params));
+			String cacheKey = TemplateUtils.getStaticCacheKey(includeTemplateKey + (StringUtils.isEmpty(params) ? "" : ("?" + params)));
 			String siteRoot = SiteUtils.getSiteRoot(site, context.getPublishPipeCode());
-			String staticFilePath = TemplateUtils.getIncludeRelativeStaticPath(site,
-					context.getPublishPipeCode(), includeTemplateKey);
+			String staticFilePath = getIncludeRelativeStaticPath(site, context.getPublishPipeCode(), templateFile);
 			String staticContent = cache ? templateService.getTemplateStaticContentCache(cacheKey) : null;
 			if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
 				staticContent = processTemplate(env, StringUtils.getPathParameterMap(file), includeTemplateKey);
@@ -171,6 +170,14 @@ public class CmsIncludeTag extends AbstractTag {
 		}
 		return null;
 	}
+
+    /**
+     * 页面区块静态文件相对路径
+     */
+    public static String getIncludeRelativeStaticPath(CmsSite site, String publishPipeCode, String includeTemplateFile) {
+        return "include/" + StringUtils.substringBefore(includeTemplateFile, ".")
+                + "." + site.getStaticSuffix(publishPipeCode);
+    }
 
 	public static String getIncludePathPrefix(String publishPipeCode, CmsSite site) {
 		String prefix = null;

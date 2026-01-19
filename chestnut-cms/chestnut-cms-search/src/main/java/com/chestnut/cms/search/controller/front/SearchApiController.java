@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,7 +213,7 @@ public class SearchApiController extends BaseRestController {
 			@RequestParam(value = "sid") @LongId Long siteId,
 			@RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
 			@RequestParam(value = "pp") @NotBlank @Length(max = 50) String publishPipeCode,
-			@RequestParam(value = "q", required = false) @NotBlank @Length(max = 200) String query,
+			@RequestParam(value = "q", required = false) @Length(max = 200) String query,
 			@RequestParam(value = "ct", required = false) @Length(max = 20) String contentType,
 			@RequestParam(value = "page", required = false, defaultValue = "1") @Min(1) Integer page,
 			@RequestParam(value = "size", required = false, defaultValue = "10") @Min(1) @Max(100) Integer size,
@@ -261,7 +261,9 @@ public class SearchApiController extends BaseRestController {
 			}
 			vo.setLink(InternalUrlUtils.getActualUrl(vo.getLink(), publishPipeCode, preview));
 			vo.setLogo(InternalUrlUtils.getActualUrl(vo.getLogo(), publishPipeCode, preview));
-			return vo;
+            List<String> images = vo.getImages().stream().map(i -> InternalUrlUtils.getActualUrl(i, publishPipeCode, preview)).toList();
+            vo.setImages(images);
+            return vo;
 		}).toList();
 		List<String> contentIds = list.stream().map(c -> c.getContentId().toString()).toList();
 		Map<Long, ContentDynamicDataVO> map = this.contentDynamicDataService.getContentDynamicDataList(contentIds)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,6 +83,11 @@ public enum ContentTips implements TipMessage {
      * 模板文件不存在：{0}
      */
     TEMPLATE_NOT_EXIST,
+
+    /**
+     * 模板未设置: {0}
+     */
+    TEMPLATE_NOT_SET,
 
     /**
      * 链接内容无页面，内容标题：{0}, 跳转链接：{1}

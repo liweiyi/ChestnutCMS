@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,9 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	 */
 	void deleteContentsByCatalog(CmsCatalog catalog, boolean includeChild, LoginUser operator);
 
-	/**
+    String getContentStaticPath(CmsContent content, String publishPipeCode);
+
+    /**
 	 * 获取内容链接
 	 * 
 	 * @param content 内容

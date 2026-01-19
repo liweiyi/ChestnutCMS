@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class HotWordMonitoredCache implements IMonitoredCache<Map<String, HotWor
 
     public static final String ID = "HotWord";
 
-    private static final String CACHE_PREFIX = "hotword:";
+    private static final String CACHE_PREFIX = "cc:hotword:";
 
     private final RedisCache redisCache;
 

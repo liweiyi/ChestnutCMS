@@ -1,8 +1,10 @@
+import { i18n } from '@/i18n'
+
 export default {
   /**
    * 网页标题
    */
-  title: import.meta.env.VITE_APP_TITLE,
+  title: i18n.global.t('APP.TITLE'),
 
   /**
    * 侧边栏主题 深色主题theme-dark，浅色主题theme-light
@@ -52,6 +54,6 @@ export default {
   /**
    * 底部版权文本内容
    */
-  footerContent: 'Copyright © 2018-2025 RuoYi. All Rights Reserved.'
+  footerContent: i18n.global.t('APP.Copyright')
 }
 

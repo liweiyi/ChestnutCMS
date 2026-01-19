@@ -27,7 +27,7 @@ defineProps({
   }
 })
 
-const title = proxy.$t('APP.TITLE') || import.meta.env.VITE_APP_TITLE
+const title = proxy.$t('APP.TITLE')
 const settingsStore = useSettingsStore()
 const sideTheme = computed(() => settingsStore.sideTheme)
 

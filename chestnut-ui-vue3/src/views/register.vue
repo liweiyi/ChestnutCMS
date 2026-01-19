@@ -1,7 +1,7 @@
 <template>
   <div class="register">
     <el-form ref="registerRef" :model="registerForm" :rules="registerRules" class="register-form">
-      <h3 class="title">{{ title }}</h3>
+      <h3 class="title">{{ $t('APP.TITLE') }}</h3>
       <el-form-item prop="username">
         <el-input 
           v-model="registerForm.username" 
@@ -70,7 +70,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-register-footer">
-      <span>{{ copyright }}</span>
+      <span>{{ $t('APP.Copyright') }}</span>
     </div>
   </div>
 </template>
@@ -79,7 +79,6 @@
 import { ElMessageBox } from "element-plus"
 import { register } from "@/api/login"
 
-const title = import.meta.env.VITE_APP_TITLE
 const router = useRouter()
 const { proxy } = getCurrentInstance()
 

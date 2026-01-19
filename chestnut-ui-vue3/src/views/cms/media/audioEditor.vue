@@ -118,7 +118,7 @@ watch(() => model.value, (newVal) => {
 
 watch(itemList, (newVal) => {
   model.value = newVal || [];
-});
+}, { deep: true });
 
 function handleResourceDialogOk(results) {
   if (resourceType.value == 'image') {

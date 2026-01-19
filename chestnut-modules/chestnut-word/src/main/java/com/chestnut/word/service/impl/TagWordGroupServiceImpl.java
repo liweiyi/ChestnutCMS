@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SortUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.word.cache.TagWordGroupMonitoredCache;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.domain.dto.CreateTagWordGroupRequest;
@@ -46,6 +47,15 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 		implements ITagWordGroupService {
 
 	private final TagWordMapper tagWordMapper;
+
+    private final TagWordGroupMonitoredCache tagWordGroupMonitoredCache;
+
+    @Override
+    public TagWordGroup getTagWordGroup(String owner, String code) {
+        return tagWordGroupMonitoredCache.getCacheValue(owner, code, () -> {
+            return this.lambdaQuery().eq(TagWordGroup::getCode, code).one();
+        });
+    }
 
 	@Override
 	public TagWordGroup addTagWordGroup(CreateTagWordGroupRequest req) {
@@ -72,6 +82,7 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 		Assert.notNull(dbGroup, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("groupId", req.getGroupId()));
 
 		checkUnique(dbGroup.getOwner(), dbGroup.getGroupId(), req.getCode());
+        String oldCode = dbGroup.getCode();
 
 		dbGroup.setParentId(req.getParentId());
 		dbGroup.setName(req.getName());
@@ -81,6 +92,12 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 		dbGroup.setRemark(req.getRemark());
 		dbGroup.updateBy(req.getOperator().getUsername());
 		this.updateById(dbGroup);
+
+        if (!oldCode.equals(dbGroup.getCode())) {
+            tagWordGroupMonitoredCache.removeCache(dbGroup.getOwner(), dbGroup.getCode());
+        } else {
+            tagWordGroupMonitoredCache.removeCache(dbGroup);
+        }
 	}
 
 	@Override
@@ -95,10 +112,12 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteTagWordGroups(List<Long> groupIds) {
-		for (Long groupId : groupIds) {
-			this.removeById(groupId);
-			this.tagWordMapper.delete(new LambdaQueryWrapper<TagWord>().eq(TagWord::getGroupId, groupId));
-		}
+        List<TagWordGroup> tagWordGroups = this.listByIds(groupIds);
+        for (TagWordGroup group : tagWordGroups) {
+            this.removeById(group);
+            tagWordGroupMonitoredCache.removeCache(group);
+            this.tagWordMapper.delete(new LambdaQueryWrapper<TagWord>().eq(TagWord::getGroupId, group.getGroupId()));
+        }
 	}
 
 	@Override

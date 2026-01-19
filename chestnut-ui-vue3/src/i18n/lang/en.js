@@ -1,6 +1,7 @@
 const en = {
   APP: {
-    TITLE: 'ChestnutCMS'
+    TITLE: 'ChestnutCMS',
+    Copyright: 'Copyright © 2022-2026 ChestnutCMS. All Rights Reserved.'
   },
   Common: {
     Search: 'Search',

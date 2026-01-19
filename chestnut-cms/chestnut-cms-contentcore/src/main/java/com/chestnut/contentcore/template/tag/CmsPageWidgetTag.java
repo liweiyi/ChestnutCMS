@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,10 +125,12 @@ public class CmsPageWidgetTag extends AbstractTag {
 			String staticFileName = PageWidgetUtils.getStaticFileName(pw, site.getStaticSuffix(context.getPublishPipeCode()));
 			String staticFilePath = pw.getPath() + staticFileName;
 
-			String staticContent = templateService.getTemplateStaticContentCache(templateKey);
+            String cacheKey =  TemplateUtils.getStaticCacheKey(site.getSiteId() +
+                    ":" + context.getPublishPipeCode() + ":" + pw.getCode());
+			String staticContent = templateService.getTemplateStaticContentCache(cacheKey);
 			if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
 				staticContent = this.processTemplate(env, pw, templateKey);
-				this.templateService.setTemplateStaticContentCache(templateKey, staticContent);
+				this.templateService.setTemplateStaticContentCache(cacheKey, staticContent);
 				if (ssi) {
 					FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
 				}

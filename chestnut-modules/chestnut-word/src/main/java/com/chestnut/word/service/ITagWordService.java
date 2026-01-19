@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.chestnut.word.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.chestnut.word.cache.TagWordMonitoredCache;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.dto.BatchAddTagRequest;
 import com.chestnut.word.domain.dto.CreateTagWordRequest;
@@ -25,7 +26,15 @@ import java.util.List;
 
 public interface ITagWordService extends IService<TagWord> {
 
-	/**
+
+    /**
+     * 获取TAG词列表，优先缓存
+     *
+     * @param groupCode
+     */
+    List<TagWordMonitoredCache.TagWordCache> getTagWords(String owner, String groupCode);
+
+    /**
 	 * 添加TAG词
 	 * 
 	 * @param req

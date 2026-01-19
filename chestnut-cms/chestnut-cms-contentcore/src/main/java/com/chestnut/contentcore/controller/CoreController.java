@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,8 +80,7 @@ public class CoreController extends BaseRestController {
 	@GetMapping("/cms/preview/{dataType}/{dataId}")
 	public void preview(@PathVariable("dataType") String dataType, @PathVariable("dataId") Long dataId,
 						@RequestParam(value = "pp") String publishPipe,
-						@RequestParam(value = "pi", required = false, defaultValue = "1") Integer pageIndex,
-						@RequestParam(value = "list", required = false, defaultValue = "N") String listFlag)
+						@RequestParam(value = "pi", required = false, defaultValue = "1") Integer pageIndex)
 			throws IOException, TemplateException {
 		HttpServletResponse response = ServletUtils.getResponse();
 		response.setCharacterEncoding(Charset.defaultCharset().displayName());

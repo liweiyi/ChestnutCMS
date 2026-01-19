@@ -5,9 +5,9 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.5.9
+  version: 1.5.10
   # 版权年份
-  copyrightYear: 2022-2025
+  copyrightYear: 2022-2026
   system:
     # 演示模式开关
     demoMode: true

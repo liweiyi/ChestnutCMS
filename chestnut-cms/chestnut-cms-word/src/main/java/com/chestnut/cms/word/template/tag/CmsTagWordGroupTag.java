@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -52,34 +52,34 @@ public class CmsTagWordGroupTag extends AbstractListTag {
 	private static final String ATTR_LEVEL = "level";
 
 	private final ITagWordGroupService tagWordGroupService;
-	
+
 	@Override
 	public List<TagAttr> getTagAttrs() {
 		List<TagAttr> tagAttrs = super.getTagAttrs();
-		tagAttrs.add(new TagAttr(ATTR_CODE, true, TagAttrDataType.STRING, ATTR_USAGE_CODE) );
+		tagAttrs.add(new TagAttr(ATTR_CODE, false, TagAttrDataType.STRING, ATTR_USAGE_CODE) );
 		tagAttrs.add(new TagAttr(ATTR_LEVEL, false, TagAttrDataType.STRING, ATTR_USAGE_LEVEL,
-				TagWordGroupTagLevel.toTagAttrOptions(), TagWordGroupTagLevel.Current.name()));
+				TagWordGroupTagLevel.toTagAttrOptions(), TagWordGroupTagLevel.Root.name()));
 		return tagAttrs;
 	}
 
 	@Override
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
 		String group = MapUtils.getString(attrs, ATTR_CODE);
-		Long siteId = TemplateUtils.evalSiteId(env);
-		Optional<TagWordGroup> opt = tagWordGroupService.lambdaQuery()
-				.eq(TagWordGroup::getOwner, siteId)
-				.eq(TagWordGroup::getCode, group).oneOpt();
-		if (opt.isEmpty()) {
-			throw new TemplateException("Tag word group not found: " + group, env);
-		}
-		String level = MapUtils.getString(attrs, ATTR_LEVEL);
+        String level = MapUtils.getString(attrs, ATTR_LEVEL, TagWordGroupTagLevel.Root.name());
+        Long siteId = TemplateUtils.evalSiteId(env);
 
-		TagWordGroup parent = opt.get();
-		LambdaQueryWrapper<TagWordGroup> q = new LambdaQueryWrapper<>();
-		if (TagWordGroupTagLevel.isCurrent(level)) {
-			q.eq(TagWordGroup::getParentId, parent.getParentId());
-		} else if (TagWordGroupTagLevel.isChild(level)) {
-			q.eq(TagWordGroup::getParentId, parent.getGroupId());
+        LambdaQueryWrapper<TagWordGroup> q = new LambdaQueryWrapper<>();
+        q.eq(TagWordGroup::getOwner, siteId.toString());
+        if (!TagWordGroupTagLevel.isRoot(level)) {
+            TagWordGroup tagWordGroup = tagWordGroupService.getTagWordGroup(siteId.toString(), group);
+            if (Objects.isNull(tagWordGroup)) {
+                throw new TemplateException("Tag word group not found: " + group, env);
+            }
+            if (TagWordGroupTagLevel.isCurrent(level)) {
+                q.eq(TagWordGroup::getParentId, tagWordGroup.getParentId());
+            } else if (TagWordGroupTagLevel.isChild(level)) {
+                q.eq(TagWordGroup::getParentId, tagWordGroup.getGroupId());
+            }
 		}
 
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);

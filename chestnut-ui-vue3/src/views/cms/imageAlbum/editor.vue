@@ -35,7 +35,7 @@
             </el-row>
             <el-row>
               <el-form-item :label="$t('CMS.Image.RedirectUrl')">
-                <el-input v-model="item.redirectUrl" placeholder="http(s)://"></el-input>
+                <cms-link-input v-model="item.redirectUrl"></cms-link-input>
               </el-form-item>
             </el-row>
             <el-row class="r-opr-row" justify="end">
@@ -77,8 +77,8 @@
 <script setup name="CMSImageEditor">
 import { ElImageViewer } from "element-plus"
 import CmsResourceDialog from "@/views/cms/contentcore/resourceDialog";
+import CmsLinkInput from "@/views/cms/components/LinkInput";
 import useAppStore from "@/store/modules/app";
-import { watch } from "vue";
 const appStore = useAppStore();
 
 const { proxy } = getCurrentInstance();

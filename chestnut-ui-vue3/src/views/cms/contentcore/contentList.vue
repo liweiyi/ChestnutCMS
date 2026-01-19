@@ -760,10 +760,10 @@ function handleMove(row) {
 }
 
 function doMove (args) {
-  const catalogs = args[0];
+  const catalog = args[0];
   const data = {
     contentIds: selectedRows.value.map(item => item.contentId),
-    catalogId: catalogs[0].id
+    catalogId: catalog.id
   };
   contentApi.moveContent(data).then(response => {
     openCatalogSelector.value = false;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
  */
 package com.chestnut.word.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SortUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.word.cache.TagWordMonitoredCache;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.domain.dto.BatchAddTagRequest;
@@ -50,6 +52,25 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 
 	private final TagWordGroupMapper tagWordGroupMapper;
 
+    private final TagWordMonitoredCache tagWordMonitoredCache;
+
+    @Override
+    public List<TagWordMonitoredCache.TagWordCache> getTagWords(String owner, String groupCode) {
+		Map<String, TagWordMonitoredCache.TagWordCache> cache = tagWordMonitoredCache.getTagWords(owner, groupCode);
+        if (Objects.nonNull(cache)) {
+            return cache.values().stream().toList();
+        }
+        TagWordGroup tagWordGroup = tagWordGroupMapper.selectOne(
+                new LambdaQueryWrapper<TagWordGroup>().eq(TagWordGroup::getCode, groupCode));
+        if (Objects.nonNull(tagWordGroup)) {
+            List<TagWord> tagWords = this.lambdaQuery().eq(TagWord::getGroupId, tagWordGroup.getGroupId()).list();
+            List<TagWordMonitoredCache.TagWordCache> caches = tagWords.stream().map(TagWordMonitoredCache.TagWordCache::new).toList();
+            tagWordMonitoredCache.setTagWords(owner, groupCode, caches);
+            return caches;
+        }
+        return null;
+    }
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void addTagWord(CreateTagWordRequest req) {
@@ -76,6 +97,7 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 
 			tagWordGroup.setWordTotal(tagWordGroup.getWordTotal() + 1);
 			tagWordGroupMapper.updateById(tagWordGroup);
+            tagWordMonitoredCache.addCache(tagWordGroup.getOwner(), tagWordGroup.getCode(), List.of(tagWord));
 		} finally {
 			lock.unlock();
 		}
@@ -105,10 +127,12 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 				return tagWord;
 			}).toList();
 
-			this.saveBatch(list);
+			this.saveBatch(list, 100);
 
 			tagWordGroup.setWordTotal(tagWordGroup.getWordTotal() + list.size());
 			tagWordGroupMapper.updateById(tagWordGroup);
+            // 更新缓存
+            tagWordMonitoredCache.addCache(tagWordGroup.getOwner(), tagWordGroup.getCode(), list);
 		} finally {
 			lock.unlock();
 		}
@@ -128,20 +152,31 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
 		dbTagWord.setRemark(req.getRemark());
 		dbTagWord.updateBy(req.getOperator().getUsername());
 		this.updateById(dbTagWord);
+        // 更新缓存
+        TagWordGroup tagWordGroup = this.tagWordGroupMapper.selectById(dbTagWord.getGroupId());
+        tagWordMonitoredCache.addCache(tagWordGroup.getOwner(), tagWordGroup.getCode(), List.of(dbTagWord));
     }
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteTagWords(List<Long> tagWordIds) {
+        List<TagWord> tagWords = this.listByIds(tagWordIds);
+        if (tagWords.isEmpty()) {
+            return;
+        }
 		RLock lock = redissonClient.getLock(LOCK_TAG_WORD);
 		lock.lock();
 		try {
-			List<TagWord> tagWords = this.listByIds(tagWordIds);
 			Map<Long, Integer> groupWordDecrease = new HashMap<>();
 			tagWords.forEach(tag -> {
 				groupWordDecrease.put(tag.getGroupId(), groupWordDecrease.getOrDefault(tag.getGroupId(), 0) + 1);
 			});
-			this.removeByIds(tagWordIds);
+            // 删除数据
+            this.removeByIds(tagWordIds);
+            // 删除缓存
+            TagWordGroup tagWordGroup = this.tagWordGroupMapper.selectById(tagWords.get(0).getGroupId());
+            tagWordMonitoredCache.removeCache(tagWordGroup.getOwner(), tagWordGroup.getCode(), tagWordIds.toArray(new Long[0]));
+            // 更新分组词数
 			groupWordDecrease.forEach((k, v) -> {
 				TagWordGroup group = tagWordGroupMapper.selectById(k);
 				group.setWordTotal(group.getWordTotal() - v);

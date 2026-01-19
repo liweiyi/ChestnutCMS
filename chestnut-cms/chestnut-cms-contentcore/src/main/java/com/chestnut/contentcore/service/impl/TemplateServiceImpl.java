@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.template.ITemplateType;
 import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.system.SysConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,27 +62,23 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 	private final ISiteService siteService;
 
 	@Override
-	public String getTemplateStaticContentCache(String templateKey) {
-		return this.templateCache.getCache(templateKey);
+	public String getTemplateStaticContentCache(String cacheKey) {
+		return this.templateCache.getCache(cacheKey);
 	}
 
 	@Override
-	public void setTemplateStaticContentCache(String templateKey, String staticContent) {
-		this.templateCache.setCache(templateKey, staticContent, 24, TimeUnit.HOURS);
+	public void setTemplateStaticContentCache(String cacheKey, String staticContent) {
+		this.templateCache.setCache(cacheKey, staticContent, 24, TimeUnit.HOURS);
 	}
 
 	@Override
-	public void clearTemplateStaticContentCache(String templateKey) {
-		this.templateCache.clear(templateKey);
+	public void clearTemplateStaticContentCache(String cacheKey) {
+		this.templateCache.clear(cacheKey);
 	}
 
 	@Override
 	public void clearSiteAllTemplateStaticContentCache(CmsSite site) {
-		List<CmsTemplate> dbTemplates = this.lambdaQuery().eq(CmsTemplate::getSiteId, site.getSiteId()).list();
-		dbTemplates.forEach(template -> {
-			String templateKey = SiteUtils.getTemplateKey(site, template.getPublishPipeCode(), template.getPath());
-			clearTemplateStaticContentCache(templateKey);
-		});
+        templateCache.clearAll();
 	}
 
 	@Override
@@ -233,7 +230,7 @@ public class TemplateServiceImpl extends ServiceImpl<CmsTemplateMapper, CmsTempl
 	private void clearTemplateStaticContentCache(CmsTemplate template) {
 		CmsSite site = this.siteService.getSite(template.getSiteId());
 		String templateKey = SiteUtils.getTemplateKey(site, template.getPublishPipeCode(), template.getPath());
-		this.clearTemplateStaticContentCache(templateKey);
+		this.clearTemplateStaticContentCache(TemplateUtils.getStaticCacheKey(templateKey));
 	}
 
 	@Override

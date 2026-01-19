@@ -155,6 +155,7 @@ import VideoPlayer from '@/views/components/VideoPlayer';
 import CmsResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import { videoScreenshot } from "@/api/contentcore/video";
 import useAppStore from "@/store/modules/app";
+import { watch } from 'vue';
 const appStore = useAppStore();
 
 const { proxy } = getCurrentInstance();
@@ -182,12 +183,14 @@ const videoSeconds = ref(99999) // 当前截图视频长度（单位：秒）
 const screenshotTime = ref(0)
 
 watch(() => model.value, (newVal) => {
+  console.log('videoEditor.watch model.value', newVal);
   itemList.value = newVal;
 });
 
 watch(itemList, (newVal) => {
+  console.log('videoEditor.watch itemList', newVal);
   model.value = newVal || [];
-});
+}, { deep: true });
 
 function handleResourceDialogOk(results) {
   if (screenshotFlag.value) {
@@ -198,6 +201,7 @@ function handleResourceDialogOk(results) {
       item.coverSrc = r.src;
       editIndex.value = -1;
   } else {
+    console.log(editIndex.value, results)
     if (editIndex.value > -1) {
       const r = results[0];
       itemList.value[editIndex.value] = { 
@@ -223,6 +227,7 @@ function handleResourceDialogOk(results) {
         });
       });
     }
+    console.log(itemList.value)
   }
 }
 

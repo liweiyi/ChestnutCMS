@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,11 @@ import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.domain.CmsPageWidget;
+import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.IPublishService;
+import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.PageWidgetUtils;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -39,7 +42,9 @@ import java.io.Writer;
 public class InternalDataType_PageWidget implements IInternalDataType {
 
 	public final static String ID = "pagewidget";
-	
+
+    private final ISiteService siteService;
+
 	private final IPageWidgetService pageWidgetService;
 	
 	private final IPublishService publishService;
@@ -48,6 +53,11 @@ public class InternalDataType_PageWidget implements IInternalDataType {
 	public String getId() {
 		return ID;
 	}
+
+    @Override
+    public boolean supportSlot() {
+        return true;
+    }
 
 	@Override
 	public String getPageData(RequestData data) throws IOException, TemplateException {
@@ -64,4 +74,13 @@ public class InternalDataType_PageWidget implements IInternalDataType {
 
 		this.publishService.processPageWidget(pageWidget, data, writer);
 	}
+
+    @Override
+    public String getStaticPath(Long dataId, String publishPipeCode) {
+        CmsPageWidget pageWidget = pageWidgetService.getById(dataId);
+        Assert.notNull(pageWidget, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", dataId));
+
+        CmsSite site = this.siteService.getSite(pageWidget.getSiteId());
+        return PageWidgetUtils.getStaticFileName(pageWidget, site.getStaticSuffix(publishPipeCode));
+    }
 }

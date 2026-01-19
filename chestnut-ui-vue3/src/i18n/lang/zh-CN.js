@@ -1,6 +1,7 @@
 const zhCN = {
   APP: {
-    TITLE: '栗子内容管理系统'
+    TITLE: '栗子内容管理系统',
+    Copyright: 'Copyright © 2022-2026 ChestnutCMS. All Rights Reserved.'
   },
   Common: {
     Search: '搜索',

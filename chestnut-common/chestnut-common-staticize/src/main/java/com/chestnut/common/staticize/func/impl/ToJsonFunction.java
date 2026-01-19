@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,14 @@ package com.chestnut.common.staticize.func.impl;
 import com.chestnut.common.staticize.func.AbstractFunc;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
-import freemarker.template.TemplateModelException;
+import freemarker.ext.beans.GenericObjectModel;
+import freemarker.template.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.*;
 
 /**
  * Freemarker模板自定义函数：JAVA对象转JSON字符串
@@ -59,6 +62,11 @@ public class ToJsonFunction extends AbstractFunc  {
 		if (StringUtils.isEmpty(args)) {
 			return StringUtils.EMPTY;
 		}
+        if (args[0] instanceof GenericObjectModel v) {
+            return JacksonUtils.to(v.getWrappedObject());
+        } else if (args[0] instanceof DefaultListAdapter v) {
+            return JacksonUtils.to(v.getWrappedObject());
+        }
         return JacksonUtils.to(args[0]);
 	}
 

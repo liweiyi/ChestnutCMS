@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import com.chestnut.system.service.ISysDictTypeService;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -108,8 +109,12 @@ public class MetaFieldType extends FixedDictType {
 			if (isDoubleField(type) && !(value instanceof Double)) {
 				return Double.valueOf(value.toString());
 			}
-			if (isDateField(type) && !(value instanceof Date)) {
-				return DateUtils.parseDate(value);
+			if (isDateField(type)) {
+                if (value instanceof String strV) {
+				    return DateUtils.parseDate(strV);
+                } else if (value instanceof Long longV) {
+                    DateUtils.epochMilliToLocalDateTime(longV);
+                }
 			}
 			if (isStringField(type) && !(value instanceof String)) {
 				return value.toString();

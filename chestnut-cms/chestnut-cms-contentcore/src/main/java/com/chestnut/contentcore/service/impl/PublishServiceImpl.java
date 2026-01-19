@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.exception.ErrorCode;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.staticize.StaticizeService;
@@ -399,21 +401,31 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		}
 	}
 
+    private void processException(Writer writer, boolean preview, ErrorCode errorCode, Object... args) throws IOException {
+        if (preview) {
+            throw errorCode.exception(args);
+        }
+        String error = I18nUtils.parse(errorCode.value(), args);
+        writer.write("<!-- " + error +" -->");
+    }
+
+
 	@Override
 	public void processContentPage(CmsContent content, IInternalDataType.RequestData requestData, Writer writer)
 			throws IOException, TemplateException {
 		CmsSite site = this.siteService.getById(content.getSiteId());
 		CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());
 		if (content.isLinkContent()) {
-            writer.write(ContentTips.PREVIEW_LINK_CONTENT.locale(content.getTitle(), content.getRedirectUrl()));
-			return;
+            throw ContentCoreErrorCode.PREVIEW_LINK_CONTENT.exception(content.getTitle(), content.getRedirectUrl());
 		}
 		// 查找模板
 		final String detailTemplate = TemplateUtils.getDetailTemplate(site, catalog, content, requestData.getPublishPipeCode());
+        if (StringUtils.isEmpty(detailTemplate)) {
+            throw ContentCoreErrorCode.TEMPLATE_EMPTY.exception("content#" + content.getContentId());
+        }
 		File templateFile = this.templateService.findTemplateFile(site, detailTemplate, requestData.getPublishPipeCode());
         if (Objects.isNull(templateFile)) {
-            writer.write(ContentTips.TEMPLATE_NOT_EXIST.locale(detailTemplate));
-            return;
+            throw ContentCoreErrorCode.TEMPLATE_FILE_NOT_FOUND.exception(templateFile);
         }
 
 		IContentType contentType = ContentCoreUtils.getContentType(content.getContentType());

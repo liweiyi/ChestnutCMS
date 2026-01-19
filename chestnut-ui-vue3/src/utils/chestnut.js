@@ -3,7 +3,7 @@
 /**
  * 通用js方法封装处理
  * 
- * Copyright © 2022-2025 兮玥（190785909@qq.com）
+ * Copyright © 2022-2026 兮玥（190785909@qq.com）
  */
 import { i18n } from '@/i18n'
 

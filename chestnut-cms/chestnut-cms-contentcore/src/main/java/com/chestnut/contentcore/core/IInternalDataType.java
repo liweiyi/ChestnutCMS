@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,14 @@ public interface IInternalDataType {
 		return path;
 	}
 
+    /**
+	 * 获取内部数据动态浏览地址
+	 *
+     * @param type 内部数据类型
+     * @param id 数据ID
+     * @param publishPipeCode 发布通道编码
+	 * @return 动态浏览地址
+	 */
 	static String getViewPath(String type, Long id, String publishPipeCode) {
 		return getViewPath(type, id, publishPipeCode, 1);
 	}
@@ -87,6 +95,13 @@ public interface IInternalDataType {
 	 */
 	String getId();
 
+    /**
+	 * 是否支持CmsSlot标签
+	 */
+    default boolean supportSlot() {
+        return false;
+    }
+
 	/**
 	 * 获取模板解析页面内容
 	 */
@@ -94,7 +109,21 @@ public interface IInternalDataType {
 		return StringUtils.EMPTY;
 	}
 
+    /**
+     * 处理模板页面内容，写入输出流
+     * @param requestData 请求数据
+     * @param writer 输出流
+     * @throws TemplateException 模板异常
+     * @throws IOException IO异常
+     */
 	default void processPageData(RequestData requestData, Writer writer) throws TemplateException, IOException {}
+
+    /**
+     * 静态文件路径，相对发布通道路径，不带域名
+     */
+    default String getStaticPath(Long dataId, String publishPipeCode) {
+        return StringUtils.EMPTY;
+    }
 
 	/**
 	 * 访问链接

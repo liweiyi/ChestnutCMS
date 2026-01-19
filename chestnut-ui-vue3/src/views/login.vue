@@ -61,7 +61,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-login-footer">
-      <span>{{ copyright }}</span>
+      <span>{{ $t('APP.Copyright') }}</span>
     </div>
   </div>
 </template>
@@ -77,7 +77,6 @@ import useUserStore from '@/store/modules/user'
 
 const { proxy } = getCurrentInstance()
 
-const copyright = import.meta.env.VITE_APP_COPYRIGHT
 const userStore = useUserStore()
 const route = useRoute()
 const router = useRouter()

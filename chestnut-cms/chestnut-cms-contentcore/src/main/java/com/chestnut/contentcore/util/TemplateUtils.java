@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,13 +22,13 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.ReflectASMUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
+import com.chestnut.contentcore.cache.TemplateMonitoredCache;
 import com.chestnut.contentcore.core.IProperty.UseType;
 import com.chestnut.contentcore.core.IPublishPipeProp;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_ContentTemplate;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.fixed.config.TemplateSuffix;
 import com.chestnut.contentcore.properties.SiteApiUrlProperty;
 import com.chestnut.system.security.StpAdminUtil;
 import freemarker.core.Environment;
@@ -259,21 +259,6 @@ public class TemplateUtils {
 		}
 	}
 
-
-	/**
-	 * 页面区块静态文件相对路径
-	 *
-	 * @param site 站点
-	 * @param publishPipeCode 发布通道编码
-	 * @param includeTemplateName 相对resourceRoot的模板路径
-	 */
-	public static String getIncludeRelativeStaticPath(CmsSite site, String publishPipeCode, String includeTemplateName) {
-		String siteTemplatePath = SiteUtils.getSiteTemplatePath(site.getPath(), publishPipeCode);
-		return "include/" + includeTemplateName.substring(siteTemplatePath.length(),
-				includeTemplateName.length() - TemplateSuffix.getValue().length())
-				+ "." + site.getStaticSuffix(publishPipeCode);
-	}
-
 	public static String appendParam(String path, String name, String value) {
 		if (path.contains("?")) {
 			return path + "&" + name + "=" + value;
@@ -320,5 +305,14 @@ public class TemplateUtils {
             }
         }
         return detailTemplate;
+    }
+
+    /**
+     * 获取模板静态化内容缓存Key
+     *
+     * @param uniqueKey 缓存Key
+     */
+    public static String getStaticCacheKey(String uniqueKey) {
+        return TemplateMonitoredCache.CACHE_PREFIX + uniqueKey;
     }
 }

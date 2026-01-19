@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 /**
@@ -213,6 +214,52 @@ public class RedisCache {
 		return Objects.requireNonNullElse(delete, 0L) > 0;
 	}
 
+    /**
+     * 删除指定前缀keys
+     * 
+     * @param prefix key前缀
+     * @return 删除的key数量
+     */
+    public long deleteByPrefix(String prefix) {
+        if (StringUtils.isEmpty(prefix)) {
+            return 0;
+        }
+        
+        String pattern = prefix + "*";
+        AtomicLong deleteCount = new AtomicLong(0);
+        
+        redisTemplate.execute((RedisCallback<Long>) connection -> {
+            ScanOptions options = ScanOptions.scanOptions()
+                    .match(pattern)
+                    .count(1000) // 每次扫描1000个key
+                    .build();
+            
+            Cursor<byte[]> cursor = connection.scan(options);
+            List<byte[]> keysToDelete = new ArrayList<>(1000);
+            
+            while (cursor.hasNext()) {
+                keysToDelete.add(cursor.next());
+                
+                if (keysToDelete.size() >= 1000) {
+                    Long deleted = connection.del(keysToDelete.toArray(new byte[0][]));
+                    deleteCount.addAndGet(Objects.requireNonNullElse(deleted, 0L));
+                    keysToDelete.clear();
+                }
+            }
+            
+            // 删除剩余的keys
+            if (!keysToDelete.isEmpty()) {
+                Long deleted = connection.del(keysToDelete.toArray(new byte[0][]));
+                deleteCount.addAndGet(Objects.requireNonNullElse(deleted, 0L));
+            }
+            
+            return deleteCount.get();
+        });
+        
+        return deleteCount.get();
+    }
+
+
 	/**
 	 * 获得缓存的list对象
 	 *
@@ -364,6 +411,9 @@ public class RedisCache {
 	 * @return Cached map
 	 */
 	public <T> Map<String, T> getCacheMap(final String key, Class<T> clazz) {
+        if (!redisTemplate.hasKey(key)) {
+            return null;
+        }
 		Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
 		if (StringUtils.isEmpty(entries)) {
 			return Map.of();
@@ -403,6 +453,10 @@ public class RedisCache {
 	public <T> void setCacheMapValue(final String key, final String hKey, final T value) {
 		redisTemplate.opsForHash().put(key, hKey, value);
 	}
+
+    public <T> void setCacheMapValues(final String key, final Map<String, T> map) {
+        redisTemplate.opsForHash().putAll(key, map);
+    }
 
 	/**
 	 * 获取Hash中的数据
@@ -551,6 +605,10 @@ public class RedisCache {
 			return;
 		}
 		this.redisTemplate.opsForZSet().remove(key, values);
+	}
+
+    public void removeZsetValueByScore(String key, double min, double max) {
+		this.redisTemplate.opsForZSet().removeRangeByScore(key, min, max);
 	}
 
 	/**

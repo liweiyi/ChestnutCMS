@@ -101,7 +101,8 @@ service.interceptors.response.use(res => {
         ).then(() => {
           isRelogin.show = false
           useUserStore().logOut().then(() => {
-            window.location.href = `${import.meta.env.VITE_APP_PATH}login?redirect=${router.currentRoute.value.fullPath}`
+            const redirect = location.pathname + location.search;
+            window.location.href = `${import.meta.env.VITE_APP_PATH || '/'}login?redirect=${encodeURIComponent(redirect)}`
           })
         }).catch(() => {
           isRelogin.show = false

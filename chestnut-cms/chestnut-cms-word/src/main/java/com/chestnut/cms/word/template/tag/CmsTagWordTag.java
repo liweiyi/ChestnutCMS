@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 package com.chestnut.cms.word.template.tag;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
+import com.chestnut.word.cache.TagWordMonitoredCache;
 import com.chestnut.word.domain.TagWord;
 import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.service.ITagWordGroupService;
@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -62,13 +62,10 @@ public class CmsTagWordTag extends AbstractListTag {
 	public TagPageData prepareData(Environment env, Map<String, String> attrs, boolean page, int size, int pageIndex) throws TemplateException {
 		String group = MapUtils.getString(attrs, "group");
 		Long siteId = TemplateUtils.evalSiteId(env);
-		Optional<TagWordGroup> opt = tagWordGroupService.lambdaQuery()
-				.eq(TagWordGroup::getOwner, siteId)
-				.eq(TagWordGroup::getCode, group).oneOpt();
-		if (opt.isEmpty()) {
+        TagWordGroup tagWordGroup = tagWordGroupService.getTagWordGroup(siteId.toString(), group);
+		if (Objects.isNull(tagWordGroup)) {
 			throw new TemplateException("Tag word group not found: " + group, env);
 		}
-		TagWordGroup tagWordGroup = opt.get();
 		LambdaQueryWrapper<TagWord> q = new LambdaQueryWrapper<TagWord>()
 				.eq(TagWord::getGroupId, tagWordGroup.getGroupId());
 
@@ -76,13 +73,13 @@ public class CmsTagWordTag extends AbstractListTag {
 		q.apply(StringUtils.isNotEmpty(condition), condition);
 		q.orderByAsc(TagWord::getSortFlag);
 
-		 Page<TagWord> pageResult = this.tagWordService.page(new Page<>(pageIndex, size, page), q);
-		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
+        List<TagWordMonitoredCache.TagWordCache> tagWords = this.tagWordService.getTagWords(tagWordGroup.getOwner(), tagWordGroup.getCode());
+		return TagPageData.of(tagWords, tagWords.size());
 	}
 
 	@Override
-	public Class<TagWord> getDataClass() {
-		return TagWord.class;
+	public Class<TagWordMonitoredCache.TagWordCache> getDataClass() {
+		return TagWordMonitoredCache.TagWordCache.class;
 	}
 
 	@Override

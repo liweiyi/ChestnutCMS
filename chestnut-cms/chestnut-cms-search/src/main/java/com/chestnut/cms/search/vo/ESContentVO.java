@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.chestnut.cms.search.vo;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.chestnut.common.annotation.XComment;
@@ -47,6 +48,9 @@ public class ESContentVO {
 
 	@XComment("{CMS.CONTENT.LOGO}")
 	private String logo;
+
+    @XComment("{CMS.CONTENT.IMAGES}")
+    private List<String> images;
 
 	@XComment(value = "{CMS.CONTENT.TITLE}")
 	private String title;

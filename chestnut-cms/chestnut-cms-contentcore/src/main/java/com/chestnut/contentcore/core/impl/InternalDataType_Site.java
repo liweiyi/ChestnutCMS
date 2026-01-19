@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,11 @@ public class InternalDataType_Site implements IInternalDataType {
 		return ID;
 	}
 
+    @Override
+    public boolean supportSlot() {
+        return true;
+    }
+
 	@Override
 	public String getPageData(RequestData requestData) throws IOException, TemplateException {
 		CmsSite site = siteService.getSite(requestData.getDataId());
@@ -66,4 +71,10 @@ public class InternalDataType_Site implements IInternalDataType {
 		CmsSite site = siteService.getSite(internalUrl.getId());
 		return SiteUtils.getSiteLink(site, publishPipeCode, isPreview);
 	}
+
+    @Override
+    public String getStaticPath(Long dataId, String publishPipeCode) {
+        CmsSite site = siteService.getSite(dataId);
+        return "index." + site.getStaticSuffix(publishPipeCode);
+    }
 }

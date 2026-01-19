@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ public class CmsXModelFieldTag extends AbstractListTag {
 		q.eq(XModelField::getModelId, modelId);
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 		q.apply(StringUtils.isNotEmpty(condition), condition);
+        q.orderByAsc(XModelField::getSortFlag);
 		Page<XModelField> pageResult = this.modelFieldService.page(new Page<>(pageIndex, size, page), q);
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
 	}

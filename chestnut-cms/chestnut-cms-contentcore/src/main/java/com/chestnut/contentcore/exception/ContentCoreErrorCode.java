@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,12 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	UNSUPPORTED_PAGE_WIDGET_TYPE,
 
 	/**
-	 * 模板未配置或模板文件不存在
+	 * 模板未配置：{0}
 	 */
 	TEMPLATE_EMPTY,
 
 	/**
-	 * 模板文件不存在
+	 * 模板文件不存在：{0}
 	 */
 	TEMPLATE_FILE_NOT_FOUND,
 
@@ -217,7 +217,12 @@ public enum ContentCoreErrorCode implements ErrorCode {
     /**
 	 * 资源数据不存在
 	 */
-    RESOURCE_NOT_FOUND;
+    RESOURCE_NOT_FOUND,
+
+    /**
+     * 链接内容无页面，内容标题：{0}, 跳转链接：{1}
+     */
+    PREVIEW_LINK_CONTENT;
 
 	@Override
 	public String value() {

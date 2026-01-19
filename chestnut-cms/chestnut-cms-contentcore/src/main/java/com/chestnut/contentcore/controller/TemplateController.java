@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
@@ -255,7 +256,7 @@ public class TemplateController extends CmsRestController {
 		this.templateService.listByIds(templateIds).forEach(template -> {
 			CmsSite site = this.siteService.getSite(template.getSiteId());
 			String templateKey = SiteUtils.getTemplateKey(site, template.getPublishPipeCode(), template.getPath());
-			this.templateService.clearTemplateStaticContentCache(templateKey);
+			this.templateService.clearTemplateStaticContentCache(TemplateUtils.getStaticCacheKey(templateKey));
 		});
 		return R.ok();
 	}

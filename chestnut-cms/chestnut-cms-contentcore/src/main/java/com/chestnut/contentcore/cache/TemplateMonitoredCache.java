@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class TemplateMonitoredCache implements IMonitoredCache<String> {
 
     public static final String ID = "Template";
 
-    private static final String CACHE_PREFIX = CMSConfig.CachePrefix + "template:";
+    public static final String CACHE_PREFIX = CMSConfig.CachePrefix + "template:";
 
     private final RedisCache redisCache;
 
@@ -60,15 +60,15 @@ public class TemplateMonitoredCache implements IMonitoredCache<String> {
         return CACHE_PREFIX;
     }
 
-    public String getCache(String templateKey, Supplier<String> supplier) {
-        return redisCache.getCacheObject(CACHE_PREFIX + templateKey, String.class, supplier);
+    public void clear(String cacheKey) {
+        this.redisCache.deleteObject(cacheKey);
     }
 
-    public void clear(String templateKey) {
-        this.redisCache.deleteObject(CACHE_PREFIX + templateKey);
+    public void setCache(String cacheKey, String staticContent, int timeout, TimeUnit timeUnit) {
+        redisCache.setCacheObject(cacheKey, staticContent, timeout, timeUnit);
     }
 
-    public void setCache(String templateKey, String staticContent, int timeout, TimeUnit timeUnit) {
-        redisCache.setCacheObject(CACHE_PREFIX + templateKey, staticContent, timeout, timeUnit);
+    public void clearAll() {
+        redisCache.deleteByPrefix(CACHE_PREFIX);
     }
 }

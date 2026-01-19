@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,16 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public interface ITagWordGroupService extends IService<TagWordGroup> {
-	
-	/**
+
+    /**
+	 * 根据分组编码获取分组信息，优先缓存获取
+	 *
+	 * @param code
+	 * @return
+	 */
+    TagWordGroup getTagWordGroup(String owner, String code);
+
+    /**
 	 * 添加TAG词分组
 	 * 
 	 * @param req

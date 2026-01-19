@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore.core.impl;
 
+import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsCatalog;
@@ -49,8 +51,13 @@ public class InternalDataType_Catalog implements IInternalDataType {
 	public String getId() {
 		return ID;
 	}
-	
-	@Override
+
+    @Override
+    public boolean supportSlot() {
+        return true;
+    }
+
+    @Override
 	public String getPageData(RequestData requestData) throws IOException, TemplateException {
 		CmsCatalog catalog = catalogService.getCatalog(requestData.getDataId());
 		boolean listFlag = YesOrNo.isYes(requestData.getParams().get("list"));
@@ -65,7 +72,17 @@ public class InternalDataType_Catalog implements IInternalDataType {
 
     }
 
-	@Override
+    @Override
+    public String getStaticPath(Long dataId, String publishPipeCode) {
+        CmsCatalog catalog = this.catalogService.getCatalog(dataId);
+        Assert.notNull(catalog,  () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(dataId));
+        if (CatalogType_Link.ID.equals(catalog.getCatalogType())) {
+            return catalog.getLink(); // 链接栏目无静态内容返回空
+        }
+        return catalog.getPath();
+    }
+
+    @Override
 	public String getLink(InternalURL internalUrl, int pageIndex, String publishPipeCode, boolean isPreview) {
 		CmsCatalog catalog = catalogService.getCatalog(internalUrl.getId());
 		return this.catalogService.getCatalogLink(catalog, pageIndex, publishPipeCode, isPreview);

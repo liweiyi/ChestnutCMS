@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,17 +96,17 @@ public class PageBarTag extends AbstractTag {
 		String firstPage = MapUtils.getString(attrs, ATTR_FIRST, I18nUtils.get(ATTR_DEFAULT_FIRST));
 		String lastPage = MapUtils.getString(attrs, ATTR_LAST, I18nUtils.get(ATTR_DEFAULT_LAST));
 		String params = MapUtils.getString(attrs, ATTR_PARAMS);
-		if (StringUtils.isEmpty(params)) {
-			Map<?, ?> mapVariable = FreeMarkerUtils.getImmutableMapVariable(env, StaticizeConstants.TemplateVariable_Request);
-			if (!mapVariable.isEmpty()) {
-				params = XCollectionUtils.join(
-						mapVariable.entrySet(),
-						"&",
-						entry -> entry.getKey().toString() + "=" + entry.getValue().toString(),
-						entry -> !StaticizeConstants.TemplateParam_PageIndex.equals(entry.getKey())
-				);
-			}
-		}
+//		if (StringUtils.isEmpty(params)) {
+//			Map<?, ?> mapVariable = FreeMarkerUtils.getImmutableMapVariable(env, StaticizeConstants.TemplateVariable_Request);
+//			if (!mapVariable.isEmpty()) {
+//				params = XCollectionUtils.join(
+//						mapVariable.entrySet(),
+//						"&",
+//						entry -> entry.getKey().toString() + "=" + entry.getValue().toString(),
+//						entry -> !StaticizeConstants.TemplateParam_PageIndex.equals(entry.getKey())
+//				);
+//			}
+//		}
 
 		env.getOut().write(switch (PageBarType.valueOf(type)) {
 			case Mini -> generateMinPageBar(target, firstPage, lastPage, params, env);

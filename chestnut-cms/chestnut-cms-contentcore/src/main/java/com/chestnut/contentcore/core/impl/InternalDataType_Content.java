@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,11 @@ public class InternalDataType_Content implements IInternalDataType {
     }
 
     @Override
+    public boolean supportSlot() {
+        return true;
+    }
+
+    @Override
     public String getPageData(RequestData requestData) throws IOException, TemplateException {
         CmsContent content = contentService.dao().getById(requestData.getDataId());
         Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", requestData.getDataId()));
@@ -73,6 +78,13 @@ public class InternalDataType_Content implements IInternalDataType {
         Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", internalUrl.getId()));
 
         return this.contentService.getContentLink(content, 1, publishPipeCode, isPreview);
+    }
+
+    @Override
+    public String getStaticPath(Long dataId, String publishPipeCode) {
+        CmsContent content = contentService.dao().getById(dataId);
+        Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", dataId));
+        return this.contentService.getContentStaticPath(content, publishPipeCode);
     }
 
     @Override

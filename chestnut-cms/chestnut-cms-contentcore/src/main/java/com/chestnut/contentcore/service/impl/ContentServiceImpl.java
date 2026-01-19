@@ -1,5 +1,5 @@
 /*
- * Copyright 2022-2025 兮玥(190785909@qq.com)
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -196,6 +196,22 @@ public class ContentServiceImpl implements IContentService {
 					});
 		}
 	}
+
+    @Override
+    public String getContentStaticPath(CmsContent content, String publishPipeCode) {
+        if (content.isLinkContent()) {
+            return StringUtils.EMPTY; // 链接内容无静态文件
+        }
+        CmsSite site = this.siteService.getSite(content.getSiteId());
+        CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());
+        String staticPath = content.getStaticPath();
+        if (StringUtils.isEmpty(staticPath)) {
+            IContentPathRule rule = ContentCoreUtils.getContentPathRule(catalog.getDetailNameRule());
+            String path = Objects.isNull(rule) ? catalog.getPath() : rule.getDirectory(site, catalog, content);
+            staticPath = path + content.getContentId() + "." + site.getStaticSuffix(publishPipeCode);
+        }
+        return staticPath;
+    }
 
 	@Override
 	public String getContentLink(CmsContent content, int pageIndex, String publishPipeCode, boolean isPreview) {
