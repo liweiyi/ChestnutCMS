@@ -33,6 +33,4 @@ public class UserInfoVO {
 	private SysUser user;
 	
 	private List<SysRole> roles;
-	
-	private List<SysPost> posts;
 }

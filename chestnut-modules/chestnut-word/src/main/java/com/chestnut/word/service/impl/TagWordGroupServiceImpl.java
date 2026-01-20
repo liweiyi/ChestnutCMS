@@ -53,7 +53,7 @@ public class TagWordGroupServiceImpl extends ServiceImpl<TagWordGroupMapper, Tag
     @Override
     public TagWordGroup getTagWordGroup(String owner, String code) {
         return tagWordGroupMonitoredCache.getCacheValue(owner, code, () -> {
-            return this.lambdaQuery().eq(TagWordGroup::getCode, code).one();
+            return this.lambdaQuery().eq(TagWordGroup::getOwner, owner).eq(TagWordGroup::getCode, code).one();
         });
     }
 

@@ -172,7 +172,6 @@ public class FileServiceImpl implements IFileService {
     	if (file.isDirectory()) {
 			FileUtils.moveDirectory(file, dest.toFile());
 		} else {
-        	this.checkFileType(rename);
 			FileUtils.moveFile(file, dest.toFile());
 		}
 	}

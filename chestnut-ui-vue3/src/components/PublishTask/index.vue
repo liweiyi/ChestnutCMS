@@ -1,16 +1,18 @@
 <template>
-  <el-dropdown trigger="click" @command="handleCommand" v-if="taskCount > 0">
-    <div style="font-size: 12px">
-      <el-tag type="success">{{ $t('Component.Layout.Navbar.PublishTask') }} [ {{ taskCount }} ]</el-tag>
-    </div>
-    <template #dropdown>
-      <el-dropdown-menu>
-        <el-dropdown-item command="clear">
-          {{ $t('Component.Layout.Navbar.ClearPublishTask') }}
-        </el-dropdown-item>
-      </el-dropdown-menu>
-    </template>
-  </el-dropdown>
+  <div class="publish-task" style="display: flex;align-items: center;">
+    <el-dropdown trigger="click" @command="handleCommand" v-if="taskCount > 0">
+      <div style="font-size: 12px">
+        <el-tag type="success">{{ $t('Component.Layout.Navbar.PublishTask') }} [ {{ taskCount }} ]</el-tag>
+      </div>
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item command="clear">
+            {{ $t('Component.Layout.Navbar.ClearPublishTask') }}
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
+  </div>
 </template>
 
 <script setup name="CMSPublishTask">

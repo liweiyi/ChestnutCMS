@@ -113,6 +113,10 @@ public class ArticleContentType implements IContentType {
             Optional<CmsArticleDetail> opt = this.articleService.dao().getOptById(contentEntity.getContentId());
             if (opt.isPresent()) {
                 extendEntity = opt.get();
+            } else {
+                extendEntity = new CmsArticleDetail();
+                extendEntity.setContentId(contentEntity.getContentId());
+                extendEntity.setSiteId(contentEntity.getSiteId());
             }
         }
         BeanUtils.copyProperties(dto, extendEntity);

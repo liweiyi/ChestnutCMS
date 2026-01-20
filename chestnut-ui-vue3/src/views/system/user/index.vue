@@ -341,6 +341,7 @@
 
 <script setup>
 import { userNameValidator, emailValidator, phoneNumberValidator } from '@/utils/validate';
+import { getPostOptions } from "@/api/system/post";
 import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, deptTreeSelect, getAuthRole, updateAuthRole } from "@/api/system/user";
 import RolePermission from '@/views/system/permission/permsTab';
 
@@ -543,11 +544,8 @@ const handleGrantPermsClose = () => {
 /** 新增按钮操作 */
 const handleAdd = () => {
   reset();
-  getUser().then(response => {
-    postOptions.value = response.data.posts;
-    open.value = true;
-    title.value = proxy.$t('System.User.Dialog.Add');
-  });
+  title.value = proxy.$t('System.User.Dialog.Add');
+  open.value = true;
 };
 
 /** 修改按钮操作 */
@@ -556,7 +554,6 @@ const handleUpdate = (row) => {
   const userId = row.userId || ids.value;
   getUser(userId).then(response => {
     form.value = response.data.user;
-    postOptions.value = response.data.posts;
     open.value = true;
     title.value = proxy.$t('System.User.Dialog.Edit');
     form.value.password = "";
@@ -673,6 +670,13 @@ const submitFileForm = () => {
   proxy.$refs.uploadRef.submit();
 };
 
+function loadPostOptions() {
+  getPostOptions().then(response => {
+    postOptions.value = response.data;
+  });
+}
+
+loadPostOptions();
 getList();
 getDeptTree();
 </script>

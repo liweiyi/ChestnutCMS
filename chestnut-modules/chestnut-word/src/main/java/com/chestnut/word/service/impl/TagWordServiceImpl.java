@@ -61,7 +61,8 @@ public class TagWordServiceImpl extends ServiceImpl<TagWordMapper, TagWord> impl
             return cache.values().stream().toList();
         }
         TagWordGroup tagWordGroup = tagWordGroupMapper.selectOne(
-                new LambdaQueryWrapper<TagWordGroup>().eq(TagWordGroup::getCode, groupCode));
+                new LambdaQueryWrapper<TagWordGroup>().eq(TagWordGroup::getOwner, owner)
+                        .eq(TagWordGroup::getCode, groupCode));
         if (Objects.nonNull(tagWordGroup)) {
             List<TagWord> tagWords = this.lambdaQuery().eq(TagWord::getGroupId, tagWordGroup.getGroupId()).list();
             List<TagWordMonitoredCache.TagWordCache> caches = tagWords.stream().map(TagWordMonitoredCache.TagWordCache::new).toList();

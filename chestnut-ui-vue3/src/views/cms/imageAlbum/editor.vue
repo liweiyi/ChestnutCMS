@@ -43,7 +43,6 @@
               <el-button link icon="Bottom" v-if="imageList.length > 1 && index < imageList.length - 1" @click="handleDownImage(index)">{{ $t("CMS.Image.MoveDown") }}</el-button>
               <el-button link icon="Search" @click="handleShowImage(index)">{{ $t("Common.View") }}</el-button>
               <el-button link icon="Picture" @click="handleChooseImage(index)">{{ $t("CMS.Image.SetLogo") }}</el-button>
-              <el-button link icon="Crop" @click="handleCropImage(index)">{{ $t("CMS.Resource.Cut") }}</el-button>
               <el-button link icon="Edit" @click="handleEditImage(index)">{{ $t("Common.Edit") }}</el-button>
               <el-button link icon="Delete" @click="handleDeleteImage(index)">{{ $t("Common.Delete") }}</el-button>
             </el-row>
@@ -95,8 +94,6 @@ const showImageViewer = ref(false);
 const imageViewerIndex = ref(0);
 const uploadLimit = ref(100);
 const singleUpload = ref(false);
-const showCropper = ref(false);
-const cropImage = ref({})
 
 const imageList = ref([]);
 
@@ -185,21 +182,6 @@ function handleChooseImage(index) {
   emit("choose", imageList.value[index].path, imageList.value[index].src);
 }
 
-function handleCropImage(index) {
-  cropImage.value = {
-    index: index,
-    src: imageList.value[index].src,
-    resourceId: proxy.$tools.getInternalUrlId(imageList.value[index].path),
-  }
-  showCropper.value = true;
-}
-
-function handleCutDone() {
-  showCropper.value = false;
-  if (cropImage.value.index > -1) {
-    imageList.value[cropImage.value.index].src = proxy.$tools.setUrlParameter(cropImage.value.src, "t", new Date().getTime());
-  }
-}
 </script>
 <style lang="scss" scoped>
 .cms-image-editor {

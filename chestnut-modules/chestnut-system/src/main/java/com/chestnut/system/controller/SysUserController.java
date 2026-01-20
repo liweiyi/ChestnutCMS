@@ -146,7 +146,6 @@ public class SysUserController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping(value = { "/detail", "/detail/{userId}" })
 	public R<?> getInfo(@PathVariable(value = "userId", required = false) Long userId) {
-		List<SysPost> posts = postService.list();
 		SysUser user = null;
 		if (IdUtils.validate(userId)) {
 			user = userService.getById(userId);
@@ -158,7 +157,7 @@ public class SysUserController extends BaseRestController {
 			user.setPostIds(
 					postService.selectPostListByUserId(userId).stream().map(SysPost::getPostId).toArray(Long[]::new));
 		}
-		return R.ok(UserInfoVO.builder().posts(posts).user(user).build());
+		return R.ok(UserInfoVO.builder().user(user).build());
 	}
 
 	/**

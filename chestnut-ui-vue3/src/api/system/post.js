@@ -9,6 +9,14 @@ export function listPost(query) {
   })
 }
 
+export function getPostOptions() {
+  return request({
+    url: '/system/post/optionselect',
+    method: 'get'
+  })
+}
+
+
 // 查询岗位详细
 export function getPost(postId) {
   return request({

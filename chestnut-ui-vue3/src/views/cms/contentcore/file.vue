@@ -127,17 +127,23 @@
             <el-table-column
               :label="$t('Common.Operation')"
               align="center"
-              width="180"
-             
+              width="240"
             >
               <template #default="scope">
                 <el-popover
                   style="margin-right: 10px"
-                  v-if="!disableAdd"
                   placement="top"
                   width="200"
-                  v-model="scope.row.showRename"
+                  trigger="click"
+                  v-model:visible="scope.row.showRename"
                 >
+                  <template #reference>
+                    <el-button
+                      type="text"
+                      icon="Edit"
+                      >{{ $t("CMS.File.Rename") }}</el-button
+                    >
+                  </template>
                   <el-input
                     v-model="scope.row.rename"
                     size="small"
@@ -146,36 +152,28 @@
                   <div style="text-align: right; margin-top: 5px">
                     <el-button
                       type="text"
+                      size="small"
                       @click="scope.row.showRename = false"
-                      >{{ $t("Common.Cancel") }}</el-button
-                    >
+                    >{{ $t("Common.Cancel") }}</el-button>
                     <el-button
                       type="primary"
+                      size="small"
                       @click="handleRename(scope.row)"
-                      >{{ $t("Common.Confirm") }}</el-button
-                    >
+                    >{{ $t("Common.Confirm") }}</el-button>
                   </div>
-                  <el-button
-                    slot="reference"
-                    type="text"
-                    icon="Edit"
-                    >{{ $t("CMS.File.Rename") }}</el-button
-                  >
                 </el-popover>
                 <el-button
                   v-if="scope.row.canEdit"
                   type="text"
                   icon="Edit"
                   @click="handleEdit(scope.row)"
-                  >{{ $t("Common.Edit") }}</el-button
-                >
+                >{{ $t("Common.Edit") }}</el-button>
                 <el-button
                   v-if="!disableAdd"
                   type="text"
                   icon="Delete"
                   @click="handleDelete(scope.row)"
-                  >{{ $t("Common.Delete") }}</el-button
-                >
+                >{{ $t("Common.Delete") }}</el-button>
               </template>
             </el-table-column>
           </el-table>
