@@ -28,6 +28,7 @@ import com.chestnut.system.domain.SysConfig;
 import com.chestnut.system.domain.dto.CreateConfigRequest;
 import com.chestnut.system.domain.dto.UpdateConfigRequest;
 import com.chestnut.system.fixed.FixedConfigUtils;
+import com.chestnut.system.fixed.config.BackendContext;
 import com.chestnut.system.mapper.SysConfigMapper;
 import com.chestnut.system.service.ISysConfigService;
 import com.chestnut.system.service.ISysI18nDictService;
@@ -178,6 +179,13 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
                     config.setConfigValue(fc.getDefaultValue());
                     config.setRemark(fc.getRemark());
                     config.createBy(SysConstants.SYS_OPERATOR);
+                    // 兼容历史数据
+                    if (fc.getKey().equals(BackendContext.ID)) {
+                        String oldV = this.selectConfigByKey("CMSBackendContext");
+                        if (StringUtils.isNotEmpty(oldV)) {
+                            config.setConfigValue(oldV);
+                        }
+                    }
                     this.save(config);
                     // 更新缓存
                     redisCache.setCacheObject(getCacheKey(config.getConfigKey()), config.getConfigValue());
