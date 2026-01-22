@@ -223,6 +223,13 @@ public class AsyncTaskManager {
 		}
 	}
 
+    public static void setTaskTenPercentProgressInfo(TipMessage message, Object... args) {
+		AsyncTask task = CURRENT.get();
+		if (Objects.nonNull(task)) {
+			task.setProgressInfo(task.getPercent() + (100 - task.getPercent()) / 10, message, args);
+		}
+    }
+
 	public static int getTaskProgressPercent() {
 		AsyncTask task = CURRENT.get();
 		if (Objects.nonNull(task)) {

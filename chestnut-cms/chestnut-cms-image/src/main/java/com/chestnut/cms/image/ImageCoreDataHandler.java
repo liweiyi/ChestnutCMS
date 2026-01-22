@@ -19,6 +19,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.image.domain.CmsImage;
 import com.chestnut.cms.image.service.IImageService;
+import com.chestnut.cms.image.utils.CmsImageContentTips;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
@@ -48,7 +49,7 @@ public class ImageCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         // cms_image
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出图集内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsImageContentTips.EXPORTING_IMAGE_CONTENT);
         int pageSize = 200;
         long offset = 0;
         int fileIndex = 1;
@@ -74,7 +75,7 @@ public class ImageCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteImport(SiteImportContext context) {
         // cms_image
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入图集内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsImageContentTips.IMPORTING_IMAGE_CONTENT);
         List<File> files = context.readDataFiles(CmsImage.TABLE_NAME);
         files.forEach(f -> {
             List<CmsImage> list = JacksonUtils.fromList(f, CmsImage.class);
@@ -86,9 +87,10 @@ public class ImageCoreDataHandler implements ICoreDataHandler {
                     data.setContentId(context.getContentIdMap().get(data.getContentId()));
                     data.createBy(context.getOperator());
                     data.setPath(context.dealInternalUrl(data.getPath()));
+                    data.setRedirectUrl(context.dealInternalUrl(data.getRedirectUrl()));
                     imageService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入图集内容数据`" + oldImageId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsImageContentTips.IMPORT_IMAGE_CONTENT_FAIL, oldImageId, e.getMessage());
                     log.error("Import cms_image failed: {}", data.getImageId(), e);
                 }
             }
