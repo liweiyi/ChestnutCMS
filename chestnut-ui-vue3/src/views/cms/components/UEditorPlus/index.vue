@@ -28,7 +28,7 @@
       @ok="handleContentSelectorOk"
       @close="handleContentSelectorClose"></cms-content-selector>
     <!-- 第三方视频 -->
-    <cms-third-video v-model:open="openThirdVideoDialog" @ok="handleThirdVideoDialogOk"></cms-third-video>
+    <cms-third-video v-model:open="openThirdVideoDialog" :iframe="thirdVideoIframe" :width="thirdVideoWidth" :height="thirdVideoHeight" :align="thirdVideoAlign" @ok="handleThirdVideoDialogOk"></cms-third-video>
     <!-- 百度地图 -->
     <cms-baidu-map v-model:open="openBaiduMapDialog" @ok="handleBaiduMapDialogOk"></cms-baidu-map>
     <!-- 视频信息修改 -->
@@ -198,12 +198,11 @@ const editorConfig = reactive({
       "imageright",          // 图片右浮动
       "imagecenter",         // 图片居中
       "|",
-      "scrawl",              // 涂鸦
       "xy-third-video",         // 视频
       'xy-resource',
       'xy-content',
       "xy-check-word",
-      // "insertframe",         // 插入Iframe
+      "insertframe",         // 插入Iframe
       "xy-baidu-map",        // 百度地图
       "insertcode",          // 插入代码
       "pagebreak",           // 分页
@@ -234,7 +233,13 @@ const editorConfig = reactive({
       "xiumi-dialog",
       "135editor",            //135编辑器
     ],
-  ]
+  ],
+  toolbarCallback: function(cmd, editor) {
+    if (cmd === 'insertimage') {
+        editor.execCommand('xy-resource', 'image');
+        return true;  // 阻止原来的 image 对话框弹出
+    }
+  }
 });
 const openResourceDialog = ref(false)
 const resourceType = ref('image')
@@ -248,6 +253,10 @@ const openContentSelector = ref(false)
 const openBaiduMapDialog = ref(false)
 const xyContentBtnValue = ref('catalog')
 const contentType = ref('')
+const thirdVideoIframe = ref('')
+const thirdVideoWidth = ref(720)
+const thirdVideoHeight = ref(480)
+const thirdVideoAlign = ref('center')
 
 function init() {
   Object.keys(props.configs).forEach(key => {
@@ -278,6 +287,9 @@ function handleReady(editorInstance) {
   editorInstance.onXyVideoButtonClick = handleXyVideoButtonClick
 }
 function addPopup(editor) {
+  if (editor.options.imagePopup) {
+    return;
+  }
   const domUtils = baidu.editor.dom.domUtils;
   var popup = new baidu.editor.ui.Popup({
     editor: editor,
@@ -324,6 +336,13 @@ function addPopup(editor) {
         editor.selection.getRange().selectNode(frame).select();
         editor.ui._dialogs.mapDialog.open();
         popup.hide();
+      } if (domUtils.hasClass(frame, "cc-third-video")) {
+        thirdVideoIframe.value = frame.outerHTML;
+        thirdVideoWidth.value = parseInt(frame.getAttribute("width"));
+        thirdVideoHeight.value = parseInt(frame.getAttribute("height"));
+        thirdVideoAlign.value = frame.getAttribute("align");
+        editor.onThirdVideoButtonClick();
+        popup.hide();
       } else {
         editor.ui._dialogs.insertframeDialog.open();
         popup.hide();
@@ -347,43 +366,43 @@ function addPopup(editor) {
   });
   popup.render();
   editor.addListener("mouseover", function (t, evt) {
-    evt = evt || window.event;
-    var el = evt.target || evt.srcElement;
-    if (
-      editor.ui._dialogs.insertframeDialog &&
-      /iframe/gi.test(el.tagName)
-    ) {
-      var html = popup.formatHtml(
-        "<nobr>" +
-        '<span onclick=$$._setIframeAlign(-2) class="edui-clickable">' +
-        editor.getLang("default") +
-        '</span>&nbsp;&nbsp;<span onclick=$$._setIframeAlign(-1) class="edui-clickable">' +
-        editor.getLang("justifyleft") +
-        '</span>&nbsp;&nbsp;<span onclick=$$._setIframeAlign(1) class="edui-clickable">' +
-        editor.getLang("justifyright") +
-        "</span>&nbsp;&nbsp;" +
-        ' <span onclick="$$._updateIframe( this);" class="edui-clickable">' +
-        editor.getLang("modify") +
-        "</span></nobr>"
-      );
-      if (html) {
-        popup.getDom("content").innerHTML = html;
-        popup.anchorEl = el;
-        popup.showAnchor(popup.anchorEl);
-      } else {
-        popup.hide();
+      evt = evt || window.event;
+      var el = evt.target || evt.srcElement;
+      if (
+          editor.ui._dialogs.insertframeDialog &&
+          /iframe/gi.test(el.tagName)
+      ) {
+          var html = popup.formatHtml(
+              "<nobr>" +
+              '<span onclick=$$._setIframeAlign(-2) class="edui-clickable">' +
+              editor.getLang("default") +
+              '</span>&nbsp;&nbsp;<span onclick=$$._setIframeAlign(-1) class="edui-clickable">' +
+              editor.getLang("justifyleft") +
+              '</span>&nbsp;&nbsp;<span onclick=$$._setIframeAlign(1) class="edui-clickable">' +
+              editor.getLang("justifyright") +
+              "</span>&nbsp;&nbsp;" +
+              ' <span onclick="$$._updateIframe( this);" class="edui-clickable">' +
+              editor.getLang("modify") +
+              "</span></nobr>"
+          );
+          if (html) {
+              popup.getDom("content").innerHTML = html;
+              popup.anchorEl = el;
+              popup.showAnchor(popup.anchorEl);
+          } else {
+              popup.hide();
+          }
       }
-    }
   });
   editor.addListener("selectionchange", function (t, causeByUi) {
     if (!causeByUi) return;
     var html = "",
       str = "",
-      img = editor.selection.getRange().getClosedNode(),
+      closedNode = editor.selection.getRange().getClosedNode(),
       dialogs = editor.ui._dialogs;
-    if (img && img.tagName == "IMG") {
+    if (closedNode && closedNode.tagName == "IMG") {
       var dialogName = "xy-resource";
-      if (img.getAttribute("anchorname")) {
+      if (closedNode.getAttribute("anchorname")) {
         dialogName = "anchorDialog";
         html = popup.formatHtml(
           "<nobr>" +
@@ -396,46 +415,33 @@ function addPopup(editor) {
         );
       }
       if (
-        domUtils.hasClass(img, "loadingclass") ||
-        domUtils.hasClass(img, "loaderrorclass")
+        domUtils.hasClass(closedNode, "uep-loading") ||
+        domUtils.hasClass(closedNode, "uep-loading-error")
       ) {
         dialogName = "";
       }
-      if (dialogName == "") {
+      if (dialogName != "xy-resource" && !dialogs[dialogName]) {
         return;
       }
 
       var actions = [];
-      actions.push('<nobr />');
-      actions.push('<span onclick=$$._onImgSetFloat("none") class="edui-clickable edui-popup-action-item">' +
-        editor.getLang("default") +
-        "</span>");
-      actions.push('<span onclick=$$._onImgSetFloat("left") class="edui-clickable edui-popup-action-item">' +
-        editor.getLang("justifyleft") +
-        "</span>");
-      actions.push('<span onclick=$$._onImgSetFloat("right") class="edui-clickable edui-popup-action-item">' +
-        editor.getLang("justifyright") +
-        "</span>");
-      actions.push('<span onclick=$$._onImgSetFloat("center") class="edui-clickable edui-popup-action-item">' +
-        editor.getLang("justifycenter") +
-        "</span>");
-      if (img.getAttribute('data-formula-image') !== null) {
-        actions.push("<span onclick=\"$$._onImgEditButtonClick('formulaDialog');\" class='edui-clickable edui-popup-action-item'>" +
-            editor.getLang("formulaedit") + "</span>");
-      } else if (img.getAttribute("data-word-image")) {
+      if (closedNode.getAttribute("data-word-image")) {
         actions.push("<span onclick=\"$$._onImgEditButtonClick('wordimageDialog');\" class='edui-clickable edui-popup-action-item'>" +
           editor.getLang("save") +
           "</span>");
       } else {
-        actions.push("<span onclick=\"$$._onImgEditButtonClick('" + dialogName + '\');" class="edui-clickable edui-popup-action-item">' +
-          editor.getLang("modify") +
-          "</span>");
+        // actions.push("<span onclick=\"$$._onImgEditButtonClick('" + dialogName + '\');" class="edui-clickable edui-popup-action-item">' +
+        //     editor.getLang("modify") +
+        //     "</span>");
       }
-      actions.push("</nobr>");
-
+      if (actions.length > 0) {
+          // wrap with <nobr> </nobr>
+          actions.unshift('<nobr>');
+          actions.push('</nobr>');
+      }
       !html && (html = popup.formatHtml(actions.join("")));
     }
-    if (html.length == 0 && editor.ui._dialogs.linkDialog) {
+    if (editor.ui._dialogs.linkDialog) {
       var link = editor.queryCommandValue("link");
       var url;
       if (
@@ -472,8 +478,10 @@ function addPopup(editor) {
 
     if (html) {
       popup.getDom("content").innerHTML = html;
-      popup.anchorEl = img;
+      popup.anchorEl = closedNode || link;
       popup.showAnchor(popup.anchorEl);
+    } else {
+      popup.hide();
     }
   });
 }
@@ -571,7 +579,7 @@ function checkCursorInLink(editor) {
 }
 
 function handleCatalogSelectorOk(args) {
-  const catalogs = args[0];
+  const catalogs = args.selectedCatalogs;
   if (catalogs && catalogs.length > 0) {
     const editor = window.UE.getEditor(props.editorId)
     checkCursorInLink(editor);
@@ -921,9 +929,27 @@ function handleThirdVideoButtonClick(cmd) {
 }
 
 function handleThirdVideoDialogOk(result) {
-  if (result && result.length > 0) {
-    var editor = window.UE.getEditor(props.editorId)
-    editor.execCommand("insertHTML", result);
+  var editor = window.UE.getEditor(props.editorId);
+  if (editor._iframe && result && result.src && result.src.length > 0) {
+    const iframe = editor._iframe;
+    const newIframe = editor.document.createElement("iframe")
+    newIframe.setAttribute("src", result.src);
+    /^[1-9]+[.]?\d*$/g.test(result.width) ? newIframe.setAttribute("width", result.width) : "";
+    /^[1-9]+[.]?\d*$/g.test(result.height) ? newIframe.setAttribute("height", result.height) : "";
+    newIframe.setAttribute("scrolling", "yes");
+    newIframe.setAttribute("frameborder", "0", 0);
+    newIframe.setAttribute("align", result.align); 
+    newIframe.setAttribute("class", "edui-video-iframe cc-third-video");
+    if (iframe) {
+      iframe.parentNode.insertBefore(newIframe, iframe);
+      const domUtils = UE.dom.domUtils;
+      domUtils.remove(iframe);
+    } else {
+      const p = editor.document.createElement("p");
+      p.appendChild(newIframe);
+      editor.execCommand("insertHTML", p.innerHTML);
+    }
+    editor._iframe = null;
   }
 }
 

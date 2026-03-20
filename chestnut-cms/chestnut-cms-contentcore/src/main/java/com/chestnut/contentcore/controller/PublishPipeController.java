@@ -18,6 +18,7 @@ package com.chestnut.contentcore.controller;
 import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
@@ -25,8 +26,11 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ServletUtils;
+
+
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
@@ -54,6 +58,7 @@ import java.util.stream.Collectors;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.PUBLISH_PIPE.MODULE}")
 @RestController
 @RequestMapping("/cms/publishpipe")
 @RequiredArgsConstructor
@@ -68,9 +73,10 @@ public class PublishPipeController extends CmsRestController {
      *
      * @return
      */
+    @XComment("{API.DOC.CMS.PUBLISH_PIPE.GET_SELECT_DATA}")
     @Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
     @GetMapping("/selectData")
-    public R<?> bindSelectData() {
+    public R<TableData<PublishPipeProps>> bindSelectData() {
         CmsSite site = this.getCurrentSite();
         List<PublishPipeProps> datalist = this.publishPipeService.getPublishPipes(site.getSiteId())
                 .stream().map(p -> PublishPipeProps.newInstance(p.getCode(), p.getName(), null))
@@ -83,13 +89,14 @@ public class PublishPipeController extends CmsRestController {
      *
      * @return
      */
+    @XComment("{API.DOC.CMS.PUBLISH_PIPE.GET_LIST}")
     @Priv(
             type = AdminUserType.TYPE,
             value = { ContentCorePriv.PublishPipeView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
             mode = SaMode.AND
     )
     @GetMapping("/list")
-    public R<?> list() {
+    public R<TableData<CmsPublishPipe>> list() {
         PageRequest pr = this.getPageRequest();
         CmsSite site = this.getCurrentSite();
         Page<CmsPublishPipe> page = publishPipeService.page(new Page<CmsPublishPipe>(pr.getPageNumber(), pr.getPageSize(), true)
@@ -103,13 +110,14 @@ public class PublishPipeController extends CmsRestController {
      * @param publishPipeId 发布通道ID
      * @return
      */
+    @XComment("{API.DOC.CMS.PUBLISH_PIPE.GET_DETAIL}")
     @Priv(
             type = AdminUserType.TYPE,
             value = { ContentCorePriv.PublishPipeView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
             mode = SaMode.AND
     )
     @GetMapping(value = "/detail/{publishPipeId}")
-    public R<?> getInfo(@PathVariable @LongId Long publishPipeId) {
+    public R<CmsPublishPipe> getInfo(@PathVariable @LongId @XComment("{API.DOC.CMS.PUBLISH_PIPE.PUBLISH_PIPE_ID}") Long publishPipeId) {
         CmsPublishPipe publishPipe = publishPipeService.getById(publishPipeId);
         Assert.notNull(publishPipe, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("publishPipeId", publishPipeId));
         return R.ok(publishPipe);
@@ -122,6 +130,7 @@ public class PublishPipeController extends CmsRestController {
      * @return
      * @throws IOException
      */
+    @XComment("{API.DOC.CMS.PUBLISH_PIPE.ADD}")
     @Priv(
             type = AdminUserType.TYPE,
             value = { ContentCorePriv.PublishPipeView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -129,7 +138,7 @@ public class PublishPipeController extends CmsRestController {
     )
     @Log(title = "新增发布通道", businessType = BusinessType.INSERT)
     @PostMapping("/add")
-    public R<?> addSave(@RequestBody @Validated CmsPublishPipe publishPipe) throws IOException {
+    public R<Void> addSave(@RequestBody @Validated CmsPublishPipe publishPipe) throws IOException {
         LoginUser loginUser = StpAdminUtil.getLoginUser();
         CmsSite site = this.siteService.getSiteOrCurrent(publishPipe.getSiteId(), ServletUtils.getRequest(), loginUser);
         publishPipe.setSiteId(site.getSiteId());
@@ -145,6 +154,7 @@ public class PublishPipeController extends CmsRestController {
      * @return
      * @throws IOException
      */
+    @XComment("{API.DOC.CMS.PUBLISH_PIPE.UPDATE}")
     @Priv(
             type = AdminUserType.TYPE,
             value = { ContentCorePriv.PublishPipeView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -152,7 +162,7 @@ public class PublishPipeController extends CmsRestController {
     )
     @Log(title = "编辑发布通道", businessType = BusinessType.UPDATE)
     @PostMapping("/update")
-    public R<?> editSave(@RequestBody @Validated CmsPublishPipe publishPipe) throws IOException {
+    public R<Void> editSave(@RequestBody @Validated CmsPublishPipe publishPipe) throws IOException {
         publishPipe.setUpdateBy(StpAdminUtil.getLoginUser().getUsername());
         this.publishPipeService.savePublishPipe(publishPipe);
         return R.ok();
@@ -165,6 +175,7 @@ public class PublishPipeController extends CmsRestController {
      * @return
      * @throws IOException
      */
+    @XComment("{API.DOC.CMS.PUBLISH_PIPE.DELETE}")
     @Priv(
             type = AdminUserType.TYPE,
             value = { ContentCorePriv.PublishPipeView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -172,7 +183,7 @@ public class PublishPipeController extends CmsRestController {
     )
     @Log(title = "删除发布通道", businessType = BusinessType.DELETE)
     @PostMapping("/delete")
-    public R<String> remove(@RequestBody @NotEmpty List<Long> publishPipeIds) throws IOException {
+    public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.PUBLISH_PIPE.PUBLISH_PIPE_IDS}") List<Long> publishPipeIds) throws IOException {
         this.publishPipeService.deletePublishPipe(publishPipeIds);
         return R.ok();
     }
@@ -184,6 +195,7 @@ public class PublishPipeController extends CmsRestController {
      * @return
      * @throws IOException
      */
+    @XComment("{API.DOC.CMS.PUBLISH_PIPE.ENABLE}")
     @Priv(
             type = AdminUserType.TYPE,
             value = { ContentCorePriv.PublishPipeView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -191,7 +203,7 @@ public class PublishPipeController extends CmsRestController {
     )
     @Log(title = "启用发布通道", businessType = BusinessType.UPDATE)
     @PostMapping("/enable/{publishPipeId}")
-    public R<String> enable(@PathVariable("publishPipeId") @LongId Long publishPipeId) throws IOException {
+    public R<Void> enable(@PathVariable("publishPipeId") @LongId @XComment("{API.DOC.CMS.PUBLISH_PIPE.PUBLISH_PIPE_ID}") Long publishPipeId) throws IOException {
         CmsPublishPipe publishPipe = this.publishPipeService.getById(publishPipeId);
         Assert.notNull(publishPipe, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("publishPipeId", publishPipe));
 
@@ -208,6 +220,7 @@ public class PublishPipeController extends CmsRestController {
      * @return
      * @throws IOException
      */
+    @XComment("{API.DOC.CMS.PUBLISH_PIPE.DISABLE}")
     @Priv(
             type = AdminUserType.TYPE,
             value = { ContentCorePriv.PublishPipeView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -215,7 +228,7 @@ public class PublishPipeController extends CmsRestController {
     )
     @Log(title = "禁用发布通道", businessType = BusinessType.UPDATE)
     @PostMapping("/disable/{publishPipeId}")
-    public R<String> disable(@PathVariable("publishPipeId") Long publishPipeId) throws IOException {
+    public R<Void> disable(@PathVariable("publishPipeId") @XComment("{API.DOC.CMS.PUBLISH_PIPE.PUBLISH_PIPE_ID}") Long publishPipeId) throws IOException {
         CmsPublishPipe publishPipe = this.publishPipeService.getById(publishPipeId);
         if (publishPipe == null) {
             return R.fail("数据ID错误：" + publishPipeId);

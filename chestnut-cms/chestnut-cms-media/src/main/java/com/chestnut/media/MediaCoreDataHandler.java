@@ -52,7 +52,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         // cms_audio
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出音频内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsMediaTips.EXPORTING_AUDIO);
         int pageSize = 200;
         long offset = 0;
         int fileIndex = 1;
@@ -74,7 +74,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
             }
         }
         // cms_video
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出视频频内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsMediaTips.EXPORTING_VIDEO);
         offset = 0;
         fileIndex = 1;
         while (true) {
@@ -99,7 +99,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteImport(SiteImportContext context) {
         // cms_audio
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入音频内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsMediaTips.IMPORTING_AUDIO);
         List<File> files = context.readDataFiles(CmsAudio.TABLE_NAME);
         files.forEach(f -> {
             List<CmsAudio> list = JacksonUtils.fromList(f, CmsAudio.class);
@@ -113,13 +113,13 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     data.setPath(context.dealInternalUrl(data.getPath()));
                     audioService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入音频内容数据`" + oldAudioId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsMediaTips.IMPORT_AUDIO_FAIL, oldAudioId, e.getMessage());
                     log.error("Import cms_audio failed: {}", data.getAudioId(), e);
                 }
             }
         });
         // cms_video
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入视频内容数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsMediaTips.IMPORTING_VIDEO);
         files = context.readDataFiles(CmsVideo.TABLE_NAME);
         files.forEach(f -> {
             List<CmsVideo> list = JacksonUtils.fromList(f, CmsVideo.class);
@@ -134,7 +134,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     data.setPath(context.dealInternalUrl(data.getPath()));
                     videoService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入视频内容数据`" + oldVideoId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsMediaTips.IMPORT_VIDEO_FAIL, oldVideoId, e.getMessage());
                     log.error("Import cms_video failed: {}", data.getVideoId(), e);
                 }
             }

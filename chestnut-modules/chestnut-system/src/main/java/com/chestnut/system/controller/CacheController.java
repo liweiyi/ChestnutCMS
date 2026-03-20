@@ -15,7 +15,10 @@
  */
 package com.chestnut.system.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
+
+
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.redis.IMonitoredCache;
@@ -44,6 +47,7 @@ import java.util.stream.Collectors;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.CACHE.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/monitor/cache")
@@ -53,9 +57,13 @@ public class CacheController {
 	
 	private final Map<String, IMonitoredCache<?>> monitoredCaches;
 
+	/**
+	 * 获取缓存信息
+	 */
+	@XComment("{API.DOC.SYS.CACHE.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
 	@GetMapping
-	public R<?> getInfo() throws Exception {
+	public R<Map<String, Object>> getInfo() throws Exception {
 		Properties info = (Properties) redisTemplate.execute((RedisCallback<Object>) connection -> connection.serverCommands().info());
 		Properties commandStats = (Properties) redisTemplate
 				.execute((RedisCallback<Object>) connection -> connection.serverCommands().info("commandstats"));
@@ -77,18 +85,27 @@ public class CacheController {
 		return R.ok(result);
 	}
 
+	/**
+	 * 获取缓存名称列表
+	 */
+	@XComment("{API.DOC.SYS.CACHE.GET_NAMES}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
 	@GetMapping("/getNames")
-	public R<?> cache() {
+	public R<List<SysCache>> cache() {
 		List<SysCache> list = this.monitoredCaches.values().stream().map(mc -> {
 			return new SysCache(mc.getId(), I18nUtils.get(mc.getCacheName()), mc.getCacheKey());
 		}).collect(Collectors.toList());
 		return R.ok(list);
 	}
 
+	/**
+	 * 获取缓存键名列表
+	 */
+	@XComment("{API.DOC.SYS.CACHE.GET_KEYS}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
 	@GetMapping("/getKeys/{monitoredId}")
-	public R<?> getCacheKeys(@PathVariable @NotBlank String monitoredId) {
+	public R<Set<String>> getCacheKeys(
+			@PathVariable @NotBlank @XComment("{API.DOC.SYS.CACHE.MONITORED_ID}") String monitoredId) {
 		IMonitoredCache<?> iMonitoredCache = this.monitoredCaches.get(IMonitoredCache.BEAN_PREFIX + monitoredId);
 		Assert.notNull(iMonitoredCache, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(monitoredId));
 
@@ -100,9 +117,15 @@ public class CacheController {
 		}
 	}
 
+	/**
+	 * 获取缓存内容
+	 */
+	@XComment("{API.DOC.SYS.CACHE.GET_VALUE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheList)
 	@GetMapping("/getValue")
-	public R<?> getCacheValue(@RequestParam @NotBlank String monitoredId, @RequestParam @NotBlank String cacheKey) {
+	public R<SysCache> getCacheValue(
+			@RequestParam @NotBlank @XComment("{API.DOC.SYS.CACHE.MONITORED_ID}") String monitoredId,
+			@RequestParam @NotBlank @XComment("{API.DOC.SYS.CACHE.CACHE_KEY}") String cacheKey) {
 		IMonitoredCache<?> iMonitoredCache = this.monitoredCaches.get(IMonitoredCache.BEAN_PREFIX + monitoredId);
 		Assert.notNull(iMonitoredCache, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(monitoredId));
 
@@ -117,9 +140,14 @@ public class CacheController {
 		return R.ok(sysCache);
 	}
 
+	/**
+	 * 清除指定缓存
+	 */
+	@XComment("{API.DOC.SYS.CACHE.CLEAR_CACHE_NAME}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
 	@PostMapping("/clearCacheName/{monitoredId}")
-	public R<?> clearCacheName(@PathVariable String monitoredId) {
+	public R<Void> clearCacheName(
+			@PathVariable @XComment("{API.DOC.SYS.CACHE.MONITORED_ID}") String monitoredId) {
 		IMonitoredCache<?> iMonitoredCache = this.monitoredCaches.get(IMonitoredCache.BEAN_PREFIX + monitoredId);
 		Assert.notNull(iMonitoredCache, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(monitoredId));
 		Collection<String> cacheKeys = redisTemplate.keys(iMonitoredCache.getCacheKey() + "*");
@@ -129,16 +157,24 @@ public class CacheController {
 		return R.ok();
 	}
 
+	/**
+	 * 清除指定缓存键
+	 */
+	@XComment("{API.DOC.SYS.CACHE.CLEAR_CACHE_KEY}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
 	@PostMapping("/clearCacheKey")
-	public R<?> clearCacheKey(@RequestBody @Validated ClearCacheRequest dto) {
+	public R<Void> clearCacheKey(@RequestBody @Validated ClearCacheRequest dto) {
 		redisTemplate.delete(dto.getCacheKey());
 		return R.ok();
 	}
 
+	/**
+	 * 清除全部缓存
+	 */
+	@XComment("{API.DOC.SYS.CACHE.CLEAR_CACHE_ALL}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorCacheClear)
 	@PostMapping("/clearCacheAll")
-	public R<?> clearCacheAll() {
+	public R<Void> clearCacheAll() {
 		Collection<String> cacheKeys = redisTemplate.keys("*");
 		if (StringUtils.isNotEmpty(cacheKeys)) {
 			redisTemplate.delete(cacheKeys);

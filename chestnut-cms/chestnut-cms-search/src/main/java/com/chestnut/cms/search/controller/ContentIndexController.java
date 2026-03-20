@@ -24,6 +24,7 @@ import com.chestnut.cms.search.es.doc.ESContent;
 import com.chestnut.cms.search.permission.CmsSearchPriv;
 import com.chestnut.cms.search.service.ContentIndexService;
 import com.chestnut.cms.search.vo.ESContentVO;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -31,9 +32,12 @@ import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
+
+
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.domain.CmsCatalog;
@@ -63,6 +67,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX_MODULE}")
 @Priv(type = AdminUserType.TYPE, value = CmsSearchPriv.ContentIndexView)
 @RequiredArgsConstructor
 @RestController
@@ -81,8 +86,9 @@ public class ContentIndexController extends CmsRestController {
 		Assert.isTrue(this.searchService.isElasticSearchAvailable(), SearchErrorCode.ESConnectFail::exception);
 	}
 
+	@XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.GET_LIST}")
 	@GetMapping("/contents")
-	public R<?> selectDocumentList(@RequestParam(value = "query", required = false) @Length(max = 200) String query,
+	public R<TableData<ESContentVO>> selectDocumentList(@RequestParam(value = "query", required = false) @Length(max = 200) String query,
 								   @RequestParam(value = "onlyTitle", required = false ,defaultValue = "false") Boolean onlyTitle,
 								   @RequestParam(value = "contentType", required = false) @Length(max = 20) String contentType) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
@@ -160,26 +166,29 @@ public class ContentIndexController extends CmsRestController {
 		return this.bindDataTable(list, sr.hits().total().value());
 	}
 
+	@XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.GET_DETAIL}")
 	@GetMapping("/content/{contentId}")
-	public R<?> selectDocumentDetail(@PathVariable(value = "contentId") @LongId Long contentId) throws ElasticsearchException, IOException {
+	public R<ESContent> selectDocumentDetail(@PathVariable(value = "contentId") @LongId @XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.CONTENT_ID}") Long contentId) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
 		CmsSite site = this.getCurrentSite();
 		ESContent source = this.searchService.getContentDocDetail(site.getSiteId(), contentId);
 		return R.ok(source);
 	}
 
+	@XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.DELETE}")
 	@Log(title = "删除索引", businessType = BusinessType.DELETE)
 	@PostMapping("/contents/delete")
-	public R<?> deleteDocuments(@RequestBody @NotEmpty List<Long> contentIds) throws ElasticsearchException, IOException {
+	public R<Void> deleteDocuments(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.CONTENT_IDS}") List<Long> contentIds) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
 		CmsSite site = this.getCurrentSite();
 		this.searchService.deleteContentDoc(site.getSiteId(), contentIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.BUILD}")
 	@Log(title = "重建内容索引", businessType = BusinessType.UPDATE)
 	@PostMapping("/build/{contentId}")
-	public R<?> buildContentIndex(@PathVariable("contentId") @LongId Long contentId) {
+	public R<Void> buildContentIndex(@PathVariable("contentId") @LongId @XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.CONTENT_ID}") Long contentId) {
 		this.checkElasticSearchEnabled();
 		CmsContent content = this.contentService.dao().getById(contentId);
 		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
@@ -190,9 +199,10 @@ public class ContentIndexController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.REBUILD_ALL}")
 	@Log(title = "重建全站索引", businessType = BusinessType.UPDATE)
 	@PostMapping("/rebuild")
-	public R<?> rebuildAllIndex() {
+	public R<String> rebuildAllIndex() {
 		this.checkElasticSearchEnabled();
 		CmsSite site = this.getCurrentSite();
 		AsyncTask task = this.searchService.rebuildAll(site);

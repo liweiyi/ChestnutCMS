@@ -15,9 +15,12 @@
  */
 package com.chestnut.contentcore.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+
+
 import com.chestnut.contentcore.publish.IPublishStrategy;
 import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.PUBLISH_LOG.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -43,16 +47,18 @@ public class PublishLogController extends BaseRestController {
 	/**
 	 * 发布队列任务数量
 	 */
+	@XComment("{API.DOC.CMS.PUBLISH_LOG.GET_TASK_COUNT}")
 	@GetMapping("/taskCount")
-	public R<?> getPublishTaskCount() {
+	public R<Long> getPublishTaskCount() {
 		return R.ok(publishStrategy.getTaskCount());
 	}
 
 	/**
 	 * 清理发布队列
 	 */
+	@XComment("{API.DOC.CMS.PUBLISH_LOG.CLEAR_TASKS}")
 	@PostMapping("/clear")
-	public R<?> clearPublishTask() {
+	public R<Void> clearPublishTask() {
 		publishStrategy.cleanTasks();
 		return R.ok();
 	}

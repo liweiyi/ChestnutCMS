@@ -15,11 +15,13 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CATALOG.NAME_TO_SPELLING_DTO}")
 @Getter
 @Setter
 public class CatalogNameToSpellingDTO {
@@ -27,11 +29,13 @@ public class CatalogNameToSpellingDTO {
     /**
      * 父级栏目ID
      */
+    @XComment("{API.DOC.CMS.CATALOG.PARENT_CATALOG_ID}")
     private Long parentId = 0L;
 
     /**
      * 栏目名称
      */
+    @XComment("{CMS.CATALOG.NAME}")
     @NotNull
     @NotEmpty
     private String name;

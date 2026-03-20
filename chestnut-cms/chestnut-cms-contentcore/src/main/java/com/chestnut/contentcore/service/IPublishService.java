@@ -108,6 +108,8 @@ public interface IPublishService {
     String getContentPageData(CmsContent content, IInternalDataType.RequestData requestData)
             throws IOException, TemplateException;
 
+    void publishCatalogAncestorsAndSite(Long catalogId);
+
     /**
      * 内容静态化
      *

@@ -24,7 +24,7 @@ import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.enums.ContentCopyType;
+import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.util.ResourceUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;

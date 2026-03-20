@@ -82,7 +82,7 @@
           <span>{{ parseTime(scope.row.endTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('Common.Operation')" width="360" align="center">
+      <el-table-column :label="$t('Common.Operation')" width="420" align="center">
         <template #default="scope">
           <el-button 
             v-if="scope.row.status=='1'"

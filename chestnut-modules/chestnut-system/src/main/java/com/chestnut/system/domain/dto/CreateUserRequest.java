@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.system.fixed.dict.Gender;
@@ -38,43 +39,56 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.CREATE_USER_REQ}")
 public class CreateUserRequest extends BaseDTO {
 
     @LongId
+    @XComment("{ENT.SYS.USER.DEPT_ID}")
     private Long deptId;
 
+    @XComment("{ENT.SYS.USER.USER_NAME}")
     @NotBlank
     @Length(max = 30)
     @Pattern(regexp = RegexConsts.REGEX_USERNAME)
     private String userName;
 
+    @XComment("{ENT.SYS.USER.NICK_NAME}")
     @Length(max = 30)
     private String nickName;
 
+    @XComment("{ENT.SYS.USER.REAL_NAME}")
     @Length(max = 30)
     private String realName;
 
+    @XComment("{ENT.SYS.USER.MAIL}")
     @Email
     @Length(max = 50)
     private String email;
 
+    @XComment("{ENT.SYS.USER.PHONE}")
     @Length(max = 20)
     private String phoneNumber;
 
+    @XComment("{ENT.SYS.USER.GENDER}")
     @NotBlank
     @Dict(value = Gender.TYPE)
     private String sex;
 
+    @XComment("{ENT.SYS.USER.BIRTHDAY}")
     private LocalDateTime birthday;
 
+    @XComment("{ENT.SYS.USER.PASSWORD}")
     @NotBlank
     private String password;
 
+    @XComment("{ENT.SYS.USER.STATUS}")
     @Dict(UserStatus.TYPE)
     private String status;
 
+    @XComment("{ENT.SYS.USER.POST_IDS}")
     private Long[] postIds;
 
+    @XComment("{CC.ENTITY.REMARK}")
     @Length(max = 500)
     private String remark;
 }

@@ -1,5 +1,6 @@
 package com.chestnut.cloud.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.validator.Dict;
@@ -16,28 +17,35 @@ import org.hibernate.validator.constraints.Length;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CLOUD.CREATE_REQ}")
 @Getter
 @Setter
 public class CreateCloudConfigRequest extends BaseDTO {
 
+    @XComment("{API.DOC.CLOUD.TYPE}")
     @NotBlank
     @Length(max = 50)
     private String type;
 
+    @XComment("{API.DOC.CLOUD.CONFIG_NAME}")
     @NotBlank
     @Length(max = 100)
     private String configName;
 
+    @XComment("{API.DOC.CLOUD.CONFIG_DESC}")
     @Length(max = 100)
     private String configDesc;
 
+    @XComment("{CC.ENTITY.STATUS}")
     @NotBlank
     @Dict(EnableOrDisable.TYPE)
     private String status;
 
+    @XComment("{API.DOC.CLOUD.CONFIG_PROPS}")
     @NotNull
     private ObjectNode configProps;
 
+    @XComment("{CC.ENTITY.REMARK}")
     @Length(max = 500)
     private String remark;
 }

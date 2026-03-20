@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.validator.Dict;
 import lombok.Getter;
@@ -29,14 +30,18 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.ROLE.QUERY_ROLE_REQ}")
 public class QueryRoleRequest {
 
     @Length(max = 30)
+    @XComment("{API.DOC.SYS.ROLE.ROLE_NAME}")
     private String roleName;
 
     @Length(max = 100)
+    @XComment("{API.DOC.SYS.ROLE.ROLE_KEY}")
     private String roleKey;
 
     @Dict(EnableOrDisable.TYPE)
+    @XComment("{API.DOC.SYS.ROLE.STATUS}")
     private String status;
 }

@@ -24,13 +24,17 @@ import com.chestnut.advertisement.mapper.CmsAdClickLogMapper;
 import com.chestnut.advertisement.mapper.CmsAdHourStatMapper;
 import com.chestnut.advertisement.mapper.CmsAdViewLogMapper;
 import com.chestnut.advertisement.service.IAdvertisementService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
+
+
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@XComment("{API.DOC.CMS.AD_LOG.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RequiredArgsConstructor
 @RestController
@@ -58,9 +63,11 @@ public class AdLogController extends CmsRestController {
 
 	private final CmsAdViewLogMapper adViewLogMapper;
 
+	@XComment("{API.DOC.CMS.AD_LOG.GET_STAT_SUM}")
 	@GetMapping
-	public R<?> getAdStatSum(@RequestParam(required = false) Date beginTime,
-			@RequestParam(required = false) Date endTime) {
+	public R<TableData<CmsAdHourStat>> getAdStatSum(
+			@RequestParam(required = false) @XComment("{API.DOC.CMS.AD_LOG.BEGIN_TIME}") Date beginTime,
+			@RequestParam(required = false) @XComment("{API.DOC.CMS.AD_LOG.END_TIME}") Date endTime) {
         CmsSite site = this.getCurrentSite();
 		String begin = Objects.isNull(beginTime) ? null : FORMAT.format(beginTime);
 		String end = Objects.isNull(endTime) ? null : FORMAT.format(endTime);
@@ -72,11 +79,12 @@ public class AdLogController extends CmsRestController {
 		return this.bindDataTable(list);
 	}
 
+	@XComment("{API.DOC.CMS.AD_LOG.GET_CHART}")
 	@GetMapping("/chart")
 	public R<?> getLineChartStatDatas(
-			@RequestParam @Min(1) Long advertisementId,
-			@RequestParam Date beginTime,
-			@RequestParam Date endTime
+			@RequestParam @Min(1) @XComment("{API.DOC.CMS.AD_LOG.AD_ID}") Long advertisementId,
+			@RequestParam @XComment("{API.DOC.CMS.AD_LOG.BEGIN_TIME}") Date beginTime,
+			@RequestParam @XComment("{API.DOC.CMS.AD_LOG.END_TIME}") Date endTime
 	) {
 		LambdaQueryWrapper<CmsAdHourStat> q = new LambdaQueryWrapper<CmsAdHourStat>()
 				.eq(CmsAdHourStat::getAdvertisementId, advertisementId)
@@ -111,8 +119,9 @@ public class AdLogController extends CmsRestController {
 		return R.ok(Map.of("xAxisDatas", xAxisDatas, "lineDatas", lineDatas));
 	}
 
+	@XComment("{API.DOC.CMS.AD_LOG.GET_CLICK_LIST}")
 	@GetMapping("/click")
-	public R<?> listAdClickLogs() {
+	public R<TableData<CmsAdClickLog>> listAdClickLogs() {
 		PageRequest pr = getPageRequest();
 		CmsSite site = this.getCurrentSite();
 		LambdaQueryWrapper<CmsAdClickLog> q = new LambdaQueryWrapper<CmsAdClickLog>()
@@ -126,8 +135,9 @@ public class AdLogController extends CmsRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.CMS.AD_LOG.GET_VIEW_LIST}")
 	@GetMapping("/view")
-	public R<?> listAdViewLogs() {
+	public R<TableData<CmsAdViewLog>> listAdViewLogs() {
 		PageRequest pr = getPageRequest();
         CmsSite site = this.getCurrentSite();
 		LambdaQueryWrapper<CmsAdViewLog> q = new LambdaQueryWrapper<CmsAdViewLog>()

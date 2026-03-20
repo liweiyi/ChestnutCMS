@@ -15,6 +15,7 @@
  */
 package com.chestnut.link.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import org.springframework.beans.BeanUtils;
 
 import com.chestnut.link.domain.CmsLinkGroup;
@@ -25,18 +26,24 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@XComment("{API.DOC.CMS.LINK_GROUP.DTO}")
 public class LinkGroupDTO {
-	
+
+	@XComment("{CMS.LINK_GROUP.ID}")
     private Long linkGroupId;
 
+	@XComment("{CMS.LINK_GROUP.SITE_ID}")
     private Long siteId;
 
     @NotNull
+	@XComment("{CMS.LINK_GROUP.NAME}")
     private String name;
 
     @NotNull
+	@XComment("{CMS.LINK_GROUP.CODE}")
     private String code;
-    
+
+	@XComment("{API.DOC.CMS.LINK_GROUP.SORT_FLAG}")
     private Long sortFlag;
     
 	public static LinkGroupDTO newInstance(CmsLinkGroup linkGroup) {

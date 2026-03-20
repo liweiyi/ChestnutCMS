@@ -15,6 +15,7 @@
  */
 package com.chestnut.word.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -29,28 +30,24 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.WORD.SENSITIVE_WORD.CREATE_REQ}")
 public class CreateSensitiveWordRequest extends BaseDTO {
 
-    /**
-     * 类型
-     */
+    @XComment("{CC.SENSITIVE_WORD.TYPE}")
     @NotBlank
     @Length(max = 5)
     private String type;
 
-    /**
-     * 名称
-     */
+    @XComment("{CC.SENSITIVE_WORD.WORD}")
     @NotBlank
     @Length(max = 255)
     private String word;
 
-    /**
-     * 替换词
-     */
+    @XComment("{CC.SENSITIVE_WORD.REPLACE_WORD}")
     @Length(max = 255)
     private String replaceWord;
 
+    @XComment("{CC.ENTITY.REMARK}")
     @Length(max = 500)
     private String remark;
 }

@@ -15,22 +15,20 @@
  */
 package com.chestnut.system.domain.vo;
 
-import java.util.List;
-
-import com.chestnut.system.domain.SysPost;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.SysUser;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.List;
 
-@Getter
-@Setter
-@Builder
-public class UserInfoVO {
+@XComment("用户信息")
+public record UserInfoVO(SysUser user, List<SysRole> roles) {
 
-	private SysUser user;
-	
-	private List<SysRole> roles;
+    public UserInfoVO {
+
+    }
+
+    public static UserInfoVO create(SysUser user) {
+        return new UserInfoVO(user, List.of());
+    }
 }

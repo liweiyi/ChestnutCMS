@@ -16,9 +16,12 @@
 package com.chestnut.system.controller;
 
 import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DynamicDataSourceProperties;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.config.properties.ChestnutProperties;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
+
+
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.system.domain.vo.server.AppInfo;
 import com.chestnut.system.domain.vo.server.Server;
@@ -36,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author 兮玥（190785909@qq.com）
  */
+@XComment("{API.DOC.SYS.SERVER.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/monitor/server")
@@ -45,9 +49,10 @@ public class ServerController {
 
 	private final DynamicDataSourceProperties dataSourceProperties;
 	
+	@XComment("{API.DOC.SYS.SERVER.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorServerList)
 	@GetMapping()
-	public R<?> getInfo() throws Exception {
+	public R<Server> getInfo() throws Exception {
 		Server server = new Server();
 		server.copyTo();
 		server.getDataSources().initFrom(dataSourceProperties.getDatasource().values());
@@ -57,9 +62,10 @@ public class ServerController {
 		return R.ok(server);
 	}
 
+	@XComment("{API.DOC.SYS.SERVER.GET_DASHBOARD}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/dashboard")
-	public R<?> getDashboardInfo() {
+	public R<DashboardServerData> getDashboardInfo() {
 		DashboardServerData server = new DashboardServerData();
 		server.getApp().setName(properties.getName());
 		server.getApp().setAlias(properties.getAlias());

@@ -17,10 +17,12 @@ package com.chestnut.contentcore.domain.dto;
 
 import java.util.List;
 
+import com.chestnut.common.annotation.XComment;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CONTENT.PUBLISH_DTO}")
 @Getter
 @Setter
 public class PublishContentDTO {
@@ -28,6 +30,7 @@ public class PublishContentDTO {
 	/**
 	 * 内容ID列表
 	 */
+	@XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}")
 	@NotEmpty
 	private List<Long> contentIds;
 }

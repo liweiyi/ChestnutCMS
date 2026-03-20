@@ -17,13 +17,17 @@ package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.system.domain.SysLoginConfig;
 import com.chestnut.system.domain.dto.CreateLoginConfigRequest;
@@ -46,6 +50,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.LOGIN_CONFIG.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/login/config")
@@ -54,12 +59,13 @@ public class SysLoginConfigController extends BaseRestController {
 	private final ILoginConfigService loginConfigService;
 
     private final List<ILoginType>  loginTypeList;
-
+    @XComment("{API.DOC.SYS.LOGIN_CONFIG.GET_TYPE_OPTIONS}")
     @GetMapping("/typeOptions")
     public R<?> getLoginTypeOptions() {
         return bindSelectOptions(loginTypeList, ILoginType::getType, ILoginType::getName);
     }
 
+    @XComment("{API.DOC.SYS.LOGIN_CONFIG.GET_OPTIONS}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
     @GetMapping("/options")
     public R<?> getConfigOptions() {
@@ -67,9 +73,10 @@ public class SysLoginConfigController extends BaseRestController {
         return bindSelectOptions(list, config -> config.getConfigId().toString(), SysLoginConfig::getConfigName);
     }
 
+    @XComment("{API.DOC.SYS.LOGIN_CONFIG.GET_LIST}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@GetMapping("/list")
-	public R<?> listConfigs() {
+	public R<TableData<SysLoginConfig>> listConfigs() {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysLoginConfig> q = new LambdaQueryWrapper<SysLoginConfig>()
 				.orderByDesc(SysLoginConfig::getConfigId);
@@ -78,9 +85,10 @@ public class SysLoginConfigController extends BaseRestController {
 		return bindDataTable(page);
 	}
 
+    @XComment("{API.DOC.SYS.LOGIN_CONFIG.GET_INFO}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@GetMapping("/detail")
-	public R<?> getConfig(@RequestParam @LongId Long configId) {
+	public R<SysLoginConfig> getConfig(@RequestParam @LongId @XComment("{API.DOC.SYS.LOGIN_CONFIG.ID}") Long configId) {
         SysLoginConfig config = loginConfigService.getById(configId);
 		Assert.notNull(config, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(configId));
         ILoginType loginType = this.loginConfigService.getLoginType(config.getType());
@@ -88,26 +96,29 @@ public class SysLoginConfigController extends BaseRestController {
         return R.ok(config);
 	}
 
+    @XComment("{API.DOC.SYS.LOGIN_CONFIG.CREATE}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "登录配置", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addConfig(@Validated @RequestBody CreateLoginConfigRequest req) {
+	public R<Void> addConfig(@Validated @RequestBody CreateLoginConfigRequest req) {
 		this.loginConfigService.addConfig(req);
 		return R.ok();
 	}
 
+    @XComment("{API.DOC.SYS.LOGIN_CONFIG.UPDATE}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "登录配置", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> saveConfig(@Validated @RequestBody UpdateLoginConfigRequest req) {
+	public R<Void> saveConfig(@Validated @RequestBody UpdateLoginConfigRequest req) {
 		this.loginConfigService.saveConfig(req);
 		return R.ok();
 	}
 
+    @XComment("{API.DOC.SYS.LOGIN_CONFIG.DELETE}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "登录配置", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> delConfig(@RequestBody @NotEmpty List<Long> configIds) {
+	public R<Void> delConfig(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.LOGIN_CONFIG.IDS}") List<Long> configIds) {
 		this.loginConfigService.deleteConfigs(configIds);
 		return R.ok();
 	}

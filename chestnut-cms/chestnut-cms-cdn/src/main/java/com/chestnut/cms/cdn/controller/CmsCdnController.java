@@ -3,6 +3,7 @@ package com.chestnut.cms.cdn.controller;
 import com.chestnut.cloud.domain.CcCloudConfig;
 import com.chestnut.cloud.service.ICloudConfigService;
 import com.chestnut.cms.cdn.properties.CdnCloudConfigProperty;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.cloud.CdnRefreshType;
 import com.chestnut.common.cloud.CloudService;
 import com.chestnut.common.cloud.ICloudProvider;
@@ -26,6 +27,8 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@XComment("{API.DOC.CMS.CDN.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -54,8 +58,9 @@ public class CmsCdnController extends BaseRestController {
 
     private final ICloudConfigService CcCloudConfigService;
 
+    @XComment("{API.DOC.CMS.CDN.REFRESH_SITE}")
     @PostMapping("/refresh/site")
-    public R<?> refreshSite(@RequestParam @LongId Long siteId, @RequestParam Boolean refreshAll) {
+    public R<Void> refreshSite(@XComment("{API.DOC.CMS.CDN.SITE_ID}") @RequestParam @LongId Long siteId, @XComment("{API.DOC.CMS.CDN.REFRESH_ALL}") @RequestParam Boolean refreshAll) {
         CmsSite site = siteService.getSite(siteId);
         CcCloudConfig cloudConfig = this.getCcCloudConfig(site);
         ICloudProvider cloudProvider = cloudService.getCloudProvider(cloudConfig.getType());
@@ -72,8 +77,9 @@ public class CmsCdnController extends BaseRestController {
         return R.ok();
     }
 
+    @XComment("{API.DOC.CMS.CDN.REFRESH_CATALOG}")
     @PostMapping("/refresh/catalog")
-    public R<?> refreshCatalog(@RequestParam @LongId Long catalogId, @RequestParam Boolean refreshAll) {
+    public R<Void> refreshCatalog(@XComment("{API.DOC.CMS.CDN.CATALOG_ID}") @RequestParam @LongId Long catalogId, @XComment("{API.DOC.CMS.CDN.REFRESH_ALL}") @RequestParam Boolean refreshAll) {
         CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
         Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(catalog));
 
@@ -103,8 +109,9 @@ public class CmsCdnController extends BaseRestController {
         return R.ok();
     }
 
+    @XComment("{API.DOC.CMS.CDN.REFRESH_CONTENT}")
     @PostMapping("/refresh/content")
-    public R<?> refreshContent(@RequestParam @LongId Long contentId) {
+    public R<Void> refreshContent(@XComment("{API.DOC.CMS.CDN.CONTENT_ID}") @RequestParam @LongId Long contentId) {
         CmsContent content = this.contentService.dao().getById(contentId);
         Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(contentId));
 

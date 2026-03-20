@@ -17,11 +17,15 @@ package com.chestnut.contentcore.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
+
+
 import com.chestnut.contentcore.domain.CmsContentOpLog;
 import com.chestnut.contentcore.service.IContentOpLogService;
 import com.chestnut.system.security.AdminUserType;
@@ -37,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CONTENT_OP_LOG.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -45,8 +50,9 @@ public class ContentOpLogController extends BaseRestController {
 
 	private final IContentOpLogService contentOpLogService;
 
+	@XComment("{API.DOC.CMS.CONTENT_OP_LOG.GET_LIST}")
 	@GetMapping
-	public R<?> getContentOpLogPageList(@RequestParam Long contentId,
+	public R<TableData<CmsContentOpLog>> getContentOpLogPageList(@RequestParam @XComment("{API.DOC.CMS.CONTENT.CONTENT_ID}") Long contentId,
 										@RequestParam(required = false) String type,
 										@RequestParam(required = false) String operator) {
 		PageRequest pr = this.getPageRequest();

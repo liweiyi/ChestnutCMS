@@ -15,6 +15,7 @@
  */
 package com.chestnut.vote.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
@@ -32,28 +33,24 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.VOTE.SUBJECT.CREATE_REQ}")
 public class CreateVoteSubjectRequest extends BaseDTO {
 
     @LongId
+    @XComment("{CC.VOTE_SUBJECT.VOTE_ID}")
     private Long voteId;
 
-    /**
-     * 类型（单选、多选、输入）
-     */
     @NotBlank
     @Length(max = 20)
     @Dict(VoteSubjectType.TYPE)
+    @XComment("{CC.VOTE_SUBJECT.TYPE}")
     private String type;
 
-    /**
-     * 标题
-     */
     @NotBlank
     @Length(max = 255)
+    @XComment("{CC.VOTE_SUBJECT.TITLE}")
     private String title;
 
-    /**
-     * 排到指定主题前
-     */
+    @XComment("{CC.VOTE_SUBJECT.NEXT_SUBJECT_ID}")
     private Long nextSubjectId;
 }

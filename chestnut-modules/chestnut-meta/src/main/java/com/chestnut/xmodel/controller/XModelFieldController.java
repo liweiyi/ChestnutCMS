@@ -16,12 +16,14 @@
 package com.chestnut.xmodel.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
@@ -33,6 +35,8 @@ import com.chestnut.xmodel.dto.UpdateXModelFieldRequest;
 import com.chestnut.xmodel.service.IModelFieldService;
 import com.chestnut.xmodel.service.IModelService;
 import com.chestnut.xmodel.util.XModelUtils;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -50,6 +54,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.META.FIELD_MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RequiredArgsConstructor
 @RestController
@@ -60,9 +65,10 @@ public class XModelFieldController extends BaseRestController {
 
 	private final IModelFieldService modelFieldService;
 
+	@XComment("{API.DOC.META.FIELD_GET_LIST}")
 	@GetMapping("/list")
-	public R<?> getModelFieldList(@RequestParam @LongId Long modelId,
-								  @RequestParam(required = false) @Length(max = 50) String query) {
+	public R<TableData<XModelField>> getModelFieldList(@RequestParam @LongId @XComment("{API.DOC.META.MODEL_ID}") Long modelId,
+								  @RequestParam(required = false) @Length(max = 50) @XComment("{CC.ENTITY.QUERY}") String query) {
 		PageRequest pr = getPageRequest();
 		Page<XModelField> page = modelFieldService.lambdaQuery()
 				.eq(XModelField::getModelId, modelId)
@@ -72,9 +78,10 @@ public class XModelFieldController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.META.FIELD_GET_ALL}")
 	@GetMapping("/all")
-	public R<?> listAllModelFields(@RequestParam @LongId Long modelId,
-								   @RequestParam(required = false, defaultValue = "true") Boolean ignoreFixedField) {
+	public R<?> listAllModelFields(@RequestParam @LongId @XComment("{API.DOC.META.MODEL_ID}") Long modelId,
+								   @RequestParam(required = false, defaultValue = "true") @XComment("{API.DOC.META.IGNORE_FIXED_FIELD}") Boolean ignoreFixedField) {
 		MetaModel model = this.modelService.getMetaModel(modelId);
 		List<MetaModelField> fields = new ArrayList<>(model.getFields());
 		if (!ignoreFixedField) {
@@ -83,23 +90,26 @@ public class XModelFieldController extends BaseRestController {
 		return this.bindDataTable(fields);
 	}
 
+	@XComment("{API.DOC.META.FIELD_ADD}")
 	@Log(title = "新增元数据字段", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> add(@RequestBody @Validated CreateXModelFieldRequest req) {
+	public R<Void> add(@RequestBody @Validated CreateXModelFieldRequest req) {
 		this.modelFieldService.addModelField(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.META.FIELD_UPDATE}")
 	@Log(title = "编辑元数据字段", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> edit(@RequestBody @Validated UpdateXModelFieldRequest req) {
+	public R<Void> edit(@RequestBody @Validated UpdateXModelFieldRequest req) {
 		this.modelFieldService.editModelField(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.META.FIELD_DELETE}")
 	@Log(title = "删除元数据字段", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> fieldIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.META.FIELD_IDS}") List<Long> fieldIds) {
 		this.modelFieldService.deleteModelField(fieldIds);
 		return R.ok();
 	}

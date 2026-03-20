@@ -22,7 +22,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.enums.ContentCopyType;
+import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.media.domain.CmsAudio;
 import com.chestnut.media.service.IAudioService;
 

@@ -21,6 +21,8 @@ import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.contentcore.domain.*;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.*;
+import com.chestnut.contentcore.properties.EnableContentDeletePublishProperty;
+import com.chestnut.contentcore.properties.EnableContentSortPublishProperty;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.SiteUtils;
@@ -264,14 +266,18 @@ public class ContentCoreListener {
 	}
 
 	@EventListener
+	public void afterContentDelete(AfterContentDeleteEvent event) {
+		CmsSite site = siteService.getSite(event.getContent().getSiteId());
+		boolean enable = EnableContentDeletePublishProperty.getValue(site.getConfigProps());
+		if (enable) {
+			this.publishService.publishCatalogAncestorsAndSite(event.getContent().getCatalogId());
+		}
+	}
+
+	@EventListener
 	public void afterContentOffline(AfterContentOfflineEvent event) {
 		// 重新发布内容所在栏目和父级栏目
-		String[] catalogIds = event.getContent().getContentEntity().getCatalogAncestors()
-				.split(CatalogUtils.ANCESTORS_SPLITER);
-		for (String catalogId : catalogIds) {
-			this.publishService.publishCatalog(this.catalogService.getCatalog(Long.valueOf(catalogId)),
-					false, false, null, event.getContent().getOperator());
-		}
+		this.publishService.publishCatalogAncestorsAndSite(event.getContent().getCatalogId());
 	}
 
 	@EventListener
@@ -329,6 +335,15 @@ public class ContentCoreListener {
 	public void afterContentTopCancelEvent(AfterContentTopCancelEvent event) {
 		if (ContentStatus.isPublished(event.getContent().getContentEntity().getStatus())) {
 			this.publishService.publishContent(event.getContent().getContentEntity(), event.getContent().getOperator());
+		}
+	}
+
+	@EventListener
+	public void afterContentSortEvent(AfterContentSortEvent event) {
+		CmsSite site = siteService.getSite(event.getContent().getSiteId());
+		boolean enable = EnableContentSortPublishProperty.getValue(site.getConfigProps());
+		if (enable) {
+			this.publishService.publishCatalogAncestorsAndSite(event.getContent().getCatalogId());
 		}
 	}
 }

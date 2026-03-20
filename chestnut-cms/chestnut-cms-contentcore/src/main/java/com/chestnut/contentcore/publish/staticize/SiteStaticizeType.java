@@ -22,6 +22,7 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.publish.IStaticizeType;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
@@ -83,14 +84,13 @@ public class SiteStaticizeType implements IStaticizeType {
 
     private void doSiteStaticize(CmsSite site, String publishPipeCode) {
         try {
-            AsyncTaskManager
-                    .setTaskMessage(StringUtils.messageFormat("[{0}]正在发布站点首页：{1}", publishPipeCode, site.getName()));
+            AsyncTaskManager.setTaskMessage(ContentTips.PUBLISHING_SITE, publishPipeCode, site.getName());
 
             String indexTemplate = site.getIndexTemplate(publishPipeCode);
             File templateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);
             if (Objects.isNull(templateFile)) {
-                logger.warn(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]站点首页模板未配置或不存在：{1}",
-                        publishPipeCode, site.getSiteId() + "#" + site.getName())));
+                logger.warn(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_NOT_FOUND,
+                        publishPipeCode, TYPE + "#" + site.getName()));
                 return;
             }
             // 模板ID = 通道:站点目录:模板文件名
@@ -110,10 +110,10 @@ public class SiteStaticizeType implements IStaticizeType {
             String text = FreeMarkerUtils.createBy(writer.toString());
             String filePath = context.getStaticizeFilePath(context.getPageIndex());
             FileUtils.writeStringToFile(new File(filePath), text, StandardCharsets.UTF_8);
-            logger.debug("[{}]首页模板解析：{}，耗时：{}ms", publishPipeCode, site.getName(), (System.currentTimeMillis() - s));
+            logger.debug("[{}]The site template parsed: {}, cost {}ms", publishPipeCode, site.getName(), (System.currentTimeMillis() - s));
         } catch (Exception e) {
-            logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}][{1}]站点首页解析失败：{2}",
-                    publishPipeCode, site.getName(), e.getMessage())), e);
+            logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
+                    TYPE + "#" + publishPipeCode, site.getSiteId() + "#" + site.getName()), e);
         }
     }
 }

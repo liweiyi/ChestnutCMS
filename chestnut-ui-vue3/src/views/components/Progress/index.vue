@@ -101,7 +101,7 @@ const getProgressInfo = () => {
     resultStatus.value = response.data.status;
     if (response.data.status == 'SUCCESS' || response.data.status == 'INTERRUPTED') {
       clearInterval(timer.value);
-      const successMsg = response.data.progressMessage ? response.data.progressMessage : props.title + proxy.$t('Component.Progress.Completed');
+      const successMsg = response.data.progressMessage ? response.data.progressMessage : proxy.$t('Common.OpSuccess');
       proxy.$modal.msgSuccess(successMsg, props.messageClass);
       progressStatus.value = "success";
       errMessages.value = response.data.errMessages;

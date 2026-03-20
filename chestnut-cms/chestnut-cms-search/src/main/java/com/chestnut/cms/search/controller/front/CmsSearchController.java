@@ -16,10 +16,13 @@
 package com.chestnut.cms.search.controller.front;
 
 import com.chestnut.cms.search.impl.SearchDynamicPageType;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.service.impl.DynamicPageService;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +41,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.SEARCH.SEARCH_PAGE_MODULE}")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -45,6 +49,7 @@ public class CmsSearchController extends BaseRestController {
 
     private final DynamicPageService dynamicPageService;
 
+    @XComment("{API.DOC.CMS.SEARCH.SEARCH_PAGE.PAGE}")
     @GetMapping(SearchDynamicPageType.REQUEST_PATH)
     public void searchPage(@RequestParam(value ="q", required = false, defaultValue = "") @Length(max = 200) String query,
                               @RequestParam("sid") @LongId Long siteId,

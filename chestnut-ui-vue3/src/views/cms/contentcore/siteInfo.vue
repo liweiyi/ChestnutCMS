@@ -244,11 +244,12 @@
     <el-dialog 
       :title="title"
       v-model="open"
-      width="500px"
+      width="400px"
       append-to-body>
       <el-form 
         ref="importFormRef"
         :model="importForm"
+        label-position="top"
         label-width="80px">
         <el-form-item :label="$t('CMS.Site.ImportTheme')">
           <el-upload 
@@ -262,6 +263,7 @@
             :on-success="handleFileSuccess"
             :auto-upload="false"
             :on-change="handleUploadChange"
+            style="width: 100%;"
             :limit="1">
               <template #default>
                 <el-icon :size="36"><Upload /></el-icon>
@@ -576,9 +578,7 @@ const handleProgressClose = (resultStatus) => {
     downloadTheme();
   } else if (progressTitle.value == proxy.$t('CMS.Site.ImportTheme')) {
     proxy.$nextTick(() => {
-      proxy.$router.replace({
-        path: '/redirect' + proxy.$route.fullPath
-      })
+      proxy.$tab.refreshPage();
     });
   }
 }

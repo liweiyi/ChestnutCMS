@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import com.chestnut.system.validator.LongId;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@XComment("{API.DOC.CMS.PAGE_WIDGET.EDIT_DTO}")
 @Getter
 @Setter
 public class PageWidgetEditDTO {
@@ -35,18 +37,21 @@ public class PageWidgetEditDTO {
 	/**
 	 * 页面部件ID
 	 */
+	@XComment("{API.DOC.CMS.PAGE_WIDGET.PAGE_WIDGET_ID}")
 	@LongId
     private Long pageWidgetId;
 
 	/**
 	 * 名称
 	 */
+	@XComment("{API.DOC.CMS.PAGE_WIDGET.NAME}")
     @NotBlank
     private String name;
 
     /**
      * 编码
      */
+    @XComment("{API.DOC.CMS.PAGE_WIDGET.CODE}")
     @NotBlank
     private String code;
 

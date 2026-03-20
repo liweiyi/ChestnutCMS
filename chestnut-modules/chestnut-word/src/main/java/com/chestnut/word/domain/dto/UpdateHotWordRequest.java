@@ -15,6 +15,7 @@
  */
 package com.chestnut.word.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,8 +28,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.WORD.HOT_WORD.UPDATE_REQ}")
 public class UpdateHotWordRequest extends CreateHotWordRequest {
 
+    @XComment("{CC.HOT_WORD.ID}")
     @LongId
     private Long wordId;
 }

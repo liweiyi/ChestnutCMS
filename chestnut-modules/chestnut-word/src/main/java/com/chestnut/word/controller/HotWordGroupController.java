@@ -16,11 +16,13 @@
 package com.chestnut.word.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.word.domain.HotWordGroup;
@@ -28,6 +30,8 @@ import com.chestnut.word.domain.dto.CreateHotWordGroupRequest;
 import com.chestnut.word.domain.dto.UpdateHotWordGroupRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.IHotWordGroupService;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -44,6 +48,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.WORD.HOT_WORD_GROUP.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/word/hotword/group")
@@ -51,9 +56,10 @@ public class HotWordGroupController extends BaseRestController {
 
 	private final IHotWordGroupService hotWordGroupService;
 
+	@XComment("{API.DOC.WORD.HOT_WORD_GROUP.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
+	public R<TableData<HotWordGroup>> getPageList(@RequestParam(required = false) @Length(max = 255) @XComment("{API.DOC.WORD.HOT_WORD_GROUP.QUERY}") String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<HotWordGroup> page = this.hotWordGroupService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(query), HotWordGroup::getName, query)
@@ -61,6 +67,7 @@ public class HotWordGroupController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.WORD.HOT_WORD_GROUP.GET_OPTIONS}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/options")
 	public R<?> getOptions() {
@@ -68,29 +75,33 @@ public class HotWordGroupController extends BaseRestController {
 		return bindSelectOptions(list, HotWordGroup::getCode, HotWordGroup::getName);
 	}
 
+	@XComment("{API.DOC.WORD.HOT_WORD_GROUP.GET_TREE_DATA}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@GetMapping("/treedata")
-	public R<?> getTreeData() {
+	public R<List<TreeNode<String>>> getTreeData() {
 		List<TreeNode<String>> treeData = this.hotWordGroupService.getGroupTreeData(q -> {});
 		return R.ok(treeData);
 	}
 
+	@XComment("{API.DOC.WORD.HOT_WORD_GROUP.CREATE}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping("/add")
 	public R<?> add(@RequestBody @Validated CreateHotWordGroupRequest req) {
 		return R.ok(this.hotWordGroupService.addHotWordGroup(req));
 	}
 
+	@XComment("{API.DOC.WORD.HOT_WORD_GROUP.UPDATE}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping("/update")
-	public R<String> edit(@RequestBody @Validated UpdateHotWordGroupRequest req) {
+	public R<Void> edit(@RequestBody @Validated UpdateHotWordGroupRequest req) {
 		this.hotWordGroupService.updateHotWordGroup(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.HOT_WORD_GROUP.DELETE}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> groupIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.WORD.HOT_WORD_GROUP.GROUP_IDS}") List<Long> groupIds) {
 		this.hotWordGroupService.deleteHotWordGroups(groupIds);
 		return R.ok();
 	}

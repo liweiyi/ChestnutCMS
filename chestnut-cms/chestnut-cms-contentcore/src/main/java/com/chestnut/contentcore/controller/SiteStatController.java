@@ -15,8 +15,11 @@
  */
 package com.chestnut.contentcore.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
+
+
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.vo.SiteStatVO;
 import com.chestnut.contentcore.service.ISiteStatService;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.SITE_STAT.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -40,9 +44,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class SiteStatController extends CmsRestController {
 
 	private final ISiteStatService siteStatService;
-	
+
+	@XComment("{API.DOC.CMS.SITE_STAT.GET_STAT}")
 	@GetMapping("/stat")
-	public R<?> getSiteStat() {
+	public R<SiteStatVO> getSiteStat() {
 		CmsSite site = this.getCurrentSite();
 		SiteStatVO siteStat = siteStatService.getSiteStat(site);
 		return R.ok(siteStat);

@@ -16,8 +16,11 @@
 package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
+
+
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
@@ -57,6 +60,7 @@ import java.util.Objects;
 /**
  * 个人信息 业务处理
  */
+@XComment("{API.DOC.SYS.PROFILE.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -70,9 +74,9 @@ public class SysProfileController extends BaseRestController {
 	private final ISecurityConfigService securityConfigService;
 
 	private final ISysMenuService menuService;
-
+	@XComment("{API.DOC.SYS.PROFILE.GET_INFO}")
 	@GetMapping
-	public R<?> profile() {
+	public R<UserProfileVO> profile() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		SysUser user = (SysUser) loginUser.getUser();
 		user.setAvatarSrc(SystemConfig.getResourcePrefix() + user.getAvatar());
@@ -80,7 +84,7 @@ public class SysProfileController extends BaseRestController {
 		String postGroup = userService.selectUserPostGroup(loginUser.getUserId());
 		return R.ok(new UserProfileVO(user, roleGroup, postGroup));
 	}
-
+	@XComment("{API.DOC.SYS.PROFILE.UPDATE_INFO}")
 	@PostMapping("/updateInfo")
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE)
 	public R<?> updateProfile(@RequestBody @Validated UpdateUserProfileRequest req) {
@@ -112,10 +116,12 @@ public class SysProfileController extends BaseRestController {
 		}
 		return R.fail();
 	}
-
+	@XComment("{API.DOC.SYS.PROFILE.UPDATE_PWD}")
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PostMapping("/updatePwd")
-	public R<?> updatePwd(String oldPassword, String newPassword) {
+	public R<?> updatePwd(
+			@XComment("{API.DOC.SYS.PROFILE.OLD_PASSWORD}") String oldPassword,
+			@XComment("{API.DOC.SYS.PROFILE.NEW_PASSWORD}") String newPassword) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		SysUser user = userService.getById(loginUser.getUserId());
         // 三方登录可能没有旧密码
@@ -139,11 +145,11 @@ public class SysProfileController extends BaseRestController {
         StpAdminUtil.setLoginUser(loginUser);
         return R.ok();
 	}
-
+	@XComment("{API.DOC.SYS.PROFILE.UPLOAD_AVATAR}")
 	@IgnoreDemoMode
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE)
 	@PostMapping("/avatar")
-	public R<?> avatar(@RequestParam("avatarfile") MultipartFile file) throws Exception {
+	public R<String> avatar(@RequestParam("avatarfile") @XComment("{API.DOC.SYS.PROFILE.AVATAR_FILE}") MultipartFile file) throws Exception {
 		if (Objects.isNull(file) || file.isEmpty()) {
 			return R.fail("上传图片异常，请联系管理员");
 		}
@@ -162,8 +168,9 @@ public class SysProfileController extends BaseRestController {
 	/**
 	 * 首页用户信息
 	 */
+	@XComment("{API.DOC.SYS.PROFILE.GET_HOME_INFO}")
 	@GetMapping("/homeInfo")
-	public R<?> getHomeInfo() {
+	public R<DashboardUserVO> getHomeInfo() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		SysUser user = (SysUser) loginUser.getUser();
 		DashboardUserVO vo = new DashboardUserVO();
@@ -178,9 +185,9 @@ public class SysProfileController extends BaseRestController {
 		this.deptService.getDept(user.getDeptId()).ifPresent(dept -> vo.setDeptName(dept.getDeptName()));
 		return R.ok(vo);
 	}
-
+	@XComment("{API.DOC.SYS.PROFILE.GET_SHORTCUTS}")
 	@GetMapping("/shortcuts")
-	public R<?> getHomeShortcuts() {
+	public R<List<ShortcutVO>> getHomeShortcuts() {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
 		List<Long> menuIds = ShortcutUserPreference.getValue(user.getPreferences());
 		List<SysMenu> allMenus = this.menuService.lambdaQuery().list();

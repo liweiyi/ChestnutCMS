@@ -22,6 +22,7 @@ import com.chestnut.advertisement.permission.CmsAdvertisementPriv;
 import com.chestnut.advertisement.pojo.dto.AdvertisementDTO;
 import com.chestnut.advertisement.pojo.vo.AdvertisementVO;
 import com.chestnut.advertisement.service.IAdvertisementService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
@@ -30,6 +31,7 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -37,6 +39,8 @@ import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
+
+
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +58,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.ADVERTISEMENT.MODULE}")
 @Priv(type = AdminUserType.TYPE, value = CmsAdvertisementPriv.View)
 @RequiredArgsConstructor
 @RestController
@@ -66,6 +71,7 @@ public class AdvertisementController extends BaseRestController {
 
 	private final IResourceService resourceService;
 
+	@XComment("{API.DOC.CMS.ADVERTISEMENT.GET_TYPES}")
 	@GetMapping("/types")
 	public R<?> listAdvertisements() {
 		List<Map<String, String>> list = advertisementService.getAdvertisementTypeList().stream()
@@ -73,10 +79,12 @@ public class AdvertisementController extends BaseRestController {
 		return this.bindDataTable(list);
 	}
 
+	@XComment("{API.DOC.CMS.ADVERTISEMENT.GET_LIST}")
 	@GetMapping("/list")
-	public R<?> listAdvertisements(@RequestParam(name = "adSpaceId") @Min(1) Long adSpaceId,
-			@RequestParam(name = "name", required = false) String name,
-			@RequestParam(name = "state", required = false) Integer state) {
+	public R<TableData<CmsAdvertisement>> listAdvertisements(
+			@RequestParam(name = "adSpaceId") @Min(1) @XComment("{API.DOC.CMS.ADVERTISEMENT.AD_SPACE_ID}") Long adSpaceId,
+			@RequestParam(name = "name", required = false) @XComment("{API.DOC.CMS.ADVERTISEMENT.NAME}") String name,
+			@RequestParam(name = "state", required = false) @XComment("{API.DOC.CMS.ADVERTISEMENT.STATE}") Integer state) {
 		PageRequest pr = getPageRequest();
 		Page<CmsAdvertisement> page = this.advertisementService.lambdaQuery()
 				.eq(CmsAdvertisement::getAdSpaceId, adSpaceId)
@@ -92,8 +100,10 @@ public class AdvertisementController extends BaseRestController {
 		return this.bindDataTable(page.getRecords(), (int) page.getTotal());
 	}
 
+	@XComment("{API.DOC.CMS.ADVERTISEMENT.GET_INFO}")
 	@GetMapping("/detail/{advertisementId}")
-	public R<AdvertisementVO> getAdvertisementInfo(@PathVariable("advertisementId") @Min(1) Long advertisementId) {
+	public R<AdvertisementVO> getAdvertisementInfo(
+			@PathVariable("advertisementId") @Min(1) @XComment("{CMS.AD.ID}") Long advertisementId) {
 		CmsAdvertisement ad = this.advertisementService.getById(advertisementId);
 		Assert.notNull(ad, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("advertisementId", advertisementId));
 
@@ -103,23 +113,27 @@ public class AdvertisementController extends BaseRestController {
 		return R.ok(vo);
 	}
 
+	@XComment("{API.DOC.CMS.ADVERTISEMENT.CREATE}")
 	@Log(title = "新增广告", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addAdvertisement(@RequestBody AdvertisementDTO dto) throws IOException {
+	public R<Void> addAdvertisement(@RequestBody AdvertisementDTO dto) throws IOException {
 		this.advertisementService.addAdvertisement(dto);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.ADVERTISEMENT.UPDATE}")
 	@Log(title = "编辑广告", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> editAdvertisement(@RequestBody AdvertisementDTO dto) throws IOException {
+	public R<Void> editAdvertisement(@RequestBody AdvertisementDTO dto) throws IOException {
 		this.advertisementService.saveAdvertisement(dto);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.ADVERTISEMENT.DELETE}")
 	@Log(title = "删除广告", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> deleteAdvertisements(@RequestBody List<Long> advertisementIds) {
+	public R<Void> deleteAdvertisements(
+			@RequestBody @XComment("{API.DOC.CMS.ADVERTISEMENT.IDS}") List<Long> advertisementIds) {
 		if (StringUtils.isEmpty(advertisementIds)) {
 			return R.fail(StringUtils.messageFormat("参数[{0}]不能为空", "advertisementIds"));
 		}
@@ -127,9 +141,11 @@ public class AdvertisementController extends BaseRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.ADVERTISEMENT.ENABLE}")
 	@Log(title = "启用广告", businessType = BusinessType.UPDATE)
 	@PostMapping("/enable")
-	public R<?> enableAdvertisements(@RequestBody List<Long> advertisementIds) {
+	public R<Void> enableAdvertisements(
+			@RequestBody @XComment("{API.DOC.CMS.ADVERTISEMENT.IDS}") List<Long> advertisementIds) {
 		if (StringUtils.isEmpty(advertisementIds)) {
 			return R.fail(StringUtils.messageFormat("参数[{0}]不能为空", "advertisementIds"));
 		}
@@ -138,9 +154,11 @@ public class AdvertisementController extends BaseRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.ADVERTISEMENT.DISABLE}")
 	@Log(title = "禁用广告", businessType = BusinessType.UPDATE)
 	@PostMapping("/disable")
-	public R<?> disableAdvertisements(@RequestBody List<Long> advertisementIds) {
+	public R<Void> disableAdvertisements(
+			@RequestBody @XComment("{API.DOC.CMS.ADVERTISEMENT.IDS}") List<Long> advertisementIds) {
 		if (StringUtils.isEmpty(advertisementIds)) {
 			return R.fail(StringUtils.messageFormat("参数[{0}]不能为空", "advertisementIds"));
 		}

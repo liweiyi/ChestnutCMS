@@ -16,11 +16,14 @@
 package com.chestnut.contentcore.controller;
 
 import cn.dev33.satoken.annotation.SaMode;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+
+
 import com.chestnut.contentcore.domain.dto.ImageCropDTO;
 import com.chestnut.contentcore.domain.dto.ImageRotateDTO;
 import com.chestnut.contentcore.perms.ContentCorePriv;
@@ -42,6 +45,7 @@ import java.io.IOException;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.IMAGE_PROCESS.MODULE}")
 @Priv(
 		type = AdminUserType.TYPE,
 		value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -54,30 +58,34 @@ public class ImageProcessController extends BaseRestController {
 
 	private final IImageProcessService imageProcessService;
 
+	@XComment("{API.DOC.CMS.IMAGE_PROCESS.CROP}")
 	@Log(title = "图片裁剪", businessType = BusinessType.UPDATE)
 	@PostMapping("/crop")
-	public R<?> cropImage(@RequestBody @Validated ImageCropDTO dto) throws Exception {
+	public R<Void> cropImage(@RequestBody @Validated ImageCropDTO dto) throws Exception {
 		this.imageProcessService.cropImage(dto);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.IMAGE_PROCESS.ROTATE}")
 	@Log(title = "旋转缩放", businessType = BusinessType.UPDATE)
 	@PostMapping("/rotate")
-	public R<?> rotateImage(@RequestBody @Validated ImageRotateDTO dto) throws Exception {
+	public R<Void> rotateImage(@RequestBody @Validated ImageRotateDTO dto) throws Exception {
 		this.imageProcessService.rotateImage(dto);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.IMAGE_PROCESS.TEXT_WATERMARK}")
 	@Log(title = "文字水印", businessType = BusinessType.UPDATE)
 	@PostMapping("/image/textWatermark")
-	public R<?> textWatermark(@RequestBody @Validated ImageCropDTO dto) {
+	public R<Void> textWatermark(@RequestBody @Validated ImageCropDTO dto) {
 
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.IMAGE_PROCESS.IMAGE_WATERMARK}")
 	@Log(title = "图片水印", businessType = BusinessType.UPDATE)
 	@PostMapping("/image/imageWatermark")
-	public R<?> imageWatermark(@RequestBody @Validated ImageCropDTO dto) {
+	public R<Void> imageWatermark(@RequestBody @Validated ImageCropDTO dto) {
 
 		return R.ok();
 	}

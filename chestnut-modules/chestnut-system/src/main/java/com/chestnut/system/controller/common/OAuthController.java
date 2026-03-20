@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/oauth")
 @RequiredArgsConstructor
 public class OAuthController extends BaseRestController {
-
+    
     @GetMapping("/callback")
     public R<?> getCaptchaOptions(@ModelAttribute OAuthCallbackReq req) {
 

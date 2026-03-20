@@ -1,8 +1,8 @@
 
 <template>
   <div class="app-container">
-    <el-row :gutter="20">
-      <el-col :span="4" :xs="24">
+    <cc-spliter storage-key="stat">
+      <cc-spliter-column width="15%" style="padding-right: 10px;">
         <div class="head-container">
           <el-input
             v-model="statName"
@@ -25,8 +25,8 @@
             @node-click="handleNodeClick"
           />
         </div>
-      </el-col>
-      <el-col :span="20" :xs="24">
+      </cc-spliter-column>
+      <cc-spliter-column>
         <cms-ad-stat v-if="currentMenu=='CmsAdStat'"></cms-ad-stat>
         <cms-ad-click v-if="currentMenu=='CmsAdClickLog'"></cms-ad-click>
         <cms-ad-view v-if="currentMenu=='CmsAdViewLog'"></cms-ad-view>
@@ -38,11 +38,10 @@
         <cms-content-stat v-if="currentMenu=='ContentDynamicStat'"></cms-content-stat>
         <cms-content-stat-by-catalog v-if="currentMenu=='ContentStatByCatalog'"></cms-content-stat-by-catalog>
         <cms-content-stat-by-user v-if="currentMenu=='ContentStatByUser'"></cms-content-stat-by-user>
-      </el-col>
-    </el-row>
+      </cc-spliter-column>
+    </cc-spliter>
   </div>
 </template>
-
 <script setup name="StatIndex">
 import { getStatMenuTreeData } from "@/api/stat/stat";
 import CmsAdStat from '@/views/cms/ad/adStat';

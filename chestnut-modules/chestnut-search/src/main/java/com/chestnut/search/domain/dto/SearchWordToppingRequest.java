@@ -15,6 +15,7 @@
  */
 package com.chestnut.search.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -25,16 +26,13 @@ import java.util.List;
 
 @Getter
 @Setter
+@XComment("{API.DOC.SEARCH.WORD_TOPPING_REQ}")
 public class SearchWordToppingRequest extends BaseDTO {
 
-	/**
-     * 搜索词IDs
-     */
     @NotEmpty
+    @XComment("{API.DOC.SEARCH.WORD_IDS}")
     private List<Long> wordIds;
-    
-    /**
-     * 指定结束时间
-     */
+
+    @XComment("{API.DOC.SEARCH.TOP_END_TIME}")
     private LocalDateTime topEndTime;
 }

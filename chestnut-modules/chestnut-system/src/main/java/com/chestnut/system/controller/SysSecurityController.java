@@ -17,13 +17,17 @@ package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.SysUser;
@@ -51,6 +55,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.SECURITY.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/security/config")
@@ -58,9 +63,10 @@ public class SysSecurityController extends BaseRestController {
 
 	private final ISecurityConfigService securityConfigService;
 
+	@XComment("{API.DOC.SYS.SECURITY.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@GetMapping("/list")
-	public R<?> listConfigs() {
+	public R<TableData<SysSecurityConfig>> listConfigs() {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysSecurityConfig> q = new LambdaQueryWrapper<SysSecurityConfig>()
 				.orderByDesc(SysSecurityConfig::getConfigId);
@@ -68,17 +74,19 @@ public class SysSecurityController extends BaseRestController {
 		return bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.SYS.SECURITY.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@GetMapping("/detail/{id}")
-	public R<?> getConfig(@PathVariable @LongId Long id) {
+	public R<SysSecurityConfig> getConfig(@PathVariable @LongId @XComment("{API.DOC.SYS.SECURITY.ID}") Long id) {
 		SysSecurityConfig securityConfig = securityConfigService.getById(id);
 		Assert.notNull(securityConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(id));
 		return R.ok(securityConfig);
 	}
 
+	@XComment("{API.DOC.SYS.SECURITY.GET_CURRENT}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/current")
-	public R<?> getCurrentConfig() {
+	public R<SysSecurityConfig> getCurrentConfig() {
 		SysSecurityConfig securityConfig = securityConfigService.getSecurityConfig();
 		if (Objects.isNull(securityConfig)) {
 			return R.ok();
@@ -88,41 +96,46 @@ public class SysSecurityController extends BaseRestController {
 		return R.ok(securityConfig);
 	}
 
+	@XComment("{API.DOC.SYS.SECURITY.CREATE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addConfig(@Validated @RequestBody CreateSecurityConfigRequest req) {
+	public R<Void> addConfig(@Validated @RequestBody CreateSecurityConfigRequest req) {
 		this.securityConfigService.addConfig(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.SECURITY.UPDATE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> saveConfig(@Validated @RequestBody UpdateSecurityConfigRequest req) {
+	public R<Void> saveConfig(@Validated @RequestBody UpdateSecurityConfigRequest req) {
 		this.securityConfigService.saveConfig(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.SECURITY.DELETE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> delConfig(@RequestBody @NotEmpty List<Long> configIds) {
+	public R<Void> delConfig(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.SECURITY.IDS}") List<Long> configIds) {
 		this.securityConfigService.deleteConfigs(configIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.SECURITY.CHANGE_STATUS}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "安全配置", businessType = BusinessType.UPDATE)
 	@PostMapping("/changeStatus/{id}")
-	public R<?> changeConfigStatus(@PathVariable @LongId Long id) {
+	public R<Void> changeConfigStatus(@PathVariable @LongId @XComment("{API.DOC.SYS.SECURITY.ID}") Long id) {
 		this.securityConfigService.changeConfigStatus(id);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.SECURITY.CHECK}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/check")
-	public R<?> checkConfig() {
+	public R<SecurityCheckVO> checkConfig() {
 		SysSecurityConfig securityConfig = securityConfigService.getSecurityConfig();
 		if (Objects.isNull(securityConfig)) {
 			return R.ok();

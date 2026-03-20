@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,14 +29,18 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.ROLE.QUERY_ROLE_USER_REQ}")
 public class QueryRoleUserRequest {
 
     @LongId
+    @XComment("{API.DOC.SYS.ROLE.ID}")
     private Long roleId;
 
     @Length(max = 30)
+    @XComment("{API.DOC.SYS.ROLE.USER_NAME}")
     private String userName;
 
     @Length(max = 20)
+    @XComment("{API.DOC.SYS.ROLE.PHONE_NUMBER}")
     private String phoneNumber;
 }

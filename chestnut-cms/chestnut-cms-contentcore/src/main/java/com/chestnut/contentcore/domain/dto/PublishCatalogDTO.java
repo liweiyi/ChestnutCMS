@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -22,6 +23,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CATALOG.PUBLISH_CATALOG_DTO}")
 @Getter
 @Setter
 public class PublishCatalogDTO {
@@ -29,24 +31,28 @@ public class PublishCatalogDTO {
 	/**
 	 * 栏目ID
 	 */
+	@XComment("{CMS.CATALOG.ID}")
 	@LongId
 	private Long catalogId;
 	
 	/**
 	 * 是否发布子栏目
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.PUBLISH_CHILD}")
 	@NotNull
 	private Boolean publishChild;
 	
 	/**
 	 * 是否发布栏目内容
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.PUBLISH_DETAIL}")
 	@NotNull
 	private Boolean publishDetail;
 	
 	/**
 	 * 发布内容状态
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.PUBLISH_STATUS}")
 	@NotEmpty
 	private String publishStatus;
 }

@@ -15,6 +15,7 @@
  */
 package com.chestnut.comment.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -23,52 +24,39 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
+@XComment("{API.DOC.COMMENT.SUBMIT_REQ}")
 @Getter
 @Setter
 public class SubmitCommentDTO extends BaseDTO {
 
-    /**
-     * 评论目标类型
-     */
+    @XComment("{API.DOC.COMMENT.SOURCE_TYPE}")
     @NotBlank
     @Length(max = 20)
     private String sourceType;
 
-    /**
-     * 评论目标ID
-     */
+    @XComment("{API.DOC.COMMENT.SOURCE_ID}")
     @NotBlank
     @Length(max = 64)
     private String sourceId;
 
-    /**
-     * 回复的评论ID
-     */
+    @XComment("{API.DOC.COMMENT.REPLY_COMMENT_ID}")
     @Min(0)
     @NotNull
     private Long commentId;
 
-    /**
-     * 回复的用户UID
-     */
+    @XComment("{API.DOC.COMMENT.REPLY_UID}")
     @Min(0)
     @NotNull
     private Long replyUid;
 
-    /**
-     * 评论内容
-     */
+    @XComment("{API.DOC.COMMENT.CONTENT}")
     @NotBlank
     @Length(max = 2000)
     private String content;
 
-    /**
-     * IP
-     */
+    @XComment("{API.DOC.COMMENT.CLIENT_IP}")
     private String clientIp;
 
-    /**
-     * UA
-     */
+    @XComment("{API.DOC.COMMENT.USER_AGENT}")
     private String userAgent;
 }

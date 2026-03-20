@@ -25,6 +25,7 @@ import com.chestnut.cms.stat.baidu.dto.BaiduTimeTrendDTO;
 import com.chestnut.cms.stat.properties.BaiduTjAccessTokenProperty;
 import com.chestnut.cms.stat.properties.BaiduTjDomainProperty;
 import com.chestnut.cms.stat.service.ICmsStatService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.utils.DateUtils;
@@ -32,6 +33,8 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
+
+
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.validation.annotation.Validated;
@@ -46,6 +49,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI_MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -54,15 +58,17 @@ public class BaiduTongjiController extends CmsRestController {
 
 	private final ICmsStatService cmsStatService;
 
+	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.REFRESH_TOKEN}")
 	@PostMapping("/refreshToken")
-	public R<?> refreshAccessToken() {
+	public R<Void> refreshAccessToken() {
 		CmsSite site = this.getCurrentSite();
 		this.cmsStatService.refreshBaiduAccessToken(site);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.GET_SITES}")
 	@GetMapping("/sites")
-	public R<?> getSiteList() {
+	public R<List<SiteListResponse.BaiduSite>> getSiteList() {
 		CmsSite site = this.getCurrentSite();
 		BaiduTongjiConfig config = BaiduTongjiConfig.read(site.getConfigProps());
 		if (StringUtils.isEmpty(config.getAccessToken())) {
@@ -84,8 +90,10 @@ public class BaiduTongjiController extends CmsRestController {
 	/**
 	 * 趋势概览数据
 	 */
+	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.TREND_OVERVIEW}")
 	@GetMapping("/trendOverview")
-	public R<?> getSiteOverviewTrendReport(@RequestParam Long bdSiteId, @RequestParam LocalDateTime startDate,
+	public R<?> getSiteOverviewTrendReport(@RequestParam @XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.BD_SITE_ID}") Long bdSiteId,
+										   @RequestParam LocalDateTime startDate,
 										   @RequestParam LocalDateTime endDate) {
 		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
@@ -110,8 +118,10 @@ public class BaiduTongjiController extends CmsRestController {
 	/**
 	 * 区域分布概览数据
 	 */
+	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.DISTRICT_OVERVIEW}")
 	@GetMapping("/districtOverview")
-	public R<?> getSiteOverviewDistrctReport(@RequestParam Long bdSiteId, @RequestParam LocalDateTime startDate,
+	public R<?> getSiteOverviewDistrctReport(@RequestParam @XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.BD_SITE_ID}") Long bdSiteId,
+											 @RequestParam LocalDateTime startDate,
 											 @RequestParam LocalDateTime endDate) {
 		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
@@ -134,8 +144,10 @@ public class BaiduTongjiController extends CmsRestController {
 	/**
 	 * 其他概览数据
 	 */
+	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.OTHER_OVERVIEW}")
 	@GetMapping("/otherOverview")
-	public R<?> getSiteOtherOverviewDatas(@RequestParam Long bdSiteId, @RequestParam LocalDateTime startDate,
+	public R<?> getSiteOtherOverviewDatas(@RequestParam @XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.BD_SITE_ID}") Long bdSiteId,
+										  @RequestParam LocalDateTime startDate,
 										  @RequestParam LocalDateTime endDate) {
 		CmsSite site = this.getCurrentSite();
 		String accessToken = BaiduTjAccessTokenProperty.getValue(site.getConfigProps());
@@ -155,6 +167,7 @@ public class BaiduTongjiController extends CmsRestController {
 		return R.ok(request);
 	}
 
+	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.TIME_TREND}")
 	@GetMapping("/timeTrend")
 	public R<?> getSiteTimeTrend(@Validated BaiduTimeTrendDTO dto) {
 		CmsSite site = this.getCurrentSite();
@@ -193,6 +206,7 @@ public class BaiduTongjiController extends CmsRestController {
 	/**
 	 * 来源统计
 	 */
+	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.SOURCE_ALL}")
 	@GetMapping("/sourceAll")
 	public R<?> getSiteSourceAll(@Validated BaiduSourceAllDTO dto) {
 		CmsSite site = this.getCurrentSite();
@@ -231,6 +245,7 @@ public class BaiduTongjiController extends CmsRestController {
 	/**
 	 * 搜索引擎来源统计
 	 */
+	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.SOURCE_ENGINE}")
 	@GetMapping("/sourceEngine")
 	public R<?> getSiteSourceEngine(@Validated BaiduSourceEngineDTO dto) {
 		CmsSite site = this.getCurrentSite();
@@ -269,6 +284,7 @@ public class BaiduTongjiController extends CmsRestController {
 	/**
 	 * 搜索词来源统计
 	 */
+	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.SOURCE_SEARCH_WORD}")
 	@GetMapping("/sourceSearchWord")
 	public R<?> getSiteSourceSearchWord(@Validated BaiduSourceSearchWordDTO dto) {
 		CmsSite site = this.getCurrentSite();

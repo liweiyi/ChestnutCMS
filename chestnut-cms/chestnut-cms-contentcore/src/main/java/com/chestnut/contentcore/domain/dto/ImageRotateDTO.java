@@ -15,28 +15,34 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.IMAGE_PROCESS.ROTATE_DTO}")
 @Getter
 @Setter
 public class ImageRotateDTO {
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_ID}")
     private Long resourceId;
 
     /**
      * 缩略图宽度
      */
+    @XComment("{API.DOC.CMS.IMAGE_PROCESS.WIDTH}")
     private Integer width;
 
     /**
      * 缩略图高度
      */
+    @XComment("{API.DOC.CMS.IMAGE_PROCESS.HEIGHT}")
     private Integer height;
 
     /**
      * 旋转角度
      */
+    @XComment("{API.DOC.CMS.IMAGE_PROCESS.ROTATE_DEGREE}")
     private Integer rotate;
 
     /**

@@ -105,8 +105,7 @@
       <el-table-column
         :label="$t('Common.Operation')"
         align="center"
-       
-        width="80"
+        width="120"
       >
         <template #default="scope">
           <el-button

@@ -17,14 +17,18 @@ package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -46,6 +50,7 @@ import java.util.List;
 /**
  * 公告 信息操作处理
  */
+@XComment("{API.DOC.SYS.NOTICE.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/notice")
@@ -56,9 +61,10 @@ public class SysNoticeController extends BaseRestController {
 	/**
 	 * 获取通知公告列表
 	 */
+	@XComment("{API.DOC.SYS.NOTICE.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeList)
 	@GetMapping("/list")
-	public R<?> list(@Validated QueryNoticeRequest req) {
+	public R<TableData<SysNotice>> list(@Validated QueryNoticeRequest req) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysNotice> q = new LambdaQueryWrapper<SysNotice>()
 				.like(StringUtils.isNotEmpty(req.getNoticeTitle()), SysNotice::getNoticeTitle, req.getNoticeTitle())
@@ -72,9 +78,10 @@ public class SysNoticeController extends BaseRestController {
 	/**
 	 * 根据通知公告编号获取详细信息
 	 */
+	@XComment("{API.DOC.SYS.NOTICE.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeList)
 	@GetMapping(value = "/detail/{noticeId}")
-	public R<?> getInfo(@PathVariable @LongId Long noticeId) {
+	public R<SysNotice> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.NOTICE.ID}") Long noticeId) {
 		Assert.isTrue(IdUtils.validate(noticeId), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("noticeId: " + noticeId));
 		return R.ok(noticeService.getById(noticeId));
 	}
@@ -82,11 +89,12 @@ public class SysNoticeController extends BaseRestController {
 	/**
 	 * 新增通知公告
 	 */
+	@XComment("{API.DOC.SYS.NOTICE.CREATE_NOTICE}")
 	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeAdd)
 	@Log(title = "通知公告", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> add(@Validated @RequestBody CreateNoticeRequest req) {
+	public R<Void> add(@Validated @RequestBody CreateNoticeRequest req) {
 		noticeService.insertNotice(req);
 		return R.ok();
 	}
@@ -94,11 +102,12 @@ public class SysNoticeController extends BaseRestController {
 	/**
 	 * 修改通知公告
 	 */
+	@XComment("{API.DOC.SYS.NOTICE.UPDATE_NOTICE}")
 	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeEdit)
 	@Log(title = "通知公告", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> edit(@Validated @RequestBody UpdateNoticeRequest req) {
+	public R<Void> edit(@Validated @RequestBody UpdateNoticeRequest req) {
 		noticeService.updateNotice(req);
 		return R.ok();
 	}
@@ -106,10 +115,11 @@ public class SysNoticeController extends BaseRestController {
 	/**
 	 * 删除通知公告
 	 */
+	@XComment("{API.DOC.SYS.NOTICE.DELETE_NOTICE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeRemove)
 	@Log(title = "通知公告", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> noticeIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.NOTICE.IDS}") List<Long> noticeIds) {
 		noticeService.deleteNoticeByIds(noticeIds);
 		return R.ok();
 	}

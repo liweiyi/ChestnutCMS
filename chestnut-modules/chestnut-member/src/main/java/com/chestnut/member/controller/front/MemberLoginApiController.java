@@ -15,7 +15,7 @@
  */
 package com.chestnut.member.controller.front;
 
-import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.SecurityUtils;
@@ -25,6 +25,7 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
+
 import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.dto.*;
 import com.chestnut.member.domain.vo.MemberCache;
@@ -56,6 +57,7 @@ import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+@XComment("{API.DOC.MEMBER.LOGIN_API_MODULE}")
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -72,8 +74,6 @@ public class MemberLoginApiController extends BaseRestController {
 
 	private final ISysLogininforService logininforService;
 
-	private final AsyncTaskManager asyncTaskManager;
-
 	private final JavaMailSender javaMailSender;
 
 	private final RedisCache redisCache;
@@ -82,9 +82,9 @@ public class MemberLoginApiController extends BaseRestController {
 
 	@Value("${spring.mail.username:}")
 	private String mailSendUser;
-
+	@XComment("{API.DOC.MEMBER.CHECK_LOGIN}")
 	@GetMapping("/is_login")
-	public R<?> checkLogin(@RequestParam(required = false, defaultValue = "false") Boolean preview) {
+	public R<?> checkLogin(@RequestParam(required = false, defaultValue = "false") @XComment("{API.DOC.MEMBER.PREVIEW}") Boolean preview) {
 		boolean login = StpMemberUtil.isLogin();
 		if (!login) {
 			return R.fail("Not Login");
@@ -104,6 +104,7 @@ public class MemberLoginApiController extends BaseRestController {
 		return R.ok(memberCache);
 	}
 
+	@XComment("{API.DOC.MEMBER.LOGIN}")
 	@IgnoreDemoMode
 	@PostMapping("/login")
 	public R<?> login(@RequestBody @Validated MemberLoginRequest dto) {
@@ -113,6 +114,7 @@ public class MemberLoginApiController extends BaseRestController {
 		return R.ok(token);
 	}
 
+	@XComment("{API.DOC.MEMBER.REGISTER}")
 	@IgnoreDemoMode
 	@PostMapping("/register")
 	public R<?> resgiter(@RequestBody @Validated MemberRegisterRequest dto, HttpServletRequest request) {
@@ -127,6 +129,7 @@ public class MemberLoginApiController extends BaseRestController {
 		return R.ok(token);
 	}
 
+	@XComment("{API.DOC.MEMBER.LOGOUT}")
 	@IgnoreDemoMode
 	@PostMapping("/logout")
 	public R<?> logout() {
@@ -143,9 +146,9 @@ public class MemberLoginApiController extends BaseRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.RESET_SELF_PWD}")
 	@Priv(type = MemberUserType.TYPE)
 	@PostMapping("/reset_pwd")
-    @PutMapping("/reset_pwd")
 	public R<?> resetMemberPassword(@RequestBody @Validated ModifyMemberPasswordRequest req) {
 		Member member = this.memberService.getById(StpMemberUtil.getLoginIdAsLong());
 		if (!SecurityUtils.matches(req.getPassword(), member.getPassword())) {
@@ -161,9 +164,10 @@ public class MemberLoginApiController extends BaseRestController {
 		return update ? R.ok() : R.fail();
 	}
 
+	@XComment("{API.DOC.MEMBER.SEND_REGISTER_SMS_CODE}")
 	@IgnoreDemoMode
 	@GetMapping("/register_sms_code")
-	public R<?> sendRegisterSmsCode(@RequestParam @Email String email) {
+	public R<?> sendRegisterSmsCode(@RequestParam @Email @XComment("{API.DOC.MEMBER.EMAIL}") String email) {
 		if (StringUtils.isEmpty(mailSendUser)) {
 			return R.fail("发送失败，请联系管理员！");
 		}
@@ -190,10 +194,11 @@ public class MemberLoginApiController extends BaseRestController {
 		}
 	}
 
+	@XComment("{API.DOC.MEMBER.SEND_SMS_CODE}")
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@PostMapping("/sms_code")
-	public R<?> sendSmsCode(@RequestParam(required = false, defaultValue = "email") String type) {
+	public R<?> sendSmsCode(@RequestParam(required = false, defaultValue = "email") @XComment("{API.DOC.MEMBER.SMS_CODE_TYPE}") String type) {
 		if (StringUtils.isEmpty(mailSendUser)) {
 			return R.fail("发送失败，请联系管理员！");
 		}
@@ -215,6 +220,7 @@ public class MemberLoginApiController extends BaseRestController {
 		}
 	}
 
+	@XComment("{API.DOC.MEMBER.CHANGE_EMAIL}")
 	@Priv(type = MemberUserType.TYPE)
 	@PostMapping("/change_email")
 	public R<?> changeMemberEmail(@RequestBody @Validated ChangeMemberEmailRequest dto) {
@@ -231,6 +237,7 @@ public class MemberLoginApiController extends BaseRestController {
 		return update ? R.ok() : R.fail();
 	}
 
+	@XComment("{API.DOC.MEMBER.SAVE_INFO}")
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@PostMapping("/info")
@@ -255,11 +262,12 @@ public class MemberLoginApiController extends BaseRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.UPLOAD_AVATAR}")
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
 	@PostMapping("/avatar")
-	public R<?> uploadMemberAvatar(@RequestParam String image,
-								   @RequestParam(required = false, defaultValue = "false") Boolean preview) throws IOException {
+	public R<?> uploadMemberAvatar(@RequestParam @XComment("{API.DOC.MEMBER.AVATAR_IMAGE}") String image,
+								   @RequestParam(required = false, defaultValue = "false") @XComment("{API.DOC.MEMBER.PREVIEW}") Boolean preview) throws IOException {
 		String url = this.memberService.uploadAvatarByBase64(StpMemberUtil.getLoginIdAsLong(), image);
 
 		this.memberStatDataService.removeMemberCache(StpMemberUtil.getLoginIdAsLong());

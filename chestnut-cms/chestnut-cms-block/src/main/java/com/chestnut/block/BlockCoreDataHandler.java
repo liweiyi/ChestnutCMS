@@ -42,7 +42,7 @@ public class BlockCoreDataHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteImport(SiteImportContext context) {
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在处理自定义区块详情数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsBlockTips.IMPORTING_BLOCK);
         List<CmsPageWidget> pageWidgets = this.pageWidgetService.lambdaQuery()
                 .eq(CmsPageWidget::getSiteId, context.getSite().getSiteId())
                 .eq(CmsPageWidget::getType, ManualPageWidgetType.ID)

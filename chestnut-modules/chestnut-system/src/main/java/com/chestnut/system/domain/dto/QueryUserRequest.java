@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.validator.Dict;
 import lombok.Getter;
@@ -29,16 +30,21 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("用户列表查询请求参数")
 public class QueryUserRequest {
 
     @Length(max = 30)
+    @XComment("用户名")
     private String userName;
 
     @Length(max = 20)
+    @XComment("手机号")
     private String phoneNumber;
 
     @Dict(UserStatus.TYPE)
+    @XComment("状态")
     private String status;
 
+    @XComment("所属机构ID")
     private Long deptId;
 }

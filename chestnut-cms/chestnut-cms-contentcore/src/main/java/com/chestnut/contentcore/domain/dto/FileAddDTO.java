@@ -15,11 +15,13 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.FILE.FILE_ADD_DTO}")
 @Getter
 @Setter
 public class FileAddDTO {
@@ -27,18 +29,21 @@ public class FileAddDTO {
 	/*
 	 * 目所在录
 	 */
+	@XComment("{API.DOC.CMS.FILE.DIR}")
 	@NotEmpty
 	private String dir;
 
 	/*
 	 * 文件/目录名
 	 */
+	@XComment("{API.DOC.CMS.FILE.FILE_NAME}")
 	@NotEmpty
 	private String fileName;
 
 	/*
 	 * 是否目录
 	 */
+	@XComment("{API.DOC.CMS.FILE.IS_DIRECTORY}")
 	@NotNull
 	private Boolean isDirectory;
 	

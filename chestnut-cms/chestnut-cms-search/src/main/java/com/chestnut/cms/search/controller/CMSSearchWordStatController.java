@@ -17,11 +17,13 @@ package com.chestnut.cms.search.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.search.CmsSearchConstants;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.CmsRestController;
@@ -29,10 +31,13 @@ import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.domain.dto.CreateSearchWordRequest;
 import com.chestnut.search.service.ISearchWordService;
 import com.chestnut.system.security.AdminUserType;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@XComment("{API.DOC.CMS.SEARCH.WORD_STAT_MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RequiredArgsConstructor
 @RestController
@@ -41,8 +46,9 @@ public class CMSSearchWordStatController extends CmsRestController {
 
 	private final ISearchWordService searchWordStatService;
 	
+	@XComment("{API.DOC.CMS.SEARCH.WORD_STAT.GET_LIST}")
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam(required = false) String query) {
+	public R<TableData<SearchWord>> getPageList(@RequestParam(required = false) String query) {
 		PageRequest pr = this.getPageRequest();
 		CmsSite site = this.getCurrentSite();
 		Page<SearchWord> page = this.searchWordStatService.lambdaQuery()
@@ -53,9 +59,10 @@ public class CMSSearchWordStatController extends CmsRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.CMS.SEARCH.WORD_STAT.ADD}")
 	@Log(title = "新增搜索词", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addWord(@RequestBody @Validated CreateSearchWordRequest req) {
+	public R<Void> addWord(@RequestBody @Validated CreateSearchWordRequest req) {
 		CmsSite site = this.getCurrentSite();
 		req.setSource(CmsSearchConstants.generateSearchSource(site.getSiteId()));
 		this.searchWordStatService.addWord(req);

@@ -15,6 +15,7 @@
  */
 package com.chestnut.media.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.contentcore.domain.CmsResource;
@@ -24,6 +25,8 @@ import com.chestnut.media.domain.dto.VideoScreenshotDTO;
 import com.chestnut.media.service.IVideoService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,6 +45,7 @@ import java.io.IOException;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.MEDIA.MODULE}")
 @RestController
 @RequestMapping("/cms/video")
 @RequiredArgsConstructor
@@ -49,9 +53,10 @@ public class VideoController extends CmsRestController {
 
 	private final IVideoService videoService;
 
+	@XComment("{API.DOC.CMS.MEDIA.SCREENSHOT}")
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/screenshot")
-	public R<?> screenshot(@RequestBody  @Validated VideoScreenshotDTO dto)
+	public R<CmsResource> screenshot(@RequestBody @Validated VideoScreenshotDTO dto)
 			throws EncoderException, IOException {
 		CmsSite site = this.getCurrentSite();
 		CmsResource cmsResource = this.videoService.videoScreenshot(site, dto.getPath(),

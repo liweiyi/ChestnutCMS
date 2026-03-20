@@ -16,15 +16,19 @@
 package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -52,6 +56,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.CONFIG.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/system/config")
@@ -62,10 +67,11 @@ public class SysConfigController extends BaseRestController {
 	/**
 	 * 获取参数配置列表
 	 */
+	@XComment("{API.DOC.SYS.CONFIG.GET_LIST}")
 	@ExcelExportable(SysConfig.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigList)
 	@GetMapping("/list")
-	public R<?> list(@Validated QueryConfigRequest req) {
+	public R<TableData<SysConfig>> list(@Validated QueryConfigRequest req) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysConfig> page = this.configService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(req.getConfigKey()), SysConfig::getConfigKey, req.getConfigKey())
@@ -81,9 +87,10 @@ public class SysConfigController extends BaseRestController {
 	/**
 	 * 根据参数编号获取详细信息
 	 */
+	@XComment("{API.DOC.SYS.CONFIG.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigList)
 	@GetMapping(value = "/detail/{configId}")
-	public R<?> getInfo(@PathVariable @LongId Long configId) {
+	public R<SysConfig> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.CONFIG.ID}") Long configId) {
 		SysConfig config = this.configService.getById(configId);
 		I18nUtils.replaceI18nFields(config);
 		return R.ok(config);
@@ -92,19 +99,21 @@ public class SysConfigController extends BaseRestController {
 	/**
 	 * 根据参数键名查询参数值
 	 */
+	@XComment("{API.DOC.SYS.CONFIG.GET_BY_KEY}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping(value = "/configKey/{configKey}")
-	public R<?> getConfigKey(@PathVariable @NotBlank String configKey) {
+	public R<String> getConfigKey(@PathVariable @NotBlank @XComment("{API.DOC.SYS.CONFIG.CONFIG_KEY}") String configKey) {
 		return R.ok(configService.selectConfigByKey(configKey));
 	}
 
 	/**
 	 * 新增参数配置
 	 */
+	@XComment("{API.DOC.SYS.CONFIG.CREATE_CONFIG}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigAdd)
 	@Log(title = "参数管理", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> add(@Validated @RequestBody CreateConfigRequest req) {
+	public R<Void> add(@Validated @RequestBody CreateConfigRequest req) {
 		configService.insertConfig(req);
 		return R.ok();
 	}
@@ -112,10 +121,11 @@ public class SysConfigController extends BaseRestController {
 	/**
 	 * 修改参数配置
 	 */
+	@XComment("{API.DOC.SYS.CONFIG.UPDATE_CONFIG}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigEdit)
 	@Log(title = "参数管理", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> edit(@Validated @RequestBody UpdateConfigRequest req) {
+	public R<Void> edit(@Validated @RequestBody UpdateConfigRequest req) {
 		configService.updateConfig(req);
 		return R.ok();
 	}
@@ -123,10 +133,11 @@ public class SysConfigController extends BaseRestController {
 	/**
 	 * 删除参数配置
 	 */
+	@XComment("{API.DOC.SYS.CONFIG.DELETE_CONFIG}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigRemove)
 	@Log(title = "参数管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> configIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.CONFIG.IDS}") List<Long> configIds) {
 		Assert.isTrue(IdUtils.validate(configIds), CommonErrorCode.INVALID_REQUEST_ARG::exception);
 		configService.deleteConfigByIds(configIds);
 		return R.ok();
@@ -135,10 +146,11 @@ public class SysConfigController extends BaseRestController {
 	/**
 	 * 刷新参数缓存
 	 */
+	@XComment("{API.DOC.SYS.CONFIG.REFRESH_CACHE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysConfigRemove)
 	@Log(title = "参数管理", businessType = BusinessType.CLEAN)
 	@PostMapping("/refreshCache")
-	public R<?> refreshCache() {
+	public R<Void> refreshCache() {
 		configService.resetConfigCache();
 		return R.ok();
 	}

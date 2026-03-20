@@ -15,18 +15,22 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.SYS.CACHE.CLEAR_CACHE_REQ}")
 @Getter
 @Setter
 public class ClearCacheRequest {
-	
+
 	@NotBlank
+	@XComment("{API.DOC.SYS.CACHE.MONITORED_ID}")
 	private String monitoredId;
 
 	@NotBlank
+	@XComment("{API.DOC.SYS.CACHE.CACHE_KEY}")
 	private String cacheKey;
 }
 

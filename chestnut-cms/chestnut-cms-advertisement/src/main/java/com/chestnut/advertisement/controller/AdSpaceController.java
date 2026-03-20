@@ -20,10 +20,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.advertisement.AdSpacePageWidgetType;
 import com.chestnut.advertisement.domain.dto.CreateAdSpaceReq;
 import com.chestnut.advertisement.pojo.vo.AdSpaceVO;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IPageWidget;
@@ -39,6 +41,8 @@ import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import freemarker.template.TemplateException;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
@@ -56,6 +60,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.AD_SPACE.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RequiredArgsConstructor
 @RestController
@@ -70,10 +75,12 @@ public class AdSpaceController extends CmsRestController {
 
 	private final AdSpacePageWidgetType pageWidgetType;
 
+	@XComment("{API.DOC.CMS.AD_SPACE.GET_LIST}")
 	@GetMapping("/list")
-	public R<?> listAdSpaces(@RequestParam(name = "catalogId", required = false) Long catalogId,
-			@RequestParam(name = "name", required = false) String name,
-			@RequestParam(name = "state", required = false) Integer state) {
+	public R<TableData<AdSpaceVO>> listAdSpaces(
+			@RequestParam(name = "catalogId", required = false) @XComment("{API.DOC.CMS.AD_SPACE.CATALOG_ID}") Long catalogId,
+			@RequestParam(name = "name", required = false) @XComment("{API.DOC.CMS.AD_SPACE.NAME}") String name,
+			@RequestParam(name = "state", required = false) @XComment("{API.DOC.CMS.AD_SPACE.STATE}") Integer state) {
 		PageRequest pr = getPageRequest();
 		CmsSite site = this.getCurrentSite();
 		LambdaQueryWrapper<CmsPageWidget> q = new LambdaQueryWrapper<CmsPageWidget>()
@@ -96,10 +103,12 @@ public class AdSpaceController extends CmsRestController {
 		return this.bindDataTable(list, (int) page.getTotal());
 	}
 
+	@XComment("{API.DOC.CMS.AD_SPACE.GET_INFO}")
 	@GetMapping("/detail/{adSpaceId}")
-	public R<PageWidgetVO> getAdSpaceInfo(@PathVariable("adSpaceId") Long adSpaceId) {
+	public R<PageWidgetVO> getAdSpaceInfo(
+			@PathVariable("adSpaceId") @XComment("{API.DOC.CMS.AD_SPACE.ID}") Long adSpaceId) {
 		CmsPageWidget pageWidget = this.pageWidgetService.getById(adSpaceId);
-		if (pageWidget == null) {
+		if (pageWidget == null || !pageWidget.getType().equals(pageWidgetType.getId())) {
 			return R.fail("数据未找到：" + adSpaceId);
 		}
 		AdSpaceVO vo = (AdSpaceVO) pageWidgetType.getPageWidgetVO(pageWidget);
@@ -108,8 +117,9 @@ public class AdSpaceController extends CmsRestController {
 		return R.ok(vo);
 	}
 
+	@XComment("{API.DOC.CMS.AD_SPACE.CREATE}")
 	@PostMapping("/add")
-	public R<?> addAdSpace(@RequestBody @Validated CreateAdSpaceReq dto) {
+	public R<Void> addAdSpace(@RequestBody @Validated CreateAdSpaceReq dto) {
         CmsSite site = this.getCurrentSite();
 		CmsPageWidget pageWidget = new CmsPageWidget();
 		BeanUtils.copyProperties(dto, pageWidget);
@@ -125,8 +135,9 @@ public class AdSpaceController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.AD_SPACE.UPDATE}")
 	@PostMapping("/update")
-	public R<?> editAdSpace(@RequestBody @Validated PageWidgetEditDTO dto) {
+	public R<Void> editAdSpace(@RequestBody @Validated PageWidgetEditDTO dto) {
 		CmsPageWidget pageWidget = new CmsPageWidget();
 		BeanUtils.copyProperties(dto, pageWidget);
 		pageWidget.setTemplates(dto.getPublishPipeTemplateMap());
@@ -138,15 +149,19 @@ public class AdSpaceController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.AD_SPACE.DELETE}")
 	@PostMapping("/delete")
-	public R<?> deleteAdSpaces(@RequestBody List<Long> adSpaceIds) {
+	public R<Void> deleteAdSpaces(
+			@RequestBody @XComment("{API.DOC.CMS.AD_SPACE.IDS}") List<Long> adSpaceIds) {
 		Assert.notEmpty(adSpaceIds, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("adSpaceIds"));
 		this.pageWidgetService.deletePageWidgets(adSpaceIds, StpAdminUtil.getLoginUser());
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.AD_SPACE.PUBLISH}")
 	@PostMapping("/publish")
-	public R<?> publishPageWidgets(@RequestBody List<Long> adSpaceIds) throws TemplateException, IOException {
+	public R<Void> publishPageWidgets(
+			@RequestBody @XComment("{API.DOC.CMS.AD_SPACE.IDS}") List<Long> adSpaceIds) throws TemplateException, IOException {
 		Assert.notEmpty(adSpaceIds, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("adSpaceIds"));
 		this.pageWidgetService.publishPageWidgets(adSpaceIds, StpAdminUtil.getLoginUser());
 		return R.ok();

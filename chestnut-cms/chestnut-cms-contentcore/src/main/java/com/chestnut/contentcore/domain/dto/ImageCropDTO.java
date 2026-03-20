@@ -15,20 +15,27 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.IMAGE_PROCESS.CROP_DTO}")
 @Getter
 @Setter
 public class ImageCropDTO {
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_ID}")
     private Long resourceId;
 
+    @XComment("{API.DOC.CMS.IMAGE_PROCESS.X}")
     private Integer x;
 
+    @XComment("{API.DOC.CMS.IMAGE_PROCESS.Y}")
     private Integer y;
 
+    @XComment("{API.DOC.CMS.IMAGE_PROCESS.WIDTH}")
     private Integer width;
 
+    @XComment("{API.DOC.CMS.IMAGE_PROCESS.HEIGHT}")
     private Integer height;
 }

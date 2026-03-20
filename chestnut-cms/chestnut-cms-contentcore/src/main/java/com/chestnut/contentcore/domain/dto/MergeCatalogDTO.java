@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
@@ -24,6 +25,7 @@ import lombok.Setter;
 
 import java.util.List;
 
+@XComment("{API.DOC.CMS.CATALOG.MERGE_DTO}")
 @Getter
 @Setter
 public class MergeCatalogDTO extends BaseDTO {
@@ -31,6 +33,7 @@ public class MergeCatalogDTO extends BaseDTO {
 	/**
 	 * 栏目ID
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}")
 	@NotNull
 	@LongId
 	public Long catalogId;
@@ -38,6 +41,7 @@ public class MergeCatalogDTO extends BaseDTO {
 	/**
 	 * 被合并栏目IDs
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.FROM_CATALOG}")
 	@NotEmpty
 	public List<Long> mergeCatalogIds;
 }

@@ -15,6 +15,7 @@
  */
 package com.chestnut.seo.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -25,6 +26,8 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.seo.service.BaiduSitemapService;
 import com.chestnut.system.security.AdminUserType;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +42,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.SEO.SITEMAP_MODULE}")
 @RestController
 @RequestMapping("/cms/seo")
 @RequiredArgsConstructor
@@ -48,9 +52,10 @@ public class SitemapController extends BaseRestController {
 
 	private final BaiduSitemapService sitemapService;
 
+	@XComment("{API.DOC.CMS.SEO.SITEMAP.GENERATE}")
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/sitemap")
-	public R<?> generateSitemap(@RequestParam Long siteId) {
+	public R<String> generateSitemap(@RequestParam @XComment("{API.DOC.CMS.SEO.SITEMAP.SITE_ID}") Long siteId) {
 		CmsSite site = siteService.getSite(siteId);
 		Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 

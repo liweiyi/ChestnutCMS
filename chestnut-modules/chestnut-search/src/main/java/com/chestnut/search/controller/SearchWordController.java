@@ -16,12 +16,14 @@
 package com.chestnut.search.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.SearchConsts;
@@ -35,6 +37,8 @@ import com.chestnut.search.service.ISearchWordService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -45,6 +49,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@XComment("{API.DOC.SEARCH.WORD_MODULE}")
 @Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.LOG_VIEW)
 @RequiredArgsConstructor
 @RestController
@@ -54,9 +59,10 @@ public class SearchWordController extends BaseRestController {
 	private final ISearchWordService searchWordStatService;
 
 	private final ISearchWordHourStatService searchWordHourStatService;
-	
+
+	@XComment("{API.DOC.SEARCH.WORD_GET_LIST}")
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
+	public R<TableData<SearchWord>> getPageList(@RequestParam(required = false) @Length(max = 255) @XComment("{API.DOC.SEARCH.QUERY}") String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<SearchWord> page = this.searchWordStatService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(query), SearchWord::getWord, query)
@@ -64,12 +70,12 @@ public class SearchWordController extends BaseRestController {
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
 		return this.bindDataTable(page);
 	}
-
+	@XComment("{API.DOC.SEARCH.WORD_TREND}")
 	@GetMapping("/trend")
 	public R<?> getTrendStatData(
-			@RequestParam @LongId Long wordId,
-			@RequestParam LocalDateTime beginTime,
-			@RequestParam LocalDateTime endTime
+			@RequestParam @LongId @XComment("{API.DOC.SEARCH.WORD_ID}") Long wordId,
+			@RequestParam @XComment("{CC.ENTITY.BEGIN_TIME}") LocalDateTime beginTime,
+			@RequestParam @XComment("{CC.ENTITY.END_TIME}") LocalDateTime endTime
 	) {
 		List<SearchWordHourStat> list = this.searchWordHourStatService.lambdaQuery()
 				.eq(SearchWordHourStat::getWordId, wordId)
@@ -99,37 +105,42 @@ public class SearchWordController extends BaseRestController {
 		return R.ok(Map.of("xAxisDatas", xAxisDatas, "lineDatas", lineDatas));
 	}
 
+	@XComment("{API.DOC.SEARCH.WORD_ADD}")
 	@Log(title = "新增搜索词", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addWord(@RequestBody CreateSearchWordRequest req) {
+	public R<Void> addWord(@RequestBody CreateSearchWordRequest req) {
 		this.searchWordStatService.addWord(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SEARCH.WORD_UPDATE}")
 	@Log(title = "编辑搜索词", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> editWord(@RequestBody @Validated UpdateSearchWordRequest req) {
+	public R<Void> editWord(@RequestBody @Validated UpdateSearchWordRequest req) {
 		this.searchWordStatService.editWord(req);
 		return R.ok();
 	}
 
-	@Log(title = "编辑搜索词", businessType = BusinessType.UPDATE)
+	@XComment("{API.DOC.SEARCH.WORD_SET_TOP}")
+	@Log(title = "搜索词置顶", businessType = BusinessType.UPDATE)
 	@PostMapping("/set_top")
-	public R<?> setTop(@RequestBody SearchWordToppingRequest req) {
+	public R<Void> setTop(@RequestBody SearchWordToppingRequest req) {
 		this.searchWordStatService.setTop(req);
 		return R.ok();
 	}
 
-	@Log(title = "编辑搜索词", businessType = BusinessType.UPDATE)
+	@XComment("{API.DOC.SEARCH.WORD_CANCEL_TOP}")
+	@Log(title = "取消搜索词置顶", businessType = BusinessType.UPDATE)
 	@PostMapping("/cancel_top")
-	public R<?> cancelTop(@RequestBody @NotEmpty List<Long> wordIds) {
+	public R<Void> cancelTop(@RequestBody @NotEmpty @XComment("{API.DOC.SEARCH.WORD_IDS}") List<Long> wordIds) {
 		this.searchWordStatService.cancelTop(wordIds, StpAdminUtil.getLoginUser().getUsername());
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SEARCH.WORD_DELETE}")
 	@Log(title = "删除搜索词", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> deleteWords(@RequestBody @NotEmpty List<Long> wordIds) {
+	public R<Void> deleteWords(@RequestBody @NotEmpty @XComment("{API.DOC.SEARCH.WORD_IDS}") List<Long> wordIds) {
 		this.searchWordStatService.deleteWords(wordIds);
 		return R.ok();
 	}

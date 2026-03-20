@@ -22,6 +22,11 @@ package com.chestnut.common.exception;
  * @email 190785909@qq.com
  */
 public enum CommonErrorCode implements ErrorCode {
+
+    /**
+	 * Lang: 未实现
+	 */
+    NOT_IMPLEMENTED_YET,
 	
 	/**
 	 * Lang: 参数【{0}】不能为空

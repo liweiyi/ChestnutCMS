@@ -18,6 +18,7 @@ package com.chestnut.contentcore.domain.dto;
 import java.util.List;
 import java.util.Map;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import jakarta.validation.constraints.Pattern;
 
@@ -29,39 +30,55 @@ import com.chestnut.contentcore.domain.CmsSite;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.SITE.SITE_DTO}")
 @Getter
 @Setter
 public class SiteDTO extends BaseDTO {
 
+	@XComment("{CMS.SITE.ID}")
 	private Long siteId;
 
+	@XComment("{CMS.SITE.NAME}")
 	private String name;
 
+	@XComment("{CMS.SITE.DESC}")
 	private String description;
 
+	@XComment("{CMS.SITE.LOGO}")
 	private String logo;
 
+	@XComment("{CMS.SITE.LOGO_SRC}")
 	private String logoSrc;
 
+	@XComment("{CMS.SITE.PATH}")
 	@Pattern(regexp = "^[A-Za-z0-9]+$", message = "站点目录只能使用大小写字母及数字组合")
 	private String path;
 
+	@XComment("{API.DOC.CMS.SITE.URL}")
 	private String url;
 
+	@XComment("{CMS.SITE.RESOURCE_URL}")
 	private String resourceUrl;
 
+	@XComment("{API.DOC.CMS.SITE.STATIC_SUFFIX}")
 	private String staticSuffix;
 
+	@XComment("{CMS.SITE.DEPT_CODE}")
 	private String deptCode;
 
+	@XComment("{CMS.SITE.SEO_KEYWORDS}")
 	private String seoKeywords;
 
+	@XComment("{CMS.SITE.SEO_DESC}")
 	private String seoDescription;
 
+	@XComment("{CMS.SITE.SEO_TITLE}")
 	private String seoTitle;
 
+	@XComment("{CMS.SITE.CONFIG_PROPS}")
 	private Map<String, String> configProps;
 
+	@XComment("{API.DOC.CMS.SITE.PUBLISH_PIPE_DATAS}")
 	private List<PublishPipeProps> publishPipeDatas;
 
 	private Map<String, Object> params;

@@ -19,6 +19,7 @@ import com.chestnut.advertisement.cache.AdNameMonitoredCache;
 import com.chestnut.advertisement.service.IAdvertisementService;
 import com.chestnut.advertisement.stat.AdClickStatEventHandler;
 import com.chestnut.advertisement.stat.AdViewStatEventHandler;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.IdUtils;
@@ -28,6 +29,8 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.stat.core.StatEvent;
 import com.chestnut.stat.service.impl.StatEventService;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +48,7 @@ import java.time.LocalDateTime;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.AD_API.MODULE}")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -59,10 +63,12 @@ public class AdApiController extends BaseRestController {
 
 	private final RedisCache redisCache;
 
+	@XComment("{API.DOC.CMS.AD_API.REDIRECT}")
 	@GetMapping("/redirect")
-	public void statAndRedirect(@RequestParam("sid") Long siteId,
-								@RequestParam("aid") Long advertisementId,
-								HttpServletResponse response) throws IOException {
+	public void statAndRedirect(
+			@RequestParam("sid") @XComment("{API.DOC.CMS.AD_API.SITE_ID}") Long siteId,
+			@RequestParam("aid") @XComment("{API.DOC.CMS.AD_API.AD_ID}") Long advertisementId,
+			HttpServletResponse response) throws IOException {
 		if (!IdUtils.validate(siteId) || !IdUtils.validate(advertisementId)) {
 			log.warn("Invalid sid/aid: sid = {}, aid = {}", siteId, advertisementId);
 			return;
@@ -77,8 +83,11 @@ public class AdApiController extends BaseRestController {
 		response.sendRedirect(redirectUrl);
 	}
 
+	@XComment("{API.DOC.CMS.AD_API.CLICK}")
 	@GetMapping("/click")
-	public void adClick(@RequestParam("sid") Long siteId, @RequestParam("aid") Long advertisementId) {
+	public void adClick(
+			@RequestParam("sid") @XComment("{API.DOC.CMS.AD_API.SITE_ID}") Long siteId,
+			@RequestParam("aid") @XComment("{API.DOC.CMS.AD_API.AD_ID}") Long advertisementId) {
 		if (!IdUtils.validate(siteId) || !IdUtils.validate(advertisementId)) {
 			log.warn("Invalid sid/aid: sid = {}, aid = {}", siteId, advertisementId);
 			return;
@@ -103,8 +112,11 @@ public class AdApiController extends BaseRestController {
 		statEventService.dealStatEvent(evt);
 	}
 
+	@XComment("{API.DOC.CMS.AD_API.VIEW}")
 	@GetMapping("/view")
-	public void adView(@RequestParam("sid") Long siteId, @RequestParam("aid") Long advertisementId) {
+	public void adView(
+			@RequestParam("sid") @XComment("{API.DOC.CMS.AD_API.SITE_ID}") Long siteId,
+			@RequestParam("aid") @XComment("{API.DOC.CMS.AD_API.AD_ID}") Long advertisementId) {
 		if (!IdUtils.validate(siteId) || !IdUtils.validate(advertisementId)) {
 			log.warn("Invalid sid/aid: sid = {}, aid = {}", siteId, advertisementId);
 			return;

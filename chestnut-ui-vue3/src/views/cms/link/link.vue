@@ -86,7 +86,7 @@
           <span v-else>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('Common.Operation')" align="center" width="140" >
+      <el-table-column :label="$t('Common.Operation')" align="center" width="160" >
         <template #default="scope">
           <el-button 
             link

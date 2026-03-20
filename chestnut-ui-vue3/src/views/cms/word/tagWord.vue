@@ -1,95 +1,87 @@
 <template>
   <div class="tag-word-container">
-    <el-row :gutter="24">
-      <el-col :span="4" :xs="24">
+    <cc-spliter storage-key="cms-tag-word">
+      <cc-spliter-column width="15%" style="padding-right: 10px;">
         <cms-tag-word-group-tree 
           ref="groupTreeRef"
           :new-btn="true"    
           @node-click="handleTreeNodeClick">
         </cms-tag-word-group-tree>
-      </el-col>
-      <el-col :span="20" :xs="24">
-        <el-row :gutter="24">
-          <el-col :span="12">
-            <el-button 
-              type="primary"
-              icon="Plus"
-              plain
-              :disabled="selectedGroupId==''"
-              @click="handleAdd">{{ $t("Common.Add") }}</el-button>
-            <el-button 
-              type="primary"
-              icon="Plus"
-              plain
-              :disabled="selectedGroupId==''"
-              @click="handleBatchAdd">{{ $t("Common.BatchAdd") }}</el-button>
-            <el-button 
-              type="danger"
-              icon="Delete"
-              plain
-              :disabled="selectedGroupId==''||selectedIds.length==0"
-              @click="handleDelete">{{ $t("Common.Delete") }}</el-button>
-          </el-col>
-          <el-col :span="12" style="text-align: right;">
-            <el-form 
-              :model="queryParams"
-              ref="queryFormRef"
-              :inline="true"
-              class="el-form-search">
-              <el-form-item prop="query">
-                <el-input v-model="queryParams.query" :placeholder="$t('WordMgr.TAG.Placeholder.InputTAG')">
-                </el-input>
-              </el-form-item>
-              <el-form-item>
-                <el-button-group>
-                  <el-button type="primary" icon="Search" @click="handleQuery">{{ $t("Common.Search") }}</el-button>
-                  <el-button icon="Refresh" @click="resetQuery">{{ $t("Common.Reset") }}</el-button>
-                </el-button-group>
-              </el-form-item>
-            </el-form>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-table 
-            v-loading="loading"
-            :data="wordList"
-            @selection-change="handleSelectionChange"
-            @row-dblclick="handleEdit">
-            <el-table-column type="selection" width="50" align="center" />
-            <el-table-column type="index" :label="$t('Common.RowNo')" align="center" width="50" />
-            <el-table-column :label="$t('WordMgr.TAG.TAGWord')" align="left" prop="word" />
-            <el-table-column :label="$t('Common.Sort')" align="center" prop="sortFlag" width="120"/>
-            <!-- <el-table-column :label="$t('WordMgr.TAG.TAGWordUseCount')" align="center" prop="useCount" width="120"/> -->
-            <el-table-column :label="$t('WordMgr.TAG.TAGWordHitCount')" align="center" prop="hitCount" width="120"/>
-            <el-table-column :label="$t('Common.CreateTime')" align="center" width="160">
-              <template #default="scope">
-                <span>{{ parseTime(scope.row.createTime) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('Common.CreateBy')" align="center" width="120" prop="createBy" />
-            <el-table-column :label="$t('Common.Operation')" align="center" width="180">
-              <template #default="scope">
-                <el-button 
-                  type="text"
-                  icon="Edit"
-                  @click="handleEdit(scope.row)">{{ $t('Common.Edit') }}</el-button>
-                <el-button 
-                  type="text"
-                  icon="Delete"
-                  @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <pagination
-            v-show="total>0"
-            :total="total"
-            v-model:page="queryParams.pageNum"
-            v-model:limit="queryParams.pageSize"
-            @pagination="loadWordList"
-          />
-        </el-row>
-      </el-col>
-    </el-row>
+      </cc-spliter-column>
+      <cc-spliter-column>
+        <el-button 
+          type="primary"
+          icon="Plus"
+          plain
+          :disabled="selectedGroupId==''"
+          @click="handleAdd">{{ $t("Common.Add") }}</el-button>
+        <el-button 
+          type="primary"
+          icon="Plus"
+          plain
+          :disabled="selectedGroupId==''"
+          @click="handleBatchAdd">{{ $t("Common.BatchAdd") }}</el-button>
+        <el-button 
+          type="danger"
+          icon="Delete"
+          plain
+          :disabled="selectedGroupId==''||selectedIds.length==0"
+          @click="handleDelete">{{ $t("Common.Delete") }}</el-button>
+        <el-form 
+          :model="queryParams"
+          ref="queryFormRef"
+          :inline="true"
+          class="el-form-search mt8">
+          <el-form-item prop="query">
+            <el-input v-model="queryParams.query" :placeholder="$t('WordMgr.TAG.Placeholder.InputTAG')">
+            </el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button-group>
+              <el-button type="primary" icon="Search" @click="handleQuery">{{ $t("Common.Search") }}</el-button>
+              <el-button icon="Refresh" @click="resetQuery">{{ $t("Common.Reset") }}</el-button>
+            </el-button-group>
+          </el-form-item>
+        </el-form>
+        <el-table 
+          v-loading="loading"
+          :data="wordList"
+          @selection-change="handleSelectionChange"
+          @row-dblclick="handleEdit">
+          <el-table-column type="selection" width="50" align="center" />
+          <el-table-column type="index" :label="$t('Common.RowNo')" align="center" width="50" />
+          <el-table-column :label="$t('WordMgr.TAG.TAGWord')" align="left" prop="word" />
+          <el-table-column :label="$t('Common.Sort')" align="center" prop="sortFlag" width="120"/>
+          <!-- <el-table-column :label="$t('WordMgr.TAG.TAGWordUseCount')" align="center" prop="useCount" width="120"/> -->
+          <el-table-column :label="$t('WordMgr.TAG.TAGWordHitCount')" align="center" prop="hitCount" width="120"/>
+          <el-table-column :label="$t('Common.CreateTime')" align="center" width="160">
+            <template #default="scope">
+              <span>{{ parseTime(scope.row.createTime) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Common.CreateBy')" align="center" width="120" prop="createBy" />
+          <el-table-column :label="$t('Common.Operation')" align="center" width="180">
+            <template #default="scope">
+              <el-button 
+                type="text"
+                icon="Edit"
+                @click="handleEdit(scope.row)">{{ $t('Common.Edit') }}</el-button>
+              <el-button 
+                type="text"
+                icon="Delete"
+                @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <pagination
+          v-show="total>0"
+          :total="total"
+          v-model:page="queryParams.pageNum"
+          v-model:limit="queryParams.pageSize"
+          @pagination="loadWordList"
+        />
+      </cc-spliter-column>
+    </cc-spliter>
     <!-- 添加TAG词弹窗 -->
     <el-dialog 
       :title="diagTitle"

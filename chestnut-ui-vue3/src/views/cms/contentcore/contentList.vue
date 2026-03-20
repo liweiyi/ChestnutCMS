@@ -219,7 +219,7 @@
           <template #default="scope">
             <el-image
               v-if="scope.row.logoSrc&&scope.row.logoSrc.length > 0"
-              style="max-height: 100px;max-width: 100px;"
+              style="height: 60px;max-width: 80px;"
               :src="scope.row.logoSrc"
               fit="contain"
             ></el-image>
@@ -227,20 +227,28 @@
       </el-table-column>
       <el-table-column :label="$t('CMS.Content.Title')" :show-overflow-tooltip="true">
         <template #default="scope">
-          <span class="content_attr" v-if="scope.row.topFlag>0" :title="$t('CMS.Content.SetTop')">[<svg-icon icon-class="top" />]</span>
-          <span
-            v-for="dict in CMSContentAttribute"
-            :key="dict.value"
-            :title="dict.label">
-            <span class="content_attr" v-if="scope.row.attributes.indexOf(dict.value)>-1">[<svg-icon :icon-class="dict.value" />]</span>
-          </span>
-          {{ scope.row.title }}
-          <!-- <el-link type="primary" @click="handleEdit(scope.row)" :title="scope.row.title" class="link-type">
-            {{ scope.row.title }}
-          </el-link> -->
+          <div class="content-list-title">{{ scope.row.title }}</div>
+          <div class="content-list-title-attrs">
+            <span class="content_attr"><el-tag type="primary" size="small">{{ contentTypeFormat(scope.row) }}</el-tag></span>
+            <span class="content_attr" v-if="scope.row.topFlag>0" :title="$t('CMS.Content.SetTop')"><svg-icon icon-class="top" /></span>
+            <span
+              v-for="dict in CMSContentAttribute"
+              :key="dict.value"
+              :title="dict.label">
+              <span class="content_attr" v-if="scope.row.attributes.indexOf(dict.value)>-1"><svg-icon :icon-class="dict.value" /></span>
+            </span>
+            <el-popover v-if="scope.row.copyType > 0" placement="right" :width="400" trigger="hover">
+              <template #reference>
+                <span class="content_attr"><svg-icon icon-class="copy" /></span>
+              </template>
+              <el-descriptions :column="1" border>
+                <el-descriptions-item :label="$t('CMS.Content.CopyType')"><dict-tag :options="CMSContentCopyType" :value="scope.row.copyType" /></el-descriptions-item>
+                <el-descriptions-item :label="$t('CMS.Content.CopyId')">{{ scope.row.copyId }}</el-descriptions-item>
+              </el-descriptions>
+            </el-popover>
+          </div>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('CMS.Content.ContentType')" width="110" align="center" prop="contentType" :formatter="contentTypeFormat" />
       <el-table-column :label="$t('CMS.Content.Status')" align="center" width="110">
           <template #default="scope">
             <dict-tag :options="CMSContentStatus" :value="scope.row.status"/>
@@ -254,7 +262,7 @@
       <el-table-column
         :label="$t('Common.Operation')"
         align="center"
-        width="400">
+        width="300">
         <template #default="scope">
           <el-button
             link
@@ -276,17 +284,15 @@
             v-hasPermi="[ $p('Catalog:EditContent:{0}', [ scope.row.catalogId ]) ]"
             @click="handleOffline(scope.row)"
           >{{ $t('CMS.Content.Offline') }}</el-button>
-          <el-button
-            link
-            type="primary"
-            icon="Timer"
-            v-hasPermi="[ $p('Catalog:EditContent:{0}', [ scope.row.catalogId ]) ]"
-            @click="handleToPublish(scope.row)"
-          >{{ $t('CMS.ContentCore.ToPublish') }}</el-button>
           <el-dropdown>
             <el-button type="primary" link icon="More"></el-button>
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item 
+                  v-if="checkPermi([$p('Catalog:EditContent:{0}', [ scope.row.catalogId ])])"
+                  icon="Timer" 
+                  @click.native="handleToPublish(scope.row)"
+                >{{ $t('CMS.ContentCore.ToPublish') }}</el-dropdown-item>
                 <el-dropdown-item 
                   v-if="checkPermi([$p('Catalog:EditContent:{0}', [ scope.row.catalogId ])])"
                   icon="Edit" 
@@ -500,7 +506,7 @@ import ContextMenu from "@/components/ContextMenu";
 
 const { proxy } = getCurrentInstance();
 
-const { CMSContentStatus, CMSContentAttribute } = proxy.useDict('CMSContentStatus', 'CMSContentAttribute');
+const { CMSContentStatus, CMSContentAttribute, CMSContentCopyType } = proxy.useDict('CMSContentStatus', 'CMSContentAttribute', 'CMSContentCopyType');
 
 const props = defineProps({
   cid: {
@@ -675,9 +681,11 @@ function handleDelete (row) {
   const contentIds = row.contentId ? [ row.contentId ] : selectedRows.value.map(row => row.contentId);
   proxy.$modal.confirm(proxy.$t("Common.ConfirmDelete")).then(function () {
     return contentApi.delContent(contentIds);
-  }).then(() => {
-    loadContentList();
-    proxy.$modal.msgSuccess(proxy.$t('Common.DeleteSuccess'));
+  }).then(response => {
+    taskId.value = response.data;
+    progressType.value = "delete";
+    progressTitle.value = proxy.$t('CMS.Content.DeleteProgressTitle');
+    openProgress.value = true;
   }).catch(function () { });
 }
 
@@ -775,8 +783,8 @@ function doMove (args) {
 }
 
 function handleCatalogSelectorOk(args) {
-  const catalogs = args[0];
-  const copyType = args[1];
+  const catalogs = args.selectedCatalogs;
+  const copyType = args.copyType;
   if (isCopy.value) {
     doCopy(catalogs, copyType);
   } else {

@@ -17,6 +17,7 @@ package com.chestnut.contentcore.controller;
 
 import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
@@ -29,6 +30,7 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.domain.Operator;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ChineseSpelling;
 import com.chestnut.common.utils.IdUtils;
@@ -73,6 +75,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CATALOG.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/catalog")
@@ -97,9 +100,10 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 查询栏目数据列表
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = ContentCorePriv.CatalogView)
 	@GetMapping("/list")
-	public R<?> list() {
+	public R<TableData<CmsCatalog>> list() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		List<CmsCatalog> list = catalogService.lambdaQuery().list().stream().filter(c ->
 				loginUser.hasPermission(CatalogPrivItem.View.getPermissionKey(c.getCatalogId()))).toList();
@@ -109,9 +113,10 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 查询栏目详情数据
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.GET_DETAIL}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:View:${#catalogId}")
 	@GetMapping("/detail/{catalogId}")
-	public R<?> catalogInfo(@PathVariable @LongId Long catalogId) {
+	public R<CatalogVO> catalogInfo(@PathVariable @LongId @XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}") Long catalogId) {
 		CmsCatalog catalog = catalogService.getById(catalogId);
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalogId));
 
@@ -131,6 +136,7 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 新增栏目数据
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.ADD}")
 	@Priv(
 		type = AdminUserType.TYPE,
 		value = { ContentCorePriv.ResourceView, "Site:AddCatalog:${#_header['" + ContentCoreConsts.Header_CurrentSite + "']}"},
@@ -138,7 +144,7 @@ public class CatalogController extends CmsRestController {
 	)
 	@Log(title = "新增栏目", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addCatalog(@RequestBody @Validated CatalogAddDTO dto) {
+	public R<CmsCatalog> addCatalog(@RequestBody @Validated CatalogAddDTO dto) {
 		CmsSite currentSite = this.getCurrentSite();
 		dto.setSiteId(currentSite.getSiteId());
 		return R.ok(this.catalogService.addCatalog(dto));
@@ -147,6 +153,7 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 批量新增栏目数据
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.BATCH_ADD}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.ResourceView, "Site:AddCatalog:${#_header[" + ContentCoreConsts.Header_CurrentSite + "]}"},
@@ -154,7 +161,7 @@ public class CatalogController extends CmsRestController {
 	)
 	@Log(title = "批量新增栏目", businessType = BusinessType.INSERT)
 	@PostMapping("/batchAdd")
-	public R<?> batchAddCatalog(@RequestBody @Validated CatalogBatchAddDTO dto) {
+	public R<Void> batchAddCatalog(@RequestBody @Validated CatalogBatchAddDTO dto) {
 		CmsSite currentSite = this.getCurrentSite();
 		dto.setSiteId(currentSite.getSiteId());
 		this.catalogService.batchAddCatalog(dto);
@@ -164,10 +171,11 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 修改栏目数据
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.UPDATE}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#dto.catalogId}")
 	@Log(title = "编辑栏目", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> editCatalog(@RequestBody @Validated CatalogUpdateDTO dto) throws IOException {
+	public R<Void> editCatalog(@RequestBody @Validated CatalogUpdateDTO dto) throws IOException {
 		this.catalogService.editCatalog(dto);
 		return R.ok();
 	}
@@ -175,10 +183,11 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 删除栏目数据
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.DELETE}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Delete:${#catalogId}")
 	@Log(title = "删除", businessType = BusinessType.DELETE)
 	@PostMapping("/delete/{catalogId}")
-	public R<String> deleteCatalog(@PathVariable("catalogId") @LongId Long catalogId) {
+	public R<String> deleteCatalog(@PathVariable("catalogId") @LongId @XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}") Long catalogId) {
 		CmsCatalog catalog = catalogService.getById(catalogId);
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalog));
 		LoginUser operator = StpAdminUtil.getLoginUser();
@@ -203,10 +212,11 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 显示/隐藏栏目
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.CHANGE_VISIBLE}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:ShowHide:${#dto.catalogId}")
 	@Log(title = "显隐栏目", businessType = BusinessType.UPDATE)
 	@PostMapping("/visible")
-	public R<String> changeVisible(@RequestBody @Validated ChangeCatalogVisibleDTO dto) {
+	public R<Void> changeVisible(@RequestBody @Validated ChangeCatalogVisibleDTO dto) {
 		catalogService.changeVisible(dto.getCatalogId(), dto.getVisible());
 		return R.ok();
 	}
@@ -214,9 +224,10 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 栏目树结构数据
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.TREE_DATA}")
 	@Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@GetMapping("/treeData")
-	public R<?> treeData(@RequestParam(required = false, defaultValue = "false") Boolean disableLink) {
+	public R<Map<String, Object>> treeData(@RequestParam(required = false, defaultValue = "false") Boolean disableLink) {
 		CmsSite site = this.getCurrentSite();
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		List<CmsCatalog> catalogs = this.catalogService.lambdaQuery().eq(CmsCatalog::getSiteId, site.getSiteId())
@@ -238,8 +249,9 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 内容类型数据
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.GET_CONTENT_TYPES}")
 	@GetMapping("/getContentTypes")
-	public R<?> getContentTypes() {
+	public R<List<Map<String, String>>> getContentTypes() {
 		List<Map<String, String>> list = this.contentTypes.stream().sorted(Comparator.comparingInt(IContentType::getOrder))
 				.map(ct -> Map.of("id", ct.getId(), "name", I18nUtils.get(ct.getName()))).toList();
 		return R.ok(list);
@@ -248,8 +260,9 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 栏目类型数据
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.GET_CATALOG_TYPES}")
 	@GetMapping("/getCatalogTypes")
-	public R<?> getCatalogTypes() {
+	public R<List<Map<String, String>>> getCatalogTypes() {
 		List<Map<String, String>> list = this.catalogTypes.stream()
 				.map(ct -> Map.of("id", ct.getId(), "name", I18nUtils.get(ct.getName()))).toList();
 		return R.ok(list);
@@ -258,6 +271,7 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 发布栏目
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.PUBLISH}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Publish:${#dto.catalogId}")
 	@Log(title = "发布栏目", businessType = BusinessType.OTHER)
 	@PostMapping("/publish")
@@ -267,7 +281,7 @@ public class CatalogController extends CmsRestController {
 
 		if (!dto.getPublishChild() && !dto.getPublishDetail() && (!catalog.isStaticize() || !catalog.isVisible()
 				|| catalog.getCatalogType().equals(CatalogType_Link.ID))) {
-			throw ContentCoreErrorCode.CATALOG_CANNOT_PUBLISH.exception();
+			throw ContentCoreErrorCode.CATALOG_CANNOT_PUBLISH.exception(catalog.getName());
 		}
 		AsyncTask task = this.publishService.publishCatalog(catalog, dto.getPublishChild(), dto.getPublishDetail(),
 				dto.getPublishStatus(), Operator.of(StpAdminUtil.getLoginUser()));
@@ -277,9 +291,10 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 获取栏目扩展配置
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.GET_EXTENDS}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:View:${#catalogId}")
 	@GetMapping("/extends")
-	public R<?> getCatalogExtends(@RequestParam("catalogId") @LongId Long catalogId) {
+	public R<Map<String, Object>> getCatalogExtends(@RequestParam("catalogId") @LongId @XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}") Long catalogId) {
 		CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalogId));
 
@@ -293,11 +308,12 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 保存栏目扩展配置
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.SAVE_EXTENDS}")
 	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#catalogId}")
 	@Log(title = "栏目扩展", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PostMapping("/extends/{catalogId}")
-	public R<?> saveCatalogExtends(@PathVariable("catalogId") @LongId Long catalogId,
+	public R<Void> saveCatalogExtends(@PathVariable("catalogId") @LongId @XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}") Long catalogId,
 			@RequestBody @NotNull Map<String, String> configs) {
 		CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalogId));
@@ -309,10 +325,11 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 扩展配置应用到子栏目
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.APPLY_CONFIG_PROPS}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#dto.catalogId}")
 	@Log(title = "扩展配置2子栏目", businessType = BusinessType.UPDATE)
 	@PostMapping("/apply_children/config_props")
-	public R<?> applyConfigPropsToChildren(@RequestBody @Validated CatalogApplyConfigPropsDTO dto) {
+	public R<Void> applyConfigPropsToChildren(@RequestBody @Validated CatalogApplyConfigPropsDTO dto) {
 		CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", dto.getCatalogId()));
 
@@ -323,10 +340,11 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 发布通道配置应用到子栏目
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.APPLY_PUBLISH_PIPE}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#dto.catalogId}")
 	@Log(title = "发布通道配置2子栏目", businessType = BusinessType.UPDATE)
 	@PostMapping("/apply_children/publish_pipe")
-	public R<?> applyPublishPipePropsToChildren(@RequestBody @Validated CatalogApplyPublishPipeDTO dto) {
+	public R<Void> applyPublishPipePropsToChildren(@RequestBody @Validated CatalogApplyPublishPipeDTO dto) {
 		CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", dto.getCatalogId()));
 
@@ -337,11 +355,12 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 移动栏目
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.MOVE}")
 	@Priv(type = AdminUserType.TYPE, value = { "Catalog:Move:${#fromCatalogId}", "Catalog:Move:${#toCatalogId}" }, mode = SaMode.AND)
 	@Log(title = "移动栏目", businessType = BusinessType.UPDATE)
 	@PostMapping("/move/{from}/{to}")
-	public R<?> moveCatalog(@PathVariable("from") @LongId Long fromCatalogId,
-			@PathVariable("to") @NotNull @Min(0) Long toCatalogId) {
+	public R<String> moveCatalog(@PathVariable("from") @LongId @XComment("{API.DOC.CMS.CATALOG.FROM_CATALOG_ID}") Long fromCatalogId,
+			@PathVariable("to") @NotNull @Min(0) @XComment("{API.DOC.CMS.CATALOG.TO_CATALOG_ID}") Long toCatalogId) {
 		CmsCatalog fromCatalog = this.catalogService.getCatalog(fromCatalogId);
 		Assert.notNull(fromCatalog,
 				() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("fromCatalogId", fromCatalogId));
@@ -362,10 +381,11 @@ public class CatalogController extends CmsRestController {
 		return R.ok(task.getTaskId());
 	}
 
+	@XComment("{API.DOC.CMS.CATALOG.SORT}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Sort:${#dto.catalogId}")
 	@Log(title = "栏目排序", businessType = BusinessType.UPDATE)
 	@PostMapping("/sort")
-	public R<?> sortCatalog(@RequestBody @Validated SortCatalogDTO dto) {
+	public R<Void> sortCatalog(@RequestBody @Validated SortCatalogDTO dto) {
 		if (dto.getSort() == 0) {
 			return R.fail("排序数值不能为0");
 		}
@@ -373,9 +393,10 @@ public class CatalogController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.CATALOG.GET_SPELLING}")
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/spelling")
-	public R<?> getChineseCapitalizedSpellingForAliasAndPath(@RequestBody CatalogNameToSpellingDTO dto) {
+	public R<Map<String, String>> getChineseCapitalizedSpellingForAliasAndPath(@RequestBody CatalogNameToSpellingDTO dto) {
 		CmsCatalog parent = catalogService.getCatalog(dto.getParentId());
 		String spelling = ChineseSpelling.getCapitalizedSpelling(dto.getName()).toLowerCase();
 		String alias = spelling;
@@ -387,9 +408,10 @@ public class CatalogController extends CmsRestController {
 		return R.ok(Map.of("alias", alias, "path", path));
 	}
 
+	@XComment("{API.DOC.CMS.CATALOG.GET_TREE}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/tree")
-	public R<String> getCatalogTree(@RequestParam Long catalogId, HttpServletRequest request) {
+	public R<String> getCatalogTree(@RequestParam @XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}") Long catalogId, HttpServletRequest request) {
 		CmsSite site = getCurrentSite();
 		CmsCatalog parent = null;
 		if (IdUtils.validate(catalogId)) {
@@ -411,6 +433,7 @@ public class CatalogController extends CmsRestController {
 		return R.ok(sb.toString());
 	}
 
+	@XComment("{API.DOC.CMS.CATALOG.CLEAR}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#catalogId}")
 	@Log(title = "清空", businessType = BusinessType.UPDATE)
 	@PostMapping("/clear")
@@ -419,6 +442,7 @@ public class CatalogController extends CmsRestController {
 		return R.ok(task.getTaskId());
 	}
 
+	@XComment("{API.DOC.CMS.CATALOG.MERGE}")
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#catalogId}")
 	@Log(title = "合并", businessType = BusinessType.UPDATE)
 	@PostMapping("/merge")

@@ -16,6 +16,7 @@
 package com.chestnut.system.controller.common;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
@@ -34,6 +35,9 @@ import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
+
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -49,6 +53,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.GROOVY.MODULE}")
 @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.GroovyExec)
 @RestController
 @RequiredArgsConstructor
@@ -57,6 +62,7 @@ public class GroovyController extends BaseRestController {
 
 	private final SysGroovyScriptMapper groovyScriptMapper;
 
+	@XComment("{API.DOC.GROOVY.EXEC}")
 	@Log(title = "执行Groovy脚本", businessType = BusinessType.UPDATE)
 	@PostMapping("/exec")
 	public R<?> execGroovyScript(@RequestBody @Validated ExecGroovyScriptRequest dto) {
@@ -72,12 +78,14 @@ public class GroovyController extends BaseRestController {
 		return R.ok(writer.toString());
 	}
 
+	@XComment("{API.DOC.GROOVY.GET_LIST}")
 	@GetMapping("/list")
 	public R<?> getGroovyScripts() {
 		List<SysGroovyScript> groovyScripts = groovyScriptMapper.selectList(new LambdaQueryWrapper<>());
 		return bindDataTable(groovyScripts);
 	}
 
+	@XComment("{API.DOC.GROOVY.SAVE}")
 	@Log(title = "保存Groovy脚本", businessType = BusinessType.INSERT)
 	@PostMapping("/save")
 	public R<?> saveGroovyScript(@RequestBody @Validated SaveGroovyScriptRequest dto) {
@@ -91,6 +99,7 @@ public class GroovyController extends BaseRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.GROOVY.DELETE}")
 	@Log(title = "刪除Groovy脚本", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
 	public R<?> deleteGroovyScript(@RequestBody @NotEmpty List<Long> scriptIds) {
@@ -98,6 +107,7 @@ public class GroovyController extends BaseRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.GROOVY.GET}")
 	@GetMapping("/{scriptId}")
 	public R<?> getGroovyScript(@PathVariable @LongId Long scriptId) {
 		SysGroovyScript groovyScript = this.groovyScriptMapper.selectById(scriptId);

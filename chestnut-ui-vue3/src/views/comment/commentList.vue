@@ -96,7 +96,7 @@
           <dict-tag :options="CommentAuditStatus" :value="scope.row.auditStatus"/>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('Comment.DelFlag')" align="center" width="80">
+      <el-table-column :label="$t('Comment.DelFlag')" align="center" width="100">
         <template #default="scope">
           <el-tag type="danger" v-if="scope.row.delFlag==1">{{ $t('Comment.Deleted') }}</el-tag>
         </template>

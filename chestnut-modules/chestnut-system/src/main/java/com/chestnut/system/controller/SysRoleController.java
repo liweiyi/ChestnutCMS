@@ -17,13 +17,17 @@ package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
+
+
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.SysUser;
@@ -49,6 +53,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.ROLE.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/role")
@@ -60,10 +65,11 @@ public class SysRoleController extends BaseRestController {
 
 	private final SysUserRoleMapper userRoleMapper;
 
+	@XComment("{API.DOC.SYS.ROLE.GET_LIST}")
 	@ExcelExportable(SysRole.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
 	@GetMapping("/list")
-	public R<?> list(@Validated QueryRoleRequest req) {
+	public R<TableData<SysRole>> list(@Validated QueryRoleRequest req) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysRole> q = new LambdaQueryWrapper<SysRole>()
 				.like(StringUtils.isNotEmpty(req.getRoleName()), SysRole::getRoleName, req.getRoleName())
@@ -77,19 +83,21 @@ public class SysRoleController extends BaseRestController {
 	/**
 	 * 根据角色编号获取详细信息
 	 */
+	@XComment("{API.DOC.SYS.ROLE.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
 	@GetMapping(value = "/detail/{roleId}")
-	public R<?> getInfo(@PathVariable @LongId Long roleId) {
+	public R<SysRole> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.ROLE.ID}") Long roleId) {
 		return R.ok(roleService.getById(roleId));
 	}
 
 	/**
 	 * 新增角色
 	 */
+	@XComment("{API.DOC.SYS.ROLE.CREATE_ROLE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleAdd)
 	@Log(title = "角色管理", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> add(@Validated @RequestBody CreateRoleRequest role) {
+	public R<Void> add(@Validated @RequestBody CreateRoleRequest role) {
 		roleService.insertRole(role);
 		return R.ok();
 	}
@@ -97,10 +105,11 @@ public class SysRoleController extends BaseRestController {
 	/**
 	 * 修改保存角色
 	 */
+	@XComment("{API.DOC.SYS.ROLE.UPDATE_ROLE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> edit(@Validated @RequestBody UpdateRoleRequest role) {
+	public R<Void> edit(@Validated @RequestBody UpdateRoleRequest role) {
 		roleService.updateRole(role);
 		return R.ok();
 	}
@@ -108,10 +117,11 @@ public class SysRoleController extends BaseRestController {
 	/**
 	 * 状态修改
 	 */
+	@XComment("{API.DOC.SYS.ROLE.CHANGE_STATUS}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.UPDATE)
 	@PostMapping("/changeStatus")
-	public R<?> changeStatus(@RequestBody @Validated UpdateRoleStatusRequest req) {
+	public R<Void> changeStatus(@RequestBody @Validated UpdateRoleStatusRequest req) {
 		roleService.updateRoleStatus(req);
 		return R.ok();
 	}
@@ -119,10 +129,11 @@ public class SysRoleController extends BaseRestController {
 	/**
 	 * 删除角色
 	 */
+	@XComment("{API.DOC.SYS.ROLE.DELETE_ROLE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleRemove)
 	@Log(title = "角色管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> roleIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.ROLE.IDS}") List<Long> roleIds) {
 		roleService.deleteRoleByIds(roleIds);
 		return R.ok();
 	}
@@ -130,9 +141,10 @@ public class SysRoleController extends BaseRestController {
 	/**
 	 * 查询已分配指定角色用户列表
 	 */
+	@XComment("{API.DOC.SYS.ROLE.ALLOCATED_USER_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
 	@GetMapping("/authUser/allocatedList")
-	public R<?> allocatedList(@Validated QueryRoleUserRequest req) {
+	public R<TableData<SysUser>> allocatedList(@Validated QueryRoleUserRequest req) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysUser> page = this.userMapper.selectAllocatedList(new Page<>(pr.getPageNumber(), pr.getPageSize()),
 				req.getRoleId(), req.getUserName(), req.getPhoneNumber());
@@ -142,9 +154,10 @@ public class SysRoleController extends BaseRestController {
 	/**
 	 * 查询未分配角色用户列表
 	 */
+	@XComment("{API.DOC.SYS.ROLE.UNALLOCATED_USER_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleList)
 	@GetMapping("/authUser/unallocatedList")
-	public R<?> unallocatedList(@Validated QueryRoleUserRequest req) {
+	public R<TableData<UserWithRoleFlagVO>> unallocatedList(@Validated QueryRoleUserRequest req) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysUser> page = this.userMapper.selectPage(
 				new Page<>(pr.getPageNumber(), pr.getPageSize()),
@@ -166,10 +179,11 @@ public class SysRoleController extends BaseRestController {
 	/**
 	 * 批量取消授权用户
 	 */
+	@XComment("{API.DOC.SYS.ROLE.CANCEL_AUTH_USERS}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.GRANT)
 	@PostMapping("/authUser/cancel")
-	public R<?> cancelAuthUserAll(@LongId Long roleId, @RequestBody @NotEmpty List<Long> userIds) {
+	public R<Void> cancelAuthUserAll(@LongId @XComment("{API.DOC.SYS.ROLE.ID}") Long roleId, @RequestBody @NotEmpty @XComment("{API.DOC.SYS.USER.IDS}") List<Long> userIds) {
 		roleService.deleteAuthUsers(roleId, userIds);
 		return R.ok();
 	}
@@ -177,10 +191,11 @@ public class SysRoleController extends BaseRestController {
 	/**
 	 * 批量选择用户授权
 	 */
+	@XComment("{API.DOC.SYS.ROLE.GRANT_AUTH_USERS}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysRoleEdit)
 	@Log(title = "角色管理", businessType = BusinessType.GRANT)
 	@PostMapping("/authUser/grant")
-	public R<?> grantAuthUserAll(@LongId Long roleId, @RequestBody @NotEmpty List<Long> userIds) {
+	public R<Void> grantAuthUserAll(@LongId @XComment("{API.DOC.SYS.ROLE.ID}") Long roleId, @RequestBody @NotEmpty @XComment("{API.DOC.SYS.USER.IDS}") List<Long> userIds) {
 		roleService.insertAuthUsers(roleId, userIds);
 		return R.ok();
 	}

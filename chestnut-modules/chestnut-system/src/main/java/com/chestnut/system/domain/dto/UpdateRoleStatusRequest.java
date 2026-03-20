@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.validator.Dict;
@@ -25,13 +26,16 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.ROLE.UPDATE_STATUS_REQ}")
 public class UpdateRoleStatusRequest extends BaseDTO {
 
 	@LongId
+	@XComment("{API.DOC.SYS.ROLE.ID}")
 	private Long roleId;
 
 	@NotBlank
 	@Dict(EnableOrDisable.TYPE)
+	@XComment("{API.DOC.SYS.ROLE.STATUS}")
 	private String status;
 }
 

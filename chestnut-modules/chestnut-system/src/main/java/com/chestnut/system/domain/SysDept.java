@@ -23,6 +23,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 
@@ -41,6 +42,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@XComment("{ENT.SYS.DEPT}")
 @TableName(SysDept.TABLE_NAME)
 public class SysDept extends BaseEntity {
 
@@ -50,38 +52,49 @@ public class SysDept extends BaseEntity {
 	public static final String TABLE_NAME = "sys_dept";
 
 	/** 部门ID */
+	@XComment("{ENT.SYS.DEPT.ID}")
 	@TableId(value = "dept_id", type = IdType.INPUT)
 	private Long deptId;
 
 	/** 父部门ID */
+	@XComment("{ENT.SYS.DEPT.PARENT_ID}")
 	private Long parentId;
 
 	/** 祖级列表 */
+	@XComment("{ENT.SYS.DEPT.ANCESTORS}")
 	private String ancestors;
 
 	/** 部门名称 */
+	@XComment("{ENT.SYS.DEPT.NAME}")
 	private String deptName;
 
 	/** 显示顺序 */
+	@XComment("{CC.ENTITY.SORT}")
 	private Integer orderNum;
 
 	/** 负责人 */
+	@XComment("{ENT.SYS.DEPT.LEADER}")
 	private String leader;
 
 	/** 联系电话 */
+	@XComment("{ENT.SYS.DEPT.PHONE}")
 	private String phone;
 
 	/** 邮箱 */
+	@XComment("{ENT.SYS.DEPT.EMAIL}")
 	private String email;
 
 	/** 部门状态:EnableOrDisable */
+	@XComment("{CC.ENTITY.STATUS}")
 	private String status;
 
 	/** 父部门名称 */
+	@XComment("{ENT.SYS.DEPT.PARENT_NAME}")
 	@TableField(exist = false)
 	private String parentName;
 
 	/** 子部门 */
+	@XComment("{ENT.SYS.DEPT.CHILDREN}")
 	@TableField(exist = false)
 	private List<SysDept> children = new ArrayList<SysDept>();
 

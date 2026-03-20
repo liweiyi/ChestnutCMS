@@ -15,6 +15,7 @@
  */
 package com.chestnut.search.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,8 +28,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SEARCH.UPDATE_WORD_REQ}")
 public class UpdateSearchWordRequest extends CreateSearchWordRequest {
 
     @LongId
+    @XComment("{API.DOC.SEARCH.WORD_ID}")
     private Long wordId;
 }

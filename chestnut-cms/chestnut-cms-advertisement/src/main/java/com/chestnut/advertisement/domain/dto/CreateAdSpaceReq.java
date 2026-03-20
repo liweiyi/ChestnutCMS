@@ -1,5 +1,6 @@
 package com.chestnut.advertisement.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
@@ -17,47 +18,32 @@ import java.util.stream.Collectors;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.AD_SPACE.CREATE_REQ}")
 @Getter
 @Setter
 public class CreateAdSpaceReq extends BaseDTO {
 
-    /**
-     * 名称
-     */
     @NotEmpty
+    @XComment("{CMS.AD_SPACE.NAME}")
     private String name;
 
-    /**
-     * 编码
-     */
     @NotEmpty
+    @XComment("{CMS.AD_SPACE.CODE}")
     private String code;
 
-    /**
-     * 发布通道编码
-     */
     @Deprecated(since = "1.5.6", forRemoval = true)
     private String publishPipeCode;
 
-    /**
-     * 模板路径
-     */
     @Deprecated(since = "1.5.6", forRemoval = true)
     private String template;
 
-    /**
-     * 发布通道模板配置
-     */
+    @XComment("{CMS.AD_SPACE.TEMPLATES}")
     private List<PublishPipeTemplate> templates;
 
-    /**
-     * 静态化目录
-     */
+    @XComment("{CMS.AD_SPACE.PATH}")
     private String path;
 
-    /**
-     * 备注
-     */
+    @XComment("{CC.ENTITY.REMARK}")
     private String remark;
 
     public Map<String, String> getPublishPipeTemplateMap() {

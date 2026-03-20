@@ -15,15 +15,18 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.ROLE.UPDATE_ROLE_REQ}")
 public class UpdateRoleRequest extends CreateRoleRequest {
 
 	@LongId
+	@XComment("{API.DOC.SYS.ROLE.ID}")
 	private Long roleId;
 }
 

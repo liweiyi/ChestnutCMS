@@ -68,7 +68,7 @@
           <span>{{ parseTime(scope.row.lastLoginTime) }} - {{ scope.row.lastLoginIp }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('Common.Operation')" align="center" width="220"
+      <el-table-column :label="$t('Common.Operation')" align="center" width="280"
        >
         <template #default="scope">
           <el-button type="text" icon="Key" @click="handleResetPwd(scope.row)">{{ $t('Member.ResetPwd') }}</el-button>

@@ -15,6 +15,7 @@
  */
 package com.chestnut.customform.controller.front;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.captcha.CaptchaData;
 import com.chestnut.common.captcha.CaptchaService;
 import com.chestnut.common.captcha.ICaptchaType;
@@ -35,6 +36,8 @@ import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.domain.vo.ImageCaptchaVO;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
@@ -52,6 +55,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CUSTOM_FORM.API_MODULE}")
 @RestController
 @RequestMapping("/api/customform")
 @RequiredArgsConstructor
@@ -65,8 +69,9 @@ public class CustomFormApiController extends BaseRestController {
 
 	private final CaptchaService captchaService;
 
+	@XComment("{API.DOC.CMS.CUSTOM_FORM.API_GET_CAPTCHA}")
 	@GetMapping("/captcha")
-	public R<?> getCaptcha(@RequestParam @LongId Long formId, HttpServletRequest request) {
+	public R<?> getCaptcha(@RequestParam @LongId @XComment("{API.DOC.CMS.CUSTOM_FORM.FORM_ID}") Long formId, HttpServletRequest request) {
 		CmsCustomForm form = this.customFormService.getById(formId);
 		Assert.notNull(form, CustomFormErrorCode.FORM_NOT_FOUND::exception);
 		// 是否需要验证码
@@ -87,9 +92,10 @@ public class CustomFormApiController extends BaseRestController {
 		return R.ok(captcha);
 	}
 
+	@XComment("{API.DOC.CMS.CUSTOM_FORM.API_SUBMIT}")
 	@IgnoreDemoMode
 	@PostMapping("/submit")
-	public R<?> submitForm(@RequestBody Map<String, Object> formData, HttpServletRequest request) throws IOException {
+	public R<Void> submitForm(@RequestBody Map<String, Object> formData, HttpServletRequest request) throws IOException {
 		Long formId = MapUtils.getLong(formData, "formId");
 		if (!IdUtils.validate(formId)) {
 			throw CommonErrorCode.INVALID_REQUEST_ARG.exception("formId");

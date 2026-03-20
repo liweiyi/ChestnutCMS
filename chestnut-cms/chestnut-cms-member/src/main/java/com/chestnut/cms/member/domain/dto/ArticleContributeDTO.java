@@ -15,6 +15,7 @@
  */
 package com.chestnut.cms.member.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -33,14 +34,17 @@ import java.util.Map;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.CMS.CMS_MEMBER.ARTICLE_CONTRIBUTE_DTO}")
 public class ArticleContributeDTO {
 
+    @XComment("{API.DOC.CMS.CMS_MEMBER.CONTENT_ID}")
     private Long contentId;
 
     /**
      * 分类ID
      */
     @LongId
+    @XComment("{API.DOC.CMS.CMS_MEMBER.CATALOG_ID}")
     private Long catalogId;
 
     /**
@@ -48,36 +52,43 @@ public class ArticleContributeDTO {
      */
     @NotBlank
     @Length(max = 120)
+    @XComment("{API.DOC.CMS.CMS_MEMBER.TITLE}")
     private String title;
 
     /**
      * 摘要
      */
+    @XComment("{API.DOC.CMS.CMS_MEMBER.SUMMARY}")
     private String summary;
 
     /**
      * 文章标签
      */
+    @XComment("{API.DOC.CMS.CMS_MEMBER.TAGS}")
     private List<String> tags;
 
     /**
      * 正文内容
      */
     @NotBlank
+    @XComment("{API.DOC.CMS.CMS_MEMBER.CONTENT_HTML}")
     private String contentHtml;
 
     /**
      * 引导图
      */
+    @XComment("{API.DOC.CMS.CMS_MEMBER.LOGO}")
     private String logo;
 
     /**
      * 文章格式
      */
+    @XComment("{API.DOC.CMS.CMS_MEMBER.FORMAT}")
     private String format;
 
     /**
      * 扩展数据
      */
+    @XComment("{API.DOC.CMS.CMS_MEMBER.PARAMS}")
     private Map<String, Object> params;
 }

@@ -18,7 +18,11 @@ package com.chestnut.system.controller;
 import cn.idev.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
+
+
+import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
@@ -28,6 +32,7 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -74,6 +79,7 @@ import java.util.stream.Collectors;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.USER.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/user")
@@ -96,10 +102,11 @@ public class SysUserController extends BaseRestController {
 	/**
 	 * 获取用户列表
 	 */
+    @XComment("{API.DOC.SYS.USER.GET_LIST}")
 	@ExcelExportable(SysUser.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping("/list")
-	public R<?> list(@Validated QueryUserRequest user) {
+	public R<TableData<SysUser>> list(@Validated QueryUserRequest user) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysUser> page = userService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(user.getUserName()), SysUser::getUserName, user.getUserName())
@@ -114,10 +121,14 @@ public class SysUserController extends BaseRestController {
 		return bindDataTable(page);
 	}
 
+    @XComment("{API.DOC.SYS.USER.IMPORT}")
 	@Log(title = "用户管理", businessType = BusinessType.IMPORT)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserAdd)
 	@PostMapping("/importData")
-	public R<String> importData(MultipartFile file, boolean updateSupport) throws Exception {
+	public R<String> importData(
+            @XComment("{API.DOC.SYS.USER.IMPORT.FILE}") MultipartFile file,
+            @XComment("{API.DOC.SYS.USER.IMPORT.UPDATE_SUPPORT}") boolean updateSupport
+    ) throws Exception {
 		if (Objects.isNull(file) || file.isEmpty()) {
 			return R.fail("Import file not exists!");
 		}
@@ -134,6 +145,7 @@ public class SysUserController extends BaseRestController {
 		return R.ok(logWriter.toString());
 	}
 
+    @XComment("{API.DOC.SYS.USER.DOWNLOAD_IMPORT_TEMPLATE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserAdd)
 	@PostMapping("/importTemplate")
 	public void importTemplate(HttpServletResponse response) {
@@ -143,9 +155,10 @@ public class SysUserController extends BaseRestController {
 	/**
 	 * 根据用户ID获取详细信息
 	 */
+    @XComment("{API.DOC.SYS.USER.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping(value = { "/detail", "/detail/{userId}" })
-	public R<?> getInfo(@PathVariable(value = "userId", required = false) Long userId) {
+	public R<UserInfoVO> getInfo(@PathVariable(value = "userId", required = false) @XComment("{API.DOC.SYS.USER.ID}") Long userId) {
 		SysUser user = null;
 		if (IdUtils.validate(userId)) {
 			user = userService.getById(userId);
@@ -157,16 +170,17 @@ public class SysUserController extends BaseRestController {
 			user.setPostIds(
 					postService.selectPostListByUserId(userId).stream().map(SysPost::getPostId).toArray(Long[]::new));
 		}
-		return R.ok(UserInfoVO.builder().user(user).build());
+		return R.ok(UserInfoVO.create(user));
 	}
 
 	/**
 	 * 新增用户
 	 */
+	@XComment("{API.DOC.SYS.USER.CREATE_USER}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserAdd)
 	@Log(title = "用户管理", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> add(@Validated @RequestBody CreateUserRequest user) {
+	public R<Void> add(@Validated @RequestBody CreateUserRequest user) {
 		userService.insertUser(user);
 		return R.ok();
 	}
@@ -174,10 +188,11 @@ public class SysUserController extends BaseRestController {
 	/**
 	 * 修改用户
 	 */
+	@XComment("{API.DOC.SYS.USER.UPDATE_USER}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserEdit)
 	@Log(title = "用户管理", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> edit(@Validated @RequestBody UpdateUserRequest user) {
+	public R<Void> edit(@Validated @RequestBody UpdateUserRequest user) {
 		userService.updateUser(user);
 		return R.ok();
 	}
@@ -185,72 +200,67 @@ public class SysUserController extends BaseRestController {
 	/**
 	 * 删除用户
 	 */
+    @XComment("{API.DOC.SYS.USER.DELETE_USER}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserRemove)
 	@Log(title = "用户管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> userIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.USER.IDS}") List<Long> userIds) {
 		userService.deleteUserByIds(userIds);
 		return R.ok();
 	}
 
-	/**
-	 * 重置密码
-	 */
+    @XComment("{API.DOC.SYS.USER.RESET_PWD}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserResetPwd)
 	@Log(title = "用户管理", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PostMapping("/resetPwd")
-	public R<?> resetPwd(@RequestBody @Validated ResetUserPwdRequest req) {
+	public R<Void> resetPwd(@RequestBody @Validated ResetUserPwdRequest req) {
 		userService.resetPwd(req);
 		return R.ok();
 	}
 
-	/**
-	 * 根据用户编号获取授权角色
-	 */
+	@XComment("{API.DOC.SYS.USER.USER_ROLES}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping("/authRole/{userId}")
-	public R<?> authRole(@PathVariable("userId") @LongId Long userId) {
+	public R<UserInfoVO> authRole(@PathVariable("userId") @LongId @XComment("{API.DOC.SYS.USER.ID}") Long userId) {
 		SysUser user = userService.getById(userId);
 		Assert.notNull(user, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(userId));
 
 		List<SysRole> userRoles = roleService.selectRolesByUserId(userId, EnableOrDisable.ENABLE);
 		user.setRoleIds(userRoles.stream().map(SysRole::getRoleId).toArray(Long[]::new));
 		List<SysRole> roles = this.roleService.list();
-		return R.ok(UserInfoVO.builder().user(user).roles(roles).build());
+		return R.ok(new UserInfoVO(user, roles));
 	}
 
-	/**
-	 * 用户授权角色
-	 */
+    @XComment("{API.DOC.SYS.USER.SAVE_USER_ROLES}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserGrant)
 	@Log(title = "用户管理", businessType = BusinessType.GRANT)
 	@PostMapping("/authRole")
-	public R<?> insertAuthRole(@Validated @RequestBody AuthRoleRequest req) {
+	public R<Void> insertAuthRole(@Validated @RequestBody AuthRoleRequest req) {
 		userService.insertUserAuth(req.getUserId(), req.getRoleIds());
 		return R.ok();
 	}
 
-	/**
-	 * 获取部门树列表
-	 */
+    @XComment("{API.DOC.SYS.USER.GET_DETP_TREE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping("/deptTree")
-	public R<?> deptTree(@Validated QueryDeptRequest req) {
+	public R<List<TreeNode<Long>>> deptTree(@Validated QueryDeptRequest req) {
 		List<SysDept> depts = this.deptService.list(new LambdaQueryWrapper<SysDept>()
 				.like(StringUtils.isNotEmpty(req.getDeptName()), SysDept::getDeptName, req.getDeptName()));
 		return R.ok(deptService.buildDeptTreeSelect(depts));
 	}
 
+    @XComment("{API.DOC.SYS.USER.GET_PREFERENCES}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/getPreferences")
-	public R<?> getPreferences() {
+	public R<Map<String, Object>> getPreferences() {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
 		return R.ok(Objects.isNull(user.getPreferences()) ? Map.of() : user.getPreferences());
 	}
 
+    @XComment("{API.DOC.SYS.USER.GET_PREFERENCE}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/preference")
-	public R<?> getUserPreference(@RequestParam("id") @NotBlank String id) {
+	public R<Object> getUserPreference(@RequestParam("id") @NotBlank @XComment("{API.DOC.SYS.USER.PREFERENCE_ID}") String id) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		SysUser user = (SysUser) loginUser.getUser();
 		Optional<IUserPreference> findFirst = this.userPreferenceList.stream().filter(up -> up.getId().equals(id))
@@ -265,10 +275,11 @@ public class SysUserController extends BaseRestController {
 		return R.ok(value);
 	}
 
+    @XComment("{API.DOC.SYS.USER.SAVE_PREFERENCES}")
 	@XssIgnore
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/savePreferences")
-	public R<?> saveUserPreferences(@RequestBody @NotNull Map<String, Object> userPreferences) {
+	public R<Void> saveUserPreferences(@RequestBody @NotNull Map<String, Object> userPreferences) {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
 		Map<String, Object> map = this.userPreferenceList.stream().collect(Collectors.toMap(IUserPreference::getId,
 				up -> userPreferences.getOrDefault(up.getId(), up.getDefaultValue())));

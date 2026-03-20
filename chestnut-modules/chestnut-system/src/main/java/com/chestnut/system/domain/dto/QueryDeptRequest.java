@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.validator.Dict;
 import lombok.Getter;
@@ -29,11 +30,14 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.DEPT.QUERY_DEPT_REQ}")
 public class QueryDeptRequest {
 
+    @XComment("{API.DOC.SYS.DEPT.DEPT_NAME}")
     @Length(max = 30)
     private String deptName;
 
+    @XComment("{CC.ENTITY.STATUS}")
     @Dict(EnableOrDisable.TYPE)
     private String status;
 }

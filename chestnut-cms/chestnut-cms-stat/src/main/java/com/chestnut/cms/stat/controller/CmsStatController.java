@@ -27,9 +27,11 @@ import com.chestnut.cms.stat.domain.vo.ContentStatByCatalogVO;
 import com.chestnut.cms.stat.mapper.CmsCatalogContentStatMapper;
 import com.chestnut.cms.stat.mapper.CmsSiteVisitLogMapper;
 import com.chestnut.cms.stat.mapper.CmsUserContentStatMapper;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
@@ -38,6 +40,8 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,6 +60,7 @@ import java.util.stream.Collectors;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.STAT.STAT_MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -72,8 +77,9 @@ public class CmsStatController extends CmsRestController {
 
 	private final CmsUserContentStatMapper contentStatByUserMapper;
 
+	@XComment("{API.DOC.CMS.STAT.STAT.SITE_VISIT_LOG}")
 	@GetMapping
-	public R<?> getSiteVisitLogList() {
+	public R<TableData<CmsSiteVisitLog>> getSiteVisitLogList() {
 		PageRequest pr = this.getPageRequest();
 		CmsSite site = this.getCurrentSite();
 		Page<CmsSiteVisitLog> page = new LambdaQueryChainWrapper<>(this.siteVisitLogMapper)
@@ -82,8 +88,9 @@ public class CmsStatController extends CmsRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.CMS.STAT.STAT.CONTENT_DYNAMIC_DATA}")
 	@GetMapping("/contentDynamicData")
-	public R<?> getContentDynamicData(@RequestParam(name = "query", required = false, defaultValue = "") String title) {
+	public R<TableData<ContentDynamicStatDataVO>> getContentDynamicData(@RequestParam(name = "query", required = false, defaultValue = "") String title) {
 		PageRequest pr = getPageRequest();
 		CmsSite site = this.getCurrentSite();
 
@@ -105,8 +112,9 @@ public class CmsStatController extends CmsRestController {
 		return this.bindDataTable(list, page.getTotal());
 	}
 
+	@XComment("{API.DOC.CMS.STAT.STAT.CONTENT_STAT_BY_CATALOG}")
 	@GetMapping("/contentStatByCatalog")
-	public R<?> getContentStatByCatalog() {
+	public R<List<ContentStatByCatalogVO>> getContentStatByCatalog() {
 		CmsSite site = this.getCurrentSite();
 		List<CmsCatalogContentStat> stats = this.contentStatByCatalogMapper
 				.selectList(new LambdaQueryWrapper<CmsCatalogContentStat>().eq(CmsCatalogContentStat::getSiteId, site.getSiteId()));
@@ -118,8 +126,9 @@ public class CmsStatController extends CmsRestController {
 		return R.ok(list);
 	}
 
+	@XComment("{API.DOC.CMS.STAT.STAT.CONTENT_STAT_BY_USER}")
 	@GetMapping("/contentStatByUser")
-	public R<?> getContentStatByUser() {
+	public R<List<CmsUserContentStat>> getContentStatByUser() {
 		CmsSite site = this.getCurrentSite();
 		List<CmsUserContentStat> list = contentStatByUserMapper
 				.selectList(new LambdaQueryWrapper<CmsUserContentStat>().eq(CmsUserContentStat::getSiteId, site.getSiteId()));

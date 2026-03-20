@@ -52,7 +52,7 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         // cms_link_group
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出友情链接数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsLinkTips.EXPORTING_FLINK);
         List<CmsLinkGroup> list = linkGroupService.lambdaQuery()
                 .eq(CmsLinkGroup::getSiteId, context.getSite().getSiteId())
                 .list();
@@ -66,7 +66,7 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteImport(SiteImportContext context) {
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入友情链接分组数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsLinkTips.IMPORTING_FLINK_GROUP);
         // cms_link_group
         Map<Long, Long> linkGroupIdMap = new HashMap<>();
         List<File> files = context.readDataFiles(CmsLinkGroup.TABLE_NAME);
@@ -81,12 +81,13 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
                     linkGroupService.save(data);
                     linkGroupIdMap.put(oldLinkGroupId, data.getLinkGroupId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入友链分组数据`" + oldLinkGroupId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsLinkTips.IMPORT_FLINK_GROUP_FAIL, oldLinkGroupId, e.getMessage());
                     log.error("Import friend link group failed: {}", data.getCode(), e);
                 }
             }
         });
         // cms_link
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsLinkTips.IMPORTING_FLINK);
         files = context.readDataFiles(CmsLink.TABLE_NAME);
         files.forEach(f -> {
             List<CmsLink> list = JacksonUtils.fromList(f, CmsLink.class);
@@ -100,7 +101,7 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
                     data.setLogo(context.dealInternalUrl(data.getLogo()));
                     linkService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入友链数据`" + oldLinkId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsLinkTips.IMPORT_FLINK_FAIL, oldLinkId, e.getMessage());
                     log.error("Import friend link failed: {}", data.getUrl(), e);
                 }
             }

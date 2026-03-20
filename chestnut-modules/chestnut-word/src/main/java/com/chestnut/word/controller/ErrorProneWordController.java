@@ -16,10 +16,12 @@
 package com.chestnut.word.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.word.domain.ErrorProneWord;
@@ -27,6 +29,8 @@ import com.chestnut.word.domain.dto.CreateErrorProneWordRequest;
 import com.chestnut.word.domain.dto.UpdateErrorProneWordRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.IErrorProneWordService;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -44,6 +48,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.WORD.ERROR_PRONE_WORD.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/word/errorproneword")
@@ -51,9 +56,10 @@ public class ErrorProneWordController extends BaseRestController {
 
 	private final IErrorProneWordService errorProneWordService;
 
+	@XComment("{API.DOC.WORD.ERROR_PRONE_WORD.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
+	public R<TableData<ErrorProneWord>> getPageList(@RequestParam(required = false) @Length(max = 255) @XComment("{API.DOC.WORD.ERROR_PRONE_WORD.QUERY}") String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<ErrorProneWord> page = this.errorProneWordService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(query), ErrorProneWord::getWord, query)
@@ -61,30 +67,34 @@ public class ErrorProneWordController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.WORD.ERROR_PRONE_WORD.CREATE}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping("/add")
-	public R<?> add(@RequestBody @Validated CreateErrorProneWordRequest req) {
+	public R<Void> add(@RequestBody @Validated CreateErrorProneWordRequest req) {
 		this.errorProneWordService.addErrorProneWord(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.ERROR_PRONE_WORD.UPDATE}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping("/update")
-	public R<String> edit(@RequestBody @Validated UpdateErrorProneWordRequest req) {
+	public R<Void> edit(@RequestBody @Validated UpdateErrorProneWordRequest req) {
 		this.errorProneWordService.updateErrorProneWord(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.ERROR_PRONE_WORD.DELETE}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping("/delete")
-	public R<String> remove(@RequestBody @NotEmpty List<Long> errorProneWordIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.WORD.ERROR_PRONE_WORD.WORD_IDS}") List<Long> errorProneWordIds) {
 		this.errorProneWordService.removeByIds(errorProneWordIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.ERROR_PRONE_WORD.CHECK}")
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/check")
-	public R<?> check(@RequestBody String text) {
+	public R<?> check(@RequestBody @XComment("{API.DOC.WORD.ERROR_PRONE_WORD.TEXT}") String text) {
 		Map<String, String> map = this.errorProneWordService.check(text);
 		return R.ok(map.entrySet().stream().map(e -> Map.of("w", e.getKey(), "r", e.getValue())).toList());
 	}

@@ -17,13 +17,17 @@ package com.chestnut.contentcore.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
+
+
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsContentRela;
 import com.chestnut.contentcore.service.IContentRelaService;
@@ -42,6 +46,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CONTENT_RELA.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -52,8 +57,9 @@ public class ContentRelaController extends BaseRestController {
 
 	private final IContentService contentService;
 
+	@XComment("{API.DOC.CMS.CONTENT_RELA.GET_LIST}")
 	@GetMapping
-	public R<?> getRelaContents(@RequestParam Long contentId, @RequestParam(required = false) String title) {
+	public R<TableData<CmsContent>> getRelaContents(@RequestParam @XComment("{API.DOC.CMS.CONTENT_RELA.CONTENT_ID}") Long contentId, @RequestParam(required = false) String title) {
 		PageRequest pr = this.getPageRequest();
 		Page<CmsContentRela> pageResult = contentRelaService.page(
 				new Page<>(pr.getPageNumber(), pr.getPageSize(), true),
@@ -64,12 +70,13 @@ public class ContentRelaController extends BaseRestController {
 			List<CmsContent> contents = this.contentService.dao().lambdaQuery().in(CmsContent::getContentId, contentIds).list();
 			return this.bindDataTable(contents, pageResult.getTotal());
 		} else {
-			return this.bindDataTable(pageResult);
+			return this.bindDataTable(List.of());
 		}
 	}
 
+	@XComment("{API.DOC.CMS.CONTENT_RELA.ADD}")
 	@PostMapping
-	public R<?> addRelaContents(@RequestParam Long contentId, @RequestBody List<Long> relaContentIds) {
+	public R<Void> addRelaContents(@RequestParam @XComment("{API.DOC.CMS.CONTENT_RELA.CONTENT_ID}") Long contentId, @RequestBody @XComment("{API.DOC.CMS.CONTENT_RELA.RELA_CONTENT_IDS}") List<Long> relaContentIds) {
 		CmsContent content = this.contentService.dao().getById(contentId);
 		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 		List<Long> contentIds = contentRelaService.list(new LambdaQueryWrapper<CmsContentRela>()
@@ -91,8 +98,9 @@ public class ContentRelaController extends BaseRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.CONTENT_RELA.DELETE}")
 	@PostMapping("/delete")
-	public R<?> deleteRelaContents(@RequestParam Long contentId, @RequestBody @NotEmpty List<Long> relaContentIds) {
+	public R<Void> deleteRelaContents(@RequestParam @XComment("{API.DOC.CMS.CONTENT_RELA.CONTENT_ID}") Long contentId, @RequestBody @NotEmpty @XComment("{API.DOC.CMS.CONTENT_RELA.RELA_CONTENT_IDS}") List<Long> relaContentIds) {
 		this.contentRelaService.remove(new LambdaQueryWrapper<CmsContentRela>()
 				.eq(CmsContentRela::getContentId, contentId)
 				.in(CmsContentRela::getRelaContentId, relaContentIds));

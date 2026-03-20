@@ -18,8 +18,10 @@ package com.chestnut.contentcore.controller;
 import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
@@ -48,6 +50,8 @@ import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
@@ -68,6 +72,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.RESOURCE_MGMT.MODULE}")
 @RestController
 @RequestMapping("/cms/resource")
 @RequiredArgsConstructor
@@ -77,6 +82,7 @@ public class ResourceController extends CmsRestController {
 
 	private final IResourceService resourceService;
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.GET_TYPES}")
     @Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@GetMapping("/types")
 	public R<?> getResourceTypes() {
@@ -89,9 +95,10 @@ public class ResourceController extends CmsRestController {
 		return R.ok(list);
 	}
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.SELECT_LIST}")
     @Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
     @GetMapping("/selectList")
-    public R<?> getSelectList(@RequestParam(value = "name", required = false) String name,
+    public R<TableData<CmsResource>> getSelectList(@RequestParam(value = "name", required = false) String name,
                               @RequestParam(value = "resourceType", required = false) String resourceType,
                               @RequestParam(value = "owner", required = false, defaultValue = "false") boolean owner,
                               @RequestParam(value = "siteId", required = false, defaultValue = "0") Long siteId,
@@ -101,9 +108,10 @@ public class ResourceController extends CmsRestController {
         return listData(name, resourceType, owner, siteId, beginTime, endTime, request);
     }
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.GET_LIST}")
     @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@GetMapping
-	public R<?> listData(@RequestParam(value = "name", required = false) String name,
+	public R<TableData<CmsResource>> listData(@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "resourceType", required = false) String resourceType,
 			@RequestParam(value = "owner", required = false, defaultValue = "false") boolean owner,
 		    @RequestParam(value = "siteId", required = false, defaultValue = "0") Long siteId,
@@ -143,9 +151,10 @@ public class ResourceController extends CmsRestController {
 		return bindDataTable(page);
 	}
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.GET_DETAIL}")
     @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@GetMapping("/{resourceId}")
-	public R<CmsResource> getInfo(@PathVariable("resourceId") @LongId Long resourceId) {
+	public R<CmsResource> getInfo(@PathVariable("resourceId") @LongId @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_ID}") Long resourceId) {
 		CmsResource resource = this.resourceService.getById(resourceId);
         Assert.notNull(resource, () -> ContentCoreErrorCode.RESOURCE_NOT_FOUND.exception());
 
@@ -154,6 +163,7 @@ public class ResourceController extends CmsRestController {
 		return R.ok(resource);
 	}
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.ADD}")
     @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@Log(title = "新增/编辑素材", businessType = BusinessType.INSERT)
 	@PostMapping
@@ -189,15 +199,17 @@ public class ResourceController extends CmsRestController {
 		}
 	}
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.DELETE}")
     @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@Log(title = "删除素材", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<String> delResources(@RequestBody @NotEmpty List<Long> resourceIds) {
+	public R<Void> delResources(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_IDS}") List<Long> resourceIds) {
 		Assert.notEmpty(resourceIds, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("resourceIds"));
 		this.resourceService.deleteResource(resourceIds);
 		return R.ok();
 	}
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.UPLOAD}")
     @Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@Log(title = "上传素材", businessType = BusinessType.INSERT)
 	@PostMapping("/upload")
@@ -215,9 +227,10 @@ public class ResourceController extends CmsRestController {
 		return R.ok(resource);
 	}
 
+    @XComment("{API.DOC.CMS.RESOURCE_MGMT.DOWNLOAD}")
     @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@GetMapping("/download/{resourceId}")
-	public void downloadResourceFile(@PathVariable @LongId Long resourceId, HttpServletResponse response) {
+	public void downloadResourceFile(@PathVariable @LongId @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_ID}") Long resourceId, HttpServletResponse response) {
 		CmsResource resource = this.resourceService.getById(resourceId);
 		Assert.notNull(resource, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("resourceId", resourceId));
 		this.resourceService.downloadResource(resource, response);

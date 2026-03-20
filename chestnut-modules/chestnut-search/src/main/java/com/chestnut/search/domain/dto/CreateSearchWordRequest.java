@@ -15,6 +15,7 @@
  */
 package com.chestnut.search.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -30,23 +31,18 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SEARCH.CREATE_WORD_REQ}")
 public class CreateSearchWordRequest extends BaseDTO {
 
-    /**
-     * 搜索词
-     */
     @NotBlank
     @Length(max = 255)
+    @XComment("{API.DOC.SEARCH.WORD}")
     private String word;
 
-    /**
-     * 历史总搜索次数
-     */
     @Min(0)
+    @XComment("{API.DOC.SEARCH.SEARCH_TOTAL}")
     private Long searchTotal;
 
-    /**
-     * 来源标识，例如：cms:siteId
-     */
+    @XComment("{API.DOC.SEARCH.SOURCE}")
     private String source;
 }

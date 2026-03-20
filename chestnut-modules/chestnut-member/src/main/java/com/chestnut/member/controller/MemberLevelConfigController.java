@@ -16,6 +16,7 @@
 package com.chestnut.member.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
@@ -24,6 +25,7 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.MemberLevelConfig;
@@ -35,6 +37,8 @@ import com.chestnut.member.permission.MemberPriv;
 import com.chestnut.member.service.IMemberLevelConfigService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -43,6 +47,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 
+@XComment("{API.DOC.MEMBER.LEVEL_CONFIG_MODULE}")
 @Priv(type = AdminUserType.TYPE, value = MemberPriv.MemberLevel)
 @RequiredArgsConstructor
 @RestController
@@ -51,9 +56,10 @@ public class MemberLevelConfigController extends BaseRestController {
 
 	private final IMemberLevelConfigService memberLevelConfigService;
 
+	@XComment("{API.DOC.MEMBER.LEVEL_CONFIG_GET_LIST}")
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam(value = "levelType", required = false) String levelType,
-			@RequestParam(value = "level", required = false) Integer level) {
+	public R<TableData<MemberLevelConfig>> getPageList(@RequestParam(value = "levelType", required = false) @XComment("{API.DOC.MEMBER.LEVEL_TYPE}") String levelType,
+			@RequestParam(value = "level", required = false) @XComment("{API.DOC.MEMBER.LEVEL}") Integer level) {
 		PageRequest pr = this.getPageRequest();
 		Page<MemberLevelConfig> page = this.memberLevelConfigService.lambdaQuery()
 				.eq(StringUtils.isNotEmpty(levelType), MemberLevelConfig::getLevelType, levelType)
@@ -65,14 +71,15 @@ public class MemberLevelConfigController extends BaseRestController {
 		});
 		return this.bindDataTable(page);
 	}
-
+	@XComment("{API.DOC.MEMBER.LEVEL_CONFIG_GET_DETAIL}")
 	@GetMapping("/detail/{configId}")
-	public R<?> getLevelConfigDetail(@PathVariable("configId") @LongId Long configId) {
+	public R<MemberLevelConfig> getLevelConfigDetail(@PathVariable("configId") @LongId @XComment("{API.DOC.MEMBER.LEVEL_CONFIG_ID}") Long configId) {
 		MemberLevelConfig lvConfig = this.memberLevelConfigService.getById(configId);
 		Assert.notNull(lvConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("id", configId));
 		return R.ok(lvConfig);
 	}
 
+	@XComment("{API.DOC.MEMBER.GET_LEVEL_TYPES}")
 	@GetMapping("/types")
 	public R<?> getLevelTypes() {
 		List<LevelTypeVO> levelTypes = this.memberLevelConfigService.getLevelTypes().values().stream()
@@ -80,23 +87,26 @@ public class MemberLevelConfigController extends BaseRestController {
 		return R.ok(levelTypes);
 	}
 
+	@XComment("{API.DOC.MEMBER.LEVEL_CONFIG_ADD}")
 	@Log(title = "新增会员等级配置", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addMemberConfig(@RequestBody @Validated CreateLevelConfigRequest req) {
+	public R<Void> addMemberConfig(@RequestBody @Validated CreateLevelConfigRequest req) {
 		this.memberLevelConfigService.addLevelConfig(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.LEVEL_CONFIG_UPDATE}")
 	@Log(title = "编辑会员等级配置", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> updateMemberConfig(@RequestBody @Validated UpdateLevelConfigRequest req) {
+	public R<Void> updateMemberConfig(@RequestBody @Validated UpdateLevelConfigRequest req) {
 		this.memberLevelConfigService.updateLevelConfig(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.LEVEL_CONFIG_DELETE}")
 	@Log(title = "删除会员等级配置", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> deleteConfig(@RequestBody @NotEmpty List<Long> configIds) {
+	public R<Void> deleteConfig(@RequestBody @NotEmpty @XComment("{API.DOC.MEMBER.LEVEL_CONFIG_IDS}") List<Long> configIds) {
 		this.memberLevelConfigService.deleteLevelConfig(configIds);
 		return R.ok();
 	}

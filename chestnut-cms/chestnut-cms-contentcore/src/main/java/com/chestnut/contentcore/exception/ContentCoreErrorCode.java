@@ -135,7 +135,7 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	NO_PUBLISHPIPE,
 
 	/**
-	 * 栏目发布失败：栏目不可见/不可静态化/标题栏目。
+	 * 栏目"{0}"发布失败：栏目不可见/不可静态化/标题栏目。
 	 */
 	CATALOG_CANNOT_PUBLISH,
 
@@ -220,9 +220,19 @@ public enum ContentCoreErrorCode implements ErrorCode {
     RESOURCE_NOT_FOUND,
 
     /**
+     * 链接栏目无页面，栏目：{0}, 跳转链接：{1}
+     */
+    PREVIEW_LINK_CATALOG,
+
+    /**
      * 链接内容无页面，内容标题：{0}, 跳转链接：{1}
      */
-    PREVIEW_LINK_CONTENT;
+    PREVIEW_LINK_CONTENT,
+
+	/**
+	 * 批量删除内容一次不能超过{0}个
+	 */
+	BATCH_DEL_CONTENT_LIMIT;
 
 	@Override
 	public String value() {

@@ -88,8 +88,6 @@
         <el-form-item :label="$t('System.Security.LoginConfig.Status')" prop="status">
           <el-switch v-model="form.status" active-value="0" inactive-value="1" />
         </el-form-item>
-        <LoginConfigWechat v-if="form.type === 'wechat'" v-model="form.configProps" />
-        <LoginConfigFeishu v-if="form.type === 'feishu'" v-model="form.configProps" />
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -102,9 +100,6 @@
 </template>
 <script setup name="SysLoginConfig">
 import * as loginConfigApi from "@/api/system/login";
-import LoginConfigWechat from "./login/wechat.vue";
-import LoginConfigFeishu from "./login/feishu.vue";
-
 const { proxy } = getCurrentInstance()
 
 const { EnableOrDisable } = proxy.useDict('EnableOrDisable')

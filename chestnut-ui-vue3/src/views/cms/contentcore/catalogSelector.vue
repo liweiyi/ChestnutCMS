@@ -11,8 +11,7 @@
       <div v-if="props.showCopyToolbar" class="header-toolbar">
         <div v-if="showCopyToolbar" style="display: flex;align-items: center;">
           <el-radio-group v-model="copyType">
-            <el-radio-button :label="1">{{ $t('CMS.Catalog.CopyContent') }}</el-radio-button>
-            <el-radio-button :label="2">{{ $t('CMS.Catalog.MappingContent') }}</el-radio-button>
+            <el-radio-button v-for="item in CMSContentCopyType" :key="item.value" :label="item.value">{{ item.label }}</el-radio-button>
           </el-radio-group>
           <el-tooltip placement="right">
             <template #content>
@@ -68,6 +67,8 @@
 import { getCatalogTreeData } from "@/api/contentcore/catalog";
 
 const { proxy } = getCurrentInstance();
+
+const { CMSContentCopyType } = proxy.useDict('CMSContentCopyType');
 
 const props = defineProps({
   open: {
@@ -168,7 +169,7 @@ function handleNodeClick (data, node) {
 }
 
 function handleTreeRootClick(e) {
-if (!props.multiple) {
+  if (!props.multiple) {
     selectedCatalogs.value = [{ id: "0", name: siteName.value, props: {} }];
     proxy.$refs.tree.setCurrentKey(null);
     rootSelected.value = true;
@@ -186,8 +187,9 @@ function handleOk (data) {
     proxy.$modal.alertWarning(proxy.$t('CMS.Catalog.SelectCatalogFirst'));
     return;
   }
+  console.log(selectedCatalogs.value);
   setNodeHighlight()
-  emit("ok", [ selectedCatalogs.value, copyType.value ]);
+  emit("ok", { selectedCatalogs: selectedCatalogs.value, copyType: copyType.value });
 }
 
 function handleCancel () {

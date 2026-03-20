@@ -17,13 +17,17 @@ package com.chestnut.contentcore.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
+
+
 import com.chestnut.contentcore.domain.CmsSiteProperty;
 import com.chestnut.contentcore.service.ISitePropertyService;
 import com.chestnut.system.security.AdminUserType;
@@ -43,6 +47,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.SITE_PROPERTY.MODULE}")
 @RestController
 @RequestMapping("/cms/site/prop")
 @RequiredArgsConstructor
@@ -59,9 +64,10 @@ public class SitePropertyController extends BaseRestController {
 	 *            属性名称/编码
 	 * @return
 	 */
+	@XComment("{API.DOC.CMS.SITE_PROPERTY.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = "Site:View:${#siteId}")
 	@GetMapping("/list")
-	public R<?> list(@RequestParam("siteId") String siteId,
+	public R<TableData<CmsSiteProperty>> list(@RequestParam("siteId") String siteId,
 			@RequestParam(value = "query", required = false) String query) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<CmsSiteProperty> q = new LambdaQueryWrapper<CmsSiteProperty>()
@@ -79,9 +85,10 @@ public class SitePropertyController extends BaseRestController {
 	 *            属性ID
 	 * @return
 	 */
+	@XComment("{API.DOC.CMS.SITE_PROPERTY.GET_DETAIL}")
 	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
 	@GetMapping(value = "/detail/{propertyId}")
-	public R<?> getInfo(@PathVariable @LongId Long propertyId) {
+	public R<CmsSiteProperty> getInfo(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE_PROPERTY.PROPERTY_ID}") Long propertyId) {
 		CmsSiteProperty siteProperty = sitePropertyService.getById(propertyId);
 		if (siteProperty == null) {
 			return R.fail("站点数据未找到：" + propertyId);
@@ -96,6 +103,7 @@ public class SitePropertyController extends BaseRestController {
 	 * @return
 	 * @throws IOException
 	 */
+	@XComment("{API.DOC.CMS.SITE_PROPERTY.ADD}")
 	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
 	@Log(title = "新增站点属性", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
@@ -111,6 +119,7 @@ public class SitePropertyController extends BaseRestController {
 	 * @return
 	 * @throws IOException
 	 */
+	@XComment("{API.DOC.CMS.SITE_PROPERTY.UPDATE}")
 	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
 	@Log(title = "编辑站点属性", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
@@ -127,10 +136,11 @@ public class SitePropertyController extends BaseRestController {
 	 * @return
 	 * @throws IOException
 	 */
+	@XComment("{API.DOC.CMS.SITE_PROPERTY.DELETE}")
 	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
 	@Log(title = "删除站点属性", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<String> removeSiteProperties(@RequestBody @NotEmpty List<Long> propertyIds) throws IOException {
+	public R<String> removeSiteProperties(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.SITE_PROPERTY.PROPERTY_IDS}") List<Long> propertyIds) throws IOException {
 		return this.sitePropertyService.deleteSiteProperties(propertyIds);
 	}
 }

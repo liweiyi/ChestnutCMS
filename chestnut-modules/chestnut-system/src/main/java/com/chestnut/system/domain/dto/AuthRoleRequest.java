@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -24,11 +25,14 @@ import java.util.List;
 
 @Getter
 @Setter
+@XComment("获取用户角色请求参数")
 public class AuthRoleRequest {
-	
+
+	@XComment("用户ID")
 	@LongId
 	private Long userId;
-	
+
+	@XComment("角色ID列表")
 	@NotEmpty
 	private List<Long> roleIds;
 }

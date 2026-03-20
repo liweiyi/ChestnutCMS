@@ -15,14 +15,17 @@
  */
 package com.chestnut.xmodel.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@XComment("{API.DOC.META.UPDATE_FIELD_REQ}")
 public class UpdateXModelFieldRequest extends CreateXModelFieldRequest {
 
     @LongId
+    @XComment("{API.DOC.META.FIELD_ID}")
 	private Long fieldId;
 }

@@ -59,7 +59,7 @@ function handleLinkTo(type) {
 }
     
 function handleCatalogSelectorOk(args) {
-  var catalogs = args[0];
+  var catalogs = args.selectedCatalogs;
   if (catalogs && catalogs.length > 0) {
     model.value = catalogs[0].props.internalUrl;
   }

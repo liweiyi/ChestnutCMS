@@ -17,14 +17,18 @@ package com.chestnut.link.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SortUtils;
 import com.chestnut.common.utils.StringUtils;
+
+
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.link.domain.CmsLinkGroup;
@@ -49,6 +53,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.LINK_GROUP.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cms/link_group")
@@ -56,9 +61,10 @@ public class LinkGroupController extends CmsRestController {
 
 	private final ILinkGroupService linkGroupService;
 
+	@XComment("{API.DOC.CMS.LINK_GROUP.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.View)
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	public R<TableData<CmsLinkGroup>> getPageList(@RequestParam(value = "query", required = false) String query) {
 		CmsSite site = this.getCurrentSite();
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<CmsLinkGroup> q = new LambdaQueryWrapper<CmsLinkGroup>()
@@ -69,10 +75,11 @@ public class LinkGroupController extends CmsRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.CMS.LINK_GROUP.CREATE}")
 	@Log(title = "新增友链分组", businessType = BusinessType.INSERT)
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.Add)
 	@PostMapping("/add")
-	public R<?> add(@RequestBody @Validated LinkGroupDTO dto) {
+	public R<Void> add(@RequestBody @Validated LinkGroupDTO dto) {
 		CmsSite site = this.getCurrentSite();
 		if (this.linkGroupService.lambdaQuery().eq(CmsLinkGroup::getSiteId, site.getSiteId())
 				.eq(CmsLinkGroup::getCode, dto.getCode()).count() > 0) {
@@ -88,10 +95,11 @@ public class LinkGroupController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.LINK_GROUP.UPDATE}")
 	@Log(title = "编辑友链分组", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { FriendLinkPriv.Add, FriendLinkPriv.Edit })
 	@PostMapping("/update")
-	public R<String> edit(@RequestBody @Validated LinkGroupDTO dto) {
+	public R<Void> edit(@RequestBody @Validated LinkGroupDTO dto) {
 		CmsSite site = this.getCurrentSite();
 		if (this.linkGroupService.lambdaQuery().eq(CmsLinkGroup::getSiteId, site.getSiteId())
 				.eq(CmsLinkGroup::getCode, dto.getCode()).ne(CmsLinkGroup::getLinkGroupId, dto.getLinkGroupId())
@@ -105,10 +113,11 @@ public class LinkGroupController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.LINK_GROUP.DELETE}")
 	@Log(title = "删除友链分组", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.Delete)
 	@PostMapping("/delete")
-	public R<String> remove(@RequestBody @Validated @NotEmpty List<LinkGroupDTO> dtoList) {
+	public R<Void> remove(@RequestBody @Validated @NotEmpty List<LinkGroupDTO> dtoList) {
 		List<Long> linkGroupIds = dtoList.stream().map(LinkGroupDTO::getLinkGroupId).toList();
 		this.linkGroupService.deleteLinkGroup(linkGroupIds);
 		return R.ok();

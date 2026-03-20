@@ -20,6 +20,7 @@ import cn.idev.excel.converters.longconverter.LongStringConverter;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.validator.Dict;
@@ -39,6 +40,7 @@ import java.io.Serial;
  */
 @Getter
 @Setter
+@XComment("{ENT.SYS.ROLE}")
 @TableName(SysRole.TABLE_NAME)
 public class SysRole extends BaseEntity {
 
@@ -48,28 +50,33 @@ public class SysRole extends BaseEntity {
 	public static final String TABLE_NAME = "sys_role";
 
 	/** 角色ID */
+	@XComment("{ENT.SYS.ROLE.ID}")
 	@ExcelProperty(value = "{ENT.SYS.ROLE.ID}", converter = LongStringConverter.class)
 	@TableId(value = "role_id", type = IdType.INPUT)
 	private Long roleId;
 
 	/** 角色名称 */
+	@XComment("{ENT.SYS.ROLE.NAME}")
 	@ExcelProperty("{ENT.SYS.ROLE.NAME}")
 	@NotBlank
 	@Length(max = 30)
 	private String roleName;
 
 	/** 角色权限 */
+	@XComment("{ENT.SYS.ROLE.KEY}")
 	@ExcelProperty("{ENT.SYS.ROLE.KEY}")
 	@NotBlank
 	@Length(max = 100)
 	private String roleKey;
 
 	/** 角色排序 */
+	@XComment("{CC.ENTITY.SORT}")
 	@ExcelProperty("{CC.ENTITY.SORT}")
 	@NotNull
 	private Integer roleSort;
 
 	/** 角色状态（0正常 1停用） */
+	@XComment("{CC.ENTITY.STATUS}")
 	@ExcelProperty("{CC.ENTITY.STATUS}")
 	@Dict(EnableOrDisable.TYPE)
 	private String status;

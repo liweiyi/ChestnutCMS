@@ -719,7 +719,8 @@ const zhCN = {
       LogName: "日志分类名称",
       Console: {
         AutoRefresh: "自动刷新",
-        LockScroll: "锁定滚动"
+        LockScroll: "锁定滚动",
+        KeywordPlaceholder: "关键词筛选"
       }
     },
     Online: {
@@ -1038,6 +1039,8 @@ const zhCN = {
         DownloadRemoteImage: "开启文章远程图片下载",
         DownloadRemoteImageTip: "自动下载文章正文中的远程图片。",
         EnableSiteDeleteBackup: "开启站点删除备份",
+        EnableContentDeletePublish: "内容删除后发布关联数据",
+        EnableContentSortPublish: "内容排序后发布关联数据",
         MemberResourceUrl: "会员资源访问域名",
         ShortTitleLabel: "短标题自定义表单名",
         SubTitleLabel: "副标题自定义表单名",
@@ -1186,6 +1189,8 @@ const zhCN = {
       ImportWord: "导入WORD",
       UploadWord: "上传WORD文档",
       SaveUploadWordFile: "保留上传的WORD文档",
+      CopyType: "复制方式",
+      CopyId: "来源ID",
       StatusOption: {
         Draft: "初稿",
         ToPublish: "待发布",
@@ -1234,6 +1239,7 @@ const zhCN = {
       PublishPipe: "发布通道",
       StaticPath: "独立路径",
       Template: "独立模板",
+      DeleteProgressTitle: "删除内容",
       PublishProgressTitle: "发布内容中",
       OfflineProgressTitle: "下线内容中",
       CopyProgressTitle: "复制内容中",
@@ -2124,6 +2130,94 @@ const zhCN = {
       NginxNode: "部署节点",
       AddTitle: "添加配置",
       EditTitle: "编辑配置信息",
+    }
+  },
+  Workflow: {
+    Definition: {
+      Code: '流程编码',
+      Name: '流程名称',
+      Description: '流程描述',
+      Status: '状态',
+      Version: '版本',
+      Versions: '版本列表',
+      VersionId: '版本ID',
+      VersionList: '版本列表',
+      Publish: '发布',
+      Disable: '停用',
+      Enable: '启用',
+      PublishTime: '发布时间',
+      Remark: '备注',
+      Designer: '流程设计器',
+      Placeholder: {
+        Code: '请输入流程编码',
+        Name: '请输入流程名称',
+        Description: '请输入流程描述'
+      }
+    },
+    Instance: {
+      InstanceId: '实例ID',
+      Title: '流程标题',
+      BusinessKey: '业务关联键',
+      Status: '状态',
+      StartUser: '发起人',
+      StartTime: '发起时间',
+      EndTime: '结束时间',
+      Remark: '备注',
+      Detail: '流程详情',
+      Variables: '流程变量',
+      VariableName: '变量名',
+      VariableValue: '变量值',
+      TaskHistory: '任务历史',
+      Suspend: '挂起',
+      Resume: '恢复',
+      Terminate: '终止',
+      TerminateReason: '终止原因',
+      Reason: '原因',
+      Placeholder: {
+        Reason: '请输入原因'
+      }
+    },
+    Task: {
+      TaskId: '任务ID',
+      TaskName: '任务名称',
+      Description: '任务描述',
+      Assignee: '处理人',
+      Status: '状态',
+      Priority: '优先级',
+      DueDate: '到期时间',
+      ClaimTime: '认领时间',
+      CompleteTime: '完成时间',
+      Comment: '审批意见',
+      Candidates: '候选信息',
+      CandidateUsers: '候选用户',
+      CandidateGroups: '候选用户组',
+      Detail: '任务详情',
+      Claim: '认领',
+      Complete: '完成',
+      Transfer: '转办',
+      Delegate: '委派',
+      Reject: '退回',
+      TargetUser: '目标用户',
+      TargetNode: '目标节点',
+      RejectReason: '退回原因',
+      Placeholder: {
+        Comment: '请输入审批意见',
+        TargetUser: '请输入目标用户ID',
+        TargetNode: '请输入目标节点ID',
+        RejectReason: '请输入退回原因'
+      }
+    },
+    MyProcess: {
+      StartNew: '发起新流程',
+      ProcessDef: '流程定义',
+      Cancel: '取消流程',
+      CancelReason: '取消原因',
+      Start: '发起',
+      Placeholder: {
+        ProcessDef: '请选择流程定义',
+        BusinessKey: '请输入业务关联键',
+        Title: '请输入流程标题'
+      }
     }
   }
 }

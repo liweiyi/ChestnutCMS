@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.controller.common;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
@@ -26,6 +27,8 @@ import com.chestnut.system.domain.vo.AsyncTaskVO;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Comparator;
 import java.util.List;
 
+@XComment("{API.DOC.ASYNC.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/async")
@@ -43,6 +47,7 @@ public class AsyncController extends BaseRestController {
 	/**
 	 * 异步任务列表
 	 */
+    @XComment("{API.DOC.ASYNC.LIST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@GetMapping("/task")
 	public R<?> getAsyncTaskList(@RequestParam(value = "type", required = false) String type,
@@ -60,6 +65,7 @@ public class AsyncController extends BaseRestController {
 	/**
 	 * 异步任务详情
 	 */
+    @XComment("{API.DOC.ASYNC.INFO}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/task/{taskId}")
 	public R<?> getAsyncTaskInfo(@PathVariable("taskId") String taskId) {
@@ -72,6 +78,7 @@ public class AsyncController extends BaseRestController {
 	/**
 	 * 停止异步任务
 	 */
+    @XComment("{API.DOC.ASYNC.STOP}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PostMapping("/task/stop")
 	public R<?> stopAsyncTask(@RequestBody @NotEmpty List<String> taskIds) {
@@ -88,6 +95,7 @@ public class AsyncController extends BaseRestController {
 	/**
 	 * 删除异步任务
 	 */
+    @XComment("{API.DOC.ASYNC.DEL}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PostMapping("task/remove")
 	public R<?> deleteAsyncTask(@RequestBody @NotEmpty List<String> taskIds) {

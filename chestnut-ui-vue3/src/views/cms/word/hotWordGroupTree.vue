@@ -1,7 +1,12 @@
 <template>
   <div class="group-tree">
     <div class="head-container">
-      <el-button type="text" icon="Plus" @click="handleAdd">{{ $t('WordMgr.HotWord.AddGroup') }}</el-button>
+      <el-button
+        class="mb8" 
+        type="text" 
+        icon="Plus" 
+        @click="handleAdd"
+      >{{ $t('WordMgr.HotWord.AddGroup') }}</el-button>
       <el-input 
         :placeholder="$t('WordMgr.HotWord.Placeholder.InputGroupName')"
         v-model="filterGroupName"

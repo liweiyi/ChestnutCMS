@@ -15,9 +15,12 @@
  */
 package com.chestnut.word.controller.front;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.word.service.WordStatService;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.WORD.WORD_STAT_API.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/word/")
@@ -37,16 +41,18 @@ public class WordStatApiController extends BaseRestController {
 
 	private final WordStatService wordStatService;
 
+	@XComment("{API.DOC.WORD.WORD_STAT_API.TAG_WORD_CLICK}")
 	@GetMapping("/tagword/click")
-	public void tagWordClickStat(@RequestParam("id") Long wordId) {
+	public void tagWordClickStat(@RequestParam("id") @XComment("{API.DOC.WORD.WORD_STAT_API.WORD_ID}") Long wordId) {
 		if (!IdUtils.validate(wordId)) {
 			return;
 		}
 		wordStatService.updateTagWordClick(wordId);
 	}
 
+	@XComment("{API.DOC.WORD.WORD_STAT_API.HOT_WORD_CLICK}")
 	@GetMapping("/hotword/click")
-	public void hotWordClickStat(@RequestParam("id") Long wordId) {
+	public void hotWordClickStat(@RequestParam("id") @XComment("{API.DOC.WORD.WORD_STAT_API.WORD_ID}") Long wordId) {
 		if (!IdUtils.validate(wordId)) {
 			return;
 		}

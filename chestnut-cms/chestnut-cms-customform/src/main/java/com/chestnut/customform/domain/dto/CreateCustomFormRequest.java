@@ -15,6 +15,7 @@
  */
 package com.chestnut.customform.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.Dict;
@@ -31,58 +32,43 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.CMS.CUSTOM_FORM.CREATE_REQ}")
 public class CreateCustomFormRequest extends BaseDTO {
 
-    /**
-     * 站点ID
-     */
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.SITE_ID}")
     private Long siteId;
 
-    /**
-     * 名称
-     */
     @NotBlank
     @Length(max = 100)
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.FORM_NAME}")
     private String name;
 
-    /**
-     * 编码
-     */
     @NotBlank
     @Length(max = 50)
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.FORM_CODE}")
     private String code;
 
-    /**
-     * 模型数据表
-     */
     @NotBlank
     @Length(max = 100)
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.TABLE_NAME}")
     private String tableName;
 
-    /**
-     * 是否需要验证码
-     */
     @NotBlank
     @Dict(YesOrNo.TYPE)
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.NEED_CAPTCHA}")
     private String needCaptcha;
 
-    /**
-     * 是否需要会员登录
-     */
     @NotBlank
     @Dict(YesOrNo.TYPE)
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.NEED_LOGIN}")
     private String needLogin;
 
-    /**
-     * 提交用户唯一性限制（无限制、IP、浏览器指纹）
-     */
     @NotBlank
     @Length(max = 20)
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.RULE_LIMIT}")
     private String ruleLimit;
 
-    /**
-     * 备注
-     */
     @Length(max = 500)
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.REMARK}")
     private String remark;
 }

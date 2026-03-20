@@ -15,22 +15,27 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.TEMPLATE.RENAME_DTO}")
 @Getter
 @Setter
 public class TemplateRenameDTO {
 
+	@XComment("{API.DOC.CMS.TEMPLATE.TEMPLATE_ID}")
 	@NotNull
 	@Min(1)
 	private Long templateId;
 
+    @XComment("{API.DOC.CMS.TEMPLATE.PATH}")
     @NotEmpty
     private String path;
-    
+
+    @XComment("{API.DOC.CMS.TEMPLATE.REMARK}")
     private String remark;
 }

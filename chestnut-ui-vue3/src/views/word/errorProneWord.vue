@@ -1,6 +1,6 @@
 <template>
   <div class="error-prone-word-container">
-    <el-row :gutter="24" class="mb8">
+    <el-row :gutter="24">
       <el-col :span="12">
         <el-button 
           type="primary"

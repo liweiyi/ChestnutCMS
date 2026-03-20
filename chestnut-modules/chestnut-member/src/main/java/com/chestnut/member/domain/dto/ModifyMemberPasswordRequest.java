@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -30,9 +31,11 @@ import lombok.Setter;
 @Setter
 public class ModifyMemberPasswordRequest extends BaseDTO {
 
+    @XComment("{API.DOC.MEMBER.PASSWORD}")
     @NotEmpty
     private String password;
 
+    @XComment("{API.DOC.MEMBER.NEW_PASSWORD}")
     @NotEmpty
     private String newPassword;
 }

@@ -16,12 +16,14 @@
 package com.chestnut.customform.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -38,6 +40,8 @@ import com.chestnut.customform.service.ICustomFormService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -54,6 +58,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CUSTOM_FORM.MODULE}")
 @RestController
 @RequestMapping("/cms/customform")
 @RequiredArgsConstructor
@@ -65,16 +70,18 @@ public class CustomFormController extends CmsRestController {
 
     private final List<ICustomFormLimitRule> limitRules;
 
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.GET_LIMIT_RULES}")
     @Priv(type = AdminUserType.TYPE)
     @GetMapping("/limit_rules")
     public R<?> getLimitRules() {
         return bindSelectOptions(this.limitRules, ICustomFormLimitRule::getId, ICustomFormLimitRule::getName);
     }
 
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.GET_LIST}")
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.View)
     @GetMapping("/list")
-    public R<?> getList(@RequestParam(value = "query", required = false) String query,
-                        @RequestParam(required = false) String status) {
+    public R<TableData<CmsCustomForm>> getList(@RequestParam(value = "query", required = false) @XComment("{API.DOC.CMS.CUSTOM_FORM.QUERY}") String query,
+                        @RequestParam(required = false) @XComment("{API.DOC.CMS.CUSTOM_FORM.STATUS}") String status) {
         PageRequest pr = this.getPageRequest();
         CmsSite site = this.getCurrentSite();
         Page<CmsCustomForm> page = this.customFormService.lambdaQuery()
@@ -85,9 +92,10 @@ public class CustomFormController extends CmsRestController {
         return this.bindDataTable(page);
     }
 
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.GET_DETAIL}")
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.View)
     @GetMapping("/detail/{formId}")
-    public R<?> getDetail(@PathVariable @LongId Long formId) {
+    public R<CustomFormVO> getDetail(@PathVariable @LongId @XComment("{API.DOC.CMS.CUSTOM_FORM.FORM_ID}") Long formId) {
         CmsCustomForm form = this.customFormService.getById(formId);
         Assert.notNull(form, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("formId", formId));
 
@@ -102,44 +110,49 @@ public class CustomFormController extends CmsRestController {
         return R.ok(vo);
     }
 
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.ADD}")
     @Log(title = "新增自定义表单", businessType = BusinessType.INSERT)
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.Add)
     @PostMapping("/add")
-    public R<?> add(@RequestBody @Validated CreateCustomFormRequest req) {
+    public R<Void> add(@RequestBody @Validated CreateCustomFormRequest req) {
         CmsSite site = this.getCurrentSite();
         req.setSiteId(site.getSiteId());
         this.customFormService.addCustomForm(req);
         return R.ok();
     }
 
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.UPDATE}")
     @Log(title = "编辑自定义表单", businessType = BusinessType.UPDATE)
     @Priv(type = AdminUserType.TYPE, value = {CustomFormPriv.Add, CustomFormPriv.Edit})
     @PostMapping("/update")
-    public R<?> edit(@RequestBody @Validated UpdateCustomFormRequest req) {
+    public R<Void> edit(@RequestBody @Validated UpdateCustomFormRequest req) {
         this.customFormService.editCustomForm(req);
         return R.ok();
     }
 
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.DELETE}")
     @Log(title = "删除自定义表单", businessType = BusinessType.DELETE)
     @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.Delete)
     @PostMapping("/delete")
-    public R<?> remove(@RequestBody @NotEmpty List<Long> formIds) {
+    public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.CUSTOM_FORM.FORM_IDS}") List<Long> formIds) {
         this.customFormService.deleteCustomForm(formIds);
         return R.ok();
     }
 
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.PUBLISH}")
     @Log(title = "发布自定义表单", businessType = BusinessType.UPDATE)
     @Priv(type = AdminUserType.TYPE, value = { CustomFormPriv.Add, CustomFormPriv.Edit })
     @PostMapping("/publish")
-    public R<?> publish(@RequestBody @NotEmpty List<Long> formIds) {
+    public R<Void> publish(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.CUSTOM_FORM.FORM_IDS}") List<Long> formIds) {
         this.customFormService.publishCustomForms(formIds, StpAdminUtil.getLoginUser().getUsername());
         return R.ok();
     }
 
+    @XComment("{API.DOC.CMS.CUSTOM_FORM.OFFLINE}")
     @Log(title = " 下线自定义表单", businessType = BusinessType.UPDATE)
     @Priv(type = AdminUserType.TYPE, value = { CustomFormPriv.Add, CustomFormPriv.Edit })
     @PostMapping("/offline")
-    public R<?> offline(@RequestBody @NotEmpty List<Long> formIds) throws IOException {
+    public R<Void> offline(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.CUSTOM_FORM.FORM_IDS}") List<Long> formIds) throws IOException {
         this.customFormService.offlineCustomForms(formIds, StpAdminUtil.getLoginUser().getUsername());
         return R.ok();
     }

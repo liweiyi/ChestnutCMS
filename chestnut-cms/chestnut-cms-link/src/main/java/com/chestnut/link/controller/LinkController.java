@@ -16,13 +16,17 @@
 package com.chestnut.link.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
+
+
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -49,6 +53,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.LINK.MODULE}")
 @RestController
 @RequestMapping("/cms/link")
 @RequiredArgsConstructor
@@ -56,9 +61,10 @@ public class LinkController extends CmsRestController {
 
 	private final ILinkService linkService;
 
+	@XComment("{API.DOC.CMS.LINK.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.View)
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam("groupId") @Min(1) Long groupId,
+	public R<TableData<CmsLink>> getPageList(@XComment("{CMS.LINK_GROUP.ID}") @RequestParam("groupId") @Min(1) Long groupId,
 			@RequestParam(value = "query", required = false) String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<CmsLink> page = this.linkService.lambdaQuery().eq(CmsLink::getGroupId, groupId)
@@ -75,10 +81,11 @@ public class LinkController extends CmsRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.CMS.LINK.CREATE}")
 	@Log(title = "新增友链", businessType = BusinessType.INSERT)
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.Add)
 	@PostMapping("/add")
-	public R<?> add(@RequestBody  @Validated LinkDTO dto) {
+	public R<Void> add(@RequestBody @Validated LinkDTO dto) {
 		CmsLink link = new CmsLink();
 		BeanUtils.copyProperties(dto, link, "siteId", "sortFlag");
 
@@ -91,10 +98,11 @@ public class LinkController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.LINK.UPDATE}")
 	@Log(title = "编辑友链", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { FriendLinkPriv.Add, FriendLinkPriv.Edit } )
 	@PostMapping("/update")
-	public R<String> edit(@RequestBody  @Validated LinkDTO dto) {
+	public R<Void> edit(@RequestBody @Validated LinkDTO dto) {
 		CmsLink link = new CmsLink();
 		BeanUtils.copyProperties(dto, link, "siteId", "groupId");
 		link.updateBy(StpAdminUtil.getLoginUser().getUsername());
@@ -102,10 +110,11 @@ public class LinkController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.LINK.DELETE}")
 	@Log(title = "删除友链", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE, value = FriendLinkPriv.Delete)
 	@PostMapping("/delete")
-	public R<String> remove(@RequestBody @Validated @NotEmpty List<LinkDTO> dtoList) {
+	public R<Void> remove(@RequestBody @Validated @NotEmpty List<LinkDTO> dtoList) {
 		List<Long> linkIds = dtoList.stream().map(LinkDTO::getLinkId).toList();
 		this.linkService.removeByIds(linkIds);
 		return R.ok();

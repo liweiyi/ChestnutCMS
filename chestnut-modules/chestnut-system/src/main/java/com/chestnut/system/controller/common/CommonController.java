@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.controller.common;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
@@ -26,6 +27,9 @@ import com.chestnut.system.config.SystemConfig;
 import com.chestnut.system.fixed.config.SysUploadSizeLimit;
 import com.chestnut.system.fixed.config.SysUploadTypeLimit;
 import com.chestnut.system.security.AdminUserType;
+
+
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +52,7 @@ import java.util.Objects;
 /**
  * 通用请求处理
  */
+@XComment("{API.DOC.COMMON.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/common")
@@ -58,6 +63,7 @@ public class CommonController extends BaseRestController {
 	/**
 	 * 通用上传请求（单个）
 	 */
+	@XComment("{API.DOC.COMMON.UPLOAD_FILE}")
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/upload")
 	public R<?> uploadFile(MultipartFile file) throws Exception {
@@ -85,6 +91,7 @@ public class CommonController extends BaseRestController {
 	/**
 	 * 本地资源通用下载
 	 */
+	@XComment("{API.DOC.COMMON.DOWNLOAD_FILE}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/download")
 	public void resourceDownload(String path, HttpServletRequest request, HttpServletResponse response)

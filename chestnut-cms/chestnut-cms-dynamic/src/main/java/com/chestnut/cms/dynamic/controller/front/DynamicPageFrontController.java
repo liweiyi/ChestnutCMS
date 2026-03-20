@@ -16,8 +16,11 @@
 package com.chestnut.cms.dynamic.controller.front;
 
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.ServletUtils;
+
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.DYNAMIC.FRONT_MODULE}")
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -44,6 +48,7 @@ public class DynamicPageFrontController extends BaseRestController {
 
 	private final IDynamicPageService dynamicPageService;
 
+	@XComment("{API.DOC.CMS.DYNAMIC.FRONT_HANDLE}")
 	@GetMapping
 	public void handleDynamicPageRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		Map<String, String> parameters = ServletUtils.getParameters();

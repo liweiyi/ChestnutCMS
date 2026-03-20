@@ -15,9 +15,12 @@
  */
 package com.chestnut.contentcore.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+
+
 import com.chestnut.contentcore.config.properties.CMSProperties;
 import com.chestnut.contentcore.domain.vo.CmsConfigurationDashboardVO;
 import com.chestnut.contentcore.publish.IPublishStrategy;
@@ -33,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.DASHBOARD.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -43,8 +47,9 @@ public class DashboardController extends BaseRestController {
 
 	private final CMSProperties properties;
 
+	@XComment("{API.DOC.CMS.DASHBOARD.GET_CONFIG}")
 	@GetMapping("/config")
-	public R<?> getCmsConfiguration() {
+	public R<CmsConfigurationDashboardVO> getCmsConfiguration() {
 		CmsConfigurationDashboardVO vo = CmsConfigurationDashboardVO.builder()
 				.publishStrategy(publishStrategy.getId())
 				.resourceRoot(properties.getResourceRoot())

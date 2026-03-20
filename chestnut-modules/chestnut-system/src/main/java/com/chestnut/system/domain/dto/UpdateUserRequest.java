@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.Gender;
 import com.chestnut.system.fixed.dict.UserStatus;
@@ -36,38 +37,50 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.UPDATE_USER_REQ}")
 public class UpdateUserRequest extends BaseDTO {
 
     @LongId
+    @XComment("{ENT.SYS.USER.ID}")
     private Long userId;
 
     @LongId
+    @XComment("{ENT.SYS.USER.DEPT_ID}")
     private Long deptId;
 
     @Length(max = 30)
+    @XComment("{ENT.SYS.USER.NICK_NAME}")
     private String nickName;
 
     @Length(max = 30)
+    @XComment("{ENT.SYS.USER.REAL_NAME}")
     private String realName;
 
     @Email
     @Length(max = 50)
+    @XComment("{ENT.SYS.USER.MAIL}")
     private String email;
 
     @Length(max = 20)
+    @XComment("{ENT.SYS.USER.PHONE}")
     private String phoneNumber;
 
     @NotBlank
     @Dict(value = Gender.TYPE)
+    @XComment("{ENT.SYS.USER.GENDER}")
     private String sex;
 
+    @XComment("{ENT.SYS.USER.BIRTHDAY}")
     private LocalDateTime birthday;
 
     @Dict(UserStatus.TYPE)
+    @XComment("{ENT.SYS.USER.STATUS}")
     private String status;
 
+    @XComment("{ENT.SYS.USER.POST_IDS}")
     private Long[] postIds;
 
     @Length(max = 500)
+    @XComment("{CC.ENTITY.REMARK}")
     private String remark;
 }

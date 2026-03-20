@@ -101,11 +101,15 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
 				for (int i = 0; i * pageSize < total; i++) {
 					Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
 					for (CmsContent xContent : page.getRecords()) {
-                        IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
-                        IContent<?> content = contentType.loadContent(xContent);
-                        content.setOperator(Operator.defalutOperator());
-                        transactionTemplate.execute(callback -> content.publish());
-                        publishService.asyncStaticizeContent(content);
+                        try {
+                            IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
+                            IContent<?> content = contentType.loadContent(xContent);
+                            content.setOperator(Operator.defalutOperator());
+                            transactionTemplate.execute(callback -> content.publish());
+                            publishService.asyncStaticizeContent(content);
+                        } catch (Exception e) {
+                            logger.warn("SitePublishJob.publish fail: {}#{}", xContent.getContentType(), xContent.getContentId(), e);
+                        }
 					}
 				}
 				if (total > 0) {

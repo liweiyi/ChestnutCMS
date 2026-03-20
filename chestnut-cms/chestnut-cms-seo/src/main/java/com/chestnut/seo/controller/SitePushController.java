@@ -15,12 +15,15 @@
  */
 package com.chestnut.seo.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.seo.service.BaiduPushService;
 import com.chestnut.system.security.AdminUserType;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +41,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.SEO.SITE_PUSH_MODULE}")
 @RestController
 @RequestMapping("/cms/seo")
 @RequiredArgsConstructor
@@ -45,9 +49,10 @@ public class SitePushController extends CmsRestController {
 
 	private final BaiduPushService baiduPushService;
 
+	@XComment("{API.DOC.CMS.SEO.SITE_PUSH.BAIDU_PUSH}")
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/baidu_push")
-	public R<?> generateSitemap(@RequestBody @NotEmpty List<Long> contentIds) {
+	public R<List<BaiduPushService.BaiduPushResult>> generateSitemap(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.SEO.SITE_PUSH.CONTENT_IDS}") List<Long> contentIds) {
 		CmsSite site = getCurrentSite();
 
 		List<BaiduPushService.BaiduPushResult> results = baiduPushService.pushContents(site, contentIds);

@@ -17,12 +17,18 @@ package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
+
+
 import com.chestnut.common.i18n.I18nUtils;
+import com.chestnut.common.log.annotation.Log;
+import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -32,6 +38,7 @@ import com.chestnut.system.domain.dto.CreateScheduledTaskRequest;
 import com.chestnut.system.domain.dto.UpdateScheduledTaskRequest;
 import com.chestnut.system.domain.vo.ScheduledTaskVO;
 import com.chestnut.system.mapper.SysScheduledTaskLogMapper;
+import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.schedule.IScheduledHandler;
 import com.chestnut.system.schedule.ScheduledTask;
 import com.chestnut.system.security.AdminUserType;
@@ -47,11 +54,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 定时任务 控制器
+ * 定时任务
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.TASK.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RequiredArgsConstructor
 @RestController
@@ -63,7 +71,7 @@ public class SysScheduledTaskController extends BaseRestController {
 	private final SysScheduledTaskLogMapper logMapper;
 	
 	private final Map<String, IScheduledHandler> taskHandlers;
-	
+	@XComment("{API.DOC.SYS.TASK.GET_TYPE_OPTIONS}")
 	@GetMapping("/typeOptions")
 	public R<?> getTaskTypeOptions() {
 		List<IScheduledHandler> list = this.taskHandlers.values().stream()
@@ -71,9 +79,10 @@ public class SysScheduledTaskController extends BaseRestController {
 				.toList();
 		return bindSelectOptions(list, IScheduledHandler::getId, IScheduledHandler::getName);
 	}
-	
+
+	@XComment("{API.DOC.SYS.TASK.GET_LIST}")
 	@GetMapping("/list")
-	public R<?> list(@RequestParam(required = false) String status) {
+	public R<TableData<ScheduledTaskVO>> list(@RequestParam(required = false) @XComment("{API.DOC.SYS.TASK.STATUS}") String status) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysScheduledTask> page = this.taskService.lambdaQuery()
 				.eq(StringUtils.isNotEmpty(status), SysScheduledTask::getStatus, status)
@@ -90,53 +99,72 @@ public class SysScheduledTaskController extends BaseRestController {
 		}).toList();
 		return bindDataTable(list, page.getTotal());
 	}
-
+	@XComment("{API.DOC.SYS.TASK.GET_INFO}")
 	@GetMapping("/detail/{taskId}")
-	public R<?> getInfo(@PathVariable @LongId Long taskId) {
+	public R<SysScheduledTask> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.TASK.ID}") Long taskId) {
 		SysScheduledTask task = this.taskService.getById(taskId);
 		Assert.notNull(task, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("taskId", taskId));
 		task.setData(JacksonUtils.parse(task.getTriggerArgs()));
 		return R.ok(task);
 	}
 
+	@XComment("{API.DOC.SYS.TASK.CREATE_TASK}")
+	@Log(title = "定时任务", businessType = BusinessType.INSERT)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PostMapping("/add")
-	public R<?> add(@Validated @RequestBody CreateScheduledTaskRequest dto) {
+	public R<Void> add(@Validated @RequestBody CreateScheduledTaskRequest dto) {
 		taskService.insertTask(dto);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.TASK.UPDATE_TASK}")
+	@Log(title = "定时任务", businessType = BusinessType.UPDATE)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PostMapping("/update")
-	public R<?> edit(@Validated @RequestBody UpdateScheduledTaskRequest dto) {
+	public R<Void> edit(@Validated @RequestBody UpdateScheduledTaskRequest dto) {
 		taskService.updateTask(dto);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.TASK.DELETE_TASK}")
+	@Log(title = "定时任务", businessType = BusinessType.DELETE)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> taskIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.TASK.IDS}") List<Long> taskIds) {
 		taskService.deleteTasks(taskIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.TASK.ENABLE}")
+	@Log(title = "定时任务", businessType = BusinessType.UPDATE)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PostMapping("/enable/{taskId}")
-	public R<?> enable(@PathVariable @LongId Long taskId) {
+	public R<Void> enable(@PathVariable @LongId @XComment("{API.DOC.SYS.TASK.ID}") Long taskId) {
 		taskService.enableTask(taskId);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.TASK.DISABLE}")
+	@Log(title = "定时任务", businessType = BusinessType.UPDATE)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PostMapping("/disable/{taskId}")
-	public R<?> disable(@PathVariable @LongId Long taskId) {
+	public R<Void> disable(@PathVariable @LongId @XComment("{API.DOC.SYS.TASK.ID}") Long taskId) {
 		taskService.disableTask(taskId);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.TASK.EXEC}")
+	@Log(title = "定时任务", businessType = BusinessType.UPDATE)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
 	@PostMapping("/exec/{taskId}")
-	public R<?> execTaskOnce(@PathVariable @LongId Long taskId) {
+	public R<Void> execTaskOnce(@PathVariable @LongId @XComment("{API.DOC.SYS.TASK.ID}") Long taskId) {
 		taskService.execOnceImmediately(taskId);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.TASK.GET_LOGS}")
 	@GetMapping("/logs")
-	public R<?> getTaskLogs(@RequestParam @LongId Long taskId) {
+	public R<TableData<SysScheduledTaskLog>> getTaskLogs(@RequestParam @LongId @XComment("{API.DOC.SYS.TASK.ID}") Long taskId) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysScheduledTaskLog> q = new LambdaQueryWrapper<SysScheduledTaskLog>()
 				.eq(SysScheduledTaskLog::getTaskId, taskId)
@@ -145,8 +173,10 @@ public class SysScheduledTaskController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.SYS.TASK.DELETE_LOGS}")
+	@Log(title = "定时任务日志", businessType = BusinessType.DELETE)
 	@PostMapping("/logs/delete")
-	public R<?> removeLogs(@RequestBody @NotEmpty List<Long> logIds) {
+	public R<Void> removeLogs(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.TASK.LOG_IDS}") List<Long> logIds) {
 		this.logMapper.deleteByIds(logIds);
 		return R.ok();
 	}

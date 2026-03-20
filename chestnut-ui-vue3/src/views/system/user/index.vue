@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
-    <el-row :gutter="20">
-      <el-col :span="4" :xs="24">
+    <cc-spliter storage-key="sys-user">
+      <cc-spliter-column width="15%" style="padding-right: 10px;">
         <div class="head-container">
           <el-input
             v-model="deptName"
@@ -24,9 +24,9 @@
             @node-click="handleNodeClick"
           />
         </div>
-      </el-col>
+      </cc-spliter-column>
       <!--用户数据-->
-      <el-col :span="20" :xs="24">
+      <cc-spliter-column style="padding-right: 10px;">
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
             <el-button
@@ -189,8 +189,8 @@
           v-model:limit="queryParams.pageSize"
           @pagination="getList"
         />
-      </el-col>
-    </el-row>
+      </cc-spliter-column>
+    </cc-spliter>
 
     <!-- 添加或修改用户配置对话框 -->
     <el-dialog :title="title" v-model="open" width="600px" append-to-body>

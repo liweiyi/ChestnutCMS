@@ -15,6 +15,7 @@
  */
 package com.chestnut.vote.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.Valid;
@@ -33,43 +34,36 @@ import java.util.List;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.VOTE.SUBJECT.SAVE_ITEMS_REQ}")
 public class SaveSubjectItemsRequest extends BaseDTO {
 
-    /**
-     * 主题ID
-     */
     @LongId
+    @XComment("{CC.VOTE_SUBJECT.ID}")
     private Long subjectId;
 
-    /**
-     * 问卷调查主题选项列表
-     */
     @Valid
+    @XComment("{CC.VOTE_SUBJECT.ITEM_LIST}")
     private List<SubjectItem> itemList;
 
     @Getter
     @Setter
+    @XComment("{API.DOC.VOTE.SUBJECT.ITEM.SAVE_REQ}")
     public static class SubjectItem {
 
+        @XComment("{CC.VOTE_SUBJECT.ITEM.ID}")
         private Long itemId;
 
-        /**
-         * 类型（文字、图片、内容引用）
-         */
         @NotBlank
         @Length(max = 20)
+        @XComment("{CC.VOTE_SUBJECT.ITEM.TYPE}")
         private String type;
 
-        /**
-         * 选项内容（文字内容、图片地址、内容引用地址）
-         */
         @Length(max = 255)
+        @XComment("{CC.VOTE_SUBJECT.ITEM.CONTENT}")
         private String content;
 
-        /**
-         * 选项描述
-         */
         @Length(max = 255)
+        @XComment("{CC.VOTE_SUBJECT.ITEM.DESC}")
         private String description;
     }
 }

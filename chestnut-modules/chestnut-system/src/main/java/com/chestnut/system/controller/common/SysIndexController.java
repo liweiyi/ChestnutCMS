@@ -15,8 +15,12 @@
  */
 package com.chestnut.system.controller.common;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.config.properties.ChestnutProperties;
 import com.chestnut.common.i18n.I18nUtils;
+
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.INDEX.MODULE}")
 @RestController
 @RequiredArgsConstructor
 public class SysIndexController {
@@ -36,6 +41,7 @@ public class SysIndexController {
 	/**
 	 * 访问首页，提示语
 	 */
+	@XComment("{API.DOC.SYS.INDEX.GET}")
 	@RequestMapping("/")
 	public String index() {
 		return I18nUtils.parse("TIPS.SYS.WELCOME", properties.getName(), properties.getVersion());

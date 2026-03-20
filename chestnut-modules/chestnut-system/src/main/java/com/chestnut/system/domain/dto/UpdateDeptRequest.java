@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,8 +28,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.DEPT.UPDATE_DEPT_REQ}")
 public class UpdateDeptRequest extends CreateDeptRequest {
 
     @LongId
+    @XComment("{API.DOC.SYS.DEPT.ID}")
     private Long deptId;
 }

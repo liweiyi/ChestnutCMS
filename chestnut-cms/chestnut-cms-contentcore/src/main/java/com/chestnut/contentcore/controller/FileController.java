@@ -16,6 +16,7 @@
 package com.chestnut.contentcore.controller;
 
 import cn.dev33.satoken.annotation.SaMode;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -23,6 +24,8 @@ import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.utils.Assert;
+
+
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.FileAddDTO;
@@ -48,6 +51,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.FILE.MODULE}")
 @Priv(
 		type = AdminUserType.TYPE,
 		value = { ContentCorePriv.FileView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -66,9 +70,10 @@ public class FileController extends CmsRestController {
 	 * @param filePath 文件目录路径
 	 * @param fileName 文件名
 	 */
+	@XComment("{API.DOC.CMS.FILE.GET_LIST}")
 	@GetMapping("/list")
-	public R<?> getFileList(@RequestParam @NotEmpty String filePath,
-							@RequestParam(required = false, defaultValue = "") String fileName) {
+	public R<?> getFileList(@RequestParam @NotEmpty @XComment("{API.DOC.CMS.FILE.FILE_PATH}") String filePath,
+							@RequestParam(required = false, defaultValue = "") @XComment("{API.DOC.CMS.FILE.FILE_NAME}") String fileName) {
 		CmsSite site = this.getCurrentSite();
 		return this.fileService.getSiteFileList(site, filePath, fileName);
 	}
@@ -76,8 +81,9 @@ public class FileController extends CmsRestController {
 	/**
 	 * 获取目录树数据
 	 */
+	@XComment("{API.DOC.CMS.FILE.GET_DIR_TREE}")
 	@GetMapping("/directoryTreeData")
-	public R<?> getDirectoryTree() {
+	public R<Map<String, Object>> getDirectoryTree() {
 		CmsSite site = this.getCurrentSite();
 		List<TreeNode<String>> list = this.fileService.getSiteDirectoryTreeData(site);
 		return R.ok(Map.of("tree", list, "resourceRoot", CMSConfig.getResourceRoot()));
@@ -90,9 +96,10 @@ public class FileController extends CmsRestController {
 	 * @return
 	 * @throws IOException
 	 */
+	@XComment("{API.DOC.CMS.FILE.RENAME}")
 	@Log(title = "文件重命名", businessType = BusinessType.UPDATE)
 	@PostMapping("/rename")
-	public R<?> renameFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
+	public R<Void> renameFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
 		CmsSite site = this.getCurrentSite();
 		this.fileService.renameFile(site, dto.getFilePath(), dto.getRename());
 		return R.ok();
@@ -105,9 +112,10 @@ public class FileController extends CmsRestController {
 	 * @return
 	 * @throws IOException
 	 */
+	@XComment("{API.DOC.CMS.FILE.ADD}")
 	@Log(title = "新建文件", businessType = BusinessType.UPDATE)
 	@PostMapping("/add")
-	public R<?> addFile(@RequestBody @Validated FileAddDTO dto) throws IOException {
+	public R<Void> addFile(@RequestBody @Validated FileAddDTO dto) throws IOException {
 		CmsSite site = this.getCurrentSite();
 		this.fileService.addFile(site, dto);
 		return R.ok();
@@ -119,9 +127,10 @@ public class FileController extends CmsRestController {
 	 * @return
 	 * @throws IOException
 	 */
+	@XComment("{API.DOC.CMS.FILE.UPLOAD}")
 	@Log(title = "上传文件", businessType = BusinessType.UPDATE)
 	@PostMapping("/upload")
-	public R<?> uploadFile(@RequestParam("dir") @NotEmpty String dir, @RequestParam("file") MultipartFile multipartFile)
+	public R<Void> uploadFile(@RequestParam("dir") @NotEmpty @XComment("{API.DOC.CMS.FILE.DIR}") String dir, @RequestParam("file") MultipartFile multipartFile)
 			throws IOException {
 		Assert.notNull(multipartFile, () -> CommonErrorCode.NOT_EMPTY.exception("file"));
 
@@ -137,9 +146,10 @@ public class FileController extends CmsRestController {
 	 * @return
 	 * @throws IOException
 	 */
+	@XComment("{API.DOC.CMS.FILE.READ}")
 	@Log(title = "读取文件", businessType = BusinessType.OTHER)
 	@PostMapping("/read")
-	public R<?> readFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
+	public R<String> readFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
 		CmsSite site = this.getCurrentSite();
 		return R.ok(this.fileService.readFile(site, dto.getFilePath()));
 	}
@@ -151,9 +161,10 @@ public class FileController extends CmsRestController {
 	 * @return
 	 * @throws IOException
 	 */
+	@XComment("{API.DOC.CMS.FILE.EDIT}")
 	@Log(title = "修改文件", businessType = BusinessType.UPDATE)
 	@PostMapping("/edit")
-	public R<?> editFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
+	public R<Void> editFile(@RequestBody @Validated FileOperateDTO dto) throws IOException {
 		CmsSite site = this.getCurrentSite();
 		this.fileService.editFile(site, dto.getFilePath(), dto.getFileContent());
 		return R.ok();
@@ -166,9 +177,10 @@ public class FileController extends CmsRestController {
 	 * @return
 	 * @throws IOException
 	 */
+	@XComment("{API.DOC.CMS.FILE.DELETE}")
 	@Log(title = "删除文件", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> deleteFile(@RequestBody @NotEmpty List<FileOperateDTO> dtoList) throws IOException {
+	public R<Void> deleteFile(@RequestBody @NotEmpty List<FileOperateDTO> dtoList) throws IOException {
 		CmsSite site = this.getCurrentSite();
 		String[] filePathArr = dtoList.stream().map(FileOperateDTO::getFilePath).toArray(String[]::new);
 		this.fileService.deleteFiles(site, filePathArr);

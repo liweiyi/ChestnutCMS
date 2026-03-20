@@ -15,6 +15,7 @@
  */
 package com.chestnut.word.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
@@ -31,11 +32,14 @@ import java.util.List;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.WORD.TAG_WORD.BATCH_CREATE_REQ}")
 public class BatchAddTagRequest extends BaseDTO {
 
+    @XComment("{CC.TAG_WORD.GROUP_ID}")
     @LongId
     private Long groupId;
 
+    @XComment("{API.DOC.WORD.TAG_WORD.WORDS}")
     @NotEmpty
     private List<String> words;
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="app-container cms-file-container">
-    <el-container>
-      <el-aside width="220">
+    <cc-spliter storage-key="cms-file">
+      <cc-spliter-column width="20%" style="padding-right: 10px;">
         <el-scrollbar :style="treeSideStyle">
           <div class="treeRoot">
             {{ $t("CMS.File.ResourceRoot") }}
@@ -28,158 +28,150 @@
           >
           </el-tree>
         </el-scrollbar>
-      </el-aside>
-      <el-container>
-        <el-header style="height: 70px">
-          <div class="btn-toolbar">
-            <el-button
-              type="primary"
-              plain
-              icon="Plus"
-              :disabled="disableAdd"
-              @click="handleAdd"
-              >{{ $t("Common.Add") }}</el-button
-            >
-            <el-button
-              type="primary"
-              plain
-              icon="Upload"
-              :disabled="disableAdd"
-              @click="handleUpload"
-              >{{ $t("CMS.File.Upload") }}</el-button
-            >
-            <el-button
-              type="danger"
-              plain
-              icon="Delete"
-              :disabled="disableAdd || selectedRows.length==0"
-              @click="handleDelete()"
-              >{{ $t("Common.Delete") }}</el-button
-            >
-          </div>
-          <el-card
-            shadow="hover"
-            class="directory-toolbar"
-            style="padding: 0, 10px"
+      </cc-spliter-column>
+      <cc-spliter-column>
+        <div class="btn-toolbar">
+          <el-button
+            type="primary"
+            plain
+            icon="Plus"
+            :disabled="disableAdd"
+            @click="handleAdd"
+            >{{ $t("Common.Add") }}</el-button
           >
-            <span class="span-path">
-              <el-button
-                type="text"
-                icon="Folder"
-                @click="handlePathClick(-1)"
-              ></el-button>
-              <span class="path-spliter">/</span>
-            </span>
-            <span
-              class="span-path"
-              v-for="(item, index) in pathArray"
-              :key="item"
+          <el-button
+            type="primary"
+            plain
+            icon="Upload"
+            :disabled="disableAdd"
+            @click="handleUpload"
+            >{{ $t("CMS.File.Upload") }}</el-button
+          >
+          <el-button
+            type="danger"
+            plain
+            icon="Delete"
+            :disabled="disableAdd || selectedRows.length==0"
+            @click="handleDelete()"
+            >{{ $t("Common.Delete") }}</el-button
+          >
+        </div>
+        <div class="dirrectory-toolbar">
+          <span class="span-path">
+            <el-button
+              type="text"
+              icon="Folder"
+              @click="handlePathClick(-1)"
+            ></el-button>
+            <span class="path-spliter">/</span>
+          </span>
+          <span
+            class="span-path"
+            v-for="(item, index) in pathArray"
+            :key="item"
+          >
+            <span v-if="index" class="path-spliter">/</span>
+            <el-button
+              type="text"
+              @click="handlePathClick(index)"
+              style="margin-left: 0"
+              >{{ item }}</el-button
             >
-              <span v-if="index" class="path-spliter">/</span>
+          </span>
+        </div>
+        <el-table
+          v-loading="loading"
+          :data="fileList"
+          @row-dblclick="handleEdit"
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column type="selection" width="50" align="center" />
+          <el-table-column
+            :label="$t('CMS.File.FileName')"
+            align="left"
+            prop="fileName"
+          >
+            <template #default="scope">
+              <i v-if="scope.row.isDirectory" class="el-icon-folder"></i>
               <el-button
+                v-if="scope.row.isDirectory"
                 type="text"
-                @click="handlePathClick(index)"
-                style="margin-left: 0"
-                >{{ item }}</el-button
+                @click="handleDirectoryClick(scope.row)"
+                >{{ scope.row.fileName }}</el-button
               >
-            </span>
-          </el-card>
-        </el-header>
-        <el-main>
-          <el-table
-            v-loading="loading"
-            :data="fileList"
-            @row-dblclick="handleEdit"
-            @selection-change="handleSelectionChange"
+              <span v-else
+                ><svg-icon :icon-class="scope.row.iconClass" />
+                {{ scope.row.fileName }}</span
+              >
+            </template>
+          </el-table-column>
+          <el-table-column
+            :label="$t('CMS.File.FileSize')"
+            align="center"
+            width="160"
+            prop="fileSize"
+          />
+          <el-table-column
+            :label="$t('CMS.File.ModifyTime')"
+            align="center"
+            width="200"
+            prop="modifyTime"
+          />
+          <el-table-column
+            :label="$t('Common.Operation')"
+            align="center"
+            width="240"
           >
-            <el-table-column type="selection" width="50" align="center" />
-            <el-table-column
-              :label="$t('CMS.File.FileName')"
-              align="left"
-              prop="fileName"
-            >
-              <template #default="scope">
-                <i v-if="scope.row.isDirectory" class="el-icon-folder"></i>
-                <el-button
-                  v-if="scope.row.isDirectory"
-                  type="text"
-                  @click="handleDirectoryClick(scope.row)"
-                  >{{ scope.row.fileName }}</el-button
-                >
-                <span v-else
-                  ><svg-icon :icon-class="scope.row.iconClass" />
-                  {{ scope.row.fileName }}</span
-                >
-              </template>
-            </el-table-column>
-            <el-table-column
-              :label="$t('CMS.File.FileSize')"
-              align="center"
-              width="160"
-              prop="fileSize"
-            />
-            <el-table-column
-              :label="$t('CMS.File.ModifyTime')"
-              align="center"
-              width="200"
-              prop="modifyTime"
-            />
-            <el-table-column
-              :label="$t('Common.Operation')"
-              align="center"
-              width="240"
-            >
-              <template #default="scope">
-                <el-popover
-                  style="margin-right: 10px"
-                  placement="top"
-                  width="200"
-                  trigger="click"
-                  v-model:visible="scope.row.showRename"
-                >
-                  <template #reference>
-                    <el-button
-                      type="text"
-                      icon="Edit"
-                      >{{ $t("CMS.File.Rename") }}</el-button
-                    >
-                  </template>
-                  <el-input
-                    v-model="scope.row.rename"
+            <template #default="scope">
+              <el-popover
+                style="margin-right: 10px"
+                placement="top"
+                width="200"
+                trigger="click"
+                v-model:visible="scope.row.showRename"
+              >
+                <template #reference>
+                  <el-button
+                    type="text"
+                    icon="Edit"
+                    >{{ $t("CMS.File.Rename") }}</el-button
+                  >
+                </template>
+                <el-input
+                  v-model="scope.row.rename"
+                  size="small"
+                  :placeholder="$t('CMS.File.InputFileName')"
+                />
+                <div style="text-align: right; margin-top: 5px">
+                  <el-button
+                    type="text"
                     size="small"
-                    :placeholder="$t('CMS.File.InputFileName')"
-                  />
-                  <div style="text-align: right; margin-top: 5px">
-                    <el-button
-                      type="text"
-                      size="small"
-                      @click="scope.row.showRename = false"
-                    >{{ $t("Common.Cancel") }}</el-button>
-                    <el-button
-                      type="primary"
-                      size="small"
-                      @click="handleRename(scope.row)"
-                    >{{ $t("Common.Confirm") }}</el-button>
-                  </div>
-                </el-popover>
-                <el-button
-                  v-if="scope.row.canEdit"
-                  type="text"
-                  icon="Edit"
-                  @click="handleEdit(scope.row)"
-                >{{ $t("Common.Edit") }}</el-button>
-                <el-button
-                  v-if="!disableAdd"
-                  type="text"
-                  icon="Delete"
-                  @click="handleDelete(scope.row)"
-                >{{ $t("Common.Delete") }}</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-main>
-      </el-container>
-    </el-container>
+                    @click="scope.row.showRename = false"
+                  >{{ $t("Common.Cancel") }}</el-button>
+                  <el-button
+                    type="primary"
+                    size="small"
+                    @click="handleRename(scope.row)"
+                  >{{ $t("Common.Confirm") }}</el-button>
+                </div>
+              </el-popover>
+              <el-button
+                v-if="scope.row.canEdit"
+                type="text"
+                icon="Edit"
+                @click="handleEdit(scope.row)"
+              >{{ $t("Common.Edit") }}</el-button>
+              <el-button
+                v-if="!disableAdd"
+                type="text"
+                icon="Delete"
+                @click="handleDelete(scope.row)"
+              >{{ $t("Common.Delete") }}</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </cc-spliter-column>
+    </cc-spliter>
     <!-- 添加文件或目录 -->
     <el-dialog
       :title="$t('CMS.File.AddTitle')"
@@ -510,13 +502,19 @@ const handleUploadSubmit = () => {
     overflow-x: hidden;
   }
 
-  .span-path {
-    line-height: 30px;
-  }
-
-  .path-spliter {
-    display: inline-block;
-    padding: 0 5px;
+  .dirrectory-toolbar {
+    padding: 0 10px;
+    border: 1px solid #e6ebf5;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    .span-path {
+      line-height: 30px;
+    }
+    .path-spliter {
+      display: inline-block;
+      padding: 0 5px;
+    }
   }
 
   .divider {

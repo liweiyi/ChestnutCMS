@@ -18,6 +18,7 @@ package com.chestnut.article.controller;
 
 import com.chestnut.article.IArticleBodyFormat;
 import com.chestnut.article.PublishPipeProp_UEditorCss;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
@@ -30,6 +31,8 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.security.AdminUserType;
+
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -50,6 +53,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.ARTICLE.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -64,8 +68,9 @@ public class ArticleController extends BaseRestController {
 
     private final List<IArticleBodyFormat> articleBodyFormatList;
 
+    @XComment("{API.DOC.CMS.ARTICLE.GET_UEDITOR_CSS}")
     @GetMapping("/ueditor_css")
-    public R<?> getUEditorCss(@RequestParam Long catalogId) {
+    public R<Map<String, String>> getUEditorCss(@XComment("{API.DOC.CMS.ARTICLE.CATALOG_ID}") @RequestParam Long catalogId) {
         CmsCatalog catalog = catalogService.getCatalog(catalogId);
         CmsSite site = siteService.getSite(catalog.getSiteId());
 
@@ -81,8 +86,9 @@ public class ArticleController extends BaseRestController {
         return R.ok(data);
     }
 
+    @XComment("{API.DOC.CMS.ARTICLE.GET_FORMATS}")
     @GetMapping("/formats")
-    public R<?> getArticleBodyFormats() {
+    public R<List<ArticleBodyFormat>> getArticleBodyFormats() {
         List<ArticleBodyFormat> list = this.articleBodyFormatList.stream().map(item -> {
             ArticleBodyFormat format = new ArticleBodyFormat();
             format.setId(item.getId());

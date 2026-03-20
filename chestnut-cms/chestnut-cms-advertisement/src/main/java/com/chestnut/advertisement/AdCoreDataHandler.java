@@ -46,7 +46,7 @@ public class AdCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         // cms_advertisement
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出广告数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsAdTips.EXPORTING_AD);
         List<CmsAdvertisement> list = advertisementService.lambdaQuery()
                 .eq(CmsAdvertisement::getSiteId, context.getSite().getSiteId())
                 .list();
@@ -55,7 +55,7 @@ public class AdCoreDataHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteImport(SiteImportContext context) {
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入广告数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsAdTips.IMPORTING_AD);
         List<File> files = context.readDataFiles(CmsAdvertisement.TABLE_NAME);
         files.forEach(f -> {
             List<CmsAdvertisement> list = JacksonUtils.fromList(f, CmsAdvertisement.class);
@@ -70,7 +70,7 @@ public class AdCoreDataHandler implements ICoreDataHandler {
                     data.setRedirectUrl(context.dealInternalUrl(data.getRedirectUrl()));
                     advertisementService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入广告数据`" + oldAdvertisementId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsAdTips.IMPORT_AD_FAIL, oldAdvertisementId, e.getMessage());
                     log.error("Import advertisement failed: {}", data.getAdvertisementId(), e);
                 }
             }

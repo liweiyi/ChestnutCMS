@@ -15,11 +15,16 @@
  */
 package com.chestnut.contentcore.domain.pojo;
 
+import com.chestnut.common.annotation.XComment;
+
 /**
  * PublishPipeTemplate
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public record PublishPipeTemplate(String name, String code, String template) {
+public record PublishPipeTemplate(
+        @XComment("{CMS.PUBLISH_PIPE.NAME}") String name,
+        @XComment("{CMS.PUBLISH_PIPE.CODE}") String code,
+        @XComment("{CMS.PUBLISH_PIPE.TEMPLATE}") String template) {
 }

@@ -20,9 +20,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.domain.vo.ArticleApiVO;
 import com.chestnut.article.service.IArticleService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.IdUtils;
+
+
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
@@ -49,6 +52,7 @@ import java.util.stream.Collectors;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.ARTICLE_API.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/cms/article")
@@ -60,10 +64,11 @@ public class ArticleApiController extends BaseRestController {
 
     private final IArticleService articleService;
 
+    @XComment("{API.DOC.CMS.ARTICLE_API.GET_LIST}")
     @GetMapping("/list")
     public R<List<ArticleApiVO>> getContentList(
-            @RequestParam("sid") Long siteId,
-            @RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
+            @XComment("{API.DOC.CMS.ARTICLE_API.SITE_ID}") @RequestParam("sid") Long siteId,
+            @XComment("{API.DOC.CMS.ARTICLE.CATALOG_ID}") @RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
             @RequestParam(value = "lv", required = false, defaultValue = "Root") String level,
             @RequestParam(value = "attrs", required = false) String hasAttributes,
             @RequestParam(value = "no_attrs", required = false) String noAttributes,

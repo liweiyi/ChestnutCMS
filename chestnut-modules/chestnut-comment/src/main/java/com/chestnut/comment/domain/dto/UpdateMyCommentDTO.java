@@ -15,6 +15,7 @@
  */
 package com.chestnut.comment.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 
 import jakarta.validation.constraints.Min;
@@ -22,19 +23,16 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.COMMENT.UPDATE_MY_REQ}")
 @Getter
 @Setter
 public class UpdateMyCommentDTO extends BaseDTO {
 
-	/**
-	 * 评论ID
-	 */
+	@XComment("{API.DOC.COMMENT.COMMENT_ID}")
 	@Min(1)
 	private Long commentId;
-		
-	/**
-	 * 评论内容
-	 */
+
+	@XComment("{API.DOC.COMMENT.CONTENT}")
 	@NotBlank
 	private String content;
 }

@@ -15,6 +15,7 @@
  */
 package com.chestnut.word.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.system.validator.LongId;
@@ -33,32 +34,29 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.WORD.HOT_WORD_GROUP.UPDATE_REQ}")
 public class UpdateHotWordGroupRequest extends BaseDTO {
 
+    @XComment("{CC.HOT_WORD_GROUP.ID}")
     @LongId
     private Long groupId;
 
-    /**
-     * 名称
-     */
+    @XComment("{CC.HOT_WORD_GROUP.NAME}")
     @NotBlank
     @Length(max = 255)
     private String name;
 
-    /**
-     * 编码，唯一标识
-     */
+    @XComment("{CC.HOT_WORD_GROUP.CODE}")
     @NotBlank
     @Length(max = 50)
     @Pattern(regexp = RegexConsts.REGEX_CODE)
     private String code;
 
-    /**
-     * 排序
-     */
+    @XComment("{CC.ENTITY.SORT}")
     @NotNull
     private Long sortFlag;
 
+    @XComment("{CC.ENTITY.REMARK}")
     @Length(max = 500)
     private String remark;
 }

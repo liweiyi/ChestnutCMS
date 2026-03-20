@@ -15,17 +15,21 @@
  */
 package com.chestnut.search.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@XComment("{API.DOC.SEARCH.WORD_ANALYZE_REQ}")
 public class WordAnalyzeRequest {
 	
 	@NotBlank
+	@XComment("{API.DOC.SEARCH.ANALYZE_TYPE}")
 	private String type;
 
 	@NotBlank
+	@XComment("{API.DOC.SEARCH.ANALYZE_TEXT}")
     private String text;
 }

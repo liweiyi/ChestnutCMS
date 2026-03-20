@@ -16,6 +16,7 @@
 package com.chestnut.member.controller.front;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
@@ -29,6 +30,8 @@ import com.chestnut.member.service.IMemberFollowService;
 import com.chestnut.member.service.IMemberStatDataService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+@XComment("{API.DOC.MEMBER.FOLLOW_API_MODULE}")
 @Priv(type = MemberUserType.TYPE)
 @RequiredArgsConstructor
 @RestController
@@ -50,8 +54,9 @@ public class MemberFollowApiController extends BaseRestController {
 
 	private final IMemberStatDataService memberStatDataService;
 
+	@XComment("{API.DOC.MEMBER.CHECK_FOLLOW}")
 	@GetMapping("/api/member/check_follow")
-	public R<?> checkFollowMember(@RequestParam @NotBlank String targetIds) {
+	public R<?> checkFollowMember(@RequestParam @NotBlank @XComment("{API.DOC.MEMBER.TARGET_IDS}") String targetIds) {
 		String[] targetMemberStrIds = StringUtils.split(targetIds, ",");
 		List<Long> targetMemberIds = Stream.of(targetMemberStrIds).map(Long::valueOf).toList();
 		IdUtils.validate(targetMemberIds, true);
@@ -63,17 +68,19 @@ public class MemberFollowApiController extends BaseRestController {
 		return R.ok(map);
 	}
 
+	@XComment("{API.DOC.MEMBER.FOLLOW}")
 	@IgnoreDemoMode
 	@PostMapping("/api/member/follow")
-	public R<?> followMember(@RequestParam @LongId Long targetId) {
+	public R<?> followMember(@RequestParam @LongId @XComment("{API.DOC.MEMBER.TARGET_ID}") Long targetId) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		this.memberFollowService.follow(memberId, targetId);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.CANCEL_FOLLOW}")
 	@IgnoreDemoMode
 	@PostMapping("/api/member/cancel_follow")
-	public R<?> cancelFollowMember(@RequestParam @LongId Long targetId) {
+	public R<?> cancelFollowMember(@RequestParam @LongId @XComment("{API.DOC.MEMBER.TARGET_ID}") Long targetId) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		if (memberId == targetId) {
 			return R.ok();
@@ -82,12 +89,10 @@ public class MemberFollowApiController extends BaseRestController {
 		return R.ok();
 	}
 
-	/**
-	 * 获取关注用户列表
-	 */
+	@XComment("{API.DOC.MEMBER.GET_FOLLOWS}")
 	@GetMapping("/api/member/follows")
-	public R<?> getMemberFollows(@RequestParam(required = false, defaultValue = "20") Integer limit,
-								 @RequestParam(required = false, defaultValue = "0") Long offset) {
+	public R<?> getMemberFollows(@RequestParam(required = false, defaultValue = "20") @XComment("{CC.ENTITY.LIMIT}") Integer limit,
+								 @RequestParam(required = false, defaultValue = "0") @XComment("{CC.ENTITY.OFFSET}") Long offset) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		List<Long> followMemberIds = memberFollowService.lambdaQuery()
 				.eq(MemberFollow::getMemberId, memberId)
@@ -100,12 +105,10 @@ public class MemberFollowApiController extends BaseRestController {
 		return this.bindDataTable(list);
 	}
 
-	/**
-	 * 获取粉丝用户列表
-	 */
+	@XComment("{API.DOC.MEMBER.GET_FOLLOWERS}")
 	@GetMapping("/api/member/followers")
-	public R<?> getMemberFollowers(@RequestParam(required = false, defaultValue = "20") Integer limit,
-								   @RequestParam(required = false, defaultValue = "0") Long offset) {
+	public R<?> getMemberFollowers(@RequestParam(required = false, defaultValue = "20") @XComment("{CC.ENTITY.LIMIT}") Integer limit,
+								   @RequestParam(required = false, defaultValue = "0") @XComment("{CC.ENTITY.OFFSET}") Long offset) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		List<Long> followerMemberIds = memberFollowService.lambdaQuery()
 				.eq(MemberFollow::getFollowMemberId, memberId)

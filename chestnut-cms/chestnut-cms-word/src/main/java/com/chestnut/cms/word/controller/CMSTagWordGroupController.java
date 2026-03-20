@@ -16,6 +16,7 @@
 package com.chestnut.cms.word.controller;
 
 import cn.dev33.satoken.annotation.SaMode;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.security.anno.Priv;
@@ -27,6 +28,8 @@ import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.domain.dto.CreateTagWordGroupRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.ITagWordGroupService;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +42,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CMS_WORD.TAG_WORD_GROUP}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/tagword/group")
@@ -51,8 +55,9 @@ public class CMSTagWordGroupController extends CmsRestController {
             value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
             mode = SaMode.AND
     )
+	@XComment("{API.DOC.CMS.CMS_WORD.GET_TAG_WORD_GROUP_TREEDATA}")
 	@GetMapping("/treedata")
-	public R<?> getTreeData() {
+	public R<List<TreeNode<String>>> getTreeData() {
 		CmsSite currentSite = getCurrentSite();
 		List<TreeNode<String>> treeData = this.tagWordGroupService.buildTreeData(q -> {
             q.eq(TagWordGroup::getOwner, currentSite.getSiteId().toString());
@@ -65,6 +70,7 @@ public class CMSTagWordGroupController extends CmsRestController {
             value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
             mode = SaMode.AND
     )
+	@XComment("{API.DOC.CMS.CMS_WORD.ADD_TAG_WORD_GROUP}")
 	@PostMapping
 	public R<?> add(@RequestBody @Validated CreateTagWordGroupRequest req) {
 		CmsSite currentSite = getCurrentSite();

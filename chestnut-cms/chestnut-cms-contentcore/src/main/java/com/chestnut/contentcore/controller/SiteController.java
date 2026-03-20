@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
@@ -25,11 +26,15 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.domain.Operator;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
+import com.chestnut.system.annotation.IgnoreDemoMode;
+
+
 import com.chestnut.contentcore.core.IProperty.UseType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
@@ -82,6 +87,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.SITE.MODULE}")
 @RestController
 @RequestMapping("/cms/site")
 @RequiredArgsConstructor
@@ -106,6 +112,7 @@ public class SiteController extends CmsRestController {
      *
      * @apiNote 读取request.header['cc-current-site']中的siteId，如果无header或无站点则取数据库第一条站点数据
      */
+    @XComment("{API.DOC.CMS.SITE.GET_CURRENT_SITE}")
     @Priv(type = AdminUserType.TYPE)
     @GetMapping("/getCurrentSite")
     public R<Map<String, Object>> getCurrentSiteOrDefault() {
@@ -114,6 +121,7 @@ public class SiteController extends CmsRestController {
         return R.ok(Map.of("siteId", site.getSiteId(), "siteName", site.getName()));
     }
 
+    @XComment("{API.DOC.CMS.SITE.GET_DASHBOARD_INFO}")
     @Priv(type = AdminUserType.TYPE)
     @GetMapping("/getDashboardSiteInfo")
     public R<SiteDashboardVO> getDashboardSiteInfo() {
@@ -127,17 +135,20 @@ public class SiteController extends CmsRestController {
      *
      * @param siteId 站点ID
      */
+    @IgnoreDemoMode
+    @XComment("{API.DOC.CMS.SITE.SET_CURRENT_SITE}")
     @Priv(type = AdminUserType.TYPE, value = "Site:View:${#siteId}")
     @Log(title = "切换站点", businessType = BusinessType.UPDATE)
     @PostMapping("/setCurrentSite/{siteId}")
-    public R<Map<String, Object>> setCurrentSite(@PathVariable("siteId") @LongId Long siteId) {
+    public R<Map<String, Object>> setCurrentSite(@PathVariable("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
         CmsSite site = this.siteService.getSite(siteId);
         return R.ok(Map.of("siteId", site.getSiteId(), "siteName", site.getName()));
     }
 
+    @XComment("{API.DOC.CMS.SITE.SELECT_LIST}")
     @Priv(type = AdminUserType.TYPE)
     @GetMapping("/selectList")
-    public R<?> selectList(@RequestParam(value = "siteName", required = false) String siteName) {
+    public R<TableData<CmsSite>> selectList(@RequestParam(value = "siteName", required = false) String siteName) {
         return this.list(siteName);
     }
 
@@ -146,9 +157,10 @@ public class SiteController extends CmsRestController {
      *
      * @param siteName 站点名称
      */
+    @XComment("{API.DOC.CMS.SITE.GET_LIST}")
     @Priv(type = AdminUserType.TYPE, value = ContentCorePriv.SiteView)
     @GetMapping("/list")
-    public R<?> list(@RequestParam(value = "siteName", required = false) String siteName) {
+    public R<TableData<CmsSite>> list(@RequestParam(value = "siteName", required = false) String siteName) {
         LoginUser loginUser = StpAdminUtil.getLoginUser();
         List<CmsSite> list = siteService.lambdaQuery()
                 .like(StringUtils.isNotEmpty(siteName), CmsSite::getName, siteName)
@@ -168,9 +180,10 @@ public class SiteController extends CmsRestController {
      *
      * @param siteId 站点ID
      */
+    @XComment("{API.DOC.CMS.SITE.GET_DETAIL}")
     @Priv(type = AdminUserType.TYPE, value = "Site:View:${#siteId}")
     @GetMapping(value = "/detail/{siteId}")
-    public R<?> getInfo(@PathVariable @LongId Long siteId) {
+    public R<SiteDTO> getInfo(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
         CmsSite site = siteService.getById(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
@@ -186,9 +199,10 @@ public class SiteController extends CmsRestController {
         return R.ok(dto);
     }
 
+    @XComment("{API.DOC.CMS.SITE.GET_OPTIONS}")
     @Priv(type = AdminUserType.TYPE)
     @GetMapping("/options")
-    public R<?> getSiteOptions() {
+    public R<TableData<Map<String, Object>>> getSiteOptions() {
         LoginUser loginUser = StpAdminUtil.getLoginUser();
         List<Map<String, Object>> list = this.siteService.lambdaQuery().select(List.of(CmsSite::getSiteId, CmsSite::getName))
                 .list().stream()
@@ -205,10 +219,11 @@ public class SiteController extends CmsRestController {
     /**
      * 新增站点数据
      */
+    @XComment("{API.DOC.CMS.SITE.ADD}")
     @Priv(type = AdminUserType.TYPE, value = ContentCorePriv.SiteAdd)
     @Log(title = "新增站点", businessType = BusinessType.INSERT)
     @PostMapping("/add")
-    public R<?> addSave(@RequestBody @Validated SiteDTO dto) throws IOException {
+    public R<CmsSite> addSave(@RequestBody @Validated SiteDTO dto) throws IOException {
         CmsSite site = this.siteService.addSite(dto);
         return R.ok(site);
     }
@@ -216,10 +231,11 @@ public class SiteController extends CmsRestController {
     /**
      * 修改站点数据
      */
+    @XComment("{API.DOC.CMS.SITE.UPDATE}")
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#dto.siteId}")
     @Log(title = "编辑站点", businessType = BusinessType.UPDATE)
     @PostMapping("/update")
-    public R<?> editSave(@RequestBody @Validated SiteDTO dto) throws IOException {
+    public R<Void> editSave(@RequestBody @Validated SiteDTO dto) throws IOException {
         this.siteService.saveSite(dto);
         return R.ok();
     }
@@ -229,10 +245,11 @@ public class SiteController extends CmsRestController {
      *
      * @param siteId 站点ID
      */
+    @XComment("{API.DOC.CMS.SITE.DELETE}")
     @Priv(type = AdminUserType.TYPE, value = "Site:Delete:${#siteId}")
     @Log(title = "删除站点", businessType = BusinessType.DELETE)
     @PostMapping("/delete/{siteId}")
-    public R<String> remove(@PathVariable("siteId") @LongId Long siteId) throws IOException {
+    public R<String> remove(@PathVariable("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) throws IOException {
         CmsSite site = siteService.getById(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
@@ -252,6 +269,7 @@ public class SiteController extends CmsRestController {
     /**
      * 发布站点
      */
+    @XComment("{API.DOC.CMS.SITE.PUBLISH}")
     @Priv(type = AdminUserType.TYPE, value = "Site:Publish:${#dto.siteId}")
     @Log(title = "发布站点", businessType = BusinessType.OTHER)
     @PostMapping("/publish")
@@ -272,9 +290,10 @@ public class SiteController extends CmsRestController {
      *
      * @param siteId 站点ID
      */
+    @XComment("{API.DOC.CMS.SITE.GET_EXTENDS}")
     @Priv(type = AdminUserType.TYPE, value = "Site:View:${#siteId}")
     @GetMapping("/extends")
-    public R<?> getSiteExtends(@RequestParam("siteId") @LongId Long siteId) {
+    public R<Map<String, Object>> getSiteExtends(@RequestParam("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
         CmsSite site = this.siteService.getSite(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
@@ -289,11 +308,12 @@ public class SiteController extends CmsRestController {
      * @param siteId  站点ID
      * @param configs 扩展配置数据
      */
+    @XComment("{API.DOC.CMS.SITE.SAVE_EXTENDS}")
     @XssIgnore
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
     @Log(title = "站点扩展", businessType = BusinessType.UPDATE, isSaveRequestData = false)
     @PostMapping("/extends/{siteId}")
-    public R<?> saveSiteExtends(@PathVariable("siteId") @LongId Long siteId, @RequestBody Map<String, String> configs) {
+    public R<Void> saveSiteExtends(@PathVariable("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId, @RequestBody Map<String, String> configs) {
         CmsSite site = this.siteService.getSite(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
@@ -306,9 +326,10 @@ public class SiteController extends CmsRestController {
      *
      * @param siteId 站点ID
      */
+    @XComment("{API.DOC.CMS.SITE.GET_DEFAULT_TEMPLATE}")
     @Priv(type = AdminUserType.TYPE, value = "Site:View:${#siteId}")
     @GetMapping("/default_template")
-    public R<?> getDefaultTemplates(@RequestParam("siteId") @LongId Long siteId) {
+    public R<SiteDefaultTemplateDTO> getDefaultTemplates(@RequestParam("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
         CmsSite site = this.siteService.getSite(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
@@ -324,10 +345,11 @@ public class SiteController extends CmsRestController {
     /**
      * 保存站点默认模板配置
      */
+    @XComment("{API.DOC.CMS.SITE.SAVE_DEFAULT_TEMPLATE}")
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#dto.siteId}")
     @Log(title = "默认模板", businessType = BusinessType.UPDATE)
     @PostMapping("/default_template")
-    public R<?> saveDefaultTemplates(@RequestBody @Validated SiteDefaultTemplateDTO dto) {
+    public R<Void> saveDefaultTemplates(@RequestBody @Validated SiteDefaultTemplateDTO dto) {
         CmsSite site = this.siteService.getSite(dto.getSiteId());
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", dto.getSiteId()));
 
@@ -338,10 +360,11 @@ public class SiteController extends CmsRestController {
     /**
      * 应用站点默认模板配置到指定栏目
      */
+    @XComment("{API.DOC.CMS.SITE.APPLY_DEFAULT_TEMPLATE}")
     @Priv(type = AdminUserType.TYPE)
     @Log(title = "应用默认模板", businessType = BusinessType.UPDATE)
     @PostMapping("/apply_default_template")
-    public R<?> applyDefaultTemplateToCatalog(@RequestBody @Validated SiteDefaultTemplateDTO dto) {
+    public R<Void> applyDefaultTemplateToCatalog(@RequestBody @Validated SiteDefaultTemplateDTO dto) {
         Assert.isTrue(IdUtils.validate(dto.getToCatalogIds()), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("toCatalogIds"));
 
         CmsSite site = this.siteService.getSite(dto.getSiteId());
@@ -357,10 +380,11 @@ public class SiteController extends CmsRestController {
      * @param siteId        站点ID
      * @param multipartFile 上传文件
      */
+    @XComment("{API.DOC.CMS.SITE.UPLOAD_WATERMARK}")
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
     @Log(title = "上传水印图", businessType = BusinessType.UPDATE)
     @PostMapping("/upload_watermarkimage")
-    public R<?> uploadFile(@RequestParam("siteId") @LongId Long siteId, @RequestParam("file") @NotNull MultipartFile multipartFile) {
+    public R<Map<String, Object>> uploadFile(@RequestParam("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId, @RequestParam("file") @NotNull MultipartFile multipartFile) {
         try {
             CmsSite site = this.siteService.getSite(siteId);
             Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
@@ -378,10 +402,11 @@ public class SiteController extends CmsRestController {
         }
     }
 
+    @XComment("{API.DOC.CMS.SITE.IMPORT_THEME}")
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
     @Log(title = "导入主题模板", businessType = BusinessType.UPDATE)
     @PostMapping("/importTheme")
-    public R<?> importSiteTheme(@RequestParam("siteId") @LongId Long siteId, @RequestParam("file") @NotNull MultipartFile multipartFile) {
+    public R<String> importSiteTheme(@RequestParam("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId, @RequestParam("file") @NotNull MultipartFile multipartFile) {
         try {
             CmsSite site = this.siteService.getSite(siteId);
             Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
@@ -397,9 +422,10 @@ public class SiteController extends CmsRestController {
         }
     }
 
+    @XComment("{API.DOC.CMS.SITE.EXPORT_THEME}")
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#dto.siteId}")
     @PostMapping("/exportTheme")
-    public R<?> exportSiteTheme(@Validated @RequestBody SiteExportDTO dto) {
+    public R<String> exportSiteTheme(@Validated @RequestBody SiteExportDTO dto) {
         CmsSite site = this.siteService.getSite(dto.getSiteId());
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", dto.getSiteId()));
 
@@ -407,9 +433,10 @@ public class SiteController extends CmsRestController {
         return R.ok(asyncTask.getTaskId());
     }
 
+    @XComment("{API.DOC.CMS.SITE.DOWNLOAD_THEME}")
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
     @GetMapping("/downloadTheme/{siteId}")
-    public ResponseEntity<StreamingResponseBody> downloadTheme(@PathVariable @LongId Long siteId) {
+    public ResponseEntity<StreamingResponseBody> downloadTheme(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
         CmsSite site = this.siteService.getSite(siteId);
         File file = new File(SiteUtils.getSiteResourceRoot(site) + SiteThemeService.ThemeZipPath);
         if (!file.exists()) {

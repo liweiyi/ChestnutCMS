@@ -78,7 +78,7 @@
         :label="$t('CMS.CustomForm.Code')"
         align="left"
         prop="code" />
-      <el-table-column :label="$t('CMS.CustomForm.Status')" align="center" prop="status" width="80">
+      <el-table-column :label="$t('CMS.CustomForm.Status')" align="center" prop="status" width="100">
         <template #default="scope">
           <dict-tag :options="CustomFormStatus" :value="scope.row.status"/>
         </template>
@@ -96,7 +96,7 @@
         :label="$t('Common.Operation')"
         fixed="right" 
         align="right"
-        width="450" 
+        width="480" 
        >
         <template #default="scope">
           <el-button

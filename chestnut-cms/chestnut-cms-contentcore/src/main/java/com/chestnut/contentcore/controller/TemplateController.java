@@ -18,8 +18,10 @@ package com.chestnut.contentcore.controller;
 import cn.dev33.satoken.annotation.SaMode;
 import cn.dev33.satoken.exception.NotPermissionException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
@@ -51,6 +53,8 @@ import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +73,7 @@ import java.util.regex.Pattern;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.TEMPLATE.MODULE}")
 @RestController
 @RequestMapping("/cms/template")
 @RequiredArgsConstructor
@@ -83,13 +88,14 @@ public class TemplateController extends CmsRestController {
 	/**
 	 * 模板数据集合
 	 */
+	@XComment("{API.DOC.CMS.TEMPLATE.GET_LIST}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
 			mode = SaMode.AND
 	)
 	@GetMapping("/list")
-	public R<?> getTemplateList(@RequestParam(value = "publishPipeCode", required = false) String publishPipeCode,
+	public R<TableData<TemplateListVO>> getTemplateList(@RequestParam(value = "publishPipeCode", required = false) String publishPipeCode,
 								@RequestParam(value = "siteId", required = false, defaultValue = "0") Long siteId,
 								@RequestParam(value = "filename", required = false) String filename,
 								HttpServletRequest request) {
@@ -117,13 +123,14 @@ public class TemplateController extends CmsRestController {
 	/**
 	 * 获取模板详情
 	 */
+	@XComment("{API.DOC.CMS.TEMPLATE.GET_DETAIL}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.TemplateView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
 			mode = SaMode.AND
 	)
 	@GetMapping("/detail/{templateId}")
-	public R<?> getTemplateDetail(@PathVariable("templateId") @LongId Long templateId) {
+	public R<CmsTemplate> getTemplateDetail(@PathVariable("templateId") @LongId @XComment("{API.DOC.CMS.TEMPLATE.TEMPLATE_ID}") Long templateId) {
 		CmsSite site = this.getCurrentSite();
 		this.templateService.scanTemplates(site);
 
@@ -138,6 +145,7 @@ public class TemplateController extends CmsRestController {
 	/**
 	 * 新增模板文件
 	 */
+	@XComment("{API.DOC.CMS.TEMPLATE.ADD}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.TemplateView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -146,7 +154,7 @@ public class TemplateController extends CmsRestController {
 	@Log(title = "新增模板", businessType = BusinessType.INSERT)
 	@XssIgnore
 	@PostMapping("/add")
-	public R<?> add(@RequestBody @Validated TemplateAddDTO dto) throws IOException {
+	public R<Void> add(@RequestBody @Validated TemplateAddDTO dto) throws IOException {
 		validTemplateName(dto.getPath());
 		CmsSite site = this.getCurrentSite();
 		dto.setSiteId(site.getSiteId());
@@ -157,6 +165,7 @@ public class TemplateController extends CmsRestController {
 	/**
 	 * 重命名模板文件
 	 */
+	@XComment("{API.DOC.CMS.TEMPLATE.RENAME}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.TemplateView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -164,7 +173,7 @@ public class TemplateController extends CmsRestController {
 	)
 	@Log(title = "重命名模板", businessType = BusinessType.UPDATE)
 	@PostMapping("/rename")
-	public R<?> rename(@RequestBody @Validated TemplateRenameDTO dto) throws IOException {
+	public R<Void> rename(@RequestBody @Validated TemplateRenameDTO dto) throws IOException {
         validTemplateName(dto.getPath());
 		CmsTemplate template = this.templateService.getById(dto.getTemplateId());
 		Assert.notNull(template,
@@ -195,6 +204,7 @@ public class TemplateController extends CmsRestController {
 	/**
 	 * 修改模板文件内容
 	 */
+	@XComment("{API.DOC.CMS.TEMPLATE.UPDATE}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.TemplateView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -203,7 +213,7 @@ public class TemplateController extends CmsRestController {
 	@Log(title = "编辑模板", businessType = BusinessType.UPDATE)
 	@XssIgnore
 	@PostMapping("/update")
-	public R<?> save(@RequestBody @Validated TemplateUpdateDTO dto) throws IOException {
+	public R<Void> save(@RequestBody @Validated TemplateUpdateDTO dto) throws IOException {
 		CmsTemplate template = this.templateService.getById(dto.getTemplateId());
 		Assert.notNull(template,
 				() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("templateId", dto.getTemplateId()));
@@ -219,6 +229,7 @@ public class TemplateController extends CmsRestController {
 	/**
 	 * 删除模板文件
 	 */
+	@XComment("{API.DOC.CMS.TEMPLATE.DELETE}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.TemplateView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -226,13 +237,14 @@ public class TemplateController extends CmsRestController {
 	)
 	@Log(title = "删除模板", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> delete(@RequestBody @NotEmpty List<Long> templateIds) throws IOException {
+	public R<Void> delete(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.TEMPLATE.TEMPLATE_IDS}") List<Long> templateIds) throws IOException {
 		Assert.isTrue(IdUtils.validate(templateIds), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("templateIds"));
 		CmsSite site = this.getCurrentSite();
 		this.templateService.deleteTemplates(site, templateIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.TEMPLATE.CLEAR_TEMPLATE_CACHE}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.TemplateView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -240,11 +252,12 @@ public class TemplateController extends CmsRestController {
 	)
 	@Log(title = "清理模板缓存", businessType = BusinessType.OTHER)
 	@PostMapping("/clearTemplateCache")
-	public R<?> clearTemplateCache() {
+	public R<Void> clearTemplateCache() {
 		this.staticizeService.clearTemplateCache();
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.TEMPLATE.CLEAR_INCLUDE_CACHE}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.TemplateView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -252,7 +265,7 @@ public class TemplateController extends CmsRestController {
 	)
 	@Log(title = "清理区块缓存", businessType = BusinessType.OTHER)
 	@PostMapping("/clearIncludeCache")
-	public R<?> clearIncludeCache(@RequestBody @NotEmpty List<Long> templateIds) {
+	public R<Void> clearIncludeCache(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.TEMPLATE.TEMPLATE_IDS}") List<Long> templateIds) {
 		this.templateService.listByIds(templateIds).forEach(template -> {
 			CmsSite site = this.siteService.getSite(template.getSiteId());
 			String templateKey = SiteUtils.getTemplateKey(site, template.getPublishPipeCode(), template.getPath());

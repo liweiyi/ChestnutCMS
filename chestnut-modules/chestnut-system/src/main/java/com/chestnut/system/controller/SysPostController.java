@@ -17,13 +17,17 @@ package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysPost;
 import com.chestnut.system.domain.dto.CreatePostRequest;
@@ -45,6 +49,7 @@ import java.util.stream.Collectors;
 /**
  * 岗位信息操作处理
  */
+@XComment("{API.DOC.SYS.POST.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/post")
@@ -55,10 +60,11 @@ public class SysPostController extends BaseRestController {
 	/**
 	 * 获取岗位列表
 	 */
+	@XComment("{API.DOC.SYS.POST.GET_LIST}")
 	@ExcelExportable(SysPost.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostList)
 	@GetMapping("/list")
-	public R<?> list(@Validated QueryPostRequest req) {
+	public R<TableData<SysPost>> list(@Validated QueryPostRequest req) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysPost> q = new LambdaQueryWrapper<SysPost>()
 				.like(StringUtils.isNotEmpty(req.getPostName()), SysPost::getPostName, req.getPostName())
@@ -72,19 +78,21 @@ public class SysPostController extends BaseRestController {
 	/**
 	 * 根据岗位编号获取详细信息
 	 */
+	@XComment("{API.DOC.SYS.POST.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostList)
 	@GetMapping(value = "/detail/{postId}")
-	public R<?> getInfo(@PathVariable @LongId Long postId) {
+	public R<SysPost> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.POST.ID}") Long postId) {
 		return R.ok(postService.getById(postId));
 	}
 
 	/**
 	 * 新增岗位
 	 */
+	@XComment("{API.DOC.SYS.POST.CREATE_POST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostAdd)
 	@Log(title = "岗位管理", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> add(@Validated @RequestBody CreatePostRequest req) {
+	public R<Void> add(@Validated @RequestBody CreatePostRequest req) {
 		postService.insertPost(req);
 		return R.ok();
 	}
@@ -92,10 +100,11 @@ public class SysPostController extends BaseRestController {
 	/**
 	 * 修改岗位
 	 */
+	@XComment("{API.DOC.SYS.POST.UPDATE_POST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostEdit)
 	@Log(title = "岗位管理", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> edit(@Validated @RequestBody UpdatePostRequest req) {
+	public R<Void> edit(@Validated @RequestBody UpdatePostRequest req) {
 		postService.updatePost(req);
 		return R.ok();
 	}
@@ -103,10 +112,11 @@ public class SysPostController extends BaseRestController {
 	/**
 	 * 删除岗位
 	 */
+	@XComment("{API.DOC.SYS.POST.DELETE_POST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysPostRemove)
 	@Log(title = "岗位管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> postIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.POST.IDS}") List<Long> postIds) {
 		postService.deletePostByIds(postIds);
 		return R.ok();
 	}
@@ -114,9 +124,10 @@ public class SysPostController extends BaseRestController {
 	/**
 	 * 获取岗位选择框列表
 	 */
+	@XComment("{API.DOC.SYS.POST.GET_OPTIONS}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/optionselect")
-	public R<?> optionselect() {
+	public R<List<SysPostSelectVO>> optionselect() {
 		List<SysPostSelectVO> options = postService.list().stream()
 				.map(post -> new SysPostSelectVO(post.getPostId(), post.getPostCode(), post.getPostName()))
 				.collect(Collectors.toList());

@@ -15,6 +15,7 @@
  */
 package com.chestnut.media.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
@@ -28,20 +29,17 @@ import lombok.Setter;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.MEDIA.SCREENSHOT_REQ}")
 @Getter
 @Setter
 public class VideoScreenshotDTO {
 
-    /**
-     * 视频资源路径
-     */
     @NotEmpty
+    @XComment("{API.DOC.CMS.MEDIA.PATH}")
     private String path;
 
-    /**
-     * 截图时间点，单位：秒
-     */
     @NotNull
     @Min(0)
+    @XComment("{API.DOC.CMS.MEDIA.TIMESTAMP}")
     private Long timestamp;
 }

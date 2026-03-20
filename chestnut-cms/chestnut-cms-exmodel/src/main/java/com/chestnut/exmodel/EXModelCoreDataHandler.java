@@ -23,6 +23,7 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.ICoreDataHandler;
+import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.core.SiteExportContext;
 import com.chestnut.contentcore.core.SiteImportContext;
 import com.chestnut.contentcore.domain.CmsCatalog;
@@ -73,7 +74,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteExport(SiteExportContext context) {
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出扩展模型数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsExModelTips.EXPORTING_EXMODEL);
         // 扩展模型数据导出
         Set<String> modelIdStrings = new HashSet<>();
         String siteModelIdStr = SiteExtendModelProperty.getValue(context.getSite().getConfigProps());
@@ -116,7 +117,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteImport(SiteImportContext context) {
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入扩展模型");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsExModelTips.IMPORTING_EXMODEL);
         // XModel
         Map<Long, Long> modelIdMapping = new HashMap<>();
         List<File> files = context.readDataFiles(XModel.TABLE_NAME + XMODEL_TABLE_SUFFIX);
@@ -135,13 +136,13 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     modelService.save(data);
                     modelIdMapping.put(oldModelId, data.getModelId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入扩展模型`" + oldModelId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsExModelTips.IMPORT_EXMODEL_FAIL, oldModelId, e.getMessage());
                     log.error("Import xmodel failed: {}", data.getCode(), e);
                 }
             }
         });
         // XModelField
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入扩展模型字段");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsExModelTips.IMPORTING_EXMODEL_FIELD);
         files = context.readDataFiles(XModelField.TABLE_NAME + XMODEL_TABLE_SUFFIX);
         files.forEach(f -> {
             List<XModelField> list = JacksonUtils.fromList(f, XModelField.class);
@@ -153,13 +154,13 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     modelFieldService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入扩展模型字段`" + oldFieldId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsExModelTips.IMPORT_EXMODEL_FIELD_FAIL, oldFieldId, e.getMessage());
                     log.error("Import xmodel field failed: {}", data.getCode(), e);
                 }
             }
         });
         // CmsExtendModelData
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入扩展模型数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsExModelTips.IMPORTING_EXMODEL_DATA);
         files = context.readDataFiles(CmsExtendModelData.TABLE_NAME);
         files.forEach(f -> {
             List<CmsExtendModelData> list = JacksonUtils.fromList(f, CmsExtendModelData.class);
@@ -184,8 +185,19 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                                 || MetaControlType_CmsResource.TYPE.equals(field.getControlType())) {
                             String fieldValue = data.getStringFieldValue(field.getFieldName());
                             if (StringUtils.isNotBlank(fieldValue)) {
-                                List<MetaControlType_CmsResource.CmsResourceMetaValue> resources = JacksonUtils
-                                        .fromList(fieldValue, MetaControlType_CmsResource.CmsResourceMetaValue.class);
+                                List<MetaControlType_CmsResource.CmsResourceMetaValue> resources;
+                                if (InternalUrlUtils.isInternalUrl(fieldValue)) {
+                                    // 兼容历史数据
+                                    String iurl = context.dealInternalUrl(fieldValue);
+                                    MetaControlType_CmsResource.CmsResourceMetaValue resource = new MetaControlType_CmsResource.CmsResourceMetaValue();
+                                    resource.setPath(iurl);
+                                    InternalURL internalURL = InternalUrlUtils.parseInternalUrl(iurl);
+                                    String name = StringUtils.substringAfterLast(internalURL.getPath(), "/");
+                                    resource.setName(name);
+                                    resources = List.of(resource);
+                                } else {
+                                    resources = JacksonUtils.fromList(fieldValue, MetaControlType_CmsResource.CmsResourceMetaValue.class);
+                                }
                                 if (Objects.nonNull(resources)) {
                                     resources.forEach(resource -> {
                                         String iurl = context.dealInternalUrl(resource.getPath());
@@ -216,7 +228,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     });
                     modelDataMapper.insert(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入扩展模型数据`" + oldKey + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsExModelTips.IMPORT_EXMODEL_DATA_FAIL, oldKey, e.getMessage());
                     log.error("Import xmodel data failed: {}", oldKey, e);
                 }
             }

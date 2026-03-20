@@ -16,12 +16,16 @@
 package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
+
+
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDept;
@@ -44,6 +48,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.DEPT.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/dept")
@@ -54,9 +59,10 @@ public class SysDeptController extends BaseRestController {
 	/**
 	 * 获取部门列表
 	 */
+	@XComment("{API.DOC.SYS.DEPT.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptList)
 	@GetMapping("/list")
-	public R<?> list(@Validated QueryDeptRequest req) {
+	public R<TableData<SysDept>> list(@Validated QueryDeptRequest req) {
 		LambdaQueryWrapper<SysDept> q = new LambdaQueryWrapper<SysDept>()
 				.like(StringUtils.isNotEmpty(req.getDeptName()), SysDept::getDeptName, req.getDeptName())
 				.eq(StringUtils.isNotEmpty(req.getStatus()), SysDept::getStatus, req.getStatus())
@@ -68,9 +74,10 @@ public class SysDeptController extends BaseRestController {
 	/**
 	 * 根据部门编号获取详细信息
 	 */
+	@XComment("{API.DOC.SYS.DEPT.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptList)
 	@GetMapping(value = "/detail/{deptId}")
-	public R<?> getInfo(@PathVariable @LongId Long deptId) {
+	public R<SysDept> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.DEPT.ID}") Long deptId) {
 		SysDept dept = deptService.getById(deptId);
 		Assert.notNull(dept, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(deptId));
 		this.deptService.getDept(dept.getParentId()).ifPresent(d -> dept.setParentName(d.getDeptName()));
@@ -80,10 +87,11 @@ public class SysDeptController extends BaseRestController {
 	/**
 	 * 新增部门
 	 */
+	@XComment("{API.DOC.SYS.DEPT.CREATE_DEPT}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptAdd)
 	@Log(title = "部门管理", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> add(@Validated @RequestBody CreateDeptRequest req) {
+	public R<Void> add(@Validated @RequestBody CreateDeptRequest req) {
 		deptService.insertDept(req);
 		return R.ok();
 	}
@@ -91,10 +99,11 @@ public class SysDeptController extends BaseRestController {
 	/**
 	 * 修改部门
 	 */
+	@XComment("{API.DOC.SYS.DEPT.UPDATE_DEPT}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptEdit)
 	@Log(title = "部门管理", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> edit(@Validated @RequestBody UpdateDeptRequest req) {
+	public R<Void> edit(@Validated @RequestBody UpdateDeptRequest req) {
 		deptService.updateDept(req);
 		return R.ok();
 	}
@@ -102,10 +111,11 @@ public class SysDeptController extends BaseRestController {
 	/**
 	 * 删除部门
 	 */
+	@XComment("{API.DOC.SYS.DEPT.DELETE_DEPT}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDeptRemove)
 	@Log(title = "部门管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete/{deptId}")
-	public R<?> remove(@PathVariable @LongId Long deptId) {
+	public R<Void> remove(@PathVariable @LongId @XComment("{API.DOC.SYS.DEPT.ID}") Long deptId) {
 		deptService.deleteDeptById(deptId);
 		return R.ok();
 	}

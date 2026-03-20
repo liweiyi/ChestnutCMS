@@ -11,7 +11,7 @@
         <el-row :gutter="24">
           <el-col :span="16">
             <el-form-item :label="$t('CMS.UEditor.ThirdVideo.Code')" prop="code">
-              <el-input v-model="formData.code" type="textarea" :rows="12" @change="handleCodeChange"></el-input>
+              <el-input v-model="formData.code" type="textarea" :rows="12"></el-input>
               <div style="color: #909399;font-size:12px;line-height: 30px;">
                 <el-icon class="mr5"><InfoFilled /></el-icon><span v-html="$t('CMS.UEditor.ThirdVideo.CodeTip')"></span>
               </div>
@@ -53,6 +53,22 @@ const props = defineProps({
     type: Boolean,
     default: false,
     required: true
+  },
+  iframe: {
+    type: String,
+    default: ''
+  },
+  width: {
+    type: Number,
+    default: 720
+  },
+  height: {
+    type: Number,
+    default: 480
+  },
+  align: {
+    type: String,
+    default: 'center'
   }
 })
 
@@ -78,10 +94,10 @@ const rules = ref({
 })
 const objects = reactive({
   formData: {
-    code: '',
-    width: 720,
-    height: 480,
-    align: 'center'
+    code: props.iframe,
+    width: props.width,
+    height: props.height,
+    align: props.align
   }
 })
 const { formData } = toRefs(objects);
@@ -94,6 +110,18 @@ watch(visible, (newVal) => {
     noticeClose();
   }
 })
+watch(() => props.iframe, (newVal) => {
+  formData.value.code = newVal;
+}, { immediate: true })
+watch(() => props.width, (newVal) => {
+  formData.value.width = newVal;
+}, { immediate: true })
+watch(() => props.height, (newVal) => {
+  formData.value.height = newVal;
+}, { immediate: true })
+watch(() => props.align, (newVal) => {
+  formData.value.align = newVal == '' ? 'center' : newVal;
+}, { immediate: true })
 
 function handleOk () {
   noticeOk();
@@ -121,13 +149,18 @@ function noticeOk () {
         var width = formData.value.width && formData.value.width > 0 ? formData.value.width : 720;
         var height = formData.value.height && formData.value.height > 0 ? formData.value.height : 480;
         var align = formData.value.align && formData.value.align.length > 0 ?  formData.value.align : 'center';
-        html = '<iframe class="edui-video-iframe"'
-                + ' src="' + window.UE.utils.html(html) + '"'
-                + ' width="' + width + '" height="' + height + '"'
-                + ' scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" />';
-        html = '<p style="text-align:'+ align +'">' + html + '</p>'
-
-        emit("ok", html);
+        // html = '<iframe class="edui-video-iframe cc-third-video"'
+        //         + ' src="' + window.UE.utils.html(html) + '"'
+        //         + ' width="' + width + '" height="' + height + '" align="' + align + '"'
+        //         + ' scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true" />';
+        // html = '<p style="text-align:'+ align +'">' + html + '</p>'
+        const _data = {
+          src: html,
+          width: width,
+          height: height,
+          align: align
+        }
+        emit("ok", _data);
         visible.value = false;
       }
     });

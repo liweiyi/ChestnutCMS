@@ -46,7 +46,7 @@ public class DynamicCoreHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         // cms_dynamic_page
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出自定义动态模板页面数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsDynamicTips.EXPORTING_DYNAMIC_TEMPLATE_PAGE);
         List<CmsDynamicPage> list = dynamicPageService.lambdaQuery()
                 .eq(CmsDynamicPage::getSiteId, context.getSite().getSiteId())
                 .list();
@@ -55,7 +55,7 @@ public class DynamicCoreHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteImport(SiteImportContext context) {
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入自定义动态模板页面数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsDynamicTips.IMPORTING_DYNAMIC_TEMPLATE_PAGE);
         // cms_dynamic_page
         List<File> files = context.readDataFiles(CmsDynamicPage.TABLE_NAME);
         files.forEach(f -> {
@@ -72,7 +72,7 @@ public class DynamicCoreHandler implements ICoreDataHandler {
                     dynamicPageService.save(data);
                     dynamicPageService.registerDynamicPageMapping(data.getCode(), data.getPath());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入自定义动态模板页面失败：" + data.getName() + "[" + data.getCode() + "]");
+                    AsyncTaskManager.addErrMessage(CmsDynamicTips.IMPORT_DYNAMIC_TEMPLATE_PAGE_FAIL, data.getCode(), e.getMessage());
                     log.error("Import dynamic page failed: {}", data.getCode(), e);
                 }
             }

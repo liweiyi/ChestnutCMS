@@ -40,9 +40,7 @@
             <el-table-column
               :label="$t('Common.Operation')"
               width="90"
-              align="center"
-             
-            >
+              align="center">
               <template #default="scope">
                 <el-button
                   link
@@ -55,7 +53,6 @@
           </el-table>
         </el-card>
       </el-col>
-
       <el-col :span="8">
         <el-card style="height: calc(100vh - 125px)">
           <template #header>
@@ -73,8 +70,7 @@
             :height="tableHeight"
             highlight-current-row
             @row-click="handleCacheValue"
-            style="width: 100%"
-          >
+            style="width: 100%">
             <el-table-column
               :label="$t('Common.RowNo')"
               width="60"
@@ -88,10 +84,8 @@
             </el-table-column>
             <el-table-column
               :label="$t('Common.Operation')"
-              width="60"
-              align="center"
-             
-            >
+              width="90"
+              align="center">
               <template #default="scope">
                 <el-button
                   link
@@ -104,7 +98,6 @@
           </el-table>
         </el-card>
       </el-col>
-
       <el-col :span="8">
         <el-card :bordered="false" style="height: calc(100vh - 125px)">
           <template #header>
@@ -114,8 +107,7 @@
               type="text"
               icon="RefreshRight"
               @click="handleClearCacheAll()"
-              >{{ $t('Monitor.Cache.ClearCache') }}</el-button
-            >
+            >{{ $t('Monitor.Cache.ClearCache') }}</el-button>
           </template>
           <el-form :model="cacheForm">
             <el-row :gutter="32">
@@ -146,7 +138,6 @@
     </el-row>
   </div>
 </template>
-
 <script setup name="MonitorCacheList">
 import { listCacheName, listCacheKey, getCacheValue, clearCacheName, clearCacheKey, clearCacheAll } from "@/api/monitor/cache";
 

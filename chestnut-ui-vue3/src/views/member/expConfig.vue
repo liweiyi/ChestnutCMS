@@ -67,15 +67,14 @@
         align="center" />
       <el-table-column 
         :label="$t('Member.ExpOpType')"
-        align="center"
-        width="180">
+        align="left">
         <template #default="scope">
           {{ scope.row.opTypeName }}[{{ scope.row.opType }}]
         </template>
       </el-table-column>
       <el-table-column 
         :label="$t('Member.LevelType')"
-        align="center"
+        align="left"
         prop="levelTypeName" />
       <el-table-column 
         :label="$t('Member.Exp')"

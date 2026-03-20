@@ -16,6 +16,7 @@
 package com.chestnut.member.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
@@ -23,6 +24,7 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.Member;
@@ -37,6 +39,8 @@ import com.chestnut.member.service.IMemberService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -46,6 +50,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@XComment("{API.DOC.MEMBER.MODULE}")
 @Priv(type = AdminUserType.TYPE, value = MemberPriv.MemberList)
 @RequiredArgsConstructor
 @RestController
@@ -54,13 +59,14 @@ public class MemberController extends BaseRestController {
 
 	private final IMemberService memberService;
 
+	@XComment("{API.DOC.MEMBER.GET_LIST}")
 	@GetMapping("/list")
-	public R<?> getPageList(
-			@RequestParam(required = false) @Length(max = 30) String userName,
-			@RequestParam(required = false) @Length(max = 30) String nickName,
-			@RequestParam(required = false) @Length(max = 50) String email,
-			@RequestParam(required = false) @Length(max = 20) String phoneNumber,
-			@RequestParam(required = false) @Length(max = 1) @Dict(MemberStatus.TYPE) String status
+	public R<TableData<MemberListVO>> getPageList(
+			@RequestParam(required = false) @Length(max = 30) @XComment("{API.DOC.MEMBER.USERNAME}") String userName,
+			@RequestParam(required = false) @Length(max = 30) @XComment("{API.DOC.MEMBER.NICK_NAME}") String nickName,
+			@RequestParam(required = false) @Length(max = 50) @XComment("{API.DOC.MEMBER.EMAIL}") String email,
+			@RequestParam(required = false) @Length(max = 20) @XComment("{API.DOC.MEMBER.PHONE}") String phoneNumber,
+			@RequestParam(required = false) @Length(max = 1) @Dict(MemberStatus.TYPE) @XComment("{CC.ENTITY.STATUS}") String status
 	) {
 		PageRequest pr = this.getPageRequest();
 		Page<Member> page = this.memberService.lambdaQuery()
@@ -82,9 +88,9 @@ public class MemberController extends BaseRestController {
 		}).toList();
 		return this.bindDataTable(list, page.getTotal());
 	}
-
+	@XComment("{API.DOC.MEMBER.GET_DETAIL}")
 	@GetMapping("/detail/{memberId}")
-	public R<?> getMemberDetail(@PathVariable @LongId Long memberId) {
+	public R<MemberListVO> getMemberDetail(@PathVariable @LongId @XComment("{API.DOC.MEMBER.MEMBER_ID}") Long memberId) {
 		Member member = this.memberService.getById(memberId);
 		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", memberId));
 		MemberListVO vo = new MemberListVO();
@@ -92,30 +98,34 @@ public class MemberController extends BaseRestController {
 		return R.ok(vo);
 	}
 
+	@XComment("{API.DOC.MEMBER.ADD}")
 	@Log(title = "新增会员", businessType = BusinessType.INSERT, isSaveRequestData = false)
 	@PostMapping("/add")
-	public R<?> addMember(@RequestBody @Validated CreateMemberRequest req) {
+	public R<Void> addMember(@RequestBody @Validated CreateMemberRequest req) {
 		this.memberService.addMember(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.UPDATE}")
 	@Log(title = "编辑会员", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> updateMember(@RequestBody @Validated UpdateMemberRequest req) {
+	public R<Void> updateMember(@RequestBody @Validated UpdateMemberRequest req) {
 		this.memberService.updateMember(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.DELETE}")
 	@Log(title = "删除会员", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> delete(@RequestBody @NotEmpty List<Long> memberIds) {
+	public R<Void> delete(@RequestBody @NotEmpty @XComment("{API.DOC.MEMBER.MEMBER_IDS}") List<Long> memberIds) {
 		this.memberService.deleteMembers(memberIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.RESET_PWD}")
 	@Log(title = "重置会员密码", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PostMapping("/resetPassword")
-	public R<?> resetPassword(@RequestBody @Validated ResetMemberPasswordRequest req) {
+	public R<Void> resetPassword(@RequestBody @Validated ResetMemberPasswordRequest req) {
 		this.memberService.resetPwd(req);
 		return R.ok();
 	}

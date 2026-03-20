@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.chestnut</groupId>
         <artifactId>chestnut-common</artifactId>
-        <version>1.5.10</version>
+        <version>1.5.11</version>
     </parent>
 
     <artifactId>chestnut-common-cloud</artifactId>

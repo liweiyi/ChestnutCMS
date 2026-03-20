@@ -23,13 +23,17 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
+import com.chestnut.common.annotation.XComment;
+
 @Getter
 @Setter
+@XComment("{API.DOC.MEMBER.REGISTER_REQ}")
 public class MemberRegisterRequest {
 	
 	/**
 	 * 注册方式：邮箱注册，手机号注册，手机短信验证码注册
 	 */
+	@XComment("{API.DOC.MEMBER.REGISTER_TYPE}")
 	@NotBlank
 	@Length(max = 20)
 	private String type;
@@ -37,6 +41,7 @@ public class MemberRegisterRequest {
 	/**
 	 * 用户名
 	 */
+	@XComment("{API.DOC.MEMBER.USERNAME}")
 	@Length(min = 6, max = 30)
 	@Pattern(regexp = RegexConsts.REGEX_USERNAME)
 	private String userName;
@@ -44,18 +49,21 @@ public class MemberRegisterRequest {
 	/**
 	 * 邮箱
 	 */
+	@XComment("{API.DOC.MEMBER.EMAIL}")
 	@Email
 	private String email;
 	
 	/**
 	 * 手机号
 	 */
+	@XComment("{API.DOC.MEMBER.PHONE}")
 	@Pattern(regexp = RegexConsts.REGEX_PHONE, message = "手机号码格式错误")
 	private String phonenumber;
 
 	/**
 	 * 用户密码
 	 */
+	@XComment("{API.DOC.MEMBER.PASSWORD}")
 	@NotBlank
 	@Length(max = 100)
 	private String password;
@@ -63,10 +71,13 @@ public class MemberRegisterRequest {
 	/**
 	 * 验证码
 	 */
+	@XComment("{API.DOC.MEMBER.AUTH_CODE}")
 	@Length(max = 10)
 	private String authCode;
 
+	@XComment("IP")
 	private String ip;
 
+	@XComment("UserAgent")
 	private String userAgent;
 }

@@ -15,23 +15,29 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.TEMPLATE.ADD_DTO}")
 @Getter
 @Setter
 public class TemplateAddDTO extends BaseDTO {
-    
+
+    @XComment("{API.DOC.CMS.SITE.SITE_ID}")
     private Long siteId;
-    
+
+    @XComment("{API.DOC.CMS.TEMPLATE.PUBLISH_PIPE_CODE}")
     @NotEmpty
     private String publishPipeCode;
 
+    @XComment("{API.DOC.CMS.TEMPLATE.PATH}")
     @NotEmpty
     private String path;
-    
+
+    @XComment("{API.DOC.CMS.TEMPLATE.REMARK}")
     private String remark;
 }

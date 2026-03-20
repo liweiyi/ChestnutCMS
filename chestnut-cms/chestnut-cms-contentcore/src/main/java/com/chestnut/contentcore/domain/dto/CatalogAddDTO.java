@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import jakarta.validation.constraints.NotBlank;
@@ -22,6 +23,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CATALOG.ADD_DTO}")
 @Getter
 @Setter
 public class CatalogAddDTO extends BaseDTO {
@@ -29,22 +31,26 @@ public class CatalogAddDTO extends BaseDTO {
 	/**
 	 * 所属站点ID
 	 */
+	@XComment("{CMS.CATALOG.SITE_ID}")
 	private Long siteId;
 
     /**
      * 父级栏目ID
      */
+	@XComment("{API.DOC.CMS.CATALOG.PARENT_CATALOG_ID}")
     private Long parentId = 0L;
 
     /**
      * 栏目名称 
      */
+	@XComment("{CMS.CATALOG.NAME}")
     @NotBlank
     private String name;
     
     /**
      * 栏目别名
      */
+	@XComment("{CMS.CATALOG.ALIAS}")
     @NotBlank
     @Pattern(regexp = RegexConsts.REGEX_CODE)
     private String alias;
@@ -52,6 +58,7 @@ public class CatalogAddDTO extends BaseDTO {
     /**
      * 栏目目录
      */
+	@XComment("{CMS.CATALOG.PATH}")
     @NotBlank
     @Pattern(regexp = RegexConsts.REGEX_PATH)
     private String path;
@@ -59,6 +66,7 @@ public class CatalogAddDTO extends BaseDTO {
     /**
      * 栏目类型
      */
+	@XComment("{CMS.CATALOG.TYPE}")
     @NotBlank
     private String catalogType;
 }

@@ -46,6 +46,8 @@ import ImageUpload from "@/components/ImageUpload"
 import ImagePreview from "@/components/ImagePreview"
 // 字典标签组件
 import DictTag from '@/components/DictTag'
+import SpliterContainer from '@/components/SpliterContainer'
+import SpliterColumn from '@/components/SpliterContainer/SpliterColumn'
 
 const app = createApp(App)
 
@@ -73,6 +75,8 @@ app.component('ImageUpload', ImageUpload)
 app.component('ImagePreview', ImagePreview)
 app.component('RightToolbar', RightToolbar)
 app.component('Editor', Editor)
+app.component('cc-spliter', SpliterContainer)
+app.component('cc-spliter-column', SpliterColumn)
 
 app.use(i18n)
 app.use(router)

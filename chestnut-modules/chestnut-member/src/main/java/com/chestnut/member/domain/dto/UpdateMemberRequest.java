@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.member.fixed.dict.MemberStatus;
@@ -37,9 +38,11 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.MEMBER.UPDATE_REQ}")
 public class UpdateMemberRequest extends BaseDTO {
 
     @LongId
+    @XComment("{API.DOC.MEMBER.MEMBER_ID}")
     private Long memberId;
 
     /**

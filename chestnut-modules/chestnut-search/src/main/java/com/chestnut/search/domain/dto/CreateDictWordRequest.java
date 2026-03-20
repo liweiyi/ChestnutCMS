@@ -15,6 +15,7 @@
  */
 package com.chestnut.search.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.search.fixed.dict.SearchDictWordType;
 import com.chestnut.system.validator.Dict;
@@ -27,15 +28,15 @@ import java.util.List;
 
 @Getter
 @Setter
+@XComment("{API.DOC.SEARCH.CREATE_DICT_WORD_REQ}")
 public class CreateDictWordRequest extends BaseDTO {
 	
 	@NotBlank
 	@Dict(SearchDictWordType.TYPE)
+	@XComment("{API.DOC.SEARCH.DICT_WORD_TYPE}")
 	private String wordType;
 
-	/**
-     * 搜索词
-     */
 	@NotEmpty
+	@XComment("{API.DOC.SEARCH.DICT_WORDS}")
     private List<String> words;
 }

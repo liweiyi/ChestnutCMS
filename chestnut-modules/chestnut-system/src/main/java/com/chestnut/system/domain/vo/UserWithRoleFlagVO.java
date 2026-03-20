@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.vo;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.domain.SysUser;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,51 +30,61 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.ROLE.USER_WITH_FLAG_VO}")
 public class UserWithRoleFlagVO {
 
 	/**
 	 * 用户ID
 	 */
+	@XComment("{ENT.SYS.USER.ID}")
 	private Long userId;
 
 	/**
 	 * 用户名
 	 */
+	@XComment("{ENT.SYS.USER.USER_NAME}")
 	private String userName;
 
 	/**
 	 * 昵称
 	 */
+	@XComment("{ENT.SYS.USER.NICK_NAME}")
 	private String nickName;
 
 	/**
 	 * 手机号
 	 */
+	@XComment("{ENT.SYS.USER.PHONE}")
 	private String phoneNumber;
 
     /**
      * email
      */
+    @XComment("{ENT.SYS.USER.MAIL}")
     private String email;
 
     /**
      * 状态
      */
+    @XComment("{ENT.SYS.USER.STATUS}")
     private String status;
 
 	/**
 	 * 创建时间
 	 */
+	@XComment("{CC.ENTITY.CREATE_TIME}")
 	private LocalDateTime createTime;
 
 	/**
 	 * 角色ID
 	 */
+	@XComment("{ENT.SYS.ROLE.ID}")
 	private Long roleId;
 
 	/**
 	 * 用户是否已分配到roleId角色下
 	 */
+	@XComment("{API.DOC.SYS.ROLE.USER_ALLOCATED}")
 	private Boolean allocated;
 
 	public static UserWithRoleFlagVO newInstance(SysUser user, Long roleId, Boolean allocated) {

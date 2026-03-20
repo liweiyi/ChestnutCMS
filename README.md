@@ -1,4 +1,4 @@
-# ChestnutCMS v1.5.10
+# ChestnutCMS v1.5.11
 
 ### 系统简介
 
@@ -26,7 +26,6 @@ ChestnutCMS是前后端分离的企业级内容管理系统。项目基于[RuoYi
 
 ### 开发环境
 - OpenJDK 17
-- Maven 3.8
 - MySQL 8.0
 - Redis 7.0
 - NodeJS 20.19.4

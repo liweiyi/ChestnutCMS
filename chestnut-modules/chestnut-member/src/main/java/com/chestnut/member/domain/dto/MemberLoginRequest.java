@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,30 +29,30 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.MEMBER.LOGIN_REQ}")
 public class MemberLoginRequest {
-
-    /**
-     * 登录方式（Email, 手机号， 手机验证码，用户名）
-     */
-//    @NotBlank
-//    @Length(max = 20)
-//    private String type;
 
     @NotBlank
     @Length(max = 30)
+    @XComment("{API.DOC.MEMBER.USERNAME}")
     private String username;
 
     @NotBlank
     @Length(max = 100)
+    @XComment("{API.DOC.MEMBER.PASSWORD}")
     private String password;
 
     @Length(max = 10)
+    @XComment("{API.DOC.MEMBER.CAPTCHA_CODE}")
     private String code;
 
     @Length(max = 100)
+    @XComment("{API.DOC.MEMBER.CAPTCHA_UUID}")
     private String uuid;
 
+    @XComment("IP")
     private String ip;
 
+    @XComment("UserAgent")
     private String userAgent;
 }

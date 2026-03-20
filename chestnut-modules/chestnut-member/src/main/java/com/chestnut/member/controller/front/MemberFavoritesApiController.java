@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.controller.front;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
@@ -25,6 +26,8 @@ import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberFavoritesService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -37,6 +40,7 @@ import org.springframework.web.bind.annotation.*;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.MEMBER.FAVORITES_API_MODULE}")
 @Priv(type = MemberUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -45,12 +49,11 @@ public class MemberFavoritesApiController extends BaseRestController {
 
 	private final IMemberFavoritesService memberFavoritesService;
 
-	/**
-	 * 是否收藏过指定内容
-	 */
+	@XComment("{API.DOC.MEMBER.CHECK_FAVORITE}")
 	@IgnoreDemoMode
 	@GetMapping("/check")
-	public R<?> isFavorited(@RequestParam @NotBlank @Length(max = 100) String dataType, @RequestParam @LongId Long dataId) {
+	public R<?> isFavorited(@RequestParam @NotBlank @Length(max = 100) @XComment("{API.DOC.MEMBER.DATA_TYPE}") String dataType,
+							@RequestParam @LongId @XComment("{API.DOC.MEMBER.DATA_ID}") Long dataId) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		Long count = this.memberFavoritesService.lambdaQuery()
 				.eq(MemberFavorites::getMemberId, memberId)
@@ -60,9 +63,7 @@ public class MemberFavoritesApiController extends BaseRestController {
 		return R.ok(count > 0);
 	}
 
-	/**
-	 * 收藏内容
-	 */
+	@XComment("{API.DOC.MEMBER.FAVORITE}")
 	@IgnoreDemoMode
 	@PostMapping
 	public R<?> favorite(@RequestBody @Validated FavoriteRequest req) {
@@ -71,9 +72,7 @@ public class MemberFavoritesApiController extends BaseRestController {
 		return R.ok();
 	}
 
-	/**
-	 * 取消收藏
-	 */
+	@XComment("{API.DOC.MEMBER.CANCEL_FAVORITE}")
 	@IgnoreDemoMode
 	@PostMapping("/cancel")
 	public R<?> cancelFavorite(@RequestBody @Validated FavoriteRequest req) {

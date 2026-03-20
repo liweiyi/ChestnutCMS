@@ -18,8 +18,11 @@ package com.chestnut.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
@@ -46,6 +49,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.LOGININFOR.MODULE}")
 @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorLogsView)
 @RestController
 @RequiredArgsConstructor
@@ -54,6 +58,7 @@ public class SysLogininforController extends BaseRestController {
 
 	private final ISysLogininforService logininforService;
 
+	@XComment("{API.DOC.SYS.LOGININFOR.GET_LIST}")
 	@ExcelExportable(SysLogininfor.class)
 	@GetMapping("/list")
 	public R<TableData<SysLogininfor>> list(SysLogininfor logininfor) {
@@ -79,16 +84,18 @@ public class SysLogininforController extends BaseRestController {
 		return bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.SYS.LOGININFOR.DELETE}")
 	@Log(title = "登录日志", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> infoIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.LOGININFOR.IDS}") List<Long> infoIds) {
 		logininforService.removeByIds(infoIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.LOGININFOR.CLEAN}")
 	@Log(title = "登录日志", businessType = BusinessType.CLEAN)
 	@PostMapping("/clean")
-	public R<?> clean() {
+	public R<Void> clean() {
 		logininforService.cleanLogininfor();
 		return R.ok();
 	}

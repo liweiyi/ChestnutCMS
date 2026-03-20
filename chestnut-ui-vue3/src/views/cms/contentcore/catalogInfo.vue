@@ -684,7 +684,7 @@ const handleLinkTo = (type) => {
 }
 
 const handleCatalogSelectorOk = (args) => {
-  const catalogs = args[0];
+  const catalogs = args.selectedCatalogs;
   if (catalogSelectorFor.value == 'MoveCatalog') {
     let toCatalog = "0";
     if (catalogs && catalogs.length > 0) {

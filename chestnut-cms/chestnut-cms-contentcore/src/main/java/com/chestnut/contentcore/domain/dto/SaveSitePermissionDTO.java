@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.contentcore.domain.vo.SitePrivVO;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -22,15 +23,19 @@ import lombok.Setter;
 
 import java.util.List;
 
+@XComment("{API.DOC.CMS.PERMISSION.SAVE_SITE_PERM_DTO}")
 @Getter
 @Setter
 public class SaveSitePermissionDTO {
 
+    @XComment("{API.DOC.CMS.PERMISSION.OWNER_TYPE}")
     @NotEmpty
     private String ownerType;
 
+    @XComment("{API.DOC.CMS.PERMISSION.OWNER}")
     @NotEmpty
     private String owner;
 
+    @XComment("{API.DOC.CMS.PERMISSION.PERMS}")
     private List<SitePrivVO> perms;
 }

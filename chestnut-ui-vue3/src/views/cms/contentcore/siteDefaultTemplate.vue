@@ -192,7 +192,8 @@ const handleApplyToCatalog = (propKey) => {
   openCatalogSelector.value = true;
   templatePropKey.value = propKey;
 };
-const doApplyToCatalog = (catalogs) => {
+const doApplyToCatalog = (args) => {
+  const catalogs = args.selectedCatalogs;
   if (catalogs.length == 0) {
     proxy.$modal.msgWarning(proxy.$t("CMS.Site.DefaultTemplate.SelectCatalogFirst"));
     return;

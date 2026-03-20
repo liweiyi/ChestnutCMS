@@ -17,6 +17,7 @@ package com.chestnut.contentcore.domain.dto;
 
 import java.util.List;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.system.validator.LongId;
@@ -25,6 +26,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.SITE.SITE_DEFAULT_TEMPLATE_DTO}")
 @Setter
 @Getter
 public class SiteDefaultTemplateDTO extends BaseDTO {
@@ -32,17 +34,20 @@ public class SiteDefaultTemplateDTO extends BaseDTO {
 	/*
 	 * 站点ID
 	 */
+	@XComment("{API.DOC.CMS.SITE.SITE_ID}")
 	@LongId
 	public Long siteId;
 
 	/*
 	 * 已用到指定栏目IDs
 	 */
+	@XComment("{API.DOC.CMS.SITE.TO_CATALOG_IDS}")
 	public List<Long> toCatalogIds;
 
 	/*
 	 * 默认模板属性
 	 */
+	@XComment("{API.DOC.CMS.SITE.PUBLISH_PIPE_PROPS}")
 	@NotEmpty(message = "{VALIDATOR.CMS.SITE.PUBLISH_PIPE_PROPS_EMPTY}")
 	public List<PublishPipeProps> publishPipeProps;
 }

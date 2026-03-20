@@ -16,6 +16,7 @@
 package com.chestnut.system.controller;
 
 import cn.dev33.satoken.session.SaSession;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
@@ -23,6 +24,7 @@ import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysUserOnline;
 import com.chestnut.system.domain.dto.QueryOnlineUserRequest;
@@ -30,7 +32,6 @@ import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysUserOnlineService;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +47,7 @@ import java.util.Set;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.USER_ONLINE.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/monitor/online")
@@ -55,9 +57,10 @@ public class SysUserOnlineController extends BaseRestController {
 
 	private final RedisCache redisCache;
 	
+	@XComment("{API.DOC.SYS.USER_ONLINE.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorOnlineList)
 	@GetMapping("/list")
-	public R<?> list(@Validated QueryOnlineUserRequest req) {
+	public R<TableData<SysUserOnline>> list(@Validated QueryOnlineUserRequest req) {
 		String keyPrefix = StpAdminUtil.getStpLogic().getConfigOrGlobal().getTokenName() + ":" + AdminUserType.TYPE + ":token:";
         if (StringUtils.isNotEmpty(req.getTokenId())) {
             try {
@@ -94,13 +97,12 @@ public class SysUserOnlineController extends BaseRestController {
 	/**
 	 * 强退用户
 	 */
+	@XComment("{API.DOC.SYS.USER_ONLINE.FORCE_LOGOUT}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorOnlineForceLogout)
 	@Log(title = "在线用户", businessType = BusinessType.FORCE)
-	@PostMapping("/delete")
-	public R<?> forceLogout(@RequestBody @NotEmpty List<String> tokenIds) {
-		for (String tokenId : tokenIds) {
-			StpAdminUtil.logoutByTokenValue(tokenId);
-		}
+	@DeleteMapping("/{tokenId}")
+	public R<Void> forceLogout(@PathVariable @XComment("{API.DOC.SYS.USER_ONLINE.TOKEN_ID}") String tokenId) {
+		StpAdminUtil.logoutByTokenValue(tokenId);
 		return R.ok();
 	}
 }

@@ -18,6 +18,7 @@ package com.chestnut.contentcore.controller;
 import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
@@ -25,6 +26,9 @@ import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
+
+
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -67,6 +71,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.PAGE_WIDGET.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/pagewidget")
@@ -78,6 +83,7 @@ public class PageWidgetController extends CmsRestController {
 
 	private final IPublishPipeService publishPipeService;
 
+	@XComment("{API.DOC.CMS.PAGE_WIDGET.GET_TYPES}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/types")
 	public R<?> getPageWidgetTypes() {
@@ -87,13 +93,14 @@ public class PageWidgetController extends CmsRestController {
 		return this.bindDataTable(result);
 	}
 
+	@XComment("{API.DOC.CMS.PAGE_WIDGET.GET_LIST}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.ContentView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER },
 			mode = SaMode.AND
 	)
 	@GetMapping("/list")
-	public R<?> listData(@RequestParam(name = "catalogId", required = false) Long catalogId,
+	public R<TableData<PageWidgetVO>> listData(@RequestParam(name = "catalogId", required = false) Long catalogId,
 			@RequestParam(name = "name", required = false) String name,
 			@RequestParam(name = "type", required = false) String type,
 			@RequestParam(name = "state", required = false) Integer state) {
@@ -121,13 +128,14 @@ public class PageWidgetController extends CmsRestController {
 		return this.bindDataTable(list, (int) page.getTotal());
 	}
 
+	@XComment("{API.DOC.CMS.PAGE_WIDGET.GET_DETAIL}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.ContentView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER },
 			mode = SaMode.AND
 	)
 	@GetMapping("/detail/{pageWidgetId}")
-	public R<PageWidgetVO> getInfo(@PathVariable("pageWidgetId") Long pageWidgetId) {
+	public R<PageWidgetVO> getInfo(@PathVariable("pageWidgetId") @XComment("{API.DOC.CMS.PAGE_WIDGET.PAGE_WIDGET_ID}") Long pageWidgetId) {
 		CmsPageWidget pageWidget = this.pageWidgetService.getById(pageWidgetId);
 		Assert.notNull(pageWidget, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", pageWidgetId));
 
@@ -148,6 +156,7 @@ public class PageWidgetController extends CmsRestController {
 		return R.ok(vo);
 	}
 
+	@XComment("{API.DOC.CMS.PAGE_WIDGET.ADD}")
 	@Priv(
 			type = AdminUserType.TYPE,
 			value = { ContentCorePriv.ContentView, SitePermissionType.ID + ":AddPageWidget:${#_header['" + ContentCoreConsts.Header_CurrentSite + "']}" },
@@ -155,7 +164,7 @@ public class PageWidgetController extends CmsRestController {
 	)
 	@Log(title = "新增页面组件", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addPageWidget(@RequestBody @Validated PageWidgetAddDTO dto) {
+	public R<Void> addPageWidget(@RequestBody @Validated PageWidgetAddDTO dto) {
 		IPageWidgetType pwt = this.pageWidgetService.getPageWidgetType(dto.getType());
 		Assert.notNull(pwt, () -> ContentCoreErrorCode.UNSUPPORTED_PAGE_WIDGET_TYPE.exception(dto.getType()));
 
@@ -176,10 +185,11 @@ public class PageWidgetController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.PAGE_WIDGET.UPDATE}")
 	@Priv(type = AdminUserType.TYPE)
 	@Log(title = "编辑页面组件", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> editPageWidget(@RequestBody @Validated PageWidgetEditDTO dto) {
+	public R<Void> editPageWidget(@RequestBody @Validated PageWidgetEditDTO dto) {
 		CmsPageWidget pageWidget = this.pageWidgetService.getById(dto.getPageWidgetId());
 		Assert.notNull(dto.getPageWidgetId(), () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", dto.getPageWidgetId()));
 		
@@ -195,26 +205,29 @@ public class PageWidgetController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.PAGE_WIDGET.DELETE}")
 	@Priv(type = AdminUserType.TYPE)
 	@Log(title = "删除页面组件", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> deletePageWidgets(@RequestBody @NotEmpty List<Long> pageWidgetIds) {
+	public R<Void> deletePageWidgets(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.PAGE_WIDGET.PAGE_WIDGET_IDS}") List<Long> pageWidgetIds) {
 		this.pageWidgetService.deletePageWidgets(pageWidgetIds, StpAdminUtil.getLoginUser());
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.PAGE_WIDGET.PUBLISH}")
 	@Priv(type = AdminUserType.TYPE)
 	@Log(title = "页面组件", businessType = BusinessType.OTHER)
 	@PostMapping("/publish")
-	public R<?> publishPageWidgets(@RequestBody @NotEmpty List<Long> pageWidgetIds) throws TemplateException, IOException {
+	public R<Void> publishPageWidgets(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.PAGE_WIDGET.PAGE_WIDGET_IDS}") List<Long> pageWidgetIds) throws TemplateException, IOException {
 		this.pageWidgetService.publishPageWidgets(pageWidgetIds, StpAdminUtil.getLoginUser());
 		return R.ok();
 	}
 
+    @XComment("{API.DOC.CMS.PAGE_WIDGET.OFFLINE}")
     @Priv(type = AdminUserType.TYPE)
     @Log(title = "页面组件", businessType = BusinessType.OTHER)
     @PostMapping("/offline")
-    public R<?> offlinePageWidgets(@RequestBody @NotEmpty List<Long> pageWidgetIds) throws TemplateException, IOException {
+    public R<Void> offlinePageWidgets(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.PAGE_WIDGET.PAGE_WIDGET_IDS}") List<Long> pageWidgetIds) throws TemplateException, IOException {
         this.pageWidgetService.offlinePageWidgets(pageWidgetIds, StpAdminUtil.getLoginUser());
         return R.ok();
     }

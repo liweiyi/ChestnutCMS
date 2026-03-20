@@ -15,12 +15,14 @@
  */
 package com.chestnut.vote.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
@@ -32,6 +34,8 @@ import com.chestnut.vote.domain.dto.UpdateVoteSubjectRequest;
 import com.chestnut.vote.permission.VotePriv;
 import com.chestnut.vote.service.IVoteSubjectItemService;
 import com.chestnut.vote.service.IVoteSubjectService;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -39,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@XComment("{API.DOC.VOTE.SUBJECT.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/vote/subject")
@@ -48,57 +53,67 @@ public class VoteSubjectController extends BaseRestController {
 
 	private final IVoteSubjectItemService voteSubjectItemService;
 
+	@XComment("{API.DOC.VOTE.SUBJECT.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
 	@GetMapping("/list")
-	public R<?> getVoteSubjects(@RequestParam @LongId Long voteId) {
+	public R<TableData<VoteSubject>> getVoteSubjects(
+			@RequestParam @LongId @XComment("{API.DOC.VOTE.SUBJECT.VOTE_ID}") Long voteId) {
 		List<VoteSubject> subjects = this.voteSubjectService.getVoteSubjectList(voteId);
 		return this.bindDataTable(subjects);
 	}
 
+	@XComment("{API.DOC.VOTE.SUBJECT.GET_DETAIL}")
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
 	@GetMapping("/detail/{subjectId}")
-	public R<?> getVoteSubjectDetail(@PathVariable @LongId Long subjectId) {
+	public R<VoteSubject> getVoteSubjectDetail(
+			@PathVariable @LongId @XComment("{API.DOC.VOTE.SUBJECT.ID}") Long subjectId) {
 		VoteSubject subject = this.voteSubjectService.getById(subjectId);
 		Assert.notNull(subject, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("subjectId", subjectId));
 		return R.ok(subject);
 	}
 
+	@XComment("{API.DOC.VOTE.SUBJECT.ADD}")
 	@Log(title = "新增调查主题", businessType = BusinessType.INSERT)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
 	@PostMapping("/add")
-	public R<?> add(@RequestBody @Validated CreateVoteSubjectRequest req) {
+	public R<Void> add(@RequestBody @Validated CreateVoteSubjectRequest req) {
 		this.voteSubjectService.addVoteSubject(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.VOTE.SUBJECT.UPDATE}")
 	@Log(title = "编辑调查主题", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
 	@PostMapping("/update")
-	public R<?> update(@RequestBody @Validated UpdateVoteSubjectRequest req) {
+	public R<Void> update(@RequestBody @Validated UpdateVoteSubjectRequest req) {
 		this.voteSubjectService.updateVoteSubject(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.VOTE.SUBJECT.DELETE}")
 	@Log(title = "删除调查主题", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
 	@PostMapping("/delete")
-	public R<String> delete(@RequestBody @NotEmpty List<Long> subjectIds) {
+	public R<Void> delete(@RequestBody @NotEmpty @XComment("{API.DOC.VOTE.SUBJECT.IDS}") List<Long> subjectIds) {
 		this.voteSubjectService.deleteVoteSubjects(subjectIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.VOTE.SUBJECT.GET_ITEMS}")
 	@Priv(type = AdminUserType.TYPE, value = VotePriv.View)
 	@GetMapping("/items/{subjectId}")
-	public R<?> getSubjectItems(@PathVariable @LongId Long subjectId) {
+	public R<TableData<VoteSubjectItem>> getSubjectItems(
+			@PathVariable @LongId @XComment("{API.DOC.VOTE.SUBJECT.ID}") Long subjectId) {
 		List<VoteSubjectItem> list = voteSubjectItemService.lambdaQuery().eq(VoteSubjectItem::getSubjectId, subjectId)
 				.orderByAsc(VoteSubjectItem::getSortFlag).list();
 		return this.bindDataTable(list);
 	}
 
+	@XComment("{API.DOC.VOTE.SUBJECT.SAVE_ITEMS}")
 	@Log(title = "保存调查主题选项", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = { VotePriv.Add, VotePriv.Edit })
 	@PostMapping("/items")
-	public R<?> saveSubjectItems(@RequestBody @Validated SaveSubjectItemsRequest req) {
+	public R<Void> saveSubjectItems(@RequestBody @Validated SaveSubjectItemsRequest req) {
 		this.voteSubjectService.saveSubjectItems(req);
 		return R.ok();
 	}

@@ -18,6 +18,7 @@ package com.chestnut.contentcore.domain.vo;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.InitByContent;
+import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -159,6 +160,11 @@ public class ListContentVO implements InitByContent {
 	 * 复制源ID
 	 */
     private Long copyId;
+
+    /*
+	 * 复制信息
+	 */
+    private ContentCopyType.ContentCopyInfo copyInfo;
 
 	/*
 	 * 发布时间

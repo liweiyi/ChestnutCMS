@@ -16,14 +16,18 @@
 package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDictType;
 import com.chestnut.system.domain.dto.CreateDictTypeRequest;
@@ -49,6 +53,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.DICT_TYPE.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/dict/type")
@@ -56,10 +61,11 @@ public class SysDictTypeController extends BaseRestController {
 	
 	private final ISysDictTypeService dictTypeService;
 
+	@XComment("{API.DOC.SYS.DICT_TYPE.GET_LIST}")
 	@ExcelExportable(SysDictType.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
 	@GetMapping(value = "/list")
-	public R<?> list(@Validated QueryDictTypeRequest req) {
+	public R<TableData<SysDictType>> list(@Validated QueryDictTypeRequest req) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysDictType> page = dictTypeService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(req.getDictType()), SysDictType::getDictType, req.getDictType())
@@ -75,9 +81,10 @@ public class SysDictTypeController extends BaseRestController {
 	/**
 	 * 查询字典类型详细
 	 */
+	@XComment("{API.DOC.SYS.DICT_TYPE.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
 	@GetMapping(value = "/detail/{dictId}")
-	public R<?> getInfo(@PathVariable @LongId Long dictId) {
+	public R<SysDictType> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.DICT_TYPE.ID}") Long dictId) {
 		SysDictType dictType = dictTypeService.getById(dictId);
 		I18nUtils.replaceI18nFields(dictType);
 		return R.ok(dictType);
@@ -86,10 +93,11 @@ public class SysDictTypeController extends BaseRestController {
 	/**
 	 * 新增字典类型
 	 */
+	@XComment("{API.DOC.SYS.DICT_TYPE.CREATE_DICT_TYPE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictAdd)
 	@Log(title = "字典类型", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> add(@Validated @RequestBody CreateDictTypeRequest req) {
+	public R<Void> add(@Validated @RequestBody CreateDictTypeRequest req) {
 		dictTypeService.insertDictType(req);
 		return R.ok();
 	}
@@ -97,10 +105,11 @@ public class SysDictTypeController extends BaseRestController {
 	/**
 	 * 修改字典类型
 	 */
+	@XComment("{API.DOC.SYS.DICT_TYPE.UPDATE_DICT_TYPE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictEdit)
 	@Log(title = "字典类型", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> edit(@Validated @RequestBody UpdateDictTypeRequest req) {
+	public R<Void> edit(@Validated @RequestBody UpdateDictTypeRequest req) {
 		dictTypeService.updateDictType(req);
 		return R.ok();
 	}
@@ -108,10 +117,11 @@ public class SysDictTypeController extends BaseRestController {
 	/**
 	 * 删除字典类型
 	 */
+	@XComment("{API.DOC.SYS.DICT_TYPE.DELETE_DICT_TYPE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictRemove)
 	@Log(title = "字典类型", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> dictIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.DICT_TYPE.IDS}") List<Long> dictIds) {
 		dictTypeService.deleteDictTypeByIds(dictIds);
 		return R.ok();
 	}
@@ -119,10 +129,11 @@ public class SysDictTypeController extends BaseRestController {
 	/**
 	 * 刷新字典缓存
 	 */
+	@XComment("{API.DOC.SYS.DICT_TYPE.REFRESH_CACHE}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictRemove)
 	@Log(title = "字典类型", businessType = BusinessType.CLEAN)
 	@PostMapping("/refreshCache")
-	public R<?> refreshCache() {
+	public R<Void> refreshCache() {
 		dictTypeService.resetDictCache();
 		return R.ok();
 	}
@@ -130,9 +141,10 @@ public class SysDictTypeController extends BaseRestController {
 	/**
 	 * 获取字典选择框列表
 	 */
+	@XComment("{API.DOC.SYS.DICT_TYPE.GET_OPTIONS}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/optionselect")
-	public R<?> optionselect() {
+	public R<List<SysDictType>> optionselect() {
 		List<SysDictType> dictTypes = dictTypeService.list();
 		I18nUtils.replaceI18nFields(dictTypes);
 		return R.ok(dictTypes);

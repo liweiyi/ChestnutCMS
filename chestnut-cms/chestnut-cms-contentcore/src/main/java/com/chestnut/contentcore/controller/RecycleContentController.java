@@ -18,11 +18,15 @@ package com.chestnut.contentcore.controller;
 import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
+
+
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.BCmsContent;
@@ -46,6 +50,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.RECYCLE_CONTENT.MODULE}")
 @Priv(
 	type = AdminUserType.TYPE,
 	value = { ContentCorePriv.ContentView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
@@ -58,8 +63,9 @@ public class RecycleContentController extends CmsRestController {
 
 	private final IContentService contentService;
 
+	@XComment("{API.DOC.CMS.RECYCLE_CONTENT.GET_LIST}")
 	@GetMapping
-	public R<?> getRecycleContentList(@RequestParam(name = "catalogId", required = false) Long catalogId,
+	public R<TableData<BCmsContent>> getRecycleContentList(@RequestParam(name = "catalogId", required = false) Long catalogId,
 									  @RequestParam(name = "contentType", required = false) String contentType,
 									  @RequestParam(name = "title", required = false) String title,
 									  @RequestParam(name = "status", required = false) String status) {
@@ -76,16 +82,18 @@ public class RecycleContentController extends CmsRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.CMS.RECYCLE_CONTENT.RECOVER}")
 	@Log(title = "恢复回收站内容", businessType = BusinessType.INSERT)
 	@PostMapping("/recover")
-	public R<?> recoverContent(@RequestBody @NotEmpty List<Long> backupIds) {
+	public R<Void> recoverContent(@RequestBody @NotEmpty List<Long> backupIds) {
 		this.contentService.recoverContents(backupIds, StpAdminUtil.getLoginUser());
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.RECYCLE_CONTENT.DELETE}")
 	@Log(title = "删除回收站内容", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> deleteRecycleContents(@RequestBody @NotEmpty List<Long> backupIds) {
+	public R<Void> deleteRecycleContents(@RequestBody @NotEmpty List<Long> backupIds) {
 		this.contentService.deleteRecycleContents(backupIds);
 		return R.ok();
 	}

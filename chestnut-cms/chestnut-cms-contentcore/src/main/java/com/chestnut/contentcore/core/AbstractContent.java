@@ -23,8 +23,8 @@ import com.chestnut.common.utils.*;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.*;
@@ -176,7 +176,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	void checkLock() {
 		boolean lockContent = content.isLock() && StringUtils.isNotEmpty(content.getLockUser())
 				&& !content.getLockUser().equals(this.getOperatorUName());
-		Assert.isFalse(lockContent, () -> ContentCoreErrorCode.CONTENT_LOCKED.exception(content.getLockUser()));
+		Assert.isFalse(lockContent, () -> ContentCoreErrorCode.CONTENT_LOCKED.exception(content.getTitle(), content.getLockUser()));
 	}
 
 	void checkRedirectUrl() {

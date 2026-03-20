@@ -24,7 +24,7 @@ import com.chestnut.cms.word.properties.HotWordMaxReplaceCountProperty;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.enums.ContentCopyType;
+import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.listener.event.BeforeContentSaveEvent;
 import com.chestnut.contentcore.listener.event.BeforeSiteDeleteEvent;
 import com.chestnut.contentcore.service.ISiteService;

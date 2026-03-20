@@ -719,7 +719,8 @@ const en = {
       LogName: "Name",
       Console: {
         AutoRefresh: "Auto Refresh",
-        LockScroll: "Lock Scroll"
+        LockScroll: "Lock Scroll",
+        KeywordPlaceholder: "Keyword Filter"
       }
     },
     Online: {
@@ -1038,6 +1039,8 @@ const en = {
         DownloadRemoteImage: "Download Article Image",
         DownloadRemoteImageTip: "Automatically download remote images within the article body.",
         EnableSiteDeleteBackup: "Enable Site Delete Backup",
+        EnableContentDeletePublish: "Publish After Content Delete",
+        EnableContentSortPublish: "Publish After Content Sort",
         MemberResourceUrl: "Member Resource Domain",
         ShortTitleLabel: "Short Title Label",
         SubTitleLabel: "Sub Title Label",
@@ -1186,6 +1189,8 @@ const en = {
       ImportWord: "Import Word",
       UploadWord: "Upload Word Files",
       SaveUploadWordFile: "Save uploaded Word document.",
+      CopyType: "Copy Type",
+      CopyId: "Source ID",
       StatusOption: {
         Draft: "Draft",
         ToPublish: "To Publish",
@@ -1234,6 +1239,7 @@ const en = {
       PublishPipe: "Publish Pipe",
       StaticPath: "Static Path",
       Template: "Template",
+      DeleteProgressTitle: "Delete contents",
       PublishProgressTitle: "Publishing contents",
       OfflineProgressTitle: "Offline contents",
       CopyProgressTitle: "Copy contents",
@@ -2069,6 +2075,94 @@ const en = {
       NginxNode: "Deploy Servers",
       AddTitle: "Add nginx config",
       EditTitle: "Edit nginx config",
+    }
+  },
+  Workflow: {
+    Definition: {
+      Code: 'Process Code',
+      Name: 'Process Name',
+      Description: 'Description',
+      Status: 'Status',
+      Version: 'Version',
+      Versions: 'Versions',
+      VersionId: 'Version ID',
+      VersionList: 'Version List',
+      Publish: 'Publish',
+      Disable: 'Disable',
+      Enable: 'Enable',
+      PublishTime: 'Publish Time',
+      Remark: 'Remark',
+      Designer: 'Process Designer',
+      Placeholder: {
+        Code: 'Please enter process code',
+        Name: 'Please enter process name',
+        Description: 'Please enter description'
+      }
+    },
+    Instance: {
+      InstanceId: 'Instance ID',
+      Title: 'Title',
+      BusinessKey: 'Business Key',
+      Status: 'Status',
+      StartUser: 'Starter',
+      StartTime: 'Start Time',
+      EndTime: 'End Time',
+      Remark: 'Remark',
+      Detail: 'Instance Detail',
+      Variables: 'Variables',
+      VariableName: 'Variable Name',
+      VariableValue: 'Variable Value',
+      TaskHistory: 'Task History',
+      Suspend: 'Suspend',
+      Resume: 'Resume',
+      Terminate: 'Terminate',
+      TerminateReason: 'Terminate Reason',
+      Reason: 'Reason',
+      Placeholder: {
+        Reason: 'Please enter reason'
+      }
+    },
+    Task: {
+      TaskId: 'Task ID',
+      TaskName: 'Task Name',
+      Description: 'Description',
+      Assignee: 'Assignee',
+      Status: 'Status',
+      Priority: 'Priority',
+      DueDate: 'Due Date',
+      ClaimTime: 'Claim Time',
+      CompleteTime: 'Complete Time',
+      Comment: 'Comment',
+      Candidates: 'Candidates',
+      CandidateUsers: 'Candidate Users',
+      CandidateGroups: 'Candidate Groups',
+      Detail: 'Task Detail',
+      Claim: 'Claim',
+      Complete: 'Complete',
+      Transfer: 'Transfer',
+      Delegate: 'Delegate',
+      Reject: 'Reject',
+      TargetUser: 'Target User',
+      TargetNode: 'Target Node',
+      RejectReason: 'Reject Reason',
+      Placeholder: {
+        Comment: 'Please enter comment',
+        TargetUser: 'Please enter target user ID',
+        TargetNode: 'Please enter target node ID',
+        RejectReason: 'Please enter reject reason'
+      }
+    },
+    MyProcess: {
+      StartNew: 'Start New Process',
+      ProcessDef: 'Process Definition',
+      Cancel: 'Cancel Process',
+      CancelReason: 'Cancel Reason',
+      Start: 'Start',
+      Placeholder: {
+        ProcessDef: 'Please select process definition',
+        BusinessKey: 'Please enter business key',
+        Title: 'Please enter title'
+      }
     }
   }
 }

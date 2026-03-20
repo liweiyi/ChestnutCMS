@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 import lombok.Getter;
@@ -22,6 +23,7 @@ import lombok.Setter;
 
 import java.util.List;
 
+@XComment("{API.DOC.CMS.SITE.SITE_EXPORT_DTO}")
 @Getter
 @Setter
 public class SiteExportDTO extends BaseDTO {
@@ -29,11 +31,13 @@ public class SiteExportDTO extends BaseDTO {
 	/**
 	 * 所属站点ID
 	 */
+	@XComment("{API.DOC.CMS.SITE.SITE_ID}")
     @LongId
 	private Long siteId;
 
     /**
      * 导出目录
      */
+    @XComment("{API.DOC.CMS.SITE.EXPORT_DIRECTORIES}")
     private List<String> directories;
 }

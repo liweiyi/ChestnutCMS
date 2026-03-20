@@ -15,6 +15,7 @@
  */
 package com.chestnut.word.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -29,18 +30,15 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.WORD.ERROR_PRONE_WORD.CREATE_REQ}")
 public class CreateErrorProneWordRequest extends BaseDTO {
 
-    /**
-     * 易错词
-     */
+    @XComment("{CC.ERROR_PRONE_WORD.WORD}")
     @NotBlank
     @Length(max = 255)
     private String word;
 
-    /**
-     * 替换词
-     */
+    @XComment("{CC.ERROR_PRONE_WORD.REPLACE_WORD}")
     @NotBlank
     @Length(max = 255)
     private String replaceWord;

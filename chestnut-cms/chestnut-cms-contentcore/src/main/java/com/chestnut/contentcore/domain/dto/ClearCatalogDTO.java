@@ -15,12 +15,14 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CATALOG.CLEAR_DTO}")
 @Getter
 @Setter
 public class ClearCatalogDTO extends BaseDTO {
@@ -28,6 +30,7 @@ public class ClearCatalogDTO extends BaseDTO {
 	/**
 	 * 栏目ID
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}")
 	@NotNull
 	@LongId
 	public Long catalogId;

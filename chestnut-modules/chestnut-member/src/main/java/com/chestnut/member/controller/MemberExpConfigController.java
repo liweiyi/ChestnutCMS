@@ -16,6 +16,7 @@
 package com.chestnut.member.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
@@ -24,6 +25,7 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.MemberExpConfig;
@@ -37,6 +39,8 @@ import com.chestnut.member.service.IMemberExpConfigService;
 import com.chestnut.member.service.IMemberLevelConfigService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -45,6 +49,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@XComment("{API.DOC.MEMBER.EXP_CONFIG_MODULE}")
 @Priv(type = AdminUserType.TYPE, value = MemberPriv.MemberExp)
 @RequiredArgsConstructor
 @RestController
@@ -55,9 +60,10 @@ public class MemberExpConfigController extends BaseRestController {
 
 	private final IMemberExpConfigService memberExpOperationService;
 
+	@XComment("{API.DOC.MEMBER.EXP_CONFIG_GET_LIST}")
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam(value = "opType", required = false) @Length(max = 50) String opType,
-			@RequestParam(value = "levelType", required = false) @Length(max = 30) String levelType) {
+	public R<TableData<MemberExpConfig>> getPageList(@RequestParam(value = "opType", required = false) @Length(max = 50) @XComment("{API.DOC.MEMBER.OP_TYPE}") String opType,
+			@RequestParam(value = "levelType", required = false) @Length(max = 30) @XComment("{API.DOC.MEMBER.LEVEL_TYPE}") String levelType) {
 		PageRequest pr = this.getPageRequest();
 		Page<MemberExpConfig> page = this.memberExpOperationService.lambdaQuery()
 				.eq(StringUtils.isNotEmpty(opType), MemberExpConfig::getOpType, opType)
@@ -72,9 +78,9 @@ public class MemberExpConfigController extends BaseRestController {
 		});
 		return this.bindDataTable(page);
 	}
-
+	@XComment("{API.DOC.MEMBER.EXP_CONFIG_GET_DETAIL}")
 	@GetMapping("/detail/{expOperationId}")
-	public R<?> getExpOperationDetail(@PathVariable("expOperationId") @LongId Long expOperationId) {
+	public R<MemberExpConfig> getExpOperationDetail(@PathVariable("expOperationId") @LongId @XComment("{API.DOC.MEMBER.EXP_CONFIG_ID}") Long expOperationId) {
 		MemberExpConfig conf = this.memberExpOperationService.getById(expOperationId);
 		Assert.notNull(conf, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("id", expOperationId));
 		IExpOperation expOperation = this.memberExpOperationService.getExpOperation(conf.getOpType());
@@ -82,6 +88,7 @@ public class MemberExpConfigController extends BaseRestController {
 		return R.ok(conf);
 	}
 
+	@XComment("{API.DOC.MEMBER.GET_EXP_OP_TYPES}")
 	@GetMapping("/types")
 	public R<?> getOperationTypes() {
 		List<ExpOperationVO> list = this.memberExpOperationService.getExpOperations().values().stream()
@@ -89,23 +96,26 @@ public class MemberExpConfigController extends BaseRestController {
 		return R.ok(list);
 	}
 
+	@XComment("{API.DOC.MEMBER.EXP_CONFIG_ADD}")
 	@Log(title = "新增会员经验配置", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addMemberExpOperation(@RequestBody @Validated CreateMemberExpConfigRequest req) {
+	public R<Void> addMemberExpOperation(@RequestBody @Validated CreateMemberExpConfigRequest req) {
 		this.memberExpOperationService.addExpOperation(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.EXP_CONFIG_UPDATE}")
 	@Log(title = "编辑会员经验配置", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> updateMemberExpOperation(@RequestBody @Validated UpdateMemberExpConfigRequest req) {
+	public R<Void> updateMemberExpOperation(@RequestBody @Validated UpdateMemberExpConfigRequest req) {
 		this.memberExpOperationService.updateExpOperation(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.MEMBER.EXP_CONFIG_DELETE}")
 	@Log(title = "删除会员经验配置", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> deleteExpOperations(@RequestBody @NotEmpty List<Long> expOperationIds) {
+	public R<Void> deleteExpOperations(@RequestBody @NotEmpty @XComment("{API.DOC.MEMBER.EXP_CONFIG_IDS}") List<Long> expOperationIds) {
 		this.memberExpOperationService.deleteExpOperations(expOperationIds);
 		return R.ok();
 	}

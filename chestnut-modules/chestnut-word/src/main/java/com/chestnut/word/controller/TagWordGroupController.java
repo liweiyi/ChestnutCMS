@@ -16,11 +16,13 @@
 package com.chestnut.word.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
@@ -29,6 +31,8 @@ import com.chestnut.word.domain.dto.CreateTagWordGroupRequest;
 import com.chestnut.word.domain.dto.UpdateTagWordGroupRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.ITagWordGroupService;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -45,6 +49,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.WORD.TAG_WORD_GROUP.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/word/tagword/group")
@@ -52,9 +57,10 @@ public class TagWordGroupController extends BaseRestController {
 
 	private final ITagWordGroupService tagWordGroupService;
 
+	@XComment("{API.DOC.WORD.TAG_WORD_GROUP.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam(required = false) @Length(max = 255) String query) {
+	public R<TableData<TagWordGroup>> getPageList(@RequestParam(required = false) @Length(max = 255) @XComment("{API.DOC.WORD.TAG_WORD_GROUP.QUERY}") String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<TagWordGroup> page = this.tagWordGroupService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(query), TagWordGroup::getName, query)
@@ -62,36 +68,41 @@ public class TagWordGroupController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.WORD.TAG_WORD_GROUP.GET_TREE_DATA}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@GetMapping("/treedata")
-	public R<?> getTreeData() {
+	public R<List<TreeNode<String>>> getTreeData() {
 		List<TreeNode<String>> treeData = this.tagWordGroupService.buildTreeData(q -> {});
 		return R.ok(treeData);
 	}
 
+	@XComment("{API.DOC.WORD.TAG_WORD_GROUP.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@GetMapping("/data/{groupId}")
-	public R<?> getData(@PathVariable @LongId Long groupId) {
+	public R<TagWordGroup> getData(@PathVariable @LongId @XComment("{API.DOC.WORD.TAG_WORD_GROUP.GROUP_ID}") Long groupId) {
 		TagWordGroup group = this.tagWordGroupService.getById(groupId);
 		return R.ok(group);
 	}
 
+	@XComment("{API.DOC.WORD.TAG_WORD_GROUP.CREATE}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping("/add")
 	public R<?> add(@RequestBody @Validated CreateTagWordGroupRequest req) {
 		return R.ok(this.tagWordGroupService.addTagWordGroup(req));
 	}
 
+	@XComment("{API.DOC.WORD.TAG_WORD_GROUP.UPDATE}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping("/update")
-	public R<?> edit(@RequestBody @Validated UpdateTagWordGroupRequest req) {
+	public R<Void> edit(@RequestBody @Validated UpdateTagWordGroupRequest req) {
 		this.tagWordGroupService.editTagWordGroup(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.TAG_WORD_GROUP.DELETE}")
 	@Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> groupIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.WORD.TAG_WORD_GROUP.GROUP_IDS}") List<Long> groupIds) {
 		this.tagWordGroupService.deleteTagWordGroups(groupIds);
 		return R.ok();
 	}

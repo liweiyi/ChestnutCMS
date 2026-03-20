@@ -15,6 +15,7 @@
  */
 package com.chestnut.vote.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -27,51 +28,39 @@ import java.util.List;
 
 @Getter
 @Setter
+@XComment("{API.DOC.VOTE.API.SUBMIT_REQ}")
 public class VoteSubmitRequest {
 
-	/**
-	 * ID
-	 */
 	@LongId
+	@XComment("{CC.VOTE.ID}")
 	private Long voteId;
 
-	/**
-	 * 问卷调查主题信息
-	 */
 	@NotEmpty
 	@Valid
+	@XComment("{API.DOC.VOTE.API.SUBJECT_RESULTS}")
 	private List<SubjectResult> subjects;
-	
-	/**
-	 * IP
-	 */
+
+	@XComment("{API.DOC.VOTE.API.IP}")
 	private String ip;
-	
-	/**
-	 * UserAgent
-	 */
+
+	@XComment("{API.DOC.VOTE.API.USER_AGENT}")
 	private String userAgent;
 
 	@Getter
 	@Setter
+	@XComment("{API.DOC.VOTE.API.SUBJECT_RESULT}")
 	public static class SubjectResult {
 
-		/**
-		 * 主题ID
-		 */
 		@LongId
+		@XComment("{CC.VOTE_SUBJECT.ID}")
 		private Long subjectId;
 
-		/**
-		 * 主题类型
-		 */
 		@NotBlank
+		@XComment("{CC.VOTE_SUBJECT.TYPE}")
 		private String type;
 
-		/**
-		 * 结果：itemId || inputText
-		 */
 		@NotEmpty
+		@XComment("{API.DOC.VOTE.API.SUBJECT_ANSWER}")
 		private ArrayList<String> result;
 	}
 }

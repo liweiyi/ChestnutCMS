@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.controller.common;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.captcha.*;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.redis.RedisCache;
@@ -24,6 +25,9 @@ import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.dto.CheckCaptchaRequest;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.service.ISecurityConfigService;
+
+
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * 验证码操作处理
  */
+@XComment("{API.DOC.CAPTCHA.MODULE}")
 @RestController
 @RequestMapping("/captcha")
 @RequiredArgsConstructor
@@ -49,11 +54,13 @@ public class CaptchaController extends BaseRestController {
 
     private final RedisCache redisCache;
 
+    @XComment("{API.DOC.CAPTCHA.GET_OPTIONS}")
     @GetMapping("/options")
     public R<?> getCaptchaOptions() {
         return bindSelectOptions(captchaTypes, ICaptchaType::getType, ICaptchaType::getName);
     }
 
+    @XComment("{API.DOC.CAPTCHA.GET_CAPTCHA}")
 	@GetMapping("/get")
 	public R<?> getCaptcha(@RequestParam @NotBlank String token) {
         SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
@@ -73,6 +80,7 @@ public class CaptchaController extends BaseRestController {
 		return R.ok(o);
 	}
 
+    @XComment("{API.DOC.CAPTCHA.CHECK_CAPTCHA}")
 	@IgnoreDemoMode
 	@PostMapping("/check")
 	public R<?> checkCaptcha(@RequestBody CheckCaptchaRequest req) {
@@ -93,6 +101,7 @@ public class CaptchaController extends BaseRestController {
         }
 	}
 
+    @XComment("{API.DOC.CAPTCHA.GET_CONFIG}")
 	@GetMapping("/config")
 	public R<?> getLoginCaptchaConfig() {
         SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();

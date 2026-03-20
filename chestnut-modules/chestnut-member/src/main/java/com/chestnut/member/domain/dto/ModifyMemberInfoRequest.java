@@ -20,6 +20,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
+import com.chestnut.common.annotation.XComment;
+
 /**
  * 会员信息修改DTO
  *
@@ -30,13 +32,16 @@ import org.hibernate.validator.constraints.Length;
 @Setter
 public class ModifyMemberInfoRequest {
 
+    @XComment("{API.DOC.MEMBER.NICK_NAME}")
     @NotBlank
     @Length(max = 30)
     private String nickName;
 
+    @XComment("{API.DOC.MEMBER.SLOGAN}")
     @Length(max = 255)
     private String slogan;
 
+    @XComment("{API.DOC.MEMBER.DESCRIPTION}")
     @Length(max = 500)
     private String description;
 }

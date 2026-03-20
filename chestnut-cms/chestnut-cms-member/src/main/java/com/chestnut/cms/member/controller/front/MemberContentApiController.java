@@ -19,8 +19,10 @@ import com.chestnut.cms.member.CmsMemberConstants;
 import com.chestnut.cms.member.domain.vo.ContentDynamicDataWithContributorVO;
 import com.chestnut.cms.member.domain.vo.ContributorVO;
 import com.chestnut.cms.member.domain.vo.FavoriteContentVO;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
@@ -33,6 +35,8 @@ import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.service.IMemberFavoritesService;
 import com.chestnut.member.service.IMemberLikeService;
 import com.chestnut.member.service.IMemberStatDataService;
+
+
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +50,7 @@ import java.util.stream.Stream;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CMS_MEMBER.MEMBER_CONTENT_API}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/cms/member")
@@ -64,8 +69,10 @@ public class MemberContentApiController extends BaseRestController {
 	/**
 	 * 内容动态数据，评论数、点赞数、收藏数、浏览数
 	 */
+	@XComment("{API.DOC.CMS.CMS_MEMBER.GET_CONTENT_DYNAMIC_DATA}")
 	@GetMapping("/content/data")
-	public R<List<ContentDynamicDataWithContributorVO>> getContentDynamicData(@RequestParam("ids") String contentIdsStr) {
+	public R<List<ContentDynamicDataWithContributorVO>> getContentDynamicData(
+			@RequestParam("ids") @XComment("{API.DOC.CMS.CMS_MEMBER.CONTENT_IDS}") String contentIdsStr) {
 		if (StringUtils.isEmpty(contentIdsStr)) {
 			return R.ok(List.of());
 		}
@@ -94,9 +101,10 @@ public class MemberContentApiController extends BaseRestController {
 	/**
 	 * 内容作者信息
 	 */
+	@XComment("{API.DOC.CMS.CMS_MEMBER.GET_MEMBER_DATA}")
 	@GetMapping("/{uid}/data")
-	public R<?> getMemberData(
-			@PathVariable("uid") Long memberId) {
+	public R<MemberCache> getMemberData(
+			@PathVariable("uid") @XComment("{API.DOC.CMS.CMS_MEMBER.MEMBER_ID}") Long memberId) {
 		MemberCache memberCache = this.memberStatDataService.getMemberCache(memberId);
 
 
@@ -106,11 +114,12 @@ public class MemberContentApiController extends BaseRestController {
 	/**
 	 * 收藏内容列表
 	 */
+	@XComment("{API.DOC.CMS.CMS_MEMBER.GET_MEMBER_FAVORITES}")
 	@GetMapping("/{uid}/favorites")
-	public R<?> getMemberFavorites(
-			@PathVariable("uid") Long memberId,
-			@RequestParam(required = false, defaultValue = "16") @Min(1) Integer limit,
-			@RequestParam(required = false, defaultValue = "0") @Min(0) Long offset) {
+	public R<TableData<FavoriteContentVO>> getMemberFavorites(
+			@PathVariable("uid") @XComment("{API.DOC.CMS.CMS_MEMBER.MEMBER_ID}") Long memberId,
+			@RequestParam(required = false, defaultValue = "16") @Min(1) @XComment("{API.DOC.CMS.CMS_MEMBER.LIMIT}") Integer limit,
+			@RequestParam(required = false, defaultValue = "0") @Min(0) @XComment("{API.DOC.CMS.CMS_MEMBER.OFFSET}") Long offset) {
 		List<MemberFavorites> memberFavorites = this.memberFavoritesService
 				.getMemberFavorites(memberId, CmsMemberConstants.MEMBER_FAVORITES_DATA_TYPE, limit, offset);
 		List<Long> contentIds = memberFavorites.stream().map(MemberFavorites::getDataId).toList();
@@ -122,11 +131,12 @@ public class MemberContentApiController extends BaseRestController {
 	/**
 	 * 点赞内容列表
 	 */
+	@XComment("{API.DOC.CMS.CMS_MEMBER.GET_MEMBER_LIKES}")
 	@GetMapping("/{uid}/likes")
-	public R<?> getMemberLikes(
-			@PathVariable("uid") Long memberId,
-			@RequestParam(required = false, defaultValue = "16") @Min(1) Integer limit,
-			@RequestParam(required = false, defaultValue = "0") @Min(0) Long offset) {
+	public R<TableData<FavoriteContentVO>> getMemberLikes(
+			@PathVariable("uid") @XComment("{API.DOC.CMS.CMS_MEMBER.MEMBER_ID}") Long memberId,
+			@RequestParam(required = false, defaultValue = "16") @Min(1) @XComment("{API.DOC.CMS.CMS_MEMBER.LIMIT}") Integer limit,
+			@RequestParam(required = false, defaultValue = "0") @Min(0) @XComment("{API.DOC.CMS.CMS_MEMBER.OFFSET}") Long offset) {
 		List<MemberLike> memberLikes = this.memberLikeService
 				.getMemberLikes(memberId, CmsMemberConstants.MEMBER_LIKE_DATA_TYPE, limit, offset);
 		List<Long> contentIds = memberLikes.stream().map(MemberLike::getDataId).toList();

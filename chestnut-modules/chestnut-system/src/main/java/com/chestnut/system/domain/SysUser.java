@@ -24,6 +24,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.common.utils.poi.converter.LocalDateTimeConverter;
 import com.chestnut.system.annotation.ExcelDictField;
@@ -63,12 +64,14 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 
 	public static final String TABLE_NAME = "sys_user";
 
+    @XComment("{ENT.SYS.USER.ID}")
 	@ExcelProperty(value = "{ENT.SYS.USER.ID}" ,converter = LongStringConverter.class)
 	@TableId(value = "user_id", type = IdType.INPUT)
 	private Long userId;
 
 	/** 部门ID */
 	@ExcelIgnore
+    @XComment("{ENT.SYS.USER.DEPT_ID}")
 	private Long deptId;
 
 	@ExcelProperty("{ENT.SYS.USER.DEPT_NAME}")
@@ -83,7 +86,7 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 	private String userName;
 
 	/** 用户昵称 */
-	@ExcelProperty("{ENT.SYS.USER.NICK_NAME}")
+    @ExcelProperty("{ENT.SYS.USER.NICK_NAME}")
 	@Length(max = 30)
 	private String nickName;
 
@@ -161,27 +164,32 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 	/**
 	 * 用户偏好配置
 	 */
+    @XComment("{ENT.SYS.USER.PREFERENCES}")
 	@ExcelIgnore
     @TableField(typeHandler = JacksonTypeHandler.class)
 	private Map<String, Object> preferences;
 
 	/** 角色对象 */
+    @XComment("{ENT.SYS.USER.ROLES}")
 	@ExcelIgnore
 	@TableField(exist = false)
 	private List<SysRole> roles;
 
 	/** 角色组 */
+    @XComment("{ENT.SYS.USER.ROLE_IDS}")
 	@ExcelIgnore
 	@TableField(exist = false)
 	private Long[] roleIds;
 
 	/** 岗位组 */
+    @XComment("{ENT.SYS.USER.POST_IDS}")
 	@ExcelIgnore
 	@TableField(exist = false)
 	private Long[] postIds;
 
 	/** 角色ID */
 	@ExcelIgnore
+    @XComment("{ENT.SYS.USER.ROLE_ID}")
 	@TableField(exist = false)
 	private Long roleId;
 	
@@ -197,6 +205,7 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 	/**
 	 * 数据变更标识
 	 */
+    @XComment("{ENT.SYS.USER.MODIFIED}")
 	@TableField(exist = false)
 	private boolean modified;
 

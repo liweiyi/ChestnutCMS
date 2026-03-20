@@ -15,6 +15,7 @@
  */
 package com.chestnut.xmodel.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.system.validator.LongId;
@@ -30,39 +31,51 @@ import java.util.Map;
 
 @Getter
 @Setter
+@XComment("{API.DOC.META.CREATE_FIELD_REQ}")
 public class CreateXModelFieldRequest extends BaseDTO {
 
     @LongId
+    @XComment("{API.DOC.META.MODEL_ID}")
     private Long modelId;
 
     @NotBlank
     @Length(max = 50)
+    @XComment("{CC.ENTITY.NAME}")
     private String name;
 
     @NotBlank
     @Length(max = 50)
     @Pattern(regexp = RegexConsts.REGEX_CODE)
+    @XComment("{CC.ENTITY.CODE}")
     private String code;
 
     @Length(max = 20)
+    @XComment("{API.DOC.META.FIELD_TYPE}")
     private String fieldType;
 
+    @XComment("{API.DOC.META.FIELD_NAME}")
     private String fieldName;
 
     @NotBlank
     @Length(max = 20)
+    @XComment("{API.DOC.META.CONTROL_TYPE}")
     private String controlType;
 
+    @XComment("{API.DOC.META.VALIDATIONS}")
     private List<Map<String, Object>> validations;
 
+    @XComment("{API.DOC.META.OPTIONS}")
     private FieldOptions options;
 
     @Length(max = 100)
+    @XComment("{API.DOC.META.DEFAULT_VALUE}")
     private String defaultValue;
 
     @NotNull
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 
     @Length(max = 500)
+    @XComment("{CC.ENTITY.REMARK}")
     private String remark;
 }

@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
-    <el-row :gutter="20" v-loading="loading">
-      <el-col :span="4" :xs="24">
+    <cc-spliter storage-key="cms-content">
+      <cc-spliter-column width="15%" style="padding-right: 10px;">
         <cms-catalog-tree 
           ref="catalogTreeRef"
           :new-btn="true"    
           @node-click="handleTreeNodeClick">
         </cms-catalog-tree>
-      </el-col>
-      <el-col :span="20" :xs="24">
+      </cc-spliter-column>
+      <cc-spliter-column>
         <el-tabs v-model="activeName" @tab-click="handleTabClick">
           <el-tab-pane :label="$t('CMS.Content.Tab.ContentList')" name="contentList">
             <cms-content-list v-if="activeName==='contentList'" v-model:cid="selectedCatalogId"></cms-content-list>
@@ -20,8 +20,8 @@
             <cms-recycle-list v-if="activeName==='recycle'" v-model:cid="selectedCatalogId"></cms-recycle-list>
           </el-tab-pane>
         </el-tabs>
-      </el-col>
-    </el-row>
+      </cc-spliter-column>
+    </cc-spliter>
   </div>
 </template>
 <script setup name="CmsContentcoreContent">

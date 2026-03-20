@@ -719,7 +719,8 @@ const zhTW = {
       LogName: "日誌分類名稱",
       Console: {
         AutoRefresh: "自動刷新",
-        LockScroll: "鎖定滾動"
+        LockScroll: "鎖定滾動",
+        KeywordPlaceholder: "關鍵詞篩選"
       }
     },
     Online: {
@@ -1038,6 +1039,8 @@ const zhTW = {
         DownloadRemoteImage: "開啟文章遠程圖片下載",
         DownloadRemoteImageTip: "自動下載文章正文中的遠程圖片。",
         EnableSiteDeleteBackup: "開啟站點刪除備份",
+        EnableContentDeletePublish: "內容刪除後發布關聯數據",
+        EnableContentSortPublish: "內容排序後發布關聯數據",
         MemberResourceUrl: "會員資源訪問功能變數名稱",
         ShortTitleLabel: "短標題自定義表單名",
         SubTitleLabel: "副標題自定義表單名",
@@ -1186,6 +1189,8 @@ const zhTW = {
       ImportWord: "導入WORD",
       UploadWord: "上傳WORD文檔",
       SaveUploadWordFile: "保留上傳的WORD文檔",
+      CopyType: "複製方式",
+      CopyId: "來源ID",
       StatusOption: {
         Draft: "初稿",
         ToPublish: "待發布",
@@ -1234,6 +1239,7 @@ const zhTW = {
       PublishPipe: "發布通道",
       StaticPath: "獨立路徑",
       Template: "獨立模板",
+      DeleteProgressTitle: "刪除內容",
       PublishProgressTitle: "發布內容中",
       OfflineProgressTitle: "下線內容中",
       CopyProgressTitle: "複製內容中",

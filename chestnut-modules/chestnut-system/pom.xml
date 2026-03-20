@@ -5,7 +5,7 @@
     <parent>
         <artifactId>chestnut-modules</artifactId>
         <groupId>com.chestnut</groupId>
-        <version>1.5.10</version>
+        <version>1.5.11</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -20,7 +20,7 @@
 		    <groupId>org.redisson</groupId>
 		    <artifactId>redisson-spring-boot-starter</artifactId>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>org.flywaydb</groupId>
 		    <artifactId>flyway-mysql</artifactId>
@@ -31,7 +31,7 @@
 			<groupId>com.github.oshi</groupId>
 			<artifactId>oshi-core</artifactId>
 		</dependency>
-		
+
 		<!-- xxl-job-core -->
 		<dependency>
 			<groupId>com.xuxueli</groupId>
@@ -62,6 +62,5 @@
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
         </dependency>
-
     </dependencies>
 </project>

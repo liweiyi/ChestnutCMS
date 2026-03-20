@@ -69,7 +69,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteExport(SiteExportContext context) {
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出自定义表单数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsCustomFormTips.EXPORTING_CUSTOM_FORM);
         // 自定义表单数据导出
         List<CmsCustomForm> customForms = customFormService.lambdaQuery()
                 .eq(CmsCustomForm::getSiteId, context.getSite().getSiteId())
@@ -109,7 +109,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteImport(SiteImportContext context) {
         // CmsCustomForm
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入自定义表单");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsCustomFormTips.EXPORTING_CUSTOM_FORM);
         Map<Long, Long> customFormIdMapping = new HashMap<>();
         List<File> files = context.readDataFiles(CmsCustomForm.TABLE_NAME);
         files.forEach(f -> {
@@ -124,7 +124,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     customFormService.save(data);
                     customFormIdMapping.put(oldFormId, data.getFormId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入自定义表单`" + oldFormId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_FAIL, oldFormId, e.getMessage());
                     log.error("Import custom form failed: {}", data.getCode(), e);
                 }
             }
@@ -133,7 +133,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
             return;
         }
         // XModel
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入自定义表单元数据模型");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsCustomFormTips.IMPORTING_CUSTOM_FORM_MODEL);
         files = context.readDataFiles(XModel.TABLE_NAME + XMODEL_TABLE_SUFFIX);
         files.forEach(f -> {
             List<XModel> list = JacksonUtils.fromList(f, XModel.class);
@@ -146,13 +146,13 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     modelService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入自定义表单元数据模型`" + oldModelId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_MODEL_FAIL, oldModelId, e.getMessage());
                     log.error("Import custom form xmodel failed: {}", data.getCode(), e);
                 }
             }
         });
         // XModelField
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入自定义表单模型字段");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsCustomFormTips.IMPORTING_CUSTOM_FORM_MODEL_FIELD);
         files = context.readDataFiles(XModelField.TABLE_NAME + XMODEL_TABLE_SUFFIX);
         files.forEach(f -> {
             List<XModelField> list = JacksonUtils.fromList(f, XModelField.class);
@@ -164,13 +164,13 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     modelFieldService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入自定义表单模型字段`" + oldFieldId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_MODEL_FIELD_FAIL, oldFieldId, e.getMessage());
                     log.error("Import custom form xmodel field failed: {}", data.getCode(), e);
                 }
             }
         });
         // CmsCustomFormData
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入自定义表单数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsCustomFormTips.IMPORTING_CUSTOM_FORM_DATA);
         files = context.readDataFiles(CmsCustomFormData.TABLE_NAME);
         files.forEach(f -> {
             List<CmsCustomFormData> list = JacksonUtils.fromList(f, CmsCustomFormData.class);
@@ -207,7 +207,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     });
                     customFormDataMapper.insert(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入自定义及表单数据`" + oldKey + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_DATA_FAIL, oldKey, e.getMessage());
                     log.error("Import custom form data failed: {} - {}", data.getModelId(), data.getDataId(), e);
                 }
             }

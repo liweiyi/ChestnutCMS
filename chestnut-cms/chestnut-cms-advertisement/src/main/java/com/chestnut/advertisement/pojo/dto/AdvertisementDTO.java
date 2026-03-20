@@ -19,75 +19,58 @@ import java.time.LocalDateTime;
 
 import jakarta.validation.constraints.NotNull;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
+@XComment("{API.DOC.CMS.ADVERTISEMENT.DTO}")
 @Getter
 @Setter
 public class AdvertisementDTO extends BaseDTO {
-    
-	/**
-	 * 广告ID
-	 */
+
     @NotNull
+    @XComment("{CMS.AD.ID}")
 	private Long advertisementId;
 
-    /**
-     * 广告位ID（等同页面部件ID）
-     */
     @NotNull
+    @XComment("{CMS.AD.SPACE_ID}")
 	private Long adSpaceId;
 
-    /**
-     * 广告类型
-     */
     @NotNull
+    @XComment("{CMS.AD.TYPE}")
     private String type;
 
-    /**
-     * 名称
-     */
     @NotNull
+    @XComment("{CMS.AD.NAME}")
     private String name;
 
-    /**
-     * 权重
-     */
     @NotNull
+    @XComment("{CMS.AD.WEIGHT}")
     private Integer weight;
 
-    /**
-     * 关键词
-     */
+    @XComment("{CMS.AD.KEYWORDS}")
     private String keywords;
 
-    /**
-     * 上线时间
-     */
     @NotNull
+    @XComment("{CMS.AD.ONLINE_DATE}")
     private LocalDateTime onlineDate;
 
-    /**
-     * 下线时间
-     */
     @NotNull
+    @XComment("{CMS.AD.OFFLINE_DATE}")
     private LocalDateTime offlineDate;
-    
-    /**
-     * 跳转链接
-     */
+
     @NotNull
+    @XComment("{CMS.AD.REDIRECT_URL}")
     private String redirectUrl;
-    
-    /**
-     * 素材链接
-     */
+
     @NotNull
+    @XComment("{CMS.AD.RESOURCE_PATH}")
     private String resourcePath;
 
     @Length(max = 255)
+    @XComment("{CC.ENTITY.REMARK}")
     private String remark;
 }

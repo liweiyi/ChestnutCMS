@@ -17,21 +17,26 @@ package com.chestnut.cms.search.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.search.CmsSearchConstants;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.search.domain.SearchLog;
 import com.chestnut.search.service.ISearchLogService;
 import com.chestnut.system.security.AdminUserType;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@XComment("{API.DOC.CMS.SEARCH.LOG_MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/search/log")
@@ -39,9 +44,10 @@ public class CMSSearchLogController extends CmsRestController {
 
 	private final ISearchLogService searchLogService;
 	
+	@XComment("{API.DOC.CMS.SEARCH.LOG.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping
-	public R<?> getPageList(@RequestParam(required = false) String query) {
+	public R<TableData<SearchLog>> getPageList(@RequestParam(required = false) String query) {
 		PageRequest pr = this.getPageRequest();
 		CmsSite site = this.getCurrentSite();
 		Page<SearchLog> page = this.searchLogService.lambdaQuery()

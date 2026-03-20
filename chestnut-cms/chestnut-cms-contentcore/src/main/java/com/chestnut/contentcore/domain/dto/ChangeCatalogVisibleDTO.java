@@ -15,19 +15,23 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CATALOG.CHANGE_VISIBLE_DTO}")
 @Getter
 @Setter
 public class ChangeCatalogVisibleDTO {
 
+	@XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}")
 	@LongId
 	public Long catalogId;
 	
+	@XComment("{API.DOC.CMS.CATALOG.VISIBLE}")
 	@NotEmpty
 	public String visible;
 }

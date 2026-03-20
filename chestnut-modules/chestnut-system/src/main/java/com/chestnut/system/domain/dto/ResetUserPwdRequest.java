@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotBlank;
@@ -29,11 +30,14 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@XComment("重置用户密码请求参数")
 public class ResetUserPwdRequest extends BaseDTO {
 
+    @XComment("用户ID")
     @LongId
     private Long userId;
 
+    @XComment("密码")
     @NotBlank
     private String password;
 }

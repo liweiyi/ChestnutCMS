@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.domain.vo;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
 import lombok.Getter;
@@ -30,36 +31,43 @@ public class PageWidgetVO {
 	/*
 	 * 页面部件ID
 	 */
+    @XComment("{CMS.PAGE_WIDGET.ID}")
     private Long pageWidgetId;
 
     /*
      * 所属栏目ID
      */
+    @XComment("{CMS.PAGE_WIDGET.CATALOG_ID}")
     private Long catalogId;
 
     /**
      * 栏目名称
      */
+    @XComment("{CMS.PAGE_WIDGET.CATALOG_NAME}")
     private String catalogName;
 
     /*
      * 栏目类型
      */
+    @XComment("{CMS.PAGE_WIDGET.TYPE}")
     private String type;
 
     /*
      * 名称
      */
+    @XComment("{CMS.PAGE_WIDGET.NAME}")
     private String name;
 
     /*
      * 编码
      */
+    @XComment("{CMS.PAGE_WIDGET.CODE}")
     private String code;
 
     /*
      * 状态
      */
+    @XComment("{CMS.PAGE_WIDGET.STATE}")
     private String state;
 
     /*
@@ -77,21 +85,25 @@ public class PageWidgetVO {
     /*
      * 发布通道模板配置
      */
+    @XComment("{CMS.PAGE_WIDGET.PUBLISH_PIPE_TEMPLATES}")
     private List<PublishPipeTemplate> templates;
 
     /*
      * 静态化目录
      */
+    @XComment("{CMS.PAGE_WIDGET.PATH}")
     private String path;
    
     /*
      * 编辑页面路由地址
      */
+    @XComment("{CMS.PAGE_WIDGET.ROUTE}")
     private String route;
 
     /*
      * 备注
      */
+    @XComment("{CC.ENTITY.REMARK}")
     private String remark;
 	
 	public static PageWidgetVO newInstance(CmsPageWidget cmsPageWidget) {

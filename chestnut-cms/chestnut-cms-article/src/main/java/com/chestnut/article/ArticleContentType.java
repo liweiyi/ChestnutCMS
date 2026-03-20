@@ -34,7 +34,7 @@ import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
 import com.chestnut.contentcore.domain.*;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.vo.ContentVO;
-import com.chestnut.contentcore.enums.ContentCopyType;
+import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.system.fixed.dict.YesOrNo;

@@ -15,11 +15,13 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.FILE.FILE_OPERATE_DTO}")
 @Getter
 @Setter
 public class FileOperateDTO {
@@ -27,18 +29,21 @@ public class FileOperateDTO {
 	/*
 	 * 文件路径
 	 */
+	@XComment("{API.DOC.CMS.FILE.FILE_PATH}")
 	@NotNull
 	private String filePath;
 
 	/*
 	 * 重名名名称
 	 */
+	@XComment("{API.DOC.CMS.FILE.RENAME_NAME}")
 	@Pattern(regexp = "^[^/\\\\]*$", message = "{VALIDATOR.CMS.FILE_NAME.REGEXP_ERR}")
 	private String rename;
 	
 	/*
 	 * 文件内容
 	 */
+	@XComment("{API.DOC.CMS.FILE.FILE_CONTENT}")
 	private String fileContent;
 	
 }

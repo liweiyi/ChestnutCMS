@@ -17,10 +17,12 @@ package com.chestnut.cms.word.controller;
 
 import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.CmsPrivUtils;
@@ -30,6 +32,8 @@ import com.chestnut.word.domain.HotWordGroup;
 import com.chestnut.word.domain.dto.CreateHotWordGroupRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.IHotWordGroupService;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +46,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CMS_WORD.HOT_WORD_GROUP}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/hotword/group")
@@ -54,8 +59,9 @@ public class CMSHotWordGroupController extends CmsRestController {
             value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
             mode = SaMode.AND
     )
+	@XComment("{API.DOC.CMS.CMS_WORD.GET_HOT_WORD_GROUP_LIST}")
 	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	public R<TableData<HotWordGroup>> getPageList(@RequestParam(value = "query", required = false) @XComment("{API.DOC.CMS.CMS_WORD.QUERY}") String query) {
 		PageRequest pr = this.getPageRequest();
 		CmsSite currentSite = getCurrentSite();
 		Page<HotWordGroup> page = this.hotWordGroupService.lambdaQuery()
@@ -70,6 +76,7 @@ public class CMSHotWordGroupController extends CmsRestController {
             value = { CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
             mode = SaMode.AND
     )
+	@XComment("{API.DOC.CMS.CMS_WORD.GET_HOT_WORD_GROUP_OPTIONS}")
 	@GetMapping("/options")
 	public R<?> getOptions() {
 		CmsSite currentSite = getCurrentSite();
@@ -84,8 +91,9 @@ public class CMSHotWordGroupController extends CmsRestController {
             value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
             mode = SaMode.AND
     )
+	@XComment("{API.DOC.CMS.CMS_WORD.GET_HOT_WORD_GROUP_TREEDATA}")
 	@GetMapping("/treedata")
-	public R<?> getTreeData() {
+	public R<List<TreeNode<String>>> getTreeData() {
 		CmsSite currentSite = getCurrentSite();
         List<TreeNode<String>> treeData = this.hotWordGroupService.getGroupTreeData(q -> {
             q.eq(HotWordGroup::getOwner, currentSite.getSiteId().toString());
@@ -98,6 +106,7 @@ public class CMSHotWordGroupController extends CmsRestController {
             value = { WordPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER},
             mode = SaMode.AND
     )
+	@XComment("{API.DOC.CMS.CMS_WORD.ADD_HOT_WORD_GROUP}")
 	@PostMapping
 	public R<?> add(@RequestBody @Validated CreateHotWordGroupRequest req) {
 		CmsSite site = getCurrentSite();

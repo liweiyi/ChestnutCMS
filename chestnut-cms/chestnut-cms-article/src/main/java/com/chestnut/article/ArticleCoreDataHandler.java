@@ -50,7 +50,7 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         // cms_article_detail
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出文章详情数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsArticleTips.EXPORTING_ARTICLE);
         long offset = 0;
         int pageSize = 200;
         int fileIndex = 1;
@@ -75,7 +75,7 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteImport(SiteImportContext context) {
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入文章详情数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsArticleTips.IMPORTING_ARTICLE);
         // cms_article_detail
         List<File> files = context.readDataFiles(CmsArticleDetail.TABLE_NAME);
         files.forEach(file -> {
@@ -97,7 +97,7 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
                     }
                     articleService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入文章数据`" + oldContentId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsArticleTips.IMPORT_ARTICLE_FAIL, oldContentId, e.getMessage());
                     log.error("Import article detail failed: {}", oldContentId, e);
                 }
             }

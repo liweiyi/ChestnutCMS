@@ -437,7 +437,7 @@ function handleContentSelectorClose() {
 }
 
 function handleCatalogSelectorOk(args) {
-  const catalogs = args[0];
+  const catalogs = args.selectedCatalogs;
   if (catalogs && catalogs.length > 0) {
     formItem.value = {
       title: catalogs[0].name,

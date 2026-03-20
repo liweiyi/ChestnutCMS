@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.controller.front;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
@@ -25,6 +26,8 @@ import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberLikeService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -37,6 +40,7 @@ import org.springframework.web.bind.annotation.*;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.MEMBER.LIKE_API_MODULE}")
 @Priv(type = MemberUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -45,11 +49,10 @@ public class MemberLikeApiController extends BaseRestController {
 
 	private final IMemberLikeService memberLikeService;
 
-	/**
-	 * 点赞内容
-	 */
+	@XComment("{API.DOC.MEMBER.CHECK_LIKE}")
 	@GetMapping("/check")
-	public R<?> checkLike(@RequestParam @NotBlank @Length(max = 100) String dataType, @RequestParam @LongId Long dataId) {
+	public R<?> checkLike(@RequestParam @NotBlank @Length(max = 100) @XComment("{API.DOC.MEMBER.DATA_TYPE}") String dataType,
+						  @RequestParam @LongId @XComment("{API.DOC.MEMBER.DATA_ID}") Long dataId) {
 		long memberId = StpMemberUtil.getLoginIdAsLong();
 		Long count = this.memberLikeService.lambdaQuery()
 				.eq(MemberLike::getMemberId, memberId)
@@ -59,9 +62,7 @@ public class MemberLikeApiController extends BaseRestController {
 		return R.ok(count > 0);
 	}
 
-	/**
-	 * 点赞内容
-	 */
+	@XComment("{API.DOC.MEMBER.LIKE}")
 	@IgnoreDemoMode
 	@PostMapping
 	public R<?> likeContent(@RequestBody @Validated LikeRequest req) {
@@ -70,9 +71,7 @@ public class MemberLikeApiController extends BaseRestController {
 		return R.ok();
 	}
 
-	/**
-	 * 取消收藏
-	 */
+	@XComment("{API.DOC.MEMBER.CANCEL_LIKE}")
 	@IgnoreDemoMode
 	@PostMapping("/cancel")
 	public R<?> cancelLike(@RequestBody @Validated LikeRequest req) {

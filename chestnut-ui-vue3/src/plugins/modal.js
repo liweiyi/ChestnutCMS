@@ -4,20 +4,32 @@ let loadingInstance
 
 export default {
   // 消息提示
-  msg(content) {
-    ElMessage.info(content)
+  msg(content, placement) {
+    ElMessage.info({
+      message: content,
+      placement: placement
+    })
   },
   // 错误消息
-  msgError(content) {
-    ElMessage.error(content)
+  msgError(content, placement) {
+    ElMessage.error({
+      message: content,
+      placement: placement
+    })
   },
   // 成功消息
-  msgSuccess(content) {
-    ElMessage.success(content)
+  msgSuccess(content, placement) {
+    ElMessage.success({
+      message: content,
+      placement: placement
+    })
   },
   // 警告消息
-  msgWarning(content) {
-    ElMessage.warning(content)
+  msgWarning(content, placement) {
+    ElMessage.warning({
+      message: content,
+      placement: placement
+    })
   },
   // 弹出提示
   alert(content) {

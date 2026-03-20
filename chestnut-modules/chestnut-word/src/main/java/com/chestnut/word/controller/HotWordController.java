@@ -16,10 +16,12 @@
 package com.chestnut.word.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -29,6 +31,8 @@ import com.chestnut.word.domain.dto.CreateHotWordRequest;
 import com.chestnut.word.domain.dto.UpdateHotWordRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.IHotWordService;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -45,38 +49,44 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.WORD.HOT_WORD.MODULE}")
 @Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/word/hotword")
 public class HotWordController extends BaseRestController {
-    
+
 	private final IHotWordService hotWordService;
-    
-    @GetMapping("/list")
-    public R<?> getPageList(@RequestParam("groupId") @LongId Long groupId,
-    		@RequestParam(required = false) @Length(max = 255) String query) {
-    	PageRequest pr = this.getPageRequest();
-    	Page<HotWord> page = this.hotWordService.lambdaQuery().eq(HotWord::getGroupId, groupId)
+
+	@XComment("{API.DOC.WORD.HOT_WORD.GET_LIST}")
+	@GetMapping("/list")
+	public R<TableData<HotWord>> getPageList(
+			@RequestParam("groupId") @LongId @XComment("{API.DOC.WORD.HOT_WORD.GROUP_ID}") Long groupId,
+			@RequestParam(required = false) @Length(max = 255) @XComment("{API.DOC.WORD.HOT_WORD.QUERY}") String query) {
+		PageRequest pr = this.getPageRequest();
+		Page<HotWord> page = this.hotWordService.lambdaQuery().eq(HotWord::getGroupId, groupId)
 				.like(StringUtils.isNotEmpty(query), HotWord::getWord, query)
 				.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
-    	return this.bindDataTable(page);
-    }
+		return this.bindDataTable(page);
+	}
 
+	@XComment("{API.DOC.WORD.HOT_WORD.CREATE}")
 	@PostMapping("/add")
-	public R<?> add(@RequestBody @Validated CreateHotWordRequest req) {
-    	this.hotWordService.addHotWord(req);
-    	return R.ok();
+	public R<Void> add(@RequestBody @Validated CreateHotWordRequest req) {
+		this.hotWordService.addHotWord(req);
+		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.HOT_WORD.UPDATE}")
 	@PostMapping("/update")
-	public R<String> edit(@RequestBody @Validated UpdateHotWordRequest req) {
+	public R<Void> edit(@RequestBody @Validated UpdateHotWordRequest req) {
 		this.hotWordService.editHotWord(req);
-    	return R.ok();
+		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.HOT_WORD.DELETE}")
 	@PostMapping("/delete")
-	public R<String> remove(@RequestBody @NotEmpty List<Long> hotWordIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.WORD.HOT_WORD.WORD_IDS}") List<Long> hotWordIds) {
 		this.hotWordService.deleteHotWords(hotWordIds);
 		return R.ok();
 	}

@@ -17,8 +17,11 @@ package com.chestnut.contentcore.controller.front;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
+
+
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
@@ -51,6 +54,7 @@ import java.util.stream.Stream;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CONTENT_API.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/cms/content")
@@ -61,8 +65,9 @@ public class ContentApiController extends BaseRestController {
 	/**
 	 * 内容动态数据，评论数、点赞数、收藏数、浏览数
 	 */
+	@XComment("{API.DOC.CMS.CONTENT_API.GET_DYNAMIC_DATA}")
 	@GetMapping("/data")
-	public R<List<ContentDynamicDataVO>> getContentDynamicData(@RequestParam("ids") String contentIdsStr) {
+	public R<List<ContentDynamicDataVO>> getContentDynamicData(@RequestParam("ids") @XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}") String contentIdsStr) {
 		if (StringUtils.isEmpty(contentIdsStr)) {
 			return R.ok(List.of());
 		}
@@ -78,9 +83,10 @@ public class ContentApiController extends BaseRestController {
 
 	private final IContentService contentService;
 
+	@XComment("{API.DOC.CMS.CONTENT_API.GET_LIST}")
 	@GetMapping("/list")
 	public R<List<ContentApiVO>> getContentList(
-			@RequestParam("sid") Long siteId,
+			@RequestParam("sid") @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId,
 			@RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
 			@RequestParam(value = "lv", required = false, defaultValue = "Root") String level,
 			@RequestParam(value = "attrs", required = false) String hasAttributes,

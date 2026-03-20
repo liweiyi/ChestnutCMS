@@ -15,12 +15,14 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CONTENT.SORT_DTO}")
 @Getter
 @Setter
 public class SortContentDTO extends BaseDTO {
@@ -28,12 +30,14 @@ public class SortContentDTO extends BaseDTO {
 	/**
 	 * 排序内容ID
 	 */
+	@XComment("{API.DOC.CMS.CONTENT.CONTENT_ID}")
 	@LongId
 	public Long contentId;
 	
 	/**
 	 * 排序目标内容ID
 	 */
+	@XComment("{API.DOC.CMS.CONTENT.TARGET_CONTENT_ID}")
 	@LongId
 	public Long targetContentId;
 }

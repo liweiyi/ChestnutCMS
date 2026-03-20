@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.validator.Dict;
@@ -34,29 +35,37 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.DEPT.CREATE_DEPT_REQ}")
 public class CreateDeptRequest extends BaseDTO {
 
     @LongId
+    @XComment("{API.DOC.SYS.DEPT.PARENT_ID}")
     private Long parentId;
 
     @NotBlank
     @Length(max = 30)
+    @XComment("{API.DOC.SYS.DEPT.DEPT_NAME}")
     private String deptName;
 
     @NotNull
+    @XComment("{CC.ENTITY.SORT}")
     private Integer orderNum;
 
     @Length(max = 20)
+    @XComment("{API.DOC.SYS.DEPT.LEADER}")
     private String leader;
 
     @Length(max = 11)
+    @XComment("{API.DOC.SYS.DEPT.PHONE}")
     private String phone;
 
     @Email
     @Length(max = 20)
+    @XComment("{API.DOC.SYS.DEPT.EMAIL}")
     private String email;
 
     @NotBlank
     @Dict(EnableOrDisable.TYPE)
+    @XComment("{CC.ENTITY.STATUS}")
     private String status;
 }

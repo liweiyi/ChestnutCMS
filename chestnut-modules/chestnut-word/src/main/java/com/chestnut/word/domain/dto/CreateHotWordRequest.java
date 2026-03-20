@@ -15,6 +15,7 @@
  */
 package com.chestnut.word.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotBlank;
@@ -30,32 +31,29 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.WORD.HOT_WORD.CREATE_REQ}")
 public class CreateHotWordRequest extends BaseDTO {
 
+    @XComment("{CC.HOT_WORD.GROUP_ID}")
     @LongId
     private Long groupId;
 
-    /**
-     * 词汇
-     */
+    @XComment("{CC.HOT_WORD.WORD}")
     @NotBlank
     @Length(max = 255)
     private String word;
 
-    /**
-     * 链接
-     */
+    @XComment("{CC.HOT_WORD.URL}")
     @NotBlank
     @Length(max = 255)
     private String url;
 
-    /**
-     * 链接打开方式
-     */
+    @XComment("{CC.HOT_WORD.URL_TARGET}")
     @NotBlank
     @Length(max = 20)
     private String urlTarget;
 
+    @XComment("{CC.ENTITY.REMARK}")
     @Length(max = 500)
     private String remark;
 }

@@ -15,6 +15,7 @@
  */
 package com.chestnut.word.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotBlank;
@@ -30,23 +31,30 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.WORD.TAG_WORD.CREATE_REQ}")
 public class CreateTagWordRequest extends BaseDTO {
 
+    @XComment("{CC.TAG_WORD.OWNER}")
     @Length(max = 100)
     private String owner;
 
+    @XComment("{CC.TAG_WORD.GROUP_ID}")
     @LongId
     private Long groupId;
 
+    @XComment("{CC.TAG_WORD.WORD}")
     @NotBlank
     @Length(max = 255)
     private String word;
 
+    @XComment("{CC.TAG_WORD.LOGO}")
     @Length(max = 255)
     private String logo;
 
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 
+    @XComment("{CC.ENTITY.REMARK}")
     @Length(max = 500)
     private String remark;
 }

@@ -21,6 +21,7 @@ import com.chestnut.cloud.domain.CcCloudConfig;
 import com.chestnut.cloud.domain.dto.CreateCloudConfigRequest;
 import com.chestnut.cloud.domain.dto.UpdateCloudConfigRequest;
 import com.chestnut.cloud.service.ICloudConfigService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.cloud.ICloudProvider;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -29,10 +30,13 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -46,6 +50,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CLOUD.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/cloud/config")
@@ -55,14 +60,16 @@ public class CloudConfigController extends BaseRestController {
 
     private final List<ICloudProvider> cloudProviderList;
 
+    @XComment("{API.DOC.CLOUD.GET_TYPE_OPTIONS}")
     @GetMapping("/typeOptions")
     public R<?> getLoginTypeOptions() {
         return bindSelectOptions(cloudProviderList, ICloudProvider::getId, ICloudProvider::getName);
     }
 
+    @XComment("{API.DOC.CLOUD.GET_LIST}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@GetMapping("/list")
-	public R<?> listConfigs() {
+	public R<TableData<CcCloudConfig>> listConfigs() {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<CcCloudConfig> q = new LambdaQueryWrapper<CcCloudConfig>()
 				.orderByDesc(CcCloudConfig::getConfigId);
@@ -71,6 +78,7 @@ public class CloudConfigController extends BaseRestController {
 		return bindDataTable(page);
 	}
 
+    @XComment("{API.DOC.CLOUD.GET_OPTIONS}")
     @Priv(type = AdminUserType.TYPE)
     @GetMapping("/options")
     public R<?> selectOptions() {
@@ -78,9 +86,10 @@ public class CloudConfigController extends BaseRestController {
         return bindSelectOptions(list, config -> config.getConfigId().toString(), CcCloudConfig::getConfigName);
     }
 
+    @XComment("{API.DOC.CLOUD.GET_DETAIL}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@GetMapping("/detail/{configId}")
-	public R<?> getConfig(@PathVariable @LongId Long configId) {
+	public R<CcCloudConfig> getConfig(@PathVariable @LongId @XComment("{API.DOC.CLOUD.CONFIG_ID}") Long configId) {
         CcCloudConfig config = cloudConfigService.getById(configId);
 		Assert.notNull(config, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(configId));
         ICloudProvider cloudProvider = this.cloudConfigService.getCloudProvider(config.getType());
@@ -88,26 +97,29 @@ public class CloudConfigController extends BaseRestController {
         return R.ok(config);
 	}
 
+    @XComment("{API.DOC.CLOUD.ADD}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "云服务配置", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addConfig(@Validated @RequestBody CreateCloudConfigRequest req) {
+	public R<Void> addConfig(@Validated @RequestBody CreateCloudConfigRequest req) {
 		this.cloudConfigService.addConfig(req);
 		return R.ok();
 	}
 
+    @XComment("{API.DOC.CLOUD.UPDATE}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "云服务配置", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> saveConfig(@Validated @RequestBody UpdateCloudConfigRequest req) {
+	public R<Void> saveConfig(@Validated @RequestBody UpdateCloudConfigRequest req) {
 		this.cloudConfigService.saveConfig(req);
 		return R.ok();
 	}
 
+    @XComment("{API.DOC.CLOUD.DELETE}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@Log(title = "云服务配置", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> delConfig(@RequestBody @NotEmpty List<Long> configIds) {
+	public R<Void> delConfig(@RequestBody @NotEmpty @XComment("{API.DOC.CLOUD.CONFIG_IDS}") List<Long> configIds) {
 		this.cloudConfigService.deleteConfigs(configIds);
 		return R.ok();
 	}

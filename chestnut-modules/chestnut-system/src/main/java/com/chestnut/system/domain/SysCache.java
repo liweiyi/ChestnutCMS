@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain;
 
+import com.chestnut.common.annotation.XComment;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,30 +25,36 @@ import lombok.Setter;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{ENT.SYS.CACHE}")
 @Getter
 @Setter
 public class SysCache {
 
+	@XComment("{ENT.SYS.CACHE.MONITORED_ID}")
 	private String monitoredId;
 
 	/**
 	 * 缓存名称
 	 */
+	@XComment("{ENT.SYS.CACHE.NAME}")
 	private String cacheName = "";
 
 	/**
 	 * 缓存键名
 	 */
+	@XComment("{ENT.SYS.CACHE.KEY}")
 	private String cacheKey = "";
 
 	/**
 	 * 缓存内容
 	 */
+	@XComment("{ENT.SYS.CACHE.VALUE}")
 	private String cacheValue = "";
 	
 	/**
 	 * 过期时间
 	 */
+	@XComment("{ENT.SYS.CACHE.EXPIRE_TIME}")
 	private Long expireTime = -1L;
 
 	public SysCache() {

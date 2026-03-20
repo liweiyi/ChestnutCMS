@@ -18,60 +18,42 @@ package com.chestnut.vote.domain.vo;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.chestnut.common.annotation.XComment;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@XComment("{CC.VOTE.ENTITY}")
 public class VoteVO {
 
-	/**
-	 * ID
-	 */
+	@XComment("{CC.VOTE.ID}")
 	private Long voteId;
-	
-	/**
-	 * 问卷调查标题
-	 */
+
+	@XComment("{CC.VOTE.TITLE}")
 	private String title;
 
-	/**
-	 * 开始时间
-	 */
+	@XComment("{CC.VOTE.START_TIME}")
 	private LocalDateTime startTime;
 
-	/**
-	 * 结束时间
-	 */
+	@XComment("{CC.VOTE.END_TIME}")
 	private LocalDateTime endTime;
-	
-	/**
-	 * 参与人类型
-	 */
+
+	@XComment("{CC.VOTE.USER_TYPE}")
 	private String userType;
-	
-	/**
-	 * 每日限制次数
-	 */
+
+	@XComment("{CC.VOTE.DAY_LIMIT}")
 	private Integer dayLimit;
-	
-	/**
-	 * 总共可参与次数
-	 */
+
+	@XComment("{CC.VOTE.TOTAL_LIMIT}")
 	private Integer totalLimit;
-	
-	/**
-	 * 结果查看方式（不允许查看、提交后可看、不限制）
-	 */
+
+	@XComment("{CC.VOTE.VIEW_TYPE}")
 	private String viewType;
-	
-	/**
-	 * 已参与人数
-	 */
+
+	@XComment("{CC.VOTE.TOTAL}")
 	private Integer total;
-	
-	/**
-	 * 主题列表
-	 */
+
+	@XComment("{CC.VOTE.SUBJECT_LIST}")
 	private List<VoteSubjectVO> subjects;
 }

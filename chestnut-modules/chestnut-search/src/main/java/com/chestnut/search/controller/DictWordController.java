@@ -20,12 +20,14 @@ import co.elastic.clients.elasticsearch.indices.AnalyzeRequest;
 import co.elastic.clients.elasticsearch.indices.AnalyzeResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.SearchConsts;
 import com.chestnut.search.domain.DictWord;
@@ -35,6 +37,8 @@ import com.chestnut.search.fixed.dict.SearchDictWordType;
 import com.chestnut.search.service.IDictWordService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.Dict;
+
+
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -47,6 +51,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@XComment("{API.DOC.SEARCH.DICT_MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/search/dict")
@@ -56,9 +61,10 @@ public class DictWordController extends BaseRestController {
 
 	private final ElasticsearchClient esClient;
 
+	@XComment("{API.DOC.SEARCH.DICT_GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.DICT_VIEW)
 	@GetMapping
-	public R<?> getPageList(@RequestParam(required = false) @Length(max = 100) String query) {
+	public R<TableData<DictWord>> getPageList(@RequestParam(required = false) @Length(max = 100) @XComment("{API.DOC.SEARCH.QUERY}") String query) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<DictWord> q = new LambdaQueryWrapper<DictWord>().like(StringUtils.isNotEmpty(query),
 				DictWord::getWord, query);
@@ -66,47 +72,41 @@ public class DictWordController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.SEARCH.DICT_ADD}")
 	@Log(title = "新增检索词", businessType = BusinessType.UPDATE)
 	@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.DICT_VIEW)
 	@PostMapping
-	public R<?> add(@RequestBody @Validated CreateDictWordRequest req) {
+	public R<Void> add(@RequestBody @Validated CreateDictWordRequest req) {
 		this.dictWordService.batchAddDictWords(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SEARCH.DICT_DELETE}")
 	@Log(title = "删除检索词", businessType = BusinessType.DELETE)
 	@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.DICT_VIEW)
 	@PostMapping("/delete")
-	public R<String> delete(@RequestBody @NotEmpty List<Long> dictWordIds) {
+	public R<Void> delete(@RequestBody @NotEmpty @XComment("{API.DOC.SEARCH.DICT_WORD_IDS}") List<Long> dictWordIds) {
 		this.dictWordService.removeByIds(dictWordIds);
 		return R.ok();
 	}
 
-	/**
-	 * 检查词库是否有变更
-	 */
+	@XComment("{API.DOC.SEARCH.DICT_IK_CHECK}")
 	@RequestMapping(value = "/ik/{type}", method = RequestMethod.HEAD)
-	public void checkDictNewest(@PathVariable("type") @NotEmpty String type,
+	public void checkDictNewest(@PathVariable("type") @NotEmpty @XComment("{API.DOC.SEARCH.DICT_WORD_TYPE}") String type,
 								HttpServletResponse response) {
 		String lastModified = this.dictWordService.getLastModified(type);
 		response.setHeader("Last-Modified", StringUtils.isEmpty(lastModified) ? "0" : lastModified);
 	}
 
-	/**
-	 * IK热更词库API
-	 *
-	 * @return 词库字符串，每行一个词
-	 */
+	@XComment("{API.DOC.SEARCH.DICT_IK_WORDS}")
 	@RequestMapping(value = "/ik/{type}", method = RequestMethod.GET, produces = { "text/html;charset=utf-8" })
-	public String dictNewest(@PathVariable("type") @NotBlank @Dict(SearchDictWordType.TYPE) String type) {
+	public String dictNewest(@PathVariable("type") @NotBlank @Dict(SearchDictWordType.TYPE) @XComment("{API.DOC.SEARCH.DICT_WORD_TYPE}") String type) {
 		String words = this.dictWordService.lambdaQuery().eq(DictWord::getWordType, type).list().stream()
 				.map(DictWord::getWord).collect(Collectors.joining("\n"));
 		return words;
 	}
 
-	/**
-	 * 分词测试
-	 */
+	@XComment("{API.DOC.SEARCH.DICT_ANALYZE}")
 	@PostMapping("/analyze")
 	public R<?> wordAnalyze(@RequestBody WordAnalyzeRequest req) throws IOException {
 		AnalyzeRequest analyzeRequest = new AnalyzeRequest.Builder().analyzer(req.getType()).text(req.getText()).build();

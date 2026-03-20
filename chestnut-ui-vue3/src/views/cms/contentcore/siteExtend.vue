@@ -90,6 +90,24 @@
             inactive-value="N">
           </el-switch>
         </el-form-item>
+        <el-form-item :label="$t('CMS.Site.Extend.EnableContentDeletePublish')" prop="EnableContentDeletePublish">
+          <el-switch
+            v-model="formExtend.EnableContentDeletePublish"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+        </el-form-item>
+        <el-form-item :label="$t('CMS.Site.Extend.EnableContentSortPublish')" prop="EnableContentSortPublish">
+          <el-switch
+            v-model="formExtend.EnableContentSortPublish"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+        </el-form-item>
         <el-form-item :label="$t('CMS.Site.Extend.SiteApiUrl')" prop="SiteApiUrl">
           <el-input v-model="formExtend.SiteApiUrl" placeholder="http(s)://"></el-input>
         </el-form-item>

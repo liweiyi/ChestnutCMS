@@ -16,14 +16,18 @@
 package com.chestnut.system.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.domain.dto.CreateDictDataRequest;
@@ -51,6 +55,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.DICT_DATA.MODULE}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/dict/data")
@@ -60,10 +65,11 @@ public class SysDictDataController extends BaseRestController {
 
 	private final ISysDictTypeService dictTypeService;
 
+	@XComment("{API.DOC.SYS.DICT_DATA.GET_LIST}")
 	@ExcelExportable(SysDictData.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
 	@GetMapping("/list")
-	public R<?> list(@Validated QueryDictDataRequest req) {
+	public R<TableData<SysDictData>> list(@Validated QueryDictDataRequest req) {
 		PageRequest pr = this.getPageRequest();
 		Page<SysDictData> page = dictDataService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(req.getDictValue()), SysDictData::getDictValue, req.getDictValue())
@@ -80,9 +86,10 @@ public class SysDictDataController extends BaseRestController {
 	/**
 	 * 查询字典数据详细
 	 */
+	@XComment("{API.DOC.SYS.DICT_DATA.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictList)
 	@GetMapping(value = "/detail/{dictCode}")
-	public R<?> getInfo(@PathVariable @LongId Long dictCode) {
+	public R<SysDictData> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.DICT_DATA.ID}") Long dictCode) {
 		SysDictData data = dictDataService.getById(dictCode);
 		I18nUtils.replaceI18nFields(data);
 		return R.ok(data);
@@ -91,43 +98,47 @@ public class SysDictDataController extends BaseRestController {
 	/**
 	 * 根据字典类型查询字典数据信息
 	 */
+	@XComment("{API.DOC.SYS.DICT_DATA.GET_BY_TYPE}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping(value = "/type/{dictType}")
-	public R<?> getDictDatasByType(@PathVariable @NotBlank String dictType) {
+	public R<List<SysDictData>> getDictDatasByType(@PathVariable @NotBlank @XComment("{API.DOC.SYS.DICT_DATA.DICT_TYPE}") String dictType) {
 		List<SysDictData> datas = dictTypeService.selectDictDatasByType(dictType);
 		I18nUtils.replaceI18nFields(datas);
 		return R.ok(datas);
 	}
 
 	/**
-	 * 新增字典类型
+	 * 新增字典数据
 	 */
+	@XComment("{API.DOC.SYS.DICT_DATA.CREATE_DICT_DATA}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictAdd)
 	@Log(title = "字典数据", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> add(@Validated @RequestBody CreateDictDataRequest req) {
+	public R<Void> add(@Validated @RequestBody CreateDictDataRequest req) {
 		dictDataService.insertDictData(req);
 		return R.ok();
 	}
 
 	/**
-	 * 修改保存字典类型
+	 * 修改字典数据
 	 */
+	@XComment("{API.DOC.SYS.DICT_DATA.UPDATE_DICT_DATA}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictEdit)
 	@Log(title = "字典数据", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> edit(@Validated @RequestBody UpdateDictDataRequest req) {
+	public R<Void> edit(@Validated @RequestBody UpdateDictDataRequest req) {
 		dictDataService.updateDictData(req);
 		return R.ok();
 	}
 
 	/**
-	 * 删除字典类型
+	 * 删除字典数据
 	 */
+	@XComment("{API.DOC.SYS.DICT_DATA.DELETE_DICT_DATA}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysDictRemove)
-	@Log(title = "字典类型", businessType = BusinessType.DELETE)
+	@Log(title = "字典数据", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> dictCodes) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.DICT_DATA.IDS}") List<Long> dictCodes) {
 		dictDataService.deleteDictDataByIds(dictCodes);
 		return R.ok();
 	}

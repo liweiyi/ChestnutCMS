@@ -148,7 +148,7 @@ public class CustomFormServiceImpl extends ServiceImpl<CustomFormMapper, CmsCust
 	public void offlineCustomForms(List<Long> formIds, String username) throws IOException {
 		// 更改状态
 		List<CmsCustomForm> forms = this.listByIds(formIds);
-		if (forms.size() == 0) {
+		if (forms.isEmpty()) {
 			return;
 		}
 		CmsSite site = this.siteService.getSite(forms.get(0).getSiteId());

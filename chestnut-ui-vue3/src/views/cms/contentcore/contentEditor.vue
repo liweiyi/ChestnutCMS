@@ -307,7 +307,7 @@
     <cms-content-rela-dialog :cid="contentId" v-model:open="openRelaContentDialog" @close="handleRelaContentClose"></cms-content-rela-dialog>
     <cms-content-oplog-dialog :cid="contentId" v-model:open="openContentOpLogDialog" @close="handleOpLogsClose"></cms-content-oplog-dialog>
     <!-- 进度条 -->
-    <cms-progress :title="progressTitle" v-model:open="openProgress" :taskId="taskId" message-class="message-top-right" @close="handleProgressClose"></cms-progress>
+    <cms-progress :title="progressTitle" v-model:open="openProgress" :taskId="taskId" message-class="top-right" @close="handleProgressClose"></cms-progress>
   </div>
 </template>
 <script setup name="CMSContentEditor">
@@ -567,7 +567,7 @@ function handleToPublish() {
 
 function doToPublishContent() {
   toPublishContent([ form.value.contentId ]).then(response => {
-    proxy.$modal.msgSuccess(proxy.$t('CMS.ContentCore.ToPublishSuccess'), "message-top-right");
+    proxy.$modal.msgSuccess(proxy.$t('CMS.ContentCore.ToPublishSuccess'), 'top-right');
   });
 }
 
@@ -621,13 +621,13 @@ function handleChangeLockState () {
   if (isLock.value) {
     unLockContent(form.value.contentId).then(response => {
       form.value.isLock = 'N';
-      proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'), "message-top-right");
+      proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'), "top-right");
     });
   } else {
     lockContent(form.value.contentId).then(response => {
       form.value.isLock = 'Y';
       form.value.lockUser = response.data;
-      proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'), "message-top-right");
+      proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'), "top-right");
     });
   }
 }
@@ -639,7 +639,7 @@ function handleCatalogChange() {
 }
     
 function handleCatalogSelectorOk(args) {
-  var catalogs = args[0];
+  var catalogs = args.selectedCatalogs;
   if (catalogSelectorFor.value === 'change') {
     if (form.value.contentId && form.value.contentId != null) {
       // 编辑内容
@@ -649,7 +649,7 @@ function handleCatalogSelectorOk(args) {
           catalogId: catalogs[0].id
         };
         moveContent(data).then(response => {
-          proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'), "message-top-right");
+          proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'), "top-right");
           form.value.catalogId = catalogs[0].id;
           form.value.catalogName = catalogs[0].name;
           proxy.$router.push({ path: proxy.$route.path, query: { type: contentType.value, catalogId: form.value.catalogId, id: contentId.value } });
@@ -747,7 +747,7 @@ function handlePushToBaidu() {
       msg += "【" + item.publishPipeCode + "】成功 " + item.success + " 条，剩余 " + item.remain + " 条。<br/>"
     })
     proxy.$modal.alert(msg)
-  })
+  });
 }
 
 function loadUEditorCSS() {

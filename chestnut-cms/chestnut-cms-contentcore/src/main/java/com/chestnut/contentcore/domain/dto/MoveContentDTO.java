@@ -17,6 +17,7 @@ package com.chestnut.contentcore.domain.dto;
 
 import java.util.List;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 
@@ -24,6 +25,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CONTENT.MOVE_DTO}")
 @Getter
 @Setter
 public class MoveContentDTO extends BaseDTO {
@@ -31,12 +33,14 @@ public class MoveContentDTO extends BaseDTO {
 	/**
 	 * 转移内容IDs
 	 */
+	@XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}")
 	@NotEmpty
 	public List<Long> contentIds;
 	
 	/**
 	 * 目标栏目ID
 	 */
+	@XComment("{API.DOC.CMS.CONTENT.TO_CATALOG_ID}")
 	@LongId
 	public Long catalogId;
 }

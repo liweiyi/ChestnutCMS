@@ -15,6 +15,7 @@
  */
 package com.chestnut.media.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.media.domain.CmsAudio;
 import lombok.Getter;
@@ -22,9 +23,11 @@ import lombok.Setter;
 
 import java.util.List;
 
+@XComment("{API.DOC.CMS.MEDIA.AUDIO_ALBUM_DTO}")
 @Getter
 @Setter
 public class AudioAlbumDTO extends ContentDTO {
 
+	@XComment("{API.DOC.CMS.MEDIA.AUDIO_LIST}")
 	private List<CmsAudio> audioList;
 }

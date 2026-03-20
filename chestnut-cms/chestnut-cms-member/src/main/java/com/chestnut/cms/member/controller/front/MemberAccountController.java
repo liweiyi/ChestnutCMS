@@ -16,8 +16,11 @@
 package com.chestnut.cms.member.controller.front;
 
 import com.chestnut.cms.member.impl.*;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+
+
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.contentcore.service.impl.DynamicPageService;
 import com.chestnut.member.security.MemberUserType;
@@ -41,6 +44,7 @@ import java.util.Map;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CMS_MEMBER.MEMBER_ACCOUNT}")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -48,8 +52,9 @@ public class MemberAccountController extends BaseRestController {
 
     private final DynamicPageService dynamicPageService;
 
+    @XComment("{API.DOC.CMS.CMS_MEMBER.ACCOUNT_CENTRE}")
     @GetMapping(AccountCentreDynamicPageType.REQUEST_PATH)
-    public void accountCentre(@PathVariable @LongId Long memberId,
+    public void accountCentre(@PathVariable @LongId @XComment("{API.DOC.CMS.CMS_MEMBER.MEMBER_ID}") Long memberId,
                               @RequestParam(value = "type", required = false, defaultValue = "") String type,
                               @RequestParam("sid") Long siteId,
                               @RequestParam("pp") String publishPipeCode,
@@ -65,6 +70,7 @@ public class MemberAccountController extends BaseRestController {
                 siteId, publishPipeCode, preview, parameters, response);
     }
 
+    @XComment("{API.DOC.CMS.CMS_MEMBER.ACCOUNT_LOGIN}")
     @GetMapping(AccountLoginDynamicPageType.REQUEST_PATH)
     public void memberLogin(@RequestParam("sid") Long siteId,
                             @RequestParam("pp") String publishPipeCode,
@@ -76,6 +82,7 @@ public class MemberAccountController extends BaseRestController {
                 siteId, publishPipeCode, preview, ServletUtils.getParameters(), response);
     }
 
+    @XComment("{API.DOC.CMS.CMS_MEMBER.ACCOUNT_REGISTER}")
     @GetMapping(AccountRegisterDynamicPageType.REQUEST_PATH)
     public void memberRegister(@RequestParam("sid") Long siteId,
                             @RequestParam("pp") String publishPipeCode,
@@ -87,6 +94,7 @@ public class MemberAccountController extends BaseRestController {
                 siteId, publishPipeCode, preview, ServletUtils.getParameters(), response);
     }
 
+    @XComment("{API.DOC.CMS.CMS_MEMBER.ACCOUNT_RESET_PASSWORD}")
     @GetMapping(AccountForgetPasswordDynamicPageType.REQUEST_PATH)
     public void memberResetPassword(@RequestParam("sid") Long siteId,
                                     @RequestParam("pp") String publishPipeCode,
@@ -97,6 +105,7 @@ public class MemberAccountController extends BaseRestController {
                 siteId, publishPipeCode, preview, ServletUtils.getParameters(), response);
     }
 
+    @XComment("{API.DOC.CMS.CMS_MEMBER.ACCOUNT_SETTING}")
     @Priv(type = MemberUserType.TYPE)
     @GetMapping(AccountSettingDynamicPageType.REQUEST_PATH)
     public void accountSetting(@RequestParam Long sid,
@@ -111,6 +120,7 @@ public class MemberAccountController extends BaseRestController {
                 sid, pp, preview, parameters, response);
     }
 
+    @XComment("{API.DOC.CMS.CMS_MEMBER.ACCOUNT_PASSWORD}")
     @Priv(type = MemberUserType.TYPE)
     @GetMapping(AccountPasswordDynamicPageType.REQUEST_PATH)
     public void accountPassword(@RequestParam Long sid,
@@ -126,6 +136,7 @@ public class MemberAccountController extends BaseRestController {
                 sid, pp, preview, parameters, response);
     }
 
+    @XComment("{API.DOC.CMS.CMS_MEMBER.ACCOUNT_CHANGE_EMAIL}")
     @Priv(type = MemberUserType.TYPE)
     @GetMapping(AccountBindEmailDynamicPageType.REQUEST_PATH)
     public void accountChangeEmail(@RequestParam Long sid,
@@ -141,6 +152,7 @@ public class MemberAccountController extends BaseRestController {
                 sid, pp, preview, parameters, response);
     }
 
+    @XComment("{API.DOC.CMS.CMS_MEMBER.ACCOUNT_CONTRIBUTE}")
     @Priv(type = MemberUserType.TYPE)
     @GetMapping(AccountContributeDynamicPageType.REQUEST_PATH)
     public void accountContribute(@RequestParam Long sid,

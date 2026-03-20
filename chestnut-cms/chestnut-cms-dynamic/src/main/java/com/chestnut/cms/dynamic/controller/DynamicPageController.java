@@ -20,12 +20,14 @@ import com.chestnut.cms.dynamic.core.IDynamicPageInitData;
 import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
 import com.chestnut.cms.dynamic.domain.vo.DynamicPageInitDataTypeVO;
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
@@ -34,6 +36,8 @@ import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +52,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.DYNAMIC.MODULE}")
 @Slf4j
 @Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 @RequiredArgsConstructor
@@ -59,8 +64,9 @@ public class DynamicPageController extends CmsRestController {
 
 	private final List<IDynamicPageInitData> initDataTypes;
 
+	@XComment("{API.DOC.CMS.DYNAMIC.GET_LIST}")
 	@GetMapping("/list")
-	public R<?> bindList(@RequestParam(required = false) String query) {
+	public R<TableData<CmsDynamicPage>> bindList(@RequestParam(required = false) @XComment("{API.DOC.CMS.DYNAMIC.QUERY}") String query) {
 		CmsSite site = getCurrentSite();
 		PageRequest pr = getPageRequest();
 		Page<CmsDynamicPage> page = this.dynamicPageService.lambdaQuery()
@@ -73,23 +79,26 @@ public class DynamicPageController extends CmsRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.CMS.DYNAMIC.GET_INIT_DATA_TYPES}")
 	@GetMapping("/init_data_types")
-	public R<?> getInitDataTypes() {
+	public R<List<DynamicPageInitDataTypeVO>> getInitDataTypes() {
 		List<DynamicPageInitDataTypeVO> list = initDataTypes.stream()
 				.map(DynamicPageInitDataTypeVO::newInstance).toList();
 		return R.ok(list);
 	}
 
+	@XComment("{API.DOC.CMS.DYNAMIC.GET_DETAIL}")
 	@GetMapping("/detail/{pageId}")
-	public R<?> getDynamicPageInfo(@PathVariable @LongId Long pageId) {
+	public R<CmsDynamicPage> getDynamicPageInfo(@PathVariable @LongId @XComment("{API.DOC.CMS.DYNAMIC.PAGE_ID}") Long pageId) {
 		CmsDynamicPage dynamicPage = this.dynamicPageService.getById(pageId);
 		Assert.notNull(dynamicPage, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageId", pageId));
 		return R.ok(dynamicPage);
 	}
 
+	@XComment("{API.DOC.CMS.DYNAMIC.ADD}")
 	@Log(title = "新增自定动态模板页面", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<?> addSave(@RequestBody @Validated CmsDynamicPage dynamicPage) {
+	public R<Void> addSave(@RequestBody @Validated CmsDynamicPage dynamicPage) {
 		CmsSite site = getCurrentSite();
 		dynamicPage.setSiteId(site.getSiteId());
 		dynamicPage.createBy(StpAdminUtil.getLoginUser().getUsername());
@@ -97,17 +106,19 @@ public class DynamicPageController extends CmsRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.DYNAMIC.UPDATE}")
 	@Log(title = "编辑自定动态模板页面", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<?> editSave(@RequestBody @Validated CmsDynamicPage dynamicPage) {
+	public R<Void> editSave(@RequestBody @Validated CmsDynamicPage dynamicPage) {
 		dynamicPage.updateBy(StpAdminUtil.getLoginUser().getUsername());
 		this.dynamicPageService.saveDynamicPage(dynamicPage);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.DYNAMIC.DELETE}")
 	@Log(title = "删除自定动态模板页面", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<String> remove(@RequestBody @NotEmpty List<Long> publishPipeIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.DYNAMIC.PAGE_IDS}") List<Long> publishPipeIds) {
 		this.dynamicPageService.deleteDynamicPage(publishPipeIds);
 		return R.ok();
 	}

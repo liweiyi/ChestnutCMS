@@ -60,28 +60,28 @@ public class WordContentCoreHandler implements ICoreDataHandler {
     @Override
     public void onSiteExport(SiteExportContext context) {
         {
-            AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出TAG词分组数据");
+            AsyncTaskManager.setTaskTenPercentProgressInfo(CmsWordTips.EXPORTING_TAG_GROUP);
             List<TagWordGroup> list = tagWordGroupService.lambdaQuery()
                     .eq(TagWordGroup::getOwner, context.getSite().getSiteId())
                     .list();
             context.saveData(TagWordGroup.TABLE_NAME, JacksonUtils.to(list));
         }
         {
-            AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出TAG词数据");
+            AsyncTaskManager.setTaskTenPercentProgressInfo(CmsWordTips.EXPORTING_TAG);
             List<TagWord> list = tagWordService.lambdaQuery()
                     .eq(TagWord::getOwner, context.getSite().getSiteId())
                     .list();
             context.saveData(TagWord.TABLE_NAME, JacksonUtils.to(list));
         }
         {
-            AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出热词分组数据");
+            AsyncTaskManager.setTaskTenPercentProgressInfo(CmsWordTips.EXPORTING_HOT_WORD_GROUP);
             List<HotWordGroup> list = hotWordGroupService.lambdaQuery()
                     .eq(HotWordGroup::getOwner, context.getSite().getSiteId())
                     .list();
             context.saveData(HotWordGroup.TABLE_NAME, JacksonUtils.to(list));
         }
         {
-            AsyncTaskManager.setTaskTenPercentProgressInfo("正在导出热词数据");
+            AsyncTaskManager.setTaskTenPercentProgressInfo(CmsWordTips.EXPORTING_HOT_WORD);
             List<HotWord> list = hotWordService.lambdaQuery()
                     .eq(HotWord::getOwner, context.getSite().getSiteId())
                     .list();
@@ -91,7 +91,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
 
     @Override
     public void onSiteImport(SiteImportContext context) {
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入TAG词分组数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsWordTips.IMPORTING_TAG_GROUP);
         Map<Long, TagWordGroup> tagGroupIdMap = new HashMap<>();
 
         List<File> files = context.readDataFiles(TagWordGroup.TABLE_NAME);
@@ -108,7 +108,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     tagWordGroupService.save(data);
                     tagGroupIdMap.put(oldGroupId, data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入TAG词分组数据`" + oldGroupId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_TAG_GROUP_FAIL, oldGroupId, e.getMessage());
                     log.error("Import tag word group failed", e);
                 }
             }
@@ -121,7 +121,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
             }
         });
 
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入TAG词数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsWordTips.IMPORTING_TAG);
         files = context.readDataFiles(TagWord.TABLE_NAME);
         files.forEach(f -> {
             List<TagWord> list = JacksonUtils.fromList(f, TagWord.class);
@@ -134,13 +134,13 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     tagWordService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入TAG词数据`" + oldTagId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_TAG_FAIL, oldTagId, e.getMessage());
                     log.error("Import tag word failed", e);
                 }
             }
         });
 
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入热词分组数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsWordTips.IMPORTING_HOT_WORD_GROUP);
         Map<Long, Long> hotGroupIdMap = new HashMap<>();
         files = context.readDataFiles(HotWordGroup.TABLE_NAME);
         files.forEach(f -> {
@@ -156,13 +156,13 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     hotWordGroupService.save(data);
                     hotGroupIdMap.put(oldGroupId, data.getGroupId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入热词分组数据`" + oldGroupId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_HOT_WORD_GROUP_FAIL, oldGroupId, e.getMessage());
                     log.error("Import hot word group failed", e);
                 }
             }
         });
 
-        AsyncTaskManager.setTaskTenPercentProgressInfo("正在导入热词数据");
+        AsyncTaskManager.setTaskTenPercentProgressInfo(CmsWordTips.IMPORTING_HOT_WORD);
         files = context.readDataFiles(HotWord.TABLE_NAME);
         files.forEach(f -> {
             List<HotWord> list = JacksonUtils.fromList(f, HotWord.class);
@@ -175,7 +175,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     hotWordService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage("导入热词数据`" + oldWordId + "`失败：" + e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_HOT_WORD_FAIL, oldWordId, e.getMessage());
                     log.error("Import hot word failed", e);
                 }
             }

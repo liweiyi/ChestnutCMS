@@ -31,6 +31,18 @@
       <el-col :span="1.5">
         <el-checkbox v-model="lockScroll" @change="handleAutoRefreshChange">{{ $t('Monitor.Logs.Console.LockScroll') }}</el-checkbox>
       </el-col>
+      <el-col :span="4">
+        <el-input
+          v-model="keyword"
+          :placeholder="$t('Monitor.Logs.Console.KeywordPlaceholder')"
+          clearable
+          @input="handleKeywordChange"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+      </el-col>
     </el-row>
     <el-row>
       <el-input ref="logInput" type="textarea" :rows="30" v-model="logStr" :readonly="true"></el-input>
@@ -38,7 +50,7 @@
   </div>
 </template>
 
-<script setup name="MonitorConsoleLogs">
+<script setup name="MonitorLogsConsole">
 import { getConsoleLogs } from "@/api/monitor/console";
 
 const { proxy } = getCurrentInstance();
@@ -46,6 +58,7 @@ const { proxy } = getCurrentInstance();
 const autoRefresh = ref(true);
 const interval = ref(3000);
 const lockScroll = ref(false);
+const keyword = ref("");
 const logStr = ref("");
 const logs = ref([]);
 const sinceIndex = ref(0);
@@ -60,11 +73,12 @@ onMounted(() => {
 function refreshLogs(func) {
   getConsoleLogs(sinceIndex.value).then(response => {
       sinceIndex.value = response.data.index;
-      response.data.logs.forEach(item => logs.value.push(item));
+      const _logs = filterLogs(response.data.logs);
+      _logs.forEach(item => logs.value.push(item));
       if (logs.value.length > maxLogLines.value) {
         logs.value.splice(0, logs.value.length - maxLogLines.value);
       }
-      logStr.value = logs.value.join('');
+      logStr.value = logs.value;
       proxy.$nextTick(() => {
         if (!lockScroll.value && proxy.$refs.logInput) {
           let el = proxy.$refs.logInput.$el.querySelector('textarea')
@@ -88,6 +102,16 @@ function handleAutoRefreshChange() {
   } else {
     clearInterval(timer.value);
   }
+}
+function filterLogs(logLines) {
+  const kw = keyword.value.trim();
+  if (!kw) {
+    return logLines;
+  }
+  return logLines.filter(line => line.includes(kw));
+}
+function handleKeywordChange() {
+  logStr.value = filterLogs(logs.value);
 }
 function handleClean() {
   logs.value = [];

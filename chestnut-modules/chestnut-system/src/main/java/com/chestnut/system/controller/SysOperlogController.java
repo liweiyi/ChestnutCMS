@@ -18,13 +18,17 @@ package com.chestnut.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysOperLog;
 import com.chestnut.system.permission.SysMenuPriv;
@@ -44,6 +48,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.OPERLOG.MODULE}")
 @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorLogsView)
 @RequiredArgsConstructor
 @RestController
@@ -52,9 +57,10 @@ public class SysOperlogController extends BaseRestController {
 
 	private final ISysOperLogService operLogService;
 
+	@XComment("{API.DOC.SYS.OPERLOG.GET_LIST}")
 	@ExcelExportable(SysOperLog.class)
 	@GetMapping("/list")
-	public R<?> list(SysOperLog operLog) {
+	public R<TableData<SysOperLog>> list(SysOperLog operLog) {
 		PageRequest pr = this.getPageRequest();
 		LambdaQueryWrapper<SysOperLog> q = new LambdaQueryWrapper<SysOperLog>()
 				.like(StringUtils.isNotEmpty(operLog.getTitle()), SysOperLog::getTitle, operLog.getTitle())
@@ -77,16 +83,18 @@ public class SysOperlogController extends BaseRestController {
 		return bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.SYS.OPERLOG.DELETE}")
 	@Log(title = "操作日志", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> operIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.OPERLOG.IDS}") List<Long> operIds) {
 		operLogService.removeByIds(operIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.OPERLOG.CLEAN}")
 	@Log(title = "操作日志", businessType = BusinessType.CLEAN)
 	@PostMapping("/clean")
-	public R<?> clean() {
+	public R<Void> clean() {
 		operLogService.cleanOperLog();
 		return R.ok();
 	}

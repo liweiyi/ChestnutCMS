@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -28,13 +29,16 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CONTENT.CHANGE_ATTR_DTO}")
 @Getter
 @Setter
 public class ChangeContentAttrDTO extends BaseDTO {
 
+    @XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}")
     @NotEmpty
     private List<Long> contentIds;
 
+    @XComment("{API.DOC.CMS.CONTENT.ATTR}")
     @NotEmpty
     private String attr;
 }

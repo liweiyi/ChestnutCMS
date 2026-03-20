@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -22,6 +23,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CATALOG.BATCH_ADD_DTO}")
 @Getter
 @Setter
 public class CatalogBatchAddDTO extends BaseDTO {
@@ -29,16 +31,19 @@ public class CatalogBatchAddDTO extends BaseDTO {
     /**
      * 所属站点ID
      */
+    @XComment("{CMS.CATALOG.SITE_ID}")
     private Long siteId;
 
     /**
      * 父级栏目ID
      */
+    @XComment("{API.DOC.CMS.CATALOG.PARENT_CATALOG_ID}")
     private Long parentId = 0L;
 
     /**
      * 栏目树
      */
+    @XComment("{API.DOC.CMS.CATALOG.CATALOGS}")
     @NotNull
     @NotEmpty
     private String catalogs;

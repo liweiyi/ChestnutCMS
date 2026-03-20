@@ -24,6 +24,7 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.publish.IContentPathRule;
 import com.chestnut.contentcore.publish.IStaticizeType;
 import com.chestnut.contentcore.service.*;
@@ -97,21 +98,18 @@ public class ContentStaticizeType implements IStaticizeType {
         CmsSite site = this.siteService.getSite(content.getSiteId());
         CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());
         if (!catalog.isStaticize()) {
-            logger.warn("[ {} ]栏目设置不静态化[ {}#{} ]：{}", publishPipeCode, site.getName(),
-                    catalog.getName(), content.getTitle());
+            logger.warn("[{}]The catalog static disabled: {}#{}", publishPipeCode, catalog.getName(), content.getTitle());
             return; // 不静态化直接跳过
         }
         if (content.isLinkContent()) {
-            logger.warn("[ {} ]标题内容不需要静态化[ {}#{} ]：{}", publishPipeCode, site.getName(),
-                    catalog.getName(), content.getTitle());
+            logger.warn("[{}]The link content cannot be static: {}#{}", publishPipeCode, catalog.getName(), content.getTitle());
             return; // 标题内容不需要静态化
         }
         final String detailTemplate = TemplateUtils.getDetailTemplate(site, catalog, content, publishPipeCode);
         File templateFile = this.templateService.findTemplateFile(site, detailTemplate, publishPipeCode);
         if (templateFile == null) {
-            logger.warn(AsyncTaskManager.addErrMessage(
-                    StringUtils.messageFormat("[ {0} ]内容模板未设置或文件不存在[ {1}#{2} ]：{3}",
-                            publishPipeCode, site.getName(), catalog.getName(), content.getTitle())));
+            logger.warn(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_NOT_FOUND,
+                TYPE + "#" + publishPipeCode, content.getContentId() + "#" + content.getTitle()));
             return;
         }
         try {
@@ -128,11 +126,11 @@ public class ContentStaticizeType implements IStaticizeType {
             this.setContentStaticPath(site, catalog, content, templateContext);
             // 静态化
             this.staticizeService.process(templateContext);
-            logger.debug("[ {} ]内容详情页模板解析[ {}#{} ]：{}，耗时：{}ms", publishPipeCode, site.getName(),
+            logger.debug("[ {} ]Content template parsed: {}#{}#{}, cost: {}ms", publishPipeCode, site.getName(),
                     catalog.getName(), content.getTitle(), (System.currentTimeMillis() - s));
         } catch (TemplateException | IOException e) {
-            logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]内容详情页解析失败：[{1}]{2}",
-                    publishPipeCode, catalog.getName(), content.getTitle())), e);
+            logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
+                    TYPE + "#" + publishPipeCode, content.getContentId() + "#" + content.getTitle()), e);
         }
     }
 
@@ -171,11 +169,11 @@ public class ContentStaticizeType implements IStaticizeType {
         CmsSite site = this.siteService.getSite(content.getSiteId());
         CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());
         if (!catalog.isStaticize()) {
-            logger.warn("[{}]栏目设置不静态化[{}#{}]：{}", publishPipeCode, site.getName(), catalog.getName(), content.getTitle());
+            logger.warn("[{}]The catalog static disabled: {}#{}", publishPipeCode, catalog.getName(), content.getTitle());
             return; // 不静态化直接跳过
         }
         if (content.isLinkContent()) {
-            logger.warn("[{}]标题内容不需要静态化[ {}#{} ]：{}", publishPipeCode, site.getName(), catalog.getName(), content.getTitle());
+            logger.warn("[{}]The link content cannot be static: {}#{}", publishPipeCode, catalog.getName(), content.getTitle());
             return; // 标题内容不需要静态化
         }
         String exTemplate = ContentUtils.getContentExTemplate(content, catalog, publishPipeCode);
@@ -184,7 +182,7 @@ public class ContentStaticizeType implements IStaticizeType {
         }
         File templateFile = this.templateService.findTemplateFile(site, exTemplate, publishPipeCode);
         if (templateFile == null) {
-            logger.warn("[{}]内容扩展模板未设置或文件不存在[ {}#{} ]：{}", publishPipeCode, site.getName(), catalog.getName(), content.getTitle());
+            logger.warn("[{}]The content extend template not configured or file does not exist: {}#{}#{}", publishPipeCode, site.getName(), catalog.getName(), content.getTitle());
             return;
         }
         try {
@@ -206,11 +204,11 @@ public class ContentStaticizeType implements IStaticizeType {
             templateContext.setFirstFileName(fileName);
             // 静态化
             this.staticizeService.process(templateContext);
-            logger.debug("[{}]内容扩展模板解析[ {}#{} ]：{}，耗时：{}ms", publishPipeCode, site.getName(),
+            logger.debug("[{}]The content extend template parsed: {}#{}#{}, cost: {}ms", publishPipeCode, site.getName(),
                     catalog.getName(), content.getTitle(), (System.currentTimeMillis() - s));
         } catch (TemplateException | IOException e) {
-            logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}] 内容扩展模板解析失败 [{1}#{2}]：{3}",
-                    publishPipeCode, site.getName(), catalog.getName(), content.getTitle())), e);
+            logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
+                    TYPE + "#" + publishPipeCode, content.getContentId() + "#" + content.getTitle()) + "#EXT", e);
         }
     }
 }

@@ -13,7 +13,7 @@
         </el-form-item>
       </el-form>
 
-      <el-table v-loading="loading" :data="siteList" highlight-current-row @current-change="handleSelectionChange"
+      <el-table v-loading="loading" :data="siteList" height="460" highlight-current-row @current-change="handleSelectionChange"
         @row-dblclick="handleRowDblclick" style="width:100%;line-height: normal;">
         <el-table-column type="index" :label="$t('Common.RowNo')" width="50" />
         <el-table-column :label="$t('CMS.Site.Name')" prop="name">

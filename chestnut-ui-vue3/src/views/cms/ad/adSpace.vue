@@ -47,13 +47,14 @@
         <el-table-column :label="$t('CMS.PageWidget.Code')" prop="code" />
         <el-table-column
           :label="$t('CMS.PageWidget.PublishPipe')"
-          width="100"
+          width="120"
+          align="center"
           prop="publishPipeCode"
         />
         <el-table-column
           :label="$t('Common.Operation')"
           align="center"
-          width="300"
+          width="320"
          
         >
           <template #default="scope">

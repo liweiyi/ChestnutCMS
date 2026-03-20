@@ -15,9 +15,12 @@
  */
 package com.chestnut.system.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+
+
 import com.chestnut.common.utils.Assert;
 import com.chestnut.system.domain.vo.ConsoleLogsVO;
 import com.chestnut.system.exception.SysErrorCode;
@@ -38,14 +41,16 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorLogsView)
+@XComment("{API.DOC.SYS.CONSOLE_LOG.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/monitor/console")
 public class SysConsoleLogController extends BaseRestController {
 
+	@XComment("{API.DOC.SYS.CONSOLE_LOG.GET_LIST}")
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorLogsView)
 	@GetMapping
-	public R<?> list(@RequestParam int sinceIndex) {
+	public R<ConsoleLogsVO> list(@RequestParam @XComment("{API.DOC.SYS.CONSOLE_LOG.SINCE_INDEX}") int sinceIndex) {
 		CcConsoleAppender<?> instance = CcConsoleAppender.getInstance();
 		Assert.notNull(instance, SysErrorCode.MISSING_CONSOLE_APPENDER::exception);
 

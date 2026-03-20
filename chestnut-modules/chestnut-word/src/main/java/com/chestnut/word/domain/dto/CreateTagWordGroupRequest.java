@@ -15,6 +15,7 @@
  */
 package com.chestnut.word.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import jakarta.validation.constraints.Min;
@@ -33,35 +34,37 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.WORD.TAG_WORD_GROUP.CREATE_REQ}")
 public class CreateTagWordGroupRequest extends BaseDTO {
 
+    @XComment("{CC.TAG_WORD_GROUP.OWNER}")
     @Length(max = 100)
     private String owner;
 
+    @XComment("{CC.TAG_WORD_GROUP.PARENT_ID}")
     @NotNull
     @Min(0)
     private Long parentId;
 
-    /**
-     * 名称
-     */
+    @XComment("{CC.TAG_WORD_GROUP.NAME}")
     @NotBlank
     @Length(max = 255)
     private String name;
 
-    /**
-     * 编码，唯一标识
-     */
+    @XComment("{CC.TAG_WORD_GROUP.CODE}")
     @NotBlank
     @Length(max = 50)
     @Pattern(regexp = RegexConsts.REGEX_CODE)
     private String code;
 
+    @XComment("{CC.TAG_WORD_GROUP.LOGO}")
     @Length(max = 255)
     private String logo;
 
+    @XComment("{CC.ENTITY.SORT}")
     private Long sortFlag;
 
+    @XComment("{CC.ENTITY.REMARK}")
     @Length(max = 500)
     private String remark;
 }

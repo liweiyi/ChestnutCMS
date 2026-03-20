@@ -251,7 +251,8 @@ const handleApplyToCatalog = (propKey) => {
       applyConfigPropKey.value = propKey;
 };
 
-const doApplyToCatalog = (catalogs) => {
+const doApplyToCatalog = (args) => {
+  const catalogs = args.selectedCatalogs;
   const data = { 
     catalogId: props.cid,
     toCatalogIds: catalogs.map(c => c.id),

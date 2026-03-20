@@ -26,7 +26,7 @@ import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
-import com.chestnut.contentcore.enums.ContentCopyType;
+import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.media.domain.CmsAudio;

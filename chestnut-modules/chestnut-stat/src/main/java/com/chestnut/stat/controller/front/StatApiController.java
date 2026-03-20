@@ -15,6 +15,7 @@
  */
 package com.chestnut.stat.controller.front;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
@@ -22,6 +23,8 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.stat.core.StatEvent;
 import com.chestnut.stat.service.impl.StatEventService;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -37,17 +40,17 @@ import java.time.LocalDateTime;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.STAT.API_MODULE}")
 @RestController
 @RequiredArgsConstructor
 public class StatApiController extends BaseRestController {
 
 	private final StatEventService statEventService;
 
-	/**
-	 * 统计API
-	 */
+	@XComment("{API.DOC.STAT.STAT_EVENT}")
 	@GetMapping("/api/stat/evt")
-	public void statEvent(@RequestParam("t") @NotBlank @Length(max = 20) String type, @RequestParam(required = false) String data) {
+	public void statEvent(@RequestParam("t") @NotBlank @Length(max = 20) @XComment("{API.DOC.STAT.EVENT_TYPE}") String type,
+						  @RequestParam(required = false) @XComment("{API.DOC.STAT.EVENT_DATA}") String data) {
 		StatEvent evt = new StatEvent();
 		evt.setType(type);
 		if (StringUtils.isNotEmpty(data)) {

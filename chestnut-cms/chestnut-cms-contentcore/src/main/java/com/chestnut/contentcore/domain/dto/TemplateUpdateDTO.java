@@ -15,20 +15,25 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.TEMPLATE.UPDATE_DTO}")
 @Getter
 @Setter
 public class TemplateUpdateDTO extends BaseDTO {
 
+	@XComment("{API.DOC.CMS.TEMPLATE.TEMPLATE_ID}")
 	@LongId
 	private Long templateId;
 
+    @XComment("{API.DOC.CMS.TEMPLATE.CONTENT}")
     private String content;
-    
+
+    @XComment("{API.DOC.CMS.TEMPLATE.REMARK}")
     private String remark;
 }

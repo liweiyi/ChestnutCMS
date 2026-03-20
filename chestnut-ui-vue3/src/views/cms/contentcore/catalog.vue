@@ -1,16 +1,14 @@
 <template>
   <div class="app-container catalog-container">
-    <el-row :gutter="20">
-      <!--栏目数据-->
-      <el-col :span="4" :xs="24">
+    <cc-spliter storage-key="cms-catalog">
+      <cc-spliter-column width="15%" style="padding-right: 10px;">
         <cms-catalog-tree 
           ref="catalogTreeRef"
           :new-btn="true"    
           @node-click="handleTreeNodeClick">
         </cms-catalog-tree>
-      </el-col>
-      <!--栏目数据-->
-      <el-col :span="20" :xs="24">
+      </cc-spliter-column>
+      <cc-spliter-column>
         <el-tabs v-model="activeName" @tab-click="handleTabClick">
           <el-tab-pane :label="$t('CMS.Catalog.Tab.Basic')" name="basicInfo">
             <cms-catalog-info 
@@ -23,8 +21,8 @@
             <cms-catalog-extend v-if="activeName=='extend'" :cid="selectedCatalogId"></cms-catalog-extend>
           </el-tab-pane>
         </el-tabs>
-      </el-col>
-    </el-row>
+      </cc-spliter-column>
+    </cc-spliter>
   </div>
 </template>
 <script setup name="CmsContentcoreCatalog">

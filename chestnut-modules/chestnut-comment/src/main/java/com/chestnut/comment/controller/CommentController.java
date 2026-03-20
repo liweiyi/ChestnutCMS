@@ -22,16 +22,20 @@ import com.chestnut.comment.domain.dto.AuditCommentDTO;
 import com.chestnut.comment.permission.CommentPriv;
 import com.chestnut.comment.service.ICommentLikeService;
 import com.chestnut.comment.service.ICommentService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +43,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 
+@XComment("{API.DOC.COMMENT.MODULE}")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/comment")
@@ -48,12 +53,13 @@ public class CommentController extends BaseRestController {
 
 	private final ICommentLikeService commentLikeService;
 
+	@XComment("{API.DOC.COMMENT.GET_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.View)
 	@GetMapping("/list")
-	public R<?> getCommentList(@RequestParam(required = false) String sourceType,
-							   @RequestParam(required = false) String sourceId,
-							   @RequestParam(required = false) Long uid,
-							   @RequestParam(required = false) Integer auditStatus) {
+	public R<TableData<Comment>> getCommentList(@RequestParam(required = false) @XComment("{API.DOC.COMMENT.SOURCE_TYPE}") String sourceType,
+							   @RequestParam(required = false) @XComment("{API.DOC.COMMENT.SOURCE_ID}") String sourceId,
+							   @RequestParam(required = false) @XComment("{API.DOC.COMMENT.UID}") Long uid,
+							   @RequestParam(required = false) @XComment("{API.DOC.COMMENT.AUDIT_STATUS}") Integer auditStatus) {
 		PageRequest pr = this.getPageRequest();
 
 		Page<Comment> page = this.commentService.lambdaQuery()
@@ -67,9 +73,10 @@ public class CommentController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.COMMENT.GET_REPLY_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.View)
 	@GetMapping("/reply/{commentId}")
-	public R<?> getCommentReplyList(@PathVariable @LongId Long commentId) {
+	public R<TableData<Comment>> getCommentReplyList(@PathVariable @LongId @XComment("{API.DOC.COMMENT.COMMENT_ID}") Long commentId) {
 		PageRequest pr = this.getPageRequest();
 		Page<Comment> page = this.commentService.lambdaQuery()
 				.eq(IdUtils.validate(commentId), Comment::getParentId, commentId)
@@ -77,9 +84,11 @@ public class CommentController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.COMMENT.GET_LIKE_LIST}")
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.View)
 	@GetMapping("/like/{commentId}")
-	public R<?> getCommentLikeList(@PathVariable @LongId Long commentId, @RequestParam(required = false) Long uid) {
+	public R<TableData<CommentLike>> getCommentLikeList(@PathVariable @LongId @XComment("{API.DOC.COMMENT.COMMENT_ID}") Long commentId,
+														@RequestParam(required = false) @XComment("{API.DOC.COMMENT.UID}") Long uid) {
 		PageRequest pr = this.getPageRequest();
 		Page<CommentLike> page = this.commentLikeService.lambdaQuery()
 				.eq(IdUtils.validate(commentId), CommentLike::getCommentId, commentId)
@@ -88,24 +97,27 @@ public class CommentController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.COMMENT.AUDIT}")
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.Audit)
 	@PostMapping("/audit")
-	public R<?> auditComment(@RequestBody AuditCommentDTO dto) {
+	public R<Void> auditComment(@RequestBody AuditCommentDTO dto) {
 		this.commentService.auditComment(dto);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.COMMENT.DELETE}")
 	@Priv(type = AdminUserType.TYPE, value = CommentPriv.Delete)
 	@PostMapping("/delete")
-	public R<?> deleteComment(@RequestBody @NotEmpty List<Long> commentIds) {
+	public R<Void> deleteComment(@RequestBody @NotEmpty @XComment("{API.DOC.COMMENT.COMMENT_IDS}") List<Long> commentIds) {
 		Assert.isTrue(IdUtils.validate(commentIds), CommonErrorCode.INVALID_REQUEST_ARG::exception);
 		this.commentService.deleteComments(commentIds);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.COMMENT.RECOVER}")
     @Priv(type = AdminUserType.TYPE, value = CommentPriv.Delete)
     @PostMapping("/recover")
-    public R<?> recoverComment(@RequestBody @NotEmpty List<Long> commentIds) {
+    public R<Void> recoverComment(@RequestBody @NotEmpty @XComment("{API.DOC.COMMENT.COMMENT_IDS}") List<Long> commentIds) {
         Assert.isTrue(IdUtils.validate(commentIds), CommonErrorCode.INVALID_REQUEST_ARG::exception);
         this.commentService.recoverComment(commentIds);
         return R.ok();

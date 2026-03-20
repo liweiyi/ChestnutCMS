@@ -2,13 +2,13 @@
   <div class="group-tree">
     <div v-if="showAdd" class="head-container">
       <el-button 
+        class="mb8"
         type="text"
         icon="Plus"
         @click="handleAdd">{{ $t('WordMgr.TAG.AddGroup') }}</el-button>
       <el-input 
         :placeholder="$t('WordMgr.TAG.Placeholder.InputGroupName')"
         v-model="filterGroupName"
-        clearable
         suffix-icon="Search">
       </el-input>
     </div>
@@ -249,6 +249,9 @@ function handleDelete (data) {
 }
 </script>
 <style scoped>
+.group-tree {
+  padding-bottom: .5rem;
+}
 .group-tree .tree-header {
   font-size: 16px;
   font-weight: 700;

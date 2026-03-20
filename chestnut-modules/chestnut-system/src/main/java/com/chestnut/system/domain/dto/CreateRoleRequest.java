@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.fixed.dict.YesOrNo;
@@ -27,27 +28,34 @@ import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
+@XComment("{API.DOC.SYS.ROLE.CREATE_ROLE_REQ}")
 public class CreateRoleRequest extends BaseDTO {
 
 	@NotBlank
 	@Length(max = 30)
+	@XComment("{API.DOC.SYS.ROLE.ROLE_NAME}")
 	private String roleName;
 
 	@NotBlank
 	@Length(max = 100)
+	@XComment("{API.DOC.SYS.ROLE.ROLE_KEY}")
 	private String roleKey;
 
 	@NotNull
+	@XComment("{API.DOC.SYS.ROLE.ROLE_SORT}")
 	private Integer roleSort;
 
 	@NotBlank
 	@Dict(EnableOrDisable.TYPE)
+	@XComment("{API.DOC.SYS.ROLE.STATUS}")
 	private String status;
 
     @Dict(YesOrNo.TYPE)
+    @XComment("{API.DOC.SYS.ROLE.DEFAULT_FLAG}")
     private String defaultFlag;
 
 	@Length(max = 500)
+	@XComment("{API.DOC.SYS.ROLE.REMARK}")
 	private String remark;
 }
 

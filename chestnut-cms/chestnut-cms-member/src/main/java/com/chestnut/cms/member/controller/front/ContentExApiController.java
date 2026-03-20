@@ -17,6 +17,7 @@ package com.chestnut.cms.member.controller.front;
 
 import com.chestnut.cms.member.domain.vo.ContentDynamicDataWithContributorVO;
 import com.chestnut.cms.member.domain.vo.ContributorVO;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.IdUtils;
@@ -26,6 +27,8 @@ import com.chestnut.contentcore.service.impl.ContentDynamicDataService;
 import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.fixed.config.MemberResourcePrefix;
 import com.chestnut.member.service.IMemberStatDataService;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +44,7 @@ import java.util.stream.Stream;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CMS_MEMBER.CONTENT_EX_API}")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/cms/contentex")
@@ -52,12 +56,11 @@ public class ContentExApiController extends BaseRestController {
 
 	/**
 	 * 内容动态数据扩展，评论数、点赞数、收藏数、浏览数 + 作者信息
-	 *
-	 * @param contentIdsStr
-	 * @return
 	 */
+	@XComment("{API.DOC.CMS.CMS_MEMBER.GET_CONTENT_DYNAMIC_DATA_EX}")
 	@GetMapping("/data")
-	public R<List<ContentDynamicDataWithContributorVO>> getContentDynamicData(@RequestParam("ids") String contentIdsStr) {
+	public R<List<ContentDynamicDataWithContributorVO>> getContentDynamicData(
+			@RequestParam("ids") @XComment("{API.DOC.CMS.CMS_MEMBER.CONTENT_IDS}") String contentIdsStr) {
 		if (StringUtils.isEmpty(contentIdsStr)) {
 			return R.ok(List.of());
 		}

@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -61,12 +63,12 @@ public class CmsSlotTag extends AbstractTag {
 	public final static String ATTR_USAGE_CODE = "{FREEMARKER.TAG." + TAG_NAME + ".type}";
     public final static String ATTR_USAGE_ID = "{FREEMARKER.TAG." + TAG_NAME + ".id}";
 	public final static String ATTR_USAGE_SSI = "{FREEMARKER.TAG." + TAG_NAME + ".ssi}";
+    public final static String ATTR_USAGE_CACHE = "{FREEMARKER.TAG." + TAG_NAME + ".cache}";
 
 	final static String ATTR_TYPE = "type";
-
     final static String ATTR_ID = "id";
-
 	final static String ATTR_SSI = "ssi";
+    final static String ATTR_CACHE = "cache";
 	
 	private final ISiteService siteService;
 
@@ -98,6 +100,7 @@ public class CmsSlotTag extends AbstractTag {
 		tagAttrs.add(new TagAttr(ATTR_TYPE, true, TagAttrDataType.STRING, ATTR_USAGE_CODE));
         tagAttrs.add(new TagAttr(ATTR_ID, true, TagAttrDataType.STRING, ATTR_USAGE_ID));
 		tagAttrs.add(new TagAttr(ATTR_SSI, false, TagAttrDataType.BOOLEAN, ATTR_USAGE_SSI, Boolean.TRUE.toString()));
+        tagAttrs.add(new TagAttr(ATTR_CACHE, false, TagAttrDataType.BOOLEAN, ATTR_USAGE_CACHE, Boolean.TRUE.toString()));
 		return tagAttrs;
 	}
 
@@ -123,22 +126,27 @@ public class CmsSlotTag extends AbstractTag {
         IInternalDataType.RequestData data = new IInternalDataType.RequestData(dataId, 1, context.getPublishPipeCode(),
                 context.isPreview(), Map.of());
 
-		boolean ssi = MapUtils.getBoolean(attrs, ATTR_ID, EnableSSIProperty.getValue(site.getConfigProps()));
+		boolean ssi = MapUtils.getBoolean(attrs, ATTR_SSI, EnableSSIProperty.getValue(site.getConfigProps()));
+        boolean cache = MapUtils.getBoolean(attrs, ATTR_CACHE, true);
 		if (context.isPreview()) {
 			env.getOut().write(this.processTemplate(env, idt, data));
 		} else {
 			String siteRoot = SiteUtils.getSiteRoot(site, context.getPublishPipeCode());
 			String staticFilePath = idt.getStaticPath(dataId, context.getPublishPipeCode());
-
-            String cacheKey = TemplateUtils.getStaticCacheKey(site.getSiteId()
-                + ":" + context.getPublishPipeCode()  + ":" + type + ":" + dataId);
-			String staticContent = templateService.getTemplateStaticContentCache(cacheKey);
-			if (Objects.isNull(staticContent) || !new File(siteRoot + staticFilePath).exists()) {
-				staticContent = this.processTemplate(env, idt, data);
-				this.templateService.setTemplateStaticContentCache(cacheKey, staticContent);
-				if (ssi) {
-					FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
-				}
+            String staticContent;
+            if (cache) {
+                String cacheKey = TemplateUtils.getStaticCacheKey(site.getSiteId()
+                        + ":" + context.getPublishPipeCode()  + ":" + type + ":" + dataId);
+                staticContent = templateService.getTemplateStaticContentCache(cacheKey);
+                if (Objects.isNull(staticContent)) {
+                    staticContent = this.processTemplate(env, idt, data);
+                    this.templateService.setTemplateStaticContentCache(cacheKey, staticContent);
+                }
+            } else {
+                staticContent = this.processTemplate(env, idt, data);
+            }
+			if (ssi && !Files.exists(Path.of(siteRoot, staticFilePath))) {
+                FileUtils.writeStringToFile(new File(siteRoot + staticFilePath), staticContent, StandardCharsets.UTF_8);
 			}
 			if (ssi) {
 				String prefix = CmsIncludeTag.getIncludePathPrefix(context.getPublishPipeCode(), site);

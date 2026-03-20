@@ -18,6 +18,7 @@ package com.chestnut.search.domain.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 
 import lombok.Getter;
@@ -25,60 +26,42 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@XComment("{API.DOC.SEARCH.SEARCH_MODEL_REQ}")
 public class SearchModelDTO extends BaseDTO {
-	
-	/*
-	 * 索引标签
-	 */
+
+	@XComment("{API.DOC.SEARCH.MODEL_LABEL}")
 	private String label;
 
-	/*
-	 * 索引名
-	 */
+	@XComment("{API.DOC.SEARCH.MODEL_NAME}")
 	private String name;
-	
-	/*
-	 * 索引字段列表
-	 */
+
+	@XComment("{API.DOC.SEARCH.MODEL_FIELDS}")
 	private List<SearchIndexField> fields = new ArrayList<>();
 	
 	@Getter
 	@Setter
+	@XComment("{API.DOC.SEARCH.INDEX_FIELD}")
 	public static class SearchIndexField {
 		
-		/*
-		 * 字段标签
-		 */
+		@XComment("{API.DOC.SEARCH.FIELD_LABEL}")
 		private String label;
 		
-		/*
-		 * 字段名
-		 */
+		@XComment("{API.DOC.SEARCH.FIELD_NAME}")
 		private String name;
 		
-		/*
-		 * 字段类型
-		 */
+		@XComment("{API.DOC.SEARCH.FIELD_TYPE}")
 		private String type;
 		
-		/*
-		 * 是否主键
-		 */
+		@XComment("{API.DOC.SEARCH.FIELD_PRIMARY}")
 		private boolean primary;
 		
-		/*
-		 * 字段权重 
-		 */
+		@XComment("{API.DOC.SEARCH.FIELD_WEIGHT}")
 		private double weight = 1;
 		
-		/*
-		 * 是否索引/可搜索
-		 */
+		@XComment("{API.DOC.SEARCH.FIELD_INDEX}")
 		private boolean index;
 		
-		/*
-		 * 分词策略
-		 */
+		@XComment("{API.DOC.SEARCH.FIELD_ANALYZER}")
 		private String analyzer;
 		
 		public SearchIndexField(String label, String name, String type, boolean primary) {

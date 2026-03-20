@@ -17,18 +17,22 @@ package com.chestnut.contentcore.domain.dto;
 
 import java.util.List;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CONTENT.RECOVER_DTO}")
 @Getter
 @Setter
 public class RecoverRecycleContentDTO extends BaseDTO {
 
+	@XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}")
 	public Long catalogId;
 	
+	@XComment("{API.DOC.CMS.CONTENT.BACKUP_IDS}")
 	@NotEmpty
 	public List<Long> backupIds;
 }

@@ -16,9 +16,12 @@
 package com.chestnut.system.controller;
 
 import cn.dev33.satoken.annotation.SaMode;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
+
+
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
@@ -46,6 +49,7 @@ import java.util.Set;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.PERMISSION.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
 @RequiredArgsConstructor
@@ -58,16 +62,20 @@ public class SysPermissionController extends BaseRestController {
 	
 	private final MenuPermissionType menuPermissionType;
 
+    @XComment("{API.DOC.SYS.PERMISSION.SAVE}")
     @Priv(type = AdminUserType.TYPE, value = { SysMenuPriv.SysUserGrant, SysMenuPriv.SysRoleGrant },  mode = SaMode.OR)
 	@Log(title = "权限设置", businessType = BusinessType.UPDATE)
 	@PostMapping
-	public R<?> saveMenuPermission(@Validated @RequestBody SavePermissionRequest dto) {
+	public R<Void> saveMenuPermission(@Validated @RequestBody SavePermissionRequest dto) {
 		this.permissionService.saveMenuPermissions(dto);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SYS.PERMISSION.GET_MENU}")
 	@GetMapping("/menu")
-	public R<?> getMenuPerms(@RequestParam String ownerType, @RequestParam String owner) {
+	public R<GetMenuPermissionVO> getMenuPerms(
+			@RequestParam @XComment("{API.DOC.SYS.PERMISSION.OWNER_TYPE}") String ownerType,
+			@RequestParam @XComment("{API.DOC.SYS.PERMISSION.OWNER}") String owner) {
 		List<SysMenu> menus = this.menuService.lambdaQuery().orderByAsc(SysMenu::getOrderNum).list();
         I18nUtils.replaceI18nFields(menus, LocaleContextHolder.getLocale());
 		SysPermission permission = this.permissionService.getPermission(ownerType, owner);

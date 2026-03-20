@@ -17,6 +17,7 @@ package com.chestnut.contentcore.domain.dto;
 
 import java.util.List;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 
@@ -24,6 +25,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CATALOG.APPLY_PUBLISH_PIPE_DTO}")
 @Getter
 @Setter
 public class CatalogApplyPublishPipeDTO extends BaseDTO {
@@ -31,17 +33,20 @@ public class CatalogApplyPublishPipeDTO extends BaseDTO {
 	/*
 	 * 源栏目ID
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.CATALOG_ID}")
 	@LongId
 	public Long catalogId;
 
 	/*
 	 * 发布通道编码，应用发布通道属性值时必填项
 	 */
+	@XComment("{API.DOC.CMS.TEMPLATE.PUBLISH_PIPE_CODE}")
 	public String publishPipeCode;
 
 	/*
 	 * 应用发布通道属性Key列表
 	 */
+	@XComment("{API.DOC.CMS.CATALOG.PUBLISH_PIPE_PROP_KEYS}")
 	@NotEmpty
 	public List<String> publishPipePropKeys;
 }

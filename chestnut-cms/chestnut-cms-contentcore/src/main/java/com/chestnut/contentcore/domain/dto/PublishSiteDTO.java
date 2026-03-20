@@ -15,12 +15,14 @@
  */
 package com.chestnut.contentcore.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.SITE.PUBLISH_SITE_DTO}")
 @Getter
 @Setter
 public class PublishSiteDTO {
@@ -28,17 +30,20 @@ public class PublishSiteDTO {
 	/**
 	 * 站点ID
 	 */
+	@XComment("{CMS.SITE.ID}")
 	@LongId
 	private Long siteId;
 	
 	/**
 	 * 是否只发布首页
 	 */
+	@XComment("{API.DOC.CMS.SITE.PUBLISH_INDEX}")
 	@NotNull
 	private boolean publishIndex;
 	
 	/**
 	 * 发布内容状态
 	 */
+	@XComment("{API.DOC.CMS.SITE.CONTENT_STATUS}")
 	private String contentStatus;
 }

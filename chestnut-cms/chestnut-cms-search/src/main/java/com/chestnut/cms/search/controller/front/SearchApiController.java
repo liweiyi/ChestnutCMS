@@ -26,12 +26,16 @@ import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.properties.EnableSearchLogProperty;
 import com.chestnut.cms.search.template.tag.CmsSearchContentTag;
 import com.chestnut.cms.search.vo.ESContentVO;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
+
+
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.vo.ContentDynamicDataVO;
@@ -64,6 +68,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@XComment("{API.DOC.CMS.SEARCH.API_MODULE}")
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -83,9 +88,10 @@ public class SearchApiController extends BaseRestController {
 
 	private final ContentDynamicDataService contentDynamicDataService;
 
+	@XComment("{API.DOC.CMS.SEARCH.API.QUERY}")
 	@GetMapping("/query")
-	public R<?> selectDocumentList(
-			@RequestParam(value = "sid") Long siteId, // 站点ID
+	public R<TableData<ESContentVO>> selectDocumentList(
+			@RequestParam(value = "sid") @XComment("{API.DOC.CMS.SEARCH.API.SITE_ID}") Long siteId, // 站点ID
 			@RequestParam(value = "pp") String publishPipeCode, // 发布通道
 			@RequestParam(value = "q") @Length(max = 50) String query, // 检索词
 			@RequestParam(value = "ot", required = false ,defaultValue = "false") Boolean onlyTitle, // 是否只查标题
@@ -208,10 +214,11 @@ public class SearchApiController extends BaseRestController {
 		return this.bindDataTable(list, Objects.isNull(sr.hits().total()) ? 0 : sr.hits().total().value());
 	}
 
+	@XComment("{API.DOC.CMS.SEARCH.API.TAG}")
 	@GetMapping("/tag")
-	public R<?> selectDocumentByTag(
-			@RequestParam(value = "sid") @LongId Long siteId,
-			@RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
+	public R<TableData<ESContentVO>> selectDocumentByTag(
+			@RequestParam(value = "sid") @LongId @XComment("{API.DOC.CMS.SEARCH.API.SITE_ID}") Long siteId,
+			@RequestParam(value = "cid", required = false, defaultValue = "0") @XComment("{API.DOC.CMS.SEARCH.API.CATALOG_ID}") Long catalogId,
 			@RequestParam(value = "pp") @NotBlank @Length(max = 50) String publishPipeCode,
 			@RequestParam(value = "q", required = false) @Length(max = 200) String query,
 			@RequestParam(value = "ct", required = false) @Length(max = 20) String contentType,
@@ -281,9 +288,10 @@ public class SearchApiController extends BaseRestController {
 	/**
 	 * 输入词前缀匹配提示
 	 */
+	@XComment("{API.DOC.CMS.SEARCH.API.SUGGEST}")
 	@GetMapping("/suggest")
-	public R<List<String>> getSuggestWords(@RequestParam("sid") @LongId Long siteId,
-								@RequestParam(value = "cid", required = false, defaultValue = "0") Long catalogId,
+	public R<List<String>> getSuggestWords(@RequestParam("sid") @LongId @XComment("{API.DOC.CMS.SEARCH.API.SITE_ID}") Long siteId,
+								@RequestParam(value = "cid", required = false, defaultValue = "0") @XComment("{API.DOC.CMS.SEARCH.API.CATALOG_ID}") Long catalogId,
 								@RequestParam(value = "q") @NotBlank @Length(max = 200) String query,
 								@RequestParam(value = "ct", required = false) @Length(max = 20) String contentType,
 								@RequestParam(value = "size", required = false) @Min(1) @Max(100) Integer size) throws IOException {
@@ -323,8 +331,9 @@ public class SearchApiController extends BaseRestController {
 		return R.ok(list);
 	}
 
+	@XComment("{API.DOC.CMS.SEARCH.API.GROUP_BY_CATALOG}")
 	@GetMapping("/group/catalog")
-	public R<?> groupBy(@RequestParam("sid") @LongId Long siteId,
+	public R<List<ObjectNode>> groupBy(@RequestParam("sid") @LongId @XComment("{API.DOC.CMS.SEARCH.API.SITE_ID}") Long siteId,
 						@RequestParam(value = "q") @NotBlank @Length(max = 200) String query,
 						@RequestParam(value = "cid", defaultValue = "0") Long catalogId,
 						@RequestParam(value = "level", defaultValue = "0") Integer level,

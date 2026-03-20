@@ -15,10 +15,13 @@
  */
 package com.chestnut.contentcore.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+
+
 import com.chestnut.common.staticize.func.IFunction;
 import com.chestnut.common.staticize.tag.ITag;
 import com.chestnut.common.utils.StringUtils;
@@ -39,6 +42,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.STATICIZE.MODULE}")
 @Priv(type = AdminUserType.TYPE, value = ContentCorePriv.StaticizeView)
 @RestController
 @RequiredArgsConstructor
@@ -52,8 +56,9 @@ public class StaticizeController extends BaseRestController {
 	/**
 	 * 获取静态化自定义模板标签列表
 	 */
+	@XComment("{API.DOC.CMS.STATICIZE.GET_TAGS}")
 	@GetMapping("/tags")
-	public R<?> getTemplateTags() {
+	public R<List<TemplateTagVO>> getTemplateTags() {
 		List<TemplateTagVO> list = this.tags.stream().map(tag -> {
 			TemplateTagVO vo = TemplateTagVO.builder()
 					.name(I18nUtils.get(tag.getName()))
@@ -80,8 +85,9 @@ public class StaticizeController extends BaseRestController {
 	/**
 	 * 获取静态化自定义模板函数列表
 	 */
+	@XComment("{API.DOC.CMS.STATICIZE.GET_FUNCTIONS}")
 	@GetMapping("/functions")
-	public R<?> getTemplateFunctions() {
+	public R<List<TemplateFuncVO>> getTemplateFunctions() {
 		List<TemplateFuncVO> list = this.functions.stream().map(func -> {
 			TemplateFuncVO vo = TemplateFuncVO.builder()
 					.funcName(func.getFuncName())

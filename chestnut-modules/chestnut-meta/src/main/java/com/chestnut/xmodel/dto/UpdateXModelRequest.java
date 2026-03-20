@@ -15,6 +15,7 @@
  */
 package com.chestnut.xmodel.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.validator.LongId;
 import lombok.Getter;
@@ -22,8 +23,10 @@ import lombok.Setter;
 
 @Setter
 @Getter
+@XComment("{API.DOC.META.UPDATE_MODEL_REQ}")
 public class UpdateXModelRequest extends CreateXModelRequest {
 
     @LongId
+    @XComment("{API.DOC.META.MODEL_ID}")
     private Long modelId;
 }

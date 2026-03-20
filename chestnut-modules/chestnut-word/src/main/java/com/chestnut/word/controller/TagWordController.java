@@ -16,10 +16,12 @@
 package com.chestnut.word.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
@@ -29,6 +31,8 @@ import com.chestnut.word.domain.dto.CreateTagWordRequest;
 import com.chestnut.word.domain.dto.UpdateTagWordRequest;
 import com.chestnut.word.permission.WordPriv;
 import com.chestnut.word.service.ITagWordService;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -45,6 +49,7 @@ import java.util.List;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.WORD.TAG_WORD.MODULE}")
 @Priv(type = AdminUserType.TYPE, value = WordPriv.View)
 @RequiredArgsConstructor
 @RestController
@@ -53,9 +58,11 @@ public class TagWordController extends BaseRestController {
 
 	private final ITagWordService tagWordService;
 
+	@XComment("{API.DOC.WORD.TAG_WORD.GET_LIST}")
 	@GetMapping("/list")
-	public R<?> getPageList(@RequestParam("groupId") @LongId Long groupId,
-			@RequestParam(required = false) @Length(max = 255) String query) {
+	public R<TableData<TagWord>> getPageList(
+			@RequestParam("groupId") @LongId @XComment("{API.DOC.WORD.TAG_WORD.GROUP_ID}") Long groupId,
+			@RequestParam(required = false) @Length(max = 255) @XComment("{API.DOC.WORD.TAG_WORD.QUERY}") String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<TagWord> page = this.tagWordService.lambdaQuery().eq(TagWord::getGroupId, groupId)
 				.like(StringUtils.isNotEmpty(query), TagWord::getWord, query)
@@ -64,26 +71,30 @@ public class TagWordController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.WORD.TAG_WORD.CREATE}")
 	@PostMapping("/add")
-	public R<?> add(@RequestBody @Validated CreateTagWordRequest req) {
+	public R<Void> add(@RequestBody @Validated CreateTagWordRequest req) {
 		this.tagWordService.addTagWord(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.TAG_WORD.BATCH_CREATE}")
 	@PostMapping("/batchAdd")
-	public R<?> batchAdd(@RequestBody @Validated BatchAddTagRequest req) {
+	public R<Void> batchAdd(@RequestBody @Validated BatchAddTagRequest req) {
 		this.tagWordService.batchAddTagWord(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.TAG_WORD.UPDATE}")
 	@PostMapping("/update")
-	public R<?> edit(@RequestBody @Validated UpdateTagWordRequest req) {
+	public R<Void> edit(@RequestBody @Validated UpdateTagWordRequest req) {
 		this.tagWordService.editTagWord(req);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.WORD.TAG_WORD.DELETE}")
 	@PostMapping("/delete")
-	public R<?> remove(@RequestBody @NotEmpty List<Long> tagWordIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.WORD.TAG_WORD.WORD_IDS}") List<Long> tagWordIds) {
 		this.tagWordService.deleteTagWords(tagWordIds);
 		return R.ok();
 	}

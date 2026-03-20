@@ -5,12 +5,12 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.5.10
+  version: 1.5.11
   # 版权年份
   copyrightYear: 2022-2026
   system:
     # 演示模式开关
-    demoMode: true
+    demoMode: false
     # 文件路径 示例（ Windows配置D:/chestnut/uploadPath，Linux配置 /home/app/uploadPath）
     uploadPath: /home/app/uploadPath
   freemarker:
@@ -73,14 +73,14 @@ spring:
   freemarker:
     check-template-location: false
   elasticsearch:
-    uris: http://cc-elasticsearch:9200
+    uris: http://127.0.0.1:9200
     username: elastic
     password: hello1234
   # redis 配置
   data:
     redis:
       # 地址
-      host: cc-redis
+      host: 127.0.0.1
       # 端口，默认为6379
       port: 6379
       # 数据库索引
@@ -154,6 +154,26 @@ spring:
       max-lifetime: 1800000
       # 用于测试连接是否可用的查询语句
       connection-test-query: SELECT 1
+  # 邮件配置
+  mail:
+    host: smtp.163.com
+    port: 465
+    username: xxx@163.com
+    # 授权码
+    password: xxx
+    # 编码格式
+    default-encoding: utf-8
+    # 协议
+    protocol: smtps
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
+          auth: true
+          starttls:
+            enable: true
+            required: true
   # 监控配置
   application:
     name: "ChestnutCMS"
@@ -203,12 +223,6 @@ mybatis-plus:
 xss: 
   # 过滤开关
   enabled: true
-  mode: clean
-  # 过滤链接
-  urlPatterns: 
-   - /system/* 
-   - /monitor/*
-   - /tool/*
 
 xxl:
   job:

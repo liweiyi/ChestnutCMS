@@ -73,7 +73,6 @@ public class SysLoginController extends BaseRestController {
     private final ILoginConfigService loginConfigService;
 
     private final ISecurityConfigService securityConfigService;
-
     @GetMapping("/checkUsername")
     public R<?> checkUsername(@RequestParam @NotBlank String username) {
         // 先校验用户名
@@ -106,7 +105,6 @@ public class SysLoginController extends BaseRestController {
 		String token = loginService.login(loginBody);
 		return R.ok(token);
 	}
-
 	@PostMapping("/logout")
 	public R<?> logout() {
 		if (StpAdminUtil.isLogin()) {
@@ -170,8 +168,6 @@ public class SysLoginController extends BaseRestController {
 		menus = menuService.getChildPerms(menus, 0);
 		return R.ok(menuService.buildRouters(menus));
 	}
-
-
     @GetMapping("/login/config")
     public R<?> getLoginConfig() {
         SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();

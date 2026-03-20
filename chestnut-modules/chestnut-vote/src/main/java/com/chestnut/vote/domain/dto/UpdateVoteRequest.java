@@ -15,6 +15,7 @@
  */
 package com.chestnut.vote.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,8 +28,10 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.VOTE.UPDATE_VOTE_REQ}")
 public class UpdateVoteRequest extends CreateVoteRequest {
 
     @LongId
+    @XComment("{CC.VOTE.ID}")
     private Long voteId;
 }

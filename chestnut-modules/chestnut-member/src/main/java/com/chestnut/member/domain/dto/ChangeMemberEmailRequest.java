@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -30,9 +31,11 @@ import lombok.Setter;
 @Setter
 public class ChangeMemberEmailRequest {
 
+    @XComment("{API.DOC.MEMBER.AUTH_CODE}")
     @NotBlank
     private String authCode;
 
+    @XComment("{API.DOC.MEMBER.EMAIL}")
     @Email
     @NotBlank
     private String email;

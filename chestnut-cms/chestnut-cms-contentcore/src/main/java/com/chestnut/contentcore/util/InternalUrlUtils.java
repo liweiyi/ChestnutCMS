@@ -94,6 +94,10 @@ public class InternalUrlUtils {
 		return getActualUrl(iurl, null, true);
 	}
 
+    public static String getActualPreviewUrl(String iurl, String publishPipeCode) {
+        return getActualUrl(iurl, publishPipeCode, true);
+    }
+
 	public static String getActualPreviewUrl(InternalURL internalURL) {
 		return getActualUrl(internalURL, null, true);
 	}

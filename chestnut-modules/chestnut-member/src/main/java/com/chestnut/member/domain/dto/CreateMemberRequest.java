@@ -15,6 +15,7 @@
  */
 package com.chestnut.member.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.member.fixed.dict.MemberStatus;
@@ -36,58 +37,43 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.MEMBER.CREATE_REQ}")
 public class CreateMemberRequest extends BaseDTO {
 
-    /**
-     * 会员用户名
-     */
     @NotBlank
     @Length(min = 2, max = 30)
     @Pattern(regexp = RegexConsts.REGEX_USERNAME)
+    @XComment("{API.DOC.MEMBER.USERNAME}")
     private String userName;
 
-    /**
-     * 会员密码
-     */
     @NotBlank
     @Length(max = 100)
+    @XComment("{API.DOC.MEMBER.PASSWORD}")
     private String password;
 
-    /**
-     * 昵称
-     */
     @Length(max = 30)
+    @XComment("{API.DOC.MEMBER.NICK_NAME}")
     private String nickName;
 
-    /**
-     * 手机号
-     */
     @Length(max = 20)
     @Pattern(regexp = RegexConsts.REGEX_PHONE)
+    @XComment("{API.DOC.MEMBER.PHONE}")
     private String phoneNumber;
 
-    /**
-     * Email
-     */
     @Email
     @Length(max = 50)
+    @XComment("{API.DOC.MEMBER.EMAIL}")
     private String email;
 
-    /**
-     * 出生日期
-     */
+    @XComment("{API.DOC.MEMBER.BIRTHDAY}")
     private LocalDateTime birthday;
 
-    /**
-     * 状态
-     */
     @Length(max = 1)
     @Dict(MemberStatus.TYPE)
+    @XComment("{CC.ENTITY.STATUS}")
     private String status;
 
-    /**
-     * 备注
-     */
     @Length(max = 500)
+    @XComment("{CC.ENTITY.REMARK}")
     private String remark;
 }

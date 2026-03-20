@@ -28,6 +28,7 @@ import com.chestnut.contentcore.core.impl.PublishPipeProp_ListTemplate;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.properties.MaxPageOnContentPublishProperty;
 import com.chestnut.contentcore.publish.IStaticizeType;
 import com.chestnut.contentcore.service.ICatalogService;
@@ -105,15 +106,15 @@ public class CatalogStaticizeType implements IStaticizeType {
     private void doCatalogStaticize(CmsCatalog catalog, String publishPipeCode, int pageMax) {
         CmsSite site = this.siteService.getSite(catalog.getSiteId());
         if (!catalog.isStaticize()) {
-            logger.warn("【{}】未启用静态化的栏目跳过静态化：{}", publishPipeCode, catalog.getName());
+            logger.warn("[{}]The catalog static disabled: {}", publishPipeCode, catalog.getName());
             return;
         }
         if (!catalog.isVisible()) {
-            logger.warn("【{}】不可见状态的栏目跳过静态化：{}", publishPipeCode, catalog.getName());
+            logger.warn("[{}]The catalog invisible: {}", publishPipeCode, catalog.getName());
             return;
         }
         if (CatalogType_Link.ID.equals(catalog.getCatalogType())) {
-            logger.warn("【{}】链接类型栏目跳过静态化：{}", publishPipeCode, catalog.getName());
+            logger.warn("[{}]The link catalog cannot be static: {}", publishPipeCode, catalog.getName());
             return;
         }
         String indexTemplate = PublishPipeProp_IndexTemplate.getValue(publishPipeCode, catalog.getPublishPipeProps());
@@ -123,9 +124,9 @@ public class CatalogStaticizeType implements IStaticizeType {
         }
         File indexTemplateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);
         File listTemplateFile = this.templateService.findTemplateFile(site, listTemplate, publishPipeCode);
-        if (indexTemplateFile == null && listTemplateFile == null) {
-            logger.warn(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]栏目首页模板和列表页模板未配置或不存在：{1}",
-                    publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName())));
+        if (Objects.isNull(indexTemplateFile) && Objects.isNull(listTemplate)) {
+            logger.warn(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_NOT_FOUND,
+                    TYPE + "#" + publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName()));
             return;
         }
         String siteRoot = SiteUtils.getSiteRoot(site, publishPipeCode);
@@ -148,10 +149,10 @@ public class CatalogStaticizeType implements IStaticizeType {
                 templateType.initTemplateData(catalog.getCatalogId(), templateContext);
                 // staticize
                 this.staticizeService.process(templateContext);
-                logger.debug("[{}]栏目首页模板解析：{}，耗时：{}ms", publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
+                logger.debug("[{}]Catalog index template parsed: {}, cost: {}ms", publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
             } catch (IOException | TemplateException e) {
-                logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]栏目首页解析失败：{1}",
-                        publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName())), e);
+                logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
+                        TYPE + "#" + publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName()), e);
             }
         }
         // 发布栏目列表页
@@ -173,10 +174,10 @@ public class CatalogStaticizeType implements IStaticizeType {
                 templateType.initTemplateData(catalog.getCatalogId(), templateContext);
                 // staticize
                 this.staticizeService.process(templateContext);
-                logger.debug("[{}]栏目列表模板解析：{}，耗时：{}ms", publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
+                logger.debug("[{}]Catalog list template parsed: {}, cost: {}ms", publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
             } catch (Exception e1) {
-                logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]栏目列表页解析失败：{1}",
-                        publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName())), e1);
+                logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
+                        TYPE + "#" + publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName()), e1);
             }
         }
     }

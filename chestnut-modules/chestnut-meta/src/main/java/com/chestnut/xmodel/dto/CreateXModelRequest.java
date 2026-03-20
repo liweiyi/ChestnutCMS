@@ -15,6 +15,7 @@
  */
 package com.chestnut.xmodel.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.xmodel.domain.XModel;
@@ -27,25 +28,32 @@ import org.springframework.beans.BeanUtils;
 
 @Setter
 @Getter
+@XComment("{API.DOC.META.CREATE_MODEL_REQ}")
 public class CreateXModelRequest extends BaseDTO {
 
+    @XComment("{API.DOC.META.OWNER_TYPE}")
     private String ownerType;
 
+    @XComment("{API.DOC.META.OWNER_ID}")
     private String ownerId;
 
     @NotBlank
     @Length(max = 100)
+    @XComment("{CC.ENTITY.NAME}")
     private String name;
 
     @Pattern(regexp = RegexConsts.REGEX_CODE)
     @Length(max = 50)
+    @XComment("{CC.ENTITY.CODE}")
     private String code;
 
     @NotBlank
     @Length(max = 100)
+    @XComment("{API.DOC.META.TABLE_NAME}")
     private String tableName;
 
     @Length(max = 500)
+    @XComment("{CC.ENTITY.REMARK}")
     private String remark;
     
 	public static CreateXModelRequest newInstance(XModel model) {

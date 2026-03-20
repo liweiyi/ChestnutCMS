@@ -16,6 +16,7 @@
 package com.chestnut.article.domain.dto;
 
 import com.chestnut.article.domain.CmsArticleDetail;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.dto.ContentDTO;
 import lombok.Getter;
@@ -24,26 +25,19 @@ import org.springframework.beans.BeanUtils;
 
 @Getter 
 @Setter
+@XComment("{API.DOC.CMS.ARTICLE.DTO}")
 public class ArticleDTO extends ContentDTO {
 
-	/**
-	 * 文章正文（html格式）
-	 */
+	@XComment("{API.DOC.CMS.ARTICLE.CONTENT_HTML}")
     private String contentHtml;
 
-    /**
-     * 是否下载远程图片
-     */
+	@XComment("{API.DOC.CMS.ARTICLE.DOWNLOAD_REMOTE_IMAGE}")
     private String downloadRemoteImage;
 
-    /**
-     * 分页标题
-     */
+	@XComment("{API.DOC.CMS.ARTICLE.PAGE_TITLES}")
     private String pageTitles;
 
-	/**
-	 * 文档格式
-	 */
+	@XComment("{API.DOC.CMS.ARTICLE.FORMAT}")
 	private String format;
 
 	public static ArticleDTO newInstance(CmsContent content, CmsArticleDetail articleDetail, boolean preview) {

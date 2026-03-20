@@ -15,10 +15,13 @@
  */
 package com.chestnut.contentcore.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+
+
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -58,6 +61,7 @@ import java.util.stream.Stream;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.PERMISSION.MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RequiredArgsConstructor
 @RestController
@@ -78,6 +82,7 @@ public class CmsPermissionController extends BaseRestController {
 
 	private final PageWidgetPermissionType pageWidgetPermissionType;
 
+	@XComment("{API.DOC.CMS.PERMISSION.GET_SITE_PERMS}")
 	@GetMapping("/site")
 	public R<?> getSitePermissions(@RequestParam String ownerType, @RequestParam String owner) {
 		List<CmsSite> sites = this.siteService.lambdaQuery().list();
@@ -111,8 +116,9 @@ public class CmsPermissionController extends BaseRestController {
 		return R.ok(Map.of("sitePrivs", sitePrivs, "sitePrivItems", siteSubPrivs));
 	}
 
+	@XComment("{API.DOC.CMS.PERMISSION.SAVE_SITE_PERMS}")
 	@PostMapping("/site")
-	public R<?> saveSitePermissions(@RequestBody @Validated SaveSitePermissionDTO dto) {
+	public R<Void> saveSitePermissions(@RequestBody @Validated SaveSitePermissionDTO dto) {
 		Set<String> perms = new HashSet<>();
 		dto.getPerms().forEach(vo -> {
 			vo.getPerms().forEach((k, v) -> {
@@ -126,6 +132,7 @@ public class CmsPermissionController extends BaseRestController {
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.CMS.PERMISSION.GET_SITE_OPTIONS}")
 	@GetMapping("/site/options")
 	public R<?> getSiteOptions(@RequestParam String ownerType, @RequestParam String owner) {
 		List<CmsSite> list = this.siteService.lambdaQuery()
@@ -145,9 +152,10 @@ public class CmsPermissionController extends BaseRestController {
 		return this.bindDataTable(data);
 	}
 
+	@XComment("{API.DOC.CMS.PERMISSION.GET_CATALOG_PERMS}")
 	@GetMapping("/catalog")
 	public R<?> getCatalogPermissions(@RequestParam String ownerType, @RequestParam String owner,
-			@RequestParam Long siteId) {
+			@RequestParam @XComment("{API.DOC.CMS.CATALOG.SITE_ID}") Long siteId) {
 		List<Map<String, String>> privItems = Stream.of(CatalogPrivItem.values())
 				.map(ssp -> Map.of("id", ssp.name(), "name", ssp.label())).toList();
 		if (!IdUtils.validate(siteId)) {
@@ -198,8 +206,9 @@ public class CmsPermissionController extends BaseRestController {
 		return result;
 	}
 
+	@XComment("{API.DOC.CMS.PERMISSION.SAVE_CATALOG_PERMS}")
 	@PostMapping("/catalog")
-	public R<?> saveCatalogPermissions(@RequestBody @Validated SaveCatalogPermissionDTO dto) {
+	public R<Void> saveCatalogPermissions(@RequestBody @Validated SaveCatalogPermissionDTO dto) {
 		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner());
 		Set<String> permissionKeys = new HashSet<>();
 		if (Objects.nonNull(permission)) {
@@ -228,9 +237,10 @@ public class CmsPermissionController extends BaseRestController {
 		});
 	}
 
+	@XComment("{API.DOC.CMS.PERMISSION.GET_PAGE_WIDGET_PERMS}")
 	@GetMapping("/pageWidget")
 	public R<?> getPageWidgetPermissions(@RequestParam String ownerType, @RequestParam String owner,
-										 @RequestParam Long siteId) {
+										 @RequestParam @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
 		List<Map<String, String>> privItems = Stream.of(CatalogPrivItem.values())
 				.map(ssp -> Map.of("id", ssp.name(), "name", ssp.label())).toList();
 		if (!IdUtils.validate(siteId)) {
@@ -268,8 +278,9 @@ public class CmsPermissionController extends BaseRestController {
 		return R.ok(Map.of("pageWidgetPrivs", pageWidgetPrivs, "privItems", pageWidgetPrivItems));
 	}
 
+	@XComment("{API.DOC.CMS.PERMISSION.SAVE_PAGE_WIDGET_PERMS}")
 	@PostMapping("/pageWidget")
-	public R<?> savePageWidgetPermissions(@RequestBody @Validated SavePageWidgetPermissionDTO dto) {
+	public R<Void> savePageWidgetPermissions(@RequestBody @Validated SavePageWidgetPermissionDTO dto) {
 		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner());
 		Set<String> permissionKeys = new HashSet<>();
 		if (Objects.nonNull(permission)) {

@@ -15,10 +15,13 @@
  */
 package com.chestnut.contentcore.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+
+
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
@@ -57,6 +60,7 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.CMS.CORE.MODULE}")
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -76,6 +80,7 @@ public class CoreController extends BaseRestController {
 	 * @param publishPipe 发布通道编码
 	 * @param pageIndex   页码
 	 */
+	@XComment("{API.DOC.CMS.CORE.PREVIEW}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/cms/preview/{dataType}/{dataId}")
 	public void preview(@PathVariable("dataType") String dataType, @PathVariable("dataId") Long dataId,
@@ -106,6 +111,7 @@ public class CoreController extends BaseRestController {
 	 * @param publishPipe 发布通道编码
 	 * @param pageIndex   页码
 	 */
+	@XComment("{API.DOC.CMS.CORE.BROWSE}")
 	@GetMapping("/cms/view/{dataType}/{dataId}")
 	public void browse(@PathVariable("dataType") String dataType, @PathVariable("dataId") Long dataId,
 					   @RequestParam(value = "pp") String publishPipe,
@@ -128,6 +134,7 @@ public class CoreController extends BaseRestController {
 		}
 	}
 
+	@XComment("{API.DOC.CMS.CORE.SSI_VIRTUAL}")
 	@GetMapping("/cms/ssi/virtual/")
 	public void getSSIVirtualContent(@RequestParam("sid") Long siteId, @RequestParam("pp") String publishPipeCode,
 									 @RequestParam("t") String template,
@@ -166,9 +173,10 @@ public class CoreController extends BaseRestController {
 		}
 	}
 
+	@XComment("{API.DOC.CMS.CORE.GET_DYNAMIC_PAGE_TYPES}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/cms/dynamicPageTypes")
-	public R<?> getDynamicPageTypes() {
+	public R<List<DynamicPageTypeVO>> getDynamicPageTypes() {
 		List<DynamicPageTypeVO> list = ContentCoreUtils.getDynamicPageTypes().stream()
 				.map(DynamicPageTypeVO::newInstance).toList();
 		list.forEach( vo -> {
@@ -182,9 +190,10 @@ public class CoreController extends BaseRestController {
 		return R.ok(list);
 	}
 
+	@XComment("{API.DOC.CMS.CORE.GET_CONTENT_PATH_RULES}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/cms/contentPathRules")
-	public R<?> getContentPathRules() {
+	public R<List<ContentPathRuleVO>> getContentPathRules() {
 		List<ContentPathRuleVO> list = ContentCoreUtils.getContentPathRules().stream()
 				.map(ContentPathRuleVO::newInstance).toList();
 		list.forEach( vo -> {

@@ -17,9 +17,12 @@ package com.chestnut.comment.controller.front;
 
 import com.chestnut.comment.domain.vo.CommentVO;
 import com.chestnut.comment.service.ICommentApiService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.system.validator.LongId;
+
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -31,17 +34,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@XComment("{API.DOC.COMMENT.MEMBER_API_MODULE}")
 @RequiredArgsConstructor
 @RestController
 public class MemberCommentApiController extends BaseRestController {
 
     private final ICommentApiService commentApiService;
 
+    @XComment("{API.DOC.COMMENT.MEMBER_GET_LIST}")
     @GetMapping("/api/comment/user/{uid}")
-    public R<?> getMemberCommentList(@PathVariable @LongId Long uid,
-                                     @RequestParam @NotBlank @Length(max = 20) String type,
-                                     @RequestParam(required = false, defaultValue = "10") @Min(1) Integer limit,
-                                     @RequestParam(required = false, defaultValue = "0") @Min(0) Long offset) {
+    public R<?> getMemberCommentList(@PathVariable @LongId @XComment("{API.DOC.COMMENT.UID}") Long uid,
+                                     @RequestParam @NotBlank @Length(max = 20) @XComment("{API.DOC.COMMENT.SOURCE_TYPE}") String type,
+                                     @RequestParam(required = false, defaultValue = "10") @Min(1) @XComment("{API.DOC.COMMENT.LIMIT}") Integer limit,
+                                     @RequestParam(required = false, defaultValue = "0") @Min(0) @XComment("{API.DOC.COMMENT.OFFSET}") Long offset) {
         List<CommentVO> comments = commentApiService.getCommentListByMember(type, uid, limit, offset, false);
         return R.ok(comments);
     }

@@ -20,6 +20,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.utils.Assert;
@@ -35,9 +37,9 @@ import com.chestnut.contentcore.domain.dto.CopyContentDTO;
 import com.chestnut.contentcore.domain.dto.MoveContentDTO;
 import com.chestnut.contentcore.domain.dto.SetTopContentDTO;
 import com.chestnut.contentcore.domain.dto.SortContentDTO;
-import com.chestnut.contentcore.enums.ContentCopyType;
 import com.chestnut.contentcore.enums.ContentTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.*;
@@ -50,7 +52,9 @@ import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.ContentLogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.config.BackendContext;
+import com.chestnut.system.fixed.dict.I18nDictType;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.security.AdminUserType;
@@ -95,18 +99,48 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public void deleteContents(List<Long> contentIds, LoginUser operator) {
-		for (Long contentId : contentIds) {
-			CmsContent xContent = this.dao().getById(contentId);
-			Assert.notNull(xContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
-			PermissionUtils.checkPermission(CatalogPrivItem.DeleteContent.getPermissionKey(xContent.getCatalogId()), operator);
-
-			deleteContent(xContent, operator, Map.of());
-		}
+	public AsyncTask deleteContents(List<Long> contentIds, LoginUser operator) {
+		Assert.isTrue(contentIds.size() <= 100, () -> ContentCoreErrorCode.BATCH_DEL_CONTENT_LIMIT.exception(100));
+		Locale locale = LocaleContextHolder.getLocale();
+		final List<CmsContent> contents = this.dao().listByIds(contentIds);
+		AsyncTask task = new AsyncTask(locale) {
+			@Override
+			public void run0() {
+				for (int i = 0; i < contents.size(); i++) {
+					try {
+						CmsContent xContent = contents.get(i);
+						this.setProgressInfo((i * 100) / contents.size(), ContentTips.DELETING_CONTENT, xContent.getTitle());
+						deleteContent0(xContent, operator, Map.of());
+					} catch (GlobalException e) {
+						addErrorMessage(I18nUtils.get(e.getErrorCode().value(), this.getLocale(), e.getErrArgs()));
+					}
+				}
+				setProgressInfo(100, ContentTips.DELETE_CONTENTS_SUCCESS);
+			}
+		};
+		task.setType("DeleteContents");
+		asyncTaskManager.execute(task);
+		return task;
 	}
 
 	@Override
-	public void deleteContent(CmsContent cmsContent, LoginUser loginUser, Map<String, Object> params) {
+	public AsyncTask deleteContent(CmsContent cmsContent, LoginUser loginUser, Map<String, Object> params) {
+		Locale locale = LocaleContextHolder.getLocale();
+		AsyncTask task = new AsyncTask(locale) {
+			@Override
+			public void run0() {
+				deleteContent0(cmsContent, loginUser, Map.of());
+				setProgressInfo(100, ContentTips.DELETE_CONTENTS_SUCCESS);
+			}
+		};
+		task.setType("DeleteContent");
+		asyncTaskManager.execute(task);
+		return task;
+	}
+
+	private void deleteContent0(CmsContent cmsContent, LoginUser loginUser, Map<String, Object> params) {
+		String perm = CatalogPrivItem.DeleteContent.getPermissionKey(cmsContent.getCatalogId());
+		PermissionUtils.checkPermission(perm, loginUser);
 		boolean canDelete = ContentStatus.isDraft(cmsContent.getStatus()) || ContentStatus.isOffline(cmsContent.getStatus());
 		Assert.isTrue(canDelete, ContentCoreErrorCode.DEL_CONTENT_ERR::exception);
 
@@ -114,7 +148,10 @@ public class ContentServiceImpl implements IContentService {
 		IContent<?> content = contentType.loadContent(cmsContent);
 		content.setOperator(Operator.of(loginUser));
 		content.setParams(params);
-		transactionTemplate.executeWithoutResult(transactionStatus -> deleteContent0(content));
+		transactionTemplate.executeWithoutResult(transactionStatus -> {
+			content.delete();
+			contentRelaService.onContentDelete(content.getContentEntity().getContentId());
+		});
 		SpringUtils.publishEvent(new AfterContentDeleteEvent(this, content));
 		// 删除映射内容
 		List<CmsContent> mappingList = this.dao().lambdaQuery()
@@ -128,19 +165,16 @@ public class ContentServiceImpl implements IContentService {
 				IContent<?> mappingIContent = mappingContentType.loadContent(cmsContent);
 				mappingIContent.setOperator(Operator.of(loginUser));
 				mappingIContent.setParams(params);
-				transactionTemplate.executeWithoutResult(transactionStatus -> deleteContent0(mappingIContent));
+				transactionTemplate.executeWithoutResult(transactionStatus -> {
+					mappingIContent.delete();
+					contentRelaService.onContentDelete(mappingIContent.getContentEntity().getContentId());
+				});
 				SpringUtils.publishEvent(new AfterContentDeleteEvent(this, mappingIContent));
 			} catch (Exception e) {
 				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentTips.DELETING_MAPPING_CONTENT.locale(
 						mappingContent.getTitle(), mappingContent.getContentId()));
 			}
 		}
-	}
-
-	private void deleteContent0(IContent<?> content) {
-		content.delete();
-		contentRelaService.onContentDelete(content.getContentEntity().getContentId());
-		// TODO 删除内容历史版本？
 	}
 
 	@Override
@@ -247,7 +281,7 @@ public class ContentServiceImpl implements IContentService {
 		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
 		boolean checkLock = content.isLock() && StringUtils.isNotEmpty(content.getLockUser())
 				&& !StringUtils.equals(content.getLockUser(), operator);
-		Assert.isFalse(checkLock, () -> ContentCoreErrorCode.CONTENT_LOCKED.exception(content.getLockUser()));
+		Assert.isFalse(checkLock, () -> ContentCoreErrorCode.CONTENT_LOCKED.exception(content.getTitle(), content.getLockUser()));
 
 		content.setIsLock(YesOrNo.YES);
 		content.setLockUser(operator);
@@ -265,7 +299,7 @@ public class ContentServiceImpl implements IContentService {
 		}
 		boolean checkOp = StringUtils.isNotEmpty(content.getLockUser())
 				&& !StringUtils.equals(content.getLockUser(), operator);
-		Assert.isFalse(checkOp, () -> ContentCoreErrorCode.CONTENT_LOCKED.exception(content.getLockUser()));
+		Assert.isFalse(checkOp, () -> ContentCoreErrorCode.CONTENT_LOCKED.exception(content.getTitle(), content.getLockUser()));
 		content.setIsLock(YesOrNo.NO);
 		content.setLockUser(StringUtils.EMPTY);
 		content.updateBy(operator);
@@ -281,6 +315,7 @@ public class ContentServiceImpl implements IContentService {
 			@Override
 			public void run0() {
 				aopProxy.addContent0(content);
+                AsyncTaskManager.setTaskProgressInfo(100, ContentTips.SAVE_SUCCESS, this.getLocale());
 			}
 		};
 		task.setType("SaveContent-" + content.getContentEntity().getContentId());
@@ -291,7 +326,6 @@ public class ContentServiceImpl implements IContentService {
 	@Transactional(rollbackFor = Exception.class)
 	public void addContent0(IContent<?> content) {
 		content.add();
-		AsyncTaskManager.setTaskPercent(100);
 	}
 
 	@Override
@@ -301,6 +335,7 @@ public class ContentServiceImpl implements IContentService {
 			@Override
 			public void run0() {
 				saveContent0(content);
+                AsyncTaskManager.setTaskProgressInfo(100, ContentTips.SAVE_SUCCESS, this.getLocale());
 			}
 		};
 		task.setType("SaveContent");
@@ -311,7 +346,6 @@ public class ContentServiceImpl implements IContentService {
 	@Transactional(rollbackFor = Exception.class)
 	public void saveContent0(IContent<?> content) {
 		content.save();
-		AsyncTaskManager.setTaskPercent(100);
 	}
 
 	@Override
@@ -324,14 +358,18 @@ public class ContentServiceImpl implements IContentService {
 			public void run0() {
 				List<Long> contentIds = dto.getContentIds();
 				for (Long contentId : contentIds) {
-					CmsContent cmsContent = dao().getById(contentId);
-					if (Objects.nonNull(cmsContent)) {
-						for (CmsCatalog catalog : catalogs) {
-							// 校验权限
-							PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.AddContent.getPermissionKey(catalog.getCatalogId()), dto.getOperator());
-                            CmsContent copyContent = copy0(cmsContent, catalog, dto.getCopyType(), dto.getOperator());
-							SpringUtils.publishEvent(new AfterContentCopyEvent(this, cmsContent, copyContent));
+					try {
+						CmsContent cmsContent = dao().getById(contentId);
+						if (Objects.nonNull(cmsContent)) {
+							for (CmsCatalog catalog : catalogs) {
+								// 校验权限
+								PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.AddContent.getPermissionKey(catalog.getCatalogId()), dto.getOperator());
+								CmsContent copyContent = copy0(cmsContent, catalog, dto.getCopyType(), dto.getOperator());
+								SpringUtils.publishEvent(new AfterContentCopyEvent(this, cmsContent, copyContent));
+							}
 						}
+					} catch (GlobalException e) {
+						addErrorMessage(I18nUtils.get(e.getErrorCode().value(), this.getLocale(), e.getErrArgs()));
 					}
 				}
 				this.setProgressInfo(100, ContentTips.COPY_CONTENT_SUCCESS.locale(this.getLocale()));
@@ -473,6 +511,7 @@ public class ContentServiceImpl implements IContentService {
 		IContent<?> content = ct.loadContent(c);
 		content.setOperator(Operator.of(dto.getOperator()));
 		content.sort(dto.getTargetContentId());
+		SpringUtils.publishEvent(new AfterContentSortEvent(this, content));
 	}
 
 	@Override

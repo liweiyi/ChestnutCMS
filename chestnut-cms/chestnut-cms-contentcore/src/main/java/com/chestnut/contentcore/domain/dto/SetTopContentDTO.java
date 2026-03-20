@@ -18,12 +18,14 @@ package com.chestnut.contentcore.domain.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
+@XComment("{API.DOC.CMS.CONTENT.SET_TOP_DTO}")
 @Getter
 @Setter
 public class SetTopContentDTO extends BaseDTO {
@@ -31,11 +33,13 @@ public class SetTopContentDTO extends BaseDTO {
 	/**
 	 * 置顶内容IDs
 	 */
+	@XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}")
 	@NotEmpty
 	public List<Long> contentIds;
 	
 	/**
 	 * 置顶结束时间
 	 */
+	@XComment("{API.DOC.CMS.CONTENT.TOP_END_TIME}")
 	public LocalDateTime topEndTime;
 }

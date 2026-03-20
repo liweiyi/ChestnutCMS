@@ -47,10 +47,10 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	/**
 	 * 删除内容
 	 */
-	void deleteContents(List<Long> contentIds, LoginUser operator);
+	AsyncTask deleteContents(List<Long> contentIds, LoginUser operator);
 
 
-	void deleteContent(CmsContent cmsContent, LoginUser operator, Map<String, Object> params);
+	AsyncTask deleteContent(CmsContent cmsContent, LoginUser operator, Map<String, Object> params);
 
 	/**
 	 * 恢复回收站删除的内容到指定栏目

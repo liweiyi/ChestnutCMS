@@ -16,18 +16,22 @@
 package com.chestnut.search.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
+import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.search.SearchConsts;
 import com.chestnut.search.domain.IndexModel;
 import com.chestnut.search.domain.dto.SearchModelDTO;
 import com.chestnut.search.service.IIndexModelService;
 import com.chestnut.system.security.AdminUserType;
+
+
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
@@ -35,6 +39,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@XComment("{API.DOC.SEARCH.MODEL_MODULE}")
 @Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.MODEL_VIEW)
 @RequiredArgsConstructor
 @RestController
@@ -43,8 +48,9 @@ public class IndexModelController extends BaseRestController {
 
 	private final IIndexModelService indexModelService;
 
+	@XComment("{API.DOC.SEARCH.MODEL_GET_LIST}")
 	@GetMapping
-	public R<?> getPageList(@RequestParam(value = "query", required = false) String query) {
+	public R<TableData<IndexModel>> getPageList(@RequestParam(value = "query", required = false) @XComment("{API.DOC.SEARCH.QUERY}") String query) {
 		PageRequest pr = this.getPageRequest();
 		Page<IndexModel> page = this.indexModelService.lambdaQuery()
 				.like(StringUtils.isNotEmpty(query), IndexModel::getName, query).or()
@@ -53,16 +59,18 @@ public class IndexModelController extends BaseRestController {
 		return this.bindDataTable(page);
 	}
 
+	@XComment("{API.DOC.SEARCH.MODEL_ADD}")
 	@Log(title = "新增索引模型", businessType = BusinessType.INSERT)
 	@PostMapping
-	public R<?> addIndexModel(@RequestBody @Validated SearchModelDTO dto) {
+	public R<Void> addIndexModel(@RequestBody @Validated SearchModelDTO dto) {
 		this.indexModelService.addIndexModel(dto);
 		return R.ok();
 	}
 
+	@XComment("{API.DOC.SEARCH.MODEL_DELETE}")
 	@Log(title = "删除索引模型", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<?> deleteIndexModel(@RequestBody @NotEmpty List<Long> modelIds) {
+	public R<Void> deleteIndexModel(@RequestBody @NotEmpty @XComment("{API.DOC.SEARCH.MODEL_IDS}") List<Long> modelIds) {
 		this.indexModelService.deleteIndexModel(modelIds);
 		return R.ok();
 	}

@@ -407,6 +407,9 @@ defineExpose({
 });
 </script>
 <style scoped>
+.catalog-tree {
+  padding-bottom: .5rem;
+}
 .catalog-tree .head-container {
   margin-bottom: 10px;
 }

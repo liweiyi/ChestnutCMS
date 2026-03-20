@@ -15,6 +15,7 @@
  */
 package com.chestnut.vote.domain.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
 import com.chestnut.system.validator.Dict;
@@ -38,72 +39,57 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
+@XComment("{API.DOC.VOTE.CREATE_VOTE_REQ}")
 public class CreateVoteRequest extends BaseDTO {
 
-    /**
-     * 唯一标识编码
-     */
     @NotBlank
     @Length(max = 20)
     @Pattern(regexp = RegexConsts.REGEX_CODE)
+    @XComment("{CC.VOTE.CODE}")
     private String code;
 
-    /**
-     * 问卷调查标题
-     */
     @NotBlank
     @Length(max = 255)
+    @XComment("{CC.VOTE.TITLE}")
     private String title;
 
-    /**
-     * 开始时间
-     */
     @NotNull
+    @XComment("{CC.VOTE.START_TIME}")
     private LocalDateTime startTime;
 
-    /**
-     * 结束时间
-     */
     @NotNull
+    @XComment("{CC.VOTE.END_TIME}")
     private LocalDateTime endTime;
 
-    /**
-     * 用户类型（IP、浏览器指纹，登录用户）
-     */
     @NotBlank
     @Length(max = 20)
+    @XComment("{CC.VOTE.USER_TYPE}")
     private String userType;
 
-    /**
-     * 每日限制次数
-     */
     @NotNull
     @Min(1)
+    @XComment("{CC.VOTE.DAY_LIMIT}")
     private Integer dayLimit;
 
-    /**
-     * 总共可参与次数
-     */
     @NotNull
     @Min(1)
+    @XComment("{CC.VOTE.TOTAL_LIMIT}")
     private Integer totalLimit;
 
-    /**
-     * 状态
-     */
     @NotBlank
     @Dict(VoteStatus.TYPE)
+    @XComment("{CC.VOTE.STATUS}")
     private String status;
 
-    /**
-     * 结果查看方式（不允许查看、提交后可看、不限制）
-     */
     @NotBlank
     @Dict(VoteViewType.TYPE)
+    @XComment("{CC.VOTE.VIEW_TYPE}")
     private String viewType;
 
+    @XComment("{CC.VOTE.SOURCE}")
     private String source;
 
     @Length(max = 500)
+    @XComment("{CC.ENTITY.REMARK}")
     private String remark;
 }
