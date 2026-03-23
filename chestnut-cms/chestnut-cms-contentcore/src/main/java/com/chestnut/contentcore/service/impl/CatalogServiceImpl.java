@@ -406,6 +406,8 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 				toCatalog.updateBy(dto.getOperator().getUsername());
 			}
 			this.updateBatchById(toCatalogs);
+            // 清理缓存
+            toCatalogs.forEach(this::clearCache);
 		}
 	}
 
