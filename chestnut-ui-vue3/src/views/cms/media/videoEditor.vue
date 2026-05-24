@@ -52,7 +52,7 @@
                       <p>{{ $t('CMS.Video.BitRate') }}：[ {{ item.bitRate }} ]</p>
                       <p>{{ $t('CMS.Video.FrameRate') }}：[ {{ item.frameRate }} ]</p>
                     </template>
-                    <el-link type="primary" :underline="false">{{$t('CMS.Video.Details') }}</el-link>
+                    <el-link type="primary" underline="never">{{$t('CMS.Video.Details') }}</el-link>
                   </el-tooltip>
                 </div>
               </el-form-item>

@@ -232,7 +232,12 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	/**
 	 * 批量删除内容一次不能超过{0}个
 	 */
-	BATCH_DEL_CONTENT_LIMIT;
+	BATCH_DEL_CONTENT_LIMIT,
+
+	/**
+	 * 不支持上传文件类型：{0}
+	 */
+	UNSUPPORTED_FILE_TYPE;
 
 	@Override
 	public String value() {

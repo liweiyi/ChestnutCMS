@@ -65,8 +65,8 @@
       </el-table-column>
       <el-table-column :label="$t('CMS.Staticize.TagDirective')" width="255" prop="tagName">
         <template #default="scope">
-          <el-link type="primary">
-            <span v-html="'<@'+scope.row.tagName+'>'"></span>
+          <el-link type="primary" :underline="false">
+            &lt;@{{ scope.row.tagName }}&gt;
           </el-link>
         </template>
       </el-table-column>

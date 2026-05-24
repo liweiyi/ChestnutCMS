@@ -18,8 +18,7 @@ package com.chestnut.system.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.system.domain.SysMenu;
-import com.chestnut.system.domain.dto.CreateMenuRequest;
-import com.chestnut.system.domain.dto.UpdateMenuRequest;
+import com.chestnut.system.domain.dto.SaveMenuRequest;
 import com.chestnut.system.domain.vo.RouterVO;
 
 import java.util.List;
@@ -57,21 +56,21 @@ public interface ISysMenuService extends IService<SysMenu> {
 	 *            菜单列表
 	 * @return 下拉树结构列表
 	 */
-	List<TreeNode<Long>> buildMenuTreeSelect(List<SysMenu> menus);
+	List<TreeNode<String>> buildMenuTreeSelect(List<SysMenu> menus);
 
 	/**
 	 * 新增保存菜单信息
 	 * 
 	 * @param req 菜单信息
 	 */
-	void insertMenu(CreateMenuRequest req);
+	void insertMenu(SaveMenuRequest req);
 
 	/**
 	 * 修改保存菜单信息
 	 *
 	 * @param req 菜单信息
 	 */
-	void updateMenu(UpdateMenuRequest req);
+	void updateMenu(SaveMenuRequest req);
 
 	/**
 	 * 删除菜单管理信息
@@ -80,7 +79,7 @@ public interface ISysMenuService extends IService<SysMenu> {
 	 *            菜单ID
 	 * @return 结果
 	 */
-	void deleteMenuById(Long menuId);
+	void deleteMenuById(String menuId);
 
 	/**
 	 * 根据父节点的ID获取所有子节点
@@ -89,5 +88,5 @@ public interface ISysMenuService extends IService<SysMenu> {
 	 * @param parentId 传入的父节点ID
 	 * @return String
 	 */
-	List<SysMenu> getChildPerms(List<SysMenu> list, int parentId);
+	List<SysMenu> getChildPerms(List<SysMenu> list, String parentId);
 }

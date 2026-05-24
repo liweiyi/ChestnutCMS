@@ -32,6 +32,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.system.SysConstants;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.config.SystemConfig;
 import com.chestnut.system.domain.SysMenu;
@@ -189,7 +190,7 @@ public class SysProfileController extends BaseRestController {
 	@GetMapping("/shortcuts")
 	public R<List<ShortcutVO>> getHomeShortcuts() {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
-		List<Long> menuIds = ShortcutUserPreference.getValue(user.getPreferences());
+		List<String> menuIds = ShortcutUserPreference.getValue(user.getPreferences());
 		List<SysMenu> allMenus = this.menuService.lambdaQuery().list();
 
 		List<SysMenu> shortcuts = allMenus.stream().filter(m -> menuIds.contains(m.getMenuId())).toList();
@@ -214,7 +215,7 @@ public class SysProfileController extends BaseRestController {
 
 	private void generateMenuRoute(SysMenu menu, List<SysMenu> menus, List<String> paths) {
 		paths.add(0, menu.getPath());
-		if (IdUtils.validate(menu.getParentId())) {
+		if (!SysConstants.MENU_ROOT_ID.equals(menu.getParentId())) {
 			menus.forEach(m -> {
 				if (m.getMenuId().equals(menu.getParentId())) {
 					generateMenuRoute(m, menus, paths);

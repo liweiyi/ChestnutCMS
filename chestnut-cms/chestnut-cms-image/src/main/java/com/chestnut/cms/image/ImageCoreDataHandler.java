@@ -64,7 +64,7 @@ public class ImageCoreDataHandler implements ICoreDataHandler {
                 if (page.getRecords().size() < pageSize) {
                     break;
                 }
-                offset = page.getRecords().get(page.getRecords().size() - 1).getContentId();
+                offset = page.getRecords().get(page.getRecords().size() - 1).getImageId();
                 fileIndex++;
             } else {
                 break;

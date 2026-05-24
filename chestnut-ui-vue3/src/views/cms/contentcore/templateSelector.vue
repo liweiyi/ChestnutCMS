@@ -1,4 +1,4 @@
-<template>
+·<template>
   <div class="app-container">
     <el-dialog 
       :title="$t('CMS.Template.SelectorTitle')"
@@ -52,7 +52,8 @@
           align="left"
           prop="path">
           <template #default="scope">
-            <span v-html="scope.row.displayPath"></span>
+            <el-text v-for="item in scope.row.dirs" :key="item" type="primary">{{ item }} / </el-text>
+            <el-text>{{ scope.row.filename }}</el-text>
           </template>
         </el-table-column>
       </el-table>
@@ -157,14 +158,13 @@ const getList = () => {
     templateList.value = response.data.rows.map(item => {
       let arr = item.path.split("/")
       if (arr.length > 1) {
-        for(let i = 0; i < arr.length - 1; i++) {
-          item.displayPath = '<span style="color: #1890ff">' + arr[i] + '</span> / '
-        }
-        item.displayPath += arr[arr.length - 1]
+        item.dirs = arr.slice(0, arr.length - 1);
+        item.filename = arr[arr.length - 1];
       } else {
-        item.displayPath = arr[0]
+        item.dirs = [];
+        item.filename = item.path;
       }
-      return item
+      return item;
     })
     total.value = parseInt(response.data.total)
     selectedTemplate.value = undefined

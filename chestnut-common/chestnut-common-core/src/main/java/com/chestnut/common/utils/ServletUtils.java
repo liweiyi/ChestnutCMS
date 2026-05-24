@@ -545,7 +545,7 @@ public class ServletUtils {
 		if (request == null) {
 			return UNKNOWN;
 		}
-		String ip = request.getHeader("x-forwarded-for");
+		String ip = request.getHeader("x-real-ip");
 		if (isUnknown(ip)) {
 			ip = request.getHeader("Proxy-Client-IP");
 		}
@@ -554,9 +554,6 @@ public class ServletUtils {
 		}
 		if (isUnknown(ip)) {
 			ip = request.getHeader("WL-Proxy-Client-IP");
-		}
-		if (isUnknown(ip)) {
-			ip = request.getHeader("X-Real-IP");
 		}
 		if (isUnknown(ip)) {
 			ip = request.getRemoteAddr();

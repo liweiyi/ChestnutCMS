@@ -101,7 +101,7 @@ service.interceptors.response.use(res => {
         ).then(() => {
           isRelogin.show = false
           useUserStore().logOut().then(() => {
-            const redirect = location.pathname + location.search;
+            const redirect = location.pathname.substring(import.meta.env.VITE_APP_PATH.length) + location.search;
             window.location.href = `${import.meta.env.VITE_APP_PATH || '/'}login?redirect=${encodeURIComponent(redirect)}`
           })
         }).catch(() => {
@@ -115,7 +115,8 @@ service.interceptors.response.use(res => {
     } else if (code === 601) {
       ElMessage({ message: msg, type: 'warning' })
       return Promise.reject(new Error(msg))
-    } else if (code !== 200) {
+    } 
+    else if (code !== 200) {
       ElNotification.error({ title: msg })
       return Promise.reject('error')
     } else {

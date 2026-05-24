@@ -15,7 +15,8 @@
  */
 package com.chestnut.contentcore.core;
 
-import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.CmsContent;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 内容核心数据引用处理器
@@ -28,4 +29,6 @@ public interface ICoreDataHandler {
     default void onSiteExport(SiteExportContext context) {}
 
     default void onSiteImport(SiteImportContext context) {}
+
+    default void beforeGetContentDetailApi(CmsContent content) {}
 }

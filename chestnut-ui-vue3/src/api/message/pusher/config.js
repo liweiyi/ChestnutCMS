@@ -34,7 +34,7 @@ export function addPusherConfig(data) {
 export function updatePusherConfig(data) {
   return request({
     url: '/pusher/config',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

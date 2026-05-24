@@ -22,7 +22,6 @@ import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.web.TableData;
-import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
@@ -152,7 +151,6 @@ public class TemplateController extends CmsRestController {
 			mode = SaMode.AND
 	)
 	@Log(title = "新增模板", businessType = BusinessType.INSERT)
-	@XssIgnore
 	@PostMapping("/add")
 	public R<Void> add(@RequestBody @Validated TemplateAddDTO dto) throws IOException {
 		validTemplateName(dto.getPath());
@@ -211,7 +209,6 @@ public class TemplateController extends CmsRestController {
 			mode = SaMode.AND
 	)
 	@Log(title = "编辑模板", businessType = BusinessType.UPDATE)
-	@XssIgnore
 	@PostMapping("/update")
 	public R<Void> save(@RequestBody @Validated TemplateUpdateDTO dto) throws IOException {
 		CmsTemplate template = this.templateService.getById(dto.getTemplateId());

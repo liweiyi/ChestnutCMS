@@ -3,7 +3,7 @@
     <el-card shadow="hover" class="mb10" v-if="shortcuts.length > 0"> 
       <div class="body">
         <el-card class="shortcut-card" v-for="shortcut in shortcuts" :key="shortcut.router" shadow="hover">
-          <el-link :underline="false" class="shortcut-link" @click="handleShortcutRedirect(shortcut.router)">
+          <el-link underline="never" class="shortcut-link" @click="handleShortcutRedirect(shortcut.router)">
             <svg-icon :icon-class="shortcut.icon" class-name="card-panel-icon"></svg-icon>
             <div class="shortcut-text">
               <span>{{ shortcut.name }}</span>

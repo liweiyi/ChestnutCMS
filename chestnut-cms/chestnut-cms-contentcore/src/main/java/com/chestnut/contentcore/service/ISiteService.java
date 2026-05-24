@@ -23,6 +23,7 @@ import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 
 public interface ISiteService extends IService<CmsSite> {
@@ -72,6 +73,14 @@ public interface ISiteService extends IService<CmsSite> {
 	 * @return
 	 */
 	CmsSite getSite(Long siteId);
+
+	/**
+	 * 批量获取站点数据
+	 *
+	 * @param siteIds 站点ID集合
+	 * @return 站点ID到站点数据映射
+	 */
+	Map<Long, CmsSite> getSites(Collection<Long> siteIds);
 
 	/**
 	 * 新增站点数据

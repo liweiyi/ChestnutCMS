@@ -10,7 +10,6 @@ import com.chestnut.common.utils.IdUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -127,7 +126,7 @@ public class ${ClassName}Controller extends BaseRestController {
      */
     @Priv
     @Log(title = "${functionName}", businessType = BusinessType.UPDATE)
-    @PutMapping
+    @PostMapping
     public R<?> edit(@RequestBody ${ClassName} ${className})
     {
         this.${className}Service.updateById(${className});
@@ -139,7 +138,7 @@ public class ${ClassName}Controller extends BaseRestController {
      */
     @Priv
     @Log(title = "${functionName}", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{${pkColumn.javaField}s}")
+	@PosgMapping("/{${pkColumn.javaField}s}")
     public R<?> remove(@PathVariable ${pkColumn.javaType}[] ${pkColumn.javaField}s)
     {
         this.${className}Service.removeBatchByIds(List.of(${pkColumn.javaField}s));

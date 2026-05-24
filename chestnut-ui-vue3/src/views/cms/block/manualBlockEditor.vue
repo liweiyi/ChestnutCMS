@@ -57,18 +57,18 @@
                     type="info"
                     :key="item.title"
                     v-for="(item, index) in scope.row.items">
-                    <el-link :underline="false" @click="handleEditItem(scope.$index, index)">{{item.title}}</el-link>
+                    <el-link underline="never" @click="handleEditItem(scope.$index, index)">{{item.title}}</el-link>
                     <span class="item-op">
                       <el-link 
                         class="item-op-add"
-                        :underline="false" 
+                        underline="never" 
                         type="primary"
                         @click="handleAddItem(scope.$index, index + 1)">
                         <el-icon><CirclePlus /></el-icon>
                       </el-link>
                       <el-link 
                         class="item-op-del"
-                        :underline="false" 
+                        underline="never" 
                         type="danger"
                         @click="handleDeleteItem(scope.$index, index)">
                         <el-icon><CircleClose /></el-icon>

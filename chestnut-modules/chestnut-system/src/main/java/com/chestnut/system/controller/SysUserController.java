@@ -24,7 +24,6 @@ import com.chestnut.common.domain.R;
 
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.ExcelExportable;
@@ -276,7 +275,6 @@ public class SysUserController extends BaseRestController {
 	}
 
     @XComment("{API.DOC.SYS.USER.SAVE_PREFERENCES}")
-	@XssIgnore
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/savePreferences")
 	public R<Void> saveUserPreferences(@RequestBody @NotNull Map<String, Object> userPreferences) {

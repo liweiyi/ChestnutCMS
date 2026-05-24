@@ -215,6 +215,49 @@ public class FileExUtils {
 	}
 
 	/**
+	 * 检查文件名是否安全（不包含路径遍历字符）。
+	 *
+	 * <p>以下情况视为不安全：null/空白、包含 {@code /} 或 {@code \}、包含 {@code ..}、
+	 * 包含 null 字节、等于 {@code .}、或经 {@link FilenameUtils#getName} 解析后与原值不一致。</p>
+	 *
+	 * @param fileName 待检查的文件名（不含目录部分）
+	 * @return 安全返回 true，否则返回 false
+	 */
+	public static boolean isSafeFileName(String fileName) {
+		if (StringUtils.isBlank(fileName)) {
+			return false;
+		}
+		if (fileName.indexOf('/') >= 0 || fileName.indexOf('\\') >= 0) {
+			return false;
+		}
+		if (fileName.contains("..")) {
+			return false;
+		}
+		if (fileName.indexOf('\0') >= 0) {
+			return false;
+		}
+		if (".".equals(fileName)) {
+			return false;
+		}
+		return fileName.equals(FilenameUtils.getName(fileName));
+	}
+
+	/**
+	 * 批量校验文件名安全性，任一文件名不安全则抛出 {@link SecurityException}。
+	 *
+	 * @param fileNames 待校验的文件名列表
+	 * @throws SecurityException 包含不安全文件名时抛出
+	 * @see #isSafeFileName(String)
+	 */
+	public static void checkFileName(String... fileNames) {
+		for (String fileName : fileNames) {
+			if (!isSafeFileName(fileName)) {
+				throw new SecurityException("Unsafe file name detected: " + fileName);
+			}
+		}
+	}
+
+	/**
 	 * 格式化路径，去掉`../`、`./`等类似路径避免文件泄露
 	 *
 	 * @param path 路径

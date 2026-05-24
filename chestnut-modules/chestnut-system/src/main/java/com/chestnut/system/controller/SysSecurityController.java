@@ -21,23 +21,19 @@ import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
-
-
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysSecurityConfig;
-import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.CreateSecurityConfigRequest;
 import com.chestnut.system.domain.dto.UpdateSecurityConfigRequest;
-import com.chestnut.system.domain.vo.SecurityCheckVO;
-import com.chestnut.system.fixed.dict.PasswordRule;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISecurityConfigService;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
@@ -45,8 +41,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -78,22 +74,25 @@ public class SysSecurityController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
 	@GetMapping("/detail/{id}")
 	public R<SysSecurityConfig> getConfig(@PathVariable @LongId @XComment("{API.DOC.SYS.SECURITY.ID}") Long id) {
-		SysSecurityConfig securityConfig = securityConfigService.getById(id);
-		Assert.notNull(securityConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(id));
-		return R.ok(securityConfig);
+		SysSecurityConfig config = securityConfigService.getById(id);
+		Assert.notNull(config, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(id));
+		securityConfigService.fixeOldVersion(config);
+		return R.ok(config);
 	}
 
-	@XComment("{API.DOC.SYS.SECURITY.GET_CURRENT}")
+	@XComment("{API.DOC.SYS.SECURITY.GET_CONFIGS}")
 	@Priv(type = AdminUserType.TYPE)
-	@GetMapping("/current")
-	public R<SysSecurityConfig> getCurrentConfig() {
+	@PostMapping("/get")
+	public R<?> getConfigs(@RequestBody List<String> types) {
 		SysSecurityConfig securityConfig = securityConfigService.getSecurityConfig();
 		if (Objects.isNull(securityConfig)) {
-			return R.ok();
+			return R.ok(JacksonUtils.objectNode());
 		}
-		String ruleRegex = PasswordRule.getRuleRegex(securityConfig.getPasswordRule());
-		securityConfig.setPasswordRulePattern(ruleRegex);
-		return R.ok(securityConfig);
+		if (StringUtils.isEmpty(types)) {
+			return R.ok(securityConfig.getConfigs());
+		}
+		Map<String, Object> configs = securityConfigService.getSecurityConfigs(types);
+		return R.ok(configs);
 	}
 
 	@XComment("{API.DOC.SYS.SECURITY.CREATE}")
@@ -130,27 +129,5 @@ public class SysSecurityController extends BaseRestController {
 	public R<Void> changeConfigStatus(@PathVariable @LongId @XComment("{API.DOC.SYS.SECURITY.ID}") Long id) {
 		this.securityConfigService.changeConfigStatus(id);
 		return R.ok();
-	}
-
-	@XComment("{API.DOC.SYS.SECURITY.CHECK}")
-	@Priv(type = AdminUserType.TYPE)
-	@GetMapping("/check")
-	public R<SecurityCheckVO> checkConfig() {
-		SysSecurityConfig securityConfig = securityConfigService.getSecurityConfig();
-		if (Objects.isNull(securityConfig)) {
-			return R.ok();
-		}
-
-		SysUser user = (SysUser) StpAdminUtil.getLoginUser().getUser();
-		SecurityCheckVO vo = new SecurityCheckVO();
-		if (securityConfig.getPasswordExpireSeconds() > 0) {
-			LocalDateTime lastModifyPwdTime = Objects.isNull(user.getPasswordModifyTime())
-					? user.getCreateTime() : user.getPasswordModifyTime();
-			if (lastModifyPwdTime.plusSeconds(securityConfig.getPasswordExpireSeconds()).isBefore(LocalDateTime.now())) {
-				vo.setIsPasswordExpired(true);
-			}
-		}
-		vo.setForceModifyPassword(user.checkForceModifyPassword());
-		return R.ok(vo);
 	}
 }

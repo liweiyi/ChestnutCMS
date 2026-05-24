@@ -26,7 +26,7 @@ export function addRule(data) {
 export function editRule(data) {
   return request({
     url: '/sys/iprule',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

@@ -111,8 +111,13 @@ public enum CommonErrorCode implements ErrorCode {
 	/**
 	 * 验证码过期
 	 */
-	CAPTCHA_EXPIRED;
-	
+	CAPTCHA_EXPIRED,
+
+	/**
+	 * Lang: 不允许缓存 null 值，key=[{0}]
+	 */
+	CACHE_NULL_NOT_ALLOWED;
+
 	@Override
 	public String value() {
 		return "{ERR.COMMON." + this.name() + "}";

@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -46,6 +47,7 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 @RequiredArgsConstructor
+@EnableConfigurationProperties(RedisCacheProperties.class)
 public class RedisConfig implements CachingConfigurer {
 
 	private final CacheProperties cacheProperties;

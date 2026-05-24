@@ -263,7 +263,8 @@ public class FileServiceImpl implements IFileService {
 		dir = StringUtils.appendIfMissing(dir, "/");
 		this.checkSiteDirectory(site, dir);
 		this.checkFileType(file.getOriginalFilename());
-		
+		FileExUtils.checkFileName(file.getOriginalFilename());
+
 		String resourceRoot = CMSConfig.getResourceRoot();
 		FileUtils.writeByteArrayToFile(new File(resourceRoot + dir + file.getOriginalFilename()), file.getBytes());
 	}

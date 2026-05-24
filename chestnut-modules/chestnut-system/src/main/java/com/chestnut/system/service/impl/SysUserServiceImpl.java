@@ -243,6 +243,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("userId", req.getUserId()));
 
 		this.securityConfigService.validPassword(db, req.getPassword());
+		this.securityConfigService.forceModifyPwdAfterResetPwd(db);
 
 		db.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
 		db.setUpdateTime(LocalDateTime.now());

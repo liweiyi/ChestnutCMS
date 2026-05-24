@@ -18,18 +18,26 @@ package com.chestnut.system.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.dto.CreateSecurityConfigRequest;
+import com.chestnut.system.domain.dto.LoginBody;
 import com.chestnut.system.domain.dto.UpdateSecurityConfigRequest;
 import com.chestnut.system.security.ISecurityUser;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ISecurityConfigService extends IService<SysSecurityConfig> {
-	
+
+	String CACHE_KEY_CONFIG_LAST_MODIFIED = "sys:security:config:lastModified";
+
 	/**
 	 * 获取安全配置信息
 	 */
 	SysSecurityConfig getSecurityConfig();
-	
+
+	void fixeOldVersion(SysSecurityConfig config);
+
+	Map<String, Object> getSecurityConfigs(List<String> configTypes);
+
 	/**
 	 * 添加安全配置信息
 	 * 
@@ -57,7 +65,7 @@ public interface ISecurityConfigService extends IService<SysSecurityConfig> {
 	 * @param user
 	 * @return 结果
 	 */
-	boolean processLoginPasswordError(ISecurityUser user);
+	void processLoginPasswordError(ISecurityUser user);
 
 	/**
 	 * 登录成功处理
@@ -95,4 +103,10 @@ public interface ISecurityConfigService extends IService<SysSecurityConfig> {
 	 * @param configId
 	 */
 	void changeConfigStatus(Long configId);
+
+	/**
+	 * 校验后台登录验证码
+	 * @param loginBody
+	 */
+	void validateLoginCaptcha(LoginBody loginBody);
 }

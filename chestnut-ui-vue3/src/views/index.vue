@@ -17,8 +17,7 @@
     </el-row>
     <el-row :gutter="10">
       <el-col :span="24">
-        <cms-site-visit-stat v-if="userStore==='Free'"></cms-site-visit-stat>
-        <cms-site-visit-trend-panel v-else></cms-site-visit-trend-panel>
+        <cms-site-visit-stat v-if="appStore.isFree"></cms-site-visit-stat>
       </el-col>
     </el-row>
     <el-row :gutter="10">
@@ -33,7 +32,7 @@
 </template>
 
 <script setup>
-import useUserStore from '@/store/modules/user'
+import useAppStore from '@/store/modules/app'
 import UserInfo from '@/views/system/dashboard/userInfo'
 import Shortcut from '@/views/system/dashboard/shortcut'
 import ServerInfo from '@/views/system/dashboard/serverInfo'
@@ -41,7 +40,7 @@ import CmsSiteVisitStat from '@/views/cms/dashboard/siteVisitStat'
 import CmsSiteDataStat from '@/views/cms/dashboard/siteDataStat'
 import CmsSitePanel from '@/views/cms/dashboard/sitePanel'
 
-const userStore = useUserStore()
+const appStore = useAppStore()
 </script>
 <style lang="scss" scoped>
 .app-container {

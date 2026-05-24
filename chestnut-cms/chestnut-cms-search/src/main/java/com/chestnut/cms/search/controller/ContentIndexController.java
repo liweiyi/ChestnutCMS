@@ -19,6 +19,7 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.transport.endpoints.BooleanResponse;
 import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.es.doc.ESContent;
 import com.chestnut.cms.search.permission.CmsSearchPriv;
@@ -34,6 +35,7 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.HtmlUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 
@@ -57,6 +59,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
+import org.jsoup.safety.Safelist;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -84,6 +87,15 @@ public class ContentIndexController extends CmsRestController {
 
 	private void checkElasticSearchEnabled() {
 		Assert.isTrue(this.searchService.isElasticSearchAvailable(), SearchErrorCode.ESConnectFail::exception);
+	}
+
+	@GetMapping("/checkExists")
+	public R<Boolean> checkSiteIndexExists() throws IOException {
+		this.checkElasticSearchEnabled();
+		CmsSite site = this.getCurrentSite();
+		String indexName = CmsSearchConstants.indexName(site.getSiteId().toString());
+		BooleanResponse response = esClient.indices().exists(fn -> fn.index(indexName));
+		return R.ok(response.value());
 	}
 
 	@XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.GET_LIST}")
@@ -126,8 +138,8 @@ public class ContentIndexController extends CmsRestController {
 					);
 			if (StringUtils.isNotEmpty(query)) {
 				s.highlight(h ->
-						h.fields("title", f -> f.preTags("<font color='red'>").postTags("</font>"))
-								.fields("fullText", f -> f.preTags("<font color='red'>").postTags("</font>")));
+						h.fields("title", f -> f.preTags("<em color='red'>").postTags("</em>"))
+								.fields("fullText", f -> f.preTags("<em color='red'>").postTags("</em>")));
 			}
 			s.sort(sort -> sort.field(f -> f.field("_score").order(SortOrder.Desc)));
 			s.sort(sort -> sort.field(f -> f.field("publishDate").order(SortOrder.Desc))); // 排序: _score:desc + publishDate:desc
@@ -161,6 +173,7 @@ public class ContentIndexController extends CmsRestController {
                     vo.setTitle(StringUtils.join(value.toArray(String[]::new)));
                 }
             });
+			vo.setTitle(HtmlUtils.clean(vo.getTitle(), Safelist.simpleText()));
 			return vo;
 		}).toList();
 		return this.bindDataTable(list, sr.hits().total().value());

@@ -20,7 +20,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
 
 
@@ -90,7 +89,6 @@ public class SysNoticeController extends BaseRestController {
 	 * 新增通知公告
 	 */
 	@XComment("{API.DOC.SYS.NOTICE.CREATE_NOTICE}")
-	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeAdd)
 	@Log(title = "通知公告", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
@@ -103,7 +101,6 @@ public class SysNoticeController extends BaseRestController {
 	 * 修改通知公告
 	 */
 	@XComment("{API.DOC.SYS.NOTICE.UPDATE_NOTICE}")
-	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysNoticeEdit)
 	@Log(title = "通知公告", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")

@@ -188,7 +188,7 @@ pipeline {
 	            	    '''
 					}
             	}
-				dir('./ChestnutCMS/chestnut-ui/dist') {
+				dir('./ChestnutCMS/chestnut-ui-vue3/dist') {
             	    sshPublisher(publishers: [sshPublisherDesc(configName: 'GameCluster', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
             	    					mkdir -p /www/docker/chestnut-ui
 										cd /www/docker/chestnut-ui

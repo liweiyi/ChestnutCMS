@@ -9,8 +9,6 @@
 import { LoadEvent } from './utils/LoadEvent'
 import { asyncSeries } from './utils/async-series'
 
-const { proxy } = getCurrentInstance()
-
 const model = defineModel({
   type: String,
   default: ''
@@ -71,7 +69,9 @@ const STATUS_MAP = {
 
 const status = ref(STATUS_MAP.UNREADY);
 const editor = ref(null);
+const editorRef = ref(null);
 const contentChangeFlag = ref(false);
+const unmounted = ref(false);
 
 const defaultEditorDependencies = ['ueditor.config.js', 'ueditor.all.min.js'];
 
@@ -173,7 +173,9 @@ onDeactivated(() => {
 })
 
 onBeforeUnmount(() => {
+  unmounted.value = true;
   destroyEditor();
+  status.value = STATUS_MAP.DESTROYED;
 })
 
 // 监听 v-model 值的变化
@@ -183,7 +185,10 @@ watch(() => model.value, (newVal) => {
     (props.forceInit || typeof window !== 'undefined') &&
       loadEditorDependencies()
         .then(() => {
-          proxy.$refs.editorRef ? initEditor() : nextTick(() => initEditor());
+          if (unmounted.value || status.value === STATUS_MAP.DESTROYED) {
+            return;
+          }
+          editorRef.value ? initEditor() : nextTick(() => initEditor());
         })
         .catch((err) => {
           console.error(err);
@@ -206,9 +211,12 @@ watch(() => model.value, (newVal) => {
 const initEditor = () => {
   console.log('initEditor', model.value);
   try {
+    if (unmounted.value || status.value === STATUS_MAP.DESTROYED || !editorRef.value) {
+      return;
+    }
     const editorId = props.editorId || 'ueditor_' + randomString(8);
     emit('before-init', editorId);
-    proxy.$refs.editorRef.id = editorId;
+    editorRef.value.id = editorId;
     editor.value = window.UE.getEditor(editorId, props.config);
     editor.value.addListener('ready', () => {
       if (status.value === STATUS_MAP.READY) {

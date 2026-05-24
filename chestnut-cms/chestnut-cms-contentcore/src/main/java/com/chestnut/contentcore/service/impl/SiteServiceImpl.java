@@ -62,6 +62,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,6 +92,25 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		CmsSite site = siteCache.getCache(siteId, () -> this.getById(siteId));
 		Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 		return site;
+	}
+
+	@Override
+	public Map<Long, CmsSite> getSites(Collection<Long> siteIds) {
+		if (siteIds == null || siteIds.isEmpty()) {
+			return Map.of();
+		}
+		List<Long> ids = siteIds.stream().filter(IdUtils::validate).distinct().toList();
+		Map<Long, CmsSite> sites = new HashMap<>(siteCache.getCaches(ids));
+		List<Long> missedIds = ids.stream().filter(id -> !sites.containsKey(id)).toList();
+		if (!missedIds.isEmpty()) {
+			this.listByIds(missedIds).forEach(site -> {
+				this.siteCache.setCache(site.getSiteId(), site);
+				sites.put(site.getSiteId(), site);
+			});
+		}
+		List<Long> notFoundIds = ids.stream().filter(id -> !sites.containsKey(id)).toList();
+		Assert.isTrue(notFoundIds.isEmpty(), () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", notFoundIds));
+		return sites;
 	}
 
     @Override

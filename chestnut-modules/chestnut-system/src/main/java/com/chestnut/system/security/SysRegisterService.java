@@ -15,26 +15,20 @@
  */
 package com.chestnut.system.security;
 
-import com.chestnut.common.captcha.CaptchaData;
 import com.chestnut.common.captcha.CaptchaService;
-import com.chestnut.common.captcha.ICaptchaType;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.RegisterBody;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.config.SysRegistEnable;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
-import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.service.ISecurityConfigService;
 import com.chestnut.system.service.ISysLogininforService;
 import com.chestnut.system.service.ISysUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 /**
  * 注册校验方法
@@ -60,7 +54,7 @@ public class SysRegisterService {
 	public void register(RegisterBody registerBody) {
 		Assert.isTrue(SysRegistEnable.isEnable(), SysErrorCode.REGISTER_DISABLED::exception);
 		// 验证码校验
-        validateCaptcha(registerBody.getUsername(), registerBody.getCaptcha());
+		this.securityConfigService.validateLoginCaptcha(registerBody);
 		SysUser user = new SysUser();
 		user.setUserName(registerBody.getUsername());
 		user.setPassword(registerBody.getPassword());
@@ -68,26 +62,5 @@ public class SysRegisterService {
 		userService.registerUser(user);
 		this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
 				user.getUserName(), LoginLogType.REGIST, SuccessOrFail.SUCCESS, StringUtils.EMPTY);
-	}
-
-	/**
-	 * 校验验证码
-	 * 
-	 * @param username 用户名
-	 * @param captchaData 验证码
-	 */
-	public void validateCaptcha(String username, CaptchaData captchaData) {
-        SysSecurityConfig securityConfig = securityConfigService.getSecurityConfig();
-        if (Objects.isNull(securityConfig) || !YesOrNo.isYes(securityConfig.getCaptchaEnable())) {
-            return;
-        }
-		Assert.notNull(captchaData, SysErrorCode.CAPTCHA_ERR::exception);
-		ICaptchaType captchaType = captchaService.getCaptchaType(captchaData.getType());
-		boolean validated = captchaType.isTokenValidated(captchaData);
-		if (!validated) {
-			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,
-					LoginLogType.REGIST, SuccessOrFail.FAIL, SysErrorCode.CAPTCHA_ERR.name());
-			throw SysErrorCode.CAPTCHA_ERR.exception();
-		}
 	}
 }

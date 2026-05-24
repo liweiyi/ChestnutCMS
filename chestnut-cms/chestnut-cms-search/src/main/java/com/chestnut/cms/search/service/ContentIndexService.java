@@ -25,6 +25,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.CmsSearchErrorCode;
+import com.chestnut.cms.search.CmsSearchTips;
 import com.chestnut.cms.search.es.doc.ESContent;
 import com.chestnut.cms.search.fixed.config.SearchAnalyzeType;
 import com.chestnut.cms.search.properties.EnableIndexProperty;
@@ -249,7 +250,7 @@ public class ContentIndexService implements CommandLineRunner {
 			for (int i = 0; i * pageSize < total; i++) {
                 try {
 					AsyncTaskManager.setTaskProgressInfo((int) (count++ * 100 / total),
-							I18nUtils.parse("PROGRESS.INFO.BUILDING_INDEX", catalog.getName()));
+							CmsSearchTips.BUILDING_CATALOG_INDEX, catalog.getName());
 					AsyncTaskManager.checkInterrupt(); // 允许中断
 					Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);
                     batchContentDoc(site, catalog, page.getRecords());
@@ -284,7 +285,7 @@ public class ContentIndexService implements CommandLineRunner {
 					for (CmsCatalog catalog : catalogs) {
 						rebuildCatalog(catalog, false);
 					}
-					this.setProgressInfo(100, I18nUtils.parse("PROGRESS.INFO.BUILD_SUCCEED"));
+					this.setProgressInfo(100, CmsSearchTips.BUILDING_CATALOG_INDEX);
 				} catch (Exception e) {
 					log.error("RebuildAllContentIndex failed.", e);
 					addErrorMessage(e.getMessage());

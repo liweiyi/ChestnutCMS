@@ -37,6 +37,10 @@ import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.security.SysLoginService;
+import com.chestnut.system.security.config.LoginSecurity;
+import com.chestnut.system.security.config.LoginSecurityConfigType;
+import com.chestnut.system.security.config.PasswordSecurity;
+import com.chestnut.system.security.config.PasswordSecurityConfigType;
 import com.chestnut.system.service.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +49,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -71,6 +76,10 @@ public class SysLoginController extends BaseRestController {
     private final ISysUserService userService;
 
     private final ILoginConfigService loginConfigService;
+
+    private final PasswordSecurityConfigType passwordSecurityConfigType;
+
+    private final LoginSecurityConfigType loginSecurityConfigType;
 
     private final ISecurityConfigService securityConfigService;
     @GetMapping("/checkUsername")
@@ -143,6 +152,17 @@ public class SysLoginController extends BaseRestController {
 		vo.setUser(user);
 		vo.setRoles(roles);
 		vo.setPermissions(permissions);
+        SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
+        if (Objects.nonNull(securityConfig)) {
+            PasswordSecurity config = passwordSecurityConfigType.getConfig(securityConfig.getConfigs());
+            if (config.getExpireSeconds() > 0) {
+                LocalDateTime lastModifyPwdTime = Objects.isNull(user.getPasswordModifyTime())
+                        ? user.getCreateTime() : user.getPasswordModifyTime();
+                if (lastModifyPwdTime.plusSeconds(config.getExpireSeconds()).isBefore(LocalDateTime.now())) {
+                    vo.getUser().setIsPasswordExpired(true);
+                }
+            }
+        }
 		return R.ok(vo);
 	}
 
@@ -165,24 +185,27 @@ public class SysLoginController extends BaseRestController {
 		// 国际化翻译
 		I18nUtils.replaceI18nFields(menus, LocaleContextHolder.getLocale());
 		// 上下级关系处理
-		menus = menuService.getChildPerms(menus, 0);
+		menus = menuService.getChildPerms(menus, "0");
 		return R.ok(menuService.buildRouters(menus));
 	}
+
     @GetMapping("/login/config")
     public R<?> getLoginConfig() {
-        SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
         LoginConfig loginConfig = new LoginConfig();
         loginConfig.getCaptcha().setEnabled(false);
         loginConfig.setThirds(List.of());
+
+        SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
         if (Objects.nonNull(securityConfig)) {
-            loginConfig.getCaptcha().setEnabled(YesOrNo.isYes(securityConfig.getCaptchaEnable()));
+            LoginSecurity loginSecurity = loginSecurityConfigType.getConfig(securityConfig.getConfigs());
+            loginConfig.getCaptcha().setEnabled(YesOrNo.isYes(loginSecurity.getCaptchaEnable()));
             if (loginConfig.getCaptcha().isEnabled()) {
-                loginConfig.getCaptcha().setType(securityConfig.getCaptchaType());
-                loginConfig.getCaptcha().setExpires(Objects.requireNonNullElse(securityConfig.getCaptchaExpires(), 0));
-                loginConfig.getCaptcha().setDuration(Objects.requireNonNullElse(securityConfig.getCaptchaDuration(), 0));
+                loginConfig.getCaptcha().setType(loginSecurity.getCaptchaType());
+                loginConfig.getCaptcha().setExpires(Objects.requireNonNullElse(loginSecurity.getCaptchaExpires(), 0));
+                loginConfig.getCaptcha().setDuration(Objects.requireNonNullElse(loginSecurity.getCaptchaDuration(), 0));
             }
-            if (Objects.nonNull(securityConfig.getLoginTypeConfigIds())) {
-                List<LoginConfig.ThirdLogin> thirdLogins = securityConfig.getLoginTypeConfigIds().stream().map(configId -> {
+            if (Objects.nonNull(loginSecurity.getLoginTypeConfigIds())) {
+                List<LoginConfig.ThirdLogin> thirdLogins = loginSecurity.getLoginTypeConfigIds().stream().map(configId -> {
                     SysLoginConfig config = this.loginConfigService.getLoginConfig(configId);
                     LoginConfig.ThirdLogin thirdLogin = new LoginConfig.ThirdLogin();
                     thirdLogin.setType(config.getType());

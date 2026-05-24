@@ -37,7 +37,6 @@ import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.service.*;
-import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -188,11 +187,13 @@ public class ArticleContentType implements IContentType {
     public void recover(BCmsContent backupContent) {
         this.contentService.dao().recover(backupContent);
 
-        if (!YesOrNo.isYes(backupContent.getLinkFlag()) && !ContentCopyType.isMapping(backupContent.getCopyType())) {
+        if (!ContentCopyType.isMapping(backupContent.getCopyType())) {
             BCmsArticleDetail backupArticle = this.articleService.dao().getOneBackup(new LambdaQueryWrapper<BCmsArticleDetail>()
                     .eq(BCmsArticleDetail::getContentId, backupContent.getContentId())
                     .eq(BCmsArticleDetail::getBackupRemark, DBConstants.BACKUP_REMARK_DELETE));
-            this.articleService.dao().recover(backupArticle);
+            if (Objects.nonNull(backupArticle)) {
+                this.articleService.dao().recover(backupArticle);
+            }
         }
     }
 

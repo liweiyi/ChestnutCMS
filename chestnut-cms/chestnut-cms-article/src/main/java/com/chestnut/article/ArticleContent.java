@@ -17,15 +17,20 @@ package com.chestnut.article;
 
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.properties.AutoArticleLogo;
+import com.chestnut.article.properties.AutoArticleLogoMinSize;
 import com.chestnut.article.service.IArticleService;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.HtmlUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.image.ImageUtils;
 import com.chestnut.contentcore.core.AbstractContent;
+import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.CmsResource;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.service.IResourceService;
+import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.ResourceUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.extern.slf4j.Slf4j;
@@ -57,10 +62,11 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 					this.getOperatorUName());
 			articleDetail.setContentHtml(contentHtml);
 		}
-		// 正文首图作为logo
+		// 正文首个尺寸岛屿20的图作为logo
 		if (StringUtils.isEmpty(this.getContentEntity().getImages())
 				&& AutoArticleLogo.getValue(this.getSite().getConfigProps())) {
-			String firstImage = this.getFirstImage(articleDetail.getContentHtml());
+			int minSize = AutoArticleLogoMinSize.getValue(this.getSite().getConfigProps());
+			String firstImage = this.getFirstImage(articleDetail.getContentHtml(), minSize);
 			if (Objects.nonNull(firstImage)) {
 				this.getContentEntity().setImages(List.of(firstImage));
 			}
@@ -86,7 +92,8 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 		// 正文首图作为logo
 		if (StringUtils.isEmpty(this.getContentEntity().getImages())
 				&& AutoArticleLogo.getValue(this.getSite().getConfigProps())) {
-			String firstImage = this.getFirstImage(articleDetail.getContentHtml());
+			int minSize = AutoArticleLogoMinSize.getValue(this.getSite().getConfigProps());
+			String firstImage = this.getFirstImage(articleDetail.getContentHtml(), minSize);
 			if (Objects.nonNull(firstImage)) {
 				this.getContentEntity().setImages(List.of(firstImage));
 			}
@@ -97,16 +104,26 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 	/**
 	 * 获取文章正文第一张图片地址
 	 */
-	private String getFirstImage(String contentHtml) {
+	private String getFirstImage(String contentHtml, int minSize) {
 		if (StringUtils.isEmpty(contentHtml)) {
 			return contentHtml;
 		}
 		Matcher matcher = ResourceUtils.ImgHtmlTagPattern.matcher(contentHtml);
-		if (matcher.find()) {
+		int lastEndIndex = 0;
+		while (matcher.find(lastEndIndex)) {
 			String imgSrc = matcher.group(1);
-			if (StringUtils.isNotEmpty(imgSrc)) {
+			if (InternalUrlUtils.isInternalUrl(imgSrc)) {
+				InternalURL iurl = InternalUrlUtils.parseInternalUrl(imgSrc);
+				if (Objects.nonNull(iurl) && Objects.nonNull(iurl.getId())) {
+					CmsResource res = this.getResourceService().getById(iurl.getId());
+					if (res.getWidth() >= minSize && res.getHeight() >= minSize) {
+						return imgSrc;
+					}
+				}
+			} else if (StringUtils.isNotEmpty(imgSrc)) {
 				return imgSrc;
 			}
+			lastEndIndex = matcher.end();
 		}
 		return null;
 	}

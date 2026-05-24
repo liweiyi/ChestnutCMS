@@ -75,11 +75,13 @@ public class PublishTaskReceiver implements StreamListener<String, MapRecord<Str
                     logger.warn("Staticize type not found: {}", type);
                 }
             }
-        } catch(Exception e) {
-            logger.error("Publish task processing failed: stream={}, messageId={}, type={}, id={}", 
-                    stream, message.getId().getValue(), 
+        } catch(Throwable t) {
+            // 放宽到 Throwable：即使遭遇 Error（如 StackOverflowError / OutOfMemoryError），
+            // 也要保证 finally 中的 XACK + XDEL 执行，避免毒消息长留 stream
+            logger.error("Publish task processing failed: stream={}, messageId={}, type={}, id={}",
+                    stream, message.getId().getValue(),
                     MapUtils.getString(message.getValue(), "type"),
-                    message.getValue().get("id"), e);
+                    message.getValue().get("id"), t);
         } finally {
             try {
                 redisTemplate.opsForStream().acknowledge(

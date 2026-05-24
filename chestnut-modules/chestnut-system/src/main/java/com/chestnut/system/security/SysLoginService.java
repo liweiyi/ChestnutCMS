@@ -16,24 +16,19 @@
 package com.chestnut.system.security;
 
 import cn.dev33.satoken.session.SaSession;
-import com.chestnut.common.captcha.CaptchaData;
-import com.chestnut.common.captcha.CaptchaService;
-import com.chestnut.common.captcha.ICaptchaType;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.enums.DeviceType;
-import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.LoginBody;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
+
 import com.chestnut.system.fixed.dict.UserStatus;
-import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.service.*;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.RequiredArgsConstructor;
@@ -64,8 +59,6 @@ public class SysLoginService {
 	
 	private final ISysPermissionService permissionService;
 
-	private final CaptchaService captchaService;
-
 	/**
 	 * 登录验证
 	 * 
@@ -74,7 +67,7 @@ public class SysLoginService {
 	 */
 	public String login(LoginBody loginBody) {
 		// 验证码校验
-        validateCaptcha(loginBody.getUsername(), loginBody.getCaptcha());
+		this.securityConfigService.validateLoginCaptcha(loginBody);
 		// 查找用户
 		SysUser user = this.userService.lambdaQuery().eq(SysUser::getUserName, loginBody.getUsername()).one();
 		if (Objects.isNull(user)) {
@@ -139,27 +132,5 @@ public class SysLoginService {
 		Set<String> permissions = this.permissionService.getUserPermissions(user.getUserId(), null);
 		loginUser.setPermissions(permissions.stream().toList());
 		return loginUser;
-	}
-
-	/**
-	 * 校验验证码
-	 * 
-	 * @param username 用户名
-	 * @param captcha 验证码
-	 */
-	public void validateCaptcha(String username, CaptchaData captcha) {
-        SysSecurityConfig securityConfig = securityConfigService.getSecurityConfig();
-        if (Objects.isNull(securityConfig) || !YesOrNo.isYes(securityConfig.getCaptchaEnable())) {
-            return;
-        }
-        Assert.notNull(captcha, SysErrorCode.CAPTCHA_ERR::exception);
-
-		ICaptchaType captchaType = captchaService.getCaptchaType(securityConfig.getCaptchaType());
-		boolean validated = captchaType.isTokenValidated(captcha);
-		if (!validated) {
-			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, username,
-					LoginLogType.LOGIN, SuccessOrFail.FAIL, SysErrorCode.CAPTCHA_ERR.name());
-			throw SysErrorCode.CAPTCHA_ERR.exception();
-		}
 	}
 }

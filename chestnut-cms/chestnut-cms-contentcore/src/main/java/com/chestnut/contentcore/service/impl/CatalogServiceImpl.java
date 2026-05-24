@@ -94,6 +94,23 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 	}
 
 	@Override
+	public Map<Long, CmsCatalog> getCatalogs(Collection<Long> catalogIds) {
+		if (catalogIds == null || catalogIds.isEmpty()) {
+			return Map.of();
+		}
+		List<Long> ids = catalogIds.stream().filter(IdUtils::validate).distinct().toList();
+		Map<Long, CmsCatalog> catalogs = new HashMap<>(this.catalogCache.getCachesById(ids));
+		List<Long> missedIds = ids.stream().filter(id -> !catalogs.containsKey(id)).toList();
+		if (!missedIds.isEmpty()) {
+			this.listByIds(missedIds).forEach(catalog -> {
+				this.catalogCache.setCacheById(catalog.getCatalogId(), catalog);
+				catalogs.put(catalog.getCatalogId(), catalog);
+			});
+		}
+		return catalogs;
+	}
+
+	@Override
 	public CmsCatalog getCatalogByAlias(Long siteId, String catalogAlias) {
 		if (!IdUtils.validate(siteId) || StringUtils.isBlank(catalogAlias)) {
 			return null;

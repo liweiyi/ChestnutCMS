@@ -16,33 +16,35 @@
 package com.chestnut.system.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.chestnut.common.captcha.CaptchaService;
+import com.chestnut.common.captcha.ICaptchaType;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.dto.CreateSecurityConfigRequest;
+import com.chestnut.system.domain.dto.LoginBody;
 import com.chestnut.system.domain.dto.UpdateSecurityConfigRequest;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
-import com.chestnut.system.fixed.dict.PasswordRetryStrategy;
-import com.chestnut.system.fixed.dict.PasswordRule;
-import com.chestnut.system.fixed.dict.PasswordSensitive;
+import com.chestnut.system.fixed.dict.LoginLogType;
+import com.chestnut.system.fixed.dict.SuccessOrFail;
+import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.mapper.SysSecurityConfigMapper;
+import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.ISecurityUser;
+import com.chestnut.system.security.config.*;
 import com.chestnut.system.service.ISecurityConfigService;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.chestnut.system.service.ISysLogininforService;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -52,15 +54,56 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 
 	private final static String CACHE_KEY_CONFIG = "sys:security:config";
 
-	private final static String CACHE_KEY_PWD_RETRY = "sys:security:pwdretry:";
-
 	private final RedisCache redisCache;
+
+	private final List<ISecurityConfigType<?>> securityConfigTypes;
+
+	private final PasswordSecurityConfigType passwordSecurityConfigType;
+
+	private final LoginSecurityConfigType loginSecurityConfigType;
+
+	private final CaptchaService captchaService;
+
+	private final ISysLogininforService logininfoService;
 	
 	@Override
 	public SysSecurityConfig getSecurityConfig() {
-		return this.redisCache.getCacheObject(CACHE_KEY_CONFIG, SysSecurityConfig.class, () ->
-			lambdaQuery().eq(SysSecurityConfig::getStatus, EnableOrDisable.ENABLE).one()
+		SysSecurityConfig config = this.redisCache.getCacheObject(CACHE_KEY_CONFIG, SysSecurityConfig.class, () -> {
+				return lambdaQuery().eq(SysSecurityConfig::getStatus, EnableOrDisable.ENABLE).one();
+			}
 		);
+		this.fixeOldVersion(config);
+		return config;
+	}
+
+	@Override
+	public void fixeOldVersion(SysSecurityConfig config) {
+		if (Objects.nonNull(config) && config.getConfigs().isEmpty()) {
+			// 兼容历史数据
+			boolean update = false;
+			for (ISecurityConfigType<?> sct : securityConfigTypes) {
+				if (!config.getConfigs().has(sct.getType())) {
+					sct.fixedOldVersion(config);
+					update = true;
+				}
+			}
+			if (update) {
+				this.updateById(config);
+			}
+		}
+	}
+
+	@Override
+	public Map<String, Object> getSecurityConfigs(List<String> configTypes) {
+		Map<String, Object> configs = new HashMap<>();
+		SysSecurityConfig securityConfig = this.getSecurityConfig();
+		this.securityConfigTypes.forEach(ict -> {
+			if (configTypes.contains(ict.getType())) {
+				Object config = ict.getConfig(securityConfig.getConfigs());
+				configs.put(ict.getType(), config);
+			}
+		});
+		return configs;
 	}
 
 	@Override
@@ -81,14 +124,13 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 		BeanUtils.copyProperties(req, dbConfig);
 		dbConfig.updateBy(req.getOperator().getUsername());
 		this.updateById(dbConfig);
-		// 清除安全配置缓存，实际使用的时候重新缓存
-		this.redisCache.deleteObject(CACHE_KEY_CONFIG);
+		clearConfigCache();
 	}
 
 	@Override
 	public void deleteConfigs(List<Long> configIds) {
 		this.removeByIds(configIds);
-		this.redisCache.deleteObject(CACHE_KEY_CONFIG);
+		clearConfigCache();
 	}
 
 	@Override
@@ -104,107 +146,80 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 		}
 		config.setStatus(config.isEnable() ? EnableOrDisable.DISABLE : EnableOrDisable.ENABLE);
 		this.updateById(config);
-		// 清除安全配置缓存，实际使用的时候重新缓存
-		redisCache.deleteObject(CACHE_KEY_CONFIG);
+		clearConfigCache();
 	}
 
 	@Override
 	public void validPassword(ISecurityUser user, String password) {
 		SysSecurityConfig securityConfig = this.getSecurityConfig();
-		if (Objects.nonNull(securityConfig) && securityConfig.isEnable()) {
-			// 最大长度
-			boolean valid = securityConfig.getPasswordLenMax() > 0
-					&& password.length() <= securityConfig.getPasswordLenMax();
-			Assert.isTrue(valid, SysErrorCode.INSECURE_PASSWORD::exception);
-			// 最小长度
-			valid = securityConfig.getPasswordLenMin() > 0 && password.length() >= securityConfig.getPasswordLenMin();
-			Assert.isTrue(valid, SysErrorCode.INSECURE_PASSWORD::exception);
-			// 校验规则检查
-			valid = PasswordRule.match(securityConfig.getPasswordRule(), password);
-			Assert.isTrue(valid, SysErrorCode.INSECURE_PASSWORD::exception);
-			// 敏感字符检查
-			valid = PasswordSensitive.check(securityConfig.getPasswordSensitive(), password, user);
-			Assert.isTrue(valid, SysErrorCode.INSECURE_PASSWORD::exception);
-			// 弱密码检查
-			String[] weakPasswords = securityConfig.getWeakPasswords().split("\n");
-			valid = StringUtils.isEmpty(weakPasswords) || !StringUtils.equalsAny(password, weakPasswords);
-			Assert.isTrue(valid, SysErrorCode.INSECURE_PASSWORD::exception);
+		if (Objects.isNull(securityConfig)) {
+			return;
 		}
+		PasswordSecurity passwordSecurity = passwordSecurityConfigType.getConfig(securityConfig.getConfigs());
+		passwordSecurity.validPassword(user, password);
 	}
 
 	@Override
 	public void forceModifyPwdAfterResetPwd(ISecurityUser user) {
 		SysSecurityConfig securityConfig = this.getSecurityConfig();
-		if (Objects.nonNull(securityConfig) && securityConfig.isEnable()
-				&& securityConfig.checkForceModifyPwdAfterReset()) {
-			user.forceModifyPassword();
+		if (Objects.isNull(securityConfig)) {
+			return;
 		}
+		PasswordSecurity passwordSecurity = passwordSecurityConfigType.getConfig(securityConfig.getConfigs());
+		passwordSecurity.checkForceModifyPwdAfterReset(user);
 	}
 
 	@Override
 	public void forceModifyPwdAfterUserAdd(ISecurityUser user) {
 		SysSecurityConfig securityConfig = this.getSecurityConfig();
-		if (Objects.nonNull(securityConfig) && securityConfig.isEnable()
-				&& securityConfig.checkForceModifyPwdAfterAdd()) {
-			user.forceModifyPassword();
+		if (Objects.isNull(securityConfig)) {
+			return;
 		}
+		PasswordSecurity passwordSecurity = passwordSecurityConfigType.getConfig(securityConfig.getConfigs());
+		passwordSecurity.checkForceModifyPwdAfterAdd(user);
 	}
 
 	/**
 	 * 
 	 */
 	@Override
-	public boolean processLoginPasswordError(ISecurityUser user) {
-		SysSecurityConfig config = this.getSecurityConfig();
-		if (Objects.nonNull(config) && config.isEnable()) {
-			String cacheKey = user.getType() + "_" + user.getUserId();
-			// 缓存更新
-			LoginPwdRetry lpe = this.redisCache.getCacheMapValue(CACHE_KEY_PWD_RETRY, cacheKey);
-			if (Objects.isNull(lpe)) {
-				lpe = new LoginPwdRetry(cacheKey);
-			}
-			lpe.inc();
-			this.redisCache.setCacheMapValue(CACHE_KEY_PWD_RETRY, cacheKey, lpe);
-			// 执行策略
-			int passwordRetryLimit = config.getPasswordRetryLimit();
-			if (passwordRetryLimit > 0 && lpe.getNum() >= passwordRetryLimit) {
-				// 达到指定次数上限触发安全策略
-				if (PasswordRetryStrategy.DISABLE.equals(config.getPasswordRetryStrategy())) {
-					user.disableUser();
-				} else if (PasswordRetryStrategy.LOCK.equals(config.getPasswordRetryStrategy())) {
-					LocalDateTime lockEndTime = LocalDateTime.now().plusSeconds(config.getPasswordRetryLockSeconds());
-					user.lockUser(lockEndTime);
-				}
-				return false;
-			}
+	public void processLoginPasswordError(ISecurityUser user) {
+		SysSecurityConfig securityConfig = this.getSecurityConfig();
+		if (Objects.isNull(securityConfig)) {
+			return;
 		}
-		return true;
+		LoginSecurity loginSecurity = loginSecurityConfigType.getConfig(securityConfig.getConfigs());
+		loginSecurityConfigType.processLoginPasswordError(loginSecurity, user);
 	}
 
 	@Override
 	public void onLoginSuccess(ISecurityUser user) {
-		this.redisCache.deleteCacheMapValue(CACHE_KEY_PWD_RETRY, user.getType() + "_" + user.getUserId());
+		loginSecurityConfigType.onLoginSuccess(user);
 	}
 
-	@Getter
-	@Setter
-	@NoArgsConstructor
-	static class LoginPwdRetry {
-		private String uid;
-		private Integer num = 0;
-		private LocalDate date = LocalDate.now();
-
-		public LoginPwdRetry(String uid) {
-			this.uid = uid;
+	public void validateLoginCaptcha(LoginBody loginBody) {
+		SysSecurityConfig securityConfig = this.getSecurityConfig();
+		if (Objects.isNull(securityConfig) || !securityConfig.isEnable()) {
+			return;
 		}
-
-		public void inc() {
-			LocalDate now = LocalDate.now();
-			if (!now.isEqual(this.date)) {
-				this.num = 0;
-			}
-			this.date = now;
-			this.num++;
+		LoginSecurity config = loginSecurityConfigType.getConfig(securityConfig.getConfigs());
+		if (Objects.nonNull(config) && !YesOrNo.isYes(config.getCaptchaEnable())) {
+			return;
 		}
+		Assert.notNull(loginBody.getCaptcha(), SysErrorCode.CAPTCHA_ERR::exception);
+
+		ICaptchaType captchaType = captchaService.getCaptchaType(config.getCaptchaType());
+		boolean validated = captchaType.isTokenValidated(loginBody.getCaptcha());
+		if (!validated) {
+			this.logininfoService.recordLogininfor(AdminUserType.TYPE, null, loginBody.getUsername(),
+					LoginLogType.LOGIN, SuccessOrFail.FAIL, SysErrorCode.CAPTCHA_ERR.name());
+			throw SysErrorCode.CAPTCHA_ERR.exception();
+		}
+	}
+
+	private void clearConfigCache() {
+		this.redisCache.deleteObject(CACHE_KEY_CONFIG);
+		this.redisCache.setCacheObject(ISecurityConfigService.CACHE_KEY_CONFIG_LAST_MODIFIED,
+				System.currentTimeMillis());
 	}
 }

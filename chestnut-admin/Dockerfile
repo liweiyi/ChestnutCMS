@@ -23,6 +23,8 @@ COPY --from=builder /home/app/snapshot-dependencies/ ./
 COPY --from=builder /home/app/application ./   
 
 ENV TZ="Asia/Shanghai" \
+    LANG="C.UTF-8" \
+    LC_ALL="C.UTF-8" \
     SERVER_PORT=8090 \
     JVM_OPTS="-Xms2g -Xmx2g -Xmn512m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m" \
     JAVA_OPTS=""

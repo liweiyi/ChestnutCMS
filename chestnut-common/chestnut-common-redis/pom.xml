@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>chestnut-common</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.11</version>
+		<version>1.5.12</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -23,6 +23,12 @@
 		<dependency>
 			<groupId>com.chestnut</groupId>
 			<artifactId>chestnut-common-core</artifactId>
+		</dependency>
+
+		<!-- 分布式锁（防缓存击穿） -->
+		<dependency>
+			<groupId>org.redisson</groupId>
+			<artifactId>redisson-spring-boot-starter</artifactId>
 		</dependency>
 	</dependencies>
 

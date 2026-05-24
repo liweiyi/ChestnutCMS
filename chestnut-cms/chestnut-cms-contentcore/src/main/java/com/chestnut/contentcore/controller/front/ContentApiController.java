@@ -24,6 +24,10 @@ import com.chestnut.common.security.web.BaseRestController;
 
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.TimeUtils;
+import com.chestnut.contentcore.core.IContent;
+import com.chestnut.contentcore.core.IContentType;
+import com.chestnut.contentcore.core.ICoreDataHandler;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.vo.ContentApiVO;
@@ -32,15 +36,16 @@ import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
+import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.impl.ContentDynamicDataService;
 import com.chestnut.contentcore.template.tag.CmsContentTag;
 import com.chestnut.contentcore.util.CatalogUtils;
+import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
+import com.chestnut.system.validator.LongId;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +67,14 @@ public class ContentApiController extends BaseRestController {
 
 	private final ContentDynamicDataService contentDynamicDataService;
 
+	private final ISiteService siteService;
+
+	private final ICatalogService catalogService;
+
+	private final IContentService contentService;
+
+	private final List<ICoreDataHandler>  coreDataHandlers;
+
 	/**
 	 * 内容动态数据，评论数、点赞数、收藏数、浏览数
 	 */
@@ -78,10 +91,6 @@ public class ContentApiController extends BaseRestController {
 		List<ContentDynamicDataVO> data = this.contentDynamicDataService.getContentDynamicDataList(contentIds);
 		return R.ok(data);
 	}
-
-	private final ICatalogService catalogService;
-
-	private final IContentService contentService;
 
 	@XComment("{API.DOC.CMS.CONTENT_API.GET_LIST}")
 	@GetMapping("/list")
@@ -142,14 +151,33 @@ public class ContentApiController extends BaseRestController {
 		}
 		List<ContentApiVO> list = new ArrayList<>();
 		pageResult.getRecords().forEach(c -> {
-			ContentApiVO dto = ContentApiVO.newInstance(c);
+			ContentApiVO vo = ContentApiVO.newInstance(c);
+			vo.setPublishDate(TimeUtils.epochSecond(c.getPublishDate()) * 1000);
 			CmsCatalog catalog = this.catalogService.getCatalog(c.getCatalogId());
-			dto.setCatalogName(catalog.getName());
-			dto.setCatalogLink(catalogService.getCatalogLink(catalog, 1, publishPipeCode, preview));
-			dto.setLink(this.contentService.getContentLink(c, 1, publishPipeCode, preview));
-			dto.setLogoSrc(InternalUrlUtils.getActualUrl(c.getLogo(), publishPipeCode, preview));
-			list.add(dto);
+			vo.setCatalogName(catalog.getName());
+			vo.setCatalogLink(catalogService.getCatalogLink(catalog, 1, publishPipeCode, preview));
+			vo.setLink(this.contentService.getContentLink(c, 1, publishPipeCode, preview));
+			if (StringUtils.isNotEmpty(vo.getImages())) {
+				vo.setImagesSrc(vo.getImages().stream().map(image -> {
+					return InternalUrlUtils.getActualUrl(image, publishPipeCode, preview);
+				}).toList());
+			}
+			list.add(vo);
 		});
 		return R.ok(list);
+	}
+
+	@GetMapping("/detail/{contentId}")
+	public R<?> getContentDetail(@PathVariable @LongId Long contentId, HttpServletRequest request) {
+		CmsContent content = this.contentService.dao().getById(contentId);
+		if (Objects.isNull(content)) {
+			return R.fail("Content not found.");
+		}
+		for (ICoreDataHandler coreDataHandler : coreDataHandlers) {
+			coreDataHandler.beforeGetContentDetailApi(content);
+		}
+		IContentType cType = ContentCoreUtils.getContentType(content.getContentType());
+		IContent<?> iContent = cType.loadContent(content);
+		return R.ok();
 	}
 }

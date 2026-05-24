@@ -19,6 +19,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 列表分页参数配置
  *
@@ -34,6 +37,32 @@ public class SecurityProperties {
      * Argon2配置
      */
     private ArgonConfig argon2 = new ArgonConfig();
+
+    private CorsConfig cors = new CorsConfig();
+
+    @Getter
+    @Setter
+    public static class CorsConfig {
+        /**
+         * 是否允许携带凭证（Cookie / Authorization）。
+         */
+        private boolean allowCredentials = true;
+
+        private List<String> allowedHeaders = List.of("*");
+
+        private List<String> allowedMethods = List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD");
+
+        private List<String> allowedOrigins = List.of();
+
+        private List<String> allowedOriginsPattern = List.of("*");
+
+        /** 预检缓存秒数 */
+        private long maxAge = 1800L;
+
+        public boolean hasAllowedOrigin() {
+            return !allowedOrigins.isEmpty() || !allowedOriginsPattern.isEmpty();
+        }
+    }
 
     @Getter
     @Setter

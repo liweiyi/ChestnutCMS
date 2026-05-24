@@ -22,6 +22,11 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -74,6 +79,27 @@ public class CatalogMonitoredCache implements IMonitoredCache<CmsCatalog> {
 
     public CmsCatalog getCacheById(Long catalogId, Supplier<CmsCatalog> supplier) {
         return redisCache.getCacheObject(cacheKeyById(catalogId), CmsCatalog.class, supplier);
+    }
+
+    public Map<Long, CmsCatalog> getCachesById(Collection<Long> catalogIds) {
+        if (catalogIds == null || catalogIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> ids = catalogIds.stream().filter(Objects::nonNull).distinct().toList();
+        List<String> keys = ids.stream().map(this::cacheKeyById).toList();
+        List<CmsCatalog> catalogs = redisCache.getCacheObjects(keys, CmsCatalog.class);
+        Map<Long, CmsCatalog> result = new LinkedHashMap<>(catalogs.size());
+        for (int i = 0; i < catalogs.size(); i++) {
+            CmsCatalog catalog = catalogs.get(i);
+            if (catalog != null) {
+                result.put(ids.get(i), catalog);
+            }
+        }
+        return result;
+    }
+
+    public void setCacheById(Long catalogId, CmsCatalog catalog) {
+        this.redisCache.setCacheObject(cacheKeyById(catalogId), catalog);
     }
 
     public CmsCatalog getCacheByAlias(Long siteId, String alias) {

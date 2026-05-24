@@ -136,6 +136,7 @@ public class MemberContributeApiController extends BaseRestController implements
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
     @DeleteMapping
+	@PostMapping
 	@Deprecated(since = "1.5.7", forRemoval = true)
 	public R<Void> deleteContribute2(@RequestParam("cid") @LongId @XComment("{API.DOC.CMS.CMS_MEMBER.CONTENT_ID}") Long contentId) {
 		return deleteContribute(contentId);

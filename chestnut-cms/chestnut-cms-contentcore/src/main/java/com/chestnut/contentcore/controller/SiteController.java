@@ -20,7 +20,6 @@ import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
@@ -32,6 +31,9 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
+import com.chestnut.contentcore.core.impl.ResourceType_Image;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.config.AllowUploadFileType;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 
 
@@ -53,6 +55,7 @@ import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
@@ -140,7 +143,7 @@ public class SiteController extends CmsRestController {
     @Priv(type = AdminUserType.TYPE, value = "Site:View:${#siteId}")
     @Log(title = "切换站点", businessType = BusinessType.UPDATE)
     @PostMapping("/setCurrentSite/{siteId}")
-    public R<Map<String, Object>> setCurrentSite(@PathVariable("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
+    public R<Map<String, Object>> setCurrentSite(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
         CmsSite site = this.siteService.getSite(siteId);
         return R.ok(Map.of("siteId", site.getSiteId(), "siteName", site.getName()));
     }
@@ -249,7 +252,7 @@ public class SiteController extends CmsRestController {
     @Priv(type = AdminUserType.TYPE, value = "Site:Delete:${#siteId}")
     @Log(title = "删除站点", businessType = BusinessType.DELETE)
     @PostMapping("/delete/{siteId}")
-    public R<String> remove(@PathVariable("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) throws IOException {
+    public R<String> remove(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) throws IOException {
         CmsSite site = siteService.getById(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
@@ -309,11 +312,10 @@ public class SiteController extends CmsRestController {
      * @param configs 扩展配置数据
      */
     @XComment("{API.DOC.CMS.SITE.SAVE_EXTENDS}")
-    @XssIgnore
     @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
     @Log(title = "站点扩展", businessType = BusinessType.UPDATE, isSaveRequestData = false)
     @PostMapping("/extends/{siteId}")
-    public R<Void> saveSiteExtends(@PathVariable("siteId") @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId, @RequestBody Map<String, String> configs) {
+    public R<Void> saveSiteExtends(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId, @RequestBody Map<String, String> configs) {
         CmsSite site = this.siteService.getSite(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
@@ -390,13 +392,16 @@ public class SiteController extends CmsRestController {
             Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
             String dir = SiteUtils.getSiteResourceRoot(site.getPath());
-            String suffix = FileExUtils.getExtension(Objects.requireNonNull(multipartFile.getOriginalFilename()));
-            String path = "watermaker" + StringUtils.DOT + suffix;
-            File file = new File(dir + path);
+            String ext = FileExUtils.getExtension(Objects.requireNonNull(multipartFile.getOriginalFilename()));
+            if (ResourceType_Image.isImageExt(ext)) {
+                throw ContentCoreErrorCode.UNSUPPORTED_FILE_TYPE.exception(ext);
+            }
+            String filename = "watermaker" + StringUtils.DOT + ext;
+            File file = new File(dir + filename);
             FileExUtils.mkdirs(file.getParentFile().getAbsolutePath());
             FileUtils.writeByteArrayToFile(file, multipartFile.getBytes());
-            String src = SiteUtils.getResourcePreviewPrefix(site) + path;
-            return R.ok(Map.of("path", path, "src", src));
+            String src = SiteUtils.getResourcePreviewPrefix(site) + filename;
+            return R.ok(Map.of("path", filename, "src", src));
         } catch (Exception e) {
             return R.fail(e.getMessage());
         }

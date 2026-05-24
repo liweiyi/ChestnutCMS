@@ -1,7 +1,7 @@
 <template>
   <div class="app-container catalog-container">
     <cc-spliter storage-key="cms-catalog">
-      <cc-spliter-column width="15%" style="padding-right: 10px;">
+      <cc-spliter-column width="15%">
         <cms-catalog-tree 
           ref="catalogTreeRef"
           :new-btn="true"    

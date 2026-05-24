@@ -45,7 +45,7 @@ router.beforeEach((to, from, next) => {
         }).catch(err => {
           useUserStore().logOut().then(() => {
             ElMessage.error(err)
-            next({ path: `${import.meta.env.VITE_APP_PATH}index` })
+            next({ path: '/index' })
           })
         })
       } else {

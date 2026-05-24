@@ -469,6 +469,12 @@ const repeatCheckOptions = [
   { label: proxy.$t("CMS.Site.Extend.TitlteRepeatCheckCatalog"), value: "2" }
 ]
 
+const contentPrivStrategyOptions = [
+  { label: '', value: "NONE" },
+  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyValid"), value: "VALID" },
+  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyIgnore"), value: "IGNORE" }
+]
+
 const storageTypes = [
   { id: "Local", name: proxy.$t("CMS.Site.Extend.Local") },
   { id: "AliyunOSS", name: proxy.$t("CMS.Site.Extend.AliyunOSS") },
@@ -576,10 +582,13 @@ const handleRefreshBdTongjiToken = () => {
 }
 .site-extend-container .el-input, 
 .site-extend-container .el-input-number  {
-  width: 301.5px;
+  width: 360px;
 }
 .site-extend-container .el-upload-list {
-  width: 300px;
+  width: 360px;
+}
+.site-extend-container .el-select {
+  width: 360px;
 }
 .watermarker_position {
   width: 188px;

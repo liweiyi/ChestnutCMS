@@ -103,6 +103,10 @@ const options = reactive({
 })
 const resizeHandler = ref(null)
 
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", resizeHandler.value)
+})
+
 /** 编辑头像 */
 function editCropper() {
   open.value = true

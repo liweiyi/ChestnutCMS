@@ -14,7 +14,7 @@
       </template>
       <template #append>
         <img v-if="codeImage!=''" :src="codeImage" @click="reloadCaptcha" class="captcha-img" :style="{ width: `${imgWidth}`, height: `${imgHeight}` }" />
-        <el-link v-else icon="Refresh" :underline="false" @click="reloadCaptcha" :style="{ width: `${imgWidth}` }">刷新</el-link>
+        <el-link v-else icon="Refresh" underline="never" @click="reloadCaptcha" :style="{ width: `${imgWidth}` }">刷新</el-link>
       </template>
     </el-input>
   </div>

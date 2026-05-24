@@ -38,7 +38,7 @@ import org.hibernate.validator.constraints.Length;
 @XComment("{API.DOC.SYS.DEPT.CREATE_DEPT_REQ}")
 public class CreateDeptRequest extends BaseDTO {
 
-    @LongId
+    @NotNull
     @XComment("{API.DOC.SYS.DEPT.PARENT_ID}")
     private Long parentId;
 

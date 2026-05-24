@@ -10,7 +10,7 @@ export function getFileConfig() {
 export function saveFileConfig(data) {
   return request({
     url: "/ccfile/config",
-    method: "put",
+    method: "post",
     data: data
   });
 }

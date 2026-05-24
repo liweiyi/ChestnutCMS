@@ -166,6 +166,12 @@ const props = defineProps({
   }
 });
 
+const contentPrivStrategyOptions = [
+  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyExtendSite"), value: "NONE" },
+  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyValid"), value: "VALID" },
+  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyIgnore"), value: "IGNORE" }
+]
+
 const loading = ref(false);
 const siteId = ref(undefined);
 const catalogId = ref(props.cid);

@@ -101,6 +101,7 @@ public class SysUserOnlineController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorOnlineForceLogout)
 	@Log(title = "在线用户", businessType = BusinessType.FORCE)
 	@DeleteMapping("/{tokenId}")
+	@PostMapping("/{tokenId}")
 	public R<Void> forceLogout(@PathVariable @XComment("{API.DOC.SYS.USER_ONLINE.TOKEN_ID}") String tokenId) {
 		StpAdminUtil.logoutByTokenValue(tokenId);
 		return R.ok();

@@ -130,7 +130,7 @@
 import CmsProgress from '@/views/components/Progress';
 import { getUserPreference } from "@/api/system/user";
 import { getContentTypes } from "@/api/contentcore/catalog";
-import { getContentIndexList, deleteContentIndex, rebuildIndex } from "@/api/contentcore/search";
+import { checkSiteIndexExists, getContentIndexList, deleteContentIndex, rebuildIndex } from "@/api/contentcore/search";
 const { proxy } = getCurrentInstance();
 const { CMSContentStatus } = proxy.useDict('CMSContentStatus');
 
@@ -153,13 +153,21 @@ const queryParams = reactive({
 const openEditorW = ref(false);
 
 onMounted(() => {
+  checkSiteIndexExists().then(response => {
+    if (!response.data) {
+        proxy.$modal.confirm(proxy.$t('CMS.ESIndex.IndexNotFound')).then(() => {
+          handleRebuildIndex();
+        }).catch(() => { });
+    } else {
+      getList();
+    }
+  });
   getContentTypes().then(response => {
     contentTypeOptions.value = response.data;
   });
   getUserPreference('OpenContentEditorW').then(response => {
     openEditorW.value = response.data == 'Y'
   })
-  getList();
 });
 
 function getList () {

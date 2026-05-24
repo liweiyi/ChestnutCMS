@@ -287,7 +287,7 @@
               <el-checkbox v-model="upload.updateSupport">{{ $t('System.User.ImportUpdate') }}</el-checkbox>
             </div>
             <span>{{ $t('System.User.ImportFileTypes') }}</span>
-            <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">{{ $t('System.User.DownloadTemplate') }}</el-link>
+            <el-link type="primary" underline="never" style="font-size:12px;vertical-align: baseline;" @click="importTemplate">{{ $t('System.User.DownloadTemplate') }}</el-link>
           </div>
         </template>
       </el-upload>

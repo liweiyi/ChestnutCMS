@@ -38,6 +38,7 @@ const en = {
     Edit: 'Edit',
     Save: 'Save',
     Delete: 'Delete',
+    BatchDelete: 'Batch Delete',
     Remove: "Remove",
     Import: 'Import',
     Export: 'Export',
@@ -83,6 +84,7 @@ const en = {
     RepeatSubmit: 'The request is being processed,  please do not submit repeatedly.',
     ServerConnectFailed: 'Server connection failed.',
     ServerConnectTimeout: 'Server connection timeout.',
+    SecondaryVerification: 'Secondary Verification',
     ServerApiError: 'Server api error: {0}',
     Loading: 'Loading...',
     DownloadFailed: 'Download failed, please contact the administrator.',
@@ -96,6 +98,7 @@ const en = {
     Others: "Others",
     Unknown: "Unknown",
     Recover: "Recover",
+    InputPassword: "Input password",
     Unit: {
       Year: "yr",
       Month: "mo",
@@ -301,6 +304,7 @@ const en = {
       UploadAvatar: 'Click to upload avatar',
       SelectUser: "Select User",
       IsAllocatedRole: "Allocated",
+      LoginRedirectTip: "Login successful, redirecting...",
       Dialog: {
         Add: "Add User",
         Edit: "Edit User",
@@ -370,6 +374,7 @@ const en = {
       PageWidgetPriv: "Page Widget"
     },
     Menu: {
+      ID: "Menu ID",
       MenuName: "Menu Name",
       MenuType: "Menu Type",
       Icon: "Icon",
@@ -573,6 +578,8 @@ const en = {
       EditGenConfig: 'Edit Gen Config'
     },
     Security: {
+      Basic: "Basic Information",
+      Name: "Name",
       PasswordLength: "Password Length",
       PasswordRule: "Password Rule",
       PasswordExpireSeconds: "Password Expiration Seconds",
@@ -604,6 +611,13 @@ const en = {
       CaptchaType: "Captcha Type",
       CaptchaExpireSeconds: "Captcha Expire Seconds",
       CaptchaRetryDuration: "Captcha Retry Duration",
+      BizConfigCard: "Business Security Configuration",
+      SecondaryVerifications: "Secondary Verification APIs",
+      SecondaryVerificationsSearch: "Search by path",
+      SecondaryVerificationsPlaceholder: "Enter API path, e.g. /system/user/delete/**",
+      SecondaryVerificationPath: "API Path",
+      SecondaryVerificationsTip: "Supports Ant-style path patterns, e.g. /system/** or /api/user/delete/{id}. Each entry is an independent rule.",
+      BizVerifyExpireSeconds: "Expiration Seconds",
       Tab: {
         SecurityConfig: "Security Configuration",
         LoginConfig: "Login Configuration",
@@ -646,6 +660,14 @@ const en = {
         AccessKey: "Access Key",
         SecretKey: "Secret Key",
         Region: "Region",
+      },
+      Aliyun: {
+        AccessKey: "Access Key",
+        SecretKey: "Secret Key",
+      },
+      Tencent: {
+        SecretId: "Secret ID",
+        SecretKey: "Secret Key",
       },
     }
   },
@@ -1050,6 +1072,11 @@ const en = {
         CloudCardTitle: "Cloud Configuration",
         CdnCloudConfig: "CDN Cloud Configuration",
         AutoRefreshCDN: "Auto Refresh CDN",
+        ContentPrivStrategy: "Content Priv Strategy",
+        ContentPrivStrategyExtendCatalog: "Extend Catalog",
+        ContentPrivStrategyExtendSite: "Extend Site",
+        ContentPrivStrategyValid: "Valid",
+        ContentPrivStrategyIgnore: "Ignore",
       },
       Property: {
         QueryPlaceholder: "Input name/code",
@@ -1597,6 +1624,7 @@ const en = {
       OnlyTitle: "Only Match Title",
       IndexDetails: "Index Details",
       ProgressTitle: "Create index task",
+      IndexNotFound: "Site index not found, rebuild?",
     },
     CustomForm: {
       Name: "Name",
@@ -1876,6 +1904,10 @@ const en = {
     RestPwdSuccess: "Success, the new password is '{0}'.",
     AddTitle: "Add member",
     EditTitle: "Edit member",
+    AuthContentPriv: "Permission Config",
+    Permission: {
+      ContentPriv: "Content View Permission"
+    },
     LevelType: "Level Type",
     Level: {
       Type: "Type",
@@ -1895,6 +1927,28 @@ const en = {
     RuleTips: {
       UserName: "Must starts with letter and only letters, numbers and underline can be useds.",
       Member: "The username phonenumber and email cannot all be empty."
+    },
+    Selector: {
+      Title: "Select Member",
+      MemberList: "Member List",
+      SelectedMemberList: "Selected Members"
+    },
+    Role: {
+      RoleId: "Role ID",
+      RoleName: "Role Name",
+      RoleKey: "Role Key",
+      Sort: "Sort",
+      AddTitle: "Add Member Role",
+      EditTitle: "Edit Member Role",
+      UserSetting: "Member Setting",
+      AuthContentPriv: "Authorize",
+      ConfirmRemoveMember: "Confirm to cancel authorization?",
+      AddMember: "Add Member",
+      RemoveMember: "Remove Authorization",
+      Placeholder: {
+        RoleName: "Please input role name",
+        RoleKey: "Please input role key"
+      }
     }
   },
   MetaModel: {
@@ -2163,6 +2217,74 @@ const en = {
         BusinessKey: 'Please enter business key',
         Title: 'Please enter title'
       }
+    }
+  },
+  CmsContentPriv: {
+    Saving: 'Saving...',
+    Title: 'Content Privilege',
+    SelectMember: 'Select member',
+    ChangeMember: 'Change member',
+    CurrentMember: 'Current member',
+    NoMember: 'Please select a member first',
+    Tab: {
+      Site: 'Site Grants',
+      Catalog: 'Catalog Grants',
+      Content: 'Content Grants'
+    },
+    PrivType: 'Privilege Type',
+    PrivTypeSite: 'Site',
+    PrivTypeCatalog: 'Catalog',
+    PrivTypeContent: 'Content',
+    Target: 'Target (format: siteId:catalogId:contentId)',
+    GrantTime: 'Granted At',
+    GrantSite: 'Grant Site',
+    GrantCatalog: 'Grant Catalog',
+    GrantContent: 'Grant Content',
+    SelectSite: 'Select site',
+    SelectPrivType: 'Please select privilege type first',
+    ConfirmGrantCurrentSite: 'Grant the current site (privilege key: {0})?',
+    SelectCatalog: 'Select catalog',
+    SelectContent: 'Select content',
+    ConfirmRevoke: 'Are you sure to revoke this grant?',
+    RevokeSuccess: 'Revoked',
+    GrantSuccess: 'Granted'
+  },
+  Migration: {
+    WP: {
+      Add: 'Add WordPress Migration',
+      Edit: 'Edit WordPress Migration',
+      Execute: 'Execute',
+      Name: 'Task Name',
+      NamePlaceholder: 'Please enter task name',
+      DataSource: 'Datasource',
+      SelectDataSource: 'Select datasource',
+      TablePrefix: 'Table Prefix',
+      Site: 'Target Site',
+      SelectSite: 'Select target site',
+      MigrateMode: 'Migration Mode',
+      FullMode: 'Full Migration',
+      SpecifiedMode: 'Specified Catalog Migration',
+      DefaultPassword: 'Default Password',
+      CatalogMappings: 'Catalog Mappings',
+      AddMapping: 'Add Mapping',
+      WpCatalogId: 'WordPress Catalog ID',
+      TargetCatalog: 'Target Catalog',
+      LastStatus: 'Last Status',
+      LastExecuteTime: 'Last Execution Time',
+      Status0: 'Not Executed',
+      Status1: 'Success',
+      Status2: 'Failed',
+      Status3: 'Running',
+      NameRequired: 'Task name is required',
+      DataSourceRequired: 'Please select datasource',
+      SiteRequired: 'Please select target site',
+      MigrateModeRequired: 'Please select migration mode',
+      DefaultPasswordRequired: 'Default password is required',
+      MappingRequired: 'At least one catalog mapping is required',
+      ConfirmDelete: 'Delete WordPress migration task "{0}"?',
+      ConfirmExecute: 'Execute WordPress migration task "{0}"?',
+      ProgressTitle: 'WordPress Migration Progress',
+      ExecuteStarted: 'Task submitted. Task ID: {0}'
     }
   }
 }

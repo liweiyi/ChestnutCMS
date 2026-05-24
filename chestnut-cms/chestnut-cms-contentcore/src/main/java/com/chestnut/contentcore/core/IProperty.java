@@ -40,7 +40,7 @@ public interface IProperty {
 	 *
 	 */
 	enum UseType {
-		Site, Catalog
+		Site, Catalog, Content
 	}
 
 	/**

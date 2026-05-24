@@ -122,37 +122,48 @@ const columns = computed(() => {
   return result
 })
 
+// 根据容器宽度计算可用宽度（分隔线实际占用 = width + margin*2 = 8 + 5 + 5 = 18px）
+const DIVIDER_TOTAL_WIDTH = 18
+
+const getAvailableWidth = (containerWidth) => {
+  const dividerCount = columns.value.length - 1
+  return containerWidth - dividerCount * DIVIDER_TOTAL_WIDTH
+}
+
 // 初始化列宽度
 const initColumnWidths = () => {
   if (!containerRef.value || columns.value.length === 0) return
-  
+
+  const containerWidth = containerRef.value.offsetWidth
+  if (containerWidth === 0) return
+
+  const availableWidth = getAvailableWidth(containerWidth)
+
   // 尝试从 localStorage 读取保存的宽度
   const savedData = loadFromStorage()
   if (savedData) {
     // 检查分栏数是否匹配
     if (savedData.count === columns.value.length && savedData.widths?.length === columns.value.length) {
-      // 分栏数匹配，使用保存的宽度
-      columns.value.forEach((col, index) => {
-        columnWidths.value[col.uid] = savedData.widths[index]
-      })
-      return
-    } else {
-      // 分栏数不匹配，清除 localStorage 数据
-      clearStorage()
+      // 按比例缩放到当前容器宽度，而非直接使用保存的绝对像素值
+      const savedTotal = savedData.widths.reduce((sum, w) => sum + parseFloat(w), 0)
+      if (savedTotal > 0) {
+        columns.value.forEach((col, index) => {
+          const ratio = parseFloat(savedData.widths[index]) / savedTotal
+          const minWidth = parseFloat(col.minWidth || '50')
+          columnWidths.value[col.uid] = `${Math.max(availableWidth * ratio, minWidth)}px`
+        })
+        return
+      }
     }
+    // 分栏数不匹配或数据异常，清除 localStorage 数据
+    clearStorage()
   }
-  
-  const containerWidth = containerRef.value.offsetWidth
-  // 减去分隔线的宽度
-  const dividerCount = columns.value.length - 1
-  const dividerWidth = 8 // 分隔线宽度
-  const availableWidth = containerWidth - dividerCount * dividerWidth
-  
+
   // 计算固定宽度和剩余列
   let fixedWidth = 0
   let flexColumns = []
-  
-  columns.value.forEach((col, index) => {
+
+  columns.value.forEach((col) => {
     if (col.width) {
       if (col.width.endsWith('%')) {
         // 百分比宽度
@@ -169,7 +180,7 @@ const initColumnWidths = () => {
       flexColumns.push(col)
     }
   })
-  
+
   // 平均分配剩余宽度
   if (flexColumns.length > 0) {
     const flexWidth = (availableWidth - fixedWidth) / flexColumns.length
@@ -177,6 +188,30 @@ const initColumnWidths = () => {
       columnWidths.value[col.uid] = `${Math.max(flexWidth, 50)}px`
     })
   }
+}
+
+// 响应容器尺寸变化：按比例缩放当前列宽，不重新读取 localStorage
+const recalculateOnResize = () => {
+  if (!containerRef.value || columns.value.length === 0) return
+
+  const containerWidth = containerRef.value.offsetWidth
+  if (containerWidth === 0) return
+
+  const newAvailable = getAvailableWidth(containerWidth)
+
+  const currentWidths = columns.value.map(col => parseFloat(columnWidths.value[col.uid] || '0'))
+  const currentTotal = currentWidths.reduce((sum, w) => sum + w, 0)
+
+  if (currentTotal === 0) {
+    initColumnWidths()
+    return
+  }
+
+  columns.value.forEach((col, index) => {
+    const ratio = currentWidths[index] / currentTotal
+    const minWidth = parseFloat(col.minWidth || '50')
+    columnWidths.value[col.uid] = `${Math.max(newAvailable * ratio, minWidth)}px`
+  })
 }
 
 // 获取列样式
@@ -293,9 +328,9 @@ onMounted(() => {
   
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(() => {
-      // 仅当没有拖动时重新计算
+      // 仅当没有拖动时重新计算，按比例缩放而非重新读取 localStorage
       if (draggingIndex.value === -1) {
-        initColumnWidths()
+        recalculateOnResize()
       }
     })
     if (containerRef.value) {
@@ -337,7 +372,7 @@ defineExpose({
   flex-shrink: 0;
   width: 8px;
   height: 100%;
-  margin: 0 5px;
+  margin: 0 12px;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -147,6 +147,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", req.getMemberId()));
 
 		this.securityConfigService.validPassword(member, req.getPassword());
+		this.securityConfigService.forceModifyPwdAfterResetPwd(member);
 
 		member.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
 		member.setUpdateTime(LocalDateTime.now());

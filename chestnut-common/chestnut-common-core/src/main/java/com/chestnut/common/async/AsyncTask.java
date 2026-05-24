@@ -122,6 +122,11 @@ public abstract class AsyncTask implements Runnable {
 		this.taskId = taskId;
 	}
 
+	public AsyncTask(String taskId, Locale locale) {
+		this.taskId = taskId;
+		this.locale = locale;
+	}
+
 	@Override
 	public void run() {
 		try {

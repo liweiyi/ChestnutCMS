@@ -23,9 +23,9 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysMenu;
-import com.chestnut.system.domain.dto.CreateMenuRequest;
-import com.chestnut.system.domain.dto.UpdateMenuRequest;
+import com.chestnut.system.domain.dto.SaveMenuRequest;
 import com.chestnut.system.domain.vo.MetaVO;
 import com.chestnut.system.domain.vo.RouterVO;
 import com.chestnut.system.enums.MenuComponentType;
@@ -36,6 +36,8 @@ import com.chestnut.system.mapper.SysMenuMapper;
 import com.chestnut.system.service.ISysI18nDictService;
 import com.chestnut.system.service.ISysMenuService;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -55,6 +57,8 @@ import java.util.stream.Collectors;
 public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> implements ISysMenuService {
 
 	private final ISysI18nDictService i18nDictService;
+
+	private final RedissonClient redissonClient;
 
 	/**
 	 * 构建前端路由所需要的菜单
@@ -91,7 +95,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 				children.setQuery(menu.getQuery());
 				childrenList.add(children);
 				router.setChildren(childrenList);
-			} else if (menu.getParentId().intValue() == 0 && isInnerLink(menu)) {
+			} else if (isRootMenu(menu) && isInnerLink(menu)) {
 				router.setMeta(new MetaVO(menu.getMenuName(), menu.getIcon()));
 				router.setPath("/");
 				List<RouterVO> childrenList = new ArrayList<>();
@@ -111,19 +115,18 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 
 	@Override
 	public List<SysMenu> buildMenuTree(List<SysMenu> menus) {
-		List<SysMenu> returnList = new ArrayList<SysMenu>();
-		List<Long> tempList = new ArrayList<Long>();
+		List<SysMenu> returnList = new ArrayList<>();
+		List<String> tempList = new ArrayList<>();
 		for (SysMenu dept : menus) {
 			tempList.add(dept.getMenuId());
 		}
-		for (Iterator<SysMenu> iterator = menus.iterator(); iterator.hasNext();) {
-			SysMenu menu = (SysMenu) iterator.next();
-			// 如果是顶级节点, 遍历该父节点的所有子节点
-			if (!tempList.contains(menu.getParentId())) {
-				recursionFn(menus, menu);
-				returnList.add(menu);
-			}
-		}
+        for (SysMenu menu : menus) {
+            // 如果是顶级节点, 遍历该父节点的所有子节点
+            if (!tempList.contains(menu.getParentId())) {
+                recursionFn(menus, menu);
+                returnList.add(menu);
+            }
+        }
 		if (returnList.isEmpty()) {
 			returnList = menus;
 		}
@@ -131,18 +134,18 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	}
 
 	@Override
-	public List<TreeNode<Long>> buildMenuTreeSelect(List<SysMenu> menus) {
+	public List<TreeNode<String>> buildMenuTreeSelect(List<SysMenu> menus) {
 		List<SysMenu> menuTrees = buildMenuTree(menus);
 		return menuTrees.stream().map(this::buildTreeSelect).collect(Collectors.toList());
 	}
 
-	private TreeNode<Long> buildTreeSelect(SysMenu menu) {
-		TreeNode<Long> node = new TreeNode<Long>(menu.getMenuId(), menu.getParentId(), menu.getMenuName(), false);
+	private TreeNode<String> buildTreeSelect(SysMenu menu) {
+		TreeNode<String> node = new TreeNode<>(menu.getMenuId(), menu.getParentId(), menu.getMenuName(), false);
 		if (MenuType.Directory.value().equals(menu.getMenuType())) {
 			node.setDefaultExpanded(true);
 		}
         node.setProps(Map.of("type", menu.getMenuType()));
-		List<TreeNode<Long>> children = menu.getChildren().stream().map(this::buildTreeSelect)
+		List<TreeNode<String>> children = menu.getChildren().stream().map(this::buildTreeSelect)
 				.collect(Collectors.toList());
 		node.setChildren(children);
 		return node;
@@ -150,39 +153,52 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 
 	@Override
 	@Transactional(rollbackFor = Throwable.class)
-	public void insertMenu(CreateMenuRequest req) {
+	public void insertMenu(SaveMenuRequest req) {
 		boolean checkFrameUrl = YesOrNo.isYes(req.getIsFrame()) && !ServletUtils.isHttpUrl(req.getPath());
 		Assert.isFalse(checkFrameUrl, () -> CommonErrorCode.SYSTEM_ERROR.exception("The path must start with http(s)://"));
 
-		boolean checkMenuUnique = this.checkMenuUnique(req.getMenuName(), req.getParentId(), null);
-		Assert.isTrue(checkMenuUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("menuName"));
+		if (!SysConstants.MENU_ROOT_ID.equals(req.getParentId())) {
+			SysMenu parentMenu = this.getById(req.getParentId());
+			Assert.notNull(parentMenu, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("parentId", req.getParentId()));
+		}
+		RLock lock = redissonClient.getLock("sys:menu:lock:create");
+		try {
+			lock.lock();
 
-		SysMenu menu = new SysMenu();
-		BeanUtils.copyProperties(req, menu);
-		menu.setMenuId(IdUtils.getSnowflakeId());
-		menu.createBy(req.getOperator().getUsername());
-		this.save(menu);
+			long count = this.lambdaQuery().eq(SysMenu::getMenuId, req.getMenuId()).count();
+			Assert.isTrue(count == 0, () -> CommonErrorCode.DATA_CONFLICT.exception("menuId"));
 
-		i18nDictService.saveOrUpdate(LocaleContextHolder.getLocale().toLanguageTag(),
-				langKey(menu.getMenuId()), menu.getMenuName());
+			SysMenu menu = new SysMenu();
+			BeanUtils.copyProperties(req, menu);
+			menu.createBy(req.getOperator().getUsername());
+			this.save(menu);
+
+			i18nDictService.saveOrUpdate(LocaleContextHolder.getLocale().toLanguageTag(),
+					langKey(menu.getMenuId()), menu.getMenuName());
+		} finally {
+			lock.unlock();
+		}
 	}
 
-	private boolean checkMenuUnique(String menuName, Long parentId, Long menuId) {
-		LambdaQueryWrapper<SysMenu> q = new LambdaQueryWrapper<SysMenu>().eq(SysMenu::getMenuName, menuName)
-				.eq(SysMenu::getParentId, parentId).ne(IdUtils.validate(menuId), SysMenu::getMenuId, menuId);
+	private boolean checkMenuUnique(String menuId) {
+		LambdaQueryWrapper<SysMenu> q = new LambdaQueryWrapper<SysMenu>().eq(SysMenu::getMenuId, menuId);
 		return this.count(q) == 0;
 	}
 
 	@Override
-	public void updateMenu(UpdateMenuRequest req) {
+	public void updateMenu(SaveMenuRequest req) {
 		SysMenu db = this.getById(req.getMenuId());
 		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getMenuId()));
-		Assert.isFalse(req.getParentId().equals(req.getMenuId()),
+
+		Assert.isFalse(req.getParentId().equals(db.getMenuId()),
 				() -> CommonErrorCode.INVALID_REQUEST_ARG.exception("The parent cannot be it self."));
+		if (!db.getParentId().equals(req.getParentId()) && !SysConstants.MENU_ROOT_ID.equals(req.getParentId())) {
+			SysMenu parentMenu = this.getById(req.getParentId());
+			Assert.notNull(parentMenu, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("parentId", req.getParentId()));
+		}
+
 		boolean checkFrameUrl = YesOrNo.isYes(req.getIsFrame()) && !ServletUtils.isHttpUrl(req.getPath());
 		Assert.isFalse(checkFrameUrl, () -> CommonErrorCode.SYSTEM_ERROR.exception("The path must start with http(s)://"));
-		boolean checkMenuUnique = this.checkMenuUnique(req.getMenuName(), req.getParentId(), req.getMenuId());
-		Assert.isTrue(checkMenuUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("menuName"));
 
 		BeanUtils.copyProperties(req, db);
 		db.updateBy(req.getOperator().getUsername());
@@ -190,7 +206,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	}
 
 	@Override
-	public void deleteMenuById(Long menuId) {
+	public void deleteMenuById(String menuId) {
 		boolean hasChild = this.count(new LambdaQueryWrapper<SysMenu>().eq(SysMenu::getParentId, menuId)) > 0;
 		Assert.isFalse(hasChild, SysErrorCode.MENU_DEL_CHILD_FIRST::exception);
 		this.removeById(menuId);
@@ -198,7 +214,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 		this.i18nDictService.deleteByLangKey(langKey(menuId), false);
 	}
 
-	private String langKey(Long menuId) {
+	private String langKey(String menuId) {
 		return "MENU.NAME." + menuId;
 	}
 
@@ -217,14 +233,18 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 				.map(StringUtils::capitalize).collect(Collectors.joining(""));
 	}
 
+	private boolean isRootMenu(SysMenu menu) {
+		return SysConstants.MENU_ROOT_ID.equals(menu.getParentId());
+	}
+
 	public String getRouterPath(SysMenu menu) {
 		String routerPath = menu.getPath();
 		// 内链打开外网方式
-		if (menu.getParentId().intValue() != 0 && isInnerLink(menu)) {
+		if (!isRootMenu(menu) && isInnerLink(menu)) {
 			routerPath = innerLinkReplaceEach(routerPath);
 		}
 		// 非外链并且是一级目录（类型为目录）
-		if (0 == menu.getParentId().intValue() && MenuType.isDirectory(menu.getMenuType())
+		if (isRootMenu(menu) && MenuType.isDirectory(menu.getMenuType())
 				&& YesOrNo.isNo(menu.getIsFrame())) {
 			routerPath = "/" + menu.getPath();
 		}
@@ -239,7 +259,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 		String component = MenuComponentType.Layout.name();
 		if (StringUtils.isNotEmpty(menu.getComponent()) && !isMenuFrame(menu)) {
 			component = menu.getComponent();
-		} else if (StringUtils.isEmpty(menu.getComponent()) && menu.getParentId().intValue() != 0
+		} else if (StringUtils.isEmpty(menu.getComponent()) && !isRootMenu(menu)
 				&& isInnerLink(menu)) {
 			component = MenuComponentType.InnerLink.name();
 		} else if (StringUtils.isEmpty(menu.getComponent()) && isParentView(menu)) {
@@ -249,7 +269,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	}
 
 	public boolean isMenuFrame(SysMenu menu) {
-		return menu.getParentId().intValue() == 0 && MenuType.isMenu(menu.getMenuType())
+		return isRootMenu(menu) && MenuType.isMenu(menu.getMenuType())
 				&& YesOrNo.isNo(menu.getIsFrame());
 	}
 
@@ -258,20 +278,19 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	}
 
 	public boolean isParentView(SysMenu menu) {
-		return menu.getParentId().intValue() != 0 && MenuType.isDirectory(menu.getMenuType());
+		return !isRootMenu(menu) && MenuType.isDirectory(menu.getMenuType());
 	}
 
 	@Override
-	public List<SysMenu> getChildPerms(List<SysMenu> list, int parentId) {
+	public List<SysMenu> getChildPerms(List<SysMenu> list, String parentId) {
 		List<SysMenu> returnList = new ArrayList<>();
-		for (Iterator<SysMenu> iterator = list.iterator(); iterator.hasNext();) {
-			SysMenu t = iterator.next();
-			// 一、根据传入的某个父节点ID,遍历该父节点的所有子节点
-			if (t.getParentId() == parentId) {
-				recursionFn(list, t);
-				returnList.add(t);
-			}
-		}
+        for (SysMenu menu : list) {
+            // 一、根据传入的某个父节点ID,遍历该父节点的所有子节点
+            if (menu.getParentId().equals(parentId)) {
+                recursionFn(list, menu);
+                returnList.add(menu);
+            }
+        }
 		return returnList;
 	}
 
@@ -295,7 +314,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	private List<SysMenu> getChildList(List<SysMenu> list, SysMenu t) {
 		List<SysMenu> tlist = new ArrayList<>();
         for (SysMenu n : list) {
-            if (n.getParentId().longValue() == t.getMenuId().longValue()) {
+            if (n.getParentId().equals(t.getMenuId())) {
                 tlist.add(n);
             }
         }

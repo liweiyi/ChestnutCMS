@@ -88,6 +88,8 @@
           <el-switch v-model="form.status" active-value="0" inactive-value="1" />
         </el-form-item>
         <CloudConfigVolc v-if="form.type === 'Volc'" v-model="form.configProps" />
+        <CloudConfigAliyun v-if="form.type === 'Aliyun'" v-model="form.configProps" />
+        <CloudConfigTencent v-if="form.type === 'Tencent'" v-model="form.configProps" />
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -101,6 +103,8 @@
 <script setup name="SysCloudConfig">
 import * as cloudConfigApi from "@/api/cloud/config";
 import CloudConfigVolc from "./cloud/volc.vue";
+import CloudConfigAliyun from "./cloud/aliyun.vue";
+import CloudConfigTencent from "./cloud/tencent.vue";
 
 const { proxy } = getCurrentInstance()
 

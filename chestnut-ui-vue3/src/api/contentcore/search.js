@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+// 查询站点索引是否存在
+export function checkSiteIndexExists() {
+	return request({
+		url: '/cms/search/checkExists',
+		method: 'get'
+	});
+}
+
 // 查询内容索引列表
 export function getContentIndexList(query) {
   return request({

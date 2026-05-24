@@ -15,20 +15,19 @@
  */
 package com.chestnut.system.fixed.dict;
 
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.utils.ChineseSpelling;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.fixed.FixedDictType;
 import com.chestnut.system.security.ISecurityUser;
 import com.chestnut.system.service.ISysDictTypeService;
+import org.springframework.stereotype.Component;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * 密码敏感信息配置
@@ -62,7 +61,7 @@ public class PasswordSensitive extends FixedDictType {
 		super.addDictData("{DICT." + TYPE + "." + BIRTHDAY + "}", BIRTHDAY, 6);
 	}
 
-	public static boolean check(String[] values, String password, ISecurityUser user) {
+	public static boolean check(List<String> values, String password, ISecurityUser user) {
 		if (StringUtils.isEmpty(password) || StringUtils.isEmpty(values) || Objects.isNull(user)) {
 			return true;
 		}

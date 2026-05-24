@@ -83,6 +83,11 @@ const props = defineProps({
     type: String,
     default: '',
     required: false
+  },
+  multiple: {
+    type: Boolean,
+    default: false,
+    required: false
   }
 });
 
@@ -141,10 +146,12 @@ function handleSelectionChange(selection) {
 }
 
 function handleRowClick (row) {
-  selectedContents.value.forEach(row => {
-    proxy.$refs.tableContentListRef.toggleRowSelection(row, false);
-  });
-  selectedContents.value = [];
+  if (!props.multiple) {
+    selectedContents.value.forEach(row => {
+      proxy.$refs.tableContentListRef.toggleRowSelection(row, false);
+    });
+    selectedContents.value = [];
+  }
   proxy.$refs.tableContentListRef.toggleRowSelection(row);
 }
 

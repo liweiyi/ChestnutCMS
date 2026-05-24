@@ -53,7 +53,7 @@ export function resetUserPwd(userId, password) {
   }
   return request({
     url: '/system/user/resetPwd',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

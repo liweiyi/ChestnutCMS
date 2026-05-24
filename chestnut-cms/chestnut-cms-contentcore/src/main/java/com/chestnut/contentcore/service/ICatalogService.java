@@ -26,6 +26,7 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.dto.*;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -39,6 +40,14 @@ public interface ICatalogService extends IService<CmsCatalog> {
 	 * @return
 	 */
 	CmsCatalog getCatalog(Long catalogId);
+
+	/**
+	 * 根据栏目ID批量查找栏目数据
+	 *
+	 * @param catalogIds 栏目ID集合
+	 * @return 栏目ID到栏目数据映射
+	 */
+	Map<Long, CmsCatalog> getCatalogs(Collection<Long> catalogIds);
 
 	/**
 	 * 根据栏目别名查找栏目数据

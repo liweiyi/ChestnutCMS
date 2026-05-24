@@ -69,6 +69,12 @@
         :show-overflow-tooltip="true"
       ></el-table-column>
       <el-table-column
+        prop="path"
+        :label="$t('System.Menu.RouterLink')"
+        :show-overflow-tooltip="true"
+      ></el-table-column>
+      <el-table-column
+      <el-table-column
         prop="component"
         :label="$t('System.Menu.Component')"
         :show-overflow-tooltip="true"
@@ -138,6 +144,11 @@
                 :placeholder="$t('System.Menu.Placeholder.ParentMenu')"
                 check-strictly
               />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item :label="$t('System.Menu.ID')">
+              <el-input v-model="form.menuId" :placeholder="$t('System.Menu.Placeholder.ID')" :disabled="isUpdate" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -355,6 +366,7 @@ const menuOptions = ref([]);
 const isExpandAll = ref(false);
 const refreshTable = ref(true);
 const iconSelectRef = ref(null);
+const isUpdate = ref(false)
 
 const data = reactive({
   form: {},
@@ -527,6 +539,7 @@ function handleAdd(row) {
   } else {
     form.value.parentId = '0';
   }
+  isUpdate.value = false;
   open.value = true;
   title.value = proxy.$t('System.Menu.Dialog.Add');
 }
@@ -546,6 +559,7 @@ function handleUpdate(row) {
   getMenu(row.menuId).then(response => {
     form.value = response.data;
   });
+  isUpdate.value = true;
   open.value = true;
   title.value = proxy.$t('System.Menu.Dialog.Edit');
 }
@@ -554,7 +568,7 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs['menuRef'].validate(valid => {
     if (valid) {
-      if (form.value.menuId != undefined) {
+      if (isUpdate.value) {
         updateMenu(form.value).then(response => {
           proxy.$modal.msgSuccess(proxy.$t('Common.SaveSuccess'));
           open.value = false;

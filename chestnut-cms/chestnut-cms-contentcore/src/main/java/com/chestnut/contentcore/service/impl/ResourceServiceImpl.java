@@ -407,7 +407,10 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
                 ImageHelper.of(is, format).resize(width, height).to(os);
             }
             storageHelper.write(thumbnailPath, os.toByteArray());
-        }
+        } catch (Exception e) {
+			log.error("Failed to save thumbnail: " + thumbnailPath, e);
+			return false;
+		}
         return true;
 	}
 

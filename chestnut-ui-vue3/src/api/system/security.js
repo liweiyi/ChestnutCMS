@@ -15,10 +15,11 @@ export function getSecurityConfig(configId) {
   });
 }
 
-export function currentSecurityConfig(configId) {
+export function getSecurityConfigByType(types) {
   return request({
-    url: "/system/security/config/current",
-    method: "get"
+    url: "/system/security/config/get",
+    method: "post",
+    data: types
   });
 }
 
@@ -50,12 +51,5 @@ export function changeConfigStatus(configId) {
   return request({
     url: "/system/security/config/changeStatus/" + configId,
     method: "post"
-  });
-}
-
-export function checkSecurityConfig(configId) {
-  return request({
-    url: "/system/security/config/check",
-    method: "get"
   });
 }

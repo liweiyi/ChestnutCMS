@@ -85,6 +85,10 @@ public class ResourceType_Image implements IResourceType {
 		return Objects.nonNull(path) && ArrayUtils.contains(SuffixArray, ext);
 	}
 
+	public static boolean isImageExt(String ext) {
+		return StringUtils.isNotEmpty(ext) && ArrayUtils.contains(SuffixArray, ext);
+	}
+
 	@Override
 	public List<File> process(CmsResource resource, File file) throws IOException {
         String extension = FilenameUtils.getExtension(file.getName());
@@ -92,7 +96,8 @@ public class ResourceType_Image implements IResourceType {
             return List.of(); // 不处理svg图片
         }
         CmsSite site = siteService.getSite(resource.getSiteId());
-		boolean needWatermark = needWatermark(site);
+		ImageWatermarkArgs args = ImageWatermarkArgsProperty.getValue(site.getConfigProps());
+		boolean needWatermark = needWatermark(site, args);
 		boolean needThumbnail = needThumbnail(site);
 		if (!needWatermark && !needThumbnail) {
 			return List.of(); // 不需要处理
@@ -103,24 +108,24 @@ public class ResourceType_Image implements IResourceType {
 			Dimension dimension = ImageUtils.getDimension(file);
 			resource.setWidth(dimension.width);
 			resource.setHeight(dimension.height);
-			// 先处理图片水印
-			if (needWatermark) {
-				watermark(site, file);
+			// 先处理图片水印，宽高小于50像素的不进行水印处理
+			if (needWatermark && dimension.getWidth() > args.getSourceMinSize()
+					&& dimension.getHeight() > args.getSourceMinSize()) {
+				watermark(site, args, file);
 				resource.setFileSize(file.length());
 			}
 			// 默认缩略图处理
-			thumbnail(site, resource, file, files);
+			thumbnail(site, file, files);
 		} catch (Exception e) {
 			log.error("Image resource process fail.", e);
 		}
 		return files;
 	}
 
-	private boolean needWatermark(CmsSite site) {
+	private boolean needWatermark(CmsSite site, ImageWatermarkArgs args) {
 		if (!ImageWatermarkProperty.getValue(site.getConfigProps())) {
 			return false;
 		}
-		ImageWatermarkArgs args = ImageWatermarkArgsProperty.getValue(site.getConfigProps());
 		if (StringUtils.isEmpty(args.getImage())) {
 			return false;
 		}
@@ -129,8 +134,7 @@ public class ResourceType_Image implements IResourceType {
         return file.exists();
     }
 
-	private void watermark(CmsSite site, File resourceFile) {
-		ImageWatermarkArgs args = ImageWatermarkArgsProperty.getValue(site.getConfigProps());
+	private void watermark(CmsSite site, ImageWatermarkArgs args, File resourceFile) {
 		String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
 		File wartermarkFile = new File(siteResourceRoot + args.getImage());
 		try {
@@ -152,14 +156,14 @@ public class ResourceType_Image implements IResourceType {
 		return w > 0 && h > 0;
 	}
 
-	private void thumbnail(CmsSite site, CmsResource resource, File tempFile, List<File> files) {
+	private void thumbnail(CmsSite site, File tempFile, List<File> files) {
 		// 读取存储配置
 		int w = ThumbnailWidthProperty.getValue(site.getConfigProps());
 		int h = ThumbnailHeightProperty.getValue(site.getConfigProps());
 		if (w > 0 && h > 0) {
 			// 生成默认缩略图
 			String tempDirectory = ResourceUtils.getResourceTempDirectory(site);
-			String thumbnailPath = ImageUtils.getThumbnailFileName(resource.getPath(), w, h);
+			String thumbnailPath = ImageUtils.getThumbnailFileName(tempFile.getName(), w, h);
 			File output = new File(tempDirectory + thumbnailPath);
             try {
 				ImageHelper.of(tempFile).resize(w, h).toFile(output);
@@ -168,7 +172,7 @@ public class ResourceType_Image implements IResourceType {
             } catch (Exception e) {
                 try {
 					// 生成缩略图失败直接使用源图作为缩略图
-                    Files.copy(tempFile.toPath(), Path.of(thumbnailPath), StandardCopyOption.REPLACE_EXISTING);
+                    Files.copy(tempFile.toPath(), output.toPath(), StandardCopyOption.REPLACE_EXISTING);
 					files.add(output);
                 } catch (IOException ex) {
                     log.error("Copy thumbnail file err.", ex);

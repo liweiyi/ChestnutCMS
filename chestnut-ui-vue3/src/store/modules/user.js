@@ -58,8 +58,8 @@ const useUserStore = defineStore(
             this.name = user.userName
             this.nickName = user.nickName
             this.avatar = avatar
-            /* 初始密码提示 */
             if(user.forceModifyPassword === 'Y') {
+              /* 强制修改密码提示 */
               ElMessageBox.confirm(
                 i18n.global.t('System.Security.ForceModifyPwd'), 
                 i18n.global.t('System.Security.SecurityTips'), 
@@ -71,25 +71,19 @@ const useUserStore = defineStore(
               ).then(() => {
                 router.push({ name: 'Profile', params: { activeTab: 'resetPwd' } })
               }).catch(() => {})
-            }
-            /* 过期密码提示 */
-            if (user.passwordExpireSeconds > 0) {
-              const lastModifyTime = user.passwordModifyTime || user.createTime
-              const expireTime = new Date(lastModifyTime).getTime() + user.passwordExpireSeconds * 24 * 60 * 60 * 1000
-              const now = new Date().getTime()
-              if (now > expireTime) {
-                ElMessageBox.confirm(
-                  i18n.global.t('System.Security.PwdExpired'), 
-                  i18n.global.t('System.Security.SecurityTips'), 
-                  {  
-                    confirmButtonText: i18n.global.t('Common.Confirm'),  
-                    cancelButtonText: i18n.global.t('Common.Cancel'),  
-                    type: 'warning' 
-                  }
-                ).then(() => {
-                  router.push({ name: 'Profile', params: { activeTab: 'resetPwd' } })
-                }).catch(() => {})
-              }
+            } else if (user.isPasswordExpired) {
+              /* 过期密码提示 */
+              ElMessageBox.confirm(
+                i18n.global.t('System.Security.PwdExpired'), 
+                i18n.global.t('System.Security.SecurityTips'), 
+                {  
+                  confirmButtonText: i18n.global.t('Common.Confirm'),  
+                  cancelButtonText: i18n.global.t('Common.Cancel'),  
+                  type: 'warning' 
+                }
+              ).then(() => {
+                router.push({ name: 'Profile', params: { activeTab: 'resetPwd' } })
+              }).catch(() => {})
             }
             resolve(res)
           }).catch(error => {

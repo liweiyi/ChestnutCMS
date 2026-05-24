@@ -142,6 +142,7 @@ public class MemberLoginApiController extends BaseRestController {
 						StringUtils.EMPTY);
 			}
 		} catch (Exception e) {
+			log.warn("Logout failed", e);
 		}
 		return R.ok();
 	}

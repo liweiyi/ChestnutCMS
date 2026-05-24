@@ -46,10 +46,10 @@
 
     <el-table v-loading="loading" :data="dataList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column :label="$t('Member.UserName')" align="center" :show-overflow-tooltip="true" prop="userName" />
-      <el-table-column :label="$t('Member.NickName')" align="center" :show-overflow-tooltip="true" prop="nickName" />
-      <el-table-column label="Email" align="center" :show-overflow-tooltip="true" prop="email" />
-      <el-table-column :label="$t('Member.PhoneNumber')" align="center" :show-overflow-tooltip="true"
+      <el-table-column :label="$t('Member.UserName')" :show-overflow-tooltip="true" prop="userName" />
+      <el-table-column :label="$t('Member.NickName')" :show-overflow-tooltip="true" prop="nickName" />
+      <el-table-column label="Email" width="180" :show-overflow-tooltip="true" prop="email" />
+      <el-table-column :label="$t('Member.PhoneNumber')" align="center" width="180" :show-overflow-tooltip="true"
         prop="phoneNumber" />
       <el-table-column :label="$t('Member.Status')" align="center" prop="status" width="80">
         <template #default="scope">
@@ -58,18 +58,20 @@
       </el-table-column>
       <el-table-column :label="$t('Member.Source')" align="center" width="100" :show-overflow-tooltip="true"
         prop="sourceType" />
-      <el-table-column :label="$t('Member.RegistTime')" align="center" prop="createTime" width="180">
+      <el-table-column :label="$t('Member.RegistTime')" align="center" width="160">
         <template #default="scope">
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('Member.LastLoginTime')" align="center" prop="createTime" width="230">
+      <el-table-column :label="$t('Member.LastLoginTime')" width="160">
         <template #default="scope">
-          <span>{{ parseTime(scope.row.lastLoginTime) }} - {{ scope.row.lastLoginIp }}</span>
+          <el-text>
+            <div><span>{{ parseTime(scope.row.lastLoginTime) }}</span></div>
+            <div><span>{{ scope.row.lastLoginIp }}</span></div>
+          </el-text>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('Common.Operation')" align="center" width="280"
-       >
+      <el-table-column :label="$t('Common.Operation')" fixed="right" align="center" width="350">
         <template #default="scope">
           <el-button type="text" icon="Key" @click="handleResetPwd(scope.row)">{{ $t('Member.ResetPwd') }}</el-button>
           <el-button type="text" icon="Edit" @click="handleUpdate(scope.row)">{{ $t("Common.Edit") }}</el-button>
@@ -122,6 +124,7 @@
         <el-button @click="handleCancel">{{ $t('Common.Cancel') }}</el-button>
       </template>
     </el-dialog>
+
   </div>
 </template>
 <script setup name="MemberMemberList">

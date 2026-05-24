@@ -30,7 +30,7 @@ export function addResource(data) {
 export function updateResource(data) {
   return request({
     url: '/ccfile/resource',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

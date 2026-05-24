@@ -142,7 +142,7 @@
               :id="form.contentId">
             </cms-exmodel-editor>
           </el-card>
-          <div v-if="form.linkFlag !== 'Y' && contentType === 'article'">
+          <div v-if="form.linkFlag !== 'Y' && contentType === 'article'" :key="articleEditorKey">
             <el-card v-if="articleFormat=='RichText'" shadow="always" class="card-editor">
               <el-row>
                 <el-col :span="12">
@@ -170,7 +170,7 @@
                 </el-col>
               </el-row>
               <div class="content bg-purple-white">
-                <ueditor editorId="ue_article" v-model="form.contentHtml" :height="800"></ueditor>
+                <ueditor :editorId="articleUEditorId" v-model="form.contentHtml" :height="800"></ueditor>
               </div>
             </el-card>
           </div>
@@ -280,6 +280,17 @@
                       </template>
                     </el-input>
                   </el-form-item>
+                  <el-divider content-position="left">{{ $t('CMS.Content.ExtendTemplate') }}</el-divider>
+                  <el-form-item :label="$t('CMS.Site.Extend.ContentPrivStrategy')" prop="ContentPrivStrategy">
+                    <el-select v-model="form.configProps.ContentPrivStrategy" clearable>
+                      <el-option
+                        v-for="item in contentPrivStrategyOptions"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
                 </el-tab-pane>
               </el-tabs>
             </el-card>
@@ -333,6 +344,12 @@ const { proxy } = getCurrentInstance();
 
 const { CMSContentAttribute } = proxy.useDict('CMSContentAttribute');
 
+const contentPrivStrategyOptions = [
+  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyExtendCatalog"), value: "NONE" },
+  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyValid"), value: "VALID" },
+  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyIgnore"), value: "IGNORE" }
+]
+
 const isLock = computed(() => {
   return form.value.isLock === 'Y' && form.value.lockUser != '';
 });
@@ -373,7 +390,8 @@ const objects = reactive({
     publishPipe: [],
     imageList: [],
     tags:[],
-    keywords:[]
+    keywords:[],
+    configProps: {}
   }
 });
 const { form } = toRefs(objects);
@@ -394,8 +412,21 @@ const openRelaContentDialog = ref(false);
 const openContentOpLogDialog = ref(false);
 const openVersionDialog = ref(false);
 const ueditorImportCss = ref("");
+const articleEditorKey = ref(0);
 const shortTitleLabel = ref(proxy.$t('CMS.Content.ShortTitle'));
 const subTitleLabel = ref(proxy.$t('CMS.Content.SubTitle'));
+
+const articleUEditorId = computed(() => `ue_article_${contentId.value}_${articleEditorKey.value}`);
+
+watch(() => form.value.linkFlag, (newVal, oldVal) => {
+  if (oldVal === 'Y' && newVal !== 'Y') {
+    articleEditorKey.value++;
+  }
+});
+
+function resolveArticleFormat(data) {
+  return data?.format || proxy.$route.query.format || articleFormat.value || 'RichText';
+}
 
 onMounted(() => {
   loadUEditorCSS();
@@ -419,11 +450,12 @@ function initData() {
   getInitContentEditorData(catalogId.value, contentType.value, contentId.value).then(response => {
     loading.value = false;
     response.data.attributes = response.data.attributes || [];
+    response.data.configProps = response.data.configProps || {};
     response.data.tags = response.data.tags || [];
     response.data.keywords = response.data.keywords || [];
     isUpdateOperate.value = proxy.$tools.isNotEmpty(response.data.createTime)
     if (response.data.contentType == "article") {
-      articleFormat.value = isUpdateOperate.value ? response.data.format : proxy.$route.query.format;
+      articleFormat.value = resolveArticleFormat(response.data);
     }
     if (!proxy.$tools.isEmpty(response.data.shortTitleLabel)) {
       shortTitleLabel.value = response.data.shortTitleLabel;
@@ -535,6 +567,9 @@ function handleSave() {
       });
       if (xmodelVisible.value) {
         form.value.params = proxy.$refs.exModelEditorRef.getDatas();
+      }
+      if (form.value.linkFlag != 'Y') {
+        form.value.redirectUrl = '';
       }
       if (isUpdateOperate.value) {
         form.value.opType = "UPDATE"
@@ -767,7 +802,7 @@ function findUEIframes(element) {
   return;
 }
 function handleChangeUEditorCSS() {
-  const iframe = findUEIframes(document.getElementById('ue_article'));
+  const iframe = findUEIframes(document.getElementById(articleUEditorId.value));
   const links = iframe.contentDocument.getElementsByTagName('link');
   for (let i = 0; i < links.length; i++) {
       if (links[i].id === 'import_css') {

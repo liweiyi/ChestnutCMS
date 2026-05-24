@@ -49,7 +49,7 @@
             <div class="node-text" :title="node.label">{{ node.label }}</div>
             <div class="node-tool">
               <el-dropdown type="primary">
-                <el-link :underline="false" class="row-more-btn" icon="More"></el-link>
+                <el-link underline="never" class="row-more-btn" icon="More"></el-link>
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item @click.native="handlePreview(data)"><svg-icon icon-class="eye-open" class="mr5"></svg-icon>{{ $t('CMS.ContentCore.Preview') }}</el-dropdown-item>

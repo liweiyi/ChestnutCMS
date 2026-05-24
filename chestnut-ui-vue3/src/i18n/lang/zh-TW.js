@@ -38,6 +38,7 @@ const zhTW = {
     Edit: '修改',
     Save: '保存',
     Delete: '刪除',
+    BatchDelete: '批量刪除',
     Remove: "移除",
     Import: '導入',
     Export: '導出',
@@ -83,6 +84,7 @@ const zhTW = {
     RepeatSubmit: '請求正在處理，請勿重複提交',
     ServerConnectFailed: '後端介面連接異常',
     ServerConnectTimeout: '系統介面請求超時',
+    SecondaryVerification: '二次驗證',
     ServerApiError: '系統介面{0}異常',
     Loading: '正在載入，請稍後',
     DownloadFailed: '下載檔案出現錯誤，請聯繫管理員！',
@@ -96,6 +98,7 @@ const zhTW = {
     Others: "其他",
     Unknown: "未知",
     Recover: "恢復",
+    InputPassword: "請輸入密碼",
     Unit: {
       Year: "年",
       Month: "月",
@@ -301,6 +304,7 @@ const zhTW = {
       UploadAvatar: '點擊上傳頭像',
       SelectUser: "選擇用戶",
       IsAllocatedRole: "已分配",
+      LoginRedirectTip: "登錄成功，正在跳轉...",
       Dialog: {
         Add: "添加用戶資訊",
         Edit: "編輯用戶資訊",
@@ -370,6 +374,7 @@ const zhTW = {
       PageWidgetPriv: "頁面部件許可權"
     },
     Menu: {
+      ID: "菜單ID",
       MenuName: "菜單名稱",
       MenuType: "菜單類型",
       Icon: "表徵圖",
@@ -573,6 +578,8 @@ const zhTW = {
       EditGenConfig: '修改生成配置'
     },
     Security: {
+      Basic: "基本資訊",
+      Name: "名稱",
       PasswordLength: "密碼長度",
       PasswordRule: "密碼組成規則",
       PasswordExpireSeconds: "密碼過期時長（單位：秒）",
@@ -604,6 +611,13 @@ const zhTW = {
       CaptchaType: "驗證碼類型",
       CaptchaExpireSeconds: "驗證碼過期時長（單位：秒）",
       CaptchaRetryDuration: "驗證碼重試時長（單位：秒）",
+      BizConfigCard: "業務安全配置",
+      SecondaryVerifications: "需要二次驗證的介面",
+      SecondaryVerificationsSearch: "按路徑模糊搜尋",
+      SecondaryVerificationsPlaceholder: "輸入介面路徑，如 /system/user/delete/**",
+      SecondaryVerificationPath: "介面路徑",
+      SecondaryVerificationsTip: "支援 Ant 風格路徑匹配，如 /system/** 或 /api/user/delete/{id}，每條為獨立規則",
+      BizVerifyExpireSeconds: "二次驗證有效期（單位：秒）",
       Tab: {
         SecurityConfig: "安全配置",
         LoginConfig: "第三方登錄配置",
@@ -646,6 +660,14 @@ const zhTW = {
         AccessKey: "訪問密鑰",
         SecretKey: "密鑰",
         Region: "區域",
+      },
+      Aliyun: {
+        AccessKey: "訪問密鑰",
+        SecretKey: "密鑰",
+      },
+      Tencent: {
+        SecretId: "密鑰ID",
+        SecretKey: "密鑰",
       },
     }
   },
@@ -1050,6 +1072,11 @@ const zhTW = {
         CloudCardTitle: "雲配置",
         CdnCloudConfig: "CDN雲配置",
         AutoRefreshCDN: "自動刷新CDN",
+        ContentPrivStrategy: "內容權限策略",
+        ContentPrivStrategyExtendCatalog: "繼承欄目",
+        ContentPrivStrategyExtendSite: "繼承站點",
+        ContentPrivStrategyValid: "需要校驗",
+        ContentPrivStrategyIgnore: "不需要校驗",
       },
       Property: {
         QueryPlaceholder: "輸入名稱/編碼查詢",
@@ -1494,7 +1521,7 @@ const zhTW = {
       RuleTips: {
         Name: "只能使用字母、數字、下劃線和斜杠，且尾碼必須為：{0}"
       },
-      ClearIncludeCache: "清理區塊緩存",
+      ClearIncludeCache: "清理緩存",
       AddTitle: "添加模板檔案",
       EditTitle: "編輯模板檔案名",
       SelectorTitle: "選擇模板"
@@ -1597,6 +1624,7 @@ const zhTW = {
       OnlyTitle: "僅匹配標題",
       IndexDetails: "索引詳情",
       ProgressTitle: "建立索引任務",
+      IndexNotFound: "站點索引不存在，是否重建？",
     },
     CustomForm: {
       Name: "名稱",
@@ -1876,6 +1904,10 @@ const zhTW = {
     RestPwdSuccess: "修改成功，新密碼是：{0}",
     AddTitle: "添加會員",
     EditTitle: "編輯會員",
+    AuthContentPriv: "權限配置",
+    Permission: {
+      ContentPriv: "內容瀏覽權限"
+    },
     LevelType: "積分類型",
     Level: {
       Type: "類型",
@@ -1895,6 +1927,28 @@ const zhTW = {
     RuleTips: {
       UserName: "必須以字母開頭，且只能為（大小寫字母，數字，下滑線）",
       Member: "用戶名/手機號/Email不能全為空"
+    },
+    Selector: {
+      Title: "選擇會員",
+      MemberList: "會員列表",
+      SelectedMemberList: "已選會員"
+    },
+    Role: {
+      RoleId: "角色ID",
+      RoleName: "角色名稱",
+      RoleKey: "角色標識碼",
+      Sort: "排序",
+      AddTitle: "添加會員角色",
+      EditTitle: "編輯會員角色",
+      UserSetting: "會員設置",
+      AuthContentPriv: "授權",
+      ConfirmRemoveMember: "確認取消授權？",
+      AddMember: "添加會員",
+      RemoveMember: "取消授權",
+      Placeholder: {
+        RoleName: "請輸入角色名稱",
+        RoleKey: "請輸入角色標識碼"
+      }
     }
   },
   MetaModel: {
@@ -2075,6 +2129,74 @@ const zhTW = {
       NginxNode: "部署節點",
       AddTitle: "添加配置",
       EditTitle: "編輯配置資訊",
+    }
+  },
+  CmsContentPriv: {
+    Saving: '保存中...',
+    Title: '內容瀏覽權限',
+    SelectMember: '選擇會員',
+    ChangeMember: '切換會員',
+    CurrentMember: '當前會員',
+    NoMember: '請先選擇會員',
+    Tab: {
+      Site: '站點權限',
+      Catalog: '欄目權限',
+      Content: '內容權限'
+    },
+    PrivType: '授權類型',
+    PrivTypeSite: '站點級',
+    PrivTypeCatalog: '欄目級',
+    PrivTypeContent: '內容級',
+    Target: '授權目標（格式：站點ID:欄目ID:內容ID）',
+    GrantTime: '授權時間',
+    GrantSite: '授權站點',
+    GrantCatalog: '授權欄目',
+    GrantContent: '授權內容',
+    SelectSite: '選擇站點',
+    SelectPrivType: '請先選擇授權類型',
+    ConfirmGrantCurrentSite: '確定授權當前站點（權限key：{0}）？',
+    SelectCatalog: '選擇欄目',
+    SelectContent: '選擇內容',
+    ConfirmRevoke: '確定撤銷該授權？',
+    RevokeSuccess: '撤銷成功',
+    GrantSuccess: '授權成功'
+  },
+  Migration: {
+    WP: {
+      Add: '新增WordPress遷移',
+      Edit: '編輯WordPress遷移',
+      Execute: '執行',
+      Name: '任務名稱',
+      NamePlaceholder: '請輸入任務名稱',
+      DataSource: '資料來源',
+      SelectDataSource: '請選擇資料來源',
+      TablePrefix: '表前綴',
+      Site: '目標站點',
+      SelectSite: '請選擇目標站點',
+      MigrateMode: '遷移方式',
+      FullMode: '全量遷移',
+      SpecifiedMode: '指定欄目遷移',
+      DefaultPassword: '預設密碼',
+      CatalogMappings: '欄目映射',
+      AddMapping: '新增映射',
+      WpCatalogId: 'WordPress欄目ID',
+      TargetCatalog: '目標欄目',
+      LastStatus: '最近狀態',
+      LastExecuteTime: '最近執行時間',
+      Status0: '未執行',
+      Status1: '成功',
+      Status2: '失敗',
+      Status3: '執行中',
+      NameRequired: '任務名稱不能為空',
+      DataSourceRequired: '請選擇資料來源',
+      SiteRequired: '請選擇目標站點',
+      MigrateModeRequired: '請選擇遷移方式',
+      DefaultPasswordRequired: '預設密碼不能為空',
+      MappingRequired: '指定欄目遷移必須至少新增一組欄目映射',
+      ConfirmDelete: '確認刪除WordPress遷移任務「{0}」？',
+      ConfirmExecute: '確認執行WordPress遷移任務「{0}」？',
+      ProgressTitle: 'WordPress遷移進度',
+      ExecuteStarted: '任務已提交，任務ID：{0}'
     }
   }
 }

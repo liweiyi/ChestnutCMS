@@ -30,22 +30,14 @@
       <right-toolbar :search="false" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="configList" @selection-change="handleSelectionChange">
+    <el-table 
+      v-loading="loading" 
+      :data="configList" 
+      @selection-change="handleSelectionChange"
+      @row-dblclick="handleDbRowClick">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="ID" align="center" prop="configId" width="100" :show-overflow-tooltip="true" />
-      <el-table-column :label="$t('System.Security.PasswordLength')" align="center">
-        <template #default="scope">
-          <span>{{ scope.row.passwordLenMin }} - {{ scope.row.passwordLenMax }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('System.Security.PasswordRule')" align="center" prop="passwordRule">
-        <template #default="scope">
-          <dict-tag :options="SecurityPasswordRule" :value="scope.row.passwordRule"/>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('System.Security.PasswordExpireSeconds')" align="center" prop="passwordExpireSeconds" />
-      <el-table-column :label="$t('System.Security.PasswordRetryLimit')" align="center" prop="passwordRetryLimit" />
-      <el-table-column :label="$t('System.Security.Status')" align="center" prop="status" width="90">
+      <el-table-column :label="$t('System.Security.Name')" prop="name" :show-overflow-tooltip="true" />
+      <el-table-column :label="$t('System.Security.Status')" align="center" prop="status" width="120">
         <template #default="scope">
           <el-switch
             v-model="scope.row.status"
@@ -80,24 +72,43 @@
       v-model:limit="queryParams.pageSize"
       @pagination="getList"
     />
-
-     <!-- 添加或修改参数配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="800px" append-to-body>
+  <el-drawer 
+    direction="rtl"
+    size="50%"
+    destroy-on-close
+    v-model="open"
+    :title="title"
+    append-to-body>
+      <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
+          <el-button type="success" plain icon="Edit" @click="submitForm">{{ $t('Common.Save') }}</el-button>
+        </el-col>
+      </el-row>
       <el-form ref="formRef" :model="form" v-loading="loading" :rules="rules" label-width="200px">
+        <el-card shadow="hover">
+          <template #header>
+            <div class="clearfix">
+              <span>{{ $t('System.Security.Basic') }}</span>
+            </div>
+          </template>
+          <el-form-item :label="$t('System.Security.Name')" prop="name">
+            <el-input v-model="form.name" />
+          </el-form-item>
+        </el-card>
         <el-card shadow="hover">
           <template #header>
             <div class="clearfix">
               <span>{{ $t('System.Security.PasswordConfig') }}</span>
             </div>
           </template>
-          <el-form-item :label="$t('System.Security.PasswordMinLength')" prop="passwordLenMin">
-            <el-input-number v-model="form.passwordLenMin" controls-position="right" :min="6" :max="16"></el-input-number>
+          <el-form-item :label="$t('System.Security.PasswordMinLength')" prop="configs.Password.minLength">
+            <el-input-number v-model="form.configs.Password.minLength" controls-position="right" :min="6" :max="16"></el-input-number>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.PasswordMaxLength')" prop="passwordLenMax">
-            <el-input-number v-model="form.passwordLenMax" controls-position="right" :min="16" :max="30"></el-input-number>
+          <el-form-item :label="$t('System.Security.PasswordMaxLength')" prop="configs.Password.maxLength">
+            <el-input-number v-model="form.configs.Password.maxLength" controls-position="right" :min="16" :max="30"></el-input-number>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.PasswordRule')" prop="passwordRule">
-            <el-select v-model="form.passwordRule">
+          <el-form-item :label="$t('System.Security.PasswordRule')" prop="configs.Password.rule">
+            <el-select v-model="form.configs.Password.rule">
               <el-option
                 v-for="item in SecurityPasswordRule"
                 :key="item.value"
@@ -106,8 +117,8 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.PasswordSensitive')" prop="passwordSensitive">
-            <el-checkbox-group v-model="form.passwordSensitive">
+          <el-form-item :label="$t('System.Security.PasswordSensitive')" prop="configs.Password.sensitives">
+            <el-checkbox-group v-model="form.configs.Password.sensitives">
                   <el-checkbox
                     v-for="item in SecurityPasswordSensitive"
                     :key="item.value"
@@ -115,28 +126,28 @@
                   >{{item.label}}</el-checkbox>
                 </el-checkbox-group>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.WeakPasswords')" prop="weakPasswords">
-            <el-input type="textarea" v-model="form.weakPasswords" :placeholder="$t('System.Security.WeakPasswordsPlaceholder')" :rows="5"></el-input>
+          <el-form-item :label="$t('System.Security.WeakPasswords')" prop="configs.Password.weakPasswords">
+            <el-input type="textarea" v-model="form.configs.Password.weakPasswords" :placeholder="$t('System.Security.WeakPasswordsPlaceholder')" :rows="5"></el-input>
           </el-form-item>
           <el-form-item 
             :label="$t('System.Security.PasswordExpireSeconds')"
-            prop="passwordExpireSeconds">
-            <el-input-number v-model="form.passwordExpireSeconds" controls-position="right" :min="0" :max="8640000"></el-input-number>
+            prop="configs.Password.expireSeconds">
+            <el-input-number v-model="form.configs.Password.expireSeconds" controls-position="right" :min="0" :max="8640000"></el-input-number>
             <el-icon class="tips"><InfoFilled /></el-icon>
             <span class="tips">{{ $t('System.Security.PasswordExpireSecondsTip') }}</span>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.ForceModifyPwdAfterAdd')" prop="forceModifyPwdAfterAdd">
+          <el-form-item :label="$t('System.Security.ForceModifyPwdAfterAdd')" prop="configs.Password.forceModifyPwdAfterAdd">
             <el-switch
-              v-model="form.forceModifyPwdAfterAdd"
+              v-model="form.configs.Password.forceModifyPwdAfterAdd"
               active-value="Y"
               inactive-value="N">
             </el-switch>
             <el-icon class="tips"><InfoFilled /></el-icon>
             <span class="tips">{{ $t('System.Security.ForceModifyPwdAfterAddTip') }}</span>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.ForceModifyPwdAfterReset')" prop="forceModifyPwdAfterReset">
+          <el-form-item :label="$t('System.Security.ForceModifyPwdAfterReset')" prop="configs.Password.forceModifyPwdAfterReset">
             <el-switch
-              v-model="form.forceModifyPwdAfterReset"
+              v-model="form.configs.Password.forceModifyPwdAfterReset"
               active-value="Y"
               inactive-value="N">
             </el-switch>
@@ -150,15 +161,15 @@
               <span>{{ $t('System.Security.LoginConfigCard') }}</span>
             </div>
           </template>
-          <el-form-item :label="$t('System.Security.PasswordRetryLimit')" prop="passwordRetryLimit">
-            <el-input-number v-model="form.passwordRetryLimit" controls-position="right" :min="0"></el-input-number>
+          <el-form-item :label="$t('System.Security.PasswordRetryLimit')" prop="configs.Login.passwordRetryLimit">
+            <el-input-number v-model="form.configs.Login.passwordRetryLimit" controls-position="right" :min="0"></el-input-number>
             <el-icon class="tips"><InfoFilled /></el-icon>
             <span class="tips">{{ $t('System.Security.PasswordRetryLimitTip') }}</span>
           </el-form-item>
           <el-form-item 
             :label="$t('System.Security.PasswordRetryStrategy')"
-            prop="passwordRetryStrategy">
-            <el-select v-model="form.passwordRetryStrategy" :disabled="form.passwordRetryLimit===0">
+            prop="configs.Login.passwordRetryStrategy">
+            <el-select v-model="form.configs.Login.passwordRetryStrategy" :disabled="form.configs.Login.passwordRetryLimit===0">
               <el-option
                 v-for="item in SecurityPasswordRetryStrategy"
                 :key="item.value"
@@ -168,22 +179,22 @@
             </el-select>
           </el-form-item>
           <el-form-item 
-            v-if="form.passwordRetryStrategy==='LOCK'"
+            v-if="form.configs.Login.passwordRetryStrategy==='LOCK'"
             :label="$t('System.Security.PasswordRetryLockSeconds')"
-            prop="passwordRetryLockSeconds">
-            <el-input-number v-model="form.passwordRetryLockSeconds" controls-position="right" :min="0" :max="31536000"></el-input-number>
+            prop="configs.Login.passwordRetryLockSeconds">
+            <el-input-number v-model="form.configs.Login.passwordRetryLockSeconds" controls-position="right" :min="0" :max="31536000"></el-input-number>
             <el-icon class="tips"><InfoFilled /></el-icon>
             <span class="tips">{{ $t('System.Security.PasswordRetryLockSecondsTip') }}</span>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.CaptchaEnable')" prop="captchaEnable">
+          <el-form-item :label="$t('System.Security.CaptchaEnable')" prop="configs.Login.captchaEnable">
             <el-switch
-              v-model="form.captchaEnable"
+              v-model="form.configs.Login.captchaEnable"
               active-value="Y"
               inactive-value="N">
             </el-switch>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.CaptchaType')" prop="captchaType">
-            <el-select v-model="form.captchaType">
+          <el-form-item :label="$t('System.Security.CaptchaType')" prop="configs.Login.captchaType">
+            <el-select v-model="form.configs.Login.captchaType">
               <el-option
                 v-for="item in captchaTypeOptions"
                 :key="item.value"
@@ -192,14 +203,14 @@
               </el-option>
             </el-select>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.CaptchaExpireSeconds')" prop="captchaExpires">
-            <el-input-number v-model="form.captchaExpires" controls-position="right" :min="1" :max="3600"></el-input-number>
+          <el-form-item :label="$t('System.Security.CaptchaExpireSeconds')" prop="configs.Login.captchaExpires">
+            <el-input-number v-model="form.configs.Login.captchaExpires" controls-position="right" :min="1" :max="3600"></el-input-number>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.CaptchaRetryDuration')" prop="captchaDuration">
-            <el-input-number v-model="form.captchaDuration" controls-position="right" :min="0"></el-input-number>
+          <el-form-item :label="$t('System.Security.CaptchaRetryDuration')" prop="configs.Login.captchaDuration">
+            <el-input-number v-model="form.configs.Login.captchaDuration" controls-position="right" :min="0"></el-input-number>
           </el-form-item>
-          <el-form-item :label="$t('System.Security.ThirdLogin')" prop="loginTypeConfigIds">
-            <el-checkbox-group v-model="form.loginTypeConfigIds">
+          <el-form-item :label="$t('System.Security.ThirdLogin')" prop="configs.Login.loginTypeConfigIds">
+            <el-checkbox-group v-model="form.configs.Login.loginTypeConfigIds">
               <el-checkbox
                 v-for="item in loginConfigOptions"
                 :key="item.value"
@@ -211,13 +222,7 @@
           </el-form-item>
         </el-card>
       </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">{{ $t('Common.Submit') }}</el-button>
-          <el-button @click="cancel">{{ $t('Common.Cancel') }}</el-button>
-        </div>
-      </template>
-    </el-dialog>
+    </el-drawer>
   </div>
 </template>
 <script setup name="SysSecurityIndex">
@@ -236,40 +241,56 @@ const single = ref(true)
 const multiple = ref(true)
 const total = ref(0)
 const configList = ref([])
-const queryParams = reactive({
-  pageNum: 1,
-  pageSize: 10,
-})
 const title = ref("")
 const open = ref(false)
-const form = reactive({})
+const objects = reactive({
+  form: {},
+  queryParams: {
+    pageNum: 1,
+    pageSize: 10,
+  },
+})
+const { form, queryParams } = toRefs(objects);
 
 // 表单校验规则
 const rules = reactive({
-  passwordLenMin: [
+  name: [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
   ],
-  passwordLenMax: [
+  'configs.Password.minLength': [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
   ],
-  passwordRule: [
+  'configs.Password.maxLength': [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
   ],
-  passwordExpireSeconds: [
+  'configs.Password.rule': [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
   ],
-  passwordRetryLimit: [
+  'configs.Password.expireSeconds': [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
   ],
-  passwordRetryStrategy: [
+  'configs.Login.passwordRetryLimit': [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
   ],
-  weakPasswords: [
+  'configs.Login.passwordRetryStrategy': [
+    { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+  ],
+  'configs.Password.weakPasswords': [
     { max: 500, message: proxy.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: "blur" }
   ]
 })
 const captchaTypeOptions = ref([]);
 const loginConfigOptions = ref([]);
+const newPattern = ref('');
+const patternSearch = ref('');
+const patternSelection = ref([]);
+
+const filteredPatterns = computed(() => {
+  const keyword = patternSearch.value.trim().toLowerCase();
+  const list = form.value?.configs?.Biz?.secondaryVerifications || [];
+  const filtered = keyword ? list.filter(p => p.toLowerCase().includes(keyword)) : list;
+  return filtered.map(pattern => ({ pattern }));
+});
 
 onMounted(() => {
   loadCaptchaTypeOptions();
@@ -307,21 +328,30 @@ const cancel = () => {
 const reset = () => {
   proxy.resetForm("formRef");
   form.value = {
-    passwordLenMin: 0,
-    passwordLenMax: 0,
-    passwordRule: 'NONE',
-    passwordSensitive: [],
-    passwordExpireSeconds: 0,
-    forceModifyPwdAfterAdd: 'N',
-    forceModifyPwdAfterReset: 'N',
-    passwordRetryLimit: 0,
-    passwordRetryStrategy: 'NONE',
-    passwordRetryLockSeconds: 0,
-    captchaEnable: 'N',
-    captchaType: 'NONE',
-    captchaExpires: 1,
-    captchaDuration: 0,
-    loginTypeConfigIds: [],
+    configs: {
+      Password: {
+        minLength: 0,
+        maxLength: 0,
+        rule: 'NONE',
+        sensitives: [],
+        weakPasswords: '',
+        expireSeconds: 0,
+        forceModifyPwdAfterAdd: 'N',
+        forceModifyPwdAfterReset: 'N',
+      },
+      Login: {
+        passwordRetryLimit: 0,
+        passwordRetryStrategy: 'NONE',
+        passwordRetryLockSeconds: 0,
+        captchaEnable: 'N',
+        captchaType: 'NONE',
+        captchaExpires: 1,
+        captchaDuration: 0,
+      },
+      Biz: {
+        secondaryVerifications: [],
+      },
+    }
   };
 }
 
@@ -329,7 +359,6 @@ const handleAdd = () => {
   reset();
   open.value = true;
   title.value = proxy.$t('System.Security.AddTitle');
-  console.log(form.value)
 }
 
 const handleSelectionChange = (selection) => {
@@ -338,27 +367,39 @@ const handleSelectionChange = (selection) => {
   multiple.value = !selection.length
 }
 
+const handleDbRowClick = (row) => {
+  handleUpdate(row);
+}
+
 const handleUpdate = (row) => {
   reset();
+  loading.value = true;
   const configId = row.configId || ids.value
   getSecurityConfig(configId).then(response => {
-    Object.assign(form, response.data);
-    open.value = true;
-    title.value = proxy.$t('System.Security.EditTitle');
+    response.data.configs.Password.weakPasswords = response.data.configs.Password.weakPasswords.join('\n');
+    if (!response.data.configs.Biz) {
+      response.data.configs.Biz = { secondaryVerifications: [] };
+    }
+    form.value = response.data;
+  }).finally(() => {
+    loading.value = false;
   });
+  title.value = proxy.$t('System.Security.EditTitle');
+  open.value = true;
 }
 
 const submitForm = () => {
-  formRef.value.validate(valid => {
+  proxy.$refs['formRef'].validate(valid => {
     if (valid) {
-      if (form.configId != undefined) {
-        saveSecurityConfig(form).then(res => {
+      form.value.configs.Password.weakPasswords = form.value.configs.Password.weakPasswords.split('\n');
+      if (form.value.configId != undefined) {
+        saveSecurityConfig(form.value).then(res => {
           proxy.$modal.msgSuccess(proxy.$t("Common.OpSuccess"));
           open.value = false;
           getList();
         });
       } else {
-        addSecurityConfig(form).then(res => {
+        addSecurityConfig(form.value).then(res => {
           proxy.$modal.msgSuccess(proxy.$t("Common.OpSuccess"));
           open.value = false;
           getList();
@@ -385,6 +426,33 @@ const handleStatusChange = (row) => {
     getList();
   });
 }
+
+const addPattern = () => {
+  const val = newPattern.value.trim();
+  if (!val) return;
+  const list = form.value.configs.Biz.secondaryVerifications;
+  if (!list.includes(val)) {
+    list.push(val);
+  }
+  newPattern.value = '';
+}
+
+const removePatternByValue = (pattern) => {
+  const list = form.value.configs.Biz.secondaryVerifications;
+  const idx = list.indexOf(pattern);
+  if (idx !== -1) list.splice(idx, 1);
+}
+
+const handlePatternSelectionChange = (selection) => {
+  patternSelection.value = selection.map(row => row.pattern);
+}
+
+const removeSelectedPatterns = () => {
+  const toDelete = new Set(patternSelection.value);
+  form.value.configs.Biz.secondaryVerifications =
+    form.value.configs.Biz.secondaryVerifications.filter(p => !toDelete.has(p));
+  patternSelection.value = [];
+}
 </script>
 <style scoped>
 .tips {
@@ -399,5 +467,33 @@ const handleStatusChange = (row) => {
 }
 .el-input, .el-input-number  {
   width: 217px;
+}
+.sv-editor {
+  width: 100%;
+  max-width: 680px;
+}
+.sv-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+.sv-search {
+  width: 180px;
+  flex-shrink: 0;
+}
+.sv-table {
+  border: 1px solid var(--el-border-color);
+  border-radius: 4px;
+}
+.sv-path {
+  font-family: monospace;
+  font-size: 13px;
+}
+.sv-tip {
+  margin-top: 6px;
+  color: #909399;
+  font-size: 12px;
+  line-height: 1.5;
 }
 </style>

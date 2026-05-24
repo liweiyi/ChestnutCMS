@@ -72,12 +72,13 @@
       <el-table-column 
         :label="$t('CMS.ContentCore.PublishPipe')"
         align="center"
-        width="160"
+        width="110"
         prop="publishPipeCode" />
       <el-table-column 
         :label="$t('CMS.Template.Name')"
         align="left"
         :show-overflow-tooltip="true"
+        width="360"
         prop="path">
       </el-table-column>
       <el-table-column 
@@ -100,23 +101,28 @@
       <el-table-column 
         :label="$t('Common.Operation')"
         align="center"
+        fixed="right"
         width="360" 
        >
         <template #default="scope">
           <el-button 
-            type="text"
+            link
+            type="primary"
             icon="Edit"
             @click="handleRename(scope.row)">{{ $t('CMS.Template.Rename') }}</el-button>
           <el-button
-            type="text"
+            link
+            type="success"
             icon="Edit"
             @click="handleEdit(scope.row)">{{ $t("Common.Edit") }}</el-button>
           <el-button
-            type="text"
+            link
+            type="danger"
             icon="Delete"
             @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
           <el-button
-            type="text"
+            link
+            type="warning"
             icon="Remove"
             @click="handleClearTemplateCache(scope.row)">{{ $t("CMS.Template.ClearIncludeCache") }}</el-button>
         </template>

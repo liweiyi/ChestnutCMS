@@ -23,7 +23,6 @@ import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
@@ -309,7 +308,6 @@ public class CatalogController extends CmsRestController {
 	 * 保存栏目扩展配置
 	 */
 	@XComment("{API.DOC.CMS.CATALOG.SAVE_EXTENDS}")
-	@XssIgnore
 	@Priv(type = AdminUserType.TYPE, value = "Catalog:Edit:${#catalogId}")
 	@Log(title = "栏目扩展", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PostMapping("/extends/{catalogId}")

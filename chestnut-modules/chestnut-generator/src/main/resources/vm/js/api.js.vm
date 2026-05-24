@@ -30,7 +30,7 @@ export function add${BusinessName}(data) {
 export function update${BusinessName}(data) {
   return request({
     url: '/${moduleName}/${businessName}',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -39,6 +39,6 @@ export function update${BusinessName}(data) {
 export function del${BusinessName}(${pkColumn.javaField}) {
   return request({
     url: '/${moduleName}/${businessName}/' + ${pkColumn.javaField},
-    method: 'delete'
+    method: 'post'
   })
 }

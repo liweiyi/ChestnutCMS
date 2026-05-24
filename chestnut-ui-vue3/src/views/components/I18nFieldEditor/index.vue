@@ -1,6 +1,6 @@
 <template>
   <div class="i18n-field-editor">
-    <el-link :underline="false" @click="handleOpen">
+    <el-link underline="never" @click="handleOpen">
       <svg-icon icon-class="language" />
     </el-link>
     <el-dialog 

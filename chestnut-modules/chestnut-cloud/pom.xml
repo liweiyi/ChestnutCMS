@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.chestnut</groupId>
         <artifactId>chestnut-modules</artifactId>
-        <version>1.5.11</version>
+        <version>1.5.12</version>
     </parent>
 
     <artifactId>chestnut-cloud</artifactId>
@@ -19,6 +19,14 @@
         <dependency>
             <groupId>com.chestnut</groupId>
             <artifactId>chestnut-common-cloud-volc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-common-cloud-aliyun</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-common-cloud-tencent</artifactId>
         </dependency>
         <dependency>
             <groupId>com.chestnut</groupId>

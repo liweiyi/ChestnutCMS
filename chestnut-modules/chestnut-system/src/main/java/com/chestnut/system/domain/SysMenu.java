@@ -50,7 +50,7 @@ public class SysMenu extends BaseEntity {
 
 	/** 菜单ID */
 	@TableId(value = "menu_id", type = IdType.INPUT)
-	private Long menuId;
+	private String menuId;
 
 	/** 菜单名称 */
 	@I18nField("{MENU.NAME.#{menuId}}")
@@ -61,7 +61,7 @@ public class SysMenu extends BaseEntity {
 	private String parentName;
 
 	/** 父菜单ID */
-	private Long parentId;
+	private String parentId;
 
 	/** 显示顺序 */
 	private Integer orderNum;

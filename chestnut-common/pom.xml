@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.chestnut</groupId>
 		<artifactId>chestnut</artifactId>
-		<version>1.5.11</version>
+		<version>1.5.12</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -24,6 +24,8 @@
 		<module>chestnut-common-captcha</module>
         <module>chestnut-common-cloud</module>
         <module>chestnut-common-cloud-volc</module>
+        <module>chestnut-common-cloud-aliyun</module>
+        <module>chestnut-common-cloud-tencent</module>
     </modules>
 	
 	<dependencyManagement>

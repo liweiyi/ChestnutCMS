@@ -7,7 +7,9 @@
                  append-to-body
                  center>
       <div class="percent_info">{{progressMessage}}</div>
-      <div class="err_messages" v-if="hasErrMessages()" v-html="formatErrMsg"></div>
+      <div class="err_messages" v-if="hasErrMessages()">
+        <div v-for="(msg, i) in errMessages" :key="i">{{ msg }}</div>
+      </div>
       <el-progress :text-inside="true" :stroke-width="15" :percentage="percent" :status="progressStatus"></el-progress>
     </el-dialog>
   </div>
@@ -120,7 +122,7 @@ const getProgressInfo = () => {
 }
 
 const hasErrMessages = () => {
-  return errMessages.value && errMessages.value != null && errMessages.value.length > 0;
+  return errMessages.value && errMessages.value.length > 0;
 }
 
 // 取消按钮

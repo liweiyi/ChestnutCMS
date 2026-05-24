@@ -30,7 +30,7 @@ export function addJob(data) {
 export function updateJob(data) {
   return request({
     url: '/monitor/job',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -52,7 +52,7 @@ export function changeJobStatus(jobId, status) {
   }
   return request({
     url: '/monitor/job/changeStatus',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -66,7 +66,7 @@ export function runJob(jobId, jobGroup) {
   }
   return request({
     url: '/monitor/job/run',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

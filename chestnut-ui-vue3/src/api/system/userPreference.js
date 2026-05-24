@@ -10,7 +10,7 @@ export function getUserPreference() {
 export function saveConfig(data) {
   return request({
     url: '/system/userPreference',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }
@@ -18,7 +18,7 @@ export function saveConfig(data) {
 export function saveSingleConfig(data) {
   return request({
     url: '/system/userPreference/single',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

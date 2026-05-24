@@ -15,21 +15,17 @@
  */
 package com.chestnut.system.fixed.dict;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.fixed.FixedDictType;
 import com.chestnut.system.service.ISysDictTypeService;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 /**
  * 密码校验规则，允许后台添加扩展，备注字段填写对应正则表达式即可
@@ -59,12 +55,14 @@ public class PasswordRule extends FixedDictType {
 
 	private static final ISysDictTypeService dictTypeService = SpringUtils.getBean(ISysDictTypeService.class);
 
-	private static final Map<String, Pattern> PatternMap = Map.of(
-			LETTER_NUMBER, Pattern.compile(REGEX_LETTER_NUMBER),
-			UPPER_LOW_LETTER_NUMBER, Pattern.compile(REGEX_UPPER_LOW_LETTER_NUMBER),
-			LETTER_NUMBER_SPECIAL, Pattern.compile(REGEX_LETTER_NUMBER_SPECIAL),
-			UPPER_LOW_LETTER_NUMBER_SPECIAL, Pattern.compile(REGEX_UPPER_LOW_LETTER_NUMBER_SPECIAL));
-	
+	private static final Map<String, Pattern> PATTERN_MAP = new HashMap<>();
+	static {
+		PATTERN_MAP.put(LETTER_NUMBER, Pattern.compile(REGEX_LETTER_NUMBER));
+		PATTERN_MAP.put(UPPER_LOW_LETTER_NUMBER, Pattern.compile(REGEX_UPPER_LOW_LETTER_NUMBER));
+		PATTERN_MAP.put(LETTER_NUMBER_SPECIAL, Pattern.compile(REGEX_LETTER_NUMBER_SPECIAL));
+		PATTERN_MAP.put(UPPER_LOW_LETTER_NUMBER_SPECIAL, Pattern.compile(REGEX_UPPER_LOW_LETTER_NUMBER_SPECIAL));
+	}
+
 	public PasswordRule() {
 		super(TYPE, "{DICT." + TYPE + "}", true);
 		super.addDictData("{DICT." + TYPE + "." + NONE + "}", NONE, 1, "");
@@ -79,20 +77,20 @@ public class PasswordRule extends FixedDictType {
 		return opt.isPresent() ? opt.get().getRemark() : StringUtils.EMPTY;
 	}
 	
-	public static Pattern getRulePatter(String rule) {
-		Pattern pattern = PatternMap.get(rule);
+	public static Pattern getRulePattern(String rule) {
+		Pattern pattern = PATTERN_MAP.get(rule);
 		if (Objects.isNull(pattern)) {
 			Optional<SysDictData> opt = dictTypeService.optDictData(TYPE, rule);
 			if (opt.isPresent() && StringUtils.isNotEmpty(opt.get().getRemark())) {
 				pattern = Pattern.compile(opt.get().getRemark());
-				PatternMap.put(rule, pattern);
+				PATTERN_MAP.put(rule, pattern);
 			}
 		}
 		return pattern;
 	}
 	
 	public static boolean match(String rule, String password) {
-		Pattern pattern = getRulePatter(rule);
+		Pattern pattern = getRulePattern(rule);
 		if (Objects.isNull(pattern)) {
 			return true;
 		}

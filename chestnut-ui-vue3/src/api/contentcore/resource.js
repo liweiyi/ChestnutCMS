@@ -47,7 +47,7 @@ export function addResource(data) {
 export function updateResource(data) {
   return request({
     url: '/cms/resource',
-    method: 'put',
+    method: 'post',
     data: data
   })
 }

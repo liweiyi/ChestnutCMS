@@ -4,14 +4,14 @@
 
 	<groupId>com.chestnut</groupId>
 	<artifactId>chestnut</artifactId>
-	<version>1.5.11</version>
+	<version>1.5.12</version>
 	<packaging>pom</packaging>
 
 	<name>ChestnutCMS</name>
 	<description>栗子内容管理系统</description>
 
 	<properties>
-		<chestnut.version>1.5.11</chestnut.version>
+		<chestnut.version>1.5.12</chestnut.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
@@ -405,6 +405,20 @@
             <dependency>
                 <groupId>com.chestnut</groupId>
                 <artifactId>chestnut-common-cloud-volc</artifactId>
+                <version>${chestnut.version}</version>
+            </dependency>
+
+            <!-- 云服务-阿里云 -->
+            <dependency>
+                <groupId>com.chestnut</groupId>
+                <artifactId>chestnut-common-cloud-aliyun</artifactId>
+                <version>${chestnut.version}</version>
+            </dependency>
+
+            <!-- 云服务-腾讯云 -->
+            <dependency>
+                <groupId>com.chestnut</groupId>
+                <artifactId>chestnut-common-cloud-tencent</artifactId>
                 <version>${chestnut.version}</version>
             </dependency>
 

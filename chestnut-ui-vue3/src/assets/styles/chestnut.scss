@@ -86,7 +86,12 @@
 .text-align-center {
   text-align: center;
 }
-
+.cursor-pointer {
+  cursor: pointer;
+}
+.cursor-move {
+  cursor: move;
+}
 .el-form .el-form-item__label {
   font-weight: 700;
 }
@@ -94,7 +99,7 @@
   margin-bottom: 8px;
 }
 .el-form--inline.el-form-search .el-form-item {
-  margin-right: 12px;
+  margin-right: 6px;
   margin-bottom: 0;
 }
 .el-dialog:not(.is-fullscreen) {

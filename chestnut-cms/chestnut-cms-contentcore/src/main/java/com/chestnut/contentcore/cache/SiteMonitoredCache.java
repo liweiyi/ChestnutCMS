@@ -22,6 +22,11 @@ import com.chestnut.contentcore.domain.CmsSite;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -60,11 +65,36 @@ public class SiteMonitoredCache implements IMonitoredCache<CmsSite> {
         return CACHE_PREFIX;
     }
 
+    private String cacheKeyById(Long siteId) {
+        return CACHE_PREFIX + siteId;
+    }
+
     public CmsSite getCache(Long siteId, Supplier<CmsSite> supplier) {
-        return redisCache.getCacheObject(CACHE_PREFIX + siteId, CmsSite.class, supplier);
+        return redisCache.getCacheObject(cacheKeyById(siteId), CmsSite.class, supplier);
+    }
+
+    public Map<Long, CmsSite> getCaches(Collection<Long> siteIds) {
+        if (siteIds == null || siteIds.isEmpty()) {
+            return Map.of();
+        }
+        List<Long> ids = siteIds.stream().filter(Objects::nonNull).distinct().toList();
+        List<String> keys = ids.stream().map(this::cacheKeyById).toList();
+        List<CmsSite> sites = redisCache.getCacheObjects(keys, CmsSite.class);
+        Map<Long, CmsSite> result = new LinkedHashMap<>(sites.size());
+        for (int i = 0; i < sites.size(); i++) {
+            CmsSite site = sites.get(i);
+            if (site != null) {
+                result.put(ids.get(i), site);
+            }
+        }
+        return result;
+    }
+
+    public void setCache(Long siteId, CmsSite site) {
+        this.redisCache.setCacheObject(cacheKeyById(siteId), site);
     }
 
     public void clear(long siteId) {
-        this.redisCache.deleteObject(CACHE_PREFIX + siteId);
+        this.redisCache.deleteObject(cacheKeyById(siteId));
     }
 }

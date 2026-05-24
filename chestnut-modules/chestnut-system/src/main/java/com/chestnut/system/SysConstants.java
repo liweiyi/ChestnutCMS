@@ -28,6 +28,11 @@ public interface SysConstants {
 	String RESOURCE_PREFIX = "/profile/";
 
     /**
+     * 后台一级菜单的PARENT_ID，兼容历史数据
+     */
+    String MENU_ROOT_ID = "0";
+
+    /**
      * 参数管理 cache key
      */
     String CACHE_SYS_CONFIG_KEY = "sys:config:";

@@ -38,6 +38,7 @@ const zhCN = {
     Edit: '修改',
     Save: '保存',
     Delete: '删除',
+    BatchDelete: '批量删除',
     Remove: "移除",
     Import: '导入',
     Export: '导出',
@@ -83,6 +84,7 @@ const zhCN = {
     RepeatSubmit: '请求正在处理，请勿重复提交',
     ServerConnectFailed: '后端接口连接异常',
     ServerConnectTimeout: '系统接口请求超时',
+    SecondaryVerification: '二次验证',
     ServerApiError: '系统接口{0}异常',
     Loading: '正在加载，请稍后',
     DownloadFailed: '下载文件出现错误，请联系管理员！',
@@ -96,6 +98,7 @@ const zhCN = {
     Others: "其他",
     Unknown: "未知",
     Recover: "恢复",
+    InputPassword: "请输入密码",
     Unit: {
       Year: "年",
       Month: "月",
@@ -301,6 +304,7 @@ const zhCN = {
       UploadAvatar: '点击上传头像',
       SelectUser: "选择用户",
       IsAllocatedRole: "已分配",
+      LoginRedirectTip: "登录成功，正在跳转...",
       Dialog: {
         Add: "添加用户信息",
         Edit: "编辑用户信息",
@@ -370,6 +374,7 @@ const zhCN = {
       PageWidgetPriv: "页面部件权限"
     },
     Menu: {
+      ID: "菜单ID",
       MenuName: "菜单名称",
       MenuType: "菜单类型",
       Icon: "图标",
@@ -573,6 +578,8 @@ const zhCN = {
       EditGenConfig: '修改生成配置'
     },
     Security: {
+      Basic: "基本信息",
+      Name: "名称",
       PasswordLength: "密码长度",
       PasswordRule: "密码组成规则",
       PasswordExpireSeconds: "密码过期时长（单位：秒）",
@@ -604,6 +611,13 @@ const zhCN = {
       CaptchaType: "验证码类型",
       CaptchaExpireSeconds: "验证码过期时长（单位：秒）",
       CaptchaRetryDuration: "验证码重试时长（单位：秒）",
+      BizConfigCard: "业务安全配置",
+      SecondaryVerifications: "需要二次验证的接口",
+      SecondaryVerificationsSearch: "按路径模糊搜索",
+      SecondaryVerificationsPlaceholder: "输入接口路径，如 /system/user/delete/**",
+      SecondaryVerificationPath: "接口路径",
+      SecondaryVerificationsTip: "支持 Ant 风格路径匹配，如 /system/** 或 /api/user/delete/{id}，每条为独立规则",
+      BizVerifyExpireSeconds: "二次验证有效期（单位：秒）",
       Tab: {
         SecurityConfig: "安全配置",
         LoginConfig: "第三方登录配置",
@@ -646,6 +660,14 @@ const zhCN = {
         AccessKey: "访问密钥",
         SecretKey: "密钥",
         Region: "区域",
+      },
+      Aliyun: {
+        AccessKey: "访问密钥",
+        SecretKey: "密钥",
+      },
+      Tencent: {
+        SecretId: "密钥ID",
+        SecretKey: "密钥",
       }
     }
   },
@@ -1050,6 +1072,11 @@ const zhCN = {
         CloudCardTitle: "云配置",
         CdnCloudConfig: "CDN云配置",
         AutoRefreshCDN: "自动刷新CDN",
+        ContentPrivStrategy: "内容权限策略",
+        ContentPrivStrategyExtendCatalog: "继承栏目",
+        ContentPrivStrategyExtendSite: "继承站点",
+        ContentPrivStrategyValid: "需要校验",
+        ContentPrivStrategyIgnore: "不需要校验",
       },
       Property: {
         QueryPlaceholder: "输入名称/编码查询",
@@ -1494,7 +1521,7 @@ const zhCN = {
       RuleTips: {
         Name: "只能使用字母、数字、下划线和斜杠，且后缀必须为：{0}"
       },
-      ClearIncludeCache: "清理区块缓存",
+      ClearIncludeCache: "清理缓存",
       AddTitle: "添加模板文件",
       EditTitle: "编辑模板文件名",
       SelectorTitle: "选择模板"
@@ -1597,6 +1624,7 @@ const zhCN = {
       OnlyTitle: "仅匹配标题",
       IndexDetails: "索引详情",
       ProgressTitle: "创建索引任务",
+      IndexNotFound: "站点索引不存在，是否重建？",
     },
     CustomForm: {
       Name: "名称",
@@ -1876,6 +1904,10 @@ const zhCN = {
     RestPwdSuccess: "修改成功，新密码是：{0}",
     AddTitle: "添加会员",
     EditTitle: "编辑会员",
+    AuthContentPriv: "权限配置",
+    Permission: {
+      ContentPriv: "内容浏览权限"
+    },
     LevelType: "积分类型",
     Level: {
       Type: "类型",
@@ -1895,6 +1927,28 @@ const zhCN = {
     RuleTips: {
       UserName: "必须以字母开头，且只能为（大小写字母，数字，下滑线）",
       Member: "用户名/手机号/Email不能全为空"
+    },
+    Selector: {
+      Title: "选择会员",
+      MemberList: "会员列表",
+      SelectedMemberList: "已选会员"
+    },
+    Role: {
+      RoleId: "角色ID",
+      RoleName: "角色名称",
+      RoleKey: "角色标识码",
+      Sort: "排序",
+      AddTitle: "添加会员角色",
+      EditTitle: "编辑会员角色",
+      UserSetting: "会员设置",
+      AuthContentPriv: "授权",
+      ConfirmRemoveMember: "确认取消授权？",
+      AddMember: "添加会员",
+      RemoveMember: "取消授权",
+      Placeholder: {
+        RoleName: "请输入角色名称",
+        RoleKey: "请输入角色标识码"
+      }
     }
   },
   MetaModel: {
@@ -2218,6 +2272,74 @@ const zhCN = {
         BusinessKey: '请输入业务关联键',
         Title: '请输入流程标题'
       }
+    }
+  },
+  CmsContentPriv: {
+    Saving: '保存中...',
+    Title: '内容浏览权限',
+    SelectMember: '选择会员',
+    ChangeMember: '切换会员',
+    CurrentMember: '当前会员',
+    NoMember: '请先选择会员',
+    Tab: {
+      Site: '站点权限',
+      Catalog: '栏目权限',
+      Content: '内容权限'
+    },
+    PrivType: '授权类型',
+    PrivTypeSite: '站点级',
+    PrivTypeCatalog: '栏目级',
+    PrivTypeContent: '内容级',
+    Target: '授权目标（格式：站点ID:栏目ID:内容ID）',
+    GrantTime: '授权时间',
+    GrantSite: '授权站点',
+    GrantCatalog: '授权栏目',
+    GrantContent: '授权内容',
+    SelectSite: '选择站点',
+    SelectPrivType: '请先选择授权类型',
+    ConfirmGrantCurrentSite: '确定授权当前站点（权限key：{0}）？',
+    SelectCatalog: '选择栏目',
+    SelectContent: '选择内容',
+    ConfirmRevoke: '确定撤销该授权？',
+    RevokeSuccess: '撤销成功',
+    GrantSuccess: '授权成功'
+  },
+  Migration: {
+    WP: {
+      Add: '新增WordPress迁移',
+      Edit: '编辑WordPress迁移',
+      Execute: '执行',
+      Name: '任务名称',
+      NamePlaceholder: '请输入任务名称',
+      DataSource: '数据源',
+      SelectDataSource: '请选择数据源',
+      TablePrefix: '表前缀',
+      Site: '目标站点',
+      SelectSite: '请选择目标站点',
+      MigrateMode: '迁移方式',
+      FullMode: '全量迁移',
+      SpecifiedMode: '指定栏目迁移',
+      DefaultPassword: '默认密码',
+      CatalogMappings: '栏目映射',
+      AddMapping: '添加映射',
+      WpCatalogId: 'WordPress栏目ID',
+      TargetCatalog: '目标栏目',
+      LastStatus: '最近状态',
+      LastExecuteTime: '最近执行时间',
+      Status0: '未执行',
+      Status1: '成功',
+      Status2: '失败',
+      Status3: '执行中',
+      NameRequired: '任务名称不能为空',
+      DataSourceRequired: '请选择数据源',
+      SiteRequired: '请选择目标站点',
+      MigrateModeRequired: '请选择迁移方式',
+      DefaultPasswordRequired: '默认密码不能为空',
+      MappingRequired: '指定栏目迁移必须至少添加一组栏目映射',
+      ConfirmDelete: '确认删除WordPress迁移任务“{0}”？',
+      ConfirmExecute: '确认执行WordPress迁移任务“{0}”？',
+      ProgressTitle: 'WordPress迁移进度',
+      ExecuteStarted: '任务已提交，任务ID：{0}'
     }
   }
 }

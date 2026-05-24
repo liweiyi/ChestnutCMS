@@ -30,6 +30,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -299,7 +300,7 @@ public class CmsContent extends BaseEntity implements IBackupable<BCmsContent> {
      * 扩展属性
      */
     @TableField(typeHandler = JacksonTypeHandler.class)
-    private Map<String, Object> configProps;
+    private Map<String, String> configProps;
 
     /**
      * 备用字段1
@@ -327,6 +328,13 @@ public class CmsContent extends BaseEntity implements IBackupable<BCmsContent> {
     
     public boolean isLinkContent() {
     	return YesOrNo.isYes(getLinkFlag());
+    }
+
+    public Map<String, String> getConfigProps() {
+        if (this.configProps == null) {
+            this.configProps = new HashMap<>();
+        }
+        return configProps;
     }
 
     @Override

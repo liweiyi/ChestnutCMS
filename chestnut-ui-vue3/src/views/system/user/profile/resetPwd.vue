@@ -5,12 +5,12 @@
       </el-form-item>
       <el-form-item :label="$t('AccountCenter.NewPwd')" prop="newPassword">
         <el-tooltip 
-          v-if="passwordRuleTips&&passwordRuleTips.length>0" 
+          v-if="ruleTips&&ruleTips.length>0" 
           class="item" 
           effect="dark" 
           placement="right"
           raw-content
-          :content="passwordRuleTips">
+          :content="ruleTips">
           <el-input v-model="user.newPassword" :placeholder="$t('AccountCenter.NewPwdPlaceHolder')" style="width:240px" type="password" show-password/>
         </el-tooltip>
       </el-form-item>
@@ -26,12 +26,12 @@
 
 <script setup name="ProfileResetPwd">
 import { updateUserPwd, getUserProfile } from "@/api/system/user";
-import { currentSecurityConfig } from "@/api/system/security";
+import { getSecurityConfigByType } from "@/api/system/security";
 import pinyin from "@/utils/pinyin";
 
 const { proxy } = getCurrentInstance()
 
-const passwordRuleTips = ref("")
+const ruleTips = ref("")
 const data = reactive({
   user: {
     oldPassword: undefined,
@@ -52,8 +52,8 @@ const equalToPassword = (rule, value, callback) => {
 }
 
 const validPasswordSensitive = (rule, value, callback) => {
-  for(let i = 0; i < securityConfig.value.passwordSensitive.length; i++) {
-    let sensitiveType = securityConfig.value.passwordSensitive[i];
+  for(let i = 0; i < securityConfig.value.sensitives.length; i++) {
+    let sensitiveType = securityConfig.value.sensitives[i];
     if ((sensitiveType == 'ACCOUNT' && user.value.newPassword.indexOf(userInfo.value.userName) > -1) // 用户名
       || (sensitiveType == 'PHONE_NUMBER' && proxy.$tools.isNotEmpty(userInfo.value.phoneNumber) && user.value.newPassword.indexOf(userInfo.value.phoneNumber) > -1) // 手机号
       || (sensitiveType == 'EMAIL' && proxy.$tools.isNotEmpty(userInfo.value.email) && user.value.newPassword.indexOf(userInfo.value.email.substring(0, userInfo.value.email.indexOf('@'))) > -1) // 邮箱名，不带@xx后缀
@@ -89,28 +89,30 @@ function loadUserProfile() {
 }
 
 function loadSecurityConfig() {
-  currentSecurityConfig().then(res => {
+  getSecurityConfigByType(['Password']).then(res => {
     if (res.data) {
-      securityConfig.value = res.data;
-      passwordRuleTips.value = "# " + proxy.$t('AccountCenter.NewPwdLenTip', [ securityConfig.value.passwordLenMin, securityConfig.value.passwordLenMax ]);
+      securityConfig.value = res.data.Password;
+      ruleTips.value = "# " + proxy.$t('AccountCenter.NewPwdLenTip', [ securityConfig.value.minLength, securityConfig.value.maxLength ]);
       rules.value.newPassword.push({ 
-        min: securityConfig.value.passwordLenMin, 
-        max: securityConfig.value.passwordLenMax, 
-        message: proxy.$t('AccountCenter.NewPwdLenTip', [ securityConfig.value.passwordLenMin, securityConfig.value.passwordLenMax ]), 
+        min: securityConfig.value.minLength, 
+        max: securityConfig.value.maxLength, 
+        message: proxy.$t('AccountCenter.NewPwdLenTip', [ securityConfig.value.minLength, securityConfig.value.maxLength ]), 
         trigger: "blur" 
       });
-      if (securityConfig.value.passwordRule != '0') {
-        passwordRuleTips.value += "<br/># " + proxy.$t('AccountCenter.NewPwdRule' + securityConfig.value.passwordRule + "Tip");
+      if (securityConfig.value.rule != '0') {
+        ruleTips.value += "<br/># " + proxy.$t('AccountCenter.NewPwdRule' + securityConfig.value.rule + "Tip");
         rules.value.newPassword.push({
-          pattern: securityConfig.value.passwordRulePattern,
-          message: proxy.$t('AccountCenter.NewPwdRule' + securityConfig.value.passwordRule + "Tip"), 
+          pattern: securityConfig.value.rulePattern,
+          message: proxy.$t('AccountCenter.NewPwdRule' + securityConfig.value.rule + "Tip"), 
           trigger: "blur"
         });
       }
-      if (securityConfig.value.passwordSensitive && securityConfig.value.passwordSensitive.length > 0) {
-        passwordRuleTips.value += "<br/># " + proxy.$t('AccountCenter.NewPwdSensitiveTip');
+      if (securityConfig.value.sensitives && securityConfig.value.sensitives.length > 0) {
+        ruleTips.value += "<br/># " + proxy.$t('AccountCenter.NewPwdSensitiveTip');
         rules.value.newPassword.push({ required: true, validator: validPasswordSensitive, trigger: "blur" });
       }
+      console.log(ruleTips.value);
+      console.log(rules.value);
     }
   })
 }

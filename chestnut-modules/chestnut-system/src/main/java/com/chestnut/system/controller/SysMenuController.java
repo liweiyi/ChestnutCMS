@@ -31,11 +31,9 @@ import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysMenu;
-import com.chestnut.system.domain.dto.CreateMenuRequest;
+import com.chestnut.system.domain.dto.SaveMenuRequest;
 import com.chestnut.system.domain.dto.QueryMenuRequest;
-import com.chestnut.system.domain.dto.UpdateMenuRequest;
 import com.chestnut.system.enums.MenuType;
-import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
@@ -43,6 +41,7 @@ import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysMenuService;
 import com.chestnut.system.service.ISysPermissionService;
 import com.chestnut.system.validator.LongId;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -85,7 +84,7 @@ public class SysMenuController extends BaseRestController {
 	@XComment("{API.DOC.SYS.MENU.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuList)
 	@GetMapping(value = "/detail/{menuId}")
-	public R<SysMenu> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.MENU.ID}") Long menuId) {
+	public R<SysMenu> getInfo(@PathVariable @NotBlank @XComment("{API.DOC.SYS.MENU.ID}") String menuId) {
 		SysMenu menu = menuService.getById(menuId);
 		Assert.notNull(menu, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(menuId));
 		I18nUtils.replaceI18nFields(menu);
@@ -98,18 +97,18 @@ public class SysMenuController extends BaseRestController {
 	@XComment("{API.DOC.SYS.MENU.GET_TREE}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/treeselect")
-	public R<List<TreeNode<Long>>> treeselect() {
+	public R<List<TreeNode<String>>> treeselect() {
 		List<SysMenu> menus = this.menuService.lambdaQuery().orderByAsc(SysMenu::getOrderNum).list();
 		// 国际化翻译
 		I18nUtils.replaceI18nFields(menus, LocaleContextHolder.getLocale());
-		List<TreeNode<Long>> buildMenuTreeSelect = menuService.buildMenuTreeSelect(menus);
+		List<TreeNode<String>> buildMenuTreeSelect = menuService.buildMenuTreeSelect(menus);
 		return R.ok(buildMenuTreeSelect);
 	}
 
 	@XComment("{API.DOC.SYS.MENU.USER_TREE}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/userTreeselect")
-	public R<List<TreeNode<Long>>> userTreeselect() {
+	public R<List<TreeNode<String>>> userTreeselect() {
 		List<SysMenu> menus = this.menuService.lambdaQuery()
 				.ne(SysMenu::getMenuType, MenuType.Button.value())
 				.eq(SysMenu::getVisible, YesOrNo.YES)
@@ -123,7 +122,7 @@ public class SysMenuController extends BaseRestController {
 		}
 		// 国际化翻译
 		I18nUtils.replaceI18nFields(menus, LocaleContextHolder.getLocale());
-		List<TreeNode<Long>> buildMenuTreeSelect = menuService.buildMenuTreeSelect(menus);
+		List<TreeNode<String>> buildMenuTreeSelect = menuService.buildMenuTreeSelect(menus);
 		return R.ok(buildMenuTreeSelect);
 	}
 
@@ -134,7 +133,7 @@ public class SysMenuController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuAdd)
 	@Log(title = "菜单管理", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
-	public R<Void> add(@Validated @RequestBody CreateMenuRequest req) {
+	public R<Void> add(@Validated @RequestBody SaveMenuRequest req) {
 		menuService.insertMenu(req);
 		return R.ok();
 	}
@@ -146,7 +145,7 @@ public class SysMenuController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuEdit)
 	@Log(title = "菜单管理", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<Void> edit(@Validated @RequestBody UpdateMenuRequest req) {
+	public R<Void> edit(@Validated @RequestBody SaveMenuRequest req) {
 		menuService.updateMenu(req);
 		return R.ok();
 	}
@@ -158,7 +157,7 @@ public class SysMenuController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysMenuRemove)
 	@Log(title = "菜单管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete/{menuId}")
-	public R<Void> remove(@PathVariable("menuId") @LongId @XComment("{API.DOC.SYS.MENU.ID}") Long menuId) {
+	public R<Void> remove(@PathVariable @NotBlank @XComment("{API.DOC.SYS.MENU.ID}") String menuId) {
 		menuService.deleteMenuById(menuId);
 		return R.ok();
 	}

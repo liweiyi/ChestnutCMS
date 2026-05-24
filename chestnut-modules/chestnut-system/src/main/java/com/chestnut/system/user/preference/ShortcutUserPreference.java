@@ -55,11 +55,11 @@ public class ShortcutUserPreference implements IUserPreference {
 		return List.of();
 	}
 
-	public static List<Long> getValue(Map<String, Object> preferences) {
+	public static List<String> getValue(Map<String, Object> preferences) {
 		if (preferences != null) {
 			Object value = preferences.get(ID);
 			if (value instanceof List<?> menuIds) {
-				return menuIds.stream().map(o -> Long.valueOf(o.toString())).toList();
+				return menuIds.stream().map(Object::toString).toList();
 			}
 		}
 		return List.of();

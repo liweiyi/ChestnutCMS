@@ -35,7 +35,7 @@
                   <p>{{ $t("CMS.Audio.BitRate") }}：[ {{ item.bitRate }} ]</p>
                   <p>{{ $t("CMS.Audio.SamplingRate") }}：[ {{ item.samplingRate }} ]</p>
                 </template>
-                <el-link type="primary" :underline="false">{{ $t("CMS.Video.Details") }}</el-link>
+                <el-link type="primary" underline="never">{{ $t("CMS.Video.Details") }}</el-link>
               </el-tooltip>
             </div>
           </el-form-item>

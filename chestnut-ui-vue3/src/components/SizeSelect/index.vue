@@ -32,7 +32,7 @@ const sizeOptions = ref([
 function handleSetSize(size) {
   proxy.$modal.loading("正在设置布局大小，请稍候...")
   appStore.setSize(size)
-  setTimeout("window.location.reload()", 1000)
+  setTimeout(() => window.location.reload(), 1000)
 }
 </script>
 

@@ -21,7 +21,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.domain.R;
-import com.chestnut.common.extend.annotation.XssIgnore;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
@@ -59,7 +58,6 @@ import freemarker.template.TemplateException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.validation.annotation.Validated;
@@ -176,7 +174,6 @@ public class ContentController extends CmsRestController {
 
 	@XComment("{API.DOC.CMS.CONTENT.ADD}")
 	@Log(title = "新增内容", businessType = BusinessType.INSERT)
-	@XssIgnore
 	@PostMapping("/add")
 	public R<Map<String, Object>> addContent(@RequestParam("contentType") @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}") String contentType, HttpServletRequest request)
 			throws IOException {
@@ -192,7 +189,6 @@ public class ContentController extends CmsRestController {
 
 	@XComment("{API.DOC.CMS.CONTENT.UPDATE}")
 	@Log(title = "编辑内容", businessType = BusinessType.UPDATE)
-	@XssIgnore
 	@PostMapping("/update")
 	public R<Map<String, Object>> saveContent(@RequestParam("contentType") @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}") String contentType, HttpServletRequest request)
 			throws IOException {

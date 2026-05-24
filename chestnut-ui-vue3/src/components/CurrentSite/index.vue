@@ -152,7 +152,7 @@ const cancel = () => {
 }
 
 const refreshView = () => {
-  setTimeout("window.location.reload()", 200)
+  setTimeout(() => window.location.reload(), 200)
 }
 </script>
 <style lang="scss" scoped>

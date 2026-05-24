@@ -86,5 +86,10 @@ public class ImageWatermarkArgsProperty implements IProperty {
 		private float opacity = 1f;
 
 		private float ratio = 30f;
+
+		/**
+		 * 需要添加水印的图片宽高尺寸不小于50
+		 */
+		private int sourceMinSize = 50;
 	}
 }

@@ -87,6 +87,10 @@ public class BaseRestController {
 		return R.ok(TableData.of(list, total));
 	}
 
+	protected <T> R<TableData<T>> bindEmptyDataTable() {
+		return this.bindDataTable(List.of());
+	}
+
 	/**
 	 * 页面跳转
 	 */
