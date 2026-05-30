@@ -618,6 +618,7 @@ const zhCN = {
       SecondaryVerificationPath: "接口路径",
       SecondaryVerificationsTip: "支持 Ant 风格路径匹配，如 /system/** 或 /api/user/delete/{id}，每条为独立规则",
       BizVerifyExpireSeconds: "二次验证有效期（单位：秒）",
+      CSP: "内容安全策略（CSP）",
       Tab: {
         SecurityConfig: "安全配置",
         LoginConfig: "第三方登录配置",
@@ -1011,6 +1012,7 @@ const zhCN = {
         ExModel: "站点扩展模型",
         PublishMaxPageNum: "内容发布更新列表页数",
         EnableEditPublished: "允许编辑已发布内容",
+        EnablePublishLog: "是否开启发布日志",
         EnableSSI: "是否启用SSI",
         CatalogConfCardTitle: "列表配置",
         CatalogPageSize: "分页列表大小",
@@ -1441,6 +1443,7 @@ const zhCN = {
       GoBack: "返回上一页",
       AdMaterials: "广告素材",
       RedirectUrl: "跳转链接",
+      Script: "JS脚本",
     },
     Block: {
       Basic: "基础属性",

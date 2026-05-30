@@ -28,7 +28,7 @@
         <el-button 
           plain
           type="info"
-          :icon="Back"
+          icon="Back"
           @click="handleGoBack">{{ $t('Common.GoBack') }}</el-button>
       </el-col>
     </el-row>
@@ -71,7 +71,7 @@
             <el-col :span="12">
               <el-row :gutter="10" style="justify-content: end;">
                 <el-col :span="1.5">
-                  <el-input :placeholder="$t('CMS.Adv.Placeholder.Name')" v-model="queryParams.name" style="width: 200px;" class="mr10"></el-input>
+                  <el-input :placeholder="$t('CMS.Adv.Placeholder.Name')" v-model="queryParams.name" style="width: 220px;"></el-input>
                 </el-col>
                 <el-col :span="1.5">
                   <el-button-group>
@@ -113,7 +113,7 @@
                 <span>{{ scope.row.offlineDate }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Common.Operation')" align="center" width="220">
+            <el-table-column :label="$t('Common.Operation')" align="center" fixed="right" width="220">
               <template #default="scope">
                 <el-button 
                   v-if="scope.row.state==='1'"

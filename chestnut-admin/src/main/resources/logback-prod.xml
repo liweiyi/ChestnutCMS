@@ -11,6 +11,11 @@
             <pattern>${log.pattern}</pattern>
         </encoder>
     </appender>
+    <appender name="CC_PUBLISH_LOG" class="com.chestnut.contentcore.publish.log.PublishLogAppender">
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
 
     <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
         <!-- 设置队列的最大容量，默认：256 -->
@@ -108,5 +113,6 @@
     <!--系统发布日志-->
     <logger name="publish" level="info">
         <appender-ref ref="publish"/>
+        <appender-ref ref="CC_PUBLISH_LOG" />
     </logger>
 </configuration> 

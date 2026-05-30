@@ -171,8 +171,7 @@
             </el-select>
           </el-form-item>
           <el-form-item>
-            <el-select  v-model="queryParams.sorts" @change="loadContentList" style="width: 140px">
-              <el-option value="" :label="$t('CMS.Content.SortOption.Default')"></el-option>
+            <el-select  v-model="queryParams.sorts" @change="loadContentList" :placeholder="$t('CMS.Content.SortOption.Default')" clearable style="width: 140px">
               <el-option value="createTime#ASC" :label="$t('CMS.Content.SortOption.CreateTimeAsc')"></el-option>
               <el-option value="createTime#DESC" :label="$t('CMS.Content.SortOption.CreateTimeDesc')"></el-option>
               <el-option value="publishDate#ASC" :label="$t('CMS.Content.SortOption.PublishDateAsc')"></el-option>
@@ -186,10 +185,16 @@
             </el-button-group>
           </el-form-item>
           <el-form-item>
-            <el-button icon="Plus" @click="showSearch=!showSearch">{{ $t("Common.More") }}</el-button>
+            <el-button-group>
+              <el-button :type="listStyle == 'list' ? 'primary' : ''" @click="handleListStyle('list')"><svg-icon icon-class="list" /></el-button>
+              <el-button :type="listStyle == 'table' ? 'primary' : ''" @click="handleListStyle('table')"><svg-icon icon-class="table" /></el-button>
+            </el-button-group>
+          </el-form-item>
+          <el-form-item>
+            
           </el-form-item>
         </div>
-        <div v-show="showSearch">
+        <div class="mt8" v-show="showSearch">
           <el-form-item :label="$t('Common.CreateTime')">
             <el-date-picker
               v-model="dateRange"
@@ -203,8 +208,188 @@
         </div>
       </el-form>
     </el-row>
-
+    <!-- 列表风格内容列表 -->
+    <div v-if="listStyle == 'list'" v-loading="loading" class="content-list-wrapper">
+      <div v-if="contentList && contentList.length > 0" class="list-selection-bar">
+        <el-checkbox
+          :model-value="isCurrentPageAllSelected()"
+          :indeterminate="isCurrentPageIndeterminate()"
+          @change="handleListCheckAllChange"
+        >{{ $t('Common.CheckAll') }}</el-checkbox>
+        <el-text v-if="selectedRows.length > 0" type="info" size="small">已选 {{ selectedRows.length }} 条</el-text>
+      </div>
+      <div
+        v-for="item in contentList"
+        :key="item.contentId"
+        class="content-wrap"
+        :class="{ 'is-selected': isListRowSelected(item) }"
+        @click="handleListRowClick(item)"
+        @contextmenu.prevent.stop="handleListRowContextMenu(item, $event)">
+        <div class="selection-wrap">
+          <el-checkbox
+            :model-value="isListRowSelected(item)"
+            @change="checked => handleListSelectionChange(item, checked)"
+            @click.stop
+          />
+        </div>
+        <div class="top-wrap">
+          <div v-if="item.logoSrc&&item.logoSrc.length > 0" class="left-wrap">
+            <el-image :src="item.logoSrc" fit="contain"></el-image>
+          </div>
+          <div class="right-wrap">
+            <div class="title-wrap">
+              <el-text type="primary" class="title">
+                <el-link type="primary" :underline="false" @click.stop="handleEdit(item)">{{ item.title }}</el-link>
+              </el-text>
+              <div class="stat-wrap">
+                <el-tooltip placement="left" effect="light">
+                  <template #content>
+                    <div class="content-stat-data">
+                      <el-text><el-icon class="mr5"><View /></el-icon>{{ $t('CMS.Content.ViewCount') }} {{ item.viewCount }}</el-text>
+                      <el-text><el-icon class="mr5"><ChatDotRound /></el-icon>{{ $t('CMS.Content.CommentCount') }} {{ item.commentCount }}</el-text>
+                      <el-text><el-icon class="mr5"><Star /></el-icon>{{ $t('CMS.Content.FavoriteCount') }} {{ item.favoriteCount }}</el-text>
+                      <el-text><el-icon class="mr5"><Pointer /></el-icon>{{ $t('CMS.Content.LikeCount') }} {{ item.likeCount }}</el-text>
+                    </div>
+                  </template>
+                  <el-link :underline="false" type="info"><el-icon class="mr5"><View /></el-icon>{{ item.viewCount }}</el-link>
+                </el-tooltip>
+              </div>
+            </div>
+            <div v-if="item.summary&&item.summary.length > 0" class="summary-wrap">
+              <el-text type="info">{{ item.summary }}</el-text>
+            </div>
+            <div class="other-wrap">
+              <div class="status-and-attrs">
+                <el-tag type="info" round class="mr5">{{ contentTypeFormat(item) }}</el-tag>
+                <dict-tag :options="CMSContentStatus" :value="item.status"/>
+                <div class="content-attrs">
+                  <span class="content_attr" v-if="item.topFlag>0" :title="$t('CMS.Content.SetTop')"><svg-icon icon-class="top" /></span>
+                  <span
+                    v-for="dict in CMSContentAttribute"
+                    :key="dict.value"
+                    :title="dict.label">
+                    <span class="content_attr" v-if="item.attributes.indexOf(dict.value)>-1"><svg-icon :icon-class="dict.value" /></span>
+                  </span>
+                  <el-popover v-if="item.copyType > 0" placement="right" :width="400" trigger="hover">
+                    <template #reference>
+                      <span class="content_attr"><svg-icon icon-class="copy" /></span>
+                    </template>
+                    <el-descriptions :column="1" border>
+                      <el-descriptions-item :label="$t('CMS.Content.CopyType')"><dict-tag :options="CMSContentCopyType" :value="item.copyType" /></el-descriptions-item>
+                      <el-descriptions-item :label="$t('CMS.Content.CopyId')">{{ item.copyId }}</el-descriptions-item>
+                    </el-descriptions>
+                  </el-popover>
+                </div>
+              </div>
+              <div class="editor-and-author">
+                <el-text v-if="$tools.isNotEmpty(item.author)" size="small">
+                  <el-icon class="mr5"><User /></el-icon><span class="font-bold mr5">{{ $t('CMS.Content.Author') }}</span>{{ item.author }}
+                </el-text>
+                <el-text v-if="$tools.isNotEmpty(item.editor)" size="small">
+                  <el-icon class="mr5"><User /></el-icon><span class="font-bold mr5">{{ $t('CMS.Content.Editor') }}</span>{{ item.editor }}
+                </el-text>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-wrap">
+          <div class="bottom-left-wrap">
+            <el-text size="small">
+              <el-icon class="mr5"><Clock /></el-icon><span class="font-bold mr5">{{ $t('CMS.Content.PublishDate') }}</span>{{ parseTime(item.publishDate,'{y}-{m}-{d} {h}:{i}') }}
+            </el-text>
+            <el-text size="small">
+              <el-icon class="mr5"><Clock /></el-icon><span class="font-bold mr5">{{ $t('Common.CreateTime') }}</span>{{ parseTime(item.createTime, '{y}-{m}-{d} {h}:{i}') }}
+            </el-text>
+          </div>
+          <div class="action-wrap" @click.stop>
+            <el-button
+              link
+              type="primary"
+              icon="View"
+              @click="handlePreview(item)"
+            >{{ $t('CMS.ContentCore.Preview') }}</el-button>
+            <el-button
+              link
+              type="success"
+              icon="Promotion"
+              v-hasPermi="[ $p('Catalog:EditContent:{0}', [ item.catalogId ]) ]"
+              @click="handlePublish(item)"
+            >{{ $t('CMS.ContentCore.Publish') }}</el-button>
+            <el-button
+              link
+              type="warning"
+              icon="Download"
+              v-hasPermi="[ $p('Catalog:EditContent:{0}', [ item.catalogId ]) ]"
+              @click="handleOffline(item)"
+            >{{ $t('CMS.Content.Offline') }}</el-button>
+            <el-button
+              link
+              type="primary"
+              icon="Sort"
+              v-hasPermi="[ $p('Catalog:EditContent:{0}', [ item.catalogId ]) ]"
+              @click="handleSort(item)"
+            >{{ $t('Common.Sort') }}</el-button>
+            <el-button
+              link
+              type="danger"
+              icon="Delete"
+              v-if="item.status == '40' || item.status == '0'"
+              v-hasPermi="[ $p('Catalog:DeleteContent:{0}', [ item.catalogId ]) ]"
+              @click="handleDelete(item)"
+            >{{ $t('Common.Delete') }}</el-button>
+            <el-dropdown>
+              <el-button type="primary" link icon="More"></el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item 
+                    v-if="checkPermi([$p('Catalog:EditContent:{0}', [ item.catalogId ])])"
+                    icon="Edit" 
+                    @click.native="handleEdit(item)"
+                  >{{ $t('Common.Edit') }}</el-dropdown-item>
+                  <el-dropdown-item 
+                    v-if="checkPermi([$p('Catalog:EditContent:{0}', [ item.catalogId ])])"
+                    icon="Timer" 
+                    @click.native="handleToPublish(item)"
+                  >{{ $t('CMS.ContentCore.ToPublish') }}</el-dropdown-item>
+                  <el-dropdown-item 
+                    v-if="checkPermi([$p('Catalog:EditContent:{0}', [ item.catalogId ])])"
+                    icon="Top" 
+                    @click.native="handleSetTop(item)"
+                  >{{ $t('CMS.Content.SetTop') }}</el-dropdown-item>
+                  <el-dropdown-item 
+                    v-if="item.topFlag>0 && checkPermi([$p('Catalog:EditContent:{0}', [ item.catalogId ])])"
+                    icon="Bottom" 
+                    @click.native="handleCancelTop(item)"
+                  >{{ $t('CMS.Content.CancelTop') }}</el-dropdown-item>
+                  <el-dropdown-item 
+                    v-if="checkPermi([$p('Catalog:EditContent:{0}', [ item.catalogId ])])"
+                    icon="DocumentCopy" 
+                    @click.native="handleCopy(item)"
+                  >{{ $t('Common.Copy') }}</el-dropdown-item>
+                  <el-dropdown-item 
+                    v-if="checkPermi([$p('Catalog:EditContent:{0}', [ item.catalogId ])])"
+                    icon="Right" 
+                    @click.native="handleMove(item)"
+                  >{{ $t('Common.Move') }}</el-dropdown-item>
+                  <el-dropdown-item 
+                    icon="Search" 
+                    @click.native="handleCreateIndex(item)"
+                  >{{ $t('CMS.Content.GenIndex') }}</el-dropdown-item>
+                  <el-dropdown-item 
+                    icon="Refresh" 
+                      @click.native="handleRefreshCdn(item)"
+                    >{{ $t('CMS.ContentCore.RefreshCdn') }}</el-dropdown-item>
+                  <!-- <el-dropdown-item icon="Document" @click.native="handleArchive(scope.row)">{{ $t('CMS.Content.Archive') }}</el-dropdown-item> -->
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 表格风格内容列表 -->
     <el-table
+      v-if="listStyle == 'table'"
       v-loading="loading"
       ref="tableContentListRef"
       :data="contentList"
@@ -215,19 +400,8 @@
       @selection-change="handleSelectionChange"
       @row-contextmenu="handleRowContextMenu">
       <el-table-column type="selection" width="50" align="center" />
-      <el-table-column :label="$t('CMS.Content.Logo')" align="center" width="110">
-          <template #default="scope">
-            <el-image
-              v-if="scope.row.logoSrc&&scope.row.logoSrc.length > 0"
-              style="height: 60px;max-width: 80px;"
-              :src="scope.row.logoSrc"
-              fit="contain"
-            ></el-image>
-          </template>
-      </el-table-column>
       <el-table-column :label="$t('CMS.Content.Title')" :show-overflow-tooltip="true">
         <template #default="scope">
-          <div class="content-list-title">{{ scope.row.title }}</div>
           <div class="content-list-title-attrs">
             <span class="content_attr"><el-tag type="primary" size="small">{{ contentTypeFormat(scope.row) }}</el-tag></span>
             <span class="content_attr" v-if="scope.row.topFlag>0" :title="$t('CMS.Content.SetTop')"><svg-icon icon-class="top" /></span>
@@ -246,6 +420,7 @@
                 <el-descriptions-item :label="$t('CMS.Content.CopyId')">{{ scope.row.copyId }}</el-descriptions-item>
               </el-descriptions>
             </el-popover>
+            {{ scope.row.title }}
           </div>
         </template>
       </el-table-column>
@@ -262,6 +437,7 @@
       <el-table-column
         :label="$t('Common.Operation')"
         align="center"
+        fixed="right"
         width="300">
         <template #default="scope">
           <el-button
@@ -328,11 +504,6 @@
                   icon="Right" 
                   @click.native="handleMove(scope.row)"
                 >{{ $t('Common.Move') }}</el-dropdown-item>
-                <el-dropdown-item 
-                  v-if="checkPermi([$p('Catalog:EditContent:{0}', [ scope.row.catalogId ])])"
-                  icon="Download" 
-                  @click.native="handleOffline(scope.row)"
-                >{{ $t('CMS.Content.Offline') }}</el-dropdown-item>
                 <el-dropdown-item 
                   icon="Search" 
                   @click.native="handleCreateIndex(scope.row)"
@@ -560,6 +731,7 @@ const openCatalogSelector = ref(false);
 const isCopy = ref(false);
 const openContentSortDialog = ref(false);
 const openEditorW = ref(false);
+const listStyle = ref('list');
 
 // 右键菜单相关
 const contextMenuVisible = ref(false);
@@ -568,6 +740,13 @@ const contextMenuRow = ref(null);
 watch(() => props.cid, (newVal) => {
   loadContentList();
 });
+
+function handleListStyle(style) {
+  if (listStyle.value != style) {
+    toggleAllCheckedRows();
+  }
+  listStyle.value = style;
+}
 
 onMounted(() => {
   changeTableHeight();
@@ -594,6 +773,7 @@ function loadArticleBodyFormats() {
 function loadContentList () {
   loading.value = true;
   queryParams.value.catalogId = props.cid;
+  toggleAllCheckedRows();
   contentApi.getContentList({
     beginTime: dateRange.value && dateRange.value.length == 2 ? dateRange.value[0] : null,
     endTime: dateRange.value && dateRange.value.length == 2 ? dateRange.value[1] : null,
@@ -617,6 +797,10 @@ function contentTypeFormat (row, column) {
 }
 
 function handleSelectionChange (selection) {
+  updateSelectionState(selection);
+}
+
+function updateSelectionState(selection) {
   selectedRows.value = selection;
   single.value = selection.length != 1;
   multiple.value = !selection.length;
@@ -628,10 +812,45 @@ function handleRowClick (currentRow) {
 }
 
 function toggleAllCheckedRows() {
-  selectedRows.value.forEach(row => {
-    proxy.$refs.tableContentListRef.toggleRowSelection(row, false);
-  });
-  selectedRows.value = [];
+  if (proxy.$refs.tableContentListRef) {
+    proxy.$refs.tableContentListRef.clearSelection();
+  }
+  updateSelectionState([]);
+}
+
+function isListRowSelected(row) {
+  return selectedRows.value.some(item => item.contentId == row.contentId);
+}
+
+function isCurrentPageAllSelected() {
+  const rows = contentList.value || [];
+  return rows.length > 0 && rows.every(row => isListRowSelected(row));
+}
+
+function isCurrentPageIndeterminate() {
+  const rows = contentList.value || [];
+  const selectedCount = rows.filter(row => isListRowSelected(row)).length;
+  return selectedCount > 0 && selectedCount < rows.length;
+}
+
+function handleListSelectionChange(row, checked) {
+  const nextSelection = checked
+    ? [ ...selectedRows.value, row ].filter((item, index, array) => array.findIndex(hit => hit.contentId == item.contentId) == index)
+    : selectedRows.value.filter(item => item.contentId != row.contentId);
+  updateSelectionState(nextSelection);
+}
+
+function handleListRowClick(row) {
+  updateSelectionState([ row ]);
+}
+
+function handleListRowContextMenu(row, event) {
+  handleListRowClick(row);
+  handleRowContextMenu(row, null, event);
+}
+
+function handleListCheckAllChange(checked) {
+  updateSelectionState(checked ? [ ...(contentList.value || []) ] : []);
 }
 
 function handleQuery () {
@@ -934,30 +1153,4 @@ function handleRowContextMenu(row, column, event) {
   proxy.$refs.contextMenuRef.show(event);
 }
 </script>
-<style lang="scss" scoped>
-.cms-content-list .head-container .el-select .el-input {
-  width: 110px;
-}
-.cms-content-list .el-divider {
-  margin-top: 10px;
-}
-.cms-content-list .el-tabs__header {
-  margin-bottom: 10px;
-}
-.cms-content-list .row-more-btn {
-  padding-left: 10px;
-}
-.cms-content-list .top-icon {
-  font-weight: bold;
-  font-size: 12px;
-  color:green;
-}
-.cms-content-list .content_attr {
-  margin-left: 2px;
-}
-.btn-more:focus-visible {
-  outline: none;
-  border: none;
-  box-shadow: none;
-}
-</style>
+<style lang="scss" scoped src="./css/contentList.scss"></style>

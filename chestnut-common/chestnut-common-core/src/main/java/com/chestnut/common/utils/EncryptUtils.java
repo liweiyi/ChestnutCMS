@@ -16,11 +16,15 @@
 package com.chestnut.common.utils;
 
 import org.apache.commons.codec.binary.Hex;
+import org.springframework.util.DigestUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -116,5 +120,29 @@ public class EncryptUtils {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static byte[] md5(byte[] bytes) {
+        return DigestUtils.md5Digest(bytes);
+    }
+
+    public static String md5AsHex(byte[] bytes) {
+        return DigestUtils.md5DigestAsHex(bytes);
+    }
+
+    public static byte[] md5(InputStream is) throws IOException {
+        return DigestUtils.md5Digest(is);
+    }
+
+    public static String md5AsHex(InputStream is) throws IOException {
+        return DigestUtils.md5DigestAsHex(is);
+    }
+
+    public static String md5AsHex(String str) {
+        return DigestUtils.md5DigestAsHex(str.getBytes(Charset.defaultCharset()));
+    }
+
+    public static String md5AsHex(String str, Charset charset) {
+        return DigestUtils.md5DigestAsHex(str.getBytes(charset));
     }
 }

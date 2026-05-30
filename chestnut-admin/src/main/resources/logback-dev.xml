@@ -27,6 +27,11 @@
             <pattern>${log.pattern}</pattern>
         </encoder>
     </appender>
+    <appender name="CC_PUBLISH_LOG" class="com.chestnut.contentcore.publish.log.PublishLogAppender">
+        <encoder>
+            <pattern>${log.pattern}</pattern>
+        </encoder>
+    </appender>
 
 	<!-- 系统日志输出 -->
 	<appender name="out" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -92,5 +97,6 @@
     <!--系统发布日志-->
     <logger name="publish" level="debug">
         <appender-ref ref="publish"/>
+        <appender-ref ref="CC_PUBLISH_LOG" />
     </logger>
 </configuration> 

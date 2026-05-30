@@ -56,6 +56,7 @@ public class AutoArticleLogoMinSize implements IProperty {
 	}
 	
 	public static int getValue(Map<String, String> props) {
-		return ConfigPropertyUtils.getInteger(ID, props);
+		Integer v = ConfigPropertyUtils.getInteger(ID, props);
+		return Objects.requireNonNullElse(v, DEFAULT_VALUE);
 	}
 }

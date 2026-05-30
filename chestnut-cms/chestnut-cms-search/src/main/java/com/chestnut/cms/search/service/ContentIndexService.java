@@ -249,7 +249,7 @@ public class ContentIndexService implements CommandLineRunner {
 			int count = 1;
 			for (int i = 0; i * pageSize < total; i++) {
                 try {
-					AsyncTaskManager.setTaskProgressInfo((int) (count++ * 100 / total),
+					AsyncTaskManager.setTaskProgressInfo((int) (count++ * pageSize * 100 / total),
 							CmsSearchTips.BUILDING_CATALOG_INDEX, catalog.getName());
 					AsyncTaskManager.checkInterrupt(); // 允许中断
 					Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);

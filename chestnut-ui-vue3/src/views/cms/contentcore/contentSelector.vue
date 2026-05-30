@@ -7,22 +7,24 @@
       :close-on-click-modal="false"
       custom-class="content-selector-dialog"
       append-to-body>
-      <el-container>
-        <el-aside>
+      <cc-spliter storage-key="cms-content-selector">
+        <cc-spliter-column width="20%">
           <cms-catalog-tree 
             ref="catalogTreeRef"
             @node-click="handleTreeNodeClick">
           </cms-catalog-tree>
-        </el-aside>
-        <el-main>
+        </cc-spliter-column>
+        <cc-spliter-column>
           <el-form :model="queryParams"
               ref="queryFormRef"
               :inline="true"
+              style="margin-top:3px;"
               class="el-form-search">
             <el-form-item label="" prop="title">
               <el-input 
                 v-model="queryParams.title" 
                 :placeholder="$t('CMS.Content.Placeholder.Title')"
+                style="width: 360px;"
                 @keyup.enter.native="handleQuery">
               </el-input>
             </el-form-item>
@@ -46,7 +48,7 @@
                 <span><i v-if="scope.row.topFlag>0" class="el-icon-top top-icon" :title="$t('CMS.Content.SetTop')"></i> {{ scope.row.title }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('CMS.Content.PublishDate')" align="center" prop="publishDate" width="160">
+            <el-table-column :label="$t('CMS.Content.PublishDate')" align="center" prop="publishDate" width="180">
               <template #default="scope">
                 <span>{{ parseTime(scope.row.publishDate) }}</span>
               </template>
@@ -58,8 +60,8 @@
             v-model:page="queryParams.pageNum"
             v-model:limit="queryParams.pageSize"
             @pagination="loadContentList" />
-        </el-main>
-      </el-container>
+        </cc-spliter-column>
+      </cc-spliter>
       <template #footer>
         <el-button type="primary" @click="handleOk">{{ $t("Common.Confirm") }}</el-button>
         <el-button @click="handleClose">{{ $t("Common.Cancel") }}</el-button>
@@ -176,16 +178,41 @@ function resetQuery () {
   handleQuery();
 }
 </script>
-<style scoped>
-.content-selector-dialog .el-dialog__body {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-.content-selector-dialog .el-aside {
-  padding: 10px;
-  background-color: #fff;
-}
-.content-selector-dialog .el-main {
-  padding: 10px;
+<style lang="scss" scoped>
+.content-selector-dialog {
+  .el-dialog__body {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .content-wrap {
+
+    .top-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .left-wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .right-wrap {
+        .title-wrap {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+      }
+    }
+    .bottom-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .action-wrap {
+        display: inline-flex;
+      }
+    }
+  }
 }
 </style>

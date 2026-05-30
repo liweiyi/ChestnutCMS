@@ -15,3 +15,11 @@ export function clearPublishTask() {
     method: 'post'
   })
 }
+
+// 发布日志
+export function getPublishLogs(sinceIndex) {
+  return request({
+    url: '/cms/publish/logs?sinceIndex=' + sinceIndex,
+    method: 'get'
+  })
+}

@@ -25,7 +25,9 @@ import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.EncryptUtils;
 import com.chestnut.common.utils.ServletUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.vo.ContentPathRuleVO;
@@ -145,6 +147,7 @@ public class CoreController extends BaseRestController {
 			CmsSite site = this.siteService.getSite(siteId);
 			// 模板ID = 通道:站点目录:模板文件名
 			String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, template);
+			templateKey += "?k=" + EncryptUtils.md5AsHex(StringUtils.mapToString(params, "&", "="));
 			// 缓存
 			String templateStaticContentCache = this.templateService.getTemplateStaticContentCache(templateKey);
 			if (Objects.nonNull(templateStaticContentCache)) {

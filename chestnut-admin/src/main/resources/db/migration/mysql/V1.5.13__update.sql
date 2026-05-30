@@ -1,0 +1,1 @@
+ALTER TABLE cms_advertisement MODIFY COLUMN resource_path longtext;

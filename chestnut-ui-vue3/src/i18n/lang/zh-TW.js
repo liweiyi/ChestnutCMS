@@ -618,6 +618,7 @@ const zhTW = {
       SecondaryVerificationPath: "介面路徑",
       SecondaryVerificationsTip: "支援 Ant 風格路徑匹配，如 /system/** 或 /api/user/delete/{id}，每條為獨立規則",
       BizVerifyExpireSeconds: "二次驗證有效期（單位：秒）",
+      CSP: "內容安全策略（CSP）",
       Tab: {
         SecurityConfig: "安全配置",
         LoginConfig: "第三方登錄配置",
@@ -1011,6 +1012,7 @@ const zhTW = {
         ExModel: "站點擴展模型",
         PublishMaxPageNum: "內容發布更新列表頁數",
         EnableEditPublished: "允許編輯已發布內容",
+        EnablePublishLog: "是否開啟發布日志",
         EnableSSI: "是否啟用SSI",
         CatalogConfCardTitle: "列表配置",
         CatalogPageSize: "分頁列表大小",
@@ -1441,6 +1443,7 @@ const zhTW = {
       GoBack: "返回上一頁",
       AdMaterials: "廣告素材",
       RedirectUrl: "跳轉連結",
+      Script: "JS腳本",
     },
     Block: {
       Basic: "基礎屬性",

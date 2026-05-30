@@ -126,7 +126,7 @@ public class ContentStaticizeType implements IStaticizeType {
             this.setContentStaticPath(site, catalog, content, templateContext);
             // 静态化
             this.staticizeService.process(templateContext);
-            logger.debug("[ {} ]Content template parsed: {}#{}#{}, cost: {}ms", publishPipeCode, site.getName(),
+            this.log(site, "[ {} ]Content template parsed: {}#{}#{}, cost: {}ms", publishPipeCode, site.getName(),
                     catalog.getName(), content.getTitle(), (System.currentTimeMillis() - s));
         } catch (TemplateException | IOException e) {
             logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
@@ -204,7 +204,7 @@ public class ContentStaticizeType implements IStaticizeType {
             templateContext.setFirstFileName(fileName);
             // 静态化
             this.staticizeService.process(templateContext);
-            logger.debug("[{}]The content extend template parsed: {}#{}#{}, cost: {}ms", publishPipeCode, site.getName(),
+            this.log(site, "[{}]The content extend template parsed: {}#{}#{}, cost: {}ms", publishPipeCode, site.getName(),
                     catalog.getName(), content.getTitle(), (System.currentTimeMillis() - s));
         } catch (TemplateException | IOException e) {
             logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,

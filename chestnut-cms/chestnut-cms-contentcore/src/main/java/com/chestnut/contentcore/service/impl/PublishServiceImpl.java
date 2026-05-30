@@ -44,6 +44,7 @@ import com.chestnut.contentcore.listener.event.AfterSitePublishEvent;
 import com.chestnut.contentcore.publish.IPublishStrategy;
 import com.chestnut.contentcore.publish.staticize.CatalogStaticizeType;
 import com.chestnut.contentcore.publish.staticize.ContentStaticizeType;
+import com.chestnut.contentcore.publish.staticize.PageWidgetStaticizeType;
 import com.chestnut.contentcore.publish.staticize.SiteStaticizeType;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.template.ITemplateType;
@@ -638,44 +639,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 			logger.warn("The page-widget template not configured: {}#{}", pw.getName(), pw.getCode());
 			return;
 		}
-		CmsSite site = this.siteService.getSite(pw.getSiteId());
-		List<CmsPublishPipe> allPublishPipes = this.publishPipeService.getAllPublishPipes(pw.getSiteId());
-		for (CmsPublishPipe publishPipe : allPublishPipes) {
-			String template = pw.getTemplate(publishPipe.getCode());
-			File templateFile = this.templateService.findTemplateFile(site, template, publishPipe.getCode());
-			if (Objects.nonNull(templateFile)) {
-				pageWidgetStaticize0(site, pw, publishPipe.getCode(), template);
-			} else {
-				logger.warn("[{}]The page-widget template not configured or the file does not exist: {}#{}", publishPipe.getCode(), pw.getName(), pw.getCode());
-			}
-		}
-	}
-
-	private void pageWidgetStaticize0(CmsSite site, CmsPageWidget pw, String publishPipeCode, String template) {
-		long s = System.currentTimeMillis();
-		try {
-			// 静态化目录
-			String dirPath = SiteUtils.getSiteRoot(site, publishPipeCode) + pw.getPath();
-			FileExUtils.mkdirs(dirPath);
-			// 自定义模板上下文
-			String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, template);
-			TemplateContext templateContext = new TemplateContext(templateKey, false, publishPipeCode);
-			templateContext.setDirectory(dirPath);
-			String staticFileName = PageWidgetUtils.getStaticFileName(pw, site.getStaticSuffix(publishPipeCode));
-			templateContext.setFirstFileName(staticFileName);
-			// init template datamode
-			TemplateUtils.initGlobalVariables(site, templateContext);
-			templateContext.getVariables().put(TemplateUtils.TemplateVariable_PageWidget, pw);
-			// init templateType data to datamode
-			ITemplateType templateType = templateService.getTemplateType(SiteTemplateType.TypeId);
-			templateType.initTemplateData(site.getSiteId(), templateContext);
-			// staticize
-			this.staticizeService.process(templateContext);
-			logger.debug("[{}]The page-widget template parsed: {}, cost: {}ms", publishPipeCode, pw.getCode(), System.currentTimeMillis() - s);
-		} catch (TemplateException | IOException e) {
-			logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]The page-widget template parse failed: {1}#{2}",
-					publishPipeCode, pw.getName(), pw.getCode())), e);
-		}
+		publishStrategy.publish(PageWidgetStaticizeType.TYPE, pageWidget.getPageWidgetEntity().getPageWidgetId().toString());
 	}
 
 	@Override

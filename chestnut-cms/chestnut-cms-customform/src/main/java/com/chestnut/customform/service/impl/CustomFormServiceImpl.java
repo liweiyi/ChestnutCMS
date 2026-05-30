@@ -16,23 +16,18 @@
 package com.chestnut.customform.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.staticize.StaticizeService;
-import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.pojo.PublishPipeTemplate;
+import com.chestnut.contentcore.publish.IPublishStrategy;
+import com.chestnut.contentcore.publish.staticize.PageWidgetStaticizeType;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
-import com.chestnut.contentcore.service.ITemplateService;
-import com.chestnut.contentcore.template.ITemplateType;
-import com.chestnut.contentcore.template.impl.SiteTemplateType;
 import com.chestnut.contentcore.util.SiteUtils;
-import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.customform.CmsCustomFormMetaModelType;
 import com.chestnut.customform.CustomFormConsts;
 import com.chestnut.customform.domain.CmsCustomForm;
@@ -40,16 +35,12 @@ import com.chestnut.customform.domain.dto.CreateCustomFormRequest;
 import com.chestnut.customform.domain.dto.UpdateCustomFormRequest;
 import com.chestnut.customform.fixed.dict.CustomFormStatus;
 import com.chestnut.customform.mapper.CustomFormMapper;
-import com.chestnut.customform.publishpipe.PublishPipeProp_CustomFormTemplate;
 import com.chestnut.customform.rule.ICustomFormLimitRule;
 import com.chestnut.customform.service.ICustomFormService;
 import com.chestnut.xmodel.domain.XModel;
 import com.chestnut.xmodel.service.IModelService;
-import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,19 +54,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomFormServiceImpl extends ServiceImpl<CustomFormMapper, CmsCustomForm> implements ICustomFormService {
 
-	private static final Logger logger = LoggerFactory.getLogger(CustomFormServiceImpl.class);
-
 	private final IModelService modelService;
 
 	private final ISiteService siteService;
 
-	private final ITemplateService templateService;
-
 	private final IPublishPipeService publishPipeService;
 
-	private final StaticizeService staticizeService;
-
 	private final Map<String, ICustomFormLimitRule> limitRuleMap;
+
+	private final IPublishStrategy publishStrategy;
 
 	@Override
 	public ICustomFormLimitRule getLimitRule(String ruleId) {
@@ -172,55 +159,18 @@ public class CustomFormServiceImpl extends ServiceImpl<CustomFormMapper, CmsCust
 
 	@Override
 	public void publishCustomForms(List<Long> formIds, String username) {
-		// 更改状态
 		List<CmsCustomForm> forms = this.listByIds(formIds);
-		if (forms.size() == 0) {
+		if (forms.isEmpty()) {
 			return;
 		}
-		CmsSite site = this.siteService.getSite(forms.get(0).getSiteId());
-		List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(site.getSiteId());
 		for (CmsCustomForm form : forms) {
 			if (form.getStatus() != CustomFormStatus.PUBLISHED) {
 				form.setStatus(CustomFormStatus.PUBLISHED);
 				this.updateById(form);
 			}
-			// 生成静态页面
-			publishPipes.forEach(pp -> this.customFormStaticize(form, pp.getCode()));
-		}
-	}
-
-	private void customFormStaticize(CmsCustomForm form, String publishPipeCode) {
-		CmsSite site = this.siteService.getSite(form.getSiteId());
-
-		String template = form.getTemplates().get(publishPipeCode);
-		if (StringUtils.isEmpty(template)) {
-			template = PublishPipeProp_CustomFormTemplate.getValue(publishPipeCode, site.getPublishPipeProps());
-		}
-		if (StringUtils.isEmpty(template)) {
-			logger.warn("[{}]自定义表单[{}]模板未设置或文件不存在", publishPipeCode, form.getName());
-			return; // 未设置模板不生成静态文件
-		}
-		try {
-			// 模板上下文
-			String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, template);
-			TemplateContext templateContext = new TemplateContext(templateKey, false, publishPipeCode);
-			// init template datamode
-			TemplateUtils.initGlobalVariables(site, templateContext);
-			// init templateType data to datamode
-			ITemplateType templateType = this.templateService.getTemplateType(SiteTemplateType.TypeId);
-			templateType.initTemplateData(form.getSiteId(), templateContext);
-			templateContext.getVariables().put(CustomFormConsts.TemplateVariable_CustomForm,
-					CustomFormConsts.getCustomFormVariables(form, site, publishPipeCode));
-			// 静态化文件地址
-			String siteRoot = SiteUtils.getSiteRoot(site, publishPipeCode);
-			templateContext.setDirectory(siteRoot + CustomFormConsts.STATICIZE_DIRECTORY);
-			String fileName = form.getCode() + "." + site.getStaticSuffix(publishPipeCode);
-			templateContext.setFirstFileName(fileName);
-			// 静态化
-			this.staticizeService.process(templateContext);
-		} catch (TemplateException | IOException e) {
-			logger.warn(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]自定义表单模板解析失败：{1}",
-					publishPipeCode, form.getName())));
+			if (StringUtils.isNotEmpty(form.getTemplates())) {
+				publishStrategy.publish(PageWidgetStaticizeType.TYPE, form.getFormId().toString());
+			}
 		}
 	}
 }

@@ -21,13 +21,18 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 
 
+import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.publish.IPublishStrategy;
+import com.chestnut.contentcore.publish.log.PublishLogAppender;
+import com.chestnut.system.domain.vo.ConsoleLogsVO;
+import com.chestnut.system.exception.SysErrorCode;
+import com.chestnut.system.logs.CcConsoleAppender;
+import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 发布日志管理
@@ -61,5 +66,21 @@ public class PublishLogController extends BaseRestController {
 	public R<Void> clearPublishTask() {
 		publishStrategy.cleanTasks();
 		return R.ok();
+	}
+
+	@XComment("{API.DOC.CMS.PUBLISH_LOG.GET_LIST}")
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorLogsView)
+	@GetMapping("/logs")
+	public R<ConsoleLogsVO> list(@RequestParam @XComment("{API.DOC.CMS.PUBLISH_LOG.SINCE_INDEX}") int sinceIndex) {
+		PublishLogAppender<?> instance = PublishLogAppender.getInstance();
+		Assert.notNull(instance, SysErrorCode.MISSING_CONSOLE_APPENDER::exception);
+
+		List<PublishLogAppender.LogEntry> logsSince = instance.getLogsSince(sinceIndex);
+		List<String> logs = logsSince.stream().map(PublishLogAppender.LogEntry::message).toList();
+		ConsoleLogsVO vo = new ConsoleLogsVO(
+				logsSince.isEmpty() ? sinceIndex : logsSince.get(logsSince.size() - 1).index(),
+				logs
+		);
+		return R.ok(vo);
 	}
 }

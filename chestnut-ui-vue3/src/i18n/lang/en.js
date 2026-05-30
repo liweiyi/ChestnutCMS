@@ -618,6 +618,7 @@ const en = {
       SecondaryVerificationPath: "API Path",
       SecondaryVerificationsTip: "Supports Ant-style path patterns, e.g. /system/** or /api/user/delete/{id}. Each entry is an independent rule.",
       BizVerifyExpireSeconds: "Expiration Seconds",
+      CSP: "Content-Security-Policy",
       Tab: {
         SecurityConfig: "Security Configuration",
         LoginConfig: "Login Configuration",
@@ -1011,6 +1012,7 @@ const en = {
         ExModel: "Site Ex-Model",
         PublishMaxPageNum: "Publish Catalog Max Page",
         EnableEditPublished: "Edit Published Content",
+        EnablePublishLog: "Enable Publish Log",
         EnableSSI: "Enable SSI",
         CatalogConfCardTitle: "Catalog",
         CatalogPageSize: "Page List Size",
@@ -1441,6 +1443,7 @@ const en = {
       GoBack: "Go Back",
       AdMaterials: "Advertising Materials",
       RedirectUrl: "Redirect Url",
+      Script: "JavaScript",
     },
     Block: {
       Basic: "Basic",

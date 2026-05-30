@@ -90,10 +90,12 @@ public class CmsAdvertisementTag extends AbstractListTag {
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		List<AdvertisementVO> list = pageResult.getRecords().stream().map(ad ->{
 			AdvertisementVO vo = new AdvertisementVO(ad);
-			if (RedirectType.isStat(redirectType)) {
-				vo.setLink(this.advertisementService.getAdvertisementStatLink(ad, context.getPublishPipeCode()));
-			} else {
-				vo.setLink(vo.getRedirectUrl());
+			if (StringUtils.isNotEmpty(ad.getRedirectUrl())) {
+				if (RedirectType.isStat(redirectType)) {
+					vo.setLink(this.advertisementService.getAdvertisementStatLink(ad, context.getPublishPipeCode()));
+				} else {
+					vo.setLink(vo.getRedirectUrl());
+				}
 			}
 			return vo;
 		}).toList();

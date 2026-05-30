@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore.publish;
 
+import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.properties.EnablePublishLogProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,4 +29,14 @@ public interface IStaticizeType {
     String getType();
 
     void staticize(String dataId);
+
+    default void log(CmsSite site, String message, Object... args) {
+        if (!logger.isDebugEnabled()) {
+            boolean enable = EnablePublishLogProperty.getValue(site.getConfigProps());
+            if (!enable) {
+                return;
+            }
+        }
+        logger.info(message, args);
+    }
 }

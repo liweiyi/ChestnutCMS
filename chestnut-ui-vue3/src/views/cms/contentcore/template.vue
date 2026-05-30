@@ -85,7 +85,6 @@
         :label="$t('Common.Remark')"
         align="left"
         :show-overflow-tooltip="true"
-        width="120"
         prop="remark">
       </el-table-column>
       <el-table-column 

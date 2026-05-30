@@ -110,7 +110,8 @@ public class SiteStaticizeType implements IStaticizeType {
             String text = FreeMarkerUtils.createBy(writer.toString());
             String filePath = context.getStaticizeFilePath(context.getPageIndex());
             FileUtils.writeStringToFile(new File(filePath), text, StandardCharsets.UTF_8);
-            logger.debug("[{}]The site template parsed: {}, cost {}ms", publishPipeCode, site.getName(), (System.currentTimeMillis() - s));
+            this.log(site, "[{}]The site template parsed: {}, cost {}ms",
+                    publishPipeCode, site.getName(), (System.currentTimeMillis() - s));
         } catch (Exception e) {
             logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
                     TYPE + "#" + publishPipeCode, site.getSiteId() + "#" + site.getName()), e);

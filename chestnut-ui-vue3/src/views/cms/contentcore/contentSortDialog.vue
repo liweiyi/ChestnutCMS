@@ -3,7 +3,7 @@
     <el-dialog 
       :title="$t('CMS.Content.SortDialogTitle')"
       v-model="props.open"
-      width="800px"
+      width="70%"
       :close-on-click-modal="false"
       custom-class="content-selector-dialog"
       append-to-body>
@@ -41,12 +41,12 @@
             <span><i v-if="scope.row.topFlag>0" class="el-icon-top top-icon" :title="$t('CMS.Content.SetTop')"></i> {{ scope.row.title }}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('CMS.Content.Status')" align="center" prop="status">
+        <el-table-column :label="$t('CMS.Content.Status')" align="center" prop="status" width="100">
           <template #default="scope">
             <dict-tag :options="CMSContentStatus" :value="scope.row.status"/>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('CMS.Content.PublishDate')" align="center" prop="publishDate" width="160">
+        <el-table-column :label="$t('CMS.Content.PublishDate')" align="center" prop="publishDate" width="180">
           <template #default="scope">
             <span>{{ parseTime(scope.row.publishDate) }}</span>
           </template>

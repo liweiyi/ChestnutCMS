@@ -149,7 +149,8 @@ public class CatalogStaticizeType implements IStaticizeType {
                 templateType.initTemplateData(catalog.getCatalogId(), templateContext);
                 // staticize
                 this.staticizeService.process(templateContext);
-                logger.debug("[{}]Catalog index template parsed: {}, cost: {}ms", publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
+                this.log(site, "[{}]Catalog index template parsed: {}, cost: {}ms",
+                        publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
             } catch (IOException | TemplateException e) {
                 logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
                         TYPE + "#" + publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName()), e);
@@ -174,7 +175,8 @@ public class CatalogStaticizeType implements IStaticizeType {
                 templateType.initTemplateData(catalog.getCatalogId(), templateContext);
                 // staticize
                 this.staticizeService.process(templateContext);
-                logger.debug("[{}]Catalog list template parsed: {}, cost: {}ms", publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
+                this.log(site, "[{}]Catalog list template parsed: {}, cost: {}ms",
+                        publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
             } catch (Exception e1) {
                 logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
                         TYPE + "#" + publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName()), e1);

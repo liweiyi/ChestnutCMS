@@ -108,6 +108,15 @@
             inactive-value="N">
           </el-switch>
         </el-form-item>
+        <el-form-item :label="$t('CMS.Site.Extend.EnablePublishLog')" prop="EnablePublishLog">
+          <el-switch
+            v-model="formExtend.EnablePublishLog"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+        </el-form-item>
         <el-form-item :label="$t('CMS.Site.Extend.SiteApiUrl')" prop="SiteApiUrl">
           <el-input v-model="formExtend.SiteApiUrl" placeholder="http(s)://"></el-input>
         </el-form-item>

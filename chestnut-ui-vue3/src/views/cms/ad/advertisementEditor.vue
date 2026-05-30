@@ -1,87 +1,93 @@
 <template>
   <div class="app-container adv-editor-container" v-loading="loading">
-    <el-container>
-      <el-header height="40px">
-        <el-row :gutter="10" class="btn-row">
-          <el-col :span="1.5">
-            <el-button 
-              plain
-              type="info"
-              icon="Back"
-              @click="handleGoBack">{{ $t('CMS.Adv.GoBack') }}</el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button 
-              plain
-              type="success"
-              icon="Edit"
-              v-hasPermi="[ $p('PageWidget:Edit:{0}', [ adSpaceId ]) ]"
-              @click="handleSave">{{ $t("Common.Save") }}</el-button>
-          </el-col>
-        </el-row>
-      </el-header>
-      <el-form 
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="110px">
-        <el-container>
-          <el-aside style="width:500px;">
-            <el-card shadow="never">
-              <template #header>
-                <div class="clearfix">
-                  <span>{{ $t('CMS.Adv.Basic') }}</span>
-                </div>
-              </template>
-              <el-form-item :label="$t('CMS.Adv.AdName')" prop="name">
-                <el-input v-model="form.name" />
-              </el-form-item>
-              <el-form-item :label="$t('CMS.Adv.Type')" prop="type">
-                <el-select v-model="form.type">
-                  <el-option
-                    v-for="t in adTypes"
-                    :key="t.id"
-                    :label="t.name"
-                    :value="t.id"
-                  />
-                </el-select>
-              </el-form-item>
-              <el-form-item :label="$t('CMS.Adv.Weight')" prop="weight">
-                <el-input-number v-model="form.weight" :min="0"></el-input-number>
-              </el-form-item>
-              <el-form-item :label="$t('CMS.Adv.OnlineDate')" prop="onlineDate">
-                <el-date-picker v-model="form.onlineDate" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" />
-              </el-form-item>
-              <el-form-item :label="$t('CMS.Adv.OfflineDate')" prop="offlineDate">
-                <el-date-picker v-model="form.offlineDate" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" />
-              </el-form-item>
-              <el-form-item :label="$t('Common.Remark')" prop="remark">
-                <el-input v-model="form.remark" type="textarea" :maxlength="100" />
-              </el-form-item>
-            </el-card>
-          </el-aside>
-          <el-main>
-            <el-card shadow="never">
-              <template #header>
-                <div class="clearfix; line-height: 32px; font-size: 16px;">
-                  <span>{{ $t('CMS.Adv.AdMaterials') }}</span>
-                </div>
-              </template>
-              <el-form-item label=""
-                v-if="form.type==='image'"
-                prop="resourcePath">
-                <cms-logo-view v-model="form.resourcePath" :width="218" :height="150"></cms-logo-view>
-              </el-form-item>
-              <el-form-item
-                :label="$t('CMS.Adv.RedirectUrl')"
-                prop="redirectUrl">
-                <el-input v-model="form.redirectUrl" placeholder="http(s)://" />
-              </el-form-item>
-            </el-card>
-          </el-main>
-        </el-container>
-      </el-form>
-    </el-container>
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button 
+          plain
+          type="info"
+          icon="Back"
+          @click="handleGoBack">{{ $t('CMS.Adv.GoBack') }}</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button 
+          plain
+          type="success"
+          icon="Edit"
+          v-hasPermi="[ $p('PageWidget:Edit:{0}', [ adSpaceId ]) ]"
+          @click="handleSave">{{ $t("Common.Save") }}</el-button>
+      </el-col>
+    </el-row>
+    <el-form 
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-width="110px">
+      <cc-spliter storage-key="cms-ad-editor">
+        <cc-spliter-column width="30%">
+          <el-card shadow="never">
+            <template #header>
+              <div class="clearfix">
+                <span>{{ $t('CMS.Adv.Basic') }}</span>
+              </div>
+            </template>
+            <el-form-item :label="$t('CMS.Adv.AdName')" prop="name">
+              <el-input v-model="form.name" />
+            </el-form-item>
+            <el-form-item :label="$t('CMS.Adv.Type')" prop="type">
+              <el-select v-model="form.type">
+                <el-option
+                  v-for="t in adTypes"
+                  :key="t.id"
+                  :label="t.name"
+                  :value="t.id"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="$t('CMS.Adv.Weight')" prop="weight">
+              <el-input-number v-model="form.weight" :min="0"></el-input-number>
+            </el-form-item>
+            <el-form-item :label="$t('CMS.Adv.OnlineDate')" prop="onlineDate">
+              <el-date-picker v-model="form.onlineDate" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" />
+            </el-form-item>
+            <el-form-item :label="$t('CMS.Adv.OfflineDate')" prop="offlineDate">
+              <el-date-picker v-model="form.offlineDate" value-format="YYYY-MM-DD HH:mm:ss" type="datetime" />
+            </el-form-item>
+            <el-form-item :label="$t('Common.Remark')" prop="remark">
+              <el-input v-model="form.remark" type="textarea" :rows="5" :maxlength="100" />
+            </el-form-item>
+          </el-card>
+        </cc-spliter-column>
+        <cc-spliter-column>
+          <el-card shadow="never">
+            <template #header>
+              <div class="clearfix; line-height: 32px; font-size: 16px;">
+                <span>{{ $t('CMS.Adv.AdMaterials') }}</span>
+              </div>
+            </template>
+            <el-form-item
+              v-if="form.type==='image'"
+              label-position="top"
+              prop="resourcePath">
+              <cms-logo-view v-model="form.resourcePath" :width="400" :height="220"></cms-logo-view>
+            </el-form-item>
+            <el-form-item
+              v-if="form.type==='image'"
+              label-position="top"
+              :label="$t('CMS.Adv.RedirectUrl')"
+              prop="redirectUrl">
+              <el-input v-model="form.redirectUrl" placeholder="http(s)://" style="width: 100%;" />
+            </el-form-item>
+            <el-form-item
+              v-if="form.type==='script'"
+              :label="$t('CMS.Adv.Script')"
+              label-position="top"
+              prop="resourcePath">
+              <el-input type="textarea" v-model="form.resourcePath" :rows="15" style="width: 100%;" />
+            </el-form-item>
+          </el-card>
+        </cc-spliter-column>
+      </cc-spliter>
+    </el-form>
   </div>
 </template>
 <script setup name="CMSAdvertisement">

@@ -16,7 +16,7 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <el-button type="text" icon="Refresh" @click="loadCatalogTreeData" style="float:right;margin-top:2px;">{{ $t("Common.Refresh") }}</el-button>
+      <el-button v-if="showRefreshBtn" type="text" icon="Refresh" @click="loadCatalogTreeData" style="float:right;margin-top:2px;">{{ $t("Common.Refresh") }}</el-button>
       <el-input 
         :placeholder="$t('CMS.Catalog.CatalogNamePlaceholder')"
         v-model="filterCatalogName"
@@ -170,6 +170,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
     required: false
+  },
+  refreshBtn: {
+    type: Boolean,
+    default: false,
+    required: false
   }
 })
 const emit = defineEmits(['node-click']);
@@ -178,6 +183,7 @@ const siteId = ref(proxy.$cms.getCurrentSite());
 const loading = ref(false);
 // 是否显示新增栏目按钮
 const showNewBtn = ref(props.newBtn);
+const showRefreshBtn = ref(props.refreshBtn);
 // 是否显示弹出层
 const diagOpen = ref(false);
 // 栏目类型

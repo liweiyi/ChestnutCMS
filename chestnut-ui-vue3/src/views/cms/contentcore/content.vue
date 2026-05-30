@@ -4,7 +4,8 @@
       <cc-spliter-column width="15%" style="padding-right: 10px;">
         <cms-catalog-tree 
           ref="catalogTreeRef"
-          :new-btn="true"    
+          :new-btn="true"
+          :refresh-btn="true"
           @node-click="handleTreeNodeClick">
         </cms-catalog-tree>
       </cc-spliter-column>
