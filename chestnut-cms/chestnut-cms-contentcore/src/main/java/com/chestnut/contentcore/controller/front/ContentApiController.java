@@ -36,7 +36,6 @@ import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.impl.ContentDynamicDataService;
 import com.chestnut.contentcore.template.tag.CmsContentTag;
 import com.chestnut.contentcore.util.CatalogUtils;
@@ -67,7 +66,6 @@ public class ContentApiController extends BaseRestController {
 
 	private final ContentDynamicDataService contentDynamicDataService;
 
-	private final ISiteService siteService;
 
 	private final ICatalogService catalogService;
 
@@ -167,6 +165,7 @@ public class ContentApiController extends BaseRestController {
 		return R.ok(list);
 	}
 
+	@XComment("{API.DOC.CMS.CONTENT_API.GET_DETAIL}")
 	@GetMapping("/detail/{contentId}")
 	public R<?> getContentDetail(@PathVariable @LongId Long contentId, HttpServletRequest request) {
 		CmsContent content = this.contentService.dao().getById(contentId);
@@ -177,7 +176,7 @@ public class ContentApiController extends BaseRestController {
 			coreDataHandler.beforeGetContentDetailApi(content);
 		}
 		IContentType cType = ContentCoreUtils.getContentType(content.getContentType());
-		IContent<?> iContent = cType.loadContent(content);
-		return R.ok();
+		IContent<?> contentDetails = cType.loadContent(content);
+		return R.ok(contentDetails.getExtendEntity());
 	}
 }

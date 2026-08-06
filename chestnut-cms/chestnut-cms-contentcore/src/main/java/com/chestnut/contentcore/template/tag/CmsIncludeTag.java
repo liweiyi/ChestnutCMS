@@ -139,7 +139,7 @@ public class CmsIncludeTag extends AbstractTag {
 			Map<String, String> paramsMap = StringUtils.splitToMap(params, "&", "=");
 			Map<String, String> mergeParams = mergeRequestVariable(env, paramsMap);
 			env.setVariable(TemplateUtils.TemplateVariable_Request, wrap(env, mergeParams));
-			// TODO 兼容历史版本，1.6.0移除IncludeRequest模板变量
+			// TODO 兼容历史版本，2.x移除IncludeRequest模板变量
 			env.setVariable(TemplateUtils.TemplateVariable_IncludeRequest, wrap(env, mergeParams));
 			env.include(includeTemplate);
 		} else if (virtual) {

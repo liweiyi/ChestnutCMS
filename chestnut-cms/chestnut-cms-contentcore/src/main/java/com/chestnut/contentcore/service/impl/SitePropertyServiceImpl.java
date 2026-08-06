@@ -20,7 +20,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.contentcore.domain.CmsSiteProperty;

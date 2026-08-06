@@ -18,7 +18,7 @@ package com.chestnut.contentcore.service;
 import java.io.IOException;
 import java.util.List;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.core.IPageWidget;
 import com.chestnut.contentcore.core.IPageWidgetType;

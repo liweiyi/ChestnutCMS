@@ -32,7 +32,9 @@ import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysUserOnlineService;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.Strings;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,10 +88,10 @@ public class SysUserOnlineController extends BaseRestController {
 			if (Objects.isNull(online)) {
 				return false;
 			}
-			if(StringUtils.isNotEmpty(req.getIpaddr()) && !StringUtils.equals(req.getIpaddr(), online.getIpaddr())) {
+			if(StringUtils.isNotEmpty(req.getIpaddr()) && !Strings.CS.equals(req.getIpaddr(), online.getIpaddr())) {
 				return false;
 			}
-            return !StringUtils.isNotEmpty(req.getUserName()) || StringUtils.equals(req.getUserName(), online.getUserName());
+            return !StringUtils.isNotEmpty(req.getUserName()) || Strings.CS.equals(req.getUserName(), online.getUserName());
         }).sorted(Comparator.comparing(SysUserOnline::getLoginTime).reversed()).toList();
 		return bindDataTable(userOnlineList);
 	}
@@ -100,10 +102,18 @@ public class SysUserOnlineController extends BaseRestController {
 	@XComment("{API.DOC.SYS.USER_ONLINE.FORCE_LOGOUT}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorOnlineForceLogout)
 	@Log(title = "在线用户", businessType = BusinessType.FORCE)
-	@DeleteMapping("/{tokenId}")
-	@PostMapping("/{tokenId}")
-	public R<Void> forceLogout(@PathVariable @XComment("{API.DOC.SYS.USER_ONLINE.TOKEN_ID}") String tokenId) {
-		StpAdminUtil.logoutByTokenValue(tokenId);
+	@PostMapping("/kickout")
+	public R<Void> forceLogout(@XComment("{API.DOC.SYS.USER_ONLINE.TOKEN_ID}") @NotEmpty List<String> tokenIds) {
+		tokenIds.forEach(StpAdminUtil::logoutByTokenValue);
 		return R.ok();
+	}
+
+	@XComment("{API.DOC.SYS.USER_ONLINE.FORCE_LOGOUT}")
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.MonitorOnlineForceLogout)
+	@Log(title = "在线用户", businessType = BusinessType.FORCE)
+	@DeleteMapping("/{tokenId}")
+	@Deprecated(since = "1.5.7", forRemoval = true)
+	public R<?> forceLogout2(@PathVariable @XComment("{API.DOC.SYS.USER_ONLINE.TOKEN_ID}") String tokenId) {
+		return forceLogout(List.of(tokenId));
 	}
 }

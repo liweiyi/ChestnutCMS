@@ -21,6 +21,7 @@ import com.chestnut.member.config.MemberConfig;
 import com.chestnut.system.fixed.FixedConfig;
 import com.chestnut.system.fixed.config.BackendContext;
 import com.chestnut.system.service.ISysConfigService;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 @Component(FixedConfig.BEAN_PREFIX + MemberResourcePrefix.ID)
@@ -40,7 +41,7 @@ public class MemberResourcePrefix extends FixedConfig {
 			return BackendContext.getValue() + MemberConfig.getResourcePrefix();
 		}
 		if (StringUtils.isEmpty(configValue)) {
-			configValue = StringUtils.appendIfMissing(configValue, "/");
+			configValue = Strings.CS.appendIfMissing(configValue, "/");
 		}
 		return configValue;
 	}

@@ -16,7 +16,7 @@
 package com.chestnut.contentcore.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.contentcore.domain.CmsContentRela;
 import com.chestnut.contentcore.mapper.CmsContentRelaMapper;
 import com.chestnut.contentcore.service.IContentRelaService;

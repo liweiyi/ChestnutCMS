@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -94,7 +95,7 @@ public class StaticizeService {
 		context.setTimeMillis(s);
 		Environment env = null;
 		String filePath = context.getStaticizeFilePath(context.getPageIndex());
-		try (FileWriter writer = new FileWriter(filePath)) {
+		try (FileWriter writer = new FileWriter(filePath, getOutputCharset())) {
 			env = template.createProcessingEnvironment(context.getVariables(), writer);
 			FreeMarkerUtils.addGlobalVariables(env, context);
 			// 生成静态化文件
@@ -111,7 +112,7 @@ public class StaticizeService {
 			env.setGlobalVariable(StaticizeConstants.TemplateVariable_PageNo,
 					env.getObjectWrapper().wrap(context.getPageIndex()));
 			filePath = context.getStaticizeFilePath(context.getPageIndex());
-			try (FileWriter writer = new FileWriter(filePath)) {
+			try (FileWriter writer = new FileWriter(filePath, getOutputCharset())) {
 				env.setOut(writer);
 				env.process();
 			} catch (Exception e) {
@@ -123,6 +124,11 @@ public class StaticizeService {
 
 	public void clearTemplateCache() {
 		cfg.clearTemplateCache();
+	}
+
+	public Charset getOutputCharset() {
+		String outputEncoding = cfg.getOutputEncoding();
+		return Charset.forName(outputEncoding == null ? cfg.getDefaultEncoding() : outputEncoding);
 	}
 
 	public void registerTag(ITag tag) {

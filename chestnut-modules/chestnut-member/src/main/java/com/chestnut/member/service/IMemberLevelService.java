@@ -17,7 +17,7 @@ package com.chestnut.member.service;
 
 import java.util.List;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.member.domain.MemberLevel;
 
 public interface IMemberLevelService extends IService<MemberLevel> {
@@ -25,16 +25,16 @@ public interface IMemberLevelService extends IService<MemberLevel> {
 	/**
 	 * 获取会员指定类型等级数据
 	 * 
-	 * @param memberId
-	 * @param levelType
+	 * @param memberId Member id.
+	 * @param levelType The member level type.
 	 */
 	MemberLevel getMemberLevel(Long memberId, String levelType);
 	
 	/**
 	 * 获取会员所有等级信息
 	 * 
-	 * @param memberId
-	 * @return
+	 * @param memberId Member id.
+	 * @return The member all levels.
 	 */
 	List<MemberLevel> getMemberLevels(Long memberId);
 }

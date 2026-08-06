@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -41,7 +41,10 @@ import com.chestnut.system.schedule.ScheduledTaskTriggerType.PeriodicTriggerArgs
 import com.chestnut.system.service.ISysScheduledTaskService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
@@ -92,9 +95,52 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
     }
 
     @Override
-    public void run(String... args) throws Exception {
-        this.lambdaQuery().eq(SysScheduledTask::getStatus, EnableOrDisable.ENABLE).list()
-                .forEach(this::addScheduledTask);
+    public void run(String @NonNull ... args) throws Exception {
+        List<SysScheduledTask> list = this.lambdaQuery().eq(SysScheduledTask::getStatus, EnableOrDisable.ENABLE).list();
+        for (SysScheduledTask task : list) {
+            try {
+                this.addScheduledTask(task);
+            } catch (Exception e) {
+                log.error("Create scheduled task fail: {}", task.getTaskType());
+                task.setStatus(EnableOrDisable.DISABLE);
+                this.updateById(task);
+            }
+        }
+    }
+
+    /**
+     * 应用关闭时主动取消所有调度任务。
+     * <p>
+     * {@link ContextClosedEvent} 在任何 Bean 销毁之前发布，此时 {@code threadPoolTaskScheduler}
+     * 尚未 shutdown，可在其关闭前置位协作中断标志并取消 future（含线程中断），
+     * 避免运行中的任务把 {@code awaitTerminationSeconds} 耗满导致关闭超时。
+     * </p>
+     */
+    @EventListener(ContextClosedEvent.class)
+    public void onContextClosed(ContextClosedEvent event) {
+        if (taskMap.isEmpty()) {
+            return;
+        }
+        log.info("Application is closing, cancelling {} scheduled task(s)...", taskMap.size());
+        taskMap.forEach((taskId, scheduledTask) -> {
+            try {
+                if (scheduledTask.getStatus() == ScheduledTaskStatus.RUNNING) {
+                    log.warn("Scheduled task still RUNNING on shutdown: type={}, taskId={}, cost={}s, percent={}%",
+                            scheduledTask.getType(), taskId, scheduledTask.getCostTime(), scheduledTask.getPercent());
+                } else {
+                    log.info("Cancelling scheduled task: type={}, taskId={}, status={}",
+                            scheduledTask.getType(), taskId, scheduledTask.getStatus());
+                }
+                scheduledTask.interrupt();
+                ScheduledFuture<?> future = scheduledTask.getFuture();
+                if (future != null) {
+                    future.cancel(true);
+                }
+            } catch (Exception e) {
+                log.warn("Cancel scheduled task[{}] on shutdown failed: {}", taskId, e.toString());
+            }
+        });
+        taskMap.clear();
     }
 
     private IScheduledHandler getScheduledHandler(String taskType) {
@@ -174,7 +220,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
     @Override
     public void updateTask(UpdateScheduledTaskRequest dto) {
         SysScheduledTask task = this.getById(dto.getTaskId());
-        Assert.notNull(task, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("taskId", task.getTaskId()));
+        Assert.notNull(task, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("taskId", dto.getTaskId()));
         Assert.isTrue(EnableOrDisable.isDisable(task.getStatus()), SysErrorCode.SCHEDULED_TASK_UPDATE_ERR::exception);
 
         task.setTaskTrigger(dto.getTaskTrigger());
@@ -251,7 +297,7 @@ public class SysScheduledTaskServiceImpl extends ServiceImpl<SysScheduledTaskMap
         scheduledTask.setTaskId(task.getTaskId());
         scheduledTask.setType(task.getTaskType());
         scheduledTask.ready();
-        scheduledTask.setEndEvent(t -> taskMap.remove(task.getTaskId()));
+        scheduledTask.setEndEvent(ignored -> taskMap.remove(task.getTaskId()));
 
         taskMap.put(task.getTaskId(), scheduledTask);
         threadPoolTaskScheduler.schedule(scheduledTask, Instant.now());

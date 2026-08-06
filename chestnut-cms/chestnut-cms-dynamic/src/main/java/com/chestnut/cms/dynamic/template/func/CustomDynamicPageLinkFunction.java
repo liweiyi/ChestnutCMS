@@ -16,6 +16,7 @@
 package com.chestnut.cms.dynamic.template.func;
 
 import com.chestnut.cms.dynamic.service.impl.DynamicPageHelper;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
@@ -70,7 +71,7 @@ public class CustomDynamicPageLinkFunction extends AbstractFunc  {
 		Long siteId = TemplateUtils.evalSiteId(env);
 		String path = this.dynamicPageHelper.getDynamicPagePath(siteId, code);
 		if (StringUtils.isEmpty(path)) {
-			throw new TemplateModelException("Unknown dynamic page code: " + code);
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.UNKNOWN_DYNAMIC_PAGE_CODE}", env.getLocale(), code));
 		}
 		if (context.isPreview()) {
 			path += "?preview=true";

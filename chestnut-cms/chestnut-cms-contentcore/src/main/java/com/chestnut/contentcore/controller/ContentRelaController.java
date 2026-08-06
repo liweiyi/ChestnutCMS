@@ -30,6 +30,8 @@ import com.chestnut.common.utils.IdUtils;
 
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsContentRela;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.IContentRelaService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.system.security.AdminUserType;
@@ -77,8 +79,7 @@ public class ContentRelaController extends BaseRestController {
 	@XComment("{API.DOC.CMS.CONTENT_RELA.ADD}")
 	@PostMapping
 	public R<Void> addRelaContents(@RequestParam @XComment("{API.DOC.CMS.CONTENT_RELA.CONTENT_ID}") Long contentId, @RequestBody @XComment("{API.DOC.CMS.CONTENT_RELA.RELA_CONTENT_IDS}") List<Long> relaContentIds) {
-		CmsContent content = this.contentService.dao().getById(contentId);
-		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+		CmsContent content = getEditableContent(contentId);
 		List<Long> contentIds = contentRelaService.list(new LambdaQueryWrapper<CmsContentRela>()
 						.eq(CmsContentRela::getContentId, contentId))
 				.stream().map(CmsContentRela::getRelaContentId).toList();
@@ -101,9 +102,17 @@ public class ContentRelaController extends BaseRestController {
 	@XComment("{API.DOC.CMS.CONTENT_RELA.DELETE}")
 	@PostMapping("/delete")
 	public R<Void> deleteRelaContents(@RequestParam @XComment("{API.DOC.CMS.CONTENT_RELA.CONTENT_ID}") Long contentId, @RequestBody @NotEmpty @XComment("{API.DOC.CMS.CONTENT_RELA.RELA_CONTENT_IDS}") List<Long> relaContentIds) {
+		getEditableContent(contentId);
 		this.contentRelaService.remove(new LambdaQueryWrapper<CmsContentRela>()
 				.eq(CmsContentRela::getContentId, contentId)
 				.in(CmsContentRela::getRelaContentId, relaContentIds));
 		return R.ok();
+	}
+
+	private CmsContent getEditableContent(Long contentId) {
+		CmsContent content = this.contentService.dao().getById(contentId);
+		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+		Assert.isFalse(ContentStatus.isFlowing(content.getStatus()), ContentCoreErrorCode.CONTENT_FLOWING::exception);
+		return content;
 	}
 }

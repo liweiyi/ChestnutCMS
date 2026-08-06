@@ -16,12 +16,13 @@
 package com.chestnut.cms.stat.controller.front;
 
 import com.chestnut.cms.stat.handler.PageViewStatEventHandler;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.stat.core.StatEvent;
 import com.chestnut.stat.service.impl.StatEventService;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,6 +45,7 @@ public class CmsStatApiController extends BaseRestController {
 	/**
 	 * 网站访问统计
 	 */
+	@XComment("{API.DOC.CMS.STAT.SITE_VISIT_API}")
 	@GetMapping("/api/stat/visit")
 	public void visitSite(
 			@RequestParam("sid") Long siteId,

@@ -45,13 +45,13 @@ public class VoteSubject extends BaseEntity {
 	public static final String TABLE_NAME = "cc_vote_subject";
 
 	@TableId(value = "subject_id", type = IdType.INPUT)
-	@XComment("CC.VOTE_SUBJECT.ID")
+	@XComment("{CC.VOTE_SUBJECT.ID}")
 	private Long subjectId;
 
 	/**
 	 * 关联问卷调查表ID
 	 */
-	@XComment("CC.VOTE_SUBJECT.VOTE_ID")
+	@XComment("{CC.VOTE_SUBJECT.VOTE_ID}")
 	private Long voteId;
 	
 	/**

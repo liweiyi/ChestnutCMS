@@ -17,6 +17,7 @@ package com.chestnut.common.utils.sql;
 
 import com.chestnut.common.exception.UtilException;
 import com.chestnut.common.utils.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 /**
  * sql操作工具类
@@ -68,7 +69,7 @@ public class SqlUtil
         String[] sqlKeywords = StringUtils.split(SQL_REGEX, "\\|");
         for (String sqlKeyword : sqlKeywords)
         {
-            if (StringUtils.indexOfIgnoreCase(value, sqlKeyword) > -1)
+            if (Strings.CI.indexOf(value, sqlKeyword) > -1)
             {
                 throw new UtilException("参数存在SQL注入风险");
             }

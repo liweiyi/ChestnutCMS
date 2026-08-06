@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.dto.CreateSecurityConfigRequest;
 import com.chestnut.system.domain.dto.LoginBody;
@@ -79,7 +79,6 @@ public interface ISecurityConfigService extends IService<SysSecurityConfig> {
 	 *
 	 * @param user
 	 * @param password
-	 * @return
 	 */
 	void validPassword(ISecurityUser user, String password);
 

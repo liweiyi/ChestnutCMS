@@ -16,7 +16,7 @@
 package com.chestnut.member.service.impl;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -29,6 +29,7 @@ import com.chestnut.member.level.LevelManager;
 import com.chestnut.member.mapper.MemberLevelConfigMapper;
 import com.chestnut.member.service.IMemberLevelConfigService;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -150,7 +151,7 @@ public class MemberLevelConfigServiceImpl extends ServiceImpl<MemberLevelConfigM
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
+	public void run(String @NonNull ... args) throws Exception {
 		levelTypes.values().forEach(this::onLevelConfigChange);
 	}
 }

@@ -158,7 +158,7 @@ public interface IContent<T> {
 	/**
 	 * 待发布
 	 */
-	void toPublish();
+	boolean toPublish();
 
 	/**
 	 * 归档

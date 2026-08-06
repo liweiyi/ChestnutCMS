@@ -115,9 +115,14 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	EXISTS_SITE_PATH,
 
 	/**
-	 * 内容已被'{0}'锁定
+	 * 内容「{0}」已被"{0}"锁定
 	 */
 	CONTENT_LOCKED,
+
+	/**
+	 * 内容正在流转中
+	 */
+	CONTENT_FLOWING,
 
 	/**
 	 * 标题重复
@@ -237,7 +242,17 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	/**
 	 * 不支持上传文件类型：{0}
 	 */
-	UNSUPPORTED_FILE_TYPE;
+	UNSUPPORTED_FILE_TYPE,
+
+	/**
+	 * 不支持的文件路径：{0}
+	 */
+	UNSUPPORTED_PATH,
+
+	/**
+	 * 请求处理映射冲突：{0}
+	 */
+	REQUEST_MAPPING_CONFLICT;
 
 	@Override
 	public String value() {

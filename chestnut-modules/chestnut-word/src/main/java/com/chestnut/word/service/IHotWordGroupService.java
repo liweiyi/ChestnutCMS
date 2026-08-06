@@ -16,7 +16,7 @@
 package com.chestnut.word.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.word.domain.HotWordGroup;
 import com.chestnut.word.domain.dto.CreateHotWordGroupRequest;

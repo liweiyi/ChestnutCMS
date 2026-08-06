@@ -17,7 +17,7 @@ package com.chestnut.search.service;
 
 import java.util.List;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.search.domain.IndexModel;
 import com.chestnut.search.domain.dto.SearchModelDTO;
 
@@ -34,7 +34,7 @@ public interface IIndexModelService extends IService<IndexModel> {
 	/**
 	 * 添加索引模型
 	 * 
-	 * @param model
+	 * @param dto
 	 */
 	void addIndexModel(SearchModelDTO dto);
 	

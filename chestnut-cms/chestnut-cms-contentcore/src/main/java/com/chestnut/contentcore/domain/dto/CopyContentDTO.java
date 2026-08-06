@@ -17,9 +17,12 @@ package com.chestnut.contentcore.domain.dto;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -37,6 +40,8 @@ public class CopyContentDTO extends BaseDTO {
 	 */
 	@XComment("{API.DOC.CMS.CONTENT.COPY_TYPE}")
 	@NotNull
+	@Min(1)
+	@Max(3)
 	public Integer copyType;
 	
 	/**
@@ -52,4 +57,10 @@ public class CopyContentDTO extends BaseDTO {
 	@XComment("{API.DOC.CMS.CONTENT.CATALOG_IDS}")
 	@NotEmpty
 	public List<Long> catalogIds;
+
+	/**
+	 * 当前操作的来源站点ID
+	 */
+	@JsonIgnore
+	private Long sourceSiteId;
 }

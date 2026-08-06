@@ -42,7 +42,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,8 +51,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/cms/ad/stat")
 public class AdLogController extends CmsRestController {
-	
-	private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMddHH");
 
 	private final IAdvertisementService advService;
 
@@ -69,8 +66,8 @@ public class AdLogController extends CmsRestController {
 			@RequestParam(required = false) @XComment("{API.DOC.CMS.AD_LOG.BEGIN_TIME}") Date beginTime,
 			@RequestParam(required = false) @XComment("{API.DOC.CMS.AD_LOG.END_TIME}") Date endTime) {
         CmsSite site = this.getCurrentSite();
-		String begin = Objects.isNull(beginTime) ? null : FORMAT.format(beginTime);
-		String end = Objects.isNull(endTime) ? null : FORMAT.format(endTime);
+		String begin = Objects.isNull(beginTime) ? null : DateUtils.parseDateToStr(DateUtils.YYYYMMDDHH, beginTime);
+		String end = Objects.isNull(endTime) ? null : DateUtils.parseDateToStr(DateUtils.YYYYMMDDHH, endTime);
 		List<CmsAdHourStat> list = this.advHourStatMapper.selectGroupByAdvId(site.getSiteId(), begin, end);
 		if (!list.isEmpty()) {
 			Map<String, String> map = this.advService.getAdvertisementMap();

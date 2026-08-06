@@ -21,7 +21,9 @@ import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggestOption;
+import co.elastic.clients.elasticsearch.core.search.HighlightField;
 import co.elastic.clients.elasticsearch.core.search.Suggestion;
+import co.elastic.clients.util.NamedValue;
 import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.properties.EnableSearchLogProperty;
 import com.chestnut.cms.search.template.tag.CmsSearchContentTag;
@@ -46,7 +48,7 @@ import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.search.SearchConsts;
 import com.chestnut.search.service.ISearchLogService;
 import com.chestnut.system.validator.LongId;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -160,8 +162,9 @@ public class SearchApiController extends BaseRestController {
 					);
 			if (StringUtils.isNotEmpty(query)) {
 				s.highlight(h ->
-						h.fields("title", f -> f.preTags("<font color='red'>").postTags("</font>"))
-								.fields("fullText", f -> f.preTags("<font color='red'>").postTags("</font>")));
+						h.fields(
+								NamedValue.of("title", HighlightField.of(f -> f.preTags("<font color='red'>").postTags("</font>"))),
+								NamedValue.of("fullText", HighlightField.of(f -> f.preTags("<font color='red'>").postTags("</font>")))));
 			}
 			if (SORT_SCORE.equals(sortType)) {
 				s.sort(sort -> sort.field(f -> f.field("_score").order(SortOrder.Desc)));

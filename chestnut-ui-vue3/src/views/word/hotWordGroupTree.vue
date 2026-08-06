@@ -81,10 +81,10 @@ const objects = reactive({
 const { form } = toRefs(objects);
 const rules = {
   name: [
-    { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+    { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
   ],
   code: [
-    { required: true, message: this.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
+    { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
     { validator: codeValidator, trigger: "change" },
   ]
 }

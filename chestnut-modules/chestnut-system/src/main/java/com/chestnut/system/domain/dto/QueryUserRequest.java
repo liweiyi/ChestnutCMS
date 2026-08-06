@@ -30,21 +30,21 @@ import org.hibernate.validator.constraints.Length;
  */
 @Getter
 @Setter
-@XComment("用户列表查询请求参数")
+@XComment("{CC.SYS.USER.QUERY_REQUEST}")
 public class QueryUserRequest {
 
     @Length(max = 30)
-    @XComment("用户名")
+    @XComment("{CC.SYS.USER.USER_NAME}")
     private String userName;
 
     @Length(max = 20)
-    @XComment("手机号")
+    @XComment("{CC.SYS.USER.PHONE}")
     private String phoneNumber;
 
     @Dict(UserStatus.TYPE)
-    @XComment("状态")
+    @XComment("{CC.SYS.USER.STATUS}")
     private String status;
 
-    @XComment("所属机构ID")
+    @XComment("{CC.SYS.USER.DEPT_ID}")
     private Long deptId;
 }

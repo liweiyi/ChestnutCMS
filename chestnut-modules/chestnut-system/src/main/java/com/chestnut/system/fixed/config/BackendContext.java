@@ -19,10 +19,11 @@ import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.fixed.FixedConfig;
 import com.chestnut.system.service.ISysConfigService;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 /**
- * 后台访问地址
+ * 后台服务访问地址
  */
 @Component(FixedConfig.BEAN_PREFIX + BackendContext.ID)
 public class BackendContext extends FixedConfig {
@@ -42,6 +43,6 @@ public class BackendContext extends FixedConfig {
 		if (StringUtils.isBlank(configValue)) {
 			configValue = DEFAULT_VALUE;
 		}
-		return StringUtils.appendIfMissing(configValue, "/");
+		return Strings.CS.appendIfMissing(configValue, "/");
 	}
 }

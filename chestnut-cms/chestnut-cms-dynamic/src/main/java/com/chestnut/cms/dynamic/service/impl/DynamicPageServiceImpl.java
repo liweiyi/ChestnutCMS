@@ -15,7 +15,7 @@
  */
 package com.chestnut.cms.dynamic.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.cms.dynamic.controller.front.DynamicPageFrontController;
 import com.chestnut.cms.dynamic.core.DynamicPageRequestMappingHandlerMapping;
 import com.chestnut.cms.dynamic.core.IDynamicPageInitData;
@@ -23,7 +23,6 @@ import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
 import com.chestnut.cms.dynamic.mapper.CmsDynamicPageMapper;
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
@@ -31,6 +30,7 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_ErrPageLink;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.util.SiteUtils;
@@ -38,6 +38,7 @@ import com.chestnut.contentcore.util.TemplateUtils;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -47,7 +48,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.charset.Charset;
 import java.util.*;
 
 @Slf4j
@@ -130,7 +130,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
         // 校验路径是冲突
         if (!IdUtils.validate(dynamicPage.getPageId())) {
             Assert.isFalse(isRequestMappingExists(dynamicPage),
-                    () -> new GlobalException("Conflict request handler mapping: " + dynamicPage.getPath()));
+                    () -> ContentCoreErrorCode.REQUEST_MAPPING_CONFLICT.exception(dynamicPage.getPath()));
         }
     }
 
@@ -181,7 +181,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String @NonNull ... args) throws Exception {
         // 初始化DynamicPageRequestMapping
         this.list().forEach(dynamicPage -> {
             dynamicPageHelper.updateCache(dynamicPage);
@@ -193,8 +193,9 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
     public void generateDynamicPage(String requestURI, Long siteId, String publishPipeCode, Boolean preview,
                                     Map<String, String> parameters, HttpServletResponse response)
             throws IOException {
-        response.setCharacterEncoding(Charset.defaultCharset().displayName());
-        response.setContentType("text/html; charset=" + Charset.defaultCharset().displayName());
+        String charset = staticizeService.getOutputCharset().name();
+        response.setCharacterEncoding(charset);
+        response.setContentType("text/html; charset=" + charset);
 
         CmsSite site = this.siteService.getSite(siteId);
         if (Objects.isNull(site)) {
@@ -218,7 +219,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
             // init template datamode
             TemplateUtils.initGlobalVariables(site, templateContext);
             // init templateType data to datamode
-            templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, parameters);
+            templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, TemplateUtils.htmlEscapeParameters(parameters));
             // 动态页面自定义数据
             if (Objects.nonNull(dynamicPage.getInitDataTypes())) {
                 for (String initDataType : dynamicPage.getInitDataTypes()) {

@@ -17,7 +17,7 @@ package com.chestnut.common.i18n;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -51,7 +51,7 @@ public class I18nPlaceholderHelper {
         Assert.notNull(placeholderSuffix, "'placeholderSuffix' must not be null");
         this.placeholderPrefix = placeholderPrefix;
         this.placeholderSuffix = placeholderSuffix;
-        String simplePrefixForSuffix = (String)wellKnownSimplePrefixes.get(this.placeholderSuffix);
+        String simplePrefixForSuffix = wellKnownSimplePrefixes.get(this.placeholderSuffix);
         if (simplePrefixForSuffix != null && this.placeholderPrefix.endsWith(simplePrefixForSuffix)) {
             this.simplePrefix = simplePrefixForSuffix;
         } else {

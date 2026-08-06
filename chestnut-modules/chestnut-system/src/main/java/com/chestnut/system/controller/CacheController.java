@@ -32,6 +32,7 @@ import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.Strings;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
@@ -77,7 +78,7 @@ public class CacheController {
 		Objects.requireNonNull(commandStats).stringPropertyNames().forEach(key -> {
 			Map<String, String> data = new HashMap<>(2);
 			String property = commandStats.getProperty(key);
-			data.put("name", StringUtils.removeStart(key, "cmdstat_"));
+			data.put("name", Strings.CS.removeStart(key, "cmdstat_"));
 			data.put("value", StringUtils.substringBetween(property, "calls=", ",usec"));
 			pieList.add(data);
 		});

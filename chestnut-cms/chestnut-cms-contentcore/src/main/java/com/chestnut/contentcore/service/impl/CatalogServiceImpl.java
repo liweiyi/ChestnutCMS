@@ -18,7 +18,7 @@ package com.chestnut.contentcore.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.TreeNode;
@@ -39,7 +39,7 @@ import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.*;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
-import com.chestnut.contentcore.enums.ContentTips;
+import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.listener.event.*;
 import com.chestnut.contentcore.mapper.CmsCatalogMapper;
@@ -52,6 +52,7 @@ import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.service.ISysPermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -331,7 +332,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		// 删除前事件发布
 		applicationContext.publishEvent(new BeforeCatalogDeleteEvent(this, catalog, operator));
 		// 删除栏目
-		AsyncTaskManager.setTaskMessage(ContentTips.DELETING_CATALOG);
+		AsyncTaskManager.setTaskMessage(ContentCoreTips.DELETING_CATALOG);
 		if (catalog.getParentId() > 0) {
 			CmsCatalog parentCatalog = getById(catalog.getParentId());
 			parentCatalog.setChildCount(parentCatalog.getChildCount() - 1);
@@ -440,7 +441,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 	@Override
 	public void changeVisible(Long catalogId, String visible) {
 		CmsCatalog catalog = this.getCatalog(catalogId);
-		if (StringUtils.equals(visible, catalog.getVisibleFlag())) {
+		if (Strings.CS.equals(visible, catalog.getVisibleFlag())) {
 			return;
 		}
 		catalog.setVisibleFlag(YesOrNo.isYes(visible) ? YesOrNo.YES : YesOrNo.NO);
@@ -466,7 +467,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 
 			@Override
 			public void run0() {
-                transactionTemplate.executeWithoutResult(transactionStatus -> {
+                transactionTemplate.executeWithoutResult(status -> {
                     moveCatalog0(fromCatalog, toCatalog, children);
                 });
 

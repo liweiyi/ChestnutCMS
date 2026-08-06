@@ -55,7 +55,7 @@ public class I18nMessageSource extends AbstractMessageSource implements Initiali
 
 	@Override
 	protected MessageFormat resolveCode(@NotNull String code, Locale locale) {
-		Object value = this.redisCache.getCacheMapValue(CACHE_PREFIX + locale.toLanguageTag(), code);
+		Object value = resolveMessageValue(code, locale);
 		if (Objects.nonNull(value)) {
 			return new MessageFormat(value.toString(), locale);
 		}
@@ -64,13 +64,33 @@ public class I18nMessageSource extends AbstractMessageSource implements Initiali
 	
 	@Override
 	protected String resolveCodeWithoutArguments(@NotNull String code, Locale locale) {
-		Object value = this.redisCache.getCacheMapValue(CACHE_PREFIX + locale.toLanguageTag(), code);
+		Object value = resolveMessageValue(code, locale);
 		return ConvertUtils.toStr(value);
 	}
 
 	@Override
 	protected String getDefaultMessage(@NotNull String code) {
-		Object value = this.redisCache.getCacheMapValue(CACHE_PREFIX + this.getDefaultLocale().toLanguageTag(), code);
+		Object value = resolveMessageValue(code, this.getDefaultLocale());
 		return ConvertUtils.toStr(value, isUseCodeAsDefaultMessage() ? code : StringUtils.EMPTY);
+	}
+
+	private Object resolveMessageValue(String code, Locale locale) {
+		Object value = this.redisCache.getCacheMapValue(CACHE_PREFIX + locale.toLanguageTag(), code);
+		if (Objects.nonNull(value)) {
+			return value;
+		}
+		value = this.redisCache.getCacheMapValue(CACHE_PREFIX + locale.getLanguage(), code);
+		if (Objects.nonNull(value)) {
+			return value;
+		}
+		Locale defaultLocale = this.getDefaultLocale();
+		if (Objects.equals(locale, defaultLocale)) {
+			return null;
+		}
+		value = this.redisCache.getCacheMapValue(CACHE_PREFIX + defaultLocale.toLanguageTag(), code);
+		if (Objects.nonNull(value)) {
+			return value;
+		}
+		return this.redisCache.getCacheMapValue(CACHE_PREFIX + defaultLocale.getLanguage(), code);
 	}
 }

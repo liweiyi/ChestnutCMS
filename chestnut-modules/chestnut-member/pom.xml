@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>chestnut-modules</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.13</version>
+		<version>1.6.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -17,8 +17,13 @@
 			<artifactId>chestnut-system</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.chestnut</groupId>
+			<artifactId>chestnut-message</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mail</artifactId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

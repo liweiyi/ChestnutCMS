@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.security;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public interface ILoginType {
 

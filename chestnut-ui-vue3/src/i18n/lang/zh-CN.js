@@ -1,7 +1,7 @@
 const zhCN = {
   APP: {
     TITLE: '栗子内容管理系统',
-    Copyright: 'Copyright © 2022-2026 ChestnutCMS. All Rights Reserved.'
+    Copyright: 'Copyright © 2022-2026 ChestnutCMS (1000mz.com) All Rights Reserved.'
   },
   Common: {
     Search: '搜索',
@@ -46,11 +46,13 @@ const zhCN = {
     RefreshCache: '刷新缓存',
     Clean: "清空",
     View: "查看",
+    Preview: "预览",
     Show: "显示",
     Hide: "隐藏",
     Move: "移动",
     Copy: "复制",
     Sort: "排序",
+    Update: "更新",
     Details: "详情",
     Remark: '备注',
     CreateTime: '创建时间',
@@ -60,6 +62,7 @@ const zhCN = {
     Operation: '操作',
     Select: '选择',
     Upload: '上传',
+    Download: '下载',
     RowNo: '序号',
     ExpandOrCollapse: '展开 / 折叠',
     Expand: '展开',
@@ -69,6 +72,7 @@ const zhCN = {
     TreeLinkage: '父子联动',
     MoveUp: "上移",
     MoveDown: "下移",
+    Back: '返回',
     ConfirmDelete: '是否确认删除？',
     ConfirmClean: "是否确认清空？清空后将无法恢复，请谨慎操作。",
     Today: '今天',
@@ -99,6 +103,12 @@ const zhCN = {
     Unknown: "未知",
     Recover: "恢复",
     InputPassword: "请输入密码",
+    SelectedCount: "已选择 {0} 条",
+    FilePreview: {
+      Unsupported: "该文件类型暂不支持在线预览",
+      NoSrc: "未找到可预览的文件",
+      OfficeUnsupported: "该 Office 文件格式暂不支持在线预览（仅支持 .docx/.xlsx/.xls/.pptx），请下载后查看"
+    },
     Unit: {
       Year: "年",
       Month: "月",
@@ -574,9 +584,6 @@ const zhCN = {
       ConfirmUnlock: '是否确认解锁用户：{0}？',
       UnlockSuccess: '用户"{0}"解锁成功'
     },
-    GenCode: {
-      EditGenConfig: '修改生成配置'
-    },
     Security: {
       Basic: "基本信息",
       Name: "名称",
@@ -611,6 +618,8 @@ const zhCN = {
       CaptchaType: "验证码类型",
       CaptchaExpireSeconds: "验证码过期时长（单位：秒）",
       CaptchaRetryDuration: "验证码重试时长（单位：秒）",
+      CaptchaMessageConfigId: "短信验证码消息配置ID",
+      CaptchaMessageTemplateId: "短信验证码消息模板ID",
       BizConfigCard: "业务安全配置",
       SecondaryVerifications: "需要二次验证的接口",
       SecondaryVerificationsSearch: "按路径模糊搜索",
@@ -1155,6 +1164,8 @@ const zhCN = {
       CopyContentTip: "拷贝副本：完整复制内容，独立于来源自由修改。",
       MappingContent: "映射内容",
       MappingContentTip: "映射内容：仅生成基础信息，独立页面，扩展内容共享自源内容。",
+      CrossSiteCopyTip: "跨站点拷贝：完整复制内容到其他站点，并记录来源站点。",
+      SelectTargetSite: "请选择目标站点",
       SortUp: "上移",
       SortDown: "下移",
       Merge: "合并",
@@ -1186,7 +1197,8 @@ const zhCN = {
         HotWordGroup: "热词分组",
         HotWordMaxReplaceCount: "替换数量限制",
         HotWordMaxReplaceCountTip: "每篇文章替换热词数量限制，0表示不限制数量。",
-        EnableContribute: "是否允许投稿"
+        EnableContribute: "是否允许投稿",
+        ContentWorkflow: "内容工作流"
       }
     },
     Content: {
@@ -1219,7 +1231,10 @@ const zhCN = {
       UploadWord: "上传WORD文档",
       SaveUploadWordFile: "保留上传的WORD文档",
       CopyType: "复制方式",
-      CopyId: "来源ID",
+      CopyId: "源ID",
+      CopySite: "源站点",
+      CopyCatalog: "源栏目",
+      CopyContent: "源内容",
       StatusOption: {
         Draft: "初稿",
         ToPublish: "待发布",
@@ -1279,6 +1294,7 @@ const zhCN = {
       CloseContentEditorTip: "关闭页面会导致未保存的内容丢失，确认关闭吗？",
       ExtendConfig: "扩展配置",
       ExtendTemplate: "扩展模板",
+      ContentPriv: "浏览权限",
       ViewCount: "浏览量",
       FavoriteCount: "收藏数",
       LikeCount: "点赞数",
@@ -1295,6 +1311,39 @@ const zhCN = {
       SaveNewVersion: "保存新版本",
       LatestVersion: "最新版本",
       VersionDiff: "版本对比",
+      Workflow: {
+        Title: "流程信息",
+        NoRecord: "暂无审批流程记录",
+        NoProgress: "暂无流转节点",
+        ProcessName: "流程名称",
+        Starter: "发起人",
+        StartTime: "发起时间",
+        EndTime: "结束时间",
+        Progress: "审批进度",
+        Assignee: "处理人",
+        CompletedAt: "完成时间",
+        Comment: "审批意见",
+        Running: "流转中",
+        Processing: "待处理",
+        Approved: "审批通过",
+        Rejected: "审批拒绝",
+        Revoked: "已撤销",
+        Revoke: "撤销审批",
+        RevokeConfirm: "撤销后内容将恢复为重新编辑状态，确认撤销当前审批流程吗？",
+        RevokeSuccess: "审批流程已撤销",
+        Urge: "催办",
+        Urged: "已催办",
+        UrgeConfirm: "确认催办当前审批流程吗？",
+        UrgeSuccess: "催办成功",
+        Submit: "提交审核",
+        SubmitDialogTitle: "提交内容审核",
+        SubmitTip: "提交后内容在审批完成或撤销前不可编辑，请确认审批通过后的动作。",
+        ActionAfterApproval: "审批通过后",
+        NoAction: "仅标记审批通过",
+        ToPublishAfterApproval: "自动设为待发布",
+        PublishAfterApproval: "自动发布",
+        SubmitSuccess: "内容已提交审核"
+      },
       VersionDiffTip: {
         Replace: "替换",
         Add: "新增",
@@ -1471,6 +1520,7 @@ const zhCN = {
       AcceptSize: "支持文件大小：{0}",
       AddDialogTitle: "添加资源",
       EditDialogTitle: "编辑资源",
+      PreviewTitle: "资源预览",
       FileTypeErrMsg: "文件格式错误，请上传图片类型,如：.jpg，.png后缀的文件。",
       SelectorTitle: "素材库",
       LocalUpload: "本地上传",
@@ -1952,6 +2002,15 @@ const zhCN = {
         RoleName: "请输入角色名称",
         RoleKey: "请输入角色标识码"
       }
+    },
+    Config: {
+      Title: "会员配置",
+      Tip: "会员业务配置统一保存在数据库中。消息配置与模板需先在消息管理中创建，再在此处选择。",
+      ConfigPlaceholder: "请选择消息配置",
+      TemplatePlaceholder: "请选择消息模板",
+      SelectConfigFirst: "请先选择消息配置",
+      MissingConfig: "原消息配置已不存在，请重新选择",
+      MissingTemplate: "原消息模板已不存在或类型不匹配，请重新选择"
     }
   },
   MetaModel: {
@@ -2104,6 +2163,7 @@ const zhCN = {
   },
   Flowable: {
     Category: {
+      TreeRoot: "流程分类",
       AddCategory: "添加分类",
       CategoryNamePlaceholder: "输入分类名称",
       SortUp: "上移",
@@ -2127,6 +2187,59 @@ const zhCN = {
         ModelKey: "输入模型标识",
         ModelName: "输入模型名称"
       }
+    },
+    Template: {
+      Name: "流程模板",
+      Fixed: "系统固定模板",
+      Custom: "自定义模板",
+      AddByTemplate: "按模板新增",
+      Convert: "转存为模板",
+      CreateProcess: "创建流程"
+    },
+    History: {
+      Title: "流转历史",
+      Empty: "暂无流转节点",
+      StartNode: "流程开始",
+      EndNode: "流程已结束",
+      Starter: "发起人",
+      Assignee: "处理人",
+      PendingAssignee: "待处理人",
+      CcUsers: "抄送人",
+      CopiedAt: "抄送时间",
+      CcCompleted: "已抄送",
+      UserNotFound: "错误：人员不存在",
+      Role: "角色",
+      Dept: "部门",
+      CompletedAt: "完成时间",
+      Comment: "审批意见"
+    },
+    Comment: {
+      Title: "流程评论",
+      Empty: "暂无评论",
+      Placeholder: "请输入评论内容",
+      Submit: "提交评论",
+      Required: "评论内容不能为空",
+      Success: "评论发表成功"
+    },
+    Action: {
+      Revoke: "撤销",
+      RevokeConfirm: "确认撤销当前流程吗？",
+      RevokeSuccess: "流程已撤销",
+      Urge: "催办",
+      UrgeConfirm: "确认催办当前流程吗？",
+      UrgeSuccess: "催办成功",
+      AdminCancel: "强制撤销",
+      AdminCancelConfirm: "确认强制撤销该流程吗？此操作不受流程撤销配置限制。",
+      AdminCancelSuccess: "流程已强制撤销"
+    },
+    Dashboard: {
+      TodoTitle: "待处理任务",
+      ViewAll: "去处理",
+      Empty: "暂无待处理任务",
+      TaskName: "任务名称",
+      ProcessName: "流程名称",
+      Starter: "发起人",
+      ArrivedAt: "到达时间"
     }
   },
   GroovyScript: {
@@ -2135,46 +2248,89 @@ const zhCN = {
     Name: "名称"
   },
   Deploy: {
-    Cert: {
-      Domain: "域名",
-      RR: "主机记录",
-      Issuer: "证书颁发机构",
-      IssueTime: "签发时间",
+    Domain: {
+      Management: "域名管理",
+      CertList: "证书列表",
+      ApplyCert: "申请证书",
+      ApplyCertTitle: "申请SSL证书",
+      CertName: "证书名称",
+      ApplyLog: "申请日志",
+      NoApplyLog: "暂无日志",
+      CertHolder: "证书持有者",
+      ScanLog: "扫描日志",
+      Scan: "扫描",
+      HostRecord: "主机记录",
+      HostRecordPlaceholder: "如 * 表示泛域名，www 表示 www 子域名",
+      RecordValue: "记录值",
+      RecordType: "记录类型",
+      Result: "结果",
+      FailReason: "失败原因",
       ExpireTime: "过期时间",
-      Apply: "申请",
-      Auth: "验证",
-      DownloadCrt: "下载证书",
+      AddDomain: "添加域名",
+      EditDomain: "编辑域名",
+      Domain: "域名",
+      DomainPlaceholder: "请输入主域名，如 example.com",
+      CloudConfig: "云账号配置",
+      CloudConfigPlaceholder: "请选择云账号配置",
+      CloudConfigHint: "用于自动写入 ACME DNS-01 TXT 验证记录",
+      AssociatedDomain: "关联域名",
+      AddCert: "添加证书",
+      EditCert: "编辑证书",
+      CertStandard: "证书标准",
+      InternationalStandard: "国际标准",
+      SM2Standard: "国密 SM2",
+      CertContent: "证书内容",
+      PrivateKeyContent: "私钥内容",
+      EncryptedCertificate: "加密证书",
+      EncryptedPrivateKey: "加密私钥",
+      CertContentAndPrivateKeyUploaded: "证书内容和私钥上传后不再回显，也不可编辑。",
+      Issuer: "证书颁发机构",
       Country: "国家",
-      State: "省份",
-      Locality: "地区",
-      Organization: "组织机构",
-      AuthChallenge: "证书申请验证",
-      DownloadHttp01File: "下载HTTP01验证文件",
-      AddDomain: "新增域名",
-      EditDomain: "修改域名信息",
-      ConfirmApply: "确认发起证书申请吗？",
-      Applying: "正在提交证书申请，请稍等...",
-      Authroizating: "正在验证，请稍等...",
-      Servers: "同步服务器",
-      SyncToServer: "同步",
-      Syncing: "正在同步证书到远程服务器，请稍等...",
-      Placeholder: {
-        Domain: "输入域名查询"
-      }
-    },
-    ServerMachine: {
-      Name: "服务器名称",
-      RemoteAddress: "服务器地址",
-      Host: "域名/IP地址",
-      Port: "端口",
-      UserName: "登录用户名",
-      KeyFile: "登录秘钥",
-      Passphrase: "秘钥密码",
-      AddTitle: "添加服务器信息",
-      EditTitle: "编辑服务器信息",
-      TestConnection: "测试连接",
-      ConnectionSuccess: "连接成功",
-      TestConnectionLoading: "正在尝试链接..."
+      State: "省/州",
+      City: "城市",
+      Organization: "组织",
+      AddHolder: "添加持有者",
+      EditHolder: "编辑持有者",
+      HolderType: "持有者类型",
+      MarkManualSuccess: "已人工处理",
+      LastSyncResult: "上次更新结果",
+      ServerHost: "服务器主机",
+      ServerPort: "服务器端口",
+      ServerUser: "服务器用户",
+      LoginPrivateKey: "登录私钥",
+      LoginPrivateKeyPlaceholder: "仅支持输入私钥内容，保存后编辑时回显 ******",
+      PrivateKeyPassword: "私钥密码",
+      PrivateKeyPasswordPlaceholder: "请输入私钥密码",
+      LoginPassword: "登录密码",
+      LoginPasswordPlaceholder: "请输入登录密码",
+      CertificateFilePath: "证书文件路径",
+      CertificateFilePathPlaceholder: "请输入证书文件路径",
+      PrivateKeyFilePath: "私钥文件路径",
+      PrivateKeyFilePathPlaceholder: "请输入私钥文件路径",
+      DifyDockerDir: "Dify Docker目录",
+      DifyDockerDirPlaceholder: "请输入Dify Docker目录",
+      SecretId: "SecretId",
+      SecretKey: "SecretKey",
+      OldCertificateId: "旧证书ID",
+      ResourceType: "资源类型",
+      ResourceTypeRegion: "资源类型区域",
+      AccessKeyId: "AccessKeyId",
+      AccessKeySecret: "AccessKeySecret",
+      TencentCloudSsl: {
+        AddResourceType: "添加资源类型",
+        ConfigJsonTip: "用于生成腾讯云 SSL 资源类型与地域配置 JSON",
+        EmptyResourceConfig: "暂无资源类型配置",
+        Regions: "地域",
+        AddRegion: "添加地域",
+        ResourceTypePlaceholder: "如 clb、cos",
+        RegionPlaceholder: "如 ap-guangzhou",
+        ResourceTypes: {
+          Clb: "负载均衡 CLB",
+          Cos: "对象存储 COS",
+          Waf: "Web 应用防火墙 WAF",
+          Apigateway: "API 网关 APIGW",
+        },
+      },
     },
     NginxConfig: {
       Name: "名称",
@@ -2274,6 +2430,68 @@ const zhCN = {
         ProcessDef: '请选择流程定义',
         BusinessKey: '请输入业务关联键',
         Title: '请输入流程标题'
+      }
+    },
+    Status: {
+      Pending: '待审批',
+      Approved: '已通过',
+      Rejected: '已拒绝',
+      Canceled: '已撤销',
+      Completed: '已完成',
+      Failed: '失败'
+    },
+    Config: {
+      ConfigId: '配置ID',
+      ConfigName: '配置名称',
+      HandlerId: '处理器',
+      WorkflowType: '引擎类型',
+      ProcessDefId: '流程定义',
+      RequestUri: '请求URI',
+      RequestMethod: '请求方法',
+      Status: '状态',
+      Dialog: {
+        Add: '新增流程配置',
+        Edit: '修改流程配置'
+      },
+      Placeholder: {
+        ConfigName: '请输入配置名称',
+        HandlerId: '请选择处理器',
+        WorkflowType: '请选择引擎类型',
+        ProcessDefId: '请选择流程定义',
+        RequestUri: '请输入请求URI',
+        RequestMethod: '请选择请求方法',
+        Status: '请选择状态'
+      },
+      ConfirmDelete: '是否确认删除配置名称为"{0}"的流程配置？'
+    },
+    Record: {
+      RecordId: '记录ID',
+      ConfigId: '配置ID',
+      HandlerId: '处理器',
+      WorkflowType: '引擎类型',
+      ProcessDefId: '流程定义ID',
+      EngineInstanceId: '引擎实例ID',
+      Title: '流程标题',
+      RequestUri: '请求URI',
+      RequestMethod: '请求方法',
+      RequestData: '请求数据',
+      OperatorId: '操作人ID',
+      OperatorName: '提交人',
+      OperatorDeptId: '操作人部门',
+      OperatorJson: '操作人信息',
+      Status: '状态',
+      SubmitTime: '提交时间',
+      FinishTime: '完成时间',
+      FailReason: '失败原因',
+      CompleteResult: '执行结果',
+      Detail: '流程记录详情',
+      Cancel: '撤销',
+      CancelSuccess: '撤销成功',
+      OnlyMine: '仅我的',
+      ConfirmCancel: '是否确认撤销流程"{0}"？',
+      Placeholder: {
+        Status: '请选择状态',
+        HandlerId: '请选择处理器'
       }
     }
   },

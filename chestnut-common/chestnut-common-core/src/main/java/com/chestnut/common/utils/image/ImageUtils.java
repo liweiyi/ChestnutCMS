@@ -19,6 +19,7 @@ import com.chestnut.common.exception.ImageException;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.springframework.util.StreamUtils;
 
 import javax.imageio.ImageIO;
@@ -52,10 +53,10 @@ public class ImageUtils {
     /**
      * 获取缩略图文件名
      *
-     * @param fileName
-     * @param width
-     * @param height
-     * @return
+     * @param fileName The image file name
+     * @param width The thumbnail width
+     * @param height The thumbnail height
+     * @return The thumbnail file name for source image file name.
      */
     public static String getThumbnailFileName(String fileName, int width, int height) {
         String prefix = StringUtils.substringBeforeLast(fileName, ".");
@@ -92,7 +93,7 @@ public class ImageUtils {
     }
 
     public static boolean isBase64Image(String base64) {
-        if (!StringUtils.startsWithIgnoreCase(base64, "data:image/")) {
+        if (!Strings.CI.startsWith(base64, "data:image/")) {
             return false;
         }
         String encode = StringUtils.substringAfter(StringUtils.substringBefore(base64, ","), ";");

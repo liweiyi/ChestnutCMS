@@ -23,7 +23,7 @@ import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.schedule.ScheduledTaskTriggerType;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 

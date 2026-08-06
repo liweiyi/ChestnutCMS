@@ -18,6 +18,8 @@ package com.chestnut.cms.search.template.tag;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.HighlightField;
+import co.elastic.clients.util.NamedValue;
 import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.vo.ESContentVO;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
@@ -32,7 +34,7 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.exmodel.CmsExtendMetaModelType;
 import com.chestnut.search.SearchConsts;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
@@ -158,8 +160,9 @@ public class CmsSearchContentTag extends AbstractListTag {
 					);
 				if (SearchMode.isFullText(mode)) {
 					s.highlight(h ->
-							h.fields("title", f -> f.preTags("<font color='red'>").postTags("</font>"))
-									.fields("fullText", f -> f.preTags("<font color='red'>").postTags("</font>")));
+							h.fields(
+									NamedValue.of("title", HighlightField.of(f -> f.preTags("<font color='red'>").postTags("</font>"))),
+									NamedValue.of("fullText", HighlightField.of(f -> f.preTags("<font color='red'>").postTags("</font>")))));
 				}
 				s.sort(sort -> sort.field(f -> f.field("_score").order(SortOrder.Desc)));
 				s.sort(sort -> sort.field(f -> f.field("publishDate").order(SortOrder.Desc))); // 排序: _score:desc + publishDate:desc
@@ -173,10 +176,10 @@ public class CmsSearchContentTag extends AbstractListTag {
 			}, ObjectNode.class);
 			List<ESContentVO> list = sr.hits().hits().stream().map(hit -> {
 				ESContentVO vo = JacksonUtils.getObjectMapper().convertValue(hit.source(), ESContentVO.class);
-				Objects.requireNonNull(hit.source()).fields().forEachRemaining(e -> {
+				Objects.requireNonNull(hit.source()).properties().forEach(e -> {
 					if (e.getKey().startsWith(CmsExtendMetaModelType.DATA_FIELD_PREFIX)) {
 						String field = e.getKey().substring(CmsExtendMetaModelType.DATA_FIELD_PREFIX.length());
-						String value = e.getValue().asText();
+						String value = e.getValue().asString();
 						vo.getExtendData().put(field, value);
 					}
 				});

@@ -89,18 +89,18 @@ public class RedisKeyOps extends AbstractRedisOps {
         AtomicLong deleteCount = new AtomicLong(0);
         redisTemplate.execute((RedisCallback<Void>) connection -> {
             ScanOptions options = ScanOptions.scanOptions().match(pattern).count(1000).build();
-            try (Cursor<byte[]> cursor = connection.scan(options)) {
+            try (Cursor<byte[]> cursor = connection.keyCommands().scan(options)) {
                 List<byte[]> batch = new ArrayList<>(1000);
                 while (cursor.hasNext()) {
                     batch.add(cursor.next());
                     if (batch.size() >= 1000) {
-                        Long deleted = connection.del(batch.toArray(new byte[0][]));
+                        Long deleted = connection.keyCommands().del(batch.toArray(new byte[0][]));
                         deleteCount.addAndGet(Objects.requireNonNullElse(deleted, 0L));
                         batch.clear();
                     }
                 }
                 if (!batch.isEmpty()) {
-                    Long deleted = connection.del(batch.toArray(new byte[0][]));
+                    Long deleted = connection.keyCommands().del(batch.toArray(new byte[0][]));
                     deleteCount.addAndGet(Objects.requireNonNullElse(deleted, 0L));
                 }
             }

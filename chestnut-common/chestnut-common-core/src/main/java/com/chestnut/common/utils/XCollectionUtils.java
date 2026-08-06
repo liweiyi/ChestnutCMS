@@ -68,4 +68,13 @@ public class XCollectionUtils {
         }
         return Collections.unmodifiableMap(map);
     }
+
+    public static <T> T findFirst(Collection<T> collection, Predicate<T> predicate) {
+        for (T item : collection) {
+            if (predicate.test(item)) {
+                return item;
+            }
+        }
+        return null;
+    }
 }

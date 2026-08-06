@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -25,6 +25,7 @@ import com.chestnut.system.domain.dto.UpdateNoticeRequest;
 import com.chestnut.system.mapper.SysNoticeMapper;
 import com.chestnut.system.service.ISysNoticeService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -63,6 +64,7 @@ public class SysNoticeServiceImpl extends ServiceImpl<SysNoticeMapper, SysNotice
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void deleteNoticeByIds(List<Long> noticeIds) {
 		this.removeBatchByIds(noticeIds);
 	}

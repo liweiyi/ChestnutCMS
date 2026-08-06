@@ -81,6 +81,7 @@ public class SysScheduledTaskController extends BaseRestController {
 	}
 
 	@XComment("{API.DOC.SYS.TASK.GET_LIST}")
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.ScheduledTaskView)
 	@GetMapping("/list")
 	public R<TableData<ScheduledTaskVO>> list(@RequestParam(required = false) @XComment("{API.DOC.SYS.TASK.STATUS}") String status) {
 		PageRequest pr = this.getPageRequest();
@@ -99,7 +100,9 @@ public class SysScheduledTaskController extends BaseRestController {
 		}).toList();
 		return bindDataTable(list, page.getTotal());
 	}
+
 	@XComment("{API.DOC.SYS.TASK.GET_INFO}")
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.ScheduledTaskView)
 	@GetMapping("/detail/{taskId}")
 	public R<SysScheduledTask> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.TASK.ID}") Long taskId) {
 		SysScheduledTask task = this.taskService.getById(taskId);
@@ -110,7 +113,7 @@ public class SysScheduledTaskController extends BaseRestController {
 
 	@XComment("{API.DOC.SYS.TASK.CREATE_TASK}")
 	@Log(title = "定时任务", businessType = BusinessType.INSERT)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.ScheduledTaskView)
 	@PostMapping("/add")
 	public R<Void> add(@Validated @RequestBody CreateScheduledTaskRequest dto) {
 		taskService.insertTask(dto);
@@ -119,7 +122,7 @@ public class SysScheduledTaskController extends BaseRestController {
 
 	@XComment("{API.DOC.SYS.TASK.UPDATE_TASK}")
 	@Log(title = "定时任务", businessType = BusinessType.UPDATE)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.ScheduledTaskView)
 	@PostMapping("/update")
 	public R<Void> edit(@Validated @RequestBody UpdateScheduledTaskRequest dto) {
 		taskService.updateTask(dto);
@@ -128,7 +131,7 @@ public class SysScheduledTaskController extends BaseRestController {
 
 	@XComment("{API.DOC.SYS.TASK.DELETE_TASK}")
 	@Log(title = "定时任务", businessType = BusinessType.DELETE)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.AsyncTaskList)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.ScheduledTaskView)
 	@PostMapping("/delete")
 	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.TASK.IDS}") List<Long> taskIds) {
 		taskService.deleteTasks(taskIds);

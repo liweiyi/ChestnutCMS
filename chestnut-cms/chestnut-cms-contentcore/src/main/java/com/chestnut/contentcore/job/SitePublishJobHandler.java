@@ -105,8 +105,10 @@ public class SitePublishJobHandler extends IJobHandler implements IScheduledHand
                             IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
                             IContent<?> content = contentType.loadContent(xContent);
                             content.setOperator(Operator.defalutOperator());
-                            transactionTemplate.execute(callback -> content.publish());
-                            publishService.asyncStaticizeContent(content);
+                            boolean published = transactionTemplate.execute(callback -> content.publish());
+							if (published) {
+								publishService.asyncStaticizeContent(content);
+							}
                         } catch (Exception e) {
                             logger.warn("SitePublishJob.publish fail: {}#{}", xContent.getContentType(), xContent.getContentId(), e);
                         }

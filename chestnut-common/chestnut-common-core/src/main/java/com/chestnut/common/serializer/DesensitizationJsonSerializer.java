@@ -16,11 +16,10 @@
 package com.chestnut.common.serializer;
 
 import com.chestnut.common.utils.StringUtils;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-
-import java.io.IOException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
 /**
  * 字段脱敏序列化处理
@@ -28,12 +27,12 @@ import java.io.IOException;
  * @author 兮玥
  * @email 190785909@qq.com
  */
-public class DesensitizationJsonSerializer extends JsonSerializer<String> {
+public class DesensitizationJsonSerializer extends ValueSerializer<String> {
 
     private static final String MASKER = "******";
 
     @Override
-    public void serialize(String value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(String value, JsonGenerator gen, SerializationContext context) throws JacksonException {
         if (StringUtils.isNotEmpty(value)) {
             gen.writeString(MASKER);
             return;

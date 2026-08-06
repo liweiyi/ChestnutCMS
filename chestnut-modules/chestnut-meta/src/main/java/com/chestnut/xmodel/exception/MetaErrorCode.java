@@ -45,6 +45,11 @@ public enum MetaErrorCode implements ErrorCode {
 	META_TABLE_NOT_EXISTS,
 
 	/**
+	 * 数据库表不在元数据模型类型允许范围内
+	 */
+	META_TABLE_NOT_ALLOWED,
+
+	/**
 	 * 不支持的元数据模型类型：{0}
 	 */
 	UNSUPPORTED_META_MODEL_TYPE,

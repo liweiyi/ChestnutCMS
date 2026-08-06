@@ -20,7 +20,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.common.db.domain.IBackupable;
 import com.chestnut.system.fixed.dict.YesOrNo;
@@ -129,7 +129,7 @@ public class CmsContent extends BaseEntity implements IBackupable<BCmsContent> {
     /**
      * 新封面图字段
      */
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private List<String> images;
 
     /**
@@ -210,13 +210,13 @@ public class CmsContent extends BaseEntity implements IBackupable<BCmsContent> {
     /**
      * 关键词
      */
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private String[] keywords;
 
     /**
      * TAGs
      */
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private String[] tags;
 
     /**
@@ -287,19 +287,19 @@ public class CmsContent extends BaseEntity implements IBackupable<BCmsContent> {
     /**
      * 发布通道
      */
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private String[] publishPipe;
 
     /**
      * 发布通道属性
      */
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private Map<String, Map<String, Object>> publishPipeProps;
 
     /**
      * 扩展属性
      */
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private Map<String, String> configProps;
 
     /**

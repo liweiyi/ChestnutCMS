@@ -31,6 +31,11 @@ public class DBTable {
 	private String catalog;
 
 	/**
+	 * 模式名
+	 */
+	private String schema;
+
+	/**
 	 * 类型（TABLE_TYPE）
 	 */
 	private String type;

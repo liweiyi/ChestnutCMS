@@ -24,6 +24,7 @@ import freemarker.cache.MruCacheStorage;
 import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.TemplateLoader;
 import freemarker.template.TemplateException;
+import org.apache.commons.lang3.Strings;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -74,6 +75,9 @@ public class FreeMarkerConfig {
 			settings.putAll(properties.getSettings());
 			cfg.setSettings(settings);
 		}
+		cfg.setOutputEncoding(StringUtils.isEmpty(properties.getOutputEncoding())
+				? properties.getDefaultEncoding()
+				: properties.getOutputEncoding());
 		return cfg;
 	}
 
@@ -85,7 +89,7 @@ public class FreeMarkerConfig {
 			templateLoaderPath = SpringUtils.getAppParentDirectory() + "/statics/";
 		}
 		templateLoaderPath = FileExUtils.normalizePath(templateLoaderPath);
-		templateLoaderPath = StringUtils.appendIfMissing(templateLoaderPath, "/");
+		templateLoaderPath = Strings.CS.appendIfMissing(templateLoaderPath, "/");
 		FileExUtils.mkdirs(templateLoaderPath);
 		properties.setTemplateLoaderPath(templateLoaderPath);
 		return new FileTemplateLoader(new File(templateLoaderPath));

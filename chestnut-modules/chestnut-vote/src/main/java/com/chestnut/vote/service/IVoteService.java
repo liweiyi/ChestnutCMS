@@ -15,7 +15,7 @@
  */
 package com.chestnut.vote.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.vote.core.IVoteItemType;
 import com.chestnut.vote.core.IVoteUserType;
 import com.chestnut.vote.domain.Vote;

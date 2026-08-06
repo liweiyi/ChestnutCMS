@@ -19,7 +19,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.chestnut.vote.domain.dto.VoteSubmitRequest;
 import lombok.Getter;
 import lombok.Setter;
@@ -66,7 +66,7 @@ public class VoteLog implements Serializable {
 	/**
 	 * 投票结果
 	 */
-	@TableField(typeHandler = JacksonTypeHandler.class)
+	@TableField(typeHandler = Jackson3TypeHandler.class)
 	private List<VoteSubmitRequest.SubjectResult> result;
 	
 	/**

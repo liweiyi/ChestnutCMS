@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.CreateBindingUserRequest;
 import com.chestnut.system.domain.dto.CreateUserRequest;

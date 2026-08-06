@@ -393,7 +393,7 @@ public class SiteController extends CmsRestController {
 
             String dir = SiteUtils.getSiteResourceRoot(site.getPath());
             String ext = FileExUtils.getExtension(Objects.requireNonNull(multipartFile.getOriginalFilename()));
-            if (ResourceType_Image.isImageExt(ext)) {
+            if (!ResourceType_Image.isImageExt(ext)) {
                 throw ContentCoreErrorCode.UNSUPPORTED_FILE_TYPE.exception(ext);
             }
             String filename = "watermaker" + StringUtils.DOT + ext;

@@ -20,12 +20,11 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.member.config.properties.MemberProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.io.FileNotFoundException;
 
 @Slf4j
 @Configuration
@@ -44,7 +43,7 @@ public class MemberConfig implements WebMvcConfigurer {
 		if (StringUtils.isEmpty(UPLOAD_DIRECTORY)) {
 			UPLOAD_DIRECTORY = SpringUtils.getAppParentDirectory() + "/_xy_member/";
 		}
-		UPLOAD_DIRECTORY = StringUtils.appendIfMissing(FileExUtils.normalizePath(UPLOAD_DIRECTORY), "/");
+		UPLOAD_DIRECTORY = Strings.CS.appendIfMissing(FileExUtils.normalizePath(UPLOAD_DIRECTORY), "/");
 		FileExUtils.mkdirs(UPLOAD_DIRECTORY);
 		properties.setUploadPath(UPLOAD_DIRECTORY);
         log.info("Member upload directory: {}", UPLOAD_DIRECTORY);

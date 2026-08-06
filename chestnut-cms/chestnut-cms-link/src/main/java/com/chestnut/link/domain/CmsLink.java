@@ -46,19 +46,19 @@ public class CmsLink extends BaseEntity {
     @TableId(value = "link_id", type = IdType.INPUT)
     private Long linkId;
 
-    @XComment("所属站点ID")
+    @XComment("{CMS.LINK.SITE_ID}")
     private Long siteId;
 
-    @XComment("所属分组ID")
+    @XComment("{CMS.LINK.GROUP_ID}")
     private Long groupId;
 
-    @XComment("链接名称")
+    @XComment("{CMS.LINK.NAME}")
     private String name;
 
-    @XComment("链接URL")
+    @XComment("{CMS.LINK.URL}")
     private String url;
 
-    @XComment("图片路径")
+    @XComment("{CMS.LINK.LOGO}")
     private String logo;
 
     @TableField(exist = false)

@@ -18,7 +18,7 @@ package com.chestnut.system.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.redis.RedisCache;
@@ -37,6 +37,8 @@ import com.chestnut.system.mapper.SysDictTypeMapper;
 import com.chestnut.system.service.ISysDictTypeService;
 import com.chestnut.system.service.ISysI18nDictService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.NonNull;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.CommandLineRunner;
@@ -210,7 +212,7 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
 	 * 初始化固定字典数据到数据库
 	 */
 	@Override
-	public void run(String... args) throws Exception {
+	public void run(String @NonNull ... args) throws Exception {
         RLock lock = redissonClient.getLock("cc:dict:init_fixed_dict");
         lock.lock();
         try {
@@ -234,7 +236,7 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
                 // 添加未存储的字典数据
                 dict.getDataList().forEach(d -> {
                     boolean contains = dictDatas.stream()
-                            .anyMatch(d2 -> StringUtils.equals(d2.getDictValue(), d.getValue()));
+                            .anyMatch(d2 -> Strings.CS.equals(d2.getDictValue(), d.getValue()));
                     if (!contains) {
                         SysDictData data = new SysDictData();
                         data.setDictCode(IdUtils.getSnowflakeId());
@@ -251,7 +253,7 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
                     // 不允许添加字典项的要清理多余字典项
                     dictDatas.forEach(data -> {
                         boolean contains = dict.getDataList().stream()
-                                .anyMatch(d -> StringUtils.equals(d.getValue(), data.getDictValue()));
+                                .anyMatch(d -> Strings.CS.equals(d.getValue(), data.getDictValue()));
                         if (!contains) {
                             this.removeById(data.getDictCode());
                         }

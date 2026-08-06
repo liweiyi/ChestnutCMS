@@ -3,14 +3,19 @@ import CONSTANTS from "@/utils/constants";
 
 export default {
   // 当前站点
-  setCurrentSite (siteId) {
+  setCurrentSite (siteId, siteName) {
     cache.local.set(CONSTANTS.CACHE_CURRENT_SITE, siteId)
+    cache.local.set(CONSTANTS.CACHE_CURRENT_SITE_NAME, siteName)
   },
   getCurrentSite () {
     return cache.local.get(CONSTANTS.CACHE_CURRENT_SITE)
   },
+  getCurrentSiteName () {
+    return cache.local.get(CONSTANTS.CACHE_CURRENT_SITE_NAME)
+  },
   clearCurrentSite () {
     cache.local.remove(CONSTANTS.CACHE_CURRENT_SITE)
+    cache.local.remove(CONSTANTS.CACHE_CURRENT_SITE_NAME)
   },
   currentSiteKey () {
     return CONSTANTS.HEADER_CURRENT_SITE;

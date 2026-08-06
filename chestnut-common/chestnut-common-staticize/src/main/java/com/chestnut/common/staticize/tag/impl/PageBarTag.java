@@ -24,7 +24,6 @@ import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.common.utils.XCollectionUtils;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
@@ -145,11 +144,11 @@ public class PageBarTag extends AbstractTag {
 
 		String firstPageLink = FreeMarkerUtils.evalStringVariable(env, StaticizeConstants.TemplateVariable_FirstPage);
         if (StringUtils.isEmpty(firstPageLink)) {
-            throw new TemplateException("Missing page variable " + StaticizeConstants.TemplateVariable_FirstPage, env);
+            throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.MISSING_PAGE_VAR_FIRST}", env.getLocale(), StaticizeConstants.TemplateVariable_FirstPage), env);
         }
 		String otherPageLink = FreeMarkerUtils.evalStringVariable(env, StaticizeConstants.TemplateVariable_OtherPage);
         if (StringUtils.isEmpty(otherPageLink)) {
-            throw new TemplateException("Missing page variable " + StaticizeConstants.TemplateVariable_OtherPage, env);
+            throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.MISSING_PAGE_VAR_OTHER}", env.getLocale(), StaticizeConstants.TemplateVariable_OtherPage), env);
         }
 		if (StringUtils.isNotEmpty(params)) {
 			firstPageLink += (firstPageLink.contains("?") ? "&" : "?") + params;

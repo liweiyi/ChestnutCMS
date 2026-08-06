@@ -18,6 +18,7 @@ package com.chestnut.article.template.tag;
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.mapper.CmsArticleDetailMapper;
 import com.chestnut.common.annotation.XComment;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.StaticizeConstants;
 import com.chestnut.common.staticize.core.TemplateContext;
@@ -81,7 +82,7 @@ public class CmsArticleTag extends AbstractTag {
 		String contentHtml;
 		long contentId = MapUtils.getLongValue(attrs, ATTR_CONTENT_ID, 0);
 		if (contentId <= 0) {
-			throw new TemplateException("Invalid contentId: " + contentId, env);
+			throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.INVALID_CONTENT_ID}", env.getLocale(), contentId), env);
 		}
 		CmsContent content = this.contentMapper.selectById(contentId);
 		if (content.isLinkContent()) {
@@ -92,7 +93,7 @@ public class CmsArticleTag extends AbstractTag {
 		}
 		CmsArticleDetail articleDetail = this.articleMapper.selectById(contentId);
 		if (Objects.isNull(articleDetail)) {
-			throw new TemplateException("Article details not found: " + contentId, env);
+			throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.ARTICLE_NOT_FOUND}", env.getLocale(), contentId), env);
 		}
 		contentHtml = articleDetail.getContentHtml();
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);

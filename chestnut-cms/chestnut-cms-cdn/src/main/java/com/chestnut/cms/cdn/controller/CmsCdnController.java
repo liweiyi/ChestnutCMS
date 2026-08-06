@@ -17,6 +17,7 @@ package com.chestnut.cms.cdn.controller;
 
 import com.chestnut.cloud.domain.CcCloudConfig;
 import com.chestnut.cloud.service.ICloudConfigService;
+import com.chestnut.cms.cdn.exception.CdnErrorCode;
 import com.chestnut.cms.cdn.properties.CdnCloudConfigProperty;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.cloud.CdnRefreshType;
@@ -24,7 +25,6 @@ import com.chestnut.common.cloud.CloudService;
 import com.chestnut.common.cloud.ICloudProvider;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
@@ -42,9 +42,8 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
-
-
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.Strings;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -112,7 +111,7 @@ public class CmsCdnController extends BaseRestController {
             if (!ServletUtils.isHttpUrl(catalogLink)) {
                 // 相对路径需要补域名
                 String url = site.getUrl(publishPipe.getCode());
-                catalogLink = url + StringUtils.removeStart(catalogLink, "/");
+                catalogLink = url + Strings.CS.removeStart(catalogLink, "/");
             }
             urls.add(catalogLink);
         }
@@ -144,7 +143,7 @@ public class CmsCdnController extends BaseRestController {
             if (!ServletUtils.isHttpUrl(contentLink)) {
                 // 相对路径需要补域名
                 String url = site.getUrl(publishPipe.getCode());
-                contentLink = url + StringUtils.removeStart(contentLink, "/");
+                contentLink = url + Strings.CS.removeStart(contentLink, "/");
             }
             urls.add(contentLink);
         }
@@ -156,11 +155,11 @@ public class CmsCdnController extends BaseRestController {
         Long configId = CdnCloudConfigProperty.getValue(site);
 
         if (!IdUtils.validate(configId)) {
-            throw new GlobalException("未配置CDN云服务");
+            throw CdnErrorCode.CDN_CLOUD_NOT_CONFIGURED.exception();
         }
         CcCloudConfig cloudConfig = CcCloudConfigService.getCloudConfig(configId);
         if (Objects.isNull(cloudConfig)) {
-            throw new GlobalException("云服务配置不存在");
+            throw CdnErrorCode.CLOUD_CONFIG_NOT_FOUND.exception();
         }
         return cloudConfig;
     }

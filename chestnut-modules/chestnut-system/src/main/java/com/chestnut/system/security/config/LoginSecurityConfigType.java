@@ -23,9 +23,9 @@ import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.fixed.dict.PasswordRetryStrategy;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.security.ISecurityUser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -72,8 +72,10 @@ public class LoginSecurityConfigType implements ISecurityConfigType<LoginSecurit
         jsonNode.put("passwordRetryLockSeconds", Objects.requireNonNullElse(securityConfig.getPasswordRetryLockSeconds(), 3600));
         jsonNode.put("captchaEnable", Objects.requireNonNullElse(securityConfig.getCaptchaEnable(), YesOrNo.NO));
         jsonNode.put("captchaType", Objects.requireNonNullElse(securityConfig.getCaptchaType(), MathCaptchaType.TYPE));
-        jsonNode.put("captchaEnable", Objects.requireNonNullElse(securityConfig.getCaptchaExpires(), 600));
-        jsonNode.put("captchaEnable", Objects.requireNonNullElse(securityConfig.getCaptchaDuration(), 0));
+        jsonNode.put("captchaExpires", Objects.requireNonNullElse(securityConfig.getCaptchaExpires(), 600));
+        jsonNode.put("captchaDuration", Objects.requireNonNullElse(securityConfig.getCaptchaDuration(), 0));
+        jsonNode.put("captchaMessageConfigId", 0L);
+        jsonNode.put("captchaMessageTemplateId", 0L);
         ArrayNode loginTypeConfigIds = JacksonUtils.arrayNode();
         if (StringUtils.isNotEmpty(securityConfig.getLoginTypeConfigIds())) {
             securityConfig.getLoginTypeConfigIds().forEach(loginTypeConfigIds::add);

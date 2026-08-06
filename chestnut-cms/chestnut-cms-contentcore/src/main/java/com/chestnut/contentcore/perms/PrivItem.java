@@ -24,9 +24,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PrivItem {
 
-    public PrivItem(boolean granted, boolean isInherited) {
+    public PrivItem(boolean granted, boolean inherited) {
         this.granted = granted;
-        this.isInherited = isInherited;
+        this.inherited = inherited;
     }
 
     /**
@@ -37,5 +37,5 @@ public class PrivItem {
     /**
      * 是否是继承权限
      */
-    private boolean isInherited;
+    private boolean inherited;
 }

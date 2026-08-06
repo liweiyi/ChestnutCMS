@@ -16,7 +16,7 @@
 package com.chestnut.word.service.impl;
 
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -31,6 +31,7 @@ import com.chestnut.word.mapper.HotWordGroupMapper;
 import com.chestnut.word.mapper.HotWordMapper;
 import com.chestnut.word.service.IHotWordService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.Strings;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
@@ -103,7 +104,7 @@ public class HotWordServiceImpl extends ServiceImpl<HotWordMapper, HotWord> impl
                 if (StringUtils.isEmpty(target)) {
                     target = e.getValue().getTarget();
                 }
-                int find = StringUtils.indexOf(text, e.getKey());
+                int find = Strings.CS.indexOf(text, e.getKey());
                 if (find > 0) {
                     replaced++;
                     String placeholder = "{{{" + IdUtils.simpleUUID() + "}}}";

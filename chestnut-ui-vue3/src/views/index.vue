@@ -41,6 +41,8 @@ import CmsSiteDataStat from '@/views/cms/dashboard/siteDataStat'
 import CmsSitePanel from '@/views/cms/dashboard/sitePanel'
 
 const appStore = useAppStore()
+const { proxy } = getCurrentInstance()
+const showTodoTask = computed(() => proxy.$auth.hasPermi('flw:task:view'))
 </script>
 <style lang="scss" scoped>
 .app-container {

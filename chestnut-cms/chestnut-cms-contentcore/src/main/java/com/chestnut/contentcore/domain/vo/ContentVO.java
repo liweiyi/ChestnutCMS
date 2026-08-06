@@ -220,6 +220,11 @@ public class ContentVO implements InitByContent {
     private List<PublishPipeProps> publishPipeProps;
 
     /**
+     * 扩展属性
+     */
+    private Map<String, String> configProps = new HashMap<>();
+
+    /**
      * SEO标题
      */
     private String seoTitle;

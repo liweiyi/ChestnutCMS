@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.fixed.dict;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.system.fixed.FixedDictType;
 import com.chestnut.system.service.ISysDictTypeService;
@@ -46,7 +47,12 @@ public class ContentCopyType extends FixedDictType {
     /**
      * 映射，仅拷贝基础内容信息，可独立修改基础信息，也就是CmsContent表的数据可独立修改，内容详情也就是扩展表共享自来源不可修改
      */
-	public static final int Mapping = 2;
+    public static final int Mapping = 2;
+
+    /**
+     * 跨站点独立复制，完整拷贝内容所有信息，并记录来源站点
+     */
+    public static final int CrossSite = 3;
 
 	private static final ISysDictTypeService dictTypeService = SpringUtils.getBean(ISysDictTypeService.class);
 
@@ -54,6 +60,7 @@ public class ContentCopyType extends FixedDictType {
 		super(TYPE, "{DICT." + TYPE + "}", false);
 		super.addDictData("{DICT." + TYPE + "." + Independency + "}", String.valueOf(Independency), 1);
 		super.addDictData("{DICT." + TYPE + "." + Mapping + "}", String.valueOf(Mapping), 2);
+		super.addDictData("{DICT." + TYPE + "." + CrossSite + "}", String.valueOf(CrossSite), 3);
 	}
 
 	public static <T> void decode(List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {
@@ -64,7 +71,7 @@ public class ContentCopyType extends FixedDictType {
      * 是否独立复制内容
      */
     public static boolean isIndependency(Integer v) {
-        return Objects.equals(v, Independency);
+        return Objects.equals(v, Independency) || isCrossSite(v);
     }
 
     /**
@@ -74,10 +81,27 @@ public class ContentCopyType extends FixedDictType {
         return Objects.equals(v, Mapping);
     }
 
-    public record ContentCopyInfo(int copyType, long copyId, String sourceCatalogName, String sourceSiteName) {
-
-        public static ContentCopyInfo of(int copyType, long copyId) {
-            return new ContentCopyInfo(copyType, copyId, "", "");
-        }
+    /**
+     * 是否跨站点复制内容
+     */
+    public static boolean isCrossSite(Integer v) {
+        return Objects.equals(v, CrossSite);
     }
+
+    public record ContentCopyInfo(
+            @XComment("{CMS.CONTENT.COPY_TYPE}")
+            int copyType,
+
+            @XComment("{CMS.CONTENT.COPY_ID}")
+            long copyId,
+
+            @XComment("{CMS.CONTENT.COPY_SITE_NAME}")
+            String copySiteName,
+
+            @XComment("{CMS.CONTENT.COPY_CATALOG_NAME}")
+            String copyCatalogName,
+
+            @XComment("{CMS.CONTENT.COPY_CONTENT_TITLE}")
+            String copyContentTitle
+    ) {}
 }

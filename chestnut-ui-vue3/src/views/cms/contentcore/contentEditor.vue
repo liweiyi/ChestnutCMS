@@ -4,27 +4,27 @@
       <el-col :span="24">
         <div class="grid-btn-bar bg-purple-white">
           <el-row :gutter="10">
-            <el-col :span="1.5" class="permi-wrap">
-              <el-button plain type="success" icon="Edit" v-if="contentId=='0'" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]" @click="handleSave">{{ $t("Common.Save") }}</el-button>
+            <el-col v-if="!isFlowing" :span="1.5" class="permi-wrap">
+              <el-button plain type="success" icon="Edit" v-if="!isUpdateOperate" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]" @click="handleSave">{{ $t("Common.Save") }}</el-button>
               <el-button plain type="success" icon="Edit" v-else v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleSave">{{ $t("Common.Save") }}</el-button>
             </el-col>
-            <el-col :span="1.5" class="permi-wrap">
+            <el-col v-if="showPublishActions" :span="1.5" class="permi-wrap">
               <el-button plain type="primary" icon="Timer" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleToPublish">{{ $t('CMS.ContentCore.ToPublish') }}</el-button>
             </el-col>
-            <el-col :span="1.5" class="permi-wrap">
+            <el-col v-if="showPublishActions" :span="1.5" class="permi-wrap">
               <el-button plain type="primary" icon="Promotion" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handlePublish">{{ $t('CMS.ContentCore.Publish') }}</el-button>
             </el-col>
             <el-col :span="1.5">
               <el-button plain type="primary" icon="View" @click="handlePreview">{{ $t('CMS.ContentCore.Preview') }}</el-button>
             </el-col>
-            <el-col :span="1.5" class="permi-wrap">
+            <el-col v-if="!isFlowing" :span="1.5" class="permi-wrap">
               <el-button plain type="warning" v-if="isLock" icon="Unlock" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleChangeLockState">{{ $t('CMS.Content.Unlock') }}</el-button>
               <el-button plain type="primary" v-else icon="Lock" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleChangeLockState">{{ $t('CMS.Content.Lock') }}</el-button>
             </el-col>
-            <el-col :span="1.5">
+            <el-col v-if="!isFlowing" :span="1.5">
               <el-button plain type="primary" icon="Share" @click="handleRelaContent">{{ $t('CMS.Content.RelaContent') }}</el-button>
             </el-col>
-            <el-col :span="1.5" class="permi-wrap">
+            <el-col v-if="!isFlowing" :span="1.5" class="permi-wrap">
               <el-button plain type="primary" icon="Files" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handlePushToBaidu">{{ $t('CMS.Content.PushToBaidu') }}</el-button>
             </el-col>
             <el-col :span="1.5">
@@ -110,7 +110,7 @@
               <el-form-item
                 :label="$t('CMS.Content.LinkFlag')"
                 prop="linkFlag">
-                <el-checkbox v-model="form.linkFlag" true-label="Y" false-label="N"></el-checkbox>
+                <el-checkbox v-model="form.linkFlag" true-value="Y" false-value="N"></el-checkbox>
               </el-form-item>
               <el-form-item
                 :label="$t('CMS.Content.RedirectUrl')"
@@ -280,17 +280,6 @@
                       </template>
                     </el-input>
                   </el-form-item>
-                  <el-divider content-position="left">{{ $t('CMS.Content.ExtendTemplate') }}</el-divider>
-                  <el-form-item :label="$t('CMS.Site.Extend.ContentPrivStrategy')" prop="ContentPrivStrategy">
-                    <el-select v-model="form.configProps.ContentPrivStrategy" clearable>
-                      <el-option
-                        v-for="item in contentPrivStrategyOptions"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
                 </el-tab-pane>
               </el-tabs>
             </el-card>
@@ -317,6 +306,29 @@
       @close="handleContentSelectorClose"></cms-content-selector>
     <cms-content-rela-dialog :cid="contentId" v-model:open="openRelaContentDialog" @close="handleRelaContentClose"></cms-content-rela-dialog>
     <cms-content-oplog-dialog :cid="contentId" v-model:open="openContentOpLogDialog" @close="handleOpLogsClose"></cms-content-oplog-dialog>
+    <el-dialog
+      v-model="openSubmitAuditDialog"
+      :title="$t('CMS.Content.Workflow.SubmitDialogTitle')"
+      width="500px"
+      append-to-body
+    >
+      <el-alert :title="$t('CMS.Content.Workflow.SubmitTip')" type="warning" :closable="false" show-icon />
+      <el-form label-width="120px" class="mt20">
+        <el-form-item :label="$t('CMS.Content.Workflow.ActionAfterApproval')">
+          <el-radio-group v-model="actionAfterFlowing">
+            <el-radio label="">{{ $t('CMS.Content.Workflow.NoAction') }}</el-radio>
+            <el-radio label="20">{{ $t('CMS.Content.Workflow.ToPublishAfterApproval') }}</el-radio>
+            <el-radio label="30">{{ $t('CMS.Content.Workflow.PublishAfterApproval') }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="openSubmitAuditDialog = false">{{ $t('Common.Cancel') }}</el-button>
+        <el-button type="primary" :loading="submittingAudit" @click="confirmSubmitAudit">
+          {{ $t('Common.Confirm') }}
+        </el-button>
+      </template>
+    </el-dialog>
     <!-- 进度条 -->
     <cms-progress :title="progressTitle" v-model:open="openProgress" :taskId="taskId" message-class="top-right" @close="handleProgressClose"></cms-progress>
   </div>
@@ -339,6 +351,7 @@ import CmsContentOplogDialog from '@/views/cms/contentcore/contentOpLogDialog';
 import CmsTemplateSelector from '@/views/cms/contentcore/templateSelector';
 import CmsExmodelEditor from '@/views/cms/components/EXModelEditor';
 import CmsTagEditor from '@/views/cms/components/TagEditor';
+import CmsContentWorkflowInfo from '@/views/cms/contentcore/contentWorkflowInfo';
 
 const { proxy } = getCurrentInstance();
 
@@ -350,9 +363,25 @@ const contentPrivStrategyOptions = [
   { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyIgnore"), value: "IGNORE" }
 ]
 
+const DIRECT_PUBLISH_STATUSES = new Set(['20', '30', '81'])
+const AUDITABLE_STATUSES = new Set(['0', '40', '60', '82'])
+const contentNeedAudit = ref(false)
+const workflowPolicyLoaded = ref(false)
+let workflowPolicyRequestId = 0
+
 const isLock = computed(() => {
   return form.value.isLock === 'Y' && form.value.lockUser != '';
 });
+const currentStatus = computed(() => form.value.status || '0')
+const isFlowing = computed(() => currentStatus.value === '80');
+const showPublishActions = computed(() => workflowPolicyLoaded.value
+  && !isFlowing.value
+  && (DIRECT_PUBLISH_STATUSES.has(currentStatus.value)
+    || (AUDITABLE_STATUSES.has(currentStatus.value) && !contentNeedAudit.value)))
+const showSubmitAudit = computed(() => workflowPolicyLoaded.value
+  && AUDITABLE_STATUSES.has(currentStatus.value)
+  && contentNeedAudit.value)
+const workflowInstanceId = computed(() => form.value.configProps?.ContentWorkflowInstanceId || '');
 const xmodelVisible = computed(() => {
   return form.value.catalogConfigProps
     && form.value.catalogConfigProps.ContentExtendModel != null
@@ -407,6 +436,10 @@ const publishPipeActiveName = ref("");
 const selectExTemplate = ref(false);
 const publishAfterSave = ref(false);
 const toPublishAfterSave = ref(false);
+const submitAuditAfterSave = ref(false)
+const openSubmitAuditDialog = ref(false)
+const actionAfterFlowing = ref('')
+const submittingAudit = ref(false)
 const publishing = ref(false);
 const openRelaContentDialog = ref(false);
 const openContentOpLogDialog = ref(false);
@@ -453,6 +486,7 @@ function initData() {
     response.data.configProps = response.data.configProps || {};
     response.data.tags = response.data.tags || [];
     response.data.keywords = response.data.keywords || [];
+    response.data.linkFlag = response.data.linkFlag || 'N';
     isUpdateOperate.value = proxy.$tools.isNotEmpty(response.data.createTime)
     if (response.data.contentType == "article") {
       articleFormat.value = resolveArticleFormat(response.data);
@@ -483,6 +517,7 @@ function initData() {
     })
   });
 }
+
 
 function handleShowOtherTitle() {
   showOtherTitle.value = !showOtherTitle.value;
@@ -577,6 +612,8 @@ function handleSave() {
           taskId.value = response.data.taskId;
           openProgress.value = true;
           progressTitle.value = proxy.$t('CMS.Content.SaveProgressTitle')
+        }).catch(() => {
+          submitAuditAfterSave.value = false
         });
       } else {
         form.value.catalogId = catalogId.value;
@@ -585,10 +622,43 @@ function handleSave() {
           taskId.value = response.data.taskId;
           openProgress.value = true;
           progressTitle.value = proxy.$t('CMS.Content.SaveProgressTitle')
+        }).catch(() => {
+          submitAuditAfterSave.value = false
         });
       }
+    } else {
+      submitAuditAfterSave.value = false
     }
   });
+}
+
+function handleSubmitAudit() {
+  actionAfterFlowing.value = ''
+  openSubmitAuditDialog.value = true
+}
+
+function confirmSubmitAudit() {
+  openSubmitAuditDialog.value = false
+  if (!isUpdateOperate.value || isFormChanged()) {
+    submitAuditAfterSave.value = true
+    handleSave()
+    return
+  }
+  doSubmitAudit()
+}
+
+function doSubmitAudit() {
+  submittingAudit.value = true
+  startContentWorkflow({
+    contentId: form.value.contentId,
+    actionAfterFlowing: actionAfterFlowing.value
+  }).then(() => {
+    proxy.$modal.msgSuccess(proxy.$t('CMS.Content.Workflow.SubmitSuccess'), 'top-right')
+    activeName.value = 'workflow'
+    initData()
+  }).finally(() => {
+    submittingAudit.value = false
+  })
 }
 
 function handleToPublish() {
@@ -603,6 +673,7 @@ function handleToPublish() {
 function doToPublishContent() {
   toPublishContent([ form.value.contentId ]).then(response => {
     proxy.$modal.msgSuccess(proxy.$t('CMS.ContentCore.ToPublishSuccess'), 'top-right');
+    initData();
   });
 }
 
@@ -629,7 +700,13 @@ function handleProgressClose (result) {
   if (result.status == 'SUCCESS') {
     if (publishing.value) {
       publishing.value = false;
+      initData();
       return;
+    }
+    if (submitAuditAfterSave.value) {
+      submitAuditAfterSave.value = false
+      doSubmitAudit()
+      return
     }
     if (publishAfterSave.value) {
       publishAfterSave.value = false;
@@ -687,6 +764,9 @@ function handleCatalogSelectorOk(args) {
           proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'), "top-right");
           form.value.catalogId = catalogs[0].id;
           form.value.catalogName = catalogs[0].name;
+          catalogId.value = catalogs[0].id
+          form.value.status = '0'
+          refreshWorkflowPolicy()
           proxy.$router.push({ path: proxy.$route.path, query: { type: contentType.value, catalogId: form.value.catalogId, id: contentId.value } });
         });
       }
@@ -694,6 +774,8 @@ function handleCatalogSelectorOk(args) {
       // 新建内容
       form.value.catalogId = catalogs[0].id;
       form.value.catalogName = catalogs[0].name;
+      catalogId.value = catalogs[0].id
+      refreshWorkflowPolicy()
     }
   } else if(catalogSelectorFor.value === 'linkflag') {
     if (catalogs && catalogs.length > 0) {

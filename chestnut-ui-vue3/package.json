@@ -1,6 +1,6 @@
 {
   "name": "ChestnutCMS",
-  "version": "1.5.13",
+  "version": "1.6.0",
   "description": "ChestnutCMS[栗子内容管理系统]",
   "author": "兮玥 - 190785909@qq.com",
   "license": "Apache-2.0",
@@ -20,6 +20,9 @@
     "@codemirror/lang-html": "^6.4.11",
     "@codemirror/lang-json": "^6.0.2",
     "@element-plus/icons-vue": "2.3.1",
+    "@vue-office/docx": "^1.6.3",
+    "@vue-office/excel": "^1.7.14",
+    "@vue-office/pptx": "^1.0.1",
     "@vueup/vue-quill": "1.2.0",
     "@vueuse/core": "13.3.0",
     "@worstone/vue-aplayer": "^1.0.7",
@@ -46,6 +49,7 @@
     "vue-baidu-map-3x": "^1.0.40",
     "vue-codemirror6": "^1.4.1",
     "vue-cropper": "^1.1.4",
+    "vue-demi": "^0.14.6",
     "vue-i18n": "^11.1.6",
     "vue-router": "4.5.1",
     "vuedraggable": "4.1.0"

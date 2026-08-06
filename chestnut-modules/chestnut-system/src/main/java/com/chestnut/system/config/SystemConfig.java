@@ -22,13 +22,12 @@ import com.chestnut.system.SysConstants;
 import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.intercepter.DemoModeInterceptor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-import java.io.FileNotFoundException;
 
 @Slf4j
 @Configuration
@@ -47,7 +46,7 @@ public class SystemConfig implements WebMvcConfigurer {
 		if (StringUtils.isEmpty(UPLOAD_DIRECTORY)) {
 			UPLOAD_DIRECTORY = SpringUtils.getAppParentDirectory() + SysConstants.RESOURCE_PREFIX;
 		}
-		UPLOAD_DIRECTORY = StringUtils.appendIfMissing(FileExUtils.normalizePath(UPLOAD_DIRECTORY), "/");
+		UPLOAD_DIRECTORY = Strings.CS.appendIfMissing(FileExUtils.normalizePath(UPLOAD_DIRECTORY), "/");
 		FileExUtils.mkdirs(UPLOAD_DIRECTORY);
 		properties.setUploadPath(UPLOAD_DIRECTORY);
 		log.info("System upload directory: " + UPLOAD_DIRECTORY);

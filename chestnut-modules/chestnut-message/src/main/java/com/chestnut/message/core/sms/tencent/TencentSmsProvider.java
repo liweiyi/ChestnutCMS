@@ -1,0 +1,73 @@
+/*
+ * Copyright 2022-2026 兮玥(190785909@qq.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.chestnut.message.core.sms.tencent;
+
+import com.chestnut.message.core.sms.ISmsProvider;
+import com.chestnut.message.core.sms.SmsSendRequest;
+import com.tencentcloudapi.common.Credential;
+import com.tencentcloudapi.sms.v20210111.SmsClient;
+import com.tencentcloudapi.sms.v20210111.models.SendSmsRequest;
+import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
+import org.springframework.stereotype.Component;
+
+@Component(ISmsProvider.BEAN_PREFIX + TencentSmsProvider.ID)
+public class TencentSmsProvider implements ISmsProvider {
+
+    public static final String ID = "tencent";
+
+    public static final String NAME = "{SMS.PROVIDER." + ID + "}";
+
+    @Override
+    public String getId() {
+        return ID;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public void send(SmsSendRequest req) throws Exception {
+        if (req.getPhoneNumbers().size() > 1000) {
+            throw new RuntimeException("PhoneNumber size exceed 1000.");
+        }
+        try {
+            SmsClient client = this.createClient(req.getSecretId(), req.getSecretKey(), req.getRegion());
+            SendSmsRequest request = new SendSmsRequest();
+            request.setPhoneNumberSet(req.getPhoneNumbers().toArray(new String[0]));
+            request.setSmsSdkAppId(req.getAppId());
+            request.setTemplateId(req.getTemplateId());
+            request.setSignName(req.getSignName());
+            request.setTemplateParamSet(req.getTemplateParams().values().toArray(new String[0]));
+            SendSmsResponse res = client.SendSms(request);
+
+            // TODO 收集发送结果
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private SmsClient createClient(String secretId, String secretKey, String region) {
+        Credential cred = new Credential(secretId, secretKey);
+//        HttpProfile httpProfile = new HttpProfile();
+//        httpProfile.setEndpoint("sms.tencentcloudapi.com");
+//        ClientProfile clientProfile = new ClientProfile();
+//        clientProfile.setHttpProfile(httpProfile);
+        // 实例化要请求产品的client对象,clientProfile是可选的
+        return new SmsClient(cred, region);
+    }
+}

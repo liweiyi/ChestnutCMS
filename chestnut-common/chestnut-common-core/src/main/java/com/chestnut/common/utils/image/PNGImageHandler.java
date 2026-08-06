@@ -58,7 +58,7 @@ public class PNGImageHandler implements ImageHandler {
             for (int x = 0; x < image.getWidth(); x++) {
                 if (index < binary.length()) {
                     int pixel = image.getRGB(x, y);
-                    Color color = new Color(pixel);
+                    Color color = new Color(pixel, true);
                     int replace = binary.charAt(index) == '0' ? 0 : 1;
                     int newRed = color.getRed() & 0b11111110 | (replace & 1);
                     Color newColor = new Color(newRed, color.getGreen(), color.getBlue(), color.getAlpha());

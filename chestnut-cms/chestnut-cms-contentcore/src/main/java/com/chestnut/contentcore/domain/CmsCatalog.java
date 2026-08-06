@@ -19,7 +19,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_IndexTemplate;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_ListTemplate;
@@ -28,6 +28,7 @@ import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +43,8 @@ import java.util.Map;
 @TableName(value = CmsCatalog.TABLE_NAME, autoResultMap = true)
 public class CmsCatalog extends BaseEntity {
 
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 
 	public static final String TABLE_NAME = "cms_catalog";
 	
@@ -209,13 +211,13 @@ public class CmsCatalog extends BaseEntity {
 	/**
 	 * 发布通道配置
 	 */
-	@TableField(typeHandler = JacksonTypeHandler.class)
+	@TableField(typeHandler = Jackson3TypeHandler.class)
 	private Map<String, Map<String, Object>> publishPipeProps;
 
 	/**
 	 * 扩展配置
 	 */
-	@TableField(typeHandler = JacksonTypeHandler.class)
+	@TableField(typeHandler = Jackson3TypeHandler.class)
 	private Map<String, String> configProps;
 
 	public Map<String, String> getConfigProps() {

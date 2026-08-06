@@ -224,7 +224,7 @@ const handleDelete = (row) => {
     return delSite(siteId);
   }).then(response => {
     if (proxy.$cms.getCurrentSite() == siteId) {
-      proxy.$cms.setCurrentSite("0");
+      proxy.$cms.clearCurrentSite();
     }
     taskId.value = response.data;
     openProgress.value = true;

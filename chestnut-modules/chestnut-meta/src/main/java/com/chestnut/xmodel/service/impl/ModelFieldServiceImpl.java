@@ -16,9 +16,10 @@
 package com.chestnut.xmodel.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.db.DBService;
 import com.chestnut.common.db.domain.DBTable;
+import com.chestnut.common.db.domain.DBTableColumn;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.ArrayUtils;
 import com.chestnut.common.utils.Assert;
@@ -41,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,7 +60,7 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 		this.checkFieldCodeUnique(req.getModelId(), req.getCode(), null);
 
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getOwnerType());
-		boolean isDefaultTable = mmt.getDefaultTable().equals(model.getTableName());
+		boolean isDefaultTable = mmt.getDefaultTable().equalsIgnoreCase(model.getTableName());
 		String[] usedFields = this.getUsedFields(model.getModelId(), req.getFieldType(), isDefaultTable);
 		if (isDefaultTable) {
 			int fieldTypeLimit = MetaFieldType.getFieldTypeLimit(req.getFieldType());
@@ -73,15 +75,17 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 			}
 		} else {
 			List<String> fixedFields = mmt.getFixedFields().stream().map(MetaModelField::getFieldName).toList();
-			if (fixedFields.contains(req.getFieldName())) {
+			if (containsIgnoreCase(fixedFields, req.getFieldName())) {
 				throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
 			}
-			if (ArrayUtils.contains(req.getFieldName(), usedFields)) {
+			if (containsIgnoreCase(List.of(usedFields), req.getFieldName())) {
 				throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
 			}
-			if (!isTableContainsColumn(model.getTableName(), req.getFieldName())) {
+			Optional<DBTableColumn> column = this.findTableColumn(model.getTableName(), req.getFieldName());
+			if (column.isEmpty()) {
 				throw MetaErrorCode.DB_FIELD_NOT_EXISTS.exception(req.getFieldName());
 			}
+			req.setFieldName(column.get().getName());
 		}
 		XModelField xModelField = new XModelField();
 		BeanUtils.copyProperties(req, xModelField);
@@ -102,8 +106,10 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 		String oldFieldType = modelField.getFieldType();
 
 		XModel model = this.modelService.getById(modelField.getModelId());
+		Assert.notNull(model, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(modelField.getModelId()));
+
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getOwnerType());
-		boolean isDefaultTable = mmt.getDefaultTable().equals(model.getTableName());
+		boolean isDefaultTable = mmt.getDefaultTable().equalsIgnoreCase(model.getTableName());
 		if (isDefaultTable && !req.getFieldType().equals(oldFieldType)) {
 			// 字段种类变更，重新计算是否有可用字段
 			String[] usedFields = this.getUsedFields(model.getModelId(), req.getFieldType(), true);
@@ -117,17 +123,21 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 					break;
 				}
 			}
-		} else if (!isDefaultTable && !req.getFieldName().equals(oldFieldName)) {
-			List<String> fixedFields = mmt.getFixedFields().stream().map(MetaModelField::getFieldName).toList();
-			if (fixedFields.contains(req.getFieldName())) {
-				throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
-			}
-			String[] usedFields = this.getUsedFields(model.getModelId(), req.getFieldType(), false);
-			if (ArrayUtils.contains(req.getFieldName(), usedFields)) {
-				throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
-			}
-			if (!isTableContainsColumn(model.getTableName(), req.getFieldName())) {
+		} else if (!isDefaultTable) {
+			Optional<DBTableColumn> column = this.findTableColumn(model.getTableName(), req.getFieldName());
+			if (column.isEmpty()) {
 				throw MetaErrorCode.DB_FIELD_NOT_EXISTS.exception(req.getFieldName());
+			}
+			req.setFieldName(column.get().getName());
+			if (!req.getFieldName().equalsIgnoreCase(oldFieldName)) {
+				List<String> fixedFields = mmt.getFixedFields().stream().map(MetaModelField::getFieldName).toList();
+				if (containsIgnoreCase(fixedFields, req.getFieldName())) {
+					throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
+				}
+				String[] usedFields = this.getUsedFields(model.getModelId(), req.getFieldType(), false);
+				if (containsIgnoreCase(List.of(usedFields), req.getFieldName())) {
+					throw MetaErrorCode.META_FIELD_CONFLICT.exception(req.getFieldName());
+				}
 			}
 		}
 		BeanUtils.copyProperties(req, modelField, "modelId");
@@ -148,18 +158,30 @@ public class ModelFieldServiceImpl extends ServiceImpl<XModelFieldMapper, XModel
 	}
 
 	/**
-	 * 判断指定表`tableName`是否含有指定字段`columnName`
+	 * 查找指定表中的字段，并返回 JDBC 元数据中的真实字段名称。
 	 *
 	 * @param tableName 表名
 	 * @param columnName 字段名
 	 */
-	private boolean isTableContainsColumn(String tableName, String columnName) {
-		List<DBTable> dbTables = this.dbService.listTables(tableName);
-		if (dbTables.isEmpty()) {
-			return false;
+	private Optional<DBTableColumn> findTableColumn(String tableName, String columnName) {
+		DBTable dbTable = this.dbService.findTable(tableName).orElse(null);
+		if (dbTable == null) {
+			return Optional.empty();
 		}
-		return dbTables.get(0).getColumns().stream()
-				.anyMatch(tc -> tc.getName().equals(columnName));
+		Optional<DBTableColumn> exact = dbTable.getColumns().stream()
+				.filter(tc -> tc.getName().equals(columnName))
+				.findFirst();
+		if (exact.isPresent()) {
+			return exact;
+		}
+		List<DBTableColumn> matches = dbTable.getColumns().stream()
+				.filter(tc -> tc.getName().equalsIgnoreCase(columnName))
+				.toList();
+		return matches.size() == 1 ? Optional.of(matches.get(0)) : Optional.empty();
+	}
+
+	private static boolean containsIgnoreCase(List<String> values, String value) {
+		return values.stream().anyMatch(item -> item.equalsIgnoreCase(value));
 	}
 
 	/**

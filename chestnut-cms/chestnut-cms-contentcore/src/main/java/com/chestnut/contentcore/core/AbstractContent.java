@@ -173,10 +173,14 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	protected abstract void add0();
 
-	void checkLock() {
+	void checkEditable() {
+		// 校验锁定状态
 		boolean lockContent = content.isLock() && StringUtils.isNotEmpty(content.getLockUser())
 				&& !content.getLockUser().equals(this.getOperatorUName());
 		Assert.isFalse(lockContent, () -> ContentCoreErrorCode.CONTENT_LOCKED.exception(content.getTitle(), content.getLockUser()));
+		// 校验流转状态
+		Assert.isFalse(ContentStatus.isFlowing(content.getStatus()),
+				ContentCoreErrorCode.CONTENT_FLOWING::exception);
 	}
 
 	void checkRedirectUrl() {
@@ -193,7 +197,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	@Override
 	public Long save() {
-		checkLock();
+		checkEditable();
 		if (this.getContentService().checkSameTitle(this.getContentEntity().getSiteId(),
 				this.getContentEntity().getCatalogId(), this.getContentEntity().getContentId(),
 				this.getContentEntity().getTitle())) {
@@ -227,7 +231,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	@Override
 	public void delete() {
 		log.debug("CC.Content[{}].delete: {}", this.getContentEntity().getContentId(), this.getContentEntity().getTitle());
-		this.checkLock();
+		this.checkEditable();
 		// 删除到备份表
 		this.getContentService().dao().deleteByIdAndBackup(this.getContentEntity(), getOperatorUName());
 		this.delete0();
@@ -242,8 +246,22 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	protected abstract void delete0();
 
 	@Override
+	public boolean toPublish() {
+		checkEditable();
+		SpringUtils.publishEvent(new BeforeContentToPublishEvent(this, this));
+		if (!ContentStatus.isToPublish(this.getContentEntity().getStatus())) {
+			this.getContentEntity().setStatus(ContentStatus.TO_PUBLISHED);
+			this.getContentEntity().updateBy(this.getOperatorUName());
+			this.getContentService().dao().updateById(this.getContentEntity());
+		}
+		ContentLogUtils.addLog(ContentOpType.TO_PUBLISH, this.getContentEntity(), this.getOperator());
+		return true;
+	}
+
+	@Override
 	public boolean publish() {
-		checkLock();
+		checkEditable();
+		SpringUtils.publishEvent(new BeforeContentPublishEvent(this, this));
 		boolean update = false;
 		if (content.getPublishDate() == null) {
 			content.setPublishDate(LocalDateTime.now());
@@ -271,7 +289,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	@Override
 	public CmsContent copyTo(CmsCatalog toCatalog, Integer copyType) {
-		checkLock();
+		checkEditable();
 		if (this.getContentService().checkSameTitle(toCatalog.getSiteId(), toCatalog.getCatalogId(), null,
 				this.getContentEntity().getTitle())) {
 			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
@@ -280,6 +298,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		BeanUtils.copyProperties(this.getContentEntity(), newContent, "contentId", "template", "staticPath", "topFlag",
 				"topDate", "isLock", "lockUser");
 		newContent.setContentId(IdUtils.getSnowflakeId());
+		newContent.setSiteId(toCatalog.getSiteId());
 		newContent.setCatalogId(toCatalog.getCatalogId());
 		newContent.setCatalogAncestors(toCatalog.getAncestors());
 		newContent.setTopCatalog(CatalogUtils.getTopCatalog(toCatalog));
@@ -310,7 +329,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	@Override
 	public void moveTo(CmsCatalog toCatalog) {
-		checkLock();
+		checkEditable();
 		if (this.getContentService().checkSameTitle(toCatalog.getSiteId(), toCatalog.getCatalogId(), null,
 				this.getContentEntity().getTitle())) {
 			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
@@ -341,6 +360,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	@Override
 	public void setTop(LocalDateTime topEndTime) {
+		checkEditable();
 		content.setTopFlag(Instant.now().toEpochMilli());
 		content.setTopDate(topEndTime);
 		content.updateBy(this.getOperatorUName());
@@ -350,6 +370,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	@Override
 	public void cancelTop() {
+		checkEditable();
 		if (content.getTopFlag() <= 0L) {
 			return;
 		}
@@ -364,7 +385,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		if (targetContentId.equals(this.getContentEntity().getContentId())) {
 			return;
 		}
-		checkLock();
+		checkEditable();
 		CmsContent next = this.getContentService().dao().getById(targetContentId);
 		if (next.getTopFlag() > 0 && this.getContentEntity().getTopFlag() == 0) {
 			this.content.setTopFlag(next.getTopFlag() + 1); // 非置顶内容排到置顶内容前需要置顶
@@ -388,6 +409,7 @@ public abstract class AbstractContent<T> implements IContent<T> {
 
 	@Override
 	public void offline() {
+		checkEditable();
 		log.debug("CC.Content[{}].offline: {}", this.getContentEntity().getContentId(), this.getContentEntity().getTitle());
 		String status = this.getContentEntity().getStatus();
 		if (!ContentStatus.isOffline(status)) {
@@ -402,16 +424,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 			}
 		}
 		ContentLogUtils.addLog(ContentOpType.OFFLINE, this.getContentEntity(), this.getOperator());
-	}
-
-	@Override
-	public void toPublish() {
-		if (!ContentStatus.isToPublish(this.getContentEntity().getStatus())) {
-			this.getContentEntity().setStatus(ContentStatus.TO_PUBLISHED);
-			this.getContentEntity().updateBy(this.getOperatorUName());
-			this.getContentService().dao().updateById(this.getContentEntity());
-		}
-		ContentLogUtils.addLog(ContentOpType.TO_PUBLISH, this.getContentEntity(), this.getOperator());
 	}
 
 	@Override

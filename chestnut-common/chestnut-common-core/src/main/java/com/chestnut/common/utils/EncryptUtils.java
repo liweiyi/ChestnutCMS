@@ -41,7 +41,7 @@ public class EncryptUtils {
     public static String sha1(String input) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-1");
-            byte[] digest = messageDigest.digest(input.getBytes());
+            byte[] digest = messageDigest.digest(input.getBytes(StandardCharsets.UTF_8));
             return Hex.encodeHexString(digest);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-1 algorithm not found");
@@ -62,7 +62,7 @@ public class EncryptUtils {
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-            random.setSeed(privateKey.getBytes());
+            random.setSeed(privateKey.getBytes(StandardCharsets.UTF_8));
             keyGen.init(128, random);
 
             SecretKey secretKey = keyGen.generateKey();
@@ -108,7 +108,7 @@ public class EncryptUtils {
             }
             KeyGenerator keyGen = KeyGenerator.getInstance("AES");
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-            random.setSeed(privateKey.getBytes());
+            random.setSeed(privateKey.getBytes(StandardCharsets.UTF_8));
             keyGen.init(128, random);
             SecretKey secretKey = keyGen.generateKey();
             byte[] enCodeFormat = secretKey.getEncoded();
@@ -139,7 +139,7 @@ public class EncryptUtils {
     }
 
     public static String md5AsHex(String str) {
-        return DigestUtils.md5DigestAsHex(str.getBytes(Charset.defaultCharset()));
+        return DigestUtils.md5DigestAsHex(str.getBytes(StandardCharsets.UTF_8));
     }
 
     public static String md5AsHex(String str, Charset charset) {

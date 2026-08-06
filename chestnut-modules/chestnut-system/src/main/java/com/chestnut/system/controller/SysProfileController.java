@@ -30,7 +30,6 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IP2RegionUtils;
-import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.annotation.IgnoreDemoMode;
@@ -45,7 +44,7 @@ import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.*;
-import com.chestnut.system.user.preference.ShortcutUserPreference;
+import com.chestnut.system.user.preference.MenuShortcutUserPreference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -190,7 +189,7 @@ public class SysProfileController extends BaseRestController {
 	@GetMapping("/shortcuts")
 	public R<List<ShortcutVO>> getHomeShortcuts() {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
-		List<String> menuIds = ShortcutUserPreference.getValue(user.getPreferences());
+		List<String> menuIds = MenuShortcutUserPreference.getValue(user.getPreferences());
 		List<SysMenu> allMenus = this.menuService.lambdaQuery().list();
 
 		List<SysMenu> shortcuts = allMenus.stream().filter(m -> menuIds.contains(m.getMenuId())).toList();

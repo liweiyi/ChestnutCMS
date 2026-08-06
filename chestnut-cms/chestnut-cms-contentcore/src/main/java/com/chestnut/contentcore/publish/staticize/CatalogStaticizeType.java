@@ -22,14 +22,11 @@ import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.impl.CatalogType_Link;
-import com.chestnut.contentcore.core.impl.PublishPipeProp_DefaultListTemplate;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_IndexTemplate;
-import com.chestnut.contentcore.core.impl.PublishPipeProp_ListTemplate;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.enums.ContentTips;
-import com.chestnut.contentcore.properties.MaxPageOnContentPublishProperty;
+import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.publish.IStaticizeType;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPublishPipeService;
@@ -89,22 +86,20 @@ public class CatalogStaticizeType implements IStaticizeType {
 
     public void catalogStaticize(CmsCatalog catalog) {
         CmsSite site = this.siteService.getSite(catalog.getSiteId());
-        int maxPage = MaxPageOnContentPublishProperty.getValue(site.getConfigProps());
-        this.catalogStaticize(catalog, maxPage);
+        this.catalogStaticize(site, catalog);
     }
 
-    public void catalogStaticize(CmsCatalog catalog, int pageMax) {
+    public void catalogStaticize(CmsSite site, CmsCatalog catalog) {
         if (!catalog.isStaticize() || !catalog.isVisible() || CatalogType_Link.ID.equals(catalog.getCatalogType())) {
             return;
         }
         List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(catalog.getSiteId());
         for (CmsPublishPipe pp : publishPipes) {
-            this.doCatalogStaticize(catalog, pp.getCode(), pageMax);
+            this.doCatalogStaticize(site, catalog, pp.getCode());
         }
     }
 
-    private void doCatalogStaticize(CmsCatalog catalog, String publishPipeCode, int pageMax) {
-        CmsSite site = this.siteService.getSite(catalog.getSiteId());
+    private void doCatalogStaticize(CmsSite site, CmsCatalog catalog, String publishPipeCode) {
         if (!catalog.isStaticize()) {
             logger.warn("[{}]The catalog static disabled: {}", publishPipeCode, catalog.getName());
             return;
@@ -118,17 +113,13 @@ public class CatalogStaticizeType implements IStaticizeType {
             return;
         }
         String indexTemplate = PublishPipeProp_IndexTemplate.getValue(publishPipeCode, catalog.getPublishPipeProps());
-        String listTemplate = PublishPipeProp_ListTemplate.getValue(publishPipeCode, catalog.getPublishPipeProps());
-        if (StringUtils.isEmpty(listTemplate)) {
-            listTemplate = PublishPipeProp_DefaultListTemplate.getValue(publishPipeCode, site.getPublishPipeProps()); // 取站点默认模板
-        }
         File indexTemplateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);
-        File listTemplateFile = this.templateService.findTemplateFile(site, listTemplate, publishPipeCode);
-        if (Objects.isNull(indexTemplateFile) && Objects.isNull(listTemplate)) {
-            logger.warn(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_NOT_FOUND,
+        if (Objects.isNull(indexTemplateFile)) {
+            logger.warn(AsyncTaskManager.addErrMessage(ContentCoreTips.TEMPLATE_NOT_FOUND,
                     TYPE + "#" + publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName()));
             return;
         }
+
         String siteRoot = SiteUtils.getSiteRoot(site, publishPipeCode);
         String dirPath = siteRoot + catalog.getPath();
         FileExUtils.mkdirs(dirPath);
@@ -136,51 +127,23 @@ public class CatalogStaticizeType implements IStaticizeType {
 
         // 发布栏目首页
         long s = System.currentTimeMillis();
-        if (Objects.nonNull(indexTemplateFile)) {
-            try {
-                String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, indexTemplate);
-                TemplateContext templateContext = new TemplateContext(templateKey, false, publishPipeCode);
-                templateContext.setDirectory(dirPath);
-                templateContext.setFirstFileName("index" + StringUtils.DOT + staticSuffix);
-                // init template variables
-                TemplateUtils.initGlobalVariables(site, templateContext);
-                // init templateType variables
-                ITemplateType templateType = templateService.getTemplateType(CatalogTemplateType.TypeId);
-                templateType.initTemplateData(catalog.getCatalogId(), templateContext);
-                // staticize
-                this.staticizeService.process(templateContext);
-                this.log(site, "[{}]Catalog index template parsed: {}, cost: {}ms",
-                        publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
-            } catch (IOException | TemplateException e) {
-                logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
-                        TYPE + "#" + publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName()), e);
-            }
-        }
-        // 发布栏目列表页
-        if (Objects.nonNull(listTemplateFile)) {
-            s = System.currentTimeMillis();
-            try {
-                String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, listTemplate);
-                TemplateContext templateContext = new TemplateContext(templateKey, false, publishPipeCode);
-                templateContext.setMaxPageNo(pageMax);
-                templateContext.setDirectory(dirPath);
-                String name = Objects.nonNull(indexTemplateFile) ? "list" : "index";
-                templateContext.setFirstFileName(name + StringUtils.DOT + staticSuffix);
-                templateContext.setOtherFileName(
-                        name + "_" + TemplateContext.PlaceHolder_PageNo + StringUtils.DOT + staticSuffix);
-                // init template variables
-                TemplateUtils.initGlobalVariables(site, templateContext);
-                // init templateType variables
-                ITemplateType templateType = templateService.getTemplateType(CatalogTemplateType.TypeId);
-                templateType.initTemplateData(catalog.getCatalogId(), templateContext);
-                // staticize
-                this.staticizeService.process(templateContext);
-                this.log(site, "[{}]Catalog list template parsed: {}, cost: {}ms",
-                        publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
-            } catch (Exception e1) {
-                logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
-                        TYPE + "#" + publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName()), e1);
-            }
+        try {
+            String templateKey = SiteUtils.getTemplateKey(site, publishPipeCode, indexTemplate);
+            TemplateContext templateContext = new TemplateContext(templateKey, false, publishPipeCode);
+            templateContext.setDirectory(dirPath);
+            templateContext.setFirstFileName("index" + StringUtils.DOT + staticSuffix);
+            // init template variables
+            TemplateUtils.initGlobalVariables(site, templateContext);
+            // init templateType variables
+            ITemplateType templateType = templateService.getTemplateType(CatalogTemplateType.TypeId);
+            templateType.initTemplateData(catalog.getCatalogId(), templateContext);
+            // staticize
+            this.staticizeService.process(templateContext);
+            this.log(site, "[{}]Catalog index template parsed: {}, cost: {}ms",
+                    publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName(), (System.currentTimeMillis() - s));
+        } catch (IOException | TemplateException e) {
+            logger.error(AsyncTaskManager.addErrMessage(ContentCoreTips.TEMPLATE_PARSE_FAILED,
+                    TYPE + "#" + publishPipeCode, catalog.getCatalogId() + "#" + catalog.getName()), e);
         }
     }
 }

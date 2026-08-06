@@ -15,7 +15,7 @@
  */
 package com.chestnut.search.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.search.domain.SearchWord;
 import com.chestnut.search.domain.dto.CreateSearchWordRequest;
 import com.chestnut.search.domain.dto.SearchWordToppingRequest;

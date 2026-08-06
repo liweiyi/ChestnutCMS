@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.system.domain.SysMenu;
 import com.chestnut.system.domain.dto.SaveMenuRequest;
@@ -77,7 +77,6 @@ public interface ISysMenuService extends IService<SysMenu> {
 	 * 
 	 * @param menuId
 	 *            菜单ID
-	 * @return 结果
 	 */
 	void deleteMenuById(String menuId);
 

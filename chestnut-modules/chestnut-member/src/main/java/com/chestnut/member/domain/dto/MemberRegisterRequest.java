@@ -57,7 +57,7 @@ public class MemberRegisterRequest {
 	 * 手机号
 	 */
 	@XComment("{API.DOC.MEMBER.PHONE}")
-	@Pattern(regexp = RegexConsts.REGEX_PHONE, message = "手机号码格式错误")
+	@Pattern(regexp = RegexConsts.REGEX_PHONE, message = "{VALID.MEMBER.PHONE_PATTERN}")
 	private String phonenumber;
 
 	/**
@@ -75,9 +75,9 @@ public class MemberRegisterRequest {
 	@Length(max = 10)
 	private String authCode;
 
-	@XComment("IP")
+	@XComment("{CC.MEMBER.IP}")
 	private String ip;
 
-	@XComment("UserAgent")
+	@XComment("{CC.MEMBER.USER_AGENT}")
 	private String userAgent;
 }

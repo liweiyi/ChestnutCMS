@@ -19,6 +19,7 @@ import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.fixed.FixedConfig;
 import com.chestnut.system.service.ISysConfigService;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 /**
@@ -42,6 +43,6 @@ public class SiteApiUrl extends FixedConfig {
 		if (StringUtils.isBlank(configValue)) {
 			configValue = DEFAULT_VALUE;
 		}
-		return StringUtils.appendIfMissing(configValue, "/");
+		return Strings.CS.appendIfMissing(configValue, "/");
 	}
 }

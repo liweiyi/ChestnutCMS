@@ -18,7 +18,7 @@ package com.chestnut.common.db.mybatisplus;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.common.db.DBConstants;
 import org.springframework.transaction.annotation.Transactional;
 

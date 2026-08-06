@@ -15,11 +15,25 @@
  */
 package com.chestnut.contentcore.util;
 
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_ContentExTemplate;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.vo.ListContentVO;
+import com.chestnut.contentcore.enums.ContentCoreTips;
+import com.chestnut.contentcore.fixed.dict.ContentCopyType;
+import com.chestnut.contentcore.service.ICatalogService;
+import com.chestnut.contentcore.service.IContentService;
+import com.chestnut.contentcore.service.ISiteService;
+import org.apache.commons.collections4.MapUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ContentUtils {
 
@@ -45,5 +59,55 @@ public class ContentUtils {
             exTemplate = PublishPipeProp_ContentExTemplate.getValue(publishPipeCode, catalog.getPublishPipeProps());
         }
         return exTemplate;
+    }
+
+    public static void dealCopyInfo(List<ListContentVO> list, ISiteService siteService,
+            ICatalogService catalogService, IContentService contentService) {
+        List<Long> copySourceContentIds = list.stream().map(ListContentVO::getCopyId).filter(IdUtils::validate).toList();
+        if (copySourceContentIds.isEmpty()) {
+            return;
+        }
+        Map<Long, CmsContent> copySourceContents = contentService.dao().lambdaQuery()
+                .select(CmsContent::getContentId, CmsContent::getSiteId, CmsContent::getCatalogId, CmsContent::getTitle)
+                .in(CmsContent::getContentId, copySourceContentIds)
+                .list().stream().filter(Objects::nonNull)
+                .collect(Collectors.toMap(CmsContent::getContentId, c -> c));
+
+        Map<Long, CmsSite> siteMap = new HashMap<>();
+        Map<Long, CmsCatalog> catalogMap = new HashMap<>();
+        list.forEach(vo -> {
+            if (IdUtils.validate(vo.getCopyId())) {
+                CmsContent copySourceContent = copySourceContents.get(vo.getCopyId());
+                String siteName = null;
+                String catalogName = null;
+                if (Objects.isNull(copySourceContent)) {
+                    siteName = ContentCoreTips.MISSING_COPY_SOURCE.locale();
+                } else {
+                    CmsSite copySourceSite = siteMap.get(copySourceContent.getSiteId());
+                    if (Objects.isNull(copySourceSite)) {
+                        copySourceSite = siteService.getSite(copySourceContent.getSiteId());
+                        if (Objects.nonNull(copySourceSite)) {
+                            siteMap.put(copySourceContent.getSiteId(), copySourceSite);
+                            siteName = copySourceSite.getName();
+                        } else {
+                            siteName = "[Unknown]";
+                        }
+                    }
+                    CmsCatalog copySourceCatalog = catalogMap.get(copySourceContent.getCatalogId());
+                    if (Objects.isNull(copySourceCatalog)) {
+                        copySourceCatalog = catalogService.getCatalog(copySourceContent.getCatalogId());
+                        if (Objects.nonNull(copySourceCatalog)) {
+                            catalogMap.put(copySourceContent.getCatalogId(), copySourceCatalog);
+                            catalogName = copySourceCatalog.getName();
+                        } else {
+                            catalogName = "[Unknown]";
+                        }
+                    }
+                }
+                ContentCopyType.ContentCopyInfo copyInfo = new ContentCopyType.ContentCopyInfo(vo.getCopyType(),
+                        vo.getCopyId(), siteName, catalogName, copySourceContent.getTitle());
+                vo.setCopyInfo(copyInfo);
+            }
+        });
     }
 }

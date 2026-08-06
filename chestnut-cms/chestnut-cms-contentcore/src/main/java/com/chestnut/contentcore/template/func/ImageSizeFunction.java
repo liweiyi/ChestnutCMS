@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.template.func;
 
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.func.AbstractFunc;
@@ -78,16 +79,17 @@ public class ImageSizeFunction extends AbstractFunc {
 		if (args.length < 3 || ObjectUtils.isAnyNull(args)) {
 			return StringUtils.EMPTY;
 		}
+		Environment env = Environment.getCurrentEnvironment();
 		String iurl = ((SimpleScalar) args[0]).getAsString();
 		int width = ((SimpleNumber) args[1]).getAsNumber().intValue();
 		int height = ((SimpleNumber) args[2]).getAsNumber().intValue();
 		if (width <= 0 || width >= 6144 || height <= 0 || height >= 6144) {
-			throw new TemplateModelException("Function[imageSize]: make sure the width/height is between 0 - 6144.");
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.IMAGE_SIZE_RANGE}", env.getLocale()));
 		}
 		if (!InternalUrlUtils.isInternalUrl(iurl)) {
 			return iurl; // 非内部链接直接返回
 		}
-		TemplateContext context = FreeMarkerUtils.getTemplateContext(Environment.getCurrentEnvironment());
+		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		InternalURL internalUrl = InternalUrlUtils.parseInternalUrl(iurl);
 		if (Objects.isNull(internalUrl) || !InternalDataType_Resource.ID.equals(internalUrl.getType())) {
 			return iurl;

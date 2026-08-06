@@ -22,4 +22,8 @@ public interface MemberPriv {
 	String MemberLevel = "member:level:view";
 	
 	String MemberExp = "member:exp:view";
+
+	String MemberConfig = "member:config:view";
+
+	String MemberConfigEdit = "member:config:edit";
 }

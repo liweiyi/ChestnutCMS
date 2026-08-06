@@ -209,22 +209,28 @@
       </el-form>
     </el-row>
     <!-- 列表风格内容列表 -->
-    <div v-if="listStyle == 'list'" v-loading="loading" class="content-list-wrapper">
+    <div
+      v-if="listStyle == 'list'"
+      ref="contentListWrapperRef"
+      v-loading="loading"
+      class="content-list-wrapper"
+      :style="{ height: contentListWrapperHeight + 'px' }">
       <div v-if="contentList && contentList.length > 0" class="list-selection-bar">
         <el-checkbox
           :model-value="isCurrentPageAllSelected()"
           :indeterminate="isCurrentPageIndeterminate()"
           @change="handleListCheckAllChange"
         >{{ $t('Common.CheckAll') }}</el-checkbox>
-        <el-text v-if="selectedRows.length > 0" type="info" size="small">已选 {{ selectedRows.length }} 条</el-text>
+        <el-text v-if="selectedRows.length > 0" type="info" size="small">{{ $t('Common.SelectedCount', [ selectedRows.length ]) }}</el-text>
       </div>
-      <div
-        v-for="item in contentList"
-        :key="item.contentId"
-        class="content-wrap"
-        :class="{ 'is-selected': isListRowSelected(item) }"
-        @click="handleListRowClick(item)"
-        @contextmenu.prevent.stop="handleListRowContextMenu(item, $event)">
+      <div class="content-list-scroll">
+        <div
+          v-for="item in contentList"
+          :key="item.contentId"
+          class="content-wrap"
+          :class="{ 'is-selected': isListRowSelected(item) }"
+          @click="handleListRowClick(item)"
+          @contextmenu.prevent.stop="handleListRowContextMenu(item, $event)">
         <div class="selection-wrap">
           <el-checkbox
             :model-value="isListRowSelected(item)"
@@ -234,7 +240,13 @@
         </div>
         <div class="top-wrap">
           <div v-if="item.logoSrc&&item.logoSrc.length > 0" class="left-wrap">
-            <el-image :src="item.logoSrc" fit="contain"></el-image>
+            <el-image :src="item.logoSrc" fit="contain">
+              <template #error>
+                <div class="image-404">
+                  <svg-icon icon-class="image404" />
+                </div>
+              </template>
+            </el-image>
           </div>
           <div class="right-wrap">
             <div class="title-wrap">
@@ -276,7 +288,9 @@
                     </template>
                     <el-descriptions :column="1" border>
                       <el-descriptions-item :label="$t('CMS.Content.CopyType')"><dict-tag :options="CMSContentCopyType" :value="item.copyType" /></el-descriptions-item>
-                      <el-descriptions-item :label="$t('CMS.Content.CopyId')">{{ item.copyId }}</el-descriptions-item>
+                      <el-descriptions-item :label="$t('CMS.Content.CopySite')">{{ item.copyInfo.copySiteName }}</el-descriptions-item>
+                      <el-descriptions-item :label="$t('CMS.Content.CopyCatalog')">{{ item.copyInfo.copyCatalogName }}</el-descriptions-item>
+                      <el-descriptions-item :label="$t('CMS.Content.CopyContent')">{{ item.copyInfo.copyContentTitle }} [ ID: {{ item.copyId }} ]</el-descriptions-item>
                     </el-descriptions>
                   </el-popover>
                 </div>
@@ -385,6 +399,7 @@
             </el-dropdown>
           </div>
         </div>
+        </div>
       </div>
     </div>
     <!-- 表格风格内容列表 -->
@@ -417,7 +432,9 @@
               </template>
               <el-descriptions :column="1" border>
                 <el-descriptions-item :label="$t('CMS.Content.CopyType')"><dict-tag :options="CMSContentCopyType" :value="scope.row.copyType" /></el-descriptions-item>
-                <el-descriptions-item :label="$t('CMS.Content.CopyId')">{{ scope.row.copyId }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('CMS.Content.CopySite')">{{ scope.row.copyInfo.copySiteName }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('CMS.Content.CopyCatalog')">{{ scope.row.copyInfo.copyCatalogName }}</el-descriptions-item>
+                <el-descriptions-item :label="$t('CMS.Content.CopyContent')">{{ item.copyInfo.copyContentTitle }} [ ID: {{ item.copyId }} ]</el-descriptions-item>
               </el-descriptions>
             </el-popover>
             {{ scope.row.title }}
@@ -695,6 +712,8 @@ const contentList = ref(null);
 const total = ref(0);
 const tableHeight = ref(600);
 const tableMaxHeight = ref(600);
+const contentListWrapperRef = ref(null);
+const contentListWrapperHeight = ref(600);
 const selectedRows = ref([]);
 const single = ref(true);
 const multiple = ref(true);
@@ -703,7 +722,7 @@ const topDialogVisible = ref(false);
 const objects = reactive({
   queryParams: {
     pageNum: 1,
-    pageSize: 10,
+    pageSize: 15,
     title: undefined,
     contentType: undefined,
     status: undefined,
@@ -736,6 +755,8 @@ const listStyle = ref('list');
 // 右键菜单相关
 const contextMenuVisible = ref(false);
 const contextMenuRow = ref(null);
+const LIST_PAGINATION_RESERVED_HEIGHT = 64;
+const PAGE_BOTTOM_RESERVED_HEIGHT = 8;
 
 watch(() => props.cid, (newVal) => {
   loadContentList();
@@ -746,10 +767,12 @@ function handleListStyle(style) {
     toggleAllCheckedRows();
   }
   listStyle.value = style;
+  changeContentListWrapperHeight();
 }
 
 onMounted(() => {
-  changeTableHeight();
+  handleContentListResize();
+  window.addEventListener('resize', handleContentListResize);
   getContentTypes().then(response => {
     contentTypeOptions.value = response.data;
     addContentType.value = contentTypeOptions.value[0].id;
@@ -761,6 +784,10 @@ onMounted(() => {
   getUserPreference('OpenContentEditorW').then(response => {
     openEditorW.value = response.data == 'Y'
   })
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleContentListResize);
 });
 
 function loadArticleBodyFormats() {
@@ -782,6 +809,7 @@ function loadContentList () {
     contentList.value = response.data.rows;
     total.value = parseInt(response.data.total);
     loading.value = false;
+    changeContentListWrapperHeight();
   });
 }
 
@@ -943,10 +971,26 @@ function handlePreview (row) {
 function handleDropdownBtn (command, row) {
 }
 
+function handleContentListResize () {
+  changeTableHeight();
+  changeContentListWrapperHeight();
+}
+
 function changeTableHeight () {
-  let height = document.body.offsetHeight // 网页可视区域高度
-  tableHeight.value = height - 330;
+  const height = window.innerHeight || document.body.offsetHeight // 网页可视区域高度
+  tableHeight.value = Math.max(120, height - 330);
   tableMaxHeight.value = tableHeight.value;
+}
+
+function changeContentListWrapperHeight () {
+  nextTick(() => {
+    if (!contentListWrapperRef.value) {
+      return;
+    }
+    const wrapperTop = contentListWrapperRef.value.getBoundingClientRect().top;
+    const availableHeight = window.innerHeight - wrapperTop - LIST_PAGINATION_RESERVED_HEIGHT - PAGE_BOTTOM_RESERVED_HEIGHT;
+    contentListWrapperHeight.value = Math.max(0, availableHeight);
+  });
 }
 
 function handleCreateIndex(row) {

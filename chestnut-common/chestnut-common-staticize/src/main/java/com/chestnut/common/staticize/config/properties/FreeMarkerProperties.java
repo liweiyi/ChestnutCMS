@@ -39,6 +39,11 @@ public class FreeMarkerProperties {
 	 */
 	private String defaultEncoding = StandardCharsets.UTF_8.displayName();
 
+	/**
+	 * 模板输出编码，默认继承 defaultEncoding
+	 */
+	private String outputEncoding;
+
 	
 	/**
 	 * MRU缓存配置

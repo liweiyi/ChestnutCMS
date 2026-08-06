@@ -22,6 +22,5 @@ import lombok.Setter;
 @Setter
 public class BatchSaveI18nDictRequest extends CreateI18nDictRequest {
 
-	private Long dictId;
 }
 

@@ -16,7 +16,7 @@
 package com.chestnut.cms.stat.baidu.api;
 
 import com.chestnut.cms.stat.baidu.BaiduTjMetrics;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -61,7 +61,7 @@ public class SourceEngineAResponse extends BaiduTjResponse {
         List<String> fields = new ArrayList<>();
         JsonNode fieldNodes = resultNode.get("fields");
         for (int i = 1; i < fieldNodes.size(); i++) {
-            fields.add(fieldNodes.get(i).asText());
+            fields.add(fieldNodes.get(i).asString());
         }
         JsonNode sumJsonNode = resultNode.get("sum").get(0);
         for (int i = 0; i < fields.size(); i++) {
@@ -78,17 +78,17 @@ public class SourceEngineAResponse extends BaiduTjResponse {
         JsonNode dataNodes = resultNode.get("items").get(1);
         for (int i = 0; i < itemNodes.size(); i++) {
             JsonNode itemNode = itemNodes.get(i).get(0);
-            String name = itemNode.get("name").asText();
-            String source = itemNode.get("source").asText();
-            String engineId = itemNode.get("engineId").asText();
-            String url = itemNode.get("url").asText();
+            String name = itemNode.get("name").asString();
+            String source = itemNode.get("source").asString();
+            String engineId = itemNode.get("engineId").asString();
+            String url = itemNode.get("url").asString();
             VisitSource visitSource = new VisitSource();
             visitSource.setName(name);
             visitSource.setSource(source);
             visitSource.setEngineId(engineId);
             visitSource.setUrl(url);
             if (itemNode.has("subEngineId")) {
-                String subEngineId = itemNode.get("subEngineId").asText();
+                String subEngineId = itemNode.get("subEngineId").asString();
                 visitSource.setSubEngineId(subEngineId);
             }
             JsonNode dataArrayNode = dataNodes.get(i);

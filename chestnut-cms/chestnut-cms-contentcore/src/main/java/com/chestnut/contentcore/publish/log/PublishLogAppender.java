@@ -18,11 +18,14 @@ package com.chestnut.contentcore.publish.log;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.Layout;
 import ch.qos.logback.core.encoder.Encoder;
+import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import ch.qos.logback.core.status.ErrorStatus;
 import com.chestnut.system.logs.LogQueue;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -48,6 +51,10 @@ public class PublishLogAppender<E> extends AppenderBase<E> {
     protected Encoder<E> encoder;
 
     @Getter
+    @Setter
+    protected Charset charset = StandardCharsets.UTF_8;
+
+    @Getter
     private static PublishLogAppender<?> instance;
 
     @Override
@@ -55,6 +62,9 @@ public class PublishLogAppender<E> extends AppenderBase<E> {
         if (this.layout == null && encoder == null) {
             this.addStatus(new ErrorStatus("No pattern set for the appender named \"" + this.name + "\".", this));
         } else {
+            if (encoder instanceof LayoutWrappingEncoder<?> layoutEncoder && layoutEncoder.getCharset() == null) {
+                layoutEncoder.setCharset(charset);
+            }
             super.start();
             instance = this;
         }
@@ -72,7 +82,12 @@ public class PublishLogAppender<E> extends AppenderBase<E> {
 
     private String encodeMessage(E logEvent) {
         if (this.encoder != null) {
-            return new String(this.encoder.encode(logEvent));
+            Charset encoderCharset = charset;
+            if (this.encoder instanceof LayoutWrappingEncoder<?> layoutEncoder
+                    && layoutEncoder.getCharset() != null) {
+                encoderCharset = layoutEncoder.getCharset();
+            }
+            return new String(this.encoder.encode(logEvent), encoderCharset);
         }
         return this.layout.doLayout(logEvent);
     }

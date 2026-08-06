@@ -15,7 +15,7 @@
  */
 package com.chestnut.media.dao;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.media.domain.BCmsAudio;
 import com.chestnut.media.mapper.BCmsAudioMapper;
 import lombok.RequiredArgsConstructor;

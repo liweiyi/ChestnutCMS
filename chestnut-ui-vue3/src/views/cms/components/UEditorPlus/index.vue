@@ -104,6 +104,7 @@ const editorConfig = reactive({
   serverUrl: undefined,
   catchRemoteImageEnable: false, // 自动下载远程图片
   maximumWords:10000, // 最大字数
+  initialFrameWidth: '100%', // 跟随父容器宽度，避免默认固定宽度撑破表单布局
   initialFrameHeight: props.height, // 初始高度
   autoSaveEnable: false, // 自动保存
   enableDragUpload: false,
@@ -299,6 +300,10 @@ function addPopup(editor) {
       this.hide();
       editor.ui._dialogs.linkDialog.open();
     },
+    _onResourceLinkEditClick: function () {
+      this.hide();
+      editor.execCommand("xy-resource", 'file', popup.anchorEl);
+    },
     _onImgEditButtonClick: function (name) {
       this.hide();
       if (name == "xy-resource") {
@@ -455,23 +460,43 @@ function addPopup(editor) {
         if (html) {
           html += '<div style="height:5px;"></div>';
         }
-        html += popup.formatHtml(
-          "<nobr>" +
-          editor.getLang("anchorMsg") +
-          ': <a target="_blank" href="' +
-          url +
-          '" title="' +
-          url +
-          '" >' +
-          txt +
-          "</a>" +
-          ' <span class="edui-clickable" onclick="$$._onEditButtonClick();">' +
-          editor.getLang("modify") +
-          "</span>" +
-          ' <span class="edui-clickable" onclick="$$._onRemoveButtonClick(\'unlink\');"> ' +
-          editor.getLang("clear") +
-          "</span></nobr>"
-        );
+        if (link.getAttribute("iurl")) {
+          html += popup.formatHtml(
+            "<nobr>" +
+            editor.getLang("anchorMsg") +
+            ': <a target="_blank" href="' +
+            url +
+            '" title="' +
+            url +
+            '" >' +
+            txt +
+            "</a>" +
+            ' <span class="edui-clickable" onclick="$$._onResourceLinkEditClick();">' +
+            editor.getLang("modify") +
+            "</span>" +
+            ' <span class="edui-clickable" onclick="$$._onRemoveButtonClick(\'unlink\');"> ' +
+            editor.getLang("delete") +
+            "</span></nobr>"
+          );
+        } else {
+          html += popup.formatHtml(
+            "<nobr>" +
+            editor.getLang("anchorMsg") +
+            ': <a target="_blank" href="' +
+            url +
+            '" title="' +
+            url +
+            '" >' +
+            txt +
+            "</a>" +
+            ' <span class="edui-clickable" onclick="$$._onEditButtonClick();">' +
+            editor.getLang("modify") +
+            "</span>" +
+            ' <span class="edui-clickable" onclick="$$._onRemoveButtonClick(\'unlink\');"> ' +
+            editor.getLang("clear") +
+            "</span></nobr>"
+          );
+        }
         popup.showAnchor(link);
       }
     }
@@ -680,6 +705,22 @@ function handleResourceDialogOk(results) {
     var html = '';
     if (resourceDialogTargetEl.value) {
       const r = results[0];
+      const target = resourceDialogTargetEl.value;
+      if (target.tagName == 'A') {
+        const newLink = target.ownerDocument.createElement('a');
+        newLink.setAttribute("href", r.src);
+        if (r.path) {
+          newLink.setAttribute("iurl", r.path);
+        }
+        newLink.setAttribute("target", "_blank");
+        newLink.setAttribute("class", "art-body-" + r.resourceType);
+        newLink.innerHTML = r.name;
+        target.parentNode.replaceChild(newLink, target);
+        var editor = window.UE.getEditor(props.editorId)
+        editor.fireEvent("saveScene");
+        resourceDialogTargetEl.value = null;
+        return;
+      }
       var clone = resourceDialogTargetEl.value.cloneNode(true)
       clone.removeAttribute("poster");
       clone.removeAttribute("iurl");
@@ -1117,6 +1158,20 @@ function handleBaiduMapDialogOk(result) {
 }
 </script>
 <style scoped>
+.ueditor {
+  width: 100%;
+  max-width: 100%;
+}
+
+:deep(.ueditor-container),
+:deep(.ueditor-wrap),
+:deep(.edui-editor),
+:deep(.edui-editor-iframeholder) {
+  width: 100% !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 :deep(.edui-for-xy-resource .edui-menubutton-body .edui-icon) {
   background-image: url('./images/image.png') !important;
   /* background-size: contain; */

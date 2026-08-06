@@ -19,7 +19,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.xmodel.dto.FieldOptions;
@@ -98,7 +98,7 @@ public class XModelField extends BaseEntity {
      *   	
      */
     @XComment("{SYS.XMODEL_FIELD.OPTIONS}")
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private FieldOptions options;
     
     /**
@@ -111,7 +111,7 @@ public class XModelField extends BaseEntity {
      * 校验规则
      */
     @XComment("{SYS.XMODEL_FIELD.VALIDATIONS}")
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private List<Map<String, Object>> validations;
 
     /**

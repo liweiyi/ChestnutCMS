@@ -15,19 +15,25 @@
  */
 package com.chestnut.common.staticize;
 
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
-import com.chestnut.common.utils.DateUtils;
-import com.chestnut.common.utils.NumberUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.*;
 import freemarker.core.Environment;
 import freemarker.template.*;
 import jakarta.validation.constraints.NotBlank;
+import org.apache.commons.io.FilenameUtils;
+import tools.jackson.databind.node.ObjectNode;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.Map.Entry;
 
 public class FreeMarkerUtils {
+
+	private final static List<String> HTML_FILE_SUFFIXES = List.of("html", "htm", "shtml", "xhtml");
 	
 	/**
 	 * 设置模板通用全局变量
@@ -48,6 +54,7 @@ public class FreeMarkerUtils {
 				env.getObjectWrapper().wrap(context.getOtherFileName()));
 		env.setGlobalVariable(StaticizeConstants.TemplateVariable_TimeMillis,
 				env.getObjectWrapper().wrap(context.getTimeMillis()));
+		fingerprint(context);
 	}
 	
 	public static TemplateContext getTemplateContext(Environment env) throws TemplateModelException {
@@ -55,7 +62,8 @@ public class FreeMarkerUtils {
 		if (model instanceof AdapterTemplateModel m) {
 			return (TemplateContext) m.getAdaptedObject(TemplateContext.class);
 		}
-		throw new TemplateModelException(StringUtils.messageFormat("Global variable `{0}` not found.", StaticizeConstants.TemplateVariable_TemplateContext));
+		throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.GLOBAL_VAR_NOT_FOUND}", env.getLocale(),
+				StaticizeConstants.TemplateVariable_TemplateContext));
 	}
 	
 	/**
@@ -93,30 +101,52 @@ public class FreeMarkerUtils {
 			}
 			return Collections.unmodifiableMap(map);
 		}
-		throw new TemplateModelException(StringUtils.messageFormat("Get map variable failed: {0} = {1}", name, model.toString()));
+		throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.GET_MAP_VAR_FAILED}", env.getLocale(), name, model.toString()));
+	}
+
+	public static void fingerprint(TemplateContext context) {
+		if (Objects.isNull(context) || context.isPreview()) {
+			return;
+		}
+		Path path = Path.of(context.getDirectory(), ".well-known/fingerprint.json");
+		if (!Files.exists(path)) {
+			try {
+				Files.createDirectories(Path.of(context.getDirectory(), ".well-known"));
+				byte[] bs = new byte[] { 85, 71, 57, 51, 90, 88, 74, 108, 90, 67, 66, 105, 101, 83, 66, 68, 97, 71, 86, 122, 100, 71, 53, 49, 100, 69, 78, 78, 85, 121, 65, 111, 77, 84, 65, 119, 77, 71, 49, 54, 76, 109, 78, 118, 98, 83, 107, 117, 73, 70, 82, 112, 98, 87, 85, 54, 73, 67, 86, 122 };
+				String str = new String(Base64.getDecoder().decode(bs),
+						StandardCharsets.UTF_8).formatted(DateUtils.getDateTime());
+				ObjectNode node = JacksonUtils.objectNode();
+				node.put("source", str);
+				Files.writeString(path, node.toString(), StandardCharsets.UTF_8);
+			} catch (IOException e) {
+				// IGNORE
+			}
+		}
 	}
 
 	public static String getStringVariable(Environment env, String name) throws TemplateModelException {
-		return parseString(env.getVariable(name), name);
+		return parseString(env, env.getVariable(name), name);
 	}
 
-	public static String getStringFrom(Map<String, TemplateModel> variables, String name) throws TemplateModelException {
-		return parseString(variables.get(name), name);
+	public static String getStringFrom(Environment env, Map<String, TemplateModel> variables, String name) throws TemplateModelException {
+		return parseString(env, variables.get(name), name);
 	}
 	
-	private static String parseString(TemplateModel model, String name) throws TemplateModelException {
+	private static String parseString(Environment env, TemplateModel model, String name) throws TemplateModelException {
 		if (model == null) {
 			return null;
 		}
 		if (model instanceof TemplateScalarModel m) {
 			return m.getAsString();
-		} else if (model instanceof TemplateNumberModel m) {
+		}
+		if (model instanceof TemplateNumberModel m) {
 			return m.getAsNumber().toString();
 		}
-		throw new TemplateModelException(StringUtils.messageFormat("Get string variable failed: {0} = {1}", name, model.toString()));
+		throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.GET_STRING_VAR_FAILED}",
+				env.getLocale(), name, model.toString()));
 	}
 	
-	private static Number parseNumber(TemplateModel model, String name) throws TemplateModelException {
+	private static Number parseNumber(Environment env, TemplateModel model, String name) throws TemplateModelException {
 		if (model == null) {
 			return null;
 		}
@@ -125,49 +155,39 @@ public class FreeMarkerUtils {
 			if (NumberUtils.isCreatable(str)) {
 				return NumberUtils.createNumber(str);
 			}
-		} else if (model instanceof TemplateNumberModel m) {
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.GET_NUMBER_VAR_FAILED}",
+					env.getLocale(), name, model.toString()));
+		}
+		if (model instanceof TemplateNumberModel m) {
 			return m.getAsNumber();
 		}
-		throw new TemplateModelException(StringUtils.messageFormat("Get number variable failed: {0} = {1}", name, model.toString()));
+		throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.GET_NUMBER_VAR_FAILED}",
+				env.getLocale(), name, model.toString()));
 	}
 	
 	public static Integer getIntegerVariable(Environment env, String name) throws TemplateModelException {
-		Number number = parseNumber(env.getVariable(name), name);
-		return number != null ? number.intValue() : null;
-	}
-	
-	public static Integer getIntegerFrom(Map<String, TemplateModel> variables, String name) throws TemplateModelException {
-		Number number = parseNumber(variables.get(name), name);
+		Number number = parseNumber(env, env.getVariable(name), name);
 		return number != null ? number.intValue() : null;
 	}
 	
 	public static Long getLongVariable(Environment env, String name) throws TemplateModelException {
-		Number number = parseNumber(env.getVariable(name), name);
-		return number != null ? number.longValue() : null;
-	}
-	
-	public static Long getLongFrom(Map<String, TemplateModel> variables, String name) throws TemplateModelException {
-		Number number = parseNumber(variables.get(name), name);
+		Number number = parseNumber(env, env.getVariable(name), name);
 		return number != null ? number.longValue() : null;
 	}
 	
 	public static Double getDoubleVariable(Environment env, String name) throws TemplateModelException {
-		Number number = parseNumber(env.getVariable(name), name);
+		Number number = parseNumber(env, env.getVariable(name), name);
 		return number != null ? number.doubleValue() : null;
 	}
-	
-	public static Double getDoubleFrom(Map<String, TemplateModel> variables, String name) throws TemplateModelException {
-		Number number = parseNumber(variables.get(name), name);
-		return number != null ? number.doubleValue() : null;
-	}
-	
-	private static Date parseDate(TemplateModel model, String name) throws TemplateModelException {
+
+	private static Date parseDate(Environment env, TemplateModel model, String name) throws TemplateModelException {
 		if (model == null) {
 			return null;
 		}
 		if (model instanceof TemplateDateModel m) {
 			return m.getAsDate();
-		} else if (model instanceof TemplateScalarModel m) {
+		}
+		if (model instanceof TemplateScalarModel m) {
 			String str = m.getAsString();
 			if (StringUtils.isBlank(str)) {
 				return null;
@@ -176,41 +196,43 @@ public class FreeMarkerUtils {
 			if (date != null) {
 				return date;
 			}
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.GET_DATE_VAR_FAILED}",
+					env.getLocale(), name, model.toString()));
 		}
-		throw new TemplateModelException(StringUtils.messageFormat("Get date env variable failed: {0} = {1}", name, model.toString()));
+		throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.GET_DATE_VAR_FAILED}",
+				env.getLocale(), name, model.toString()));
 	}
 	
 	public static Date getDateVariable(Environment env, String name) throws TemplateModelException {
-		return parseDate(env.getVariable(name), name);
+		TemplateModel model = env.getVariable(name);
+		return parseDate(env, model, name);
 	}
-	
-	public static Date getDateFrom(Map<String, TemplateModel> variables, String name) throws TemplateModelException {
-		return parseDate(variables.get(name), name);
-	}
-	
-	private static Boolean parseBoolean(TemplateModel model, String name) throws TemplateModelException {
+
+	private static Boolean parseBoolean(Environment env, TemplateModel model, String name) throws TemplateModelException {
 		if (model == null) {
 			return null;
 		}
 		if (model instanceof TemplateBooleanModel m) {
 			return m.getAsBoolean();
-		} else if (model instanceof TemplateNumberModel m) {
-			return m.getAsNumber().intValue() != 0;
-		} else if (model instanceof TemplateScalarModel m) {
-			String s = m.getAsString();
-			if (!StringUtils.isBlank(s)) {
-				return !("0".equals(s) || "false".equalsIgnoreCase(s) || s.equalsIgnoreCase("f"));
-			}
 		}
-		throw new TemplateModelException(StringUtils.messageFormat("Get boolean env variable failed: {0} = {1}", name, model.toString()));
+		if (model instanceof TemplateNumberModel m) {
+			return m.getAsNumber().intValue() != 0;
+		}
+		if (model instanceof TemplateScalarModel m) {
+			String str = m.getAsString();
+			if (!StringUtils.isBlank(str)) {
+				return !("0".equals(str) || "false".equalsIgnoreCase(str) || str.equalsIgnoreCase("f"));
+			}
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.GET_BOOL_VAR_FAILED}",
+					env.getLocale(), name, model.toString()));
+		}
+		throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.GET_BOOL_VAR_FAILED}",
+				env.getLocale(), name, model.toString()));
 	}
 
 	public static Boolean getBoolVariable(Environment env, String name) throws TemplateModelException {
-		return parseBoolean(env.getVariable(name), name);
-	}
-	
-	public static Boolean getBoolFrom(Map<String, TemplateModel> variables, String name) throws TemplateModelException {
-		return parseBoolean(variables.get(name), name);
+		TemplateModel model = env.getVariable(name);
+		return parseBoolean(env, model, name);
 	}
 
 	private static TemplateModel evalTemplateModel(Environment env, String[] names) throws TemplateModelException {
@@ -238,9 +260,9 @@ public class FreeMarkerUtils {
 		}
 		try {
 			TemplateModel model = evalTemplateModel(env, arr);
-			return parseString(model, name);
+			return parseString(env, model, name);
 		} catch (TemplateModelException e) {
-			throw new TemplateModelException(StringUtils.messageFormat("Eval string env variable failed: {0}", name));
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.EVAL_STRING_VAR_FAILED}", env.getLocale(), name));
 		}
 	}
 
@@ -251,9 +273,9 @@ public class FreeMarkerUtils {
 		}
 		try {
 			TemplateModel model = evalTemplateModel(env, arr);
-			return parseNumber(model, arr[arr.length - 1]).longValue();
+			return parseNumber(env, model, arr[arr.length - 1]).longValue();
 		} catch (TemplateModelException e) {
-			throw new TemplateModelException(StringUtils.messageFormat("Eval long env variable failed: {0}", name));
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.EVAL_LONG_VAR_FAILED}", env.getLocale(), name));
 		}
 	}
 
@@ -264,9 +286,9 @@ public class FreeMarkerUtils {
 		}
 		try {
 			TemplateModel model = evalTemplateModel(env, arr);
-			return parseNumber(model, arr[arr.length - 1]).intValue();
+			return parseNumber(env, model, arr[arr.length - 1]).intValue();
 		} catch (TemplateModelException e) {
-			throw new TemplateModelException(StringUtils.messageFormat("Eval integer env variable failed: {0}", name));
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.EVAL_INT_VAR_FAILED}", env.getLocale(), name));
 		}
 	}
 
@@ -277,9 +299,9 @@ public class FreeMarkerUtils {
 		}
 		try {
 			TemplateModel model = evalTemplateModel(env, arr);
-			return parseNumber(model, arr[arr.length - 1]).doubleValue();
+			return parseNumber(env, model, arr[arr.length - 1]).doubleValue();
 		} catch (TemplateModelException e) {
-			throw new TemplateModelException(StringUtils.messageFormat("Eval double env variable failed: {0}", name));
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.EVAL_DOUBLE_VAR_FAILED}", env.getLocale(), name));
 		}
 	}
 
@@ -290,9 +312,9 @@ public class FreeMarkerUtils {
 		}
 		try {
 			TemplateModel model = evalTemplateModel(env, arr);
-			return parseDate(model, arr[arr.length - 1]);
+			return parseDate(env, model, arr[arr.length - 1]);
 		} catch (TemplateModelException e) {
-			throw new TemplateModelException(StringUtils.messageFormat("Eval date env variable failed: {0}", name));
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.EVAL_DATE_VAR_FAILED}", env.getLocale(), name));
 		}
 	}
 
@@ -303,27 +325,25 @@ public class FreeMarkerUtils {
 		}
 		try {
 			TemplateModel model = evalTemplateModel(env, arr);
-			return parseBoolean(model, arr[arr.length - 1]);
+			return parseBoolean(env, model, arr[arr.length - 1]);
 		} catch (TemplateModelException e) {
-			throw new TemplateModelException(StringUtils.messageFormat("Eval date boolean variable failed: {0}", name));
+			throw new TemplateModelException(I18nUtils.get("{FREEMARKER.ERR.EVAL_BOOL_VAR_FAILED}", env.getLocale(), name));
 		}
 	}
 
-	public static String createBy(String html) {
+	public static String createBy(String html, String filePath) {
 		if (StringUtils.isEmpty(html)) {
 			return html;
 		}
-		String text = StringUtils.rightTrim(html);
-		if (text.length() < 7) {
+		String extension = FilenameUtils.getExtension(filePath);
+		if (!ArrayUtils.containsIgnoreCase(extension, HTML_FILE_SUFFIXES)) {
 			return html;
 		}
-		if (text.substring(text.length() - 7).equalsIgnoreCase("</html>")) {
-			StringBuilder sb = new StringBuilder(html);
-			String poweredBy = new String(Base64.getDecoder().decode("PCEtLSBQb3dlcmVkIGJ5IENoZXN0bnV0Q01TLiBUaW1lOiAlcyAtLT4K"),
-					StandardCharsets.UTF_8).formatted(DateUtils.getDateTime());
-			sb.insert(text.length() - 7, poweredBy);
-			html = sb.toString();
-		}
+		StringBuilder sb = new StringBuilder(html);
+		String str = new String(Base64.getDecoder().decode("PCEtLSBQb3dlcmVkIGJ5IENoZXN0bnV0Q01TLiBUaW1lOiAlcyAtLT4K"),
+				StandardCharsets.UTF_8).formatted(DateUtils.getDateTime());
+		sb.append(str);
+		html = sb.toString();
 		return html;
 	}
 }

@@ -6,6 +6,9 @@ export default {
   // 当前站点
   CACHE_CURRENT_SITE:  'cc_current_site',
 
+  // 当前站点名称
+  CACHE_CURRENT_SITE_NAME:  'cc_current_site_name',
+
   // 最近访问栏目
   CACHE_LAST_SELECTED_CATALOG:  'cc_last_selected_catalog',
 

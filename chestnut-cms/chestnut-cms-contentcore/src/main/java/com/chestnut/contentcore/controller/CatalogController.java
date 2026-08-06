@@ -45,15 +45,17 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.*;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.vo.CatalogVO;
-import com.chestnut.contentcore.enums.ContentTips;
+import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.perms.ContentCorePriv;
+import com.chestnut.contentcore.perms.SitePermissionType.SitePrivItem;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.user.preference.CatalogTreeExpandModePreference;
 import com.chestnut.contentcore.util.*;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
+import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.validator.LongId;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
@@ -100,7 +102,7 @@ public class CatalogController extends CmsRestController {
 	 * 查询栏目数据列表
 	 */
 	@XComment("{API.DOC.CMS.CATALOG.GET_LIST}")
-	@Priv(type = AdminUserType.TYPE, value = ContentCorePriv.CatalogView)
+	@Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@GetMapping("/list")
 	public R<TableData<CmsCatalog>> list() {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
@@ -201,7 +203,7 @@ public class CatalogController extends CmsRestController {
 				list.forEach(c -> {
 					catalogService.deleteCatalog(c, operator);
 				});
-                this.setProgressInfo(100, ContentTips.DELETE_SUCCESS);
+                this.setProgressInfo(100, ContentCoreTips.DELETE_SUCCESS);
 			}
 		};
 		this.asyncTaskManager.execute(task);
@@ -226,9 +228,16 @@ public class CatalogController extends CmsRestController {
 	@XComment("{API.DOC.CMS.CATALOG.TREE_DATA}")
 	@Priv(type = AdminUserType.TYPE, value = CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER)
 	@GetMapping("/treeData")
-	public R<Map<String, Object>> treeData(@RequestParam(required = false, defaultValue = "false") Boolean disableLink) {
-		CmsSite site = this.getCurrentSite();
+	public R<Map<String, Object>> treeData(@RequestParam(required = false, defaultValue = "false") Boolean disableLink,
+										  @RequestParam(required = false) @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		CmsSite site;
+		if (Objects.isNull(siteId)) {
+			site = this.getCurrentSite();
+		} else {
+			PermissionUtils.checkPermission(SitePrivItem.View.getPermissionKey(siteId), loginUser);
+			site = this.siteService.getSite(siteId);
+		}
 		List<CmsCatalog> catalogs = this.catalogService.lambdaQuery().eq(CmsCatalog::getSiteId, site.getSiteId())
 				.orderByAsc(CmsCatalog::getSortFlag).list().stream().filter(c -> loginUser
 						.hasPermission(CatalogPrivItem.View.getPermissionKey(c.getCatalogId())))

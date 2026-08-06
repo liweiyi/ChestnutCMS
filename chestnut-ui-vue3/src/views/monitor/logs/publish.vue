@@ -29,7 +29,7 @@
         <el-checkbox v-model="autoRefresh" @change="handleAutoRefreshChange">{{ $t('Monitor.Logs.Console.AutoRefresh') }}</el-checkbox>
       </el-col>
       <el-col :span="1.5">
-        <el-checkbox v-model="lockScroll" @change="handleAutoRefreshChange">{{ $t('Monitor.Logs.Console.LockScroll') }}</el-checkbox>
+        <el-checkbox v-model="lockScroll">{{ $t('Monitor.Logs.Console.LockScroll') }}</el-checkbox>
       </el-col>
       <el-col :span="4">
         <el-input

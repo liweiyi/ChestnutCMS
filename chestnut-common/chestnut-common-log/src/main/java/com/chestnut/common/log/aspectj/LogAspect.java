@@ -57,6 +57,20 @@ public class LogAspect {
 		if (logType == null) {
 			return joinPoint.proceed();
 		}
+		Map<String, Object> previous = CONTEXT.get();
+		CONTEXT.set(new HashMap<>());
+		try {
+			return proceedInContext(joinPoint, log, logType);
+		} finally {
+			if (previous == null) {
+				CONTEXT.remove();
+			} else {
+				CONTEXT.set(previous);
+			}
+		}
+	}
+
+	private Object proceedInContext(ProceedingJoinPoint joinPoint, Log log, ILogType logType) throws Throwable {
 		LocalDateTime logTime = LocalDateTime.now();
 		try {
 			logType.beforeProceed(joinPoint, log, logTime);
@@ -66,43 +80,45 @@ public class LogAspect {
 		} catch (Throwable exception) {
 			logType.afterProceed(joinPoint, log, logTime, null, exception);
 			throw exception;
-		} finally {
-			clearThreadLocal();
 		}
 	}
 	
 	public static void put(String key, Object value) {
-		if (Objects.isNull(CONTEXT.get())) {
-			CONTEXT.set(new HashMap<>());
+		Map<String, Object> context = CONTEXT.get();
+		if (context == null) {
+			throw new IllegalStateException("Log context is only available within an active log aspect");
 		}
-		CONTEXT.get().put(key, value);
+		context.put(key, value);
 	}
 	
 	public static Optional<?> get(String key) {
-		if (Objects.isNull(CONTEXT.get())) {
+		Map<String, Object> context = currentContext();
+		if (Objects.isNull(context)) {
 			return Optional.empty();
 		}
 		
-		return Optional.ofNullable(CONTEXT.get().get(key));
+		return Optional.ofNullable(context.get(key));
 	}
 	
 	public static String getString(String key) {
-		if (Objects.isNull(CONTEXT.get())) {
+		Map<String, Object> context = currentContext();
+		if (Objects.isNull(context)) {
 			return StringUtils.EMPTY;
 		}
-		Object v = CONTEXT.get().get(key);
+		Object v = context.get(key);
 		return Objects.isNull(v) ? StringUtils.EMPTY : v.toString();
 	}
 
 	public static long getLongValue(String key) {
-		if (Objects.isNull(CONTEXT.get())) {
+		Map<String, Object> context = currentContext();
+		if (Objects.isNull(context)) {
 			return 0L;
 		}
-		Object v = CONTEXT.get().get(key);
+		Object v = context.get(key);
 		return Objects.isNull(v) ? 0L : NumberUtils.toLong(v.toString());
 	}
-	
-	private static void clearThreadLocal() {
-		CONTEXT.remove();
+
+	private static Map<String, Object> currentContext() {
+		return CONTEXT.get();
 	}
 }

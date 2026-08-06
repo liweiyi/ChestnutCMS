@@ -79,7 +79,7 @@ const loadCurrentSite = () => {
   getCurrentSite().then(response => {
     currentSite.value = response.data.siteId
     currentSiteName.value = response.data.siteName
-    proxy.$cms.setCurrentSite(currentSite.value)
+    proxy.$cms.setCurrentSite(currentSite.value, currentSiteName.value)
     showCurrentSite.value = true
   })
 }
@@ -89,7 +89,7 @@ const resetCurrentSite = (changed) => {
     if (response.code == 200 && response.data) {
       currentSite.value = response.data.siteId
       currentSiteName.value = response.data.siteName
-      proxy.$cms.setCurrentSite(currentSite.value)
+      proxy.$cms.setCurrentSite(currentSite.value, currentSiteName.value)
       showCurrentSite.value = true
       if (changed) {
         open.value = false

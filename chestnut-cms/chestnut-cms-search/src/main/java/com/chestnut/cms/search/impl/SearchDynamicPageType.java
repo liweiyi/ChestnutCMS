@@ -17,13 +17,14 @@ package com.chestnut.cms.search.impl;
 
 import com.chestnut.cms.search.publishpipe.PublishPipeProp_SearchTemplate;
 import com.chestnut.common.staticize.core.TemplateContext;
-import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IDynamicPageType;
 import com.chestnut.contentcore.util.TemplateUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Component;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -78,10 +79,10 @@ public class SearchDynamicPageType implements IDynamicPageType {
 
     @Override
     public void initTemplateData(Map<String, String> parameters, TemplateContext templateContext) {
-        templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, ServletUtils.getParameters());
-        String link = "_search?q=" + parameters.get("q");
+        String link = "_search?q=" + urlEncode(parameters.get("q"))
+                + "&sid=" + urlEncode(parameters.get("sid")) + "&pp=" + urlEncode(templateContext.getPublishPipeCode());
         if (templateContext.isPreview()) {
-            link += "&sid=" + parameters.get("sid") + "&pp=" + templateContext.getPublishPipeCode() + "&preview=true";
+            link +=  "&preview=true";
         }
         boolean onlyTitle = MapUtils.getBooleanValue(parameters, "ot", false);
         if (onlyTitle) {
@@ -89,11 +90,11 @@ public class SearchDynamicPageType implements IDynamicPageType {
         }
         String contentType = parameters.get("ct");
         if (StringUtils.isNotEmpty(contentType)) {
-            link += "&ct=" + contentType;
+            link += "&ct=" + urlEncode(contentType);
         }
         String catalogId = parameters.get("cid");
         if (StringUtils.isNotEmpty(catalogId)) {
-            link += "&cid=" + catalogId;
+            link += "&cid=" + urlEncode(catalogId);
         }
         if (templateContext.isPreview()) {
             link = TemplateUtils.appendTokenParameter(link);
@@ -101,5 +102,9 @@ public class SearchDynamicPageType implements IDynamicPageType {
         templateContext.setPageIndex(MapUtils.getIntValue(parameters, "page", 1));
         templateContext.setFirstFileName(link);
         templateContext.setOtherFileName(link + "&page=" + TemplateContext.PlaceHolder_PageNo);
+    }
+
+    private static String urlEncode(String value) {
+        return URLEncoder.encode(StringUtils.defaultString(value), StandardCharsets.UTF_8);
     }
 }

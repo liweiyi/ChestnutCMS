@@ -16,8 +16,7 @@
 package com.chestnut.word.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.chestnut.common.domain.R;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
@@ -46,7 +45,7 @@ import java.util.function.Consumer;
 public class HotWordGroupServiceImpl extends ServiceImpl<HotWordGroupMapper, HotWordGroup>
 		implements IHotWordGroupService {
 
-	private final HotWordMapper hotWordMapper;
+    private final HotWordMapper hotWordMapper;
 
 	@Override
 	public HotWordGroup addHotWordGroup(CreateHotWordGroupRequest req) {

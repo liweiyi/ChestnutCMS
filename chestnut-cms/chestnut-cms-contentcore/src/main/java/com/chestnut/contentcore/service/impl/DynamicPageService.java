@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Objects;
 
@@ -63,8 +62,9 @@ public class DynamicPageService {
 
     public void generateDynamicPage(String dynamicPageType, Long siteId, String publishPipeCode, Boolean preview,
                                     Map<String, String> parameters, HttpServletResponse response) throws IOException {
-        response.setCharacterEncoding(Charset.defaultCharset().displayName());
-        response.setContentType("text/html; charset=" + Charset.defaultCharset().displayName());
+        String charset = staticizeService.getOutputCharset().name();
+        response.setCharacterEncoding(charset);
+        response.setContentType("text/html; charset=" + charset);
 
         CmsSite site = this.siteService.getSite(siteId);
         if (Objects.isNull(site)) {
@@ -90,7 +90,7 @@ public class DynamicPageService {
             // init template datamode
             TemplateUtils.initGlobalVariables(site, templateContext);
             // init templateType data to datamode
-            templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, parameters);
+            templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, TemplateUtils.htmlEscapeParameters(parameters));
             dpt.initTemplateData(parameters, templateContext);
             // staticize
             this.staticizeService.process(templateContext, response.getWriter());

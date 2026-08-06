@@ -16,7 +16,7 @@
 package com.chestnut.search.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
@@ -36,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -101,6 +102,7 @@ public class SearchWordServiceImpl extends ServiceImpl<SearchWordMapper, SearchW
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void deleteWords(List<Long> wordIds) {
 		// 删除搜索词数据
 		this.removeBatchByIds(wordIds);
@@ -112,6 +114,7 @@ public class SearchWordServiceImpl extends ServiceImpl<SearchWordMapper, SearchW
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void setTop(SearchWordToppingRequest req) {
 		List<SearchWord> wordStats = this.listByIds(req.getWordIds());
 		for (SearchWord wordStat : wordStats) {

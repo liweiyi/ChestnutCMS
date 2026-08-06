@@ -89,6 +89,7 @@ public class SysI18nDictController extends BaseRestController {
 		Page<SysI18nDict> page = i18nDictService.page(new Page<>(pr.getPageNumber(), pr.getPageSize()), q);
 		return bindDataTable(page);
 	}
+
 	@XComment("{API.DOC.SYS.I18N_DICT.GET_LANG_OPTIONS}")
 	@GetMapping("/langOptions")
 	public R<?> bindLanguageOptions() {
@@ -100,7 +101,7 @@ public class SysI18nDictController extends BaseRestController {
 	@XComment("{API.DOC.SYS.I18N_DICT.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictList)
 	@GetMapping(value = "/detail/{i18nDictId}")
-	public R<SysI18nDict> getInfo(@PathVariable @LongId @XComment("{API.DOC.SYS.I18N_DICT.ID}") Long i18nDictId) {
+	public R<SysI18nDict> getInfo(@PathVariable @XComment("{API.DOC.SYS.I18N_DICT.ID}") String i18nDictId) {
 		return R.ok(this.i18nDictService.getById(i18nDictId));
 	}
 
@@ -157,7 +158,7 @@ public class SysI18nDictController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysI18NDictRemove)
 	@Log(title = "国际化管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.I18N_DICT.IDS}") List<Long> i18nDictIds) {
+	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.I18N_DICT.IDS}") List<String> i18nDictIds) {
 		Assert.notEmpty(i18nDictIds, CommonErrorCode.INVALID_REQUEST_ARG::exception);
 		i18nDictService.deleteI18nDictByIds(i18nDictIds);
 		return R.ok();

@@ -15,9 +15,6 @@
  */
 package com.chestnut.system.config.converter;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import cn.idev.excel.converters.Converter;
 import cn.idev.excel.enums.CellDataTypeEnum;
 import cn.idev.excel.metadata.GlobalConfiguration;
@@ -30,10 +27,14 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.annotation.ExcelDictField;
 import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.service.ISysDictTypeService;
+import org.apache.commons.lang3.Strings;
+
+import java.util.Objects;
+import java.util.Optional;
 
 public class DictConverter implements Converter<Object> {
 
-	private ISysDictTypeService dictService = SpringUtils.getBean(ISysDictTypeService.class);
+	private final ISysDictTypeService dictService = SpringUtils.getBean(ISysDictTypeService.class);
 
 	@Override
 	public Class<?> supportJavaTypeKey() {
@@ -67,7 +68,7 @@ public class DictConverter implements Converter<Object> {
 		ExcelDictField excelDictField = contentProperty.getField().getAnnotation(ExcelDictField.class);
 		if (Objects.nonNull(excelDictField) && StringUtils.isNotEmpty(excelDictField.value())) {
 			Optional<SysDictData> opt = dictService.selectDictDatasByType(excelDictField.value()).stream().filter(d -> {
-				return StringUtils.equals(cellData.getStringValue(), I18nUtils.get(d.getDictLabel(), cfg.getLocale()));
+				return Strings.CS.equals(cellData.getStringValue(), I18nUtils.get(d.getDictLabel(), cfg.getLocale()));
 			}).findFirst();
 			if (opt.isPresent()) {
 				return opt.get().getDictValue();

@@ -15,7 +15,7 @@
  */
 package com.chestnut.media.dao;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.media.domain.BCmsVideo;
 import com.chestnut.media.mapper.BCmsVideoMapper;
 import lombok.RequiredArgsConstructor;

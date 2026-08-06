@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-oraclelinux8 as builder
+FROM eclipse-temurin:17-jdk-noble AS builder
 
 ARG APP_NAME
 ARG APP_VERSION
@@ -10,7 +10,7 @@ COPY target/$APP_NAME.jar app.jar
 
 RUN java -Djarmode=layertools -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} -jar app.jar extract
 
-FROM openjdk:17-jdk-oraclelinux8
+FROM eclipse-temurin:17-jdk-noble
 
 WORKDIR /home/app
 

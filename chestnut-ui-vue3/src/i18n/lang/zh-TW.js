@@ -1,7 +1,7 @@
 const zhTW = {
   APP: {
     TITLE: '栗子內容管理系統',
-    Copyright: 'Copyright © 2022-2026 ChestnutCMS. All Rights Reserved.'
+    Copyright: 'Copyright © 2022-2026 ChestnutCMS (1000mz.com) All Rights Reserved.'
   },
   Common: {
     Search: '搜索',
@@ -46,11 +46,13 @@ const zhTW = {
     RefreshCache: '刷新緩存',
     Clean: "清空",
     View: "查看",
+    Preview: "預覽",
     Show: "顯示",
     Hide: "隱藏",
     Move: "移動",
     Copy: "複製",
     Sort: "排序",
+    Update: "更新",
     Details: "詳情",
     Remark: '備註',
     CreateTime: '建立時間',
@@ -60,6 +62,7 @@ const zhTW = {
     Operation: '操作',
     Select: '選擇',
     Upload: '上傳',
+    Download: '下載',
     RowNo: '序號',
     ExpandOrCollapse: '展開 / 摺疊',
     Expand: '展開',
@@ -69,6 +72,7 @@ const zhTW = {
     TreeLinkage: '父子聯動',
     MoveUp: "上移",
     MoveDown: "下移",
+    Back: '返回',
     ConfirmDelete: '是否確認刪除？',
     ConfirmClean: "是否確認清空？清空後將無法恢復，請謹慎操作。",
     Today: '今天',
@@ -99,6 +103,12 @@ const zhTW = {
     Unknown: "未知",
     Recover: "恢復",
     InputPassword: "請輸入密碼",
+    SelectedCount: "已選擇 {0} 條",
+    FilePreview: {
+      Unsupported: "該檔案類型暫不支援線上預覽",
+      NoSrc: "未找到可預覽的檔案",
+      OfficeUnsupported: "該 Office 檔案格式暫不支援線上預覽（僅支援 .docx/.xlsx/.xls/.pptx），請下載後查看"
+    },
     Unit: {
       Year: "年",
       Month: "月",
@@ -574,9 +584,6 @@ const zhTW = {
       ConfirmUnlock: '是否確認解鎖用戶：{0}？',
       UnlockSuccess: '用戶"{0}"解鎖成功'
     },
-    GenCode: {
-      EditGenConfig: '修改生成配置'
-    },
     Security: {
       Basic: "基本資訊",
       Name: "名稱",
@@ -611,6 +618,8 @@ const zhTW = {
       CaptchaType: "驗證碼類型",
       CaptchaExpireSeconds: "驗證碼過期時長（單位：秒）",
       CaptchaRetryDuration: "驗證碼重試時長（單位：秒）",
+      CaptchaMessageConfigId: "短信驗證碼消息配置ID",
+      CaptchaMessageTemplateId: "短信驗證碼消息模板ID",
       BizConfigCard: "業務安全配置",
       SecondaryVerifications: "需要二次驗證的介面",
       SecondaryVerificationsSearch: "按路徑模糊搜尋",
@@ -1155,6 +1164,8 @@ const zhTW = {
       CopyContentTip: "拷貝副本：完整複製內容，獨立於來源自由修改。",
       MappingContent: "映射內容",
       MappingContentTip: "映射內容：僅生成基礎資訊，獨立頁面，擴展內容共用自源內容。",
+      CrossSiteCopyTip: "跨站點拷貝：完整複製內容到其他站點，並記錄來源站點。",
+      SelectTargetSite: "請選擇目標站點",
       SortUp: "上移",
       SortDown: "下移",
       Merge: "合并",
@@ -1186,7 +1197,8 @@ const zhTW = {
         HotWordGroup: "熱詞分組",
         HotWordMaxReplaceCount: "替換數量限制",
         HotWordMaxReplaceCountTip: "每篇文章替換熱詞數量限制，0表示不限制數量。",
-        EnableContribute: "是否允許投稿"
+        EnableContribute: "是否允許投稿",
+        ContentWorkflow: "內容工作流"
       }
     },
     Content: {
@@ -1219,7 +1231,10 @@ const zhTW = {
       UploadWord: "上傳WORD文檔",
       SaveUploadWordFile: "保留上傳的WORD文檔",
       CopyType: "複製方式",
-      CopyId: "來源ID",
+      CopyId: "源ID",
+      CopySite: "源站點",
+      CopyCatalog: "源欄目",
+      CopyContent: "源內容",
       StatusOption: {
         Draft: "初稿",
         ToPublish: "待發布",
@@ -1279,6 +1294,7 @@ const zhTW = {
       CloseContentEditorTip: "關閉頁面會導致未保存的內容丟失，確認關閉嗎？",
       ExtendConfig: "擴展配置",
       ExtendTemplate: "擴展模板",
+      ContentPriv: "瀏覽權限",
       ViewCount: "瀏覽量",
       FavoriteCount: "收藏數",
       LikeCount: "點贊數",
@@ -1295,6 +1311,39 @@ const zhTW = {
       SaveNewVersion: "保存新版本",
       LatestVersion: "最新版本",
       VersionDiff: "版本對比",
+      Workflow: {
+        Title: "流程資訊",
+        NoRecord: "暫無審批流程記錄",
+        NoProgress: "暫無流轉節點",
+        ProcessName: "流程名稱",
+        Starter: "發起人",
+        StartTime: "發起時間",
+        EndTime: "結束時間",
+        Progress: "審批進度",
+        Assignee: "處理人",
+        CompletedAt: "完成時間",
+        Comment: "審批意見",
+        Running: "流轉中",
+        Processing: "待處理",
+        Approved: "審批通過",
+        Rejected: "審批拒絕",
+        Revoked: "已撤銷",
+        Revoke: "撤銷審批",
+        RevokeConfirm: "撤銷後內容將恢復為重新編輯狀態，確認撤銷當前審批流程嗎？",
+        RevokeSuccess: "審批流程已撤銷",
+        Urge: "催辦",
+        Urged: "已催辦",
+        UrgeConfirm: "確認催辦目前審批流程嗎？",
+        UrgeSuccess: "催辦成功",
+        Submit: "提交審核",
+        SubmitDialogTitle: "提交內容審核",
+        SubmitTip: "提交後內容在審批完成或撤銷前不可編輯，請確認審批通過後的動作。",
+        ActionAfterApproval: "審批通過後",
+        NoAction: "僅標記審批通過",
+        ToPublishAfterApproval: "自動設為待發布",
+        PublishAfterApproval: "自動發布",
+        SubmitSuccess: "內容已提交審核"
+      },
       VersionDiffTip: {
         Replace: "替換",
         Add: "新增",
@@ -1471,6 +1520,7 @@ const zhTW = {
       AcceptSize: "支持文件大小：{0}",
       AddDialogTitle: "添加資源",
       EditDialogTitle: "編輯資源",
+      PreviewTitle: "資源預覽",
       FileTypeErrMsg: "檔案格式錯誤，請上傳圖片類型,如：.jpg，.png尾碼的檔案。",
       SelectorTitle: "素材庫",
       LocalUpload: "本地上傳",
@@ -1952,6 +2002,15 @@ const zhTW = {
         RoleName: "請輸入角色名稱",
         RoleKey: "請輸入角色標識碼"
       }
+    },
+    Config: {
+      Title: "會員配置",
+      Tip: "會員業務配置統一保存在資料庫中。消息配置與範本需先在消息管理中建立，再在此處選擇。",
+      ConfigPlaceholder: "請選擇消息配置",
+      TemplatePlaceholder: "請選擇消息範本",
+      SelectConfigFirst: "請先選擇消息配置",
+      MissingConfig: "原消息配置已不存在，請重新選擇",
+      MissingTemplate: "原消息範本已不存在或類型不匹配，請重新選擇"
     }
   },
   MetaModel: {
@@ -2034,21 +2093,77 @@ const zhTW = {
       }
     }
   },
-  MessagePusher: {
+  Message: {
     Config: {
       Name: "名稱",
       Type: "類型",
       Status: "狀態",
       ConfigJson: "配置詳情",
-      AddTitle: "添加消息推送配置",
-      EditTitle: "編輯消息推送配置",
+      AddTitle: "添加訊息配置",
+      EditTitle: "編輯訊息配置",
+      SelectorTitle: "選擇訊息配置",
+      TestSend: "測試發送",
       Placehoder: {
         Query: "輸入名稱"
-      }
+      },
+      TestTitle: "測試標題",
+      TestContent: "測試內容",
+      SMS: {
+        TestPhone: "測試手機號碼",
+        TestTemplateId: "測試簡訊範本ID",
+        TestTemplateParams: "測試簡訊範本參數",
+        Tencent: {
+          SecretId: "SecretId",
+          SecretKey: "SecretKey",
+          SdkAppId: "SdkAppId",
+          SignName: "SignName",
+          Region: "Region"
+        }
+      },
+      Email: {
+        Host: "主機",
+        Port: "埠",
+        Secure: "安全",
+        User: "用戶",
+        Password: "密碼",
+        From: "寄件人",
+        TestTo: "測試收件人",
+      },
+      DingTalk: {
+        Webhook: "Webhook",
+        Secret: "Secret",
+      },
+      Feishu: {
+        Webhook: "Webhook",
+        Secret: "Secret",
+      },
+    },
+    Template: {
+      Type: "訊息類型",
+      Name: "範本名稱",
+      Title: "訊息標題",
+      Content: "訊息內容",
+      AddTitle: "添加訊息範本",
+      EditTitle: "編輯訊息範本",
+      SelectorTitle: "選擇訊息範本"
+    },
+    Event: {
+      Name: "事件名稱",
+      Key: "事件標識",
+      Status: "狀態",
+      NotifyConfig: "通知配置",
+      Template: "範本",
+      SMSTemplateId: "簡訊範本ID",
+      AddTitle: "添加事件",
+      EditTitle: "編輯事件",
+      TestEventParams: "測試事件參數",
+      InnerEventSelectorTitle: "內建事件選擇",
+      InnerEventSelectorQueryPlaceholder: "輸入事件ID/名稱查詢",
     }
   },
   Flowable: {
     Category: {
+      TreeRoot: "流程分類",
       AddCategory: "添加分類",
       CategoryNamePlaceholder: "輸入分類名稱",
       SortUp: "上移",
@@ -2072,6 +2187,59 @@ const zhTW = {
         ModelKey: "輸入模型標識",
         ModelName: "輸入模型名稱"
       }
+    },
+    Template: {
+      Name: "流程範本",
+      Fixed: "系統固定範本",
+      Custom: "自訂範本",
+      AddByTemplate: "按範本新增",
+      Convert: "轉存為範本",
+      CreateProcess: "建立流程"
+    },
+    History: {
+      Title: "流轉歷史",
+      Empty: "暫無流轉節點",
+      StartNode: "流程開始",
+      EndNode: "流程已結束",
+      Starter: "發起人",
+      Assignee: "處理人",
+      PendingAssignee: "待處理人",
+      CcUsers: "抄送人",
+      CopiedAt: "抄送時間",
+      CcCompleted: "已抄送",
+      UserNotFound: "錯誤：人員不存在",
+      Role: "角色",
+      Dept: "部門",
+      CompletedAt: "完成時間",
+      Comment: "審批意見"
+    },
+    Comment: {
+      Title: "流程評論",
+      Empty: "暫無評論",
+      Placeholder: "請輸入評論內容",
+      Submit: "提交評論",
+      Required: "評論內容不能為空",
+      Success: "評論發表成功"
+    },
+    Action: {
+      Revoke: "撤銷",
+      RevokeConfirm: "確認撤銷目前流程嗎？",
+      RevokeSuccess: "流程已撤銷",
+      Urge: "催辦",
+      UrgeConfirm: "確認催辦目前流程嗎？",
+      UrgeSuccess: "催辦成功",
+      AdminCancel: "強制撤銷",
+      AdminCancelConfirm: "確認強制撤銷該流程嗎？此操作不受流程撤銷設定限制。",
+      AdminCancelSuccess: "流程已強制撤銷"
+    },
+    Dashboard: {
+      TodoTitle: "待處理任務",
+      ViewAll: "查看全部",
+      Empty: "暫無待處理任務",
+      TaskName: "任務名稱",
+      ProcessName: "流程名稱",
+      Starter: "發起人",
+      ArrivedAt: "到達時間"
     }
   },
   GroovyScript: {
@@ -2080,32 +2248,89 @@ const zhTW = {
     Name: "名稱"
   },
   Deploy: {
-    Cert: {
-      Domain: "功能變數名稱",
-      RR: "主機記錄",
-      Issuer: "證書頒發機構",
-      IssueTime: "簽發時間",
+    Domain: {
+      Management: "域名管理",
+      CertList: "證書列表",
+      ApplyCert: "申請證書",
+      ApplyCertTitle: "申請SSL證書",
+      CertName: "證書名稱",
+      ApplyLog: "申請日誌",
+      NoApplyLog: "暫無日誌",
+      CertHolder: "證書持有者",
+      ScanLog: "掃描日誌",
+      Scan: "掃描",
+      HostRecord: "主機記錄",
+      HostRecordPlaceholder: "如 * 表示泛域名，www 表示 www 子域名",
+      RecordValue: "記錄值",
+      RecordType: "記錄類型",
+      Result: "結果",
+      FailReason: "失敗原因",
       ExpireTime: "過期時間",
-      Apply: "申請",
-      Auth: "驗證",
-      DownloadCrt: "下載證書",
+      AddDomain: "新增域名",
+      EditDomain: "修改域名",
+      Domain: "域名",
+      DomainPlaceholder: "請輸入主域名，如 example.com",
+      CloudConfig: "雲帳號配置",
+      CloudConfigPlaceholder: "請選擇雲帳號配置",
+      CloudConfigHint: "用於自動寫入 ACME DNS-01 TXT 驗證記錄",
+      AssociatedDomain: "關聯域名",
+      AddCert: "新增證書",
+      EditCert: "編輯證書",
+      CertStandard: "證書標準",
+      InternationalStandard: "國際標準",
+      SM2Standard: "國密 SM2",
+      CertContent: "證書內容",
+      PrivateKeyContent: "私鑰內容",
+      EncryptedCertificate: "加密證書",
+      EncryptedPrivateKey: "加密私鑰",
+      CertContentAndPrivateKeyUploaded: "證書內容和私鑰上傳後不再回顯，也不可編輯。",
+      Issuer: "證書頒發機構",
       Country: "國家",
-      State: "省份",
-      Locality: "地區",
-      Organization: "組織機構",
-      AuthChallenge: "證書申請驗證",
-      DownloadHttp01File: "下載HTTP01驗證檔案",
-      AddDomain: "新增功能變數名稱",
-      EditDomain: "修改功能變數名稱資訊",
-      ConfirmApply: "確認發起證書申請嗎？",
-      Applying: "正在提交證書申請，請稍等...",
-      Authroizating: "正在驗證，請稍等...",
-      Servers: "同步伺服器",
-      SyncToServer: "同步",
-      Syncing: "正在同步證書到遠程伺服器，請稍等...",
-      Placeholder: {
-        Domain: "輸入功能變數名稱查詢"
-      }
+      State: "省/州",
+      City: "城市",
+      Organization: "組織",
+      AddHolder: "新增持有者",
+      EditHolder: "編輯持有者",
+      HolderType: "持有者類型",
+      MarkManualSuccess: "已人工處理",
+      LastSyncResult: "上次更新結果",
+      ServerHost: "伺服器主機",
+      ServerPort: "伺服器端口",
+      ServerUser: "伺服器用戶",
+      LoginPrivateKey: "登錄私鑰",
+      LoginPrivateKeyPlaceholder: "僅支持輸入私鑰內容，保存後編輯時回顯 ******",
+      PrivateKeyPassword: "私鑰密碼",
+      PrivateKeyPasswordPlaceholder: "請輸入私鑰密碼",
+      LoginPassword: "登錄密碼",
+      LoginPasswordPlaceholder: "請輸入登錄密碼",
+      CertificateFilePath: "證書文件路徑",
+      CertificateFilePathPlaceholder: "請輸入證書文件路徑",
+      PrivateKeyFilePath: "私鑰文件路徑",
+      PrivateKeyFilePathPlaceholder: "請輸入私鑰文件路徑",
+      DifyDockerDir: "Dify Docker目錄",
+      DifyDockerDirPlaceholder: "請輸入Dify Docker目錄",
+      SecretId: "SecretId",
+      SecretKey: "SecretKey",
+      OldCertificateId: "舊證書ID",
+      ResourceType: "資源類型",
+      ResourceTypeRegion: "資源類型區域",
+      AccessKeyId: "AccessKeyId",
+      AccessKeySecret: "AccessKeySecret",
+      TencentCloudSsl: {
+        AddResourceType: "新增資源類型",
+        ConfigJsonTip: "用於生成騰訊雲 SSL 資源類型與地域配置 JSON",
+        EmptyResourceConfig: "暫無資源類型配置",
+        Regions: "地域",
+        AddRegion: "新增地域",
+        ResourceTypePlaceholder: "如 clb、cos",
+        RegionPlaceholder: "如 ap-guangzhou",
+        ResourceTypes: {
+          Clb: "負載均衡 CLB",
+          Cos: "對象存儲 COS",
+          Waf: "Web 應用防火牆 WAF",
+          Apigateway: "API 網關 APIGW",
+        },
+      },
     },
     ServerMachine: {
       Name: "伺服器名稱",
@@ -2132,6 +2357,156 @@ const zhTW = {
       NginxNode: "部署節點",
       AddTitle: "添加配置",
       EditTitle: "編輯配置資訊",
+    }
+  },
+  Workflow: {
+    Definition: {
+      Code: '流程編碼',
+      Name: '流程名稱',
+      Description: '流程描述',
+      Status: '狀態',
+      Version: '版本',
+      Versions: '版本列表',
+      VersionId: '版本ID',
+      VersionList: '版本列表',
+      Publish: '發佈',
+      Disable: '停用',
+      Enable: '啟用',
+      PublishTime: '發佈時間',
+      Remark: '備註',
+      Designer: '流程設計器',
+      Placeholder: {
+        Code: '請輸入流程編碼',
+        Name: '請輸入流程名稱',
+        Description: '請輸入流程描述'
+      }
+    },
+    Instance: {
+      InstanceId: '實例ID',
+      Title: '流程標題',
+      BusinessKey: '業務關聯鍵',
+      Status: '狀態',
+      StartUser: '發起人',
+      StartTime: '發起時間',
+      EndTime: '結束時間',
+      Remark: '備註',
+      Detail: '流程詳情',
+      Variables: '流程變數',
+      VariableName: '變數名',
+      VariableValue: '變數值',
+      TaskHistory: '任務歷史',
+      Suspend: '掛起',
+      Resume: '恢復',
+      Terminate: '終止',
+      TerminateReason: '終止原因',
+      Reason: '原因',
+      Placeholder: {
+        Reason: '請輸入原因'
+      }
+    },
+    Task: {
+      TaskId: '任務ID',
+      TaskName: '任務名稱',
+      Description: '任務描述',
+      Assignee: '處理人',
+      Status: '狀態',
+      Priority: '優先級',
+      DueDate: '到期時間',
+      ClaimTime: '認領時間',
+      CompleteTime: '完成時間',
+      Comment: '審批意見',
+      Candidates: '候選資訊',
+      CandidateUsers: '候選用戶',
+      CandidateGroups: '候選用戶組',
+      Detail: '任務詳情',
+      Claim: '認領',
+      Complete: '完成',
+      Transfer: '轉辦',
+      Delegate: '委派',
+      Reject: '退回',
+      TargetUser: '目標用戶',
+      TargetNode: '目標節點',
+      RejectReason: '退回原因',
+      Placeholder: {
+        Comment: '請輸入審批意見',
+        TargetUser: '請輸入目標用戶ID',
+        TargetNode: '請輸入目標節點ID',
+        RejectReason: '請輸入退回原因'
+      }
+    },
+    MyProcess: {
+      StartNew: '發起新流程',
+      ProcessDef: '流程定義',
+      Cancel: '取消流程',
+      CancelReason: '取消原因',
+      Start: '發起',
+      Placeholder: {
+        ProcessDef: '請選擇流程定義',
+        BusinessKey: '請輸入業務關聯鍵',
+        Title: '請輸入流程標題'
+      }
+    },
+    Status: {
+      Pending: '待審批',
+      Approved: '已通過',
+      Rejected: '已拒絕',
+      Canceled: '已撤銷',
+      Completed: '已完成',
+      Failed: '失敗'
+    },
+    Config: {
+      ConfigId: '配置ID',
+      ConfigName: '配置名稱',
+      HandlerId: '處理器',
+      WorkflowType: '引擎類型',
+      ProcessDefId: '流程定義',
+      RequestUri: '請求URI',
+      RequestMethod: '請求方法',
+      Status: '狀態',
+      Dialog: {
+        Add: '新增流程配置',
+        Edit: '修改流程配置'
+      },
+      Placeholder: {
+        ConfigName: '請輸入配置名稱',
+        HandlerId: '請選擇處理器',
+        WorkflowType: '請選擇引擎類型',
+        ProcessDefId: '請選擇流程定義',
+        RequestUri: '請輸入請求URI',
+        RequestMethod: '請選擇請求方法',
+        Status: '請選擇狀態'
+      },
+      ConfirmDelete: '是否確認刪除配置名稱為"{0}"的流程配置？'
+    },
+    Record: {
+      RecordId: '記錄ID',
+      ConfigId: '配置ID',
+      HandlerId: '處理器',
+      WorkflowType: '引擎類型',
+      ProcessDefId: '流程定義ID',
+      EngineInstanceId: '引擎實例ID',
+      Title: '流程標題',
+      RequestUri: '請求URI',
+      RequestMethod: '請求方法',
+      RequestData: '請求數據',
+      OperatorId: '操作人ID',
+      OperatorName: '提交人',
+      OperatorDeptId: '操作人部門',
+      OperatorJson: '操作人信息',
+      Status: '狀態',
+      SubmitTime: '提交時間',
+      FinishTime: '完成時間',
+      FailReason: '失敗原因',
+      CompleteResult: '執行結果',
+      Detail: '流程記錄詳情',
+      Cancel: '撤銷',
+      CancelSuccess: '撤銷成功',
+      OnlyMine: '僅我的',
+      ConfirmCancel: '是否確認撤銷流程"{0}"？',
+      Placeholder: {
+        Status: '請選擇狀態',
+        HandlerId: '請選擇處理器'
+      }
     }
   },
   CmsContentPriv: {
@@ -2204,4 +2579,4 @@ const zhTW = {
   }
 }
 
-export default zhCN
+export default zhTW

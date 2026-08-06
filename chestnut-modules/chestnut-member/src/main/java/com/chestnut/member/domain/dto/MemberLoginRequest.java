@@ -50,9 +50,9 @@ public class MemberLoginRequest {
     @XComment("{API.DOC.MEMBER.CAPTCHA_UUID}")
     private String uuid;
 
-    @XComment("IP")
+    @XComment("{CC.MEMBER.IP}")
     private String ip;
 
-    @XComment("UserAgent")
+    @XComment("{CC.MEMBER.USER_AGENT}")
     private String userAgent;
 }

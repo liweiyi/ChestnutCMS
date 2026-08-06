@@ -5,7 +5,7 @@
     <parent>
         <artifactId>chestnut-modules</artifactId>
         <groupId>com.chestnut</groupId>
-        <version>1.5.13</version>
+        <version>1.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -63,4 +63,23 @@
             <artifactId>spring-boot-admin-starter-client</artifactId>
         </dependency>
     </dependencies>
+
+	<profiles>
+		<profile>
+			<id>macos-netty-dns</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>io.netty</groupId>
+					<artifactId>netty-resolver-dns-native-macos</artifactId>
+					<classifier>osx-aarch_64</classifier>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 </project>

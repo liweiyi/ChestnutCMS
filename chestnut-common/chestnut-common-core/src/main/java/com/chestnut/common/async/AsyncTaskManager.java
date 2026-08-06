@@ -133,23 +133,27 @@ public class AsyncTaskManager {
 		return this.taskExecutor;
     }
 
-    protected static void setCurrent(AsyncTask task) {
+	protected static void setCurrent(AsyncTask task) {
 		CURRENT.set(task);
-    }
-    
-    protected static void removeCurrent() {
+	}
+
+	protected static void removeCurrent() {
 		CURRENT.remove();
-    }
+	}
+
+	private static AsyncTask currentTask() {
+		return CURRENT.get();
+	}
     
     public static void checkInterrupt() throws InterruptedException {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			task.checkInterrupt();
 		}
     }
 
     public static String addErrMessage(String message) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			task.addErrorMessage(message);
 		}
@@ -157,7 +161,7 @@ public class AsyncTaskManager {
     }
 
     public static String addErrMessage(TipMessage message, Object... args) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
             return task.addErrorMessage(message, args);
 		}
@@ -165,42 +169,42 @@ public class AsyncTaskManager {
     }
     
     public static void setTaskPercent(int percent) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			task.setPercent(percent);
 		}
     }
     
     public static void setTaskMessage(String msg) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			task.setProgressMessage(msg);
 		}
     }
 
     public static void setTaskMessage(TipMessage message, Object... args) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			task.setProgressMessage(message, args);
 		}
     }
 
     public static void setTaskProgressInfo(int percent, String msg) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			task.setProgressInfo(percent, msg);
 		}
     }
 
     public static void setTaskProgressInfo(int percent, TipMessage message, Object... args) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			task.setProgressInfo(percent, message, args);
 		}
     }
 
 	public static void completed(String msg) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			if (StringUtils.isEmpty(msg)) {
 				msg = I18nUtils.get("{AsyncTask.SuccessMsg}");
@@ -217,21 +221,21 @@ public class AsyncTaskManager {
 	 * 设置进度条数据，进度增加剩余进度的十分之一
 	 */
 	public static void setTaskTenPercentProgressInfo(String msg) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			task.setProgressInfo(task.getPercent() + (100 - task.getPercent()) / 10, msg);
 		}
-	}
+    }
 
     public static void setTaskTenPercentProgressInfo(TipMessage message, Object... args) {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			task.setProgressInfo(task.getPercent() + (100 - task.getPercent()) / 10, message, args);
 		}
     }
 
 	public static int getTaskProgressPercent() {
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			return task.getPercent();
 		}
@@ -240,7 +244,7 @@ public class AsyncTaskManager {
 
 	public static Locale getLocale() {
 		Locale locale = null;
-		AsyncTask task = CURRENT.get();
+		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
 			locale = task.getLocale();
 		}

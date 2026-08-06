@@ -140,7 +140,7 @@ public class ResourceController extends CmsRestController {
 					r.setSrc(r.getPath());
 				} else {
                     r.setInternalUrl(InternalDataType_Resource.getInternalUrl(r));
-					if (ResourceType_Image.isImage(r.getResourceType())) {
+					if (ResourceType_Image.ID.equals(r.getResourceType())) {
 						resourceService.dealDefaultThumbnail(site, r.getInternalUrl(), r::setSrc);
 					} else {
 						r.setSrc(InternalUrlUtils.getActualPreviewUrl(r.getInternalUrl()));

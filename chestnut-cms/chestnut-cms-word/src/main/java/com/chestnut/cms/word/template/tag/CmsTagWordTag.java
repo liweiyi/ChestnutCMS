@@ -16,6 +16,7 @@
 package com.chestnut.cms.word.template.tag;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
@@ -64,7 +65,7 @@ public class CmsTagWordTag extends AbstractListTag {
 		Long siteId = TemplateUtils.evalSiteId(env);
         TagWordGroup tagWordGroup = tagWordGroupService.getTagWordGroup(siteId.toString(), group);
 		if (Objects.isNull(tagWordGroup)) {
-			throw new TemplateException("Tag word group not found: " + group, env);
+			throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.TAG_WORD_GROUP_NOT_FOUND}", env.getLocale(), group), env);
 		}
 		LambdaQueryWrapper<TagWord> q = new LambdaQueryWrapper<TagWord>()
 				.eq(TagWord::getGroupId, tagWordGroup.getGroupId());

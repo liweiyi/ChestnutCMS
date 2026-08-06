@@ -1,20 +1,18 @@
-#基础镜像
-FROM elasticsearch:8.5.2
+# ES 版本，需与下方 IK 分词器版本保持一致
+ARG ES_VERSION=9.4.2
 
-#es插件目录
-ENV ES_PLUGINS_PATH /usr/share/elasticsearch/plugins
+# 基础镜像
+FROM elasticsearch:${ES_VERSION}
 
-#定义maven的安装目录
-ENV MAVEN_BASE_PATH /opt
+# FROM 之后需重新声明 ARG 才能在后续指令中引用
+ARG ES_VERSION
 
-#定义编译ik分词器源码的目录
-ENV IK_SRC_COMPILE_PATH /opt/ik_build
+# ES 插件目录
+ENV ES_PLUGINS_PATH=/usr/share/elasticsearch/plugins
 
-
+# IK 分词器插件包（版本需与 ES_VERSION 一致）
 WORKDIR /usr/share/elasticsearch/plugins
 
-COPY elasticsearch-analysis-ik-8.5.2.zip ik.zip
+COPY elasticsearch-analysis-ik-${ES_VERSION}.zip ik.zip
 
 RUN unzip ik.zip -d ik && rm -rf ik.zip
-	
-VOLUME [ "/usr/share/elasticsearch/config/elasticsearch.yml", "/usr/share/elasticsearch/plugins","/usr/share/elasticsearch/data", "/usr/share/elasticsearch/logs"]

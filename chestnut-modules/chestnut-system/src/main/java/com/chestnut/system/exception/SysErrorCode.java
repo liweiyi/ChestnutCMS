@@ -237,7 +237,22 @@ public enum SysErrorCode implements ErrorCode {
     /**
      * 不支持的登录类型：{0}
      */
-    UNSUPPORTED_LOGIN_TYPE;
+    UNSUPPORTED_LOGIN_TYPE,
+
+    /**
+     * 登录配置已禁用
+     */
+    LOGIN_CONFIG_DISABLED,
+
+    /**
+     * 无效的登录配置属性
+     */
+    INVALID_LOGIN_CONFIG_PROPS,
+
+    /**
+     * 访问被拒绝
+     */
+    ACCESS_DENIED;
 	
 	@Override
 	public String value() {

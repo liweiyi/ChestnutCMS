@@ -22,6 +22,7 @@ import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.service.ISysDictTypeService;
 import freemarker.template.TemplateModelException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -77,7 +78,7 @@ public class DictFunction extends AbstractFunc {
 		}
 		I18nUtils.replaceI18nFields(datas, Locale.getDefault());
 		if (StringUtils.isNotBlank(dictValue)) {
-			Optional<SysDictData> first = datas.stream().filter(data -> StringUtils.equals(data.getDictValue(), dictValue)).findFirst();
+			Optional<SysDictData> first = datas.stream().filter(data -> Strings.CS.equals(data.getDictValue(), dictValue)).findFirst();
 			if (first.isEmpty()) {
 				return List.of();
 			}

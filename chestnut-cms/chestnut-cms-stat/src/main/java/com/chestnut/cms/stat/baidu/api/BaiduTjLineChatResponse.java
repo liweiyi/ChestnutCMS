@@ -16,7 +16,7 @@
 package com.chestnut.cms.stat.baidu.api;
 
 import com.chestnut.cms.stat.baidu.BaiduTjMetrics;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -55,12 +55,12 @@ public class BaiduTjLineChatResponse extends BaiduTjResponse {
         }
         JsonNode resultNode = jsonNode.get("result");
         List<String> fields = new ArrayList<>();
-        resultNode.get("fields").forEach(node -> fields.add(node.asText()));
+        resultNode.get("fields").forEach(node -> fields.add(node.asString()));
 
         JsonNode itemsNode = resultNode.get("items");
         itemsNode.get(0).forEach(node -> {
             XAxisData xAxisData = new XAxisData();
-            xAxisData.setXAxis(node.get(0).asText());
+            xAxisData.setXAxis(node.get(0).asString());
             List<YAxisData> yAxisDataList = new ArrayList<>();
             for (int i = 1; i < fields.size(); i++) {
                 YAxisData yAxisData = new YAxisData();
@@ -73,9 +73,7 @@ public class BaiduTjLineChatResponse extends BaiduTjResponse {
         });
 
         int index = 0;
-        Iterator<JsonNode> xAxisDataJsonArray = itemsNode.get(1).elements();
-        while (xAxisDataJsonArray.hasNext()) {
-            JsonNode yAxisDataArray = xAxisDataJsonArray.next();
+        for (JsonNode yAxisDataArray : itemsNode.get(1).values()) {
             List<YAxisData> yAxisDataList = xAxisList.get(index).getYAxisDataList();
             for (int i = 0; i < yAxisDataList.size(); i++) {
                 YAxisData yAxisData = yAxisDataList.get(i);

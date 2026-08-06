@@ -285,7 +285,7 @@ public class ContentIndexService implements CommandLineRunner {
 					for (CmsCatalog catalog : catalogs) {
 						rebuildCatalog(catalog, false);
 					}
-					this.setProgressInfo(100, CmsSearchTips.BUILDING_CATALOG_INDEX);
+					this.setProgressInfo(100, CmsSearchTips.REBUILD_INDEX_SUCCEED);
 				} catch (Exception e) {
 					log.error("RebuildAllContentIndex failed.", e);
 					addErrorMessage(e.getMessage());
@@ -338,23 +338,29 @@ public class ContentIndexService implements CommandLineRunner {
 		data.put("fullText", content.getFullText());
 		// 扩展模型数据
 		this.extendModelService.getModelData(content.getContentEntity()).forEach(fd -> {
-			if (fd.getValue() instanceof LocalDateTime date) {
-				data.put(fd.getFieldName(), date.toInstant(ZoneOffset.UTC).toEpochMilli());
-			} else if (fd.getValue() instanceof LocalDate date) {
-				data.put(fd.getFieldName(), date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli());
-			} else if (fd.getValue() instanceof Instant date) {
-				data.put(fd.getFieldName(), date.toEpochMilli());
-			} else {
-				data.put(fd.getFieldName(), fd.getValue());
-			}
+			data.put(fd.getFieldName(), normalizeIndexValue(fd.getValue()));
 		});
 		return data;
+	}
+
+	static Object normalizeIndexValue(Object value) {
+		if (value instanceof LocalDateTime date) {
+			return date.toInstant(ZoneOffset.UTC).toEpochMilli();
+		}
+		if (value instanceof LocalDate date) {
+			return date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli();
+		}
+		if (value instanceof Instant date) {
+			return date.toEpochMilli();
+		}
+		return value;
 	}
 
 	public boolean isElasticSearchAvailable() {
 		try {
 			return esClient.ping().value();
 		} catch (Exception e) {
+			e.printStackTrace();
 			return false;
 		}
 	}

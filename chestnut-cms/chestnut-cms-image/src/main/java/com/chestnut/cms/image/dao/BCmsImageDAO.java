@@ -15,7 +15,7 @@
  */
 package com.chestnut.cms.image.dao;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.cms.image.domain.BCmsImage;
 import com.chestnut.cms.image.mapper.BCmsImageMapper;
 import lombok.RequiredArgsConstructor;

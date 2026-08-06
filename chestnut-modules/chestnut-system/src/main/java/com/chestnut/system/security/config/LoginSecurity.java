@@ -15,8 +15,6 @@
  */
 package com.chestnut.system.security.config;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -61,6 +59,16 @@ public class LoginSecurity {
      * 验证码重新生成间隔时长，单位：秒
      */
     private Integer captchaDuration;
+
+    /**
+     * 验证码消息配置ID。
+     */
+    private Long captchaMessageConfigId;
+
+    /**
+     * 验证码消息模板ID。
+     */
+    private Long captchaMessageTemplateId;
 
     /**
      * 第三方登录配置ID，多个用逗号分隔

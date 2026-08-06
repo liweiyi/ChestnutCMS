@@ -15,7 +15,7 @@
  */
 package com.chestnut.comment.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.comment.CommentConsts;
 import com.chestnut.comment.domain.Comment;
 import com.chestnut.comment.domain.dto.AuditCommentDTO;

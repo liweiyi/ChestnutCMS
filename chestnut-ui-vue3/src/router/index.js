@@ -103,6 +103,12 @@ export const constantRoutes = [
     name: 'ContentCorePreview'
   },
   {
+    path: '/cms/resource/preview',
+    component: () => import('@/views/cms/contentcore/resourcePreview'),
+    hidden: true,
+    name: 'CMSResourcePreview'
+  },
+  {
     path: '/cms/content/editorW',
     component: () => import('@/views/cms/contentcore/contentEditor'),
     hidden: true,
@@ -188,22 +194,7 @@ export const constantRoutes = [
 ]
 
 // 动态路由，基于用户权限动态去加载
-export const dynamicRoutes = [
-  {
-    path: '/tool/gen-edit',
-    component: Layout,
-    hidden: true,
-    permissions: ['tool:gen:edit'],
-    children: [
-      {
-        path: 'index/:tableId(\\d+)',
-        component: () => import('@/views/tool/gen/editTable'),
-        name: 'GenEdit',
-        meta: { title: i18n.global.t('System.GenCode.EditGenConfig'), activeMenu: '/tool/gen' }
-      }
-    ]
-  }
-]
+export const dynamicRoutes = []
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.VITE_APP_PATH || '/'),

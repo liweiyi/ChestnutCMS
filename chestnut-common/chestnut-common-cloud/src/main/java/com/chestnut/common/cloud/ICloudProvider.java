@@ -15,7 +15,7 @@
  */
 package com.chestnut.common.cloud;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.List;
 
@@ -28,6 +28,22 @@ public interface ICloudProvider {
     String getName();
 
     void refreshCdn(ObjectNode config, CdnRefreshType type, List<String> urls);
+
+    default String addDnsRecord(ObjectNode config, String domainName, String rr, String type, String value) {
+        throw new UnsupportedOperationException("Unsupported API: addDnsRecord");
+    }
+
+    default String updateDnsRecord(ObjectNode config, String recordId, String domainName, String rr, String type, String value) {
+        throw new UnsupportedOperationException("Unsupported API: updateDnsRecord");
+    }
+
+    default void deleteDnsRecord(ObjectNode config, String recordId, String domainName) {
+        throw new UnsupportedOperationException("Unsupported API: deleteDnsRecord");
+    }
+
+    default List<DnsRecord> listDnsRecords(ObjectNode config, String domainName) {
+        throw new UnsupportedOperationException("Unsupported API: listDnsRecords");
+    }
 
     void dealSensitive(ObjectNode configProps);
 

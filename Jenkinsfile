@@ -2,8 +2,9 @@ pipeline {
     agent any
     environment {
         DOCKER_HUB_URL = 'registry.cn-hangzhou.aliyuncs.com'
-        DOCKER_HUB_WORKSPACE = 'xxxxxx'
-        DINGTALK_ID = 'xxxxxx'
+        DOCKER_HUB_URL_VPC = 'registry-vpc.cn-hangzhou.aliyuncs.com'
+        DOCKER_HUB_WORKSPACE = 'liweiyi'
+        DINGTALK_ID = '0e390ce4-c612-4c26-bc84-c086439a2da8'
         // 获取Maven pom.xml项目版本号
         //APP_VERSION = readMavenPom().getVersion()
          APP_VERSION = '0.1.0'
@@ -15,12 +16,12 @@ pipeline {
             name: 'DEPLOY_SERVER')
         choice(
             choices: [ 'N', 'Y' ],
-            description: '是否发布wwwroot_release',
-            name: 'DEPLOY_WWWROOT')
-        choice(
-            choices: [ 'N', 'Y' ],
             description: '是否发布前端',
             name: 'DEPLOY_UI')
+        choice(
+            choices: [ 'N', 'Y' ],
+            description: '是否发布工具站',
+            name: 'DEPLOY_TOOLS')
         choice(
             choices: [ 'latest' ],
             description: '镜像TAG',
@@ -39,34 +40,13 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '2'))
     }
     stages {
-        stage("Preparing") {
-            steps {
-                dingtalk (
-	                robot: '${DINGTALK_ID}',
-	                type: 'MARKDOWN',
-	                at: [],
-	                atAll: false,
-                    title: '(${JOB_NAME} #${BUILD_NUMBER})',
-	                text: [
-	                    '### 开始构建(${JOB_NAME} #${BUILD_NUMBER})',
-	                    '---',
-	                    '- DEPLOY_SERVER: ${DEPLOY_SERVER}',
-	                    '- DEPLOY_UI: ${DEPLOY_UI}',
-	                    '- IMAGE_TAG: ${IMAGE_TAG}',
-	                    '- DEPLOY_ENV: ${DEPLOY_ENV}',
-	                ],
-                    messageUrl: '${BUILD_URL}',
-                    picUrl: ''
-                )
-            }
-        }
         stage("Checkout") {
             steps {
 				dir('./ChestnutCMS') {
-					checkout([$class: 'GitSCM', branches: [[name: '*/dev']], extensions: [], userRemoteConfigs: [[credentialsId: 'LwyGitee', url: 'https://gitee.com/liweiyi/ChestnutCMS.git']]])
+					checkout([$class: 'GitSCM', branches: [[name: '*/dev']], extensions: [], userRemoteConfigs: [[credentialsId: 'gitea_lwy', url: 'https://ccgit.1000mz.com/liweiyi/ChestnutCMS']]])
 				}
-				dir('./wwwroot_release') {
-					checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: 'gitea', url: 'http://gitea.huaray.com/liweiyi/swikoon_wwwroot_release.git']]])
+				dir('./ChestnutTools') {
+					checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'gitea_lwy', url: 'https://ccgit.1000mz.com/liweiyi/ChestnutTools']]])
 				}
             }
         }
@@ -76,27 +56,27 @@ pipeline {
             }
             steps {
 				dir('./ChestnutCMS') {
-					withEnv(['JAVA_HOME=/var/jenkins_home/jdk/jdk-17.0.4.1']) {
-						withMaven(maven: 'M3.8') {
-							sh 'mvn -U clean package -Dmaven.test.skip=true'
+					withEnv(['JAVA_HOME=/var/jenkins_home/jdks/jdk17', 'PATH+JAVA=/var/jenkins_home/jdks/jdk17/bin']) {
+						withMaven(maven: 'M3.9.9') {
+							sh 'mvn -U clean package -pl chestnut-build/chestnut-official -am -Dmaven.test.skip=true'
 						}
 					}
 				}
             }
         }
-        stage("chestnut-admin") {
+        stage("chestnut-official") {
 			when {
                 expression { return params.DEPLOY_SERVER == 'Y' }
             }
             steps {
-            	withEnv(['APP_PATH=chestnut-admin', 'APP_NAME=chestnut-admin']) {
+            	withEnv(['APP_PATH=chestnut-build/chestnut-official', 'APP_NAME=chestnut-official']) {
    					echo "docker build start: ${APP_PATH}#${APP_VERSION}"
 	            	dir('./ChestnutCMS') {
 	                	withCredentials([usernamePassword(credentialsId: 'ALIYUN-DOCKER-REGISTRY-LWY', passwordVariable: 'DOCKERPWD', usernameVariable: 'DOCKERUSER')]) {
 							sh '''
 								cd ${APP_PATH}
 			                    echo ${DOCKERPWD} | docker login --username=${DOCKERUSER} --password-stdin ${DOCKER_HUB_URL}
-								docker build -t ${DOCKER_HUB_URL}/${DOCKER_HUB_WORKSPACE}/${APP_NAME}:${IMAGE_TAG} . --build-arg APP_NAME=${APP_PATH} --build-arg APP_VERSION=${APP_VERSION}
+								docker build -t ${DOCKER_HUB_URL}/${DOCKER_HUB_WORKSPACE}/${APP_NAME}:${IMAGE_TAG} . --build-arg APP_NAME=${APP_NAME} --build-arg APP_VERSION=${APP_VERSION}
 			                    docker logout ${DOCKER_HUB_URL}
 							'''
 			            }
@@ -108,9 +88,9 @@ pipeline {
 			                    echo ${DOCKERPWD} | docker login --username=${DOCKERUSER} --password-stdin ${DOCKER_HUB_URL}
 			                    docker push ${DOCKER_HUB_URL}/${DOCKER_HUB_WORKSPACE}/${APP_NAME}:${IMAGE_TAG}
 			                    docker logout ${DOCKER_HUB_URL}
-								
+
 								cp -f bin/docker-image-clear.sh docker-image-clear.sh
-								sed -i "s/{{DOCKER_HUB_URL}}/${DOCKER_HUB_URL}/g" docker-image-clear.sh
+								sed -i "s/{{DOCKER_HUB_URL}}/${DOCKER_HUB_URL_VPC}/g" docker-image-clear.sh
 								sed -i "s/{{IMAGE_REPOSITORY}}/${DOCKER_HUB_WORKSPACE}\\/${APP_NAME}/g" docker-image-clear.sh
 			                    /bin/bash docker-image-clear.sh
 								rm -f docker-image-clear.sh
@@ -121,31 +101,31 @@ pipeline {
 	                dir('./ChestnutCMS') {
 		            	withCredentials([usernamePassword(credentialsId: 'ALIYUN-DOCKER-REGISTRY-LWY', passwordVariable: 'DOCKERPWD', usernameVariable: 'DOCKERUSER')]) {
 		            	    sh '''
-		            	    cp -f bin/docker-deploy.sh ${APP_PATH}/docker-deploy.sh
-		                    cp -f docker/docker-compose_${DEPLOY_ENV}.yml ${APP_PATH}/docker-compose.yml
+		            	    cp -f bin/docker-deploy.sh ${APP_PATH}
+		                    cp -f docker/docker-compose_${DEPLOY_ENV}.yml ${APP_PATH}
 
             	    		cd ${APP_PATH}
-		                    
+            	    		mv docker-compose_${DEPLOY_ENV}.yml docker-compose.yml
+
 		                    sed -i "s/{{DOCKERUSER}}/${DOCKERUSER}/g" docker-deploy.sh
 							sed -i "s/{{DOCKERPWD}}/${DOCKERPWD}/g" docker-deploy.sh
-							sed -i "s/{{DOCKER_HUB_URL}}/${DOCKER_HUB_URL}/g" docker-deploy.sh
+							sed -i "s/{{DOCKER_HUB_URL}}/${DOCKER_HUB_URL_VPC}/g" docker-deploy.sh
 							sed -i "s/{{IMAGE_REPOSITORY}}/${DOCKER_HUB_WORKSPACE}\\/${APP_NAME}/g" docker-deploy.sh
 							sed -i "s/{{IMAGE_TAG}}/${IMAGE_TAG}/g" docker-deploy.sh
 
-							sed -i "s/{{DOCKER_IMAGE}}/${DOCKER_HUB_URL}\\/${DOCKER_HUB_WORKSPACE}\\/${APP_NAME}:${IMAGE_TAG}/g" docker-compose.yml
+							sed -i "s/{{DOCKER_IMAGE}}/${DOCKER_HUB_URL_VPC}\\/${DOCKER_HUB_WORKSPACE}\\/${APP_NAME}:${IMAGE_TAG}/g" docker-compose.yml
 		            	    '''
-							sshPublisher(publishers: [sshPublisherDesc(configName: 'GameCluster', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
-										mkdir -p /www/docker/chestnut-admin
-										cd /www/docker/chestnut-admin
+							sshPublisher(publishers: [sshPublisherDesc(configName: 'lwy_dev', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
+										mkdir -p /home/admin/docker/chestnut-admin
+										cd /home/admin/docker/chestnut-admin
 			                            sh docker-deploy.sh
-			                            rm -f docker-deploy.sh
 										''', execTimeout: 600000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: 'chestnut-admin/',
-										remoteDirectorySDF: false, removePrefix: 'chestnut-admin/',
-										sourceFiles: 'chestnut-admin/docker-compose.yml,chestnut-admin/docker-deploy.sh')],
+										remoteDirectorySDF: false, removePrefix: 'chestnut-build/chestnut-official/',
+										sourceFiles: 'chestnut-build/chestnut-official/docker-compose.yml,chestnut-build/chestnut-official/docker-deploy.sh')],
 										usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true)])
 			        	}
 	                }
-	
+
 	                // delete tmp file
 	                dir('./ChestnutCMS') {
 			        	sh 'rm -f ${APP_PATH}/docker-deploy.sh'
@@ -162,13 +142,13 @@ pipeline {
             steps {
 				dir('./wwwroot_release') {
 					sh 'zip -q -r wwwroot_release.zip * --exclude *.svn* --exclude *.git*'
-					sshPublisher(publishers: [sshPublisherDesc(configName: 'GameCluster', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
-								cd /www/docker/chestnut-admin/wwwroot_release
+					sshPublisher(publishers: [sshPublisherDesc(configName: 'lwy_dev', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
+								cd /home/admin/docker/chestnut-admin/wwwroot_release
 								unzip -o -q wwwroot_release.zip
 								rm -f wwwroot_release.zip
 								''', execTimeout: 600000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: 'chestnut-admin/wwwroot_release/',
-								remoteDirectorySDF: false, removePrefix: '', 
-								sourceFiles: 'wwwroot_release.zip')], 
+								remoteDirectorySDF: false, removePrefix: '',
+								sourceFiles: 'wwwroot_release.zip')],
 								usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true)])
 				}
 			}
@@ -178,8 +158,8 @@ pipeline {
                 expression { return params.DEPLOY_UI == 'Y' }
             }
             steps {
-            	dir('./ChestnutCMS/chestnut-ui') {
-               		nodejs('NodeJS16_13') {
+            	dir('./ChestnutCMS/chestnut-ui-vue3') {
+               		nodejs('nodejs_20_19_0') {
 	            	    sh '''
 	            	    npm install --registry=https://registry.npmmirror.com
 	            	    npm run build:prod
@@ -189,65 +169,48 @@ pipeline {
 					}
             	}
 				dir('./ChestnutCMS/chestnut-ui-vue3/dist') {
-            	    sshPublisher(publishers: [sshPublisherDesc(configName: 'GameCluster', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
-            	    					mkdir -p /www/docker/chestnut-ui
-										cd /www/docker/chestnut-ui
+            	    sshPublisher(publishers: [sshPublisherDesc(configName: 'lwy_dev', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
+            	    					mkdir -p /home/admin/docker/chestnut-ui
+										cd /home/admin/docker/chestnut-ui
 			                            unzip -o -q ui.zip
 			                            rm -f ui.zip
 										''', execTimeout: 600000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: 'chestnut-ui/',
-										remoteDirectorySDF: false, removePrefix: '', 
-										sourceFiles: 'ui.zip')], 
+										remoteDirectorySDF: false, removePrefix: '',
+										sourceFiles: 'ui.zip')],
 										usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true)])
 					sh 'rm -f ui.zip'
 				}
+
 	        }
 	    }
-    }
-    post {
-        success {
-            dingtalk (
-                robot: '${DINGTALK_ID}',
-                type: 'MARKDOWN',
-                at: [],
-                atAll: false,
-                title: '${JOB_NAME} #${BUILD_NUMBER}',
-                text: [
-                    '### 构建成功(${JOB_NAME} #${BUILD_NUMBER})',
-                    '---',
-                    '- IMAGE_TAG: ${IMAGE_TAG}',
-                    '- DEPLOY_ENV: ${DEPLOY_ENV}',
-                ],
-                messageUrl: '${BUILD_URL}',
-                picUrl: ''
-            )
-        }
-        failure {
-            dingtalk (
-                robot: '${DINGTALK_ID}',
-                type: 'LINK',
-                at: [],
-                atAll: false,
-                title: '${JOB_NAME} #${BUILD_NUMBER}',
-                text: [
-                	'构建失败',
-                ],
-                messageUrl: '${BUILD_URL}',
-                picUrl: ''
-            )
-        }
-        unstable {
-            dingtalk (
-                robot: '${DINGTALK_ID}',
-                type: 'LINK',
-                at: [],
-                atAll: false,
-                title: '${JOB_NAME} #${BUILD_NUMBER}',
-                text: [
-                	'构建流程可能出现问题，详情请查看流程日志',
-                ],
-                messageUrl: '${BUILD_URL}',
-                picUrl: ''
-            )
-        }
+        stage("chestnut-tools") {
+			when {
+                expression { return params.DEPLOY_TOOLS == 'Y' }
+            }
+            steps {
+            	dir('./ChestnutTools') {
+               		nodejs('nodejs_20_19_0') {
+	            	    sh '''
+	            	    npm install --registry=https://registry.npmmirror.com
+	            	    npm run build
+	            	    cd dist
+	            	    zip -q -r tools.zip *
+	            	    '''
+					}
+            	}
+				dir('./ChestnutTools/dist') {
+            	    sshPublisher(publishers: [sshPublisherDesc(configName: 'lwy_dev', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
+            	    					mkdir -p /home/admin/docker/chestnut-tools
+										cd /home/admin/docker/chestnut-tools
+			                            unzip -o -q tools.zip
+			                            rm -f tools.zip
+										''', execTimeout: 600000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: 'chestnut-tools/',
+										remoteDirectorySDF: false, removePrefix: '',
+										sourceFiles: 'tools.zip')],
+										usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true)])
+					sh 'rm -f tools.zip'
+				}
+	        }
+	    }
     }
 }

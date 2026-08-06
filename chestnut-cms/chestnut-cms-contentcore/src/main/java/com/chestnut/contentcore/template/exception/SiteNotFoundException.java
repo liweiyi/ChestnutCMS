@@ -15,16 +15,20 @@
  */
 package com.chestnut.contentcore.template.exception;
 
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.i18n.I18nUtils;
 
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
+import org.springframework.context.i18n.LocaleContextHolder;
+
+import java.io.Serial;
 
 public class SiteNotFoundException extends TemplateException {
 
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 
 	public SiteNotFoundException(String tag, long siteId, Environment env) {
-		super(StringUtils.messageFormat("<@{0}>[id: {1}]", tag, siteId), env);
+		super(I18nUtils.get("{FREEMARKER.ERR.SiteNotFound}", LocaleContextHolder.getLocale(), tag, siteId), env);
 	}
 }

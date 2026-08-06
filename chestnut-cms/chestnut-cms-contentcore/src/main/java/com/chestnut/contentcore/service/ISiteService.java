@@ -15,7 +15,7 @@
  */
 package com.chestnut.contentcore.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.SiteDTO;

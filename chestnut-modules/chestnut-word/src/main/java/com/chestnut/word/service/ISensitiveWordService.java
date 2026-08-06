@@ -15,7 +15,7 @@
  */
 package com.chestnut.word.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.word.domain.SensitiveWord;
 import com.chestnut.word.domain.dto.CreateSensitiveWordRequest;
 

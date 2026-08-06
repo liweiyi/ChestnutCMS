@@ -16,7 +16,7 @@
 package com.chestnut.system.schedule;
 
 import com.chestnut.system.fixed.dict.YesOrNo;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.scheduling.support.CronExpression;
@@ -42,7 +42,7 @@ public enum ScheduledTaskTriggerType {
 		public static CronTriggerArgs fromJson(JsonNode json) {
 			CronTriggerArgs args = new CronTriggerArgs();
 			// 尝试解析cron表达式
-			CronExpression expr = CronExpression.parse(json.required("cron").asText());
+			CronExpression expr = CronExpression.parse(json.required("cron").asString());
 			args.setCron(expr.toString());
 			return args;
 		}
@@ -70,7 +70,7 @@ public enum ScheduledTaskTriggerType {
 
 		public static PeriodicTriggerArgs fromJson(JsonNode json) {
 			PeriodicTriggerArgs args = new PeriodicTriggerArgs();
-			args.setFixedRate(json.required("fixedRate").asText());
+			args.setFixedRate(json.required("fixedRate").asString());
 			args.setSeconds(json.required("seconds").asLong());
 			args.setDelaySeconds(json.required("delaySeconds").asLong());
 			return args;

@@ -18,7 +18,7 @@ package com.chestnut.common.db.mybatisplus;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.db.domain.IBackupEntity;
 import com.chestnut.common.db.domain.IBackupable;
 import com.chestnut.common.utils.IdUtils;

@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>chestnut-modules</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.13</version>
+		<version>1.6.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -20,11 +20,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.aliyun</groupId>
-			<artifactId>searchengine20211025</artifactId>
 		</dependency>
 
 	</dependencies>

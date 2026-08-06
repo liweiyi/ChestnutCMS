@@ -17,7 +17,7 @@ package com.chestnut.common.db.mybatisplus.config;
 
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
 import com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.BlockAttackInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.OptimisticLockerInnerInterceptor;
@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Configuration;
 public class MybatisPlusConfiguration {
 
 	static {
-		JacksonTypeHandler.setObjectMapper(JacksonUtils.getObjectMapper());
+		Jackson3TypeHandler.setObjectMapper(JacksonUtils.getObjectMapper());
 	}
 
 	@Bean

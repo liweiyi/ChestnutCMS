@@ -22,6 +22,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -47,7 +48,7 @@ public class LocalFileStorageType implements IFileStorageType {
 	@Override
 	public boolean exists(StorageExistArgs args) {
 		String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
-		bucket = StringUtils.appendIfMissing(bucket, "/");
+		bucket = Strings.CS.appendIfMissing(bucket, "/");
 		String filePath = bucket + args.getPath();
 		File file = new File(filePath);
 		return file.exists() && file.isFile();
@@ -57,7 +58,7 @@ public class LocalFileStorageType implements IFileStorageType {
 	public void copy(StorageCopyArgs args) {
 		try {
 			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
-			bucket = StringUtils.appendIfMissing(bucket, "/");
+			bucket = Strings.CS.appendIfMissing(bucket, "/");
 			FileUtils.copyDirectory(new File(bucket + args.getSourcePath()), new File(bucket + args.getDestPath()));
 		} catch (IOException e) {
 			throw new FileStorageException(e);
@@ -68,7 +69,7 @@ public class LocalFileStorageType implements IFileStorageType {
 	public void move(StorageMoveArgs args) {
 		try {
 			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
-			bucket = StringUtils.appendIfMissing(bucket, "/");
+			bucket = Strings.CS.appendIfMissing(bucket, "/");
 			FileUtils.moveDirectory(new File(bucket + args.getSourcePath()), new File(bucket + args.getDestPath()));
 		} catch (IOException e) {
 			throw new FileStorageException(e);
@@ -79,7 +80,7 @@ public class LocalFileStorageType implements IFileStorageType {
 	public InputStream read(StorageReadArgs args) {
 		try {
 			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
-			bucket = StringUtils.appendIfMissing(bucket, "/");
+			bucket = Strings.CS.appendIfMissing(bucket, "/");
 			String filePath = bucket + args.getPath();
 			File file = new File(filePath);
 			if (!file.exists()) {
@@ -95,7 +96,7 @@ public class LocalFileStorageType implements IFileStorageType {
 	public void write(StorageWriteArgs args) {
 		try {
 			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
-			bucket = StringUtils.appendIfMissing(bucket, "/");
+			bucket = Strings.CS.appendIfMissing(bucket, "/");
 			String filePath = bucket + args.getPath();
 			File file = new File(filePath);
 			FileExUtils.mkdirs(file.getParentFile().getAbsolutePath());
@@ -109,7 +110,7 @@ public class LocalFileStorageType implements IFileStorageType {
 	public void remove(StorageRemoveArgs args) {
 		try {
 			String bucket = Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY);
-			bucket = StringUtils.appendIfMissing(bucket, "/");
+			bucket = Strings.CS.appendIfMissing(bucket, "/");
 			String filePath = bucket + args.getPath();
 			FileUtils.delete(new File(filePath));
 		} catch (Exception e) {
@@ -120,7 +121,7 @@ public class LocalFileStorageType implements IFileStorageType {
 	@Override
 	public List<String> list(StorageListArgs args) {
 		try {
-			String bucket = StringUtils.appendIfMissing(
+			String bucket = Strings.CS.appendIfMissing(
 					Objects.requireNonNullElse(args.getBucket(), StringUtils.EMPTY), "/");
 			String dirPath = bucket;
 			String prefix;

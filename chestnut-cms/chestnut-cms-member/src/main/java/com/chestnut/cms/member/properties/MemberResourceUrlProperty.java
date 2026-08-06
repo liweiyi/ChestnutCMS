@@ -19,6 +19,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IProperty;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 /**
@@ -52,7 +53,7 @@ public class MemberResourceUrlProperty implements IProperty {
 	public static String getValue(CmsSite site) {
 		String value = ConfigPropertyUtils.getStringValue(ID, site.getConfigProps());
 		if (StringUtils.isNotEmpty(value)) {
-			return StringUtils.appendIfMissing(value, "/");
+			return Strings.CS.appendIfMissing(value, "/");
 		}
 		return StringUtils.EMPTY;
 	}

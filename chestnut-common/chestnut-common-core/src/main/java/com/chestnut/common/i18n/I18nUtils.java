@@ -32,9 +32,6 @@ import java.util.Objects;
 @Slf4j
 public class I18nUtils {
 
-	private final static MessageSource messageSource = SpringUtils
-			.getBean(AbstractApplicationContext.MESSAGE_SOURCE_BEAN_NAME);
-
 	private static final PropertyPlaceholderHelper FieldPlaceholderHelper = new PropertyPlaceholderHelper("#{", "}");
 
 	private static final I18nPlaceholderHelper PlaceholderHelper = new I18nPlaceholderHelper("{", "}", ":",
@@ -133,6 +130,10 @@ public class I18nUtils {
 		if (StringUtils.isEmpty(str)) {
 			return str;
 		}
+		MessageSource messageSource = getMessageSource();
+		if (messageSource == null) {
+			return str;
+		}
 		return PlaceholderHelper.replacePlaceholders(str, langKey -> messageSource.getMessage(langKey, args, locale));
 	}
 
@@ -169,7 +170,19 @@ public class I18nUtils {
 		if (StringUtils.isEmpty(langKey)) {
 			return langKey;
 		}
+		MessageSource messageSource = getMessageSource();
+		if (messageSource == null) {
+			return langKey;
+		}
 		return messageSource.getMessage(langKey, args, locale);
+	}
+
+	private static MessageSource getMessageSource() {
+		try {
+			return SpringUtils.getBean(AbstractApplicationContext.MESSAGE_SOURCE_BEAN_NAME);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	public static boolean isLanguageTag(String s) {

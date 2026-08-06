@@ -54,7 +54,7 @@ public class RateLimiterAspect {
 		try {
 			String combineKey = this.getCombineKey(rateLimiter, point);
 			List<String> keys = List.of(combineKey);
-			if (Boolean.FALSE.equals(redisTemplate.execute(this.limitScript, keys, limit, expire))) {
+			if (!redisTemplate.execute(this.limitScript, keys, limit, expire)) {
 				log.warn("限制请求'{}',缓存key'{}'", limit, combineKey);
 				throw RateLimiterErrorCode.RATE_LIMIT.exception();
 			}

@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.advertisement.domain.CmsAdvertisement;
 import com.chestnut.advertisement.pojo.vo.AdvertisementVO;
 import com.chestnut.advertisement.service.IAdvertisementService;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
@@ -78,7 +79,7 @@ public class CmsAdvertisementTag extends AbstractListTag {
 				.eq(CmsPageWidget::getSiteId, siteId)
 				.eq(CmsPageWidget::getCode, code));
 		if (adSpace == null) {
-			throw new TemplateException(StringUtils.messageFormat("Advertising space `{0}` not exists.", code), env)  ;
+			throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.AD_SPACE_NOT_FOUND}", env.getLocale(), code), env)  ;
 		}
 		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 

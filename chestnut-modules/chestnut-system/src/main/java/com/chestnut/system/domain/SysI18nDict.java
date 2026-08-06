@@ -39,7 +39,7 @@ public class SysI18nDict {
 	public static final String TABLE_NAME = "sys_i18n_dict";
 
 	@TableId(value = "dict_id", type = IdType.INPUT)
-	private Long dictId;
+	private String dictId;
 	
 	/**
 	 * 各国语言环境简称字符串，例如：zh-CN=中文（简体），en-US=英文（美国）

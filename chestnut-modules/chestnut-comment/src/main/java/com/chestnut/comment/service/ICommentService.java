@@ -17,7 +17,7 @@ package com.chestnut.comment.service;
 
 import java.util.List;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.comment.domain.Comment;
 import com.chestnut.comment.domain.dto.AuditCommentDTO;
 

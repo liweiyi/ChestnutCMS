@@ -18,7 +18,7 @@ package com.chestnut.system.service.impl;
 import com.chestnut.common.async.AsyncTaskManager;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.system.domain.SysOperLog;
 import com.chestnut.system.mapper.SysOperLogMapper;

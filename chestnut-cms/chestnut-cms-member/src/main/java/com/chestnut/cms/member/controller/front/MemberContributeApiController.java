@@ -36,6 +36,7 @@ import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.HtmlUtils;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
@@ -136,7 +137,6 @@ public class MemberContributeApiController extends BaseRestController implements
 	@IgnoreDemoMode
 	@Priv(type = MemberUserType.TYPE)
     @DeleteMapping
-	@PostMapping
 	@Deprecated(since = "1.5.7", forRemoval = true)
 	public R<Void> deleteContribute2(@RequestParam("cid") @LongId @XComment("{API.DOC.CMS.CMS_MEMBER.CONTENT_ID}") Long contentId) {
 		return deleteContribute(contentId);
@@ -157,7 +157,16 @@ public class MemberContributeApiController extends BaseRestController implements
 		if (!EnableContributeProperty.getValue(catalog.getConfigProps())) {
 			return R.fail("参数`catalogId`异常：" + dto.getCatalogId());
 		}
+		String contentHtml = HtmlUtils.cleanRichText(dto.getContentHtml());
+		Assert.isTrue(StringUtils.isNotBlank(contentHtml),
+				() -> CommonErrorCode.NOT_EMPTY.exception("contentHtml"));
+		dto.setContentHtml(contentHtml);
+
 		Operator operator = Operator.of(StpMemberUtil.getLoginUser());
+		IArticleBodyFormat articleBodyFormat = articleService.getArticleBodyFormat(dto.getFormat());
+		if (Objects.isNull(articleBodyFormat)) {
+			dto.setFormat(ArticleBodyFormat_RichText.ID);
+		}
 		if (IdUtils.validate(dto.getContentId())) {
 			CmsContent cmsContent = this.contentService.dao().getById(dto.getContentId());
 			if (!operator.getUserId().equals(cmsContent.getContributorId())) {
@@ -191,10 +200,6 @@ public class MemberContributeApiController extends BaseRestController implements
 			}
 			CmsArticleDetail articleDetail = this.articleService.dao().getById(cmsContent.getContentId());
 			articleDetail.setContentHtml(dto.getContentHtml());
-			IArticleBodyFormat articleBodyFormat = articleService.getArticleBodyFormat(dto.getFormat());
-			if (Objects.isNull(articleBodyFormat)) {
-				dto.setFormat(ArticleBodyFormat_RichText.ID);
-			}
 			articleDetail.setFormat(dto.getFormat());
 
 			ArticleContent content = new ArticleContent();
@@ -229,6 +234,7 @@ public class MemberContributeApiController extends BaseRestController implements
 			extendEntity.setContentId(contentEntity.getContentId());
 			extendEntity.setSiteId(contentEntity.getSiteId());
 			extendEntity.setContentHtml(dto.getContentHtml());
+			extendEntity.setFormat(dto.getFormat());
 			extendEntity.setDownloadRemoteImage(YesOrNo.NO);
 
 			ArticleContent content = new ArticleContent();
@@ -288,4 +294,3 @@ public class MemberContributeApiController extends BaseRestController implements
 		this.applicationContext = applicationContext;
 	}
 }
-

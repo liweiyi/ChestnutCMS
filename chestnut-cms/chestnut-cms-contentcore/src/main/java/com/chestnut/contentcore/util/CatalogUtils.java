@@ -23,6 +23,7 @@ import com.chestnut.contentcore.core.impl.InternalDataType_Catalog;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.system.fixed.config.BackendContext;
+import org.apache.commons.lang3.Strings;
 
 import java.util.Objects;
 
@@ -35,15 +36,15 @@ public class CatalogUtils {
 
 	public static String formatCatalogPath(String path) {
 		path = FileExUtils.normalizePath(path);
-		return StringUtils.appendIfMissing(path, "/");
+		return Strings.CS.appendIfMissing(path, "/");
 	}
 	
 	/**
 	 * 生成指定栏目的子栏目用的祖级字符串
 	 * 
-	 * @param parentAncestors
-	 * @param catalogId
-	 * @return
+	 * @param parentAncestors parent ancestors
+	 * @param catalogId catalog id
+	 * @return catalog ancestors
 	 */
 	public static String getCatalogAncestors(String parentAncestors, Long catalogId) {
 		if (StringUtils.isNotEmpty(parentAncestors)) {
@@ -59,8 +60,8 @@ public class CatalogUtils {
 	/**
 	 * 获取指定栏目所属顶级栏目ID
 	 * 
-	 * @param catalog
-	 * @return
+	 * @param catalog catalog
+	 * @return top catalog id
 	 */
 	public static Long getTopCatalog(CmsCatalog catalog) {
 		if (catalog.getCatalogId().toString().equals(catalog.getAncestors())) {
@@ -72,12 +73,12 @@ public class CatalogUtils {
 	/**
 	 * 获取栏目访问链接
 	 *
-	 * @param site
-	 * @param catalog
-	 * @param pageIndex
-	 * @param publishPipeCode
-	 * @param isPreview
-	 * @return
+	 * @param site site
+	 * @param catalog catalog
+	 * @param pageIndex page index
+	 * @param publishPipeCode publish pipe code
+	 * @param isPreview is preview mode
+	 * @return The catalog link.
 	 */
 	public static String getCatalogLink(CmsSite site, CmsCatalog catalog, int pageIndex, String publishPipeCode, boolean isPreview) {
 		if (catalog.getCatalogType().equals(CatalogType_Link.ID)) {

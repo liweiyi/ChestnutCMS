@@ -22,6 +22,7 @@ import com.chestnut.system.domain.SysDictData;
 import com.chestnut.system.service.ISysDictTypeService;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.apache.commons.lang3.Strings;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.util.Optional;
@@ -38,7 +39,7 @@ public class DictValidator implements ConstraintValidator<Dict, String> {
 			return true;
 		}
 		Optional<SysDictData> findFirst = SpringUtils.getBean(ISysDictTypeService.class).selectDictDatasByType(dictType)
-				.stream().filter(data -> StringUtils.equals(data.getDictValue(), value)).findFirst();
+				.stream().filter(data -> Strings.CS.equals(data.getDictValue(), value)).findFirst();
 		if (findFirst.isPresent()) {
 			return true;
 		}

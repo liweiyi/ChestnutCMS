@@ -116,7 +116,37 @@ public enum CommonErrorCode implements ErrorCode {
 	/**
 	 * Lang: 不允许缓存 null 值，key=[{0}]
 	 */
-	CACHE_NULL_NOT_ALLOWED;
+	CACHE_NULL_NOT_ALLOWED,
+
+	/**
+	 * 云服务配置不能为空
+	 */
+	CLOUD_CONFIG_NULL,
+
+	/**
+	 * 缺少访问密钥
+	 */
+	CLOUD_MISSING_ACCESS_KEY,
+
+	/**
+	 * 缺少密钥
+	 */
+	CLOUD_MISSING_SECRET_KEY,
+
+	/**
+	 * 缺少Secret ID
+	 */
+	CLOUD_MISSING_SECRET_ID,
+
+	/**
+	 * 当前云服务不支持正则刷新
+	 */
+	CDN_REGEX_NOT_SUPPORTED,
+
+	/**
+	 * 未配置百度推送密钥
+	 */
+	BAIDU_PUSH_SECRET_NOT_CONFIGURED;
 
 	@Override
 	public String value() {

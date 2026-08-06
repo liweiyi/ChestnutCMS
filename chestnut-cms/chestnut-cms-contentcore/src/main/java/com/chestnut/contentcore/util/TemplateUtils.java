@@ -19,6 +19,7 @@ import cn.dev33.satoken.config.SaTokenConfig;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.StaticizeConstants;
 import com.chestnut.common.staticize.core.TemplateContext;
+import com.chestnut.common.utils.HtmlUtils;
 import com.chestnut.common.utils.ReflectASMUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -257,6 +259,23 @@ public class TemplateUtils {
 			}
 			context.getVariables().put(TemplateVariable_Token, token);
 		}
+	}
+
+	/**
+	 * 对请求参数值做 HTML 转义，返回新 Map，不修改入参。
+	 * 用于动态模板 Request 变量，防止反射型 XSS。
+	 */
+	public static Map<String, String> htmlEscapeParameters(Map<String, String> params) {
+		if (MapUtils.isEmpty(params)) {
+			return params == null ? Map.of() : params;
+		}
+		Map<String, String> escaped = new HashMap<>(params.size());
+		params.forEach((key, value) -> {
+			if (value != null) {
+				escaped.put(key, HtmlUtils.htmlEscape(value));
+			}
+		});
+		return escaped;
 	}
 
 	public static String appendParam(String path, String name, String value) {

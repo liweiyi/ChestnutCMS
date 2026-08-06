@@ -15,7 +15,7 @@
  */
 package com.chestnut.member.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.member.domain.MemberFollow;
 
 public interface IMemberFollowService extends IService<MemberFollow> {
@@ -23,16 +23,16 @@ public interface IMemberFollowService extends IService<MemberFollow> {
     /**
      * 关注 用户
      *
-     * @param memberId
-     * @param targetId
+     * @param memberId Member id.
+     * @param targetId The follow member id.
      */
     void follow(long memberId, Long targetId);
 
     /**
      * 取消关注  用户
      *
-     * @param memberId
-     * @param targetId
+     * @param memberId Member id.
+     * @param targetId The cancel follow member id.
      */
     void cancelFollow(long memberId, Long targetId);
 }

@@ -90,7 +90,7 @@ public class TagWordMonitoredCache implements IMonitoredCache<Map<String, TagWor
             this.redisCache.deleteObject(cacheKey(owner, groupCode));
             return;
         }
-        this.redisCache.deleteCacheMapValue(cacheKey(owner, groupCode), tagIds);
+        this.redisCache.deleteCacheMapValue(cacheKey(owner, groupCode), (Object[]) tagIds);
     }
 
     @Getter

@@ -25,5 +25,5 @@ public interface CustomFormPriv {
 
 	String Edit = Prefix + "edit";
 
-	String Delete = Prefix + "delete";
+	String Delete = Prefix + "del";
 }

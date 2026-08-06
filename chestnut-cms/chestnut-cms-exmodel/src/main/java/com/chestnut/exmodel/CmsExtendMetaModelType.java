@@ -16,6 +16,7 @@
 package com.chestnut.exmodel;
 
 import com.chestnut.exmodel.domain.CmsExtendModelData;
+import com.chestnut.xmodel.core.BaseModelData;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.core.impl.MetaControlType_Input;
@@ -47,6 +48,11 @@ public class CmsExtendMetaModelType implements IMetaModelType {
     @Override
     public String getDefaultTable() {
         return CmsExtendModelData.TABLE_NAME;
+    }
+
+    @Override
+    public Class<? extends BaseModelData> getDefaultDataClass() {
+        return CmsExtendModelData.class;
     }
 
     @Override

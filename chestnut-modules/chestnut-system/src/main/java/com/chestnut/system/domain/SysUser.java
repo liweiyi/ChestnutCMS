@@ -23,7 +23,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.common.utils.poi.converter.LocalDateTimeConverter;
@@ -166,7 +166,7 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 	 */
     @XComment("{ENT.SYS.USER.PREFERENCES}")
 	@ExcelIgnore
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
 	private Map<String, Object> preferences;
 
 	/** 角色对象 */

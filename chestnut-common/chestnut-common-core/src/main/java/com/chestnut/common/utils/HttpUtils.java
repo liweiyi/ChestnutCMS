@@ -48,7 +48,7 @@ public class HttpUtils {
 			"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50" };
 
 	public static String randomUserAgent() {
-		int index = RandomUtils.nextInt(0, USER_AGENTS.length);
+		int index = RandomUtils.secure().randomInt(0, USER_AGENTS.length);
 		return USER_AGENTS[index];
 	}
 
@@ -96,11 +96,11 @@ public class HttpUtils {
 	 * @return
 	 */
 	public static String get(URI uri, Map<String, String> headers) {
+		HttpClient httpClient = HttpClient.newBuilder()
+				.connectTimeout(Duration.ofSeconds(30))
+				.followRedirects(Redirect.ALWAYS)
+				.build();
 		try {
-			HttpClient httpClient = HttpClient.newBuilder()
-					.connectTimeout(Duration.ofSeconds(30))
-					.followRedirects(Redirect.ALWAYS)
-					.build();
 			HttpRequest.Builder builder = HttpRequest.newBuilder(uri);
 			headers.forEach(builder::setHeader);
 			HttpRequest httpRequest = builder.GET().build();
@@ -119,14 +119,18 @@ public class HttpUtils {
 			body = StringUtils.EMPTY;
 		}
 		HttpClient httpClient = buildHttpClient(true);
-		HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
-				.POST(BodyPublishers.ofString(body, StandardCharsets.UTF_8));
-		headers.forEach(builder::header);
-		if (!headers.containsKey("Content-Type")) {
-			builder.header("Content-Type", "application/json");
+		try {
+			HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+					.POST(BodyPublishers.ofString(body, StandardCharsets.UTF_8));
+			headers.forEach(builder::header);
+			if (!headers.containsKey("Content-Type")) {
+				builder.header("Content-Type", "application/json");
+			}
+			HttpRequest httpRequest = builder.build();
+			return httpClient.send(httpRequest, BodyHandlers.ofString()).body();
+		} catch (IOException | InterruptedException e) {
+			throw new RuntimeException(e);
 		}
-		HttpRequest httpRequest = builder.build();
-		return httpClient.send(httpRequest, BodyHandlers.ofString()).body();
 	}
 
 	/**
@@ -151,10 +155,14 @@ public class HttpUtils {
 
 	public static byte[] syncDownload(String uri, boolean ignoreSSL) throws Exception {
 		HttpClient httpClient = buildHttpClient(ignoreSSL);
-		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
-				.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
-				.GET().build();
-		return httpClient.send(httpRequest, BodyHandlers.ofByteArray()).body();
+		try {
+			HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
+					.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
+					.GET().build();
+			return httpClient.send(httpRequest, BodyHandlers.ofByteArray()).body();
+		} catch (IOException | InterruptedException e) {
+			throw new RuntimeException(e);
+		}
     }
 
 	public static InputStream syncDownloadInputStream(String uri) throws Exception {
@@ -163,10 +171,14 @@ public class HttpUtils {
 
 	public static InputStream syncDownloadInputStream(String uri, boolean ignoreSSL) throws Exception {
 		HttpClient httpClient = buildHttpClient(ignoreSSL);
-		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
-				.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
-				.GET().build();
-		return httpClient.send(httpRequest, BodyHandlers.ofInputStream()).body();
+		try {
+			HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
+					.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
+					.GET().build();
+			return httpClient.send(httpRequest, BodyHandlers.ofInputStream()).body();
+		} catch (IOException | InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -180,7 +192,7 @@ public class HttpUtils {
 		HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(uri))
 				.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
 				.GET().build();
-		httpClient.sendAsync(httpRequest, BodyHandlers.ofFile(destPath));
+		httpClient.send(httpRequest, BodyHandlers.ofFile(destPath));
 	}
 
 	public static void asyncDownload(String uri, String destPath) throws Exception {
@@ -208,6 +220,6 @@ public class HttpUtils {
 				.setHeader(HttpHeaders.USER_AGENT, randomUserAgent())
 				.GET().build();
 		Optional<String> headerValue = httpClient.send(httpRequest, BodyHandlers.discarding()).headers().firstValue(headerName);
-        return headerValue.orElse(null);
+		return headerValue.orElse(null);
     }
 }

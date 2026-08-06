@@ -7,7 +7,7 @@
       <el-row :gutter="10">
         <el-col :span="1.5">
           <el-input v-model="pair.key" @change="handleKeyChange(index)">
-            <template #prefix>KEY =&nbsp;</template>
+            <template #prefix>{{ props.keyName }} =&nbsp;</template>
             <template v-if="keyOptions.length > 0" #suffix>
               <el-popover :ref="`keySelectRef_${index}`" placement="bottom" :width="400">
                 <template #reference>
@@ -20,7 +20,7 @@
         </el-col>
         <el-col :span="1.5">
           <el-input v-model="pair.value" @change="handleValueChange(index)">
-            <template #prefix>VALUE =&nbsp;</template>
+            <template #prefix>{{ props.valueName }} =&nbsp;</template>
           </el-input>
         </el-col>
         <el-col :span="1.5">
@@ -36,6 +36,14 @@ const { proxy } = getCurrentInstance()
 const model = defineModel();
 
 const props = defineProps({
+  keyName: {
+    type: String,
+    default: "KEY"
+  },
+  valueName: {
+    type: String,
+    default: "VALUE"
+  },
   limit: {
     type: Number,
     default: 0
@@ -112,6 +120,7 @@ function handleAdd() {
 
 function handleRemove(index) {
   pairs.value.splice(index, 1)
+  updateModelValue()
 }
 
 function handleSelectKey(pair, keyOption, index) {

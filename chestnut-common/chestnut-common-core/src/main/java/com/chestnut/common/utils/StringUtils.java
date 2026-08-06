@@ -16,8 +16,10 @@
 package com.chestnut.common.utils;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.util.AntPathMatcher;
 
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.function.Consumer;
@@ -206,6 +208,14 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 		return str;
 	}
 
+	public static boolean isSystemDir(File f) {
+		return ".well-known".equals(f.getName());
+	}
+
+	public static boolean isNotSystemDir(File f) {
+		return !isSystemDir(f);
+	}
+
 	public static String firstNotBlankStr(String... strArr) {
 		return filterFirst(StringUtils::isNotBlank, strArr);
 	}
@@ -384,7 +394,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 			return false;
 		}
 		for (CharSequence testStr : searchCharSequences) {
-			if (containsIgnoreCase(cs, testStr)) {
+			if (Strings.CI.contains(cs, testStr)) {
 				return true;
 			}
 		}

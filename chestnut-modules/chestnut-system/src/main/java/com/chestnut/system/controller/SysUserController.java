@@ -21,7 +21,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 
-
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
@@ -53,6 +52,7 @@ import com.chestnut.system.service.ISysRoleService;
 import com.chestnut.system.service.ISysUserService;
 import com.chestnut.system.service.impl.SysUserServiceImpl.SysUserReadListener;
 import com.chestnut.system.user.preference.IUserPreference;
+import com.chestnut.system.user.preference.MenuShortcutUserPreference;
 import com.chestnut.system.validator.LongId;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Validator;
@@ -220,7 +220,7 @@ public class SysUserController extends BaseRestController {
 	@XComment("{API.DOC.SYS.USER.USER_ROLES}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping("/authRole/{userId}")
-	public R<UserInfoVO> authRole(@PathVariable("userId") @LongId @XComment("{API.DOC.SYS.USER.ID}") Long userId) {
+	public R<UserInfoVO> authRole(@PathVariable @LongId @XComment("{API.DOC.SYS.USER.ID}") Long userId) {
 		SysUser user = userService.getById(userId);
 		Assert.notNull(user, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(userId));
 
@@ -253,7 +253,10 @@ public class SysUserController extends BaseRestController {
 	@GetMapping("/getPreferences")
 	public R<Map<String, Object>> getPreferences() {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
-		return R.ok(Objects.isNull(user.getPreferences()) ? Map.of() : user.getPreferences());
+		if (Objects.isNull(user.getPreferences())) {
+			return R.ok(Map.of());
+		}
+		return R.ok(user.getPreferences());
 	}
 
     @XComment("{API.DOC.SYS.USER.GET_PREFERENCE}")
@@ -281,6 +284,7 @@ public class SysUserController extends BaseRestController {
 		SysUser user = this.userService.getById(StpAdminUtil.getLoginIdAsLong());
 		Map<String, Object> map = this.userPreferenceList.stream().collect(Collectors.toMap(IUserPreference::getId,
 				up -> userPreferences.getOrDefault(up.getId(), up.getDefaultValue())));
+		MenuShortcutUserPreference.removeOldShortcut(map);
 		user.setPreferences(map);
 		this.userService.updateById(user);
 		LoginUser loginUser = StpAdminUtil.getLoginUser();

@@ -15,7 +15,7 @@
  */
 package com.chestnut.word.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -28,6 +28,7 @@ import com.chestnut.word.mapper.ErrorProneWordMapper;
 import com.chestnut.word.sensitive.ErrorProneWordProcessor;
 import com.chestnut.word.service.IErrorProneWordService;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
@@ -91,7 +92,7 @@ public class ErrorProneWordServiceImpl extends ServiceImpl<ErrorProneWordMapper,
 	}
 
 	@Override
-	public void run(String... args) {
+	public void run(String @NonNull ... args) {
 		Map<String, String> errorProneWords = getErrorProneWords();
 		this.processor.addWords(errorProneWords);
 	}

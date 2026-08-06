@@ -15,6 +15,7 @@
  */
 package com.chestnut.system.controller;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
@@ -60,6 +61,7 @@ import java.util.Optional;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@XComment("{API.DOC.SYS.LOGIN.API}")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -82,6 +84,8 @@ public class SysLoginController extends BaseRestController {
     private final LoginSecurityConfigType loginSecurityConfigType;
 
     private final ISecurityConfigService securityConfigService;
+
+    @XComment("{API.DOC.SYS.LOGIN.CHECK_USERNAME}")
     @GetMapping("/checkUsername")
     public R<?> checkUsername(@RequestParam @NotBlank String username) {
         // 先校验用户名
@@ -108,12 +112,15 @@ public class SysLoginController extends BaseRestController {
 	 * @param loginBody 登录信息
 	 * @return 结果
 	 */
+    @XComment("{API.DOC.SYS.LOGIN.LOGIN}")
 	@PostMapping("/login")
 	public R<?> login(@Validated @RequestBody LoginBody loginBody) {
 		// 生成令牌
 		String token = loginService.login(loginBody);
 		return R.ok(token);
 	}
+
+    @XComment("{API.DOC.SYS.LOGIN.LOGOUT}")
 	@PostMapping("/logout")
 	public R<?> logout() {
 		if (StpAdminUtil.isLogin()) {
@@ -138,6 +145,7 @@ public class SysLoginController extends BaseRestController {
 	 * 
 	 * @return 用户信息
 	 */
+    @XComment("{API.DOC.SYS.LOGIN.GET_INFO}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/getInfo")
 	public R<?> getInfo() {
@@ -171,6 +179,7 @@ public class SysLoginController extends BaseRestController {
 	 * 
 	 * @return 路由信息
 	 */
+    @XComment("{API.DOC.SYS.LOGIN.GET_ROUTERS}")
 	@Priv(type = AdminUserType.TYPE)
 	@GetMapping("/getRouters")
 	public R<?> getRouters() {
@@ -189,6 +198,7 @@ public class SysLoginController extends BaseRestController {
 		return R.ok(menuService.buildRouters(menus));
 	}
 
+    @XComment("{API.DOC.SYS.LOGIN.GET_LOGIN_CONFIG}")
     @GetMapping("/login/config")
     public R<?> getLoginConfig() {
         LoginConfig loginConfig = new LoginConfig();

@@ -25,6 +25,7 @@ import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.CmsRestController;
+import com.chestnut.search.SearchConsts;
 import com.chestnut.search.domain.SearchLog;
 import com.chestnut.search.service.ISearchLogService;
 import com.chestnut.system.security.AdminUserType;
@@ -45,7 +46,7 @@ public class CMSSearchLogController extends CmsRestController {
 	private final ISearchLogService searchLogService;
 	
 	@XComment("{API.DOC.CMS.SEARCH.LOG.GET_LIST}")
-	@Priv(type = AdminUserType.TYPE)
+	@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.LOG_VIEW)
 	@GetMapping
 	public R<TableData<SearchLog>> getPageList(@RequestParam(required = false) String query) {
 		PageRequest pr = this.getPageRequest();

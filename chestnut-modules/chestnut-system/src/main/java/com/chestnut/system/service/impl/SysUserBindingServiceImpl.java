@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.system.domain.SysUserBinding;

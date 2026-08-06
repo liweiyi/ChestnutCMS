@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.*;
 import com.chestnut.system.domain.SysLogininfor;
@@ -60,15 +60,14 @@ public class SysLogininforServiceImpl extends ServiceImpl<SysLogininforMapper, S
 		final String ip = ServletUtils.getIpAddr(ServletUtils.getRequest());
 		asyncTaskManager.execute(() -> {
 			// 打印信息到日志
-			StringBuilder s = new StringBuilder();
-			s.append("[").append(ip).append("]");
-			s.append("[type:").append(userType).append("]");
-			s.append("[uid:").append(userId).append("]");
-			s.append("[uname:").append(username).append("]");
-			s.append("[").append(logType).append("]");
-			s.append("[").append(status).append("]");
-			s.append("[").append(message).append("]");
-			logger.info(s.toString(), args);
+            String s = "[" + ip + "]" +
+                    "[type:" + userType + "]" +
+                    "[uid:" + userId + "]" +
+                    "[uname:" + username + "]" +
+                    "[" + logType + "]" +
+                    "[" + status + "]" +
+                    "[" + message + "]";
+			logger.info(s, args);
 			// 获取客户端操作系统
 			String os = userAgent.getOperatingSystem().getName();
 			// 获取客户端浏览器

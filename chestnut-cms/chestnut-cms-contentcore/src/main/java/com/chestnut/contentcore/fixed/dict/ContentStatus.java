@@ -45,6 +45,12 @@ public class ContentStatus extends FixedDictType {
 
 	public static final String EDITING = "60"; // 重新编辑
 
+	public static final String FLOWING = "80"; // 审批中
+
+	public static final String Passed = "81"; // 审批通过
+
+	public static final String Rejected = "82"; // 审批不通过
+
 	private static final ISysDictTypeService dictTypeService = SpringUtils.getBean(ISysDictTypeService.class);
 
 	public ContentStatus() {
@@ -54,6 +60,9 @@ public class ContentStatus extends FixedDictType {
 		super.addDictData("{DICT." + TYPE + "." + PUBLISHED + "}", PUBLISHED, 3);
 		super.addDictData("{DICT." + TYPE + "." + OFFLINE + "}", OFFLINE, 4);
 		super.addDictData("{DICT." + TYPE + "." + EDITING + "}", EDITING, 5);
+		super.addDictData("{DICT." + TYPE + "." + FLOWING + "}", FLOWING, 6);
+		super.addDictData("{DICT." + TYPE + "." + Passed + "}", Passed, 7);
+		super.addDictData("{DICT." + TYPE + "." + Rejected + "}", Rejected, 8);
 	}
 
 	public static boolean isDraft(String status) {
@@ -76,11 +85,23 @@ public class ContentStatus extends FixedDictType {
 		return OFFLINE.equals(v);
 	}
 
+	public static boolean isFlowing(String v) {
+		return FLOWING.equals(v);
+	}
+
+	public static boolean isPassed(String status) {
+		return Passed.equals(status);
+	}
+
+	public static boolean isRejected(String status) {
+		return Rejected.equals(status);
+	}
+
 	public static <T> void decode(List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {
 		dictTypeService.decode(TYPE, list, getter, setter);
 	}
 
 	public static List<String> all() {
-		return List.of(DRAFT, TO_PUBLISHED, PUBLISHED, OFFLINE, EDITING);
+		return List.of(DRAFT, TO_PUBLISHED, PUBLISHED, OFFLINE, EDITING, FLOWING, Passed, Rejected);
 	}
 }

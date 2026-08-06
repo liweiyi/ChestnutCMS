@@ -53,6 +53,13 @@ public interface IMetaModelType {
     String getDefaultTable();
 
     /**
+     * 默认共享数据表对应的实体类型
+     */
+    default Class<? extends BaseModelData> getDefaultDataClass() {
+        throw new UnsupportedOperationException("Default data class is not configured for meta model type: " + getType());
+    }
+
+    /**
      * 模型数据表固定字段
      */
     List<MetaModelField> getFixedFields();

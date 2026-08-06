@@ -29,6 +29,7 @@ import com.chestnut.system.fixed.config.BackendContext;
 import freemarker.cache.FileTemplateLoader;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -69,7 +70,7 @@ public class CMSConfig implements WebMvcConfigurer {
 		if (StringUtils.isEmpty(RESOURCE_ROOT)) {
 			RESOURCE_ROOT = SpringUtils.getAppParentDirectory() + "/wwwroot_release/";
 		}
-		RESOURCE_ROOT = StringUtils.appendIfMissing(FileExUtils.normalizePath(RESOURCE_ROOT), "/");
+		RESOURCE_ROOT = Strings.CS.appendIfMissing(FileExUtils.normalizePath(RESOURCE_ROOT), "/");
 		FileExUtils.mkdirs(RESOURCE_ROOT);
 		properties.setResourceRoot(RESOURCE_ROOT);
         log.info("ResourceRoot: {}", RESOURCE_ROOT);
@@ -104,7 +105,7 @@ public class CMSConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		/** 本地文件上传路径 */
+		// Local file upload directory
 		registry.addResourceHandler(ContentCoreConsts.RESOURCE_PREVIEW_PREFIX + "**")
 				.addResourceLocations("file:" + getResourceRoot());
 	}

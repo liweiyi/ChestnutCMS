@@ -20,6 +20,7 @@ import com.chestnut.common.captcha.*;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.dto.CheckCaptchaRequest;
@@ -76,7 +77,11 @@ public class CaptchaController extends BaseRestController {
                 throw CaptchaErrorCode.CAPTCHA_LIMIT.exception();
             }
         }
-		Object o = captchaType.create(new CaptchaData(config.getCaptchaType(), token));
+		CaptchaData captchaData = new CaptchaData(config.getCaptchaType(), token);
+		captchaData.setProperties(JacksonUtils.objectNode()
+				.put("messageConfigId", Objects.requireNonNullElse(config.getCaptchaMessageConfigId(), 0L))
+				.put("messageTemplateId", Objects.requireNonNullElse(config.getCaptchaMessageTemplateId(), 0L)));
+		Object o = captchaType.create(captchaData);
 		return R.ok(o);
 	}
 

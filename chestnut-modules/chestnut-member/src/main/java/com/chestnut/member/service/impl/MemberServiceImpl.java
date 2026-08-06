@@ -16,7 +16,7 @@
 package com.chestnut.member.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.utils.Assert;
@@ -45,6 +45,8 @@ import com.chestnut.system.service.ISecurityConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
@@ -115,7 +117,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		member.updateBy(req.getOperator().getUsername());
 		this.updateById(member);
 		// 变更未封禁或锁定状态时注销登录状态
-		if (!StringUtils.equals(member.getStatus(), oldStatus)
+		if (!Strings.CS.equals(member.getStatus(), oldStatus)
 				&& (MemberStatus.isDisbale(member.getStatus()) || UserStatus.isLocked(member.getStatus()))) {
 			StpAdminUtil.logout(member.getUserId());
 		}
@@ -197,7 +199,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 	private final List<IMemberStatData> memberDataStats;
 
 	@Override
-	public void run(String... args) {
+	public void run(String @NonNull ... args) {
 		Field[] declaredFields = MemberStatData.class.getDeclaredFields();
 		List<String> fieldNames = Stream.of(declaredFields).map(Field::getName).toList();
 		for (IMemberStatData mds : memberDataStats) {

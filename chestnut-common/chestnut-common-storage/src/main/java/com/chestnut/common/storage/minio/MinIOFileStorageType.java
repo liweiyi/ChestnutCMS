@@ -147,7 +147,7 @@ public class MinIOFileStorageType implements IFileStorageType {
 			OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(),
 					args.getAccessSecret());
 			PutObjectArgs putObjectArgs = PutObjectArgs.builder().bucket(args.getBucket()).object(args.getPath())
-					.contentType(mimetype).stream(args.getInputStream(), args.getInputStream().available(), -1).build();
+					.contentType(mimetype).stream(args.getInputStream(), (long) args.getInputStream().available(), -1L).build();
 			client.getClient().putObject(putObjectArgs);
 		} catch (Exception e) {
 			throw new FileStorageException(e);
@@ -170,11 +170,9 @@ public class MinIOFileStorageType implements IFileStorageType {
 	@Override
 	public void copy(StorageCopyArgs args) {
 		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(), args.getAccessSecret());
-		ComposeSource composeSource = new ComposeSource(
-				CopySource.builder().bucket(args.getBucket()).object(args.getSourcePath()).build());
-		ComposeObjectArgs objectArgs = ComposeObjectArgs.builder().bucket(args.getBucket())
-				.sources(List.of(composeSource)).object(args.getDestPath()).build();
-		CopyObjectArgs copyArgs = new CopyObjectArgs(objectArgs);
+		SourceObject sourceObject = SourceObject.builder().bucket(args.getBucket()).object(args.getSourcePath()).build();
+		CopyObjectArgs copyArgs = CopyObjectArgs.builder().bucket(args.getBucket()).object(args.getDestPath())
+				.source(sourceObject).build();
 		try {
 			client.getClient().copyObject(copyArgs);
 		} catch (Exception e) {
@@ -185,11 +183,9 @@ public class MinIOFileStorageType implements IFileStorageType {
 	@Override
 	public void move(StorageMoveArgs args) {
 		OSSClient<MinioClient> client = this.getClient(args.getEndpoint(), args.getRegion(), args.getAccessKey(), args.getAccessSecret());
-		ComposeSource composeSource = new ComposeSource(
-				CopySource.builder().bucket(args.getBucket()).object(args.getSourcePath()).build());
-		ComposeObjectArgs objectArgs = ComposeObjectArgs.builder().bucket(args.getBucket())
-				.sources(List.of(composeSource)).object(args.getDestPath()).build();
-		CopyObjectArgs copyArgs = new CopyObjectArgs(objectArgs);
+		SourceObject sourceObject = SourceObject.builder().bucket(args.getBucket()).object(args.getSourcePath()).build();
+		CopyObjectArgs copyArgs = CopyObjectArgs.builder().bucket(args.getBucket()).object(args.getDestPath())
+				.source(sourceObject).build();
 		try {
 			client.getClient().copyObject(copyArgs);
 		} catch (Exception e) {

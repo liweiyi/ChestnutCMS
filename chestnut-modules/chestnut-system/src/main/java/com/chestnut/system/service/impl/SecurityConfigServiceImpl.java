@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.captcha.CaptchaService;
 import com.chestnut.common.captcha.ICaptchaType;
 import com.chestnut.common.exception.CommonErrorCode;

@@ -107,7 +107,17 @@ public enum MemberErrorCode implements ErrorCode {
 	/**
 	 * 不能关注自己
 	 */
-	CAN_NOT_FOLLOW_SELF;
+	CAN_NOT_FOLLOW_SELF,
+
+	/**
+	 * 账号已存在
+	 */
+	ACCOUNT_EXISTS,
+
+	/**
+	 * 会员配置值无效
+	 */
+	INVALID_CONFIG_VALUE;
 	
 	@Override
 	public String value() {

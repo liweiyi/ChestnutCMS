@@ -19,7 +19,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_IndexTemplate;
@@ -27,6 +27,7 @@ import com.chestnut.contentcore.core.impl.PublishPipeProp_SiteUrl;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_StaticSuffix;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.Strings;
 
 import java.io.Serial;
 import java.util.HashMap;
@@ -122,13 +123,13 @@ public class CmsSite extends BaseEntity {
     /**
      * 发布通道配置
      */
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private Map<String, Map<String, Object>> publishPipeProps;
 
     /**
      * 扩展属性配置
      */
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private Map<String, String> configProps;
 
 	public Map<String, String> getConfigProps() {
@@ -156,7 +157,7 @@ public class CmsSite extends BaseEntity {
     public String getUrl(String publishPipeCode) {
 		String ppUrl = PublishPipeProp_SiteUrl.getValue(publishPipeCode, this.publishPipeProps);
         if (StringUtils.isNotBlank(ppUrl)) {
-            ppUrl = StringUtils.appendIfMissing(ppUrl, "/");
+            ppUrl = Strings.CS.appendIfMissing(ppUrl, "/");
         }
 		return Objects.requireNonNullElse(ppUrl, StringUtils.EMPTY);
     }

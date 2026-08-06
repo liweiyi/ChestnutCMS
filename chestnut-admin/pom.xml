@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>chestnut</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.13</version>
+		<version>1.6.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>jar</packaging>
@@ -21,10 +21,15 @@
 			<artifactId>spring-boot-devtools</artifactId>
 			<optional>true</optional> <!-- 表示依赖不会传递 -->
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-properties-migrator</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>  
         </dependency>
         
@@ -33,12 +38,6 @@
 			<groupId>com.chestnut</groupId>
 			<artifactId>chestnut-system</artifactId>
 		</dependency>
-
-		<!-- 代码生成
-		<dependency>
-			<groupId>com.chestnut</groupId>
-			<artifactId>chestnut-generator</artifactId>
-		</dependency> -->
 
 		<!-- 元数据模块 -->
 		<dependency>
@@ -160,6 +159,10 @@
             <groupId>com.chestnut</groupId>
             <artifactId>chestnut-cms-cdn</artifactId>
         </dependency>
+		<dependency>
+			<groupId>com.chestnut</groupId>
+			<artifactId>chestnut-message</artifactId>
+		</dependency>
 
 	</dependencies>
 

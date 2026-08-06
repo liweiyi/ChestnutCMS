@@ -15,7 +15,7 @@
  */
 package com.chestnut.cloud.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.cloud.domain.CcCloudConfig;
 import com.chestnut.cloud.domain.dto.CreateCloudConfigRequest;
 import com.chestnut.cloud.domain.dto.UpdateCloudConfigRequest;

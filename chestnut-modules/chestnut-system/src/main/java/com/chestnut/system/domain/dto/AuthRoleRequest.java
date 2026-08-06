@@ -25,14 +25,14 @@ import java.util.List;
 
 @Getter
 @Setter
-@XComment("获取用户角色请求参数")
+@XComment("{CC.SYS.USER.AUTH_ROLE_REQUEST}")
 public class AuthRoleRequest {
 
-	@XComment("用户ID")
+	@XComment("{CC.SYS.USER.USER_ID}")
 	@LongId
 	private Long userId;
 
-	@XComment("角色ID列表")
+	@XComment("{CC.SYS.USER.ROLE_IDS}")
 	@NotEmpty
 	private List<Long> roleIds;
 }

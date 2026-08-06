@@ -15,7 +15,7 @@
  */
 package com.chestnut.xmodel.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.xmodel.domain.XModelField;
 import com.chestnut.xmodel.dto.CreateXModelFieldRequest;
 import com.chestnut.xmodel.dto.UpdateXModelFieldRequest;

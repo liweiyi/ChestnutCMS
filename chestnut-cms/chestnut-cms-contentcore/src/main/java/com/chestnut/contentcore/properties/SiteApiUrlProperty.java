@@ -21,6 +21,7 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.fixed.config.SiteApiUrl;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -76,7 +77,7 @@ public class SiteApiUrlProperty implements IProperty {
 			apiUrl = site.getUrl(publishPipeCode);
 		}
 		if (StringUtils.isNotEmpty(apiUrl)) {
-			apiUrl = StringUtils.appendIfMissing(apiUrl, "/");
+			apiUrl = Strings.CS.appendIfMissing(apiUrl, "/");
 		}
 		return apiUrl;
 	}

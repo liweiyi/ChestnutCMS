@@ -14,6 +14,20 @@ let downloadLoadingInstance
 // 是否显示重新登录
 export let isRelogin = { show: false }
 
+// 防重复提交：以 "method:url" 为 key，存储每个接口最近一次请求的 data 和 time
+// 容量上限 100，超出时 FIFO 移除最旧的记录
+// data 超过 DATA_COMPARE_LIMIT 时不存储内容，仅凭 method+url 判重
+const PENDING_REQUEST_MAX = 100
+const DATA_COMPARE_LIMIT = 100 * 1024 // 100KB
+const pendingRequestMap = new Map()
+const buildRequestKey = (config) => `${config.method}:${config.url}`
+const setPendingRequest = (key, value) => {
+  if (!pendingRequestMap.has(key) && pendingRequestMap.size >= PENDING_REQUEST_MAX) {
+    pendingRequestMap.delete(pendingRequestMap.keys().next().value)
+  }
+  pendingRequestMap.set(key, value)
+}
+
 axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
 // 创建axios实例
 const service = axios.create({
@@ -43,33 +57,21 @@ service.interceptors.request.use(config => {
     config.url = url
   }
   if (!ignoreRepeatSubmit && (config.method === 'post' || config.method === 'put')) {
-    const requestObj = {
-      url: config.url,
-      data: typeof config.data === 'object' ? JSON.stringify(config.data) : config.data,
-      time: new Date().getTime()
-    }
-    const requestSize = Object.keys(JSON.stringify(requestObj)).length // 请求数据大小
-    const limitSize = 5 * 1024 * 1024 // 限制存放数据5M
-    if (requestSize >= limitSize) {
-      console.warn(`[${config.url}]: ` + '请求数据大小超出允许的5M限制，无法进行防重复提交验证。')
-      return config
-    }
-    const sessionObj = cache.session.getJSON('sessionObj')
-    if (sessionObj === undefined || sessionObj === null || sessionObj === '') {
-      cache.session.setJSON('sessionObj', requestObj)
-    } else {
-      const s_url = sessionObj.url                // 请求地址
-      const s_data = sessionObj.data              // 请求数据
-      const s_time = sessionObj.time              // 请求时间
-      const interval = 1000                       // 间隔时间(ms)，小于此时间视为重复提交
-      if (s_data === requestObj.data && requestObj.time - s_time < interval && s_url === requestObj.url) {
-        const message = i18n.global.t('Common.RepeatSubmit');
-        console.warn(`[${s_url}]: ` + message)
+    const dataStr = typeof config.data === 'object' ? JSON.stringify(config.data) : config.data
+    const key = buildRequestKey(config)
+    const prev = pendingRequestMap.get(key)
+    const interval = 1000 // 间隔时间(ms)，小于此时间视为重复提交
+    if (prev && Date.now() - prev.time < interval) {
+      // prev.data 为 null 表示上次是大数据请求，仅凭 method+url 判重；否则需数据内容也一致
+      const dataMatch = prev.data === null || prev.data === dataStr
+      if (dataMatch) {
+        const message = i18n.global.t('Common.RepeatSubmit')
+        console.warn(`[${config.url}]: ` + message)
         return Promise.reject(new Error(message))
-      } else {
-        cache.session.setJSON('sessionObj', requestObj)
       }
     }
+    const isLargeData = dataStr && dataStr.length >= DATA_COMPARE_LIMIT
+    setPendingRequest(key, { data: isLargeData ? null : dataStr, time: Date.now() })
   }
   return config
 }, error => {
@@ -79,6 +81,7 @@ service.interceptors.request.use(config => {
 
 // 响应拦截器
 service.interceptors.response.use(res => {
+    pendingRequestMap.delete(buildRequestKey(res.config))
     // 未设置状态码则默认成功状态
     const code = res.data.code || 200
     // 获取错误信息
@@ -124,6 +127,9 @@ service.interceptors.response.use(res => {
     }
   },
   error => {
+    if (error.config) {
+      pendingRequestMap.delete(buildRequestKey(error.config))
+    }
     console.log('err' + error)
     let { message } = error
     if (message == "Network Error") {

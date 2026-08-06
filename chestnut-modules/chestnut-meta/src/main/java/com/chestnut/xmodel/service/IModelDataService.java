@@ -16,7 +16,7 @@
 package com.chestnut.xmodel.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.chestnut.common.db.util.SqlBuilder;
+import com.chestnut.xmodel.core.MetaModelDataQuery;
 
 import java.util.List;
 import java.util.Map;
@@ -66,8 +66,8 @@ public interface IModelDataService {
 	 */
 	void deleteModelDataByPkValue(Long modeId, List<Map<String, Object>> pkValues);
 
-    List<Map<String, Object>> selectModelDataList(Long modelId, Consumer<SqlBuilder> consumer);
+    List<Map<String, Object>> selectModelDataList(Long modelId, Consumer<MetaModelDataQuery> consumer);
 
 	IPage<Map<String, Object>> selectModelDataPage(Long modelId, IPage<Map<String, Object>> page,
-												   Consumer<SqlBuilder> consumer);
+											   Consumer<MetaModelDataQuery> consumer);
 }

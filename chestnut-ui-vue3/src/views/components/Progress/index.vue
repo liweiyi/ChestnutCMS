@@ -118,6 +118,11 @@ const getProgressInfo = () => {
     } else {
 
     }
+  }).catch(error => {
+    clearInterval(timer.value);
+    percent.value = 100;
+    progressStatus.value = "exception"
+    errMessages.value.push(error.message);
   });
 }
 

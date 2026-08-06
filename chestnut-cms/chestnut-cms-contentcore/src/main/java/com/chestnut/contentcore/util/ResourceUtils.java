@@ -23,6 +23,7 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.properties.FileStorageArgsProperty;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -79,7 +80,7 @@ public class ResourceUtils {
         }
         FileStorageArgsProperty.FileStorageArgs fileStorageArgs = FileStorageArgsProperty.getValue(site.getConfigProps());
         if (fileStorageArgs != null && StringUtils.isNotEmpty(fileStorageArgs.getDomain())) {
-            return StringUtils.appendIfMissing(fileStorageArgs.getDomain(), "/");
+            return Strings.CS.appendIfMissing(fileStorageArgs.getDomain(), "/");
         }
         // 无法获取到对象存储访问地址时默认使用站点资源域名
         return site.getResourceUrl();

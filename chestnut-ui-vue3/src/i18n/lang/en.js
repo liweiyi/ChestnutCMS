@@ -1,7 +1,7 @@
 const en = {
   APP: {
     TITLE: 'ChestnutCMS',
-    Copyright: 'Copyright © 2022-2026 ChestnutCMS. All Rights Reserved.'
+    Copyright: 'Copyright © 2022-2026 ChestnutCMS (1000mz.com) All Rights Reserved.'
   },
   Common: {
     Search: 'Search',
@@ -46,11 +46,13 @@ const en = {
     RefreshCache: 'Refresh Cache',
     Clean: "Clean",
     View: "View",
+    Preview: "Preview",
     Show: "Show",
     Hide: "Hide",
     Move: "Move",
     Copy: "Copy",
     Sort: "Sort",
+    Update: "Update",
     Details: "Details",
     Remark: 'Remark',
     CreateTime: 'Create Time',
@@ -60,6 +62,7 @@ const en = {
     Operation: 'Operation',
     Select: 'Select',
     Upload: 'Upload',
+    Download: 'Download',
     RowNo: 'No.',
     ExpandOrCollapse: 'Expand / Collapse',
     Expand: 'Expand',
@@ -69,6 +72,7 @@ const en = {
     TreeLinkage: 'Linkage',
     MoveUp: "Move Up",
     MoveDown: "Move Down",
+    Back: 'Back',
     ConfirmDelete: 'Are you sure to delete?',
     ConfirmClean: 'Are you sure to clean? Cleaned data cannot be recovered, please be careful.',
     Today: 'Today',
@@ -99,6 +103,12 @@ const en = {
     Unknown: "Unknown",
     Recover: "Recover",
     InputPassword: "Input password",
+    SelectedCount: "Selected {0} items",
+    FilePreview: {
+      Unsupported: "This file type does not support online preview",
+      NoSrc: "No previewable file found",
+      OfficeUnsupported: "This Office format does not support online preview (only .docx/.xlsx/.xls/.pptx are supported). Please download it."
+    },
     Unit: {
       Year: "yr",
       Month: "mo",
@@ -574,9 +584,6 @@ const en = {
       ConfirmUnlock: 'Are you sure to unlock user: {0}?',
       UnlockSuccess: 'Unlock user "{0}" success.'
     },
-    GenCode: {
-      EditGenConfig: 'Edit Gen Config'
-    },
     Security: {
       Basic: "Basic Information",
       Name: "Name",
@@ -611,6 +618,8 @@ const en = {
       CaptchaType: "Captcha Type",
       CaptchaExpireSeconds: "Captcha Expire Seconds",
       CaptchaRetryDuration: "Captcha Retry Duration",
+      CaptchaMessageConfigId: "SMS Captcha Message Config ID",
+      CaptchaMessageTemplateId: "SMS Captcha Message Template ID",
       BizConfigCard: "Business Security Configuration",
       SecondaryVerifications: "Secondary Verification APIs",
       SecondaryVerificationsSearch: "Search by path",
@@ -1155,6 +1164,8 @@ const en = {
       CopyContentTip: "Depe Copy: independently of the source.",
       MappingContent: "Mapping",
       MappingContentTip: "Mapping: only basic content, the extend content is from source.",
+      CrossSiteCopyTip: "Cross-site copy: fully copies content to another site and records the source site.",
+      SelectTargetSite: "Please select a target site",
       SortUp: "MoveUp",
       SortDown: "MoveDown",
       Merge: "Merge",
@@ -1186,7 +1197,8 @@ const en = {
         HotWordGroup: "Hot Word Group",
         HotWordMaxReplaceCount: "Replace Limit",
         HotWordMaxReplaceCountTip: "The max replaced number in each article, with 0 indicating no limit.",
-        EnableContribute: "Enable Contribute"
+        EnableContribute: "Enable Contribute",
+        ContentWorkflow: "Content Workflow"
       }
     },
     Content: {
@@ -1220,6 +1232,9 @@ const en = {
       SaveUploadWordFile: "Save uploaded Word document.",
       CopyType: "Copy Type",
       CopyId: "Source ID",
+      CopySite: "Source Site",
+      CopyCatalog: "Source Catalog",
+      CopyContent: "Source Content",
       StatusOption: {
         Draft: "Draft",
         ToPublish: "To Publish",
@@ -1279,6 +1294,7 @@ const en = {
       CloseContentEditorTip: "Closing the page will lose unsaved content. Are you sure to close?",
       ExtendConfig: "Extend",
       ExtendTemplate: "Extend Template",
+      ContentPriv: "View Permission",
       ViewCount: "Views",
       FavoriteCount: "Favorities",
       LikeCount: "Likes",
@@ -1295,6 +1311,39 @@ const en = {
       SaveNewVersion: "Save New Version",
       LatestVersion: "Latest Version",
       VersionDiff: "Version Diff",
+      Workflow: {
+        Title: "Workflow",
+        NoRecord: "No approval workflow record",
+        NoProgress: "No workflow task",
+        ProcessName: "Process",
+        Starter: "Starter",
+        StartTime: "Start Time",
+        EndTime: "End Time",
+        Progress: "Approval Progress",
+        Assignee: "Assignee",
+        CompletedAt: "Completed At",
+        Comment: "Comment",
+        Running: "Running",
+        Processing: "Pending",
+        Approved: "Approved",
+        Rejected: "Rejected",
+        Revoked: "Revoked",
+        Revoke: "Revoke",
+        RevokeConfirm: "Revoking restores the content to editing. Revoke this approval process?",
+        RevokeSuccess: "Approval process revoked",
+        Urge: "Urge",
+        Urged: "Urged",
+        UrgeConfirm: "Urge the current approval process?",
+        UrgeSuccess: "The approval process was urged",
+        Submit: "Submit for Approval",
+        SubmitDialogTitle: "Submit Content for Approval",
+        SubmitTip: "After submission, the content cannot be edited until approval finishes or is revoked. Choose what happens after approval.",
+        ActionAfterApproval: "After approval",
+        NoAction: "Mark as approved only",
+        ToPublishAfterApproval: "Set to pending publication",
+        PublishAfterApproval: "Publish automatically",
+        SubmitSuccess: "Content submitted for approval"
+      },
       VersionDiffTip: {
         Replace: "Replace",
         Add: "Add",
@@ -1471,6 +1520,7 @@ const en = {
       AcceptSize: "Accept size: {0}",
       AddDialogTitle: "Add Resource",
       EditDialogTitle: "Eidt Resource",
+      PreviewTitle: "Resource Preview",
       FileTypeErrMsg: "The file format is incorrect.",
       SelectorTitle: "Resources",
       LocalUpload: "Local Upload",
@@ -1952,6 +2002,15 @@ const en = {
         RoleName: "Please input role name",
         RoleKey: "Please input role key"
       }
+    },
+    Config: {
+      Title: "Member Config",
+      Tip: "Member business settings are stored in the database. Create message configs and templates in Message Management before selecting them here.",
+      ConfigPlaceholder: "Select a message config",
+      TemplatePlaceholder: "Select a message template",
+      SelectConfigFirst: "Select a message config first",
+      MissingConfig: "The previous message config no longer exists. Select another one.",
+      MissingTemplate: "The previous template is missing or incompatible. Select another one."
     }
   },
   MetaModel: {
@@ -2047,8 +2106,77 @@ const en = {
       }
     }
   },
+  Message: {
+    Config: {
+      Name: "Name",
+      Type: "Type",
+      Status: "Status",
+      ConfigJson: "Config Details",
+      AddTitle: "Add Message Config",
+      EditTitle: "Edit Message Config",
+      SelectorTitle: "Select Message Config",
+      TestSend: "Test Send",
+      Placehoder: {
+        Query: "Input name"
+      },
+      TestTitle: "Test Title",
+      TestContent: "Test Content",
+      SMS: {
+        TestPhone: "Test Phone Number",
+        TestTemplateId: "Test Template ID",
+        TestTemplateParams: "Test Template Parameters",
+        Tencent: {
+          SecretId: "SecretId",
+          SecretKey: "SecretKey",
+          SdkAppId: "SdkAppId",
+          SignName: "SignName",
+          Region: "Region"
+        }
+      },
+      Email: {
+        Host: "Host",
+        Port: "Port",
+        Secure: "Secure",
+        User: "User",
+        Password: "Password",
+        From: "From",
+        TestTo: "Test Recipient",
+      },
+      DingTalk: {
+        Webhook: "Webhook",
+        Secret: "Secret",
+      },
+      Feishu: {
+        Webhook: "Webhook",
+        Secret: "Secret",
+      },
+    },
+    Template: {
+      Type: "Message Type",
+      Name: "Template Name",
+      Title: "Message Title",
+      Content: "Message Content",
+      AddTitle: "Add Message Template",
+      EditTitle: "Edit Message Template",
+      SelectorTitle: "Select Message Template"
+    },
+    Event: {
+      Name: "Event Name",
+      Key: "Event Key",
+      Status: "Status",
+      NotifyConfig: "Notification Config",
+      Template: "Template",
+      SMSTemplateId: "SMS Template ID",
+      AddTitle: "Add Event",
+      EditTitle: "Edit Event",
+      TestEventParams: "Test Event Parameters",
+      InnerEventSelectorTitle: "Built-in Event Selection",
+      InnerEventSelectorQueryPlaceholder: "Search by ID/name",
+    }
+  },
   Flowable: {
     Category: {
+      TreeRoot: "Workflow Category",
       AddCategory: "Add Category",
       CategoryNamePlaceholder: "Input category name...",
       SortUp: "Move Up",
@@ -2072,6 +2200,59 @@ const en = {
         ModelKey: "Input model key",
         ModelName: "Input model name"
       }
+    },
+    Template: {
+      Name: "Workflow Templates",
+      Fixed: "Fixed Templates",
+      Custom: "Custom Templates",
+      AddByTemplate: "Create from Template",
+      Convert: "Save as Template",
+      CreateProcess: "Create Process"
+    },
+    History: {
+      Title: "Workflow History",
+      Empty: "No workflow task",
+      StartNode: "Workflow Started",
+      EndNode: "Workflow Ended",
+      Starter: "Starter",
+      Assignee: "Assignee",
+      PendingAssignee: "Pending Assignee",
+      CcUsers: "Recipients",
+      CopiedAt: "Copied At",
+      CcCompleted: "Copied",
+      UserNotFound: "Error: User does not exist",
+      Role: "Role",
+      Dept: "Department",
+      CompletedAt: "Completed At",
+      Comment: "Comment"
+    },
+    Comment: {
+      Title: "Process Comments",
+      Empty: "No comments",
+      Placeholder: "Enter a comment",
+      Submit: "Submit Comment",
+      Required: "Comment content is required",
+      Success: "Comment submitted"
+    },
+    Action: {
+      Revoke: "Revoke",
+      RevokeConfirm: "Revoke this workflow?",
+      RevokeSuccess: "Workflow revoked",
+      Urge: "Urge",
+      UrgeConfirm: "Urge this workflow?",
+      UrgeSuccess: "Workflow urged",
+      AdminCancel: "Force Revoke",
+      AdminCancelConfirm: "Force revoke this workflow? This action ignores the workflow revocation setting.",
+      AdminCancelSuccess: "Workflow force revoked"
+    },
+    Dashboard: {
+      TodoTitle: "Pending Tasks",
+      ViewAll: "View All",
+      Empty: "No pending task",
+      TaskName: "Task",
+      ProcessName: "Process",
+      Starter: "Starter",
+      ArrivedAt: "Arrived At"
     }
   },
   GroovyScript: {
@@ -2080,32 +2261,89 @@ const en = {
     Name: "Name"
   },
   Deploy: {
-    Cert: {
-      Domain: "Domain",
-      RR: "RR",
-      Issuer: "Authority",
-      IssueTime: "Issue Time",
+    Domain: {
+      Management: "Domain Management",
+      CertList: "Certificate List",
+      ApplyCert: "Apply Certificate",
+      ApplyCertTitle: "Apply SSL Certificate",
+      CertName: "Certificate Name",
+      ApplyLog: "Apply Log",
+      NoApplyLog: "No apply log",
+      CertHolder: "Certificate Holder",
+      ScanLog: "Scan Log",
+      Scan: "Scan",
+      HostRecord: "Host Record",
+      HostRecordPlaceholder: "e.g. * for wildcard, www for www subdomain",
+      RecordValue: "Record Value",
+      RecordType: "Record Type",
+      Result: "Result",
+      FailReason: "Fail Reason",
       ExpireTime: "Expire Time",
-      Apply: "Apply",
-      Auth: "Authorizate",
-      DownloadCrt: "Download",
+      AddDomain: "Add Domain",
+      EditDomain: "Edit Domain",
+      Domain: "Domain",
+      DomainPlaceholder: "Enter the primary domain, e.g. example.com",
+      CloudConfig: "Cloud Account",
+      CloudConfigPlaceholder: "Select a cloud account",
+      CloudConfigHint: "Used to automatically write ACME DNS-01 TXT verification records",
+      AssociatedDomain: "Associated Domain",
+      AddCert: "Add Certificate",
+      EditCert: "Edit Certificate",
+      CertStandard: "Certificate Standard",
+      InternationalStandard: "International Standard",
+      SM2Standard: "SM2 Standard",
+      CertContent: "Certificate Content",
+      PrivateKeyContent: "Private Key Content",
+      EncryptedCertificate: "Encrypted Certificate",
+      EncryptedPrivateKey: "Encrypted Private Key",
+      CertContentAndPrivateKeyUploaded: "Uploaded certificate and private key will not be displayed again and cannot be edited.",
+      Issuer: "Certificate Authority",
       Country: "Country",
-      State: "State",
-      Locality: "Locality",
+      State: "State/Province",
+      City: "City",
       Organization: "Organization",
-      AuthChallenge: "Http-01 Challenge",
-      DownloadHttp01File: "Dwonload http-01 challenge file.",
-      AddDomain: "Add domain",
-      EditDomain: "Edit domain",
-      ConfirmApply: "Are you sure to apply for the certificate?",
-      Applying: "Waiting for certificate application...",
-      Authroizating: "Authorizating...",
-      Servers: "Synchronize to server",
-      SyncToServer: "Sync",
-      Syncing: "Syncing certificate to servers...",
-      Placeholder: {
-        Domain: "Input domain..."
-      }
+      AddHolder: "Add Holder",
+      EditHolder: "Edit Holder",
+      HolderType: "Holder Type",
+      MarkManualSuccess: "Mark Manual Success",
+      LastSyncResult: "Last Sync Result",
+      ServerHost: "Server Host",
+      ServerPort: "Server Port",
+      ServerUser: "Server User",
+      LoginPrivateKey: "Login Private Key",
+      LoginPrivateKeyPlaceholder: "Paste private key content only; masked as ****** when editing",
+      PrivateKeyPassword: "Private Key Password",
+      PrivateKeyPasswordPlaceholder: "Enter private key password",
+      LoginPassword: "Login Password",
+      LoginPasswordPlaceholder: "Enter login password",
+      CertificateFilePath: "Certificate File Path",
+      CertificateFilePathPlaceholder: "Enter certificate file path",
+      PrivateKeyFilePath: "Private Key File Path",
+      PrivateKeyFilePathPlaceholder: "Enter private key file path",
+      DifyDockerDir: "Dify Docker Directory",
+      DifyDockerDirPlaceholder: "Enter Dify Docker directory",
+      SecretId: "SecretId",
+      SecretKey: "SecretKey",
+      OldCertificateId: "Old Certificate ID",
+      ResourceType: "Resource Type",
+      ResourceTypeRegion: "Resource Type Region",
+      AccessKeyId: "AccessKeyId",
+      AccessKeySecret: "AccessKeySecret",
+      TencentCloudSsl: {
+        AddResourceType: "Add Resource Type",
+        ConfigJsonTip: "Configure Tencent Cloud SSL resource types and regions as JSON",
+        EmptyResourceConfig: "No resource type configuration",
+        Regions: "Regions",
+        AddRegion: "Add Region",
+        ResourceTypePlaceholder: "e.g. clb, cos",
+        RegionPlaceholder: "e.g. ap-guangzhou",
+        ResourceTypes: {
+          Clb: "CLB (Load Balancer)",
+          Cos: "COS (Object Storage)",
+          Waf: "WAF (Web Application Firewall)",
+          Apigateway: "APIGW (API Gateway)",
+        },
+      },
     },
     ServerMachine: {
       Name: "Server Name",
@@ -2219,6 +2457,68 @@ const en = {
         ProcessDef: 'Please select process definition',
         BusinessKey: 'Please enter business key',
         Title: 'Please enter title'
+      }
+    },
+    Status: {
+      Pending: 'Pending',
+      Approved: 'Approved',
+      Rejected: 'Rejected',
+      Canceled: 'Canceled',
+      Completed: 'Completed',
+      Failed: 'Failed'
+    },
+    Config: {
+      ConfigId: 'Config ID',
+      ConfigName: 'Config Name',
+      HandlerId: 'Handler',
+      WorkflowType: 'Engine Type',
+      ProcessDefId: 'Process Definition',
+      RequestUri: 'Request URI',
+      RequestMethod: 'Request Method',
+      Status: 'Status',
+      Dialog: {
+        Add: 'Add Workflow Config',
+        Edit: 'Edit Workflow Config'
+      },
+      Placeholder: {
+        ConfigName: 'Please enter config name',
+        HandlerId: 'Please select handler',
+        WorkflowType: 'Please select engine type',
+        ProcessDefId: 'Please select process definition',
+        RequestUri: 'Please enter request URI',
+        RequestMethod: 'Please select request method',
+        Status: 'Please select status'
+      },
+      ConfirmDelete: 'Are you sure to delete the workflow config "{0}"?'
+    },
+    Record: {
+      RecordId: 'Record ID',
+      ConfigId: 'Config ID',
+      HandlerId: 'Handler',
+      WorkflowType: 'Engine Type',
+      ProcessDefId: 'Process Definition ID',
+      EngineInstanceId: 'Engine Instance ID',
+      Title: 'Title',
+      RequestUri: 'Request URI',
+      RequestMethod: 'Request Method',
+      RequestData: 'Request Data',
+      OperatorId: 'Operator ID',
+      OperatorName: 'Submitter',
+      OperatorDeptId: 'Operator Dept',
+      OperatorJson: 'Operator Info',
+      Status: 'Status',
+      SubmitTime: 'Submit Time',
+      FinishTime: 'Finish Time',
+      FailReason: 'Fail Reason',
+      CompleteResult: 'Result',
+      Detail: 'Record Detail',
+      Cancel: 'Cancel',
+      CancelSuccess: 'Canceled successfully',
+      OnlyMine: 'Mine only',
+      ConfirmCancel: 'Are you sure to cancel the workflow "{0}"?',
+      Placeholder: {
+        Status: 'Please select status',
+        HandlerId: 'Please select handler'
       }
     }
   },

@@ -15,7 +15,7 @@
  */
 package com.chestnut.word.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.word.domain.ErrorProneWord;
 import com.chestnut.word.domain.dto.CreateErrorProneWordRequest;
 import com.chestnut.word.domain.dto.UpdateErrorProneWordRequest;

@@ -15,7 +15,7 @@
  */
 package com.chestnut.advertisement.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.advertisement.AdSpacePageWidgetType;
 import com.chestnut.advertisement.IAdvertisementType;
 import com.chestnut.advertisement.cache.AdNameMonitoredCache;
@@ -38,6 +38,7 @@ import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.security.StpAdminUtil;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
@@ -192,7 +193,7 @@ public class AdvertisementServiceImpl extends ServiceImpl<CmsAdvertisementMapper
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
+	public void run(String @NonNull ... args) throws Exception {
 		this.list().forEach(this::updateCache);
 	}
 }

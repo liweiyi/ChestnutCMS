@@ -15,21 +15,28 @@
  */
 package com.chestnut.customform.controller;
 
+import cn.dev33.satoken.annotation.SaMode;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.security.web.TableData;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.perms.SitePermissionType;
+import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.customform.CmsCustomFormMetaModelType;
+import com.chestnut.customform.domain.CmsCustomForm;
 import com.chestnut.customform.permission.CustomFormPriv;
+import com.chestnut.customform.service.ICustomFormService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
 import com.chestnut.xmodel.core.IMetaControlType;
@@ -64,18 +71,24 @@ public class CustomFormDataController extends CmsRestController {
 
     private final IModelService modelService;
 
+    private final ICustomFormService customFormService;
+
     @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_GET_LIST}")
-    @Priv(type = AdminUserType.TYPE, value = CustomFormPriv.View)
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { CustomFormPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER },
+            mode = SaMode.AND
+    )
     @GetMapping("/list")
     public R<TableData<Map<String, Object>>> getList(@RequestParam @LongId @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_FORM_ID}") Long formId,
                                                      @RequestParam(required = false) @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_IP}") String ip) {
-        CmsSite site = this.getCurrentSite();
+        CmsSite site = this.getCurrentSite(formId);
         PageRequest pr = this.getPageRequest();
         IPage<Map<String, Object>> page = this.modelDataService.selectModelDataPage(formId,
-                new Page<>(pr.getPageNumber(), pr.getPageSize(), true), sqlBuilder -> {
-            sqlBuilder.and().eq(CmsCustomFormMetaModelType.FIELD_SITE_ID.getFieldName(), site.getSiteId());
+                new Page<>(pr.getPageNumber(), pr.getPageSize(), true), query -> {
+            query.eq(CmsCustomFormMetaModelType.FIELD_SITE_ID.getCode(), site.getSiteId());
             if (StringUtils.isNotEmpty(ip)) {
-                sqlBuilder.and().eq(CmsCustomFormMetaModelType.FIELD_CLIENT_IP.getFieldName(), ip);
+                query.eq(CmsCustomFormMetaModelType.FIELD_CLIENT_IP.getCode(), ip);
             }
         });
         MetaModel metaModel = modelService.getMetaModel(formId);
@@ -96,9 +109,15 @@ public class CustomFormDataController extends CmsRestController {
     }
 
     @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_GET_DETAIL}")
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { CustomFormPriv.View, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER },
+            mode = SaMode.AND
+    )
     @GetMapping("/detail")
     public R<Map<String, Object>> getCustomFormDataDetail(@RequestParam @LongId @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_FORM_ID}") Long formId,
                                                           @RequestParam @LongId @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_ID}") Long dataId) {
+        this.getCurrentSite(formId);
         Map<String, Object> map = this.modelDataService.getModelDataByPkValue(formId,
                 Map.of(CmsCustomFormMetaModelType.FIELD_DATA_ID.getCode(), dataId));
         Map<String, Object> dataMap = new HashMap<>();
@@ -112,10 +131,15 @@ public class CustomFormDataController extends CmsRestController {
     }
 
     @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_ADD}")
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { CustomFormPriv.Add, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER },
+            mode = SaMode.AND
+    )
     @PostMapping("/add")
     public R<Void> addCustomFormData(@RequestParam @LongId @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_FORM_ID}") Long formId,
                                      @RequestBody Map<String, Object> data) {
-        CmsSite site = this.getCurrentSite();
+        CmsSite site = this.getCurrentSite(formId);
 
         data.put(CmsCustomFormMetaModelType.FIELD_DATA_ID.getCode(), IdUtils.getSnowflakeId());
         data.put(CmsCustomFormMetaModelType.FIELD_MODEL_ID.getCode(), formId);
@@ -128,17 +152,29 @@ public class CustomFormDataController extends CmsRestController {
     }
 
     @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_UPDATE}")
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { CustomFormPriv.Edit, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER },
+            mode = SaMode.AND
+    )
     @PostMapping("/update")
     public R<Void> editCustomFormData(@RequestParam @LongId @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_FORM_ID}") Long formId,
                                       @RequestBody Map<String, Object> data) {
+        this.getCurrentSite(formId);
         this.modelDataService.updateModelData(formId, data);
         return R.ok();
     }
 
     @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_DELETE}")
+    @Priv(
+            type = AdminUserType.TYPE,
+            value = { CustomFormPriv.Delete, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER },
+            mode = SaMode.AND
+    )
     @PostMapping("/delete")
     public R<Void> deleteCustomFormDatas(@RequestParam @LongId @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_FORM_ID}") Long formId,
                                          @RequestBody @NotEmpty @XComment("{API.DOC.CMS.CUSTOM_FORM.DATA_IDS}") List<Long> dataIds) {
+        this.getCurrentSite(formId);
         List<Map<String, Object>> pkValues = dataIds.stream()
                 .map(id -> {
                     Map<String, Object> map = new HashMap<>();
@@ -147,5 +183,16 @@ public class CustomFormDataController extends CmsRestController {
                 }).toList();
         this.modelDataService.deleteModelDataByPkValue(formId, pkValues);
         return R.ok();
+    }
+
+    private CmsSite getCurrentSite(Long formId) {
+        CmsSite site = super.getCurrentSite();
+        CmsCustomForm form = this.customFormService.lambdaQuery()
+                .select(CmsCustomForm::getFormId)
+                .eq(CmsCustomForm::getFormId, formId)
+                .eq(CmsCustomForm::getSiteId, site.getSiteId())
+                .one();
+        Assert.notNull(form, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("formId", formId));
+        return site;
     }
 }

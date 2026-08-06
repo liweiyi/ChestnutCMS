@@ -29,6 +29,7 @@ import ws.schild.jave.info.MultimediaInfo;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.function.Supplier;
 
@@ -45,7 +46,7 @@ public class MediaUtils {
 		try {
 			MultimediaObject multimediaObject;
 			if (ServletUtils.isHttpUrl(url)) {
-				multimediaObject = new MultimediaObject(new URL(url));
+				multimediaObject = new MultimediaObject(URI.create(url).toURL());
 			} else {
 				multimediaObject = new MultimediaObject(new File(url));
 			}
@@ -58,9 +59,10 @@ public class MediaUtils {
 
 	/**
 	 * 视频加图片水印
-	 *
+	 * <p>
 	 * jave2插件 3.0版本后 针对windows版本的路径有bug,导致windows下添加水印命令不成功
 	 * 但是3.0版本前，没找到添加水印功能，所以不考虑windows或则反编译MovieFilter.escapingPath 方法修改
+	 * </p>
 	 * <p>
 	 * movie='C\\:\\Users\\lin\\Desktop\\usedMarketIcon.png'[watermark];[0:v][watermark]overlay='main_w-overlay_w-10:main_h-overlay_h-10'
 	 * <p>
@@ -70,8 +72,8 @@ public class MediaUtils {
 	 * @param dest      水印视频
 	 * @param watermark 水印图
 	 * @param position  水印位置
-	 * @throws EncoderException
-	 * @throws FileNotFoundException
+	 * @throws EncoderException e1
+	 * @throws FileNotFoundException e2
 	 */
 	public static void generateVideoImageWatermark(File source, File dest, File watermark, OverlayLocation position)
 			throws EncoderException, FileNotFoundException {
@@ -99,14 +101,14 @@ public class MediaUtils {
 	/**
 	 * 视频压缩
 	 *
-	 * @param source
-	 * @param dest
-	 * @param supplierAudio
-	 * @param supplierVideo
-	 * @throws IllegalArgumentException
-	 * @throws InputFormatException
-	 * @throws EncoderException
-	 * @throws FileNotFoundException
+	 * @param source The source video file.
+	 * @param dest The video dest file path.
+	 * @param supplierAudio audio supplier
+	 * @param supplierVideo video supplier
+	 * @throws IllegalArgumentException e1
+	 * @throws InputFormatException e2
+	 * @throws EncoderException e3
+	 * @throws FileNotFoundException e4
 	 */
 	public static void compress(File source, File dest, Supplier<AudioAttributes> supplierAudio,
 								Supplier<VideoAttributes> supplierVideo)
@@ -148,8 +150,8 @@ public class MediaUtils {
 	 * @param source    原视频文件
 	 * @param output    截图存储文件
 	 * @param timestamp 截取的时间戳，单位：秒
-	 * @throws EncoderException
-	 * @throws FileNotFoundException
+	 * @throws EncoderException e1
+	 * @throws FileNotFoundException e2
 	 */
 	public static void generateVideoScreenshot(File source, File output, long timestamp)
 			throws FileNotFoundException, EncoderException {

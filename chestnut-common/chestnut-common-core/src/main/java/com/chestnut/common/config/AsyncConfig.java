@@ -49,7 +49,7 @@ public class AsyncConfig implements AsyncConfigurer {
 
 	@Bean(COMMON_EXECUTOR_BEAN)
 	@Override
-	public Executor getAsyncExecutor() {
+	public ThreadPoolTaskExecutor getAsyncExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setThreadNamePrefix(properties.getPool().getThreadNamePrefix());
 		// 常驻内存核心线程数

@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.template.tag;
 
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
@@ -24,13 +25,11 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IInternalDataType;
-import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.properties.EnableSSIProperty;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.util.ContentCoreUtils;
-import com.chestnut.contentcore.util.PageWidgetUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
@@ -39,6 +38,7 @@ import freemarker.template.TemplateModel;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -111,14 +111,14 @@ public class CmsSlotTag extends AbstractTag {
 
 		String type = attrs.get(ATTR_TYPE);
         IInternalDataType idt = ContentCoreUtils.getInternalDataType(type);
-        Assert.notNull(idt, () -> new TemplateException(StringUtils.messageFormat("Unsupported data type: type={0}.", type), env));
+        Assert.notNull(idt, () -> new TemplateException(I18nUtils.get("{FREEMARKER.ERR.UNSUPPORTED_DATA_TYPE}", env.getLocale(), type), env));
 
         if (!idt.supportSlot()) {
-            throw new TemplateException(StringUtils.messageFormat("Tag attr[type={0}] not support slot.", type), env);
+            throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.SLOT_NOT_SUPPORTED}", env.getLocale(), type), env);
         }
 
         Long dataId = MapUtils.getLong(attrs, ATTR_ID);
-        Assert.isTrue(IdUtils.validate(dataId), () -> new TemplateException("Invalid data id.", env));
+        Assert.isTrue(IdUtils.validate(dataId), () -> new TemplateException(I18nUtils.get("{FREEMARKER.ERR.INVALID_DATA_ID}", env.getLocale()), env));
 
         long siteId = TemplateUtils.evalSiteId(env);
 		CmsSite site = this.siteService.getSite(siteId);

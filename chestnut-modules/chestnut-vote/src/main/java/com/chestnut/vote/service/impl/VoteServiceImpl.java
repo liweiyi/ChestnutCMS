@@ -17,12 +17,13 @@ package com.chestnut.vote.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.ObjectUtils;
+import com.chestnut.common.utils.XCollectionUtils;
 import com.chestnut.vote.core.IVoteItemType;
 import com.chestnut.vote.core.IVoteUserType;
 import com.chestnut.vote.domain.Vote;
@@ -141,7 +142,7 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 					vo.setContent(item.getContent());
 					vo.setDescription(item.getDescription());
 					vo.setSortFlag(item.getSortFlag());
-					vo.setVoteTotal(ObjectUtils.ifNullOrElse(item.getTotal(), () -> 0L, Integer::longValue));
+					vo.setTotal(ObjectUtils.ifNullOrElse(item.getTotal(), () -> 0L, Integer::longValue));
 					return vo;
 				}).collect(Collectors.groupingBy(VoteSubjectItemVO::getSubjectId));
 
@@ -244,7 +245,9 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 			VoteVO vote = this.getVote(voteLog.getVoteId());
 			// 问卷调查参与数+1
 			vote.setTotal(Objects.requireNonNullElse(vote.getTotal(), 0) + 1);
-			voteMapper.increaseVoteTotal(vote.getVoteId(), 1);
+			// 数据库更新
+			new LambdaUpdateChainWrapper<>(this.voteMapper).set(Vote::getTotal, vote.getTotal())
+					.eq(Vote::getVoteId, vote.getVoteId()).update();
 			// 单选/多选主题选项票数+1
 			vote.getSubjects().forEach(subject -> {
 				if (!VoteSubjectType.isInput(subject.getType())) {
@@ -255,8 +258,15 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 					if (opt.isPresent()) {
 						VoteSubmitRequest.SubjectResult result = opt.get();
 						for (String itemIdStr : result.getResult()) {
-							Long itemId = Long.parseLong(itemIdStr);
-							this.itemMapper.increaseVoteSubjectItemTotal(itemId, 1);
+							Long itemId = Long.valueOf(itemIdStr);
+							VoteSubjectItemVO findItem = XCollectionUtils.findFirst(subject.getItems(), item -> item.getItemId().equals(itemId));
+							if (Objects.nonNull(findItem)) {
+								findItem.setTotal(findItem.getTotal() + 1);
+								new LambdaUpdateChainWrapper<>(this.itemMapper)
+										.set(VoteSubjectItem::getTotal, findItem.getTotal())
+										.eq(VoteSubjectItem::getItemId, findItem.getItemId())
+										.update();
+							}
 						}
 					}
 				}

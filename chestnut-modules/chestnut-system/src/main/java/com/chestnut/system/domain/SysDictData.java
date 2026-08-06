@@ -87,25 +87,25 @@ public class SysDictData extends BaseEntity {
 	@TableField(exist = false)
 	private String fixed;
 
-	@NotBlank(message = "字典标签不能为空")
-	@Size(min = 0, max = 100, message = "字典标签长度不能超过100个字符")
+	@NotBlank(message = "{VALID.SYS.DICT.DICT_LABEL_NOT_BLANK}")
+	@Size(min = 0, max = 100, message = "{VALID.SYS.DICT.DICT_LABEL_SIZE}")
 	public String getDictLabel() {
 		return dictLabel;
 	}
 
-	@NotBlank(message = "字典键值不能为空")
-	@Size(min = 0, max = 100, message = "字典键值长度不能超过100个字符")
+	@NotBlank(message = "{VALID.SYS.DICT.DICT_VALUE_NOT_BLANK}")
+	@Size(min = 0, max = 100, message = "{VALID.SYS.DICT.DICT_VALUE_SIZE}")
 	public String getDictValue() {
 		return dictValue;
 	}
 
-	@NotBlank(message = "字典类型不能为空")
-	@Size(min = 0, max = 100, message = "字典类型长度不能超过100个字符")
+	@NotBlank(message = "{VALID.SYS.DICT.DICT_TYPE_NOT_BLANK}")
+	@Size(min = 0, max = 100, message = "{VALID.SYS.DICT.DICT_TYPE_SIZE}")
 	public String getDictType() {
 		return dictType;
 	}
 
-	@Size(min = 0, max = 100, message = "样式属性长度不能超过100个字符")
+	@Size(min = 0, max = 100, message = "{VALID.SYS.DICT.CSS_CLASS_SIZE}")
 	public String getCssClass() {
 		return cssClass;
 	}

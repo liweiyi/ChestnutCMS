@@ -16,6 +16,7 @@
 package com.chestnut.customform;
 
 import com.chestnut.customform.domain.CmsCustomFormData;
+import com.chestnut.xmodel.core.BaseModelData;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.core.impl.MetaControlType_Input;
@@ -48,6 +49,11 @@ public class CmsCustomFormMetaModelType implements IMetaModelType {
     @Override
     public String getDefaultTable() {
         return CmsCustomFormData.TABLE_NAME;
+    }
+
+    @Override
+    public Class<? extends BaseModelData> getDefaultDataClass() {
+        return CmsCustomFormData.class;
     }
 
     @Override

@@ -15,10 +15,11 @@
  */
 package com.chestnut.common.utils;
 
+import org.lionsoul.ip2region.xdb.LongByteArray;
 import org.lionsoul.ip2region.xdb.Searcher;
+import org.lionsoul.ip2region.xdb.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.FileCopyUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,14 +36,16 @@ public class IP2RegionUtils {
 	private static Searcher searcher;
 	
 	static {
-        try (InputStream is = IP2RegionUtils.class.getClassLoader().getResourceAsStream(IP2REGION_DB_PATH)) {
-        	 byte[] cBuff;
-             cBuff = FileCopyUtils.copyToByteArray(is);
-             searcher = Searcher.newWithBuffer(cBuff);
-        } catch (IOException e1) {
-         	logger.error("Load ip2region.xdb failed.", e1);
+		try (InputStream is = IP2RegionUtils.class.getClassLoader().getResourceAsStream(IP2REGION_DB_PATH)) {
+			if (is == null) {
+				throw new IOException("ip2region.xdb not found: " + IP2REGION_DB_PATH);
+			}
+			LongByteArray cBuff = Searcher.loadContentFromInputStream(is);
+			searcher = Searcher.newWithBuffer(Version.IPv4, cBuff);
+		} catch (IOException e) {
+			logger.error("Load ip2region.xdb failed.", e);
 		}
-    }
+	}
 
 	/**
 	 * ip转区域，格式：

@@ -15,7 +15,7 @@
  */
 package com.chestnut.contentcore.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.domain.LoginUser;
@@ -32,7 +32,7 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
 import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
-import com.chestnut.contentcore.enums.ContentTips;
+import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.listener.event.AfterSiteAddEvent;
 import com.chestnut.contentcore.listener.event.AfterSiteDeleteEvent;
@@ -53,6 +53,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -62,12 +63,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -135,7 +131,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 
 	@Override
 	public CmsSite getSiteOrCurrent(Long siteId, HttpServletRequest request, LoginUser loginUser) {
-		CmsSite site = null;
+		CmsSite site;
         // siteId有效以siteId为准
 		if (IdUtils.validate(siteId) && loginUser.hasPermission(SitePrivItem.View.getPermissionKey(siteId))) {
 			site = getSite(siteId);
@@ -187,7 +183,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		site.setSiteId(IdUtils.getSnowflakeId());
 		BeanUtils.copyProperties(dto, site, "siteId");
 		if (StringUtils.isNotBlank(site.getResourceUrl())) {
-        	site.setResourceUrl(StringUtils.appendIfMissing(site.getResourceUrl(), "/"));
+        	site.setResourceUrl(Strings.CS.appendIfMissing(site.getResourceUrl(), "/"));
 		}
 		site.setSortFlag(SortUtils.getDefaultSortValue());
 		site.createBy(dto.getOperator().getUsername());
@@ -213,7 +209,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 
 		BeanUtils.copyProperties(dto, site, "path");
 		if (StringUtils.isNotBlank(site.getResourceUrl())) {
-			site.setResourceUrl(StringUtils.appendIfMissing(site.getResourceUrl(), "/"));
+			site.setResourceUrl(Strings.CS.appendIfMissing(site.getResourceUrl(), "/"));
 		}
 		// 发布通道数据处理
         dto.getPublishPipeDatas().forEach(prop -> {
@@ -241,7 +237,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 
 		applicationContext.publishEvent(new BeforeSiteDeleteEvent(this, site));
 
-		AsyncTaskManager.setTaskMessage(ContentTips.DELETING_SITE.locale(AsyncTaskManager.getLocale(), site.getName()));
+		AsyncTaskManager.setTaskMessage(ContentCoreTips.DELETING_SITE.locale(AsyncTaskManager.getLocale(), site.getName()));
 		this.removeById(site.getSiteId());
 		this.clearCache(site.getSiteId());
 

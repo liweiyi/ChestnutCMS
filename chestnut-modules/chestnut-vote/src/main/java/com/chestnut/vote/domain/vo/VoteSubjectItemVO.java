@@ -63,5 +63,5 @@ public class VoteSubjectItemVO {
 	 * 票数
 	 */
 	@XComment("{CC.VOTE_SUBJECT.ITEM.TOTAL}")
-	private Long voteTotal;
+	private Long total;
 }

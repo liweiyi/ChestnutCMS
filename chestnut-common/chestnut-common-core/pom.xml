@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>chestnut-common</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.5.13</version>
+		<version>1.6.0</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -17,7 +17,12 @@
 		<!-- SpringBoot JSON -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-json</artifactId>
+			<artifactId>spring-boot-starter-jackson</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
 		</dependency>
 
 		<!-- 自定义验证注解 -->
@@ -34,7 +39,7 @@
 
 		<!-- Jackson-guava -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<groupId>tools.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-guava</artifactId>
 		</dependency>
 
@@ -55,7 +60,7 @@
 		    <groupId>org.jsoup</groupId>
 		    <artifactId>jsoup</artifactId>
 		</dependency>
-		
+
 		<!-- 解析客户端操作系统、浏览器等 -->
 		<dependency>
 			<groupId>eu.bitwalker</groupId>

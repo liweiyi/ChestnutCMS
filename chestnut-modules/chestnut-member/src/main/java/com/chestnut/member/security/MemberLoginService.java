@@ -17,7 +17,6 @@ package com.chestnut.member.security;
 
 import cn.dev33.satoken.session.SaSession;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.enums.DeviceType;
@@ -130,7 +129,7 @@ public class MemberLoginService {
 		}
 		Member member = this.memberService.getOne(q);
 		if (Objects.nonNull(member)) {
-			throw new GlobalException("账号已存在");
+			throw MemberErrorCode.ACCOUNT_EXISTS.exception();
 		}
 		// 密码规则校验
 		this.securityConfigService.validPassword(null, dto.getPassword());

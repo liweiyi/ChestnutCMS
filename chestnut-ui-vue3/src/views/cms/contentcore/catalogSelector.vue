@@ -16,11 +16,30 @@
           <el-tooltip placement="right">
             <template #content>
               {{ $t('CMS.Catalog.CopyContentTip') }}<br/>
-              {{ $t('CMS.Catalog.MappingContentTip') }}
+              {{ $t('CMS.Catalog.MappingContentTip') }}<br/>
+              {{ $t('CMS.Catalog.CrossSiteCopyTip') }}
             </template>
             <el-icon class="ml5"><InfoFilled /></el-icon>
           </el-tooltip>
         </div>
+        <el-select
+          v-if="isCrossSiteCopy"
+          v-model="targetSiteId"
+          class="site-selector"
+          :placeholder="$t('CMS.Catalog.SelectTargetSite')"
+          filterable
+          remote
+          clearable
+          :remote-method="loadSiteOptions"
+          :loading="siteLoading"
+          @change="handleTargetSiteChange">
+          <el-option
+            v-for="site in siteOptions"
+            :key="site.siteId"
+            :label="site.name"
+            :value="site.siteId"
+            :disabled="isCurrentSite(site.siteId)" />
+        </el-select>
       </div>
       <div class="search-toolbar">
         <el-input 
@@ -65,6 +84,7 @@
 </template>
 <script setup name="CMSCatalogSelector">
 import { getCatalogTreeData } from "@/api/contentcore/catalog";
+import { getSelectSites } from "@/api/contentcore/site";
 
 const { proxy } = getCurrentInstance();
 
@@ -110,12 +130,19 @@ const props = defineProps({
 const emit = defineEmits(['ok', 'close']);
 
 const loading = ref(false);
+const siteLoading = ref(false);
 const filterCatalogName = ref(undefined);
 const catalogOptions = ref([]);
+const siteOptions = ref([]);
 const siteName = ref("");
 const rootSelected = ref(false);
 const selectedCatalogs = ref([]);
-const copyType = ref(1);
+const copyType = ref('1');
+const targetSiteId = ref(undefined);
+const currentSiteId = computed(() => proxy.$cms.getCurrentSite());
+const isCrossSiteCopy = computed(() => copyType.value === '3');
+let treeRequestId = 0;
+let siteRequestId = 0;
 const defaultProps = ref({
   children: "children",
   label: "label"
@@ -131,18 +158,87 @@ watch(() => props.open, (newVal) => {
 });
 
 watch(filterCatalogName, (newVal) => {
-  proxy.$refs.tree.filter(newVal);
+  proxy.$refs.tree?.filter(newVal);
 });
 
-function loadCatalogTreeData () {
+watch(copyType, (newVal) => {
+  if (!props.open) {
+    return;
+  }
+  resetCatalogSelection();
+  if (newVal === '3') {
+    targetSiteId.value = undefined;
+    siteName.value = "";
+    catalogOptions.value = [];
+    treeRequestId++;
+    loading.value = false;
+    loadSiteOptions();
+  } else {
+    targetSiteId.value = undefined;
+    loadCatalogTreeData();
+  }
+});
+
+function loadCatalogTreeData (siteId) {
+  resetCatalogSelection();
+  const requestId = ++treeRequestId;
+  loading.value = true;
+  const params = {disableLink: props.disableLink};
+  if (siteId) {
+    params.siteId = siteId;
+  }
+  getCatalogTreeData(params).then(response => {
+    if (requestId !== treeRequestId) {
+      return;
+    }
+    catalogOptions.value = response.data.rows;
+    siteName.value = response.data.siteName;
+  }).finally(() => {
+    if (requestId === treeRequestId) {
+      loading.value = false;
+    }
+  });
+}
+
+function loadSiteOptions (keyword) {
+  const requestId = ++siteRequestId;
+  siteLoading.value = true;
+  getSelectSites({
+    siteName: keyword || undefined,
+    pageNum: 1,
+    pageSize: 100
+  }).then(response => {
+    if (requestId === siteRequestId) {
+      siteOptions.value = response.data.rows || [];
+    }
+  }).finally(() => {
+    if (requestId === siteRequestId) {
+      siteLoading.value = false;
+    }
+  });
+}
+
+function isCurrentSite(siteId) {
+  return String(siteId) === String(currentSiteId.value);
+}
+
+function handleTargetSiteChange(siteId) {
+  catalogOptions.value = [];
+  siteName.value = "";
+  if (siteId && !isCurrentSite(siteId)) {
+    loadCatalogTreeData(siteId);
+  } else {
+    treeRequestId++;
+    loading.value = false;
+    resetCatalogSelection();
+  }
+}
+
+function resetCatalogSelection() {
   selectedCatalogs.value = [];
   rootSelected.value = false;
-  loading.value = true;
-  getCatalogTreeData({disableLink: props.disableLink}).then(response => {
-    catalogOptions.value = response.data.rows;
-    siteName.value = response.data.siteName; 
-    loading.value = false;
-  });
+  filterCatalogName.value = undefined;
+  proxy.$refs.tree?.setCurrentKey(null);
 }
 function filterNode (value, data) {
   if (!value) return true;
@@ -177,6 +273,10 @@ function handleTreeRootClick(e) {
 }
 
 function handleOk (data) {
+  if (isCrossSiteCopy.value && !targetSiteId.value) {
+    proxy.$modal.alertWarning(proxy.$t('CMS.Catalog.SelectTargetSite'));
+    return;
+  }
   if (props.multiple) {
     selectedCatalogs.value = [];
     proxy.$refs.tree.getCheckedNodes().map(item => {
@@ -194,8 +294,16 @@ function handleOk (data) {
 
 function handleCancel () {
   emit("close");
-  selectedCatalogs.value = [];
-  copyType.value = 1;
+  resetCatalogSelection();
+  treeRequestId++;
+  siteRequestId++;
+  loading.value = false;
+  siteLoading.value = false;
+  targetSiteId.value = undefined;
+  siteOptions.value = [];
+  catalogOptions.value = [];
+  siteName.value = "";
+  copyType.value = '1';
 }
 </script>
 <style scoped>
@@ -204,6 +312,10 @@ function handleCancel () {
 }
 .catalog-selector .header-toolbar {
   margin-bottom: 10px;
+}
+.catalog-selector .header-toolbar .site-selector {
+  width: 100%;
+  margin-top: 10px;
 }
 .catalog-selector .tree-container {
   margin: 10px 0;

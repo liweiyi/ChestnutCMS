@@ -16,7 +16,7 @@
 package com.chestnut.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.redis.RedisCache;
@@ -33,6 +33,8 @@ import com.chestnut.system.mapper.SysConfigMapper;
 import com.chestnut.system.service.ISysConfigService;
 import com.chestnut.system.service.ISysI18nDictService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.NonNull;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.CommandLineRunner;
@@ -93,7 +95,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 		Assert.notNull(dbConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("configId", req.getConfigId()));
 		// 系统固定配置参数不能修改键名
 		String oldConfigKey = dbConfig.getConfigKey();
-		if (FixedConfigUtils.isFixedConfig(oldConfigKey) && !StringUtils.equals(oldConfigKey, req.getConfigKey())) {
+		if (FixedConfigUtils.isFixedConfig(oldConfigKey) && !Strings.CS.equals(oldConfigKey, req.getConfigKey())) {
 			throw CommonErrorCode.FIXED_CONFIG_UPDATE.exception(oldConfigKey);
 		}
 		// 键名是否重复
@@ -107,7 +109,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 		dbConfig.updateBy(req.getOperator().getUsername());
 		if (this.updateById(dbConfig)) {
 			redisCache.setCacheObject(getCacheKey(dbConfig.getConfigKey()), dbConfig.getConfigValue());
-			if (!StringUtils.equals(oldConfigKey, dbConfig.getConfigKey())) {
+			if (!Strings.CS.equals(oldConfigKey, dbConfig.getConfigKey())) {
 				redisCache.deleteObject(getCacheKey(oldConfigKey));
 				i18nDictService.changeLangKey(langKey(oldConfigKey),
 						langKey(dbConfig.getConfigKey()), false);
@@ -118,16 +120,18 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 	@Override
 	@Transactional(rollbackFor = Throwable.class)
 	public void deleteConfigByIds(List<Long> configIds) {
-		for (Long configId : configIds) {
-			SysConfig config = this.getById(configId);
+		List<SysConfig> configs = this.listByIds(configIds).stream().filter(Objects::nonNull).toList();
+		for (SysConfig config : configs) {
 			boolean fixed = FixedConfigUtils.isFixedConfig(config.getConfigKey());
 			Assert.isFalse(fixed, () -> CommonErrorCode.FIXED_CONFIG_DEL.exception(config.getConfigKey()));
-
-			this.removeById(configId);
-			redisCache.deleteObject(getCacheKey(config.getConfigKey()));
-			// 删除国际化配置
-			this.i18nDictService.deleteByLangKey(langKey(config.getConfigKey()), false);
 		}
+		this.removeByIds(configIds);
+		// 删除缓存
+		List<String> configKeys = configs.stream().map(SysConfig::getConfigKey).toList();
+		redisCache.deleteObjects(configKeys);
+		// 删除国际化配置
+		List<String> langKeys = configKeys.stream().map(this::langKey).toList();
+		this.i18nDictService.deleteByLangKeys(langKeys);
 	}
 
 	private String langKey(String configKey) {
@@ -164,7 +168,7 @@ public class SysConfigServiceImpl extends ServiceImpl<SysConfigMapper, SysConfig
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
+	public void run(String @NonNull ... args) throws Exception {
         RLock lock = redissonClient.getLock("cc:dict:init_fixed_dict");
         lock.lock();
         try {

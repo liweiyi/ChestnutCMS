@@ -16,7 +16,7 @@
 package com.chestnut.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
@@ -32,6 +32,7 @@ import com.chestnut.system.mapper.SysDictDataMapper;
 import com.chestnut.system.service.ISysDictDataService;
 import com.chestnut.system.service.ISysI18nDictService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -104,7 +105,7 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
 		// 是否存在
 		Assert.notNull(dbData, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("dictCode", req.getDictCode()));
 		// 是否系统固定字典数据，固定数据不允许修改字典数据值
-		Assert.isFalse(isFixed(dbData) && !StringUtils.equals(dbData.getDictValue(), req.getDictValue()),
+		Assert.isFalse(isFixed(dbData) && !Strings.CS.equals(dbData.getDictValue(), req.getDictValue()),
 				CommonErrorCode.FIXED_DICT::exception);
 		// 字典数据值是否冲突
 		Assert.isTrue(this.checkDictValueUnique(req.getDictType(), req.getDictValue(), req.getDictCode()),
@@ -122,7 +123,7 @@ public class SysDictDataServiceImpl extends ServiceImpl<SysDictDataMapper, SysDi
 
 		if (this.updateById(dbData)) {
 			this.redisCache.deleteObject(SysConstants.CACHE_SYS_DICT_KEY + dbData.getDictType());
-			if (!StringUtils.equals(oldDictValue, dbData.getDictValue())) {
+			if (!Strings.CS.equals(oldDictValue, dbData.getDictValue())) {
 				i18nDictService.changeLangKey(langKey(dbData.getDictType(), oldDictValue),
 						langKey(dbData.getDictType(), dbData.getDictValue()), false);
 			}

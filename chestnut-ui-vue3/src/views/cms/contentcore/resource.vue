@@ -74,42 +74,33 @@
       </div>
     </el-row>
 
-    <el-table v-loading="loading" :data="resourceList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="ID" prop="resourceId" align="center" width="180" />
-      <el-table-column :label="$t('CMS.Resource.Type')" prop="resourceTypeName" width="80" />
-      <el-table-column :label="$t('CMS.Resource.Name')" prop="name" align="left">
-        <template #default="scope">
-          <svg-icon :icon-class="scope.row.iconClass" /> <el-link type="primary" target="_blank" :href="scope.row.src">{{ scope.row.name }}</el-link>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('CMS.Resource.StorageType')" prop="storageType" align="center" width="120" />
-      <el-table-column :label="$t('CMS.Resource.FileSize')" prop="fileSizeName" align="center" width="120" />
-      <el-table-column :label="$t('Common.CreateTime')" prop="createTime" align="center" width="180">
-        <template #default="scope">
-          <span>{{ parseTime(scope.row.createTime) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column 
-        :label="$t('Common.Operation')"
-        align="center"
-        width="180" 
-       >
-        <template #default="scope">
-          <el-button 
-            link
-            type="primary"
-            icon="Edit"
-            @click="handleUpdate(scope.row)">{{ $t("Common.Edit") }}</el-button>
-          <el-button 
-            link
-            type="danger"
-            icon="Delete"
-            @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination 
+    <div class="resource-grid" v-loading="loading">
+      <el-card
+        shadow="hover"
+        class="resource-card"
+        :body-class="['resource-card-body', r.selected ? 'selected' : '']"
+        v-for="(r, index) in resourceList"
+        :key="r.resourceId"
+        @click="handleCardClick(index)">
+        <div class="card-preview">
+          <el-image v-if="isImageResource(r.src)" class="item-img" fit="scale-down" :src="r.src" hide-on-click-modal></el-image>
+          <svg-icon v-else :icon-class="r.iconClass" class="item-svg" />
+        </div>
+        <div class="card-info">
+          <div class="r-name" :title="r.name">{{ r.name }}</div>
+          <div class="r-meta">
+            <span class="r-type">{{ r.resourceTypeName }}</span>
+            <span class="r-size">{{ r.fileSizeName }}</span>
+          </div>
+        </div>
+        <div class="card-actions" @click.stop>
+          <el-button link type="primary" icon="View" :title="$t('Common.Preview')" @click="handlePreview(r)" />
+          <el-button link type="primary" icon="Edit" :title="$t('Common.Edit')" @click="handleUpdate(r)" />
+          <el-button link type="danger" icon="Delete" :title="$t('Common.Delete')" @click="handleDelete(r)" />
+        </div>
+      </el-card>
+    </div>
+    <pagination
       v-show="total>0"
       :total="total"
       v-model:page="queryParams.pageNum"
@@ -174,7 +165,7 @@
   </div>
 </template>
 <script setup name="CmsContentcoreResource">
-import { getFileSvgIconClass } from "@/utils/chestnut";
+import { isImage, getFileSvgIconClass } from "@/utils/chestnut";
 import { getResourceTypes, getResourceList, getResourceDetail, delResource } from "@/api/contentcore/resource";
 import { getConfigKey } from "@/api/system/config";
 
@@ -190,7 +181,7 @@ const dateRange = ref([])
 const objects = reactive({
   queryParams: {
     pageNum: 1,
-    pageSize: 15,
+    pageSize: 24,
     resourceType: undefined,
     name: undefined,
     beginTime: undefined,
@@ -238,7 +229,11 @@ const getList = () => {
   }
   getResourceList(queryParams.value).then(response => {
     resourceList.value = response.data.rows;
-    resourceList.value.forEach(r => r.iconClass = getFileSvgIconClass(r.name))
+    resourceList.value.forEach(r => {
+      r.iconClass = getFileSvgIconClass(r.name)
+      r.selected = false
+    })
+    selectedIds.value = []
     total.value = parseInt(response.data.total);
     loading.value = false;
   });
@@ -262,8 +257,21 @@ const resetQuery = () => {
   dateRange.value = [];
   handleQuery();
 }
-const handleSelectionChange = (selection) => {
-  selectedIds.value = selection.map(item => item.resourceId)
+const isImageResource = (src) => {
+  return isImage(src);
+}
+const handlePreview = (row) => {
+  // 在独立浏览器标签页打开预览（不在后台 tab 组件中新增 tab）
+  const routeData = proxy.$router.resolve({
+    path: '/cms/resource/preview',
+    query: { iurl: row.internalUrl }
+  });
+  window.open(routeData.href, '_blank');
+}
+const handleCardClick = (index) => {
+  const r = resourceList.value[index];
+  r.selected = !r.selected;
+  selectedIds.value = resourceList.value.filter(item => item.selected).map(item => item.resourceId);
 }
 const handleAdd = () => {
   reset();
@@ -317,6 +325,114 @@ const handleDelete = (row) => {
 }
 </script>
 <style lang="scss" scoped>
+.resource-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-height: 300px;
+  margin-top: 12px;
+  padding: 4px;
+
+  .resource-card {
+    width: calc((100% - 84px) / 8);
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+
+    :deep(.resource-card-body) {
+      padding: 10px;
+      border: 2px solid transparent;
+      border-radius: var(--el-card-border-radius);
+      position: relative;
+
+      &.selected {
+        border-color: #319766 !important;
+      }
+      &.selected:before {
+        position: absolute;
+        right: -2px;
+        top: -2px;
+        content: '';
+        width: 0;
+        height: 0;
+        border: 14px solid #fff;
+        border-top-color: #319766;
+        border-right-color: #319766;
+        z-index: 1;
+      }
+      &.selected:after {
+        content: "";
+        position: absolute;
+        right: 2px;
+        top: 2px;
+        width: 14px;
+        height: 14px;
+        background-image: var(--cc-icon-check);
+        background-size: contain;
+        background-repeat: no-repeat;
+        z-index: 2;
+      }
+
+      .card-preview {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 90px;
+        background-color: #f7f7f7;
+        border-radius: 4px;
+        overflow: hidden;
+
+        .item-img {
+          width: 100%;
+          height: 100%;
+        }
+
+        .item-svg {
+          width: 56px;
+          height: 56px;
+          padding: 6px;
+        }
+      }
+
+      .card-info {
+        padding: 8px 2px 4px;
+
+        .r-name {
+          font-size: 13px;
+          line-height: 20px;
+          height: 20px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          text-align: center;
+          color: #333;
+        }
+
+        .r-meta {
+          display: flex;
+          justify-content: center;
+          gap: 8px;
+          margin-top: 4px;
+          font-size: 12px;
+          color: #999;
+
+          .r-type {
+            color: var(--el-color-primary);
+          }
+        }
+      }
+
+      .card-actions {
+        display: flex;
+        justify-content: center;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 6px;
+        margin-top: 4px;
+      }
+    }
+  }
+}
+
 .upload-form-item {
 
   :deep(.el-form-item__content) {

@@ -51,7 +51,7 @@ public class SiteDTO extends BaseDTO {
 	private String logoSrc;
 
 	@XComment("{CMS.SITE.PATH}")
-	@Pattern(regexp = "^[A-Za-z0-9]+$", message = "站点目录只能使用大小写字母及数字组合")
+	@Pattern(regexp = "^[A-Za-z0-9]+$", message = "{VALID.CMS.SITE.DIR_PATTERN}")
 	private String path;
 
 	@XComment("{API.DOC.CMS.SITE.URL}")

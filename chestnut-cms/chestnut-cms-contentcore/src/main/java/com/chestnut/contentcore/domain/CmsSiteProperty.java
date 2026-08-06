@@ -45,20 +45,20 @@ public class CmsSiteProperty extends BaseEntity {
     public static final String TABLE_NAME = "cms_site_property";
 
     @TableId(value = "property_id", type = IdType.INPUT)
-    @XComment("ID")
+    @XComment("{CMS.SITE_PROPERTY.ID}")
     private Long propertyId;
 
-    @XComment("所属站点ID")
+    @XComment("{CMS.SITE_PROPERTY.SITE_ID}")
     private Long siteId;
 
-    @XComment("属性名称")
+    @XComment("{CMS.SITE_PROPERTY.PROP_NAME}")
     @NotBlank
     private String propName;
 
-    @XComment("属性编码")
+    @XComment("{CMS.SITE_PROPERTY.PROP_CODE}")
     @Pattern(regexp = RegexConsts.REGEX_CODE)
     private String propCode;
 
-    @XComment("属性值")
+    @XComment("{CMS.SITE_PROPERTY.PROP_VALUE}")
     private String propValue;
 }

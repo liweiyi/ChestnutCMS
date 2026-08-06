@@ -32,7 +32,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
@@ -110,7 +115,9 @@ public class PageWidgetStaticizeType implements IStaticizeType {
             ITemplateType templateType = templateService.getTemplateType(SiteTemplateType.TypeId);
             templateType.initTemplateData(site.getSiteId(), templateContext);
             // staticize
-            this.staticizeService.process(templateContext);
+            try (FileWriter writer = new FileWriter(Path.of(dirPath, staticFileName).toFile(), StandardCharsets.UTF_8)) {
+                this.staticizeService.process(templateContext, writer);
+            }
             this.log(site, "[{}]The page-widget template parsed: {}, cost: {}ms", publishPipeCode, pw.getCode(), System.currentTimeMillis() - s);
         } catch (TemplateException | IOException e) {
             logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]The page-widget template parse failed: {1}#{2}",

@@ -38,6 +38,7 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.*;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.domain.vo.ListContentVO;
+import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.listener.event.AfterContentEditorInitEvent;
@@ -47,9 +48,7 @@ import com.chestnut.contentcore.properties.SubTitleLabelProperty;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.user.preference.IncludeChildContentPreference;
 import com.chestnut.contentcore.user.preference.ShowContentSubTitlePreference;
-import com.chestnut.contentcore.util.CmsPrivUtils;
-import com.chestnut.contentcore.util.CmsRestController;
-import com.chestnut.contentcore.util.ContentCoreUtils;
+import com.chestnut.contentcore.util.*;
 import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -68,6 +67,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 内容管理控制器
@@ -94,17 +94,16 @@ public class ContentController extends CmsRestController {
 
 	private final ApplicationContext applicationContext;
 
-	/**
-	 * 内容列表
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.GET_LIST}")
 	@GetMapping("/list")
-	public R<TableData<ListContentVO>> listData(@RequestParam(required = false) @XComment("{API.DOC.CMS.CONTENT.CATALOG_ID}") Long catalogId,
-						 @RequestParam(required = false) String title,
-						 @RequestParam(required = false) String contentType,
-						 @RequestParam(required = false) String status,
-						 @RequestParam(required = false) LocalDateTime beginTime,
-						 @RequestParam(required = false) LocalDateTime endTime) {
+	public R<TableData<ListContentVO>> listData(
+			@RequestParam(required = false) @XComment("{API.DOC.CMS.CONTENT.CATALOG_ID}") Long catalogId,
+		 	@RequestParam(required = false) @XComment("{API.DOC.CMS.CONTENT.TITLE}")  String title,
+		 	@RequestParam(required = false) @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}")  String contentType,
+		 	@RequestParam(required = false) @XComment("{API.DOC.CMS.CONTENT.STATUS}")  String status,
+		 	@RequestParam(required = false) @XComment("{API.DOC.CMS.CONTENT.CREATE_TIME_BEGIN}")  LocalDateTime beginTime,
+		 	@RequestParam(required = false) @XComment("{API.DOC.CMS.CONTENT.CREATE_TIME_END}")  LocalDateTime endTime
+	) {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		if (!IdUtils.validate(catalogId)
 				|| !loginUser.hasPermission(CatalogPrivItem.View.getPermissionKey(catalogId))) {
@@ -139,24 +138,24 @@ public class ContentController extends CmsRestController {
 		}
 		Page<CmsContent> page = q.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true));
 		List<ListContentVO> list = page.getRecords().stream().map(ListContentVO::newInstance).toList();
-		// 内容引导图缩略图处理
+
 		list.forEach(vo -> {
-            vo.setCopyInfo(ContentCopyType.ContentCopyInfo.of(vo.getCopyType(), vo.getCopyId()));
             resourceService.dealDefaultThumbnail(site, vo.getImages(), thumbnails -> {
                 vo.setImagesSrc(thumbnails);
                 vo.setLogoSrc(thumbnails.get(0));
             });
         });
+		ContentUtils.dealCopyInfo(list, this.siteService, this.catalogService, this.contentService);
 		return this.bindDataTable(list, (int) page.getTotal());
 	}
 
-	/**
-	 * 内容编辑数据初始化
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.INIT_EDITOR}")
 	@GetMapping("/init/{catalogId}/{contentType}/{contentId}")
-	public R<ContentVO> initContentEditor(@PathVariable("catalogId") @LongId @XComment("{API.DOC.CMS.CONTENT.CATALOG_ID}") Long catalogId,
-			@PathVariable("contentType") @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}") String contentType, @PathVariable("contentId") @XComment("{API.DOC.CMS.CONTENT.CONTENT_ID}") Long contentId) {
+	public R<ContentVO> initContentEditor(
+			@PathVariable("catalogId") @LongId @XComment("{API.DOC.CMS.CONTENT.CATALOG_ID}") Long catalogId,
+			@PathVariable("contentType") @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}") String contentType,
+			@PathVariable("contentId") @XComment("{API.DOC.CMS.CONTENT.CONTENT_ID}") Long contentId
+	) {
 		IContentType ct = ContentCoreUtils.getContentType(contentType);
 		// 获取初始化数据
 		ContentVO vo = ct.initEditor(catalogId, contentId);
@@ -173,7 +172,7 @@ public class ContentController extends CmsRestController {
 	}
 
 	@XComment("{API.DOC.CMS.CONTENT.ADD}")
-	@Log(title = "新增内容", businessType = BusinessType.INSERT)
+	@Log(title = "CreateContent", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
 	public R<Map<String, Object>> addContent(@RequestParam("contentType") @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}") String contentType, HttpServletRequest request)
 			throws IOException {
@@ -188,7 +187,7 @@ public class ContentController extends CmsRestController {
 	}
 
 	@XComment("{API.DOC.CMS.CONTENT.UPDATE}")
-	@Log(title = "编辑内容", businessType = BusinessType.UPDATE)
+	@Log(title = "UpdateContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
 	public R<Map<String, Object>> saveContent(@RequestParam("contentType") @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}") String contentType, HttpServletRequest request)
 			throws IOException {
@@ -205,18 +204,15 @@ public class ContentController extends CmsRestController {
 	}
 
 	@XComment("{API.DOC.CMS.CONTENT.DELETE}")
-	@Log(title = "删除内容", businessType = BusinessType.DELETE)
+	@Log(title = "DeleteContent", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
 	public R<String> deleteContent(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}") List<Long> contentIds) {
 		AsyncTask task = this.contentService.deleteContents(contentIds, StpAdminUtil.getLoginUser());
 		return R.ok(task.getTaskId());
 	}
 
-	/**
-	 * 发布内容
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.PUBLISH}")
-	@Log(title = "发布内容", businessType = BusinessType.OTHER)
+	@Log(title = "PublishContent", businessType = BusinessType.OTHER)
 	@PostMapping("/publish")
 	public R<String> publish(@RequestBody @Validated PublishContentDTO publishContentDTO) throws TemplateException, IOException {
 		CmsContent content = contentService.dao().getById(publishContentDTO.getContentIds().get(0));
@@ -228,110 +224,81 @@ public class ContentController extends CmsRestController {
 		return R.ok(task.getTaskId());
 	}
 
-	/**
-	 * 锁定内容
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.LOCK}")
-	@Log(title = "锁定内容", businessType = BusinessType.UPDATE)
+	@Log(title = "LockContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/lock/{contentId}")
 	public R<String> lock(@PathVariable("contentId") @LongId @XComment("{API.DOC.CMS.CONTENT.CONTENT_ID}") Long contentId) {
 		this.contentService.lock(contentId, StpAdminUtil.getLoginUser().getUsername());
 		return R.ok(StpAdminUtil.getLoginUser().getUsername());
 	}
 
-	/**
-	 * 解锁内容
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.UNLOCK}")
-	@Log(title = "解锁内容", businessType = BusinessType.UPDATE)
+	@Log(title = "UnlockContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/unlock/{contentId}")
 	public R<Void> unLock(@PathVariable("contentId") @LongId @XComment("{API.DOC.CMS.CONTENT.CONTENT_ID}") Long contentId) {
 		this.contentService.unLock(contentId, StpAdminUtil.getLoginUser().getUsername());
 		return R.ok();
 	}
 
-	/**
-	 * 复制内容
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.COPY}")
-	@Log(title = "复制内容", businessType = BusinessType.UPDATE)
+	@Log(title = "CopyContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/copy")
 	public R<String> copy(@RequestBody @Validated CopyContentDTO dto) {
+		dto.setSourceSiteId(this.getCurrentSite().getSiteId());
 		AsyncTask task = this.contentService.copy(dto);
 		return R.ok(task.getTaskId());
 	}
 
-	/**
-	 * 转移内容
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.MOVE}")
-	@Log(title = "转移内容", businessType = BusinessType.UPDATE)
+	@Log(title = "MoveContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/move")
 	public R<String> move(@RequestBody @Validated MoveContentDTO dto) {
 		AsyncTask task = this.contentService.move(dto);
 		return R.ok(task.getTaskId());
 	}
 
-	/**
-	 * 置顶
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.SET_TOP}")
-	@Log(title = "置顶", businessType = BusinessType.UPDATE)
+	@Log(title = "SetTopContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/set_top")
 	public R<Void> setTop(@RequestBody @Validated SetTopContentDTO dto) {
 		this.contentService.setTop(dto);
 		return R.ok();
 	}
 
-	/**
-	 * 取消置顶
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.CANCEL_TOP}")
-	@Log(title = "取消置顶", businessType = BusinessType.UPDATE)
+	@Log(title = "CancelTopContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/cancel_top")
 	public R<Void> cancelTop(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}") List<Long> contentIds) {
 		this.contentService.cancelTop(contentIds, StpAdminUtil.getLoginUser());
 		return R.ok();
 	}
 
-	/**
-	 * 排序
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.SORT}")
-	@Log(title = "内容排序", businessType = BusinessType.UPDATE)
+	@Log(title = "SortContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/sort")
 	public R<Void> sort(@RequestBody @Validated SortContentDTO dto) {
 		this.contentService.sort(dto);
 		return R.ok();
 	}
 
-	/**
-	 * 下线
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.OFFLINE}")
-	@Log(title = "下线内容", businessType = BusinessType.UPDATE)
+	@Log(title = "OfflineContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/offline")
 	public R<String> offline(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}") List<Long> contentIds) {
 		AsyncTask task = this.contentService.offline(contentIds, StpAdminUtil.getLoginUser());
 		return R.ok(task.getTaskId());
 	}
 
-	/**
-	 * 待发布
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.TO_PUBLISH}")
-	@Log(title = "待发布内容", businessType = BusinessType.UPDATE)
+	@Log(title = "ToPublishContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/to_publish")
 	public R<Void> toPublish(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}") List<Long> contentIds) {
 		this.contentService.toPublish(contentIds, StpAdminUtil.getLoginUser());
 		return R.ok();
 	}
 
-	/**
-	 * 归档
-	 */
 	@XComment("{API.DOC.CMS.CONTENT.ARCHIVE}")
-	@Log(title = "归档内容", businessType = BusinessType.UPDATE)
+	@Log(title = "ArchiveContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/archive")
 	public R<Void> archive(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.CONTENT.CONTENT_IDS}") List<Long> contentIds) {
 		this.contentService.archive(contentIds, StpAdminUtil.getLoginUser());
@@ -339,7 +306,7 @@ public class ContentController extends CmsRestController {
 	}
 
 	@XComment("{API.DOC.CMS.CONTENT.ADD_ATTR}")
-	@Log(title = "添加内容属性", businessType = BusinessType.UPDATE)
+	@Log(title = "AddContentAttr", businessType = BusinessType.UPDATE)
 	@PostMapping("/attr")
 	public R<Void> addContentsAttribute(@RequestBody @Validated ChangeContentAttrDTO dto) {
 		this.contentService.dao().listByIds(dto.getContentIds()).forEach(content -> {
@@ -350,7 +317,7 @@ public class ContentController extends CmsRestController {
 	}
 
 	@XComment("{API.DOC.CMS.CONTENT.REMOVE_ATTR}")
-	@Log(title = "移除内容属性", businessType = BusinessType.UPDATE)
+	@Log(title = "RemoveContentAttr", businessType = BusinessType.UPDATE)
 	@PostMapping("/attr/delete")
 	public R<Void> removeContentsAttribute(@RequestBody @Validated ChangeContentAttrDTO dto) {
 		this.contentService.dao().listByIds(dto.getContentIds()).forEach(content -> {

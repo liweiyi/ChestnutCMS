@@ -209,6 +209,18 @@
           <el-form-item :label="$t('System.Security.CaptchaRetryDuration')" prop="configs.Login.captchaDuration">
             <el-input-number v-model="form.configs.Login.captchaDuration" controls-position="right" :min="0"></el-input-number>
           </el-form-item>
+          <el-form-item
+            v-if="form.configs.Login.captchaType === 'SMS'"
+            :label="$t('System.Security.CaptchaMessageConfigId')"
+            prop="configs.Login.captchaMessageConfigId">
+            <el-input v-model="form.configs.Login.captchaMessageConfigId" />
+          </el-form-item>
+          <el-form-item
+            v-if="form.configs.Login.captchaType === 'SMS'"
+            :label="$t('System.Security.CaptchaMessageTemplateId')"
+            prop="configs.Login.captchaMessageTemplateId">
+            <el-input v-model="form.configs.Login.captchaMessageTemplateId" />
+          </el-form-item>
           <el-form-item :label="$t('System.Security.ThirdLogin')" prop="configs.Login.loginTypeConfigIds">
             <el-checkbox-group v-model="form.configs.Login.loginTypeConfigIds">
               <el-checkbox
@@ -347,6 +359,8 @@ const reset = () => {
         captchaType: 'NONE',
         captchaExpires: 1,
         captchaDuration: 0,
+        captchaMessageConfigId: 0,
+        captchaMessageTemplateId: 0,
       },
       Biz: {
         secondaryVerifications: [],

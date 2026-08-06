@@ -24,7 +24,7 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.enums.ContentTips;
+import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.publish.IContentPathRule;
 import com.chestnut.contentcore.publish.IStaticizeType;
 import com.chestnut.contentcore.service.*;
@@ -108,7 +108,7 @@ public class ContentStaticizeType implements IStaticizeType {
         final String detailTemplate = TemplateUtils.getDetailTemplate(site, catalog, content, publishPipeCode);
         File templateFile = this.templateService.findTemplateFile(site, detailTemplate, publishPipeCode);
         if (templateFile == null) {
-            logger.warn(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_NOT_FOUND,
+            logger.warn(AsyncTaskManager.addErrMessage(ContentCoreTips.TEMPLATE_NOT_FOUND,
                 TYPE + "#" + publishPipeCode, content.getContentId() + "#" + content.getTitle()));
             return;
         }
@@ -129,7 +129,7 @@ public class ContentStaticizeType implements IStaticizeType {
             this.log(site, "[ {} ]Content template parsed: {}#{}#{}, cost: {}ms", publishPipeCode, site.getName(),
                     catalog.getName(), content.getTitle(), (System.currentTimeMillis() - s));
         } catch (TemplateException | IOException e) {
-            logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
+            logger.error(AsyncTaskManager.addErrMessage(ContentCoreTips.TEMPLATE_PARSE_FAILED,
                     TYPE + "#" + publishPipeCode, content.getContentId() + "#" + content.getTitle()), e);
         }
     }
@@ -207,7 +207,7 @@ public class ContentStaticizeType implements IStaticizeType {
             this.log(site, "[{}]The content extend template parsed: {}#{}#{}, cost: {}ms", publishPipeCode, site.getName(),
                     catalog.getName(), content.getTitle(), (System.currentTimeMillis() - s));
         } catch (TemplateException | IOException e) {
-            logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
+            logger.error(AsyncTaskManager.addErrMessage(ContentCoreTips.TEMPLATE_PARSE_FAILED,
                     TYPE + "#" + publishPipeCode, content.getContentId() + "#" + content.getTitle()) + "#EXT", e);
         }
     }

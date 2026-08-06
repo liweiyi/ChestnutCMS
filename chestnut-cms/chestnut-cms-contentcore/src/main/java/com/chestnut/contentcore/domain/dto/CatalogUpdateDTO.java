@@ -61,7 +61,7 @@ public class CatalogUpdateDTO extends BaseDTO {
      */
 	@XComment("{CMS.CATALOG.ALIAS}")
     @NotBlank
-    @Pattern(regexp = RegexConsts.REGEX_CODE, message = "栏目别名只能使用大小写字母、数字、下划线组合")
+    @Pattern(regexp = RegexConsts.REGEX_CODE, message = "{VALID.CMS.CATALOG.ALIAS_PATTERN}")
     private String alias;
 
     /**
@@ -69,7 +69,7 @@ public class CatalogUpdateDTO extends BaseDTO {
      */
 	@XComment("{CMS.CATALOG.PATH}")
     @NotBlank
-    @Pattern(regexp = RegexConsts.REGEX_PATH, message = "栏目路径只能使用大小写字母、数字、下划线组合")
+    @Pattern(regexp = RegexConsts.REGEX_PATH, message = "{VALID.CMS.CATALOG.PATH_PATTERN}")
     private String path;
 
     /*

@@ -43,33 +43,33 @@ public class CmsContentOpLog implements Serializable {
     public static final String TABLE_NAME = "cms_content_op_log";
 
     @TableId(value = "log_id", type = IdType.INPUT)
-    @XComment("ID")
+    @XComment("{CMS.CONTENT_OP_LOG.ID}")
     private Long logId;
 
-    @XComment("所属站点ID")
+    @XComment("{CMS.CONTENT_OP_LOG.SITE_ID}")
     private Long siteId;
 
-    @XComment("所属栏目ID")
+    @XComment("{CMS.CONTENT_OP_LOG.CATALOG_ID}")
     private Long catalogId;
 
-    @XComment("所属栏目祖级IDs")
+    @XComment("{CMS.CONTENT_OP_LOG.CATALOG_ANCESTORS}")
     private String catalogAncestors;
 
-    @XComment("所属内容ID")
+    @XComment("{CMS.CONTENT_OP_LOG.CONTENT_ID}")
     private Long contentId;
 
-    @XComment("操作类型")
+    @XComment("{CMS.CONTENT_OP_LOG.OP_TYPE}")
     private String type;
 
-    @XComment("操作明细")
+    @XComment("{CMS.CONTENT_OP_LOG.DETAIL}")
     private String details;
 
-    @XComment("操作人类型")
+    @XComment("{CMS.CONTENT_OP_LOG.OPERATOR_TYPE}")
     private String operatorType;
 
-    @XComment("操作人用户名")
+    @XComment("{CMS.CONTENT_OP_LOG.OPERATOR}")
     private String operator;
 
-    @XComment("日志时间")
+    @XComment("{CMS.CONTENT_OP_LOG.LOG_TIME}")
     private LocalDateTime logTime;
 }

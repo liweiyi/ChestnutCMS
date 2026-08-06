@@ -17,6 +17,7 @@ package com.chestnut.contentcore.properties;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
 
 import com.chestnut.common.utils.StringUtils;
@@ -54,7 +55,7 @@ public class RepeatTitleCheckProperty implements IProperty {
 
 	@Override
 	public boolean validate(String value) {
-		return StringUtils.isEmpty(value) || StringUtils.equalsAny(value.toString(), StringUtils.EMPTY, CheckType_None,
+		return StringUtils.isEmpty(value) || Strings.CS.equalsAny(value, StringUtils.EMPTY, CheckType_None,
 				CheckType_Site, CheckType_Catalog);
 	}
 

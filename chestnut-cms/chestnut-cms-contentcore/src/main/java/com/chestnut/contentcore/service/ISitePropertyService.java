@@ -17,7 +17,7 @@ package com.chestnut.contentcore.service;
 
 import java.util.List;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.common.domain.R;
 import com.chestnut.contentcore.domain.CmsSiteProperty;
 

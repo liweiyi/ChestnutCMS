@@ -16,7 +16,7 @@
 package com.chestnut.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
@@ -66,8 +66,8 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 
 	@Override
 	public List<SysDept> buildDeptTree(List<SysDept> depts) {
-		List<SysDept> returnList = new ArrayList<SysDept>();
-		List<Long> tempList = new ArrayList<Long>();
+		List<SysDept> returnList = new ArrayList<>();
+		List<Long> tempList = new ArrayList<>();
 		for (SysDept dept : depts) {
 			tempList.add(dept.getDeptId());
 		}
@@ -111,7 +111,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 	public void insertDept(CreateDeptRequest req) {
 		SysDept parent = this.getById(req.getParentId());
 		// 如果父节点不为正常状态,则不允许新增子节点
-		Assert.isTrue(parent.isEnable(), SysErrorCode.DISABLE_DEPT_ADD_CHILD::exception);
+		Assert.isTrue(Objects.nonNull(parent) && parent.isEnable(), SysErrorCode.DISABLE_DEPT_ADD_CHILD::exception);
 
 		boolean unique = this.checkDeptNameUnique(req.getParentId(),req.getDeptName(), 0L);
 		Assert.isTrue(unique, () -> CommonErrorCode.DATA_CONFLICT.exception(req.getDeptName()));
@@ -181,13 +181,11 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 
 	private List<SysDept> getChildList(List<SysDept> list, SysDept t) {
 		List<SysDept> tlist = new ArrayList<>();
-		Iterator<SysDept> it = list.iterator();
-		while (it.hasNext()) {
-			SysDept n = it.next();
-			if (Objects.nonNull(n.getParentId()) && n.getParentId().longValue() == t.getDeptId().longValue()) {
-				tlist.add(n);
-			}
-		}
+        for (SysDept n : list) {
+            if (Objects.nonNull(n.getParentId()) && n.getParentId().longValue() == t.getDeptId().longValue()) {
+                tlist.add(n);
+            }
+        }
 		return tlist;
 	}
 

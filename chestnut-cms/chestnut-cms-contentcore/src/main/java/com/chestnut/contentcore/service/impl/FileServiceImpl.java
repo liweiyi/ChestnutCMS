@@ -34,6 +34,7 @@ import com.chestnut.contentcore.util.SiteUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -77,7 +78,7 @@ public class FileServiceImpl implements IFileService {
 	
 	private void loadChildrenDirectories(TreeNode<String> node) {
 		File root = new File(CMSConfig.getResourceRoot() + node.getId());
-		File[] listFiles = root.listFiles();
+		File[] listFiles = root.listFiles(StringUtils::isNotSystemDir);
 		if (Objects.isNull(listFiles)) {
 			return;
 		}
@@ -114,9 +115,12 @@ public class FileServiceImpl implements IFileService {
 			}
     	} else {
     		// 返回指定目录文件
-        	listFiles = file.listFiles((dir, name) -> {
+        	listFiles = file.listFiles(f -> {
+				if (StringUtils.isSystemDir(f)) {
+					return false;
+				}
 				if (StringUtils.isNotEmpty(filterFilename)) {
-					return name.contains(filterFilename);
+					return f.getName().contains(filterFilename);
 				}
 				return true;
 			});
@@ -183,7 +187,7 @@ public class FileServiceImpl implements IFileService {
     	if (dir.startsWith("/")) {
     		dir = dir.substring(1);
     	}
-		dir = StringUtils.appendIfMissing(dir, "/");
+		dir = Strings.CS.appendIfMissing(dir, "/");
     	this.checkSiteDirectory(site, dir);
     	if (!dto.getIsDirectory()) {
     		this.checkFileType(dto.getFileName());
@@ -260,7 +264,7 @@ public class FileServiceImpl implements IFileService {
 		if (dir.startsWith("/")) {
 			dir = dir.substring(1);
 		}
-		dir = StringUtils.appendIfMissing(dir, "/");
+		dir = Strings.CS.appendIfMissing(dir, "/");
 		this.checkSiteDirectory(site, dir);
 		this.checkFileType(file.getOriginalFilename());
 		FileExUtils.checkFileName(file.getOriginalFilename());

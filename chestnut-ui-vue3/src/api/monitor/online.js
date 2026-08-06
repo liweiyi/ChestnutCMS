@@ -12,7 +12,7 @@ export function list(query) {
 // 强退用户
 export function forceLogout(tokenIds) {
   return request({
-    url: '/monitor/online/delete',
+    url: '/monitor/online/kickout',
     method: 'post',
     data: tokenIds
   })

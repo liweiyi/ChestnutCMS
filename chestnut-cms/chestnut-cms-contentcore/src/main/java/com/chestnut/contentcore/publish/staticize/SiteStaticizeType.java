@@ -22,7 +22,7 @@ import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
-import com.chestnut.contentcore.enums.ContentTips;
+import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.publish.IStaticizeType;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.contentcore.service.ISiteService;
@@ -84,12 +84,12 @@ public class SiteStaticizeType implements IStaticizeType {
 
     private void doSiteStaticize(CmsSite site, String publishPipeCode) {
         try {
-            AsyncTaskManager.setTaskMessage(ContentTips.PUBLISHING_SITE, publishPipeCode, site.getName());
+            AsyncTaskManager.setTaskMessage(ContentCoreTips.PUBLISHING_SITE, publishPipeCode, site.getName());
 
             String indexTemplate = site.getIndexTemplate(publishPipeCode);
             File templateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);
             if (Objects.isNull(templateFile)) {
-                logger.warn(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_NOT_FOUND,
+                logger.warn(AsyncTaskManager.addErrMessage(ContentCoreTips.TEMPLATE_NOT_FOUND,
                         publishPipeCode, TYPE + "#" + site.getName()));
                 return;
             }
@@ -104,16 +104,17 @@ public class SiteStaticizeType implements IStaticizeType {
 
             long s = System.currentTimeMillis();
             context.setDirectory(SiteUtils.getSiteRoot(site, publishPipeCode));
+            FreeMarkerUtils.fingerprint(context);
             context.setFirstFileName("index" + StringUtils.DOT + site.getStaticSuffix(publishPipeCode));
-            StringWriter writer = new StringWriter();
-            this.staticizeService.process(context, writer);
-            String text = FreeMarkerUtils.createBy(writer.toString());
-            String filePath = context.getStaticizeFilePath(context.getPageIndex());
-            FileUtils.writeStringToFile(new File(filePath), text, StandardCharsets.UTF_8);
+            try (StringWriter writer = new StringWriter()) {
+                this.staticizeService.process(context, writer);
+                String filePath = context.getStaticizeFilePath(context.getPageIndex());
+                FileUtils.writeStringToFile(new File(filePath), FreeMarkerUtils.createBy(writer.toString(), filePath), StandardCharsets.UTF_8);
+            }
             this.log(site, "[{}]The site template parsed: {}, cost {}ms",
                     publishPipeCode, site.getName(), (System.currentTimeMillis() - s));
         } catch (Exception e) {
-            logger.error(AsyncTaskManager.addErrMessage(ContentTips.TEMPLATE_PARSE_FAILED,
+            logger.error(AsyncTaskManager.addErrMessage(ContentCoreTips.TEMPLATE_PARSE_FAILED,
                     TYPE + "#" + publishPipeCode, site.getSiteId() + "#" + site.getName()), e);
         }
     }

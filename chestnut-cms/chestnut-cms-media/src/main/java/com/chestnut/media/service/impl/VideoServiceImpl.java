@@ -42,11 +42,9 @@ import ws.schild.jave.info.MultimediaInfo;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
-
-import static com.chestnut.contentcore.core.impl.InternalDataType_Resource.InternalUrl_Param_StorageType;
 
 @Service
 @RequiredArgsConstructor
@@ -104,7 +102,7 @@ public class VideoServiceImpl implements IVideoService {
 
 		try {
 			if (ServletUtils.isHttpUrl(videoPath)) {
-				MediaUtils.generateRemoteVideoScreenshot(new URL(videoPath), screenshotFile, timestamp);
+				MediaUtils.generateRemoteVideoScreenshot(URI.create(videoPath).toURL(), screenshotFile, timestamp);
 			} else {
 				MediaUtils.generateVideoScreenshot(new File(videoPath), screenshotFile, timestamp);
 			}

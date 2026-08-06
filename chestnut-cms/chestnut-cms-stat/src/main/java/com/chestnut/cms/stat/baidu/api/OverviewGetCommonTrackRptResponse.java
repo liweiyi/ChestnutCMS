@@ -16,7 +16,7 @@
 package com.chestnut.cms.stat.baidu.api;
 
 import com.chestnut.cms.stat.baidu.BaiduTjMetrics;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -81,7 +81,7 @@ public class OverviewGetCommonTrackRptResponse extends BaiduTjResponse {
         JsonNode items = jsonNode.get("items");
         items.forEach(item -> {
             RatioData ratioData = new RatioData();
-            ratioData.setLabel(item.get(0).asText());
+            ratioData.setLabel(item.get(0).asString());
             ratioData.setPv_count(item.get(1).asInt());
             ratioData.setRatio(item.get(2).asDouble());
             ratioDataList.add(ratioData);

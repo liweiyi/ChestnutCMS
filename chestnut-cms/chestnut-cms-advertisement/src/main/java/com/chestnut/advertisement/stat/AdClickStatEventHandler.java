@@ -52,7 +52,7 @@ public class AdClickStatEventHandler implements IStatEventHandler {
 
     @Override
     public void handle(StatEvent event) {
-        String aid = event.getData().get("aid").asText();
+        String aid = event.getData().get("aid").asString();
         Map<String, String> map = this.adService.getAdvertisementMap();
         String adName = map.get(aid);
         if (Objects.isNull(adName)) {

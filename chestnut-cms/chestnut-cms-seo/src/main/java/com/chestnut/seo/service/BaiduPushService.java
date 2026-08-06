@@ -15,7 +15,7 @@
  */
 package com.chestnut.seo.service;
 
-import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.HttpUtils;
 import com.chestnut.common.utils.JacksonUtils;
@@ -23,6 +23,8 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishPipeService;
 import com.chestnut.seo.properties.BaiduPushAccessSecretProperty;
@@ -56,7 +58,13 @@ public class BaiduPushService {
 
     public List<BaiduPushResult> pushContents(CmsSite site, List<Long> contentIds) {
         String secret = BaiduPushAccessSecretProperty.getValue(site.getConfigProps());
-        Assert.notEmpty(secret, () -> new GlobalException("Baidu push access secret not configured."));
+        Assert.notEmpty(secret, CommonErrorCode.BAIDU_PUSH_SECRET_NOT_CONFIGURED::exception);
+
+        List<CmsContent> contents = contentService.dao().lambdaQuery()
+                .in(CmsContent::getContentId, contentIds)
+                .list();
+        Assert.isFalse(contents.stream().anyMatch(content -> ContentStatus.isFlowing(content.getStatus())),
+                ContentCoreErrorCode.CONTENT_FLOWING::exception);
 
         List<CmsPublishPipe> publishPipes = publishPipeService.getPublishPipes(site.getSiteId());
         List<BaiduPushResult> results = new ArrayList<>(publishPipes.size());
@@ -68,8 +76,7 @@ public class BaiduPushService {
             if (domain.contains("://")) {
                 domain = StringUtils.substringAfter(domain, "://");
             }
-            List<CmsContent> list = contentService.dao().lambdaQuery().in(CmsContent::getContentId, contentIds).list();
-            List<String> urls = list.stream().map(content -> contentService
+            List<String> urls = contents.stream().map(content -> contentService
                     .getContentLink(content, 1, pp.getCode(), false)).toList();
 
             String apiUrl = StringUtils.messageFormat(API, domain, secret);

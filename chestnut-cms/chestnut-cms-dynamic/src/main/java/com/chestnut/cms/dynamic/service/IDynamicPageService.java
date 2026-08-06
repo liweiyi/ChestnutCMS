@@ -15,7 +15,7 @@
  */
 package com.chestnut.cms.dynamic.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
 import jakarta.servlet.http.HttpServletResponse;
 

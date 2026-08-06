@@ -21,7 +21,7 @@ import com.chestnut.system.domain.SysUser;
 
 import java.util.List;
 
-@XComment("用户信息")
+@XComment("{CC.SYS.USER.USER_INFO}")
 public record UserInfoVO(SysUser user, List<SysRole> roles) {
 
     public UserInfoVO {

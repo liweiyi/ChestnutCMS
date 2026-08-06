@@ -24,6 +24,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.CaseInsensitiveMap;
+import org.apache.commons.lang3.Strings;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -89,7 +90,7 @@ public class ServletUtils {
 	public static final String INTERNAL_IP = "InternalIP";
 
 	public static boolean isHttpUrl(String url) {
-		return StringUtils.startsWithIgnoreCase(url, HTTP) || StringUtils.startsWithIgnoreCase(url, HTTPS);
+		return Strings.CI.startsWith(url, HTTP) || Strings.CI.startsWith(url, HTTPS);
 	}
 
 	public static String getAcceptLanguage(HttpServletRequest request) {

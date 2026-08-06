@@ -16,7 +16,7 @@
 package com.chestnut.cms.stat.baidu.api;
 
 import com.chestnut.common.utils.StringUtils;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,7 +34,7 @@ public class BaiduTjResponse {
 
     public void fromJson(JsonNode jsonNode) {
         if (jsonNode.has("error_msg")) {
-            this.setError_msg(jsonNode.required("error_msg").asText());
+            this.setError_msg(jsonNode.required("error_msg").asString());
         }
     }
 

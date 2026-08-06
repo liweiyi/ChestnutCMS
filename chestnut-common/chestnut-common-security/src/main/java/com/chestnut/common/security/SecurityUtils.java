@@ -78,7 +78,7 @@ public class SecurityUtils {
 		if (encodedPassword.startsWith("$argon")) {
 			return INSTANCE.verify(encodedPassword, password.toCharArray());
 		}
-		// TODO remove for 1.6.0
+		// TODO remove for 2.x
 		return BCrypt.checkpw(password, encodedPassword);
 	}
 }

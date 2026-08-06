@@ -17,7 +17,7 @@ package com.chestnut.advertisement.service.impl;
 
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.advertisement.domain.CmsAdHourStat;
 import com.chestnut.advertisement.mapper.CmsAdHourStatMapper;
 import com.chestnut.advertisement.service.IAdHourStatService;

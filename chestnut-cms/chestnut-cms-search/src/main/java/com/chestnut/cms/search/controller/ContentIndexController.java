@@ -19,7 +19,9 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.HighlightField;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
+import co.elastic.clients.util.NamedValue;
 import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.es.doc.ESContent;
 import com.chestnut.cms.search.permission.CmsSearchPriv;
@@ -55,7 +57,7 @@ import com.chestnut.search.exception.SearchErrorCode;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
 import com.chestnut.xmodel.core.IMetaModelType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -138,8 +140,9 @@ public class ContentIndexController extends CmsRestController {
 					);
 			if (StringUtils.isNotEmpty(query)) {
 				s.highlight(h ->
-						h.fields("title", f -> f.preTags("<em color='red'>").postTags("</em>"))
-								.fields("fullText", f -> f.preTags("<em color='red'>").postTags("</em>")));
+						h.fields(
+								NamedValue.of("title", HighlightField.of(f -> f.preTags("<em color='red'>").postTags("</em>"))),
+								NamedValue.of("fullText", HighlightField.of(f -> f.preTags("<em color='red'>").postTags("</em>")))));
 			}
 			s.sort(sort -> sort.field(f -> f.field("_score").order(SortOrder.Desc)));
 			s.sort(sort -> sort.field(f -> f.field("publishDate").order(SortOrder.Desc))); // 排序: _score:desc + publishDate:desc
@@ -150,38 +153,41 @@ public class ContentIndexController extends CmsRestController {
 		List<ESContentVO> list = sr.hits().hits().stream().map(hit -> {
 			ObjectNode source = hit.source();
 			ESContentVO vo = JacksonUtils.getObjectMapper().convertValue(source, ESContentVO.class);
-			source.fieldNames().forEachRemaining(fieldName -> {
-				if (fieldName.startsWith(IMetaModelType.DATA_FIELD_PREFIX)) {
-					vo.getExtendData().put(fieldName, source.get(fieldName).asText());
+			if (Objects.nonNull(source)) {
+				source.properties().forEach(entry -> {
+					String fieldName = entry.getKey();
+					if (fieldName.startsWith(IMetaModelType.DATA_FIELD_PREFIX)) {
+						vo.getExtendData().put(fieldName, source.get(fieldName).asString());
+					}
+				});
+				vo.setHitScore(hit.score());
+				vo.setPublishDateInstance(LocalDateTime.ofEpochSecond(vo.getPublishDate(), 0, ZoneOffset.UTC));
+				vo.setCreateTimeInstance(LocalDateTime.ofEpochSecond(vo.getCreateTime(), 0, ZoneOffset.UTC));
+				CmsCatalog catalog = this.catalogService.getCatalog(vo.getCatalogId());
+				if (Objects.nonNull(catalog)) {
+					String catalogName = Stream.of(catalog.getAncestors().split(CatalogUtils.ANCESTORS_SPLITER)).map(cid -> {
+						CmsCatalog parent = this.catalogService.getCatalog(Long.valueOf(cid));
+						return Objects.nonNull(parent) ? parent.getName() : "[Unknown]";
+					}).collect(Collectors.joining(" > "));
+					vo.setCatalogName(catalogName);
 				}
-			});
-			vo.setHitScore(hit.score());
-			vo.setPublishDateInstance(LocalDateTime.ofEpochSecond(vo.getPublishDate(), 0, ZoneOffset.UTC));
-			vo.setCreateTimeInstance(LocalDateTime.ofEpochSecond(vo.getCreateTime(), 0, ZoneOffset.UTC));
-			CmsCatalog catalog = this.catalogService.getCatalog(vo.getCatalogId());
-			if (Objects.nonNull(catalog)) {
-				String catalogName = Stream.of(catalog.getAncestors().split(CatalogUtils.ANCESTORS_SPLITER)).map(cid -> {
-					CmsCatalog parent = this.catalogService.getCatalog(Long.valueOf(cid));
-					return Objects.nonNull(parent) ? parent.getName() : "[Unknown]";
-				}).collect(Collectors.joining(" > "));
-				vo.setCatalogName(catalogName);
+				hit.highlight().forEach((key, value) -> {
+					if (key.equals("fullText")) {
+						vo.setFullText(StringUtils.join(value.toArray(String[]::new)));
+					} else if (key.equals("title")) {
+						vo.setTitle(StringUtils.join(value.toArray(String[]::new)));
+					}
+				});
+				vo.setTitle(HtmlUtils.clean(vo.getTitle(), Safelist.simpleText()));
 			}
-			hit.highlight().forEach((key, value) -> {
-                if (key.equals("fullText")) {
-                    vo.setFullText(StringUtils.join(value.toArray(String[]::new)));
-                } else if (key.equals("title")) {
-                    vo.setTitle(StringUtils.join(value.toArray(String[]::new)));
-                }
-            });
-			vo.setTitle(HtmlUtils.clean(vo.getTitle(), Safelist.simpleText()));
 			return vo;
 		}).toList();
-		return this.bindDataTable(list, sr.hits().total().value());
+		return this.bindDataTable(list, Objects.nonNull(sr.hits().total()) ?  sr.hits().total().value() : 0);
 	}
 
 	@XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.GET_DETAIL}")
 	@GetMapping("/content/{contentId}")
-	public R<ESContent> selectDocumentDetail(@PathVariable(value = "contentId") @LongId @XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.CONTENT_ID}") Long contentId) throws ElasticsearchException, IOException {
+	public R<ESContent> selectDocumentDetail(@PathVariable @LongId @XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.CONTENT_ID}") Long contentId) throws ElasticsearchException, IOException {
 		this.checkElasticSearchEnabled();
 		CmsSite site = this.getCurrentSite();
 		ESContent source = this.searchService.getContentDocDetail(site.getSiteId(), contentId);
@@ -201,7 +207,7 @@ public class ContentIndexController extends CmsRestController {
 	@XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.BUILD}")
 	@Log(title = "重建内容索引", businessType = BusinessType.UPDATE)
 	@PostMapping("/build/{contentId}")
-	public R<Void> buildContentIndex(@PathVariable("contentId") @LongId @XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.CONTENT_ID}") Long contentId) {
+	public R<Void> buildContentIndex(@PathVariable @LongId @XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX.CONTENT_ID}") Long contentId) {
 		this.checkElasticSearchEnabled();
 		CmsContent content = this.contentService.dao().getById(contentId);
 		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));

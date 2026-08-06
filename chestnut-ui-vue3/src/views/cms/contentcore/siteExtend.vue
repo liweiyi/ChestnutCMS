@@ -389,41 +389,6 @@
             <el-icon class="ml5" style="width: var(--font-size);"><InfoFilled /></el-icon>
           </el-tooltip>
         </el-form-item>
-        <el-form-item 
-          :label="$t('CMS.Site.Extend.EnableStat')"
-          prop="EnableStat">
-          <el-switch
-            v-model="formExtend.EnableStat"
-            :active-text="$t('Common.Yes')"
-            :inactive-text="$t('Common.No')"
-            active-value="Y"
-            inactive-value="N">
-          </el-switch>
-        </el-form-item>
-        <el-form-item 
-          v-if="formExtend.EnableStat=='Y'"
-          :label="$t('CMS.Site.Extend.EnableDynamicStatScript')"
-          prop="EnableDynamicStatScript">
-          <el-switch
-            v-model="formExtend.EnableDynamicStatScript"
-            :active-text="$t('Common.Yes')"
-            :inactive-text="$t('Common.No')"
-            active-value="Y"
-            inactive-value="N">
-          </el-switch>
-        </el-form-item>
-        <el-form-item 
-          v-if="formExtend.EnableStat=='Y'"
-          :label="$t('CMS.Site.Extend.EnableHyperLogLog')"
-          prop="EnableHyperLogLog">
-          <el-switch
-            v-model="formExtend.EnableHyperLogLog"
-            :active-text="$t('Common.Yes')"
-            :inactive-text="$t('Common.No')"
-            active-value="Y"
-            inactive-value="N">
-          </el-switch>
-        </el-form-item>
       </el-card>
       
       <el-card shadow="hover">

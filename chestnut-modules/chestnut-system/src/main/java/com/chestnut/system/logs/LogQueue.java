@@ -81,8 +81,7 @@ public class LogQueue<E> extends AbstractQueue<E> implements Serializable {
 
                 @Override
                 public E next() {
-                    //noinspection unchecked
-                    return (E) snapshot[index++];
+                    return castElement(snapshot[index++]);
                 }
             };
 
@@ -128,8 +127,7 @@ public class LogQueue<E> extends AbstractQueue<E> implements Serializable {
             if (size == 0) {
                 return null;
             }
-            //noinspection unchecked
-            E element = (E) elements[head];
+            E element = castElement(elements[head]);
             elements[head] = null;
             head = (head + 1) % capacity;
             size--;
@@ -146,10 +144,14 @@ public class LogQueue<E> extends AbstractQueue<E> implements Serializable {
             if (size == 0) {
                 return null;
             }
-            //noinspection unchecked
-            return (E) elements[head];
+            return castElement(elements[head]);
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private E castElement(Object element) {
+        return (E) element;
     }
 }

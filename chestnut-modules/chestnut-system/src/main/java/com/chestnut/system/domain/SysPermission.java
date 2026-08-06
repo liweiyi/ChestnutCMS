@@ -23,7 +23,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.chestnut.common.db.domain.BaseEntity;
 
 import lombok.Getter;
@@ -61,7 +61,7 @@ public class SysPermission extends BaseEntity {
 	/**
 	 * 授权信息
 	 */
-	@TableField(typeHandler = JacksonTypeHandler.class)
+	@TableField(typeHandler = Jackson3TypeHandler.class)
 	private Map<String, String> permissions;
 	
 	public Map<String, String> getPermissions() {

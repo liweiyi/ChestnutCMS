@@ -15,7 +15,7 @@
  */
 package com.chestnut.contentcore.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.storage.FileStorageService;
@@ -62,6 +62,8 @@ import java.util.regex.Matcher;
 @Service
 @RequiredArgsConstructor
 public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResource> implements IResourceService {
+
+	private static final int FILE_NAME_MAX_LENGTH = 100;
 
 	private final FileStorageService fileStorageService;
 
@@ -118,8 +120,9 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		resource.setResourceId(IdUtils.getSnowflakeId());
 		resource.setSiteId(dto.getSite().getSiteId());
 		resource.setResourceType(resourceType.getId());
-		resource.setFileName(dto.getFile().getOriginalFilename());
-		resource.setName(StringUtils.isEmpty(dto.getName()) ? dto.getFile().getOriginalFilename() : dto.getName());
+		String originalFileName = fitFileName(dto.getFile().getOriginalFilename());
+		resource.setFileName(originalFileName);
+		resource.setName(StringUtils.isEmpty(dto.getName()) ? originalFileName : dto.getName());
 		resource.setSuffix(suffix);
 
 		String siteResourceRoot = SiteUtils.getSiteResourceRoot(dto.getSite());
@@ -152,8 +155,9 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		String oldPath = resource.getPath();
 
 		resource.setResourceType(resourceType.getId());
-		resource.setFileName(dto.getFile().getOriginalFilename());
-		resource.setName(StringUtils.isEmpty(dto.getName()) ? dto.getFile().getOriginalFilename() : dto.getName());
+		String originalFileName = fitFileName(dto.getFile().getOriginalFilename());
+		resource.setFileName(originalFileName);
+		resource.setName(StringUtils.isEmpty(dto.getName()) ? originalFileName : dto.getName());
 		resource.setSuffix(suffix);
 		String fileName = resource.getResourceId() + StringUtils.DOT + suffix;
 		String path = StringUtils.substringBeforeLast(resource.getPath(), "/") + "/" + fileName;
@@ -375,9 +379,9 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 	}
 
 	@Override
-	public boolean createThumbnailIfNotExists(InternalURL internalUrl, int width, int height) throws Exception {
+	public boolean createThumbnailIfNotExists(InternalURL internalUrl, int width, int height) {
 		if (!InternalDataType_Resource.ID.equals(internalUrl.getType())
-				|| !ResourceType_Image.isImage(internalUrl.getPath())) {
+				|| !ResourceType_Image.isImagePath(internalUrl.getPath())) {
 			return false;  // 非图片资源忽略
 		}
 
@@ -468,6 +472,25 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
         FileStorageHelper storageHelper = FileStorageHelper.of(fst, site);
         return storageHelper.read(resource.getPath());
     }
+
+	/**
+	 * 裁剪文件名以适配 cms_resource.file_name 字段长度（varchar(100)），保留扩展名。
+	 */
+	private static String fitFileName(String fileName) {
+		if (StringUtils.isEmpty(fileName) || fileName.length() <= FILE_NAME_MAX_LENGTH) {
+			return fileName;
+		}
+		String extension = FilenameUtils.getExtension(fileName);
+		if (StringUtils.isEmpty(extension)) {
+			return StringUtils.substring(fileName, 0, FILE_NAME_MAX_LENGTH);
+		}
+		String suffix = StringUtils.DOT + extension;
+		int baseMaxLength = FILE_NAME_MAX_LENGTH - suffix.length();
+		if (baseMaxLength <= 0) {
+			return StringUtils.substring(fileName, 0, FILE_NAME_MAX_LENGTH);
+		}
+		return StringUtils.substring(FilenameUtils.getBaseName(fileName), 0, baseMaxLength) + suffix;
+	}
 
     /**
 	 * 统计资源引用

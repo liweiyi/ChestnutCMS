@@ -123,7 +123,7 @@ public abstract class AbstractTag implements ITag, TemplateDirectiveModel {
         attrs.putAll(_attrs);
         CaseInsensitiveMap<String, String> map = new CaseInsensitiveMap<>();
         for (TagAttr tagAttr : tagAttrs) {
-            String attrValue = FreeMarkerUtils.getStringFrom(attrs, tagAttr.getName());
+            String attrValue = FreeMarkerUtils.getStringFrom(env, attrs, tagAttr.getName());
             if (tagAttr.isMandatory() && StringUtils.isEmpty(attrValue)) {
                 throw new MissionTagAttributeException(this.getTagName(), tagAttr.getName(), env);
             }

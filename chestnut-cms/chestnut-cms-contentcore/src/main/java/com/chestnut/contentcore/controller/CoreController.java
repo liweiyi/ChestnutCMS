@@ -38,6 +38,7 @@ import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.template.ITemplateType;
 import com.chestnut.contentcore.template.impl.SiteTemplateType;
 import com.chestnut.contentcore.util.ContentCoreUtils;
+import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.system.security.AdminUserType;
@@ -51,7 +52,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,8 +90,9 @@ public class CoreController extends BaseRestController {
 						@RequestParam(value = "pi", required = false, defaultValue = "1") Integer pageIndex)
 			throws IOException, TemplateException {
 		HttpServletResponse response = ServletUtils.getResponse();
-		response.setCharacterEncoding(Charset.defaultCharset().displayName());
-		response.setContentType("text/html; charset=" + Charset.defaultCharset().displayName());
+		String charset = staticizeService.getOutputCharset().name();
+		response.setCharacterEncoding(charset);
+		response.setContentType("text/html; charset=" + charset);
 		IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(dataType);
 		Assert.notNull(internalDataType, () -> ContentCoreErrorCode.UNSUPPORTED_INTERNAL_DATA_TYPE.exception(dataType));
 
@@ -121,8 +122,9 @@ public class CoreController extends BaseRestController {
 			throws IOException {
 		HttpServletResponse response = ServletUtils.getResponse();
 
-		response.setCharacterEncoding(Charset.defaultCharset().displayName());
-		response.setContentType("text/html; charset=" + Charset.defaultCharset().displayName());
+		String charset = staticizeService.getOutputCharset().name();
+		response.setCharacterEncoding(charset);
+		response.setContentType("text/html; charset=" + charset);
 		IInternalDataType internalDataType = ContentCoreUtils.getInternalDataType(dataType);
 		Assert.notNull(internalDataType, () -> ContentCoreErrorCode.UNSUPPORTED_INTERNAL_DATA_TYPE.exception(dataType));
 
@@ -162,13 +164,14 @@ public class CoreController extends BaseRestController {
 			ITemplateType templateType = this.templateService.getTemplateType(SiteTemplateType.TypeId);
 			templateType.initTemplateData(siteId, templateContext);
 			templateContext.getVariables().put(TemplateUtils.TemplateVariable_Request, params);
-			// TODO 兼容历史版本，下个大版本移除IncludeRequest模板变量
+			// TODO 兼容历史版本，2.x版本移除IncludeRequest模板变量
 			templateContext.getVariables().put(TemplateUtils.TemplateVariable_IncludeRequest, params);
 			templateContext.getVariables().put(TemplateUtils.TemplateVariable_ClientType, ServletUtils.getDeviceType());
 			// staticize
 			HttpServletResponse response = ServletUtils.getResponse();
-			response.setCharacterEncoding(Charset.defaultCharset().displayName());
-			response.setContentType("text/html; charset=" + Charset.defaultCharset().displayName());
+			String charset = staticizeService.getOutputCharset().name();
+			response.setCharacterEncoding(charset);
+			response.setContentType("text/html; charset=" + charset);
 			this.staticizeService.process(templateContext, response.getWriter());
 			log.debug("[{}]动态区块模板解析：{}，耗时：{}", publishPipeCode, template, System.currentTimeMillis() - s);
 		} catch (TemplateException | IOException e) {
@@ -203,5 +206,12 @@ public class CoreController extends BaseRestController {
 			vo.setName(I18nUtils.get(vo.getName()));
 		});
 		return R.ok(list);
+	}
+
+	@Priv(type = AdminUserType.TYPE)
+	@GetMapping("/cms/iurl")
+	public R<String> parseInternalUrl(@RequestParam String iurl) {
+		String url = InternalUrlUtils.getActualPreviewUrl(iurl);
+		return R.ok(url);
 	}
 }

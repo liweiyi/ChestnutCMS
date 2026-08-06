@@ -15,7 +15,7 @@
  */
 package com.chestnut.member.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.dto.CreateMemberRequest;
 import com.chestnut.member.domain.dto.ResetMemberPasswordRequest;

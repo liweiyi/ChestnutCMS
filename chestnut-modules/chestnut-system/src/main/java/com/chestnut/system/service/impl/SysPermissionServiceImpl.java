@@ -16,7 +16,7 @@
 package com.chestnut.system.service.impl;
 
 import cn.dev33.satoken.session.SaSession;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.IdUtils;

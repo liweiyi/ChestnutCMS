@@ -100,33 +100,33 @@ public class SysMenu extends BaseEntity {
 	@TableField(exist = false)
 	private List<SysMenu> children = new ArrayList<SysMenu>();
 
-	@NotBlank(message = "菜单名称不能为空")
-	@Size(min = 0, max = 50, message = "菜单名称长度不能超过50个字符")
+	@NotBlank(message = "{VALID.SYS.MENU.MENU_NAME_NOT_BLANK}")
+	@Size(min = 0, max = 50, message = "{VALID.SYS.MENU.MENU_NAME_SIZE}")
 	public String getMenuName() {
 		return menuName;
 	}
 
-	@NotNull(message = "显示顺序不能为空")
+	@NotNull(message = "{VALID.SYS.MENU.ORDER_NUM_NOT_NULL}")
 	public Integer getOrderNum() {
 		return orderNum;
 	}
 
-	@Size(min = 0, max = 200, message = "路由地址不能超过200个字符")
+	@Size(min = 0, max = 200, message = "{VALID.SYS.MENU.PATH_SIZE}")
 	public String getPath() {
 		return path;
 	}
 
-	@Size(min = 0, max = 200, message = "组件路径不能超过255个字符")
+	@Size(min = 0, max = 200, message = "{VALID.SYS.MENU.COMPONENT_SIZE}")
 	public String getComponent() {
 		return component;
 	}
 
-	@NotBlank(message = "菜单类型不能为空")
+	@NotBlank(message = "{VALID.SYS.MENU.MENU_TYPE_NOT_BLANK}")
 	public String getMenuType() {
 		return menuType;
 	}
 
-	@Size(min = 0, max = 100, message = "权限标识长度不能超过100个字符")
+	@Size(min = 0, max = 100, message = "{VALID.SYS.MENU.PERMS_SIZE}")
 	public String getPerms() {
 		return perms;
 	}

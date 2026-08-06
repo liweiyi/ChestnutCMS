@@ -140,6 +140,10 @@
   margin-bottom: 0;
 }
 
+.btn-row .el-col {
+  margin-bottom: 8px;
+}
+
 .el-col {
   &:has(.no-permi) {
     padding-right: 0!important;

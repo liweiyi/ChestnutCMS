@@ -17,16 +17,15 @@ package com.chestnut.contentcore.cache;
 
 import com.chestnut.common.redis.IMonitoredCache;
 import com.chestnut.common.redis.RedisCache;
+import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -42,6 +41,20 @@ public class CatalogMonitoredCache implements IMonitoredCache<CmsCatalog> {
     public static final String ID = "Catalog";
 
     private static final String CACHE_PREFIX = CMSConfig.CachePrefix + "catalog:";
+
+    private static final DefaultRedisScript<Long> UPDATE_CATALOG_PUBLISHING_SCRIPT = new DefaultRedisScript<>("""
+            local field = ARGV[1]
+            local pages = tonumber(ARGV[2])
+            if not pages then
+                return redis.error_reply('Catalog publishing pages must be numeric')
+            end
+            local value = redis.call('HGET', KEYS[1], field)
+            local current = tonumber(value) or 1
+            redis.call('HSET', KEYS[1], field, current + pages)
+            return current
+            """, Long.class);
+
+    private static final RedisSerializer<String> STRING_SERIALIZER = RedisSerializer.string();
 
     private final RedisCache redisCache;
 
@@ -113,5 +126,53 @@ public class CatalogMonitoredCache implements IMonitoredCache<CmsCatalog> {
     public void clear(Long siteId, Long catalogId, String catalogAlias) {
         this.redisCache.deleteObject(cacheKeyById(catalogId));
         this.redisCache.deleteObject(cacheKeyByAlias(siteId, catalogAlias));
+    }
+
+    /**
+     * 更新栏目发布进度
+     *
+     * @param catalogId 栏目ID
+     * @param pages 本次发布任务发布的分页数量
+     */
+    private int updateCatalogPublishing(Long catalogId, int pages) {
+        Long pageNo = this.redisCache.getRedisTemplate().execute(
+                UPDATE_CATALOG_PUBLISHING_SCRIPT,
+                STRING_SERIALIZER,
+                null,
+                List.of(ContentCoreConsts.CATALOG_PUBLISHING_CACHE_KEY),
+                catalogId.toString(),
+                String.valueOf(pages));
+        return pageNo.intValue();
+    }
+
+    public void resetCatalogPublishing(Long catalogId) {
+        this.removeCatalogPublishing(catalogId);
+        this.updateCatalogPublishing(catalogId, 0);
+    }
+
+    /**
+     * 删除栏目发布进度
+     * @param catalogId
+     */
+    public void removeCatalogPublishing(Long catalogId) {
+        this.redisCache.deleteCacheMapValue(ContentCoreConsts.CATALOG_PUBLISHING_CACHE_KEY, catalogId.toString());
+    }
+
+    public int getAndUpdateCatalogPublishingPageNo(Long catalogId, int pages) {
+        if (!redisCache.hasMapKey(ContentCoreConsts.CATALOG_PUBLISHING_CACHE_KEY, catalogId.toString())) {
+            return -1;
+        }
+        return this.updateCatalogPublishing(catalogId, pages);
+    }
+
+    /**
+     * 获取是所有发布进度栏目ID
+     */
+    public List<Long> getCatalogPublishingKeys() {
+        Map<String, Integer> map = this.redisCache.getCacheMap(ContentCoreConsts.CATALOG_PUBLISHING_CACHE_KEY, Integer.class);
+        if (Objects.isNull(map)) {
+            return List.of();
+        }
+        return map.keySet().stream().map(Long::valueOf).toList();
     }
 }

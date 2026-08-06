@@ -16,7 +16,7 @@
 package com.chestnut.common.db.util;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.toolkit.SqlRunner;
+import com.baomidou.mybatisplus.spring.toolkit.SqlRunner;
 import com.chestnut.common.db.DBErrorCode;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;

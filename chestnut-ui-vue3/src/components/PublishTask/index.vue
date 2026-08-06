@@ -50,6 +50,9 @@ const loadPublishTaskCount = () => {
         proxy.$cms.setPublishFlag('')
       }
     }
+  }).catch(error => {
+    taskCount.value = 0
+    clearInterval(interval.value)
   })
 }
 

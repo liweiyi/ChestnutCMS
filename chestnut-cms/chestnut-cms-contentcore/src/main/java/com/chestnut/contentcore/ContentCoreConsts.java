@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore;
 
+import com.chestnut.contentcore.config.CMSConfig;
+
 public interface ContentCoreConsts {
 
 	/**
@@ -46,4 +48,6 @@ public interface ContentCoreConsts {
 	 * 扩展配置属性字段模板变量前缀
 	 */
 	String ConfigPropFieldPrefix = "extend_";
+
+	String CATALOG_PUBLISHING_CACHE_KEY = CMSConfig.CachePrefix + "publish:catalog";
 }

@@ -17,15 +17,19 @@ package com.chestnut.member.controller.front;
 
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 
+import com.chestnut.member.config.MemberConfig_AccountEmailMessage;
+import com.chestnut.member.config.MemberConfig_RegisterEmailMessage;
 import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.dto.*;
 import com.chestnut.member.domain.vo.MemberCache;
@@ -35,8 +39,12 @@ import com.chestnut.member.security.MemberLoginService;
 import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberService;
+import com.chestnut.member.service.IMemberConfigService;
 import com.chestnut.member.service.IMemberStatDataService;
 import com.chestnut.member.util.MemberUtils;
+import com.chestnut.message.core.email.EmailMessageType;
+import com.chestnut.message.domain.dto.UserMessageSendRequest;
+import com.chestnut.message.service.IMessageSendService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
@@ -46,10 +54,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -74,14 +79,18 @@ public class MemberLoginApiController extends BaseRestController {
 
 	private final ISysLogininforService logininforService;
 
-	private final JavaMailSender javaMailSender;
+	private final IMessageSendService messageSendService;
+
+	private final IMemberConfigService memberConfigService;
+
+	private final MemberConfig_RegisterEmailMessage registerEmailMessage;
+
+	private final MemberConfig_AccountEmailMessage accountEmailMessage;
 
 	private final RedisCache redisCache;
 
 	private static final String SMS_CODE_CACHE_PREFIX = "member:sms_code:";
 
-	@Value("${spring.mail.username:}")
-	private String mailSendUser;
 	@XComment("{API.DOC.MEMBER.CHECK_LOGIN}")
 	@GetMapping("/is_login")
 	public R<?> checkLogin(@RequestParam(required = false, defaultValue = "false") @XComment("{API.DOC.MEMBER.PREVIEW}") Boolean preview) {
@@ -169,26 +178,27 @@ public class MemberLoginApiController extends BaseRestController {
 	@IgnoreDemoMode
 	@GetMapping("/register_sms_code")
 	public R<?> sendRegisterSmsCode(@RequestParam @Email @XComment("{API.DOC.MEMBER.EMAIL}") String email) {
-		if (StringUtils.isEmpty(mailSendUser)) {
-			return R.fail("发送失败，请联系管理员！");
-		}
 		try {
 			Long count = this.memberService.lambdaQuery().eq(Member::getEmail, email).count();
 			if (count > 0) {
 				return R.fail("邮箱已注册！");
 			}
-			SimpleMailMessage message = new SimpleMailMessage();
-			message.setFrom(mailSendUser);
-			message.setTo(email);
-			message.setSubject("会员注册验证");
-
 			String code = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 999999));
-			message.setText("验证码：" + code);
-			javaMailSender.send(message);
+			Long[] messageConfig = memberConfigService.getConfigValue(registerEmailMessage);
+			messageSendService.sendUserMessage(new UserMessageSendRequest(
+					EmailMessageType.TYPE,
+					MemberConfig_RegisterEmailMessage.REGISTER_EMAIL_SCENE,
+					email,
+					messageConfig[MemberConfig_RegisterEmailMessage.CONFIG_ID_INDEX],
+					messageConfig[MemberConfig_RegisterEmailMessage.TEMPLATE_ID_INDEX],
+					JacksonUtils.objectNode().put("code", code)
+			));
 
 			String uuid = IdUtils.simpleUUID();
 			redisCache.setCacheObject(SMS_CODE_CACHE_PREFIX + uuid, code, 600, TimeUnit.SECONDS);
 			return R.ok(uuid);
+		} catch (GlobalException e) {
+			throw e;
 		} catch (Exception e) {
 			log.error("邮件发送失败", e);
 			return R.fail("发送错误，请联系管理员！");
@@ -200,22 +210,23 @@ public class MemberLoginApiController extends BaseRestController {
 	@Priv(type = MemberUserType.TYPE)
 	@PostMapping("/sms_code")
 	public R<?> sendSmsCode(@RequestParam(required = false, defaultValue = "email") @XComment("{API.DOC.MEMBER.SMS_CODE_TYPE}") String type) {
-		if (StringUtils.isEmpty(mailSendUser)) {
-			return R.fail("发送失败，请联系管理员！");
-		}
 		try {
 			Member member = this.memberService.getById(StpMemberUtil.getLoginIdAsLong());
-
-			SimpleMailMessage message = new SimpleMailMessage();
-			message.setFrom(mailSendUser);
-			message.setTo(member.getEmail());
-			message.setSubject("邮箱绑定验证");
 			String code = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 999999));
-			message.setText("验证码：" + code);
-			javaMailSender.send(message);
+			Long[] messageConfig = memberConfigService.getConfigValue(accountEmailMessage);
+			messageSendService.sendUserMessage(new UserMessageSendRequest(
+					EmailMessageType.TYPE,
+					MemberConfig_AccountEmailMessage.CHANGE_EMAIL_SCENE,
+					member.getEmail(),
+					messageConfig[MemberConfig_AccountEmailMessage.CONFIG_ID_INDEX],
+					messageConfig[MemberConfig_AccountEmailMessage.TEMPLATE_ID_INDEX],
+					JacksonUtils.objectNode().put("code", code)
+			));
 
 			redisCache.setCacheObject(SMS_CODE_CACHE_PREFIX + member.getMemberId(), code, 600, TimeUnit.SECONDS);
 			return R.ok();
+		} catch (GlobalException e) {
+			throw e;
 		} catch (Exception e) {
 			return R.fail("发送失败，请联系管理员！");
 		}

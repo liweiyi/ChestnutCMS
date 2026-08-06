@@ -106,6 +106,7 @@ public class DictWordController extends BaseRestController {
 		return words;
 	}
 
+	@Priv(type = AdminUserType.TYPE, value = SearchConsts.SearchPriv.DICT_VIEW)
 	@XComment("{API.DOC.SEARCH.DICT_ANALYZE}")
 	@PostMapping("/analyze")
 	public R<?> wordAnalyze(@RequestBody WordAnalyzeRequest req) throws IOException {

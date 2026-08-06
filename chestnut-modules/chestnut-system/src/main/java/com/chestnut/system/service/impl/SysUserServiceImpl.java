@@ -18,7 +18,7 @@ package com.chestnut.system.service.impl;
 import cn.idev.excel.context.AnalysisContext;
 import cn.idev.excel.read.listener.ReadListener;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.utils.*;
@@ -42,6 +42,7 @@ import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -221,7 +222,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		// 用户与岗位关联
 		syncUserPost(db.getUserId(), req.getPostIds(), true);
 		// 变更未封禁或锁定状态时注销登录状态
-		if (!StringUtils.equals(db.getStatus(), oldStatus)
+		if (!Strings.CS.equals(db.getStatus(), oldStatus)
 				&& (UserStatus.isDisable(db.getStatus()) || UserStatus.isLocked(db.getStatus()))) {
 			StpAdminUtil.logout(req.getUserId());
 		}

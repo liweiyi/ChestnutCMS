@@ -15,12 +15,13 @@
  */
 package com.chestnut.system.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.system.config.I18nMessageSource;
 import com.chestnut.system.domain.SysI18nDict;
 import com.chestnut.system.domain.dto.BatchSaveI18nDictRequest;
 import com.chestnut.system.domain.dto.CreateI18nDictRequest;
 import com.chestnut.system.domain.dto.UpdateI18nDictRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.List;
@@ -73,6 +74,9 @@ public interface ISysI18nDictService extends IService<SysI18nDict> {
 		batchSaveI18nDicts(List.of(i18nDict));
 	}
 
+	@Transactional(rollbackFor = Throwable.class)
+	void deleteByLangKeys(List<String> langKeys);
+
 	/**
 	 * 修改国际化键名
 	 *
@@ -87,7 +91,7 @@ public interface ISysI18nDictService extends IService<SysI18nDict> {
 	 * 
 	 * @param i18nDictIds 国际化字典ID列表
 	 */
-	void deleteI18nDictByIds(List<Long> i18nDictIds);
+	void deleteI18nDictByIds(List<String> i18nDictIds);
 
 	/**
 	 * 根据国际化键名删除数据

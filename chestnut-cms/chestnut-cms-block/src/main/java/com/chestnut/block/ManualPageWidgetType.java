@@ -123,12 +123,12 @@ public class ManualPageWidgetType implements IPageWidgetType {
 
 		private String url;
 
-		@XComment("与url字段同值，仅为习惯添加")
+		@XComment("{CMS.BLOCK.MANUAL_PAGE_WIDGET.URL_ALIAS}")
 		private String link;
 		
 		private String logo;
 
-		// TODO 下个大版本移除，在模板使用${iurl(logo)}
+		// TODO 2.x版本移除，在模板使用${iurl(logo)}
 		@Deprecated(forRemoval = true)
 		private String logoSrc;
 		

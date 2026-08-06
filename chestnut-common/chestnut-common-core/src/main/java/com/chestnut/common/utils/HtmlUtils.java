@@ -23,6 +23,14 @@ import org.jsoup.safety.Safelist;
  */
 public class HtmlUtils extends org.springframework.web.util.HtmlUtils {
 
+    private static final String SANITIZER_BASE_URI = "https://sanitizer.invalid/";
+
+    private static final Safelist RICH_TEXT_SAFELIST = Safelist.relaxed()
+            .addTags("figure", "figcaption", "hr")
+            .addProtocols("a", "href", "iurl")
+            .addProtocols("img", "src", "iurl")
+            .preserveRelativeLinks(true);
+
 	/**
 	 * 清除所有HTML标签，但是不删除标签内的内容
 	 * 
@@ -39,6 +47,19 @@ public class HtmlUtils extends org.springframework.web.util.HtmlUtils {
         }
 		return Jsoup.clean(content, safelist);
 	}
+
+    /**
+     * 使用富文本白名单清理不可信HTML。
+     * <p>
+     * 保留常见排版、图片、表格、普通链接和站内iurl链接，移除脚本、事件属性、
+     * 内联样式以及危险URL协议。
+     */
+    public static String cleanRichText(String content) {
+        if (StringUtils.isBlank(content)) {
+            return content;
+        }
+        return Jsoup.clean(content, SANITIZER_BASE_URI, RICH_TEXT_SAFELIST);
+    }
 
     /**
      * 清理HTML标签，保留标签内的内容及换行格式

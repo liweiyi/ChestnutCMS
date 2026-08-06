@@ -15,19 +15,17 @@
  */
 package com.chestnut.member.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.chestnut.member.domain.MemberFollow;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.member.domain.MemberStatData;
 import com.chestnut.member.domain.vo.MemberCache;
-import com.chestnut.member.service.impl.MemberStatDataServiceImpl;
 
 public interface IMemberStatDataService extends IService<MemberStatData> {
 
     /**
      * 会员基础数据缓存
      *
-     * @param memberId
-     * @return
+     * @param memberId Member id.
+     * @return The member cache data.
      */
     MemberCache getMemberCache(Long memberId);
 
@@ -36,9 +34,9 @@ public interface IMemberStatDataService extends IService<MemberStatData> {
     /**
      * 更新统计数据
      *
-     * @param memberId
-     * @param statDataType
-     * @param delta
+     * @param memberId Member id.
+     * @param statDataType Stat data type.
+     * @param delta Delta.
      */
     void changeMemberStatData(Long memberId, String statDataType, Integer delta);
 }

@@ -19,11 +19,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -60,7 +60,7 @@ public class SysSecurityConfig extends BaseEntity {
 	/**
 	 * 安全配置
 	 */
-	@TableField(typeHandler = JacksonTypeHandler.class)
+	@TableField(typeHandler = Jackson3TypeHandler.class)
 	private ObjectNode configs;
 
 	/**
@@ -90,7 +90,7 @@ public class SysSecurityConfig extends BaseEntity {
 	/**
 	 * 密码中不允许包含的用户信息<br/>
 	 */
-	@TableField(typeHandler = JacksonTypeHandler.class)
+	@TableField(typeHandler = Jackson3TypeHandler.class)
 	private String[] passwordSensitive;
 
 	/**
@@ -165,7 +165,7 @@ public class SysSecurityConfig extends BaseEntity {
 	 * 第三方登录配置ID，多个用逗号分隔
 	 */
 	@Deprecated
-    @TableField(typeHandler = JacksonTypeHandler.class)
+    @TableField(typeHandler = Jackson3TypeHandler.class)
     private List<Long> loginTypeConfigIds;
 
 	public ObjectNode getConfigs() {

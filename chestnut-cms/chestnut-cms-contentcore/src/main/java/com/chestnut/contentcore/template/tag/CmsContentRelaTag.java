@@ -17,6 +17,7 @@ package com.chestnut.contentcore.template.tag;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
@@ -64,7 +65,7 @@ public class CmsContentRelaTag extends AbstractListTag {
 			throws TemplateException {
 		long contentId = MapUtils.getLongValue(attrs, ATTR_CONTENT_ID);
 		if (!IdUtils.validate(contentId)) {
-			throw new TemplateException("Invalid content id: " + contentId, env);
+			throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.INVALID_CONTENT_ID}", env.getLocale(), contentId), env);
 		}
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		Page<CmsContentRela> pageResult = contentRelaMapper.selectPage(new Page<>(pageIndex, size, page),

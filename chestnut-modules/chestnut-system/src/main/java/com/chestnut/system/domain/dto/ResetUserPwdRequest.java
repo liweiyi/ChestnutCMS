@@ -30,14 +30,14 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@XComment("重置用户密码请求参数")
+@XComment("{CC.SYS.USER.RESET_PWD_REQUEST}")
 public class ResetUserPwdRequest extends BaseDTO {
 
-    @XComment("用户ID")
+    @XComment("{CC.SYS.USER.USER_ID}")
     @LongId
     private Long userId;
 
-    @XComment("密码")
+    @XComment("{CC.SYS.USER.PASSWORD}")
     @NotBlank
     private String password;
 }

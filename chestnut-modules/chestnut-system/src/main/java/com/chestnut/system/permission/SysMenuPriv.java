@@ -36,6 +36,8 @@ public interface SysMenuPriv {
 	String MonitorLogsView = "monitor:logs:view";
 	
 	String AsyncTaskList = "monitor:async:view";
+
+	String ScheduledTaskView = "monitor:scheduledtask:view";
 	
 	String GroovyExec = "tool:groovy:exec";
 	

@@ -15,7 +15,7 @@
  */
 package com.chestnut.word.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.word.WordConstants;
@@ -29,6 +29,7 @@ import com.chestnut.word.sensitive.SensitiveWordProcessor.ReplaceType;
 import com.chestnut.word.sensitive.SensitiveWordType;
 import com.chestnut.word.service.ISensitiveWordService;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
@@ -85,7 +86,7 @@ public class SensitiveWordServiceImpl extends ServiceImpl<SensitiveWordMapper, S
 	}
 
 	@Override
-	public void run(String... args) throws Exception {
+	public void run(String @NonNull ... args) throws Exception {
 		// 敏感词黑名单
 		Set<String> blackList = getSensitiveWords(SensitiveWordType.BLACK);
 		// 敏感词白名单

@@ -15,28 +15,38 @@
  */
 package com.chestnut.xmodel.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.chestnut.common.db.util.SqlBuilder;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.toolkit.Db;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.ObjectUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.xmodel.core.*;
-import com.chestnut.xmodel.domain.XModel;
+import com.chestnut.xmodel.exception.MetaErrorCode;
 import com.chestnut.xmodel.exception.MetaXValidationException;
 import com.chestnut.xmodel.fixed.dict.MetaFieldType;
+import com.chestnut.xmodel.mapper.MetaModelDataMapper;
+import com.chestnut.xmodel.mapper.support.MetaModelDataSqlCommand;
+import com.chestnut.xmodel.mapper.support.MetaModelDataSqlCommandFactory;
 import com.chestnut.xmodel.service.IModelDataService;
 import com.chestnut.xmodel.service.IModelService;
 import com.chestnut.xmodel.util.XModelUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +58,10 @@ public class ModelDataServiceImpl implements IModelDataService {
 
 	private final IModelService modelService;
 
+	private final MetaModelDataMapper modelDataMapper;
+
+	private final MetaModelDataSqlCommandFactory sqlCommandFactory;
+
 	private IMetaControlType getControlType(String type) {
 		return controlTypeMap.get(IMetaControlType.BEAN_PREFIX + type);
 	}
@@ -58,27 +72,19 @@ public class ModelDataServiceImpl implements IModelDataService {
 
 	@Override
 	public void saveModelData(Long modelId, Map<String, Object> params) {
-		XModel model = this.modelService.getMetaModel(modelId).getModel();
+		MetaModel model = this.modelService.getMetaModel(modelId);
+		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
+		List<MetaModelField> primaryKeys = this.getPrimaryKeys(mmt);
 
-		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getOwnerType());
-		List<MetaModelField> primaryKeys = mmt.getFixedFields().stream()
-				.filter(MetaModelField::isPrimaryKey).toList();
-		if (primaryKeys.isEmpty()) {
-			throw new RuntimeException("Meta model primary key not defined.");
+		long count;
+		if (this.isDefaultDataTable(model, mmt)) {
+			QueryWrapper<BaseModelData> wrapper = this.newDefaultQueryWrapper(mmt);
+			this.addPrimaryKeyConditions(wrapper, primaryKeys, params);
+			count = Db.count(wrapper);
+		} else {
+			count = this.modelDataMapper.selectCount(this.newCustomCommand(model, Map.of(),
+					this.getPrimaryKeyConditions(primaryKeys, params)));
 		}
-		SqlBuilder sqlBuilder = new SqlBuilder().selectAll().from(model.getTableName()).where();
-		for (int i = 0; i < primaryKeys.size(); i++) {
-			if (i > 0) {
-				sqlBuilder.and();
-			}
-			MetaModelField pkField = primaryKeys.get(i);
-			Object fieldValue = params.get(pkField.getCode());
-			if (Objects.isNull(fieldValue)) {
-				throw new RuntimeException("Meta model primary key `" + pkField.getCode() + "` value cannot be null.");
-			}
-			sqlBuilder.eq(pkField.getFieldName(), fieldValue);
-		}
-		long count = sqlBuilder.selectCount();
 		if (count > 0) {
 			this.updateModelData(modelId, params);
 		} else {
@@ -91,10 +97,14 @@ public class ModelDataServiceImpl implements IModelDataService {
 		MetaModel model = this.modelService.getMetaModel(modelId);
 
 		final Map<String, Object> fieldValues = this.parseFieldValues(model, data);
-		// 构建插入sql添加数据
-		SqlBuilder sqlBuilder = new SqlBuilder().insertInto(model.getModel().getTableName(),
-				fieldValues.keySet(), fieldValues.values());
-		sqlBuilder.execInsert();
+		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
+		if (this.isDefaultDataTable(model, mmt)) {
+			BaseModelData modelData = this.newDefaultData(mmt);
+			fieldValues.forEach(modelData::setFieldValue);
+			Db.save(modelData);
+		} else {
+			this.modelDataMapper.insert(this.newCustomCommand(model, fieldValues, Map.of()));
+		}
 	}
 
 	@Override
@@ -104,26 +114,18 @@ public class ModelDataServiceImpl implements IModelDataService {
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
 		final Map<String, Object> fieldValues = this.parseFieldValues(model, data);
 
-		List<MetaModelField> primaryKeys = mmt.getFixedFields().stream()
-				.filter(MetaModelField::isPrimaryKey).toList();
+		List<MetaModelField> primaryKeys = this.getPrimaryKeys(mmt);
 		// 移除可能存在的主键字段值
 		primaryKeys.forEach(f -> fieldValues.remove(f.getFieldName()));
-		// 更新数据
-		SqlBuilder sqlBuilder = new SqlBuilder().update(model.getModel().getTableName());
-		fieldValues.forEach(sqlBuilder::set);
-		sqlBuilder.where();
-		for (int i = 0; i < primaryKeys.size(); i++) {
-			if (i > 0) {
-				sqlBuilder.and();
-			}
-			MetaModelField pkField = primaryKeys.get(i);
-			Object fieldValue = data.get(pkField.getCode());
-			if (Objects.isNull(fieldValue)) {
-				throw new RuntimeException("Meta model primary key `"+pkField.getCode()+"` value cannot be null.");
-			}
-			sqlBuilder.eq(pkField.getFieldName(), fieldValue);
+		if (this.isDefaultDataTable(model, mmt)) {
+			UpdateWrapper<BaseModelData> wrapper = Wrappers.update(this.newDefaultData(mmt)).checkSqlInjection();
+			fieldValues.forEach(wrapper::set);
+			this.addPrimaryKeyConditions(wrapper, primaryKeys, data);
+			Db.update(wrapper);
+		} else {
+			this.modelDataMapper.update(this.newCustomCommand(model, fieldValues,
+					this.getPrimaryKeyConditions(primaryKeys, data)));
 		}
-		sqlBuilder.executeUpdate();
 	}
 
 	private Map<String, Object> parseFieldValues(MetaModel model, Map<String, Object> data) {
@@ -171,23 +173,17 @@ public class ModelDataServiceImpl implements IModelDataService {
 
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
 
-		List<MetaModelField> primaryKeys = mmt.getFixedFields().stream()
-				.filter(MetaModelField::isPrimaryKey).toList();
+		List<MetaModelField> primaryKeys = this.getPrimaryKeys(mmt);
 
 		pkValues.forEach(pkValue -> {
-			SqlBuilder sqlBuilder = new SqlBuilder().delete().from(model.getModel().getTableName()).where();
-			for (int i = 0; i < primaryKeys.size(); i++) {
-				if (i > 0) {
-					sqlBuilder.and();
-				}
-				MetaModelField pkField = primaryKeys.get(i);
-				Object fieldValue = pkValue.get(pkField.getCode());
-				if (Objects.isNull(fieldValue)) {
-					throw new RuntimeException("Primary key `"+pkField.getCode()+"` cannot be null!");
-				}
-				sqlBuilder.eq(pkField.getFieldName(), fieldValue);
+			if (this.isDefaultDataTable(model, mmt)) {
+				QueryWrapper<BaseModelData> wrapper = this.newDefaultQueryWrapper(mmt);
+				this.addPrimaryKeyConditions(wrapper, primaryKeys, pkValue);
+				Db.remove(wrapper);
+			} else {
+				this.modelDataMapper.delete(this.newCustomCommand(model, Map.of(),
+						this.getPrimaryKeyConditions(primaryKeys, pkValue)));
 			}
-			sqlBuilder.executeDelete();
 		});
 	}
 
@@ -197,21 +193,20 @@ public class ModelDataServiceImpl implements IModelDataService {
 
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
 
-		List<MetaModelField> primaryKeys = mmt.getFixedFields().stream()
-				.filter(MetaModelField::isPrimaryKey).toList();
+		List<MetaModelField> primaryKeys = this.getPrimaryKeys(mmt);
 		Object[] args = primaryKeys.stream().map(f -> pkValues.get(f.getCode())).toArray(Object[]::new);
 		if (ObjectUtils.isAnyNull(args)) {
 			return Map.of();
 		}
-		SqlBuilder sqlBuilder = new SqlBuilder().selectAll().from(model.getModel().getTableName()).where();
-		for (int i = 0; i < primaryKeys.size(); i++) {
-			if (i > 0) {
-				sqlBuilder.and();
-			}
-			MetaModelField pkField = primaryKeys.get(i);
-			sqlBuilder.eq(pkField.getFieldName(), pkValues.get(pkField.getCode()));
+		Map<String, Object> map;
+		if (this.isDefaultDataTable(model, mmt)) {
+			QueryWrapper<BaseModelData> wrapper = this.newDefaultQueryWrapper(mmt);
+			this.addPrimaryKeyConditions(wrapper, primaryKeys, pkValues);
+			map = Db.getMap(wrapper);
+		} else {
+			map = this.modelDataMapper.selectOne(this.newCustomCommand(model, Map.of(),
+					this.getPrimaryKeyConditions(primaryKeys, pkValues)));
 		}
-		Map<String, Object> map = sqlBuilder.selectOne();
 		Map<String, Object> dataMap = new HashMap<>();
 		if (map == null) {
 			model.getFields().forEach(f -> {
@@ -219,14 +214,16 @@ public class ModelDataServiceImpl implements IModelDataService {
 			});
 			return dataMap;
 		}
+		Map<String, Object> row = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		row.putAll(map);
 		// 固定字段
 		mmt.getFixedFields().forEach(f -> {
-			Object v = map.get(f.getFieldName());
+			Object v = row.get(f.getFieldName());
 			dataMap.put(f.getCode(), v);
 		});
 		// 自定义字段
 		model.getFields().forEach(f -> {
-			Object v = map.get(f.getFieldName());
+			Object v = row.get(f.getFieldName());
 			IMetaControlType controlType = getControlType(f.getControlType());
             if (Objects.isNull(v)) {
 				v = StringUtils.EMPTY;
@@ -241,44 +238,158 @@ public class ModelDataServiceImpl implements IModelDataService {
 	}
 
 	@Override
-	public List<Map<String, Object>> selectModelDataList(Long modelId, Consumer<SqlBuilder> consumer) {
+	public List<Map<String, Object>> selectModelDataList(Long modelId, Consumer<MetaModelDataQuery> consumer) {
 		MetaModel model = this.modelService.getMetaModel(modelId);
-		Map<String, String> fieldNameToCode = model.getFields().stream()
-				.collect(Collectors.toMap(MetaModelField::getFieldName, MetaModelField::getCode));
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
-		mmt.getFixedFields().forEach(f -> fieldNameToCode.put(f.getFieldName(), f.getCode()));
+		MetaModelDataQuery query = this.createQuery(consumer);
 
-		SqlBuilder sqlBuilder = new SqlBuilder().selectAll().from(model.getModel().getTableName())
-				.where().eq(IMetaModelType.MODEL_ID_FIELD_NAME, model.getModel().getModelId());
-		consumer.accept(sqlBuilder);
-
-		return sqlBuilder.selectList().stream().map(data -> {
-			Map<String, Object> map = new HashMap<>();
-			data.forEach((key, value) -> map.put(fieldNameToCode.get(key), value));
-			return map;
-		}).toList();
+		List<Map<String, Object>> rows;
+		if (this.isDefaultDataTable(model, mmt)) {
+			QueryWrapper<BaseModelData> wrapper = this.newDefaultQueryWrapper(mmt)
+					.eq(IMetaModelType.MODEL_ID_FIELD_NAME, model.getModel().getModelId());
+			this.addQueryConditions(wrapper, model, mmt, query);
+			rows = Db.listMaps(wrapper);
+		} else {
+			rows = this.modelDataMapper.selectList(this.newCustomCommand(model, Map.of(),
+					this.getQueryConditions(model, mmt, query)));
+		}
+		return this.mapFieldNamesToCodes(rows, model, mmt);
 	}
 
 	@Override
 	public IPage<Map<String, Object>> selectModelDataPage(Long modelId, IPage<Map<String, Object>> page,
-														  Consumer<SqlBuilder> consumer) {
+														  Consumer<MetaModelDataQuery> consumer) {
 		MetaModel model = this.modelService.getMetaModel(modelId);
-		Map<String, String> fieldNameToCode = model.getFields().stream()
-				.collect(Collectors.toMap(MetaModelField::getFieldName, MetaModelField::getCode));
 		IMetaModelType mmt = XModelUtils.getMetaModelType(model.getModel().getOwnerType());
+		MetaModelDataQuery query = this.createQuery(consumer);
+
+		if (this.isDefaultDataTable(model, mmt)) {
+			QueryWrapper<BaseModelData> wrapper = this.newDefaultQueryWrapper(mmt)
+					.eq(IMetaModelType.MODEL_ID_FIELD_NAME, model.getModel().getModelId());
+			this.addQueryConditions(wrapper, model, mmt, query);
+			Db.pageMaps(page, wrapper);
+		} else {
+			this.modelDataMapper.selectPage(page, this.newCustomCommand(model, Map.of(),
+					this.getQueryConditions(model, mmt, query)));
+		}
+		page.setRecords(this.mapFieldNamesToCodes(page.getRecords(), model, mmt));
+		return page;
+	}
+
+	private List<MetaModelField> getPrimaryKeys(IMetaModelType mmt) {
+		List<MetaModelField> primaryKeys = mmt.getFixedFields().stream()
+				.filter(MetaModelField::isPrimaryKey).toList();
+		if (primaryKeys.isEmpty()) {
+			throw new RuntimeException("Meta model primary key not defined.");
+		}
+		return primaryKeys;
+	}
+
+	private Object getPrimaryKeyValue(Map<String, Object> values, MetaModelField primaryKey) {
+		Object value = values.get(primaryKey.getCode());
+		if (Objects.isNull(value)) {
+			throw new RuntimeException("Meta model primary key `" + primaryKey.getCode() + "` value cannot be null.");
+		}
+		return value;
+	}
+
+	private boolean isDefaultDataTable(MetaModel model, IMetaModelType mmt) {
+		return mmt.getDefaultTable().equalsIgnoreCase(model.getModel().getTableName());
+	}
+
+	@SuppressWarnings("unchecked")
+	private Class<BaseModelData> getDefaultDataClass(IMetaModelType mmt) {
+		return (Class<BaseModelData>) mmt.getDefaultDataClass();
+	}
+
+	private BaseModelData newDefaultData(IMetaModelType mmt) {
+		return BeanUtils.instantiateClass(this.getDefaultDataClass(mmt));
+	}
+
+	private QueryWrapper<BaseModelData> newDefaultQueryWrapper(IMetaModelType mmt) {
+		return Wrappers.query(this.getDefaultDataClass(mmt)).checkSqlInjection();
+	}
+
+	private void addPrimaryKeyConditions(QueryWrapper<BaseModelData> wrapper,
+										 List<MetaModelField> primaryKeys, Map<String, Object> values) {
+		primaryKeys.forEach(primaryKey -> wrapper.eq(primaryKey.getFieldName(),
+				this.getPrimaryKeyValue(values, primaryKey)));
+	}
+
+	private void addPrimaryKeyConditions(UpdateWrapper<BaseModelData> wrapper,
+										 List<MetaModelField> primaryKeys, Map<String, Object> values) {
+		primaryKeys.forEach(primaryKey -> wrapper.eq(primaryKey.getFieldName(),
+				this.getPrimaryKeyValue(values, primaryKey)));
+	}
+
+	private Map<String, Object> getPrimaryKeyConditions(List<MetaModelField> primaryKeys,
+													 Map<String, Object> values) {
+		Map<String, Object> conditions = new LinkedHashMap<>();
+		primaryKeys.forEach(primaryKey -> conditions.put(primaryKey.getFieldName(),
+				this.getPrimaryKeyValue(values, primaryKey)));
+		return conditions;
+	}
+
+	private MetaModelDataQuery createQuery(Consumer<MetaModelDataQuery> consumer) {
+		MetaModelDataQuery query = new MetaModelDataQuery();
+		if (consumer != null) {
+			consumer.accept(query);
+		}
+		return query;
+	}
+
+	private String resolveFieldName(MetaModel model, IMetaModelType mmt, String fieldCode) {
+		return Stream.concat(mmt.getFixedFields().stream(), model.getFields().stream())
+				.filter(field -> field.getCode().equals(fieldCode))
+				.map(MetaModelField::getFieldName)
+				.findFirst()
+				.orElseThrow(() -> MetaErrorCode.DB_FIELD_NOT_EXISTS.exception(fieldCode));
+	}
+
+	private void addQueryConditions(QueryWrapper<BaseModelData> wrapper, MetaModel model,
+									IMetaModelType mmt, MetaModelDataQuery query) {
+		query.getConditions().forEach(condition -> {
+			String fieldName = this.resolveFieldName(model, mmt, condition.fieldCode());
+			if (condition.value() == null) {
+				wrapper.isNull(fieldName);
+			} else {
+				wrapper.eq(fieldName, condition.value());
+			}
+		});
+	}
+
+	private Map<String, Object> getQueryConditions(MetaModel model, IMetaModelType mmt,
+													 MetaModelDataQuery query) {
+		Map<String, Object> conditions = new LinkedHashMap<>();
+		conditions.put(IMetaModelType.MODEL_ID_FIELD_NAME, model.getModel().getModelId());
+		query.getConditions().forEach(condition -> {
+			String fieldName = this.resolveFieldName(model, mmt, condition.fieldCode());
+			conditions.put(fieldName, condition.value());
+		});
+		return conditions;
+	}
+
+	private MetaModelDataSqlCommand newCustomCommand(MetaModel model, Map<String, Object> values,
+													  Map<String, Object> conditions) {
+		return this.sqlCommandFactory.create(model.getModel().getTableName(), values, conditions);
+	}
+
+	private List<Map<String, Object>> mapFieldNamesToCodes(List<Map<String, Object>> rows,
+														 MetaModel model, IMetaModelType mmt) {
+		Map<String, String> fieldNameToCode = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		fieldNameToCode.putAll(model.getFields().stream()
+				.collect(Collectors.toMap(MetaModelField::getFieldName, MetaModelField::getCode)));
 		mmt.getFixedFields().forEach(f -> fieldNameToCode.put(f.getFieldName(), f.getCode()));
 
-		SqlBuilder sqlBuilder = new SqlBuilder().selectAll().from(model.getModel().getTableName())
-				.where().eq(IMetaModelType.MODEL_ID_FIELD_NAME, model.getModel().getModelId());
-		consumer.accept(sqlBuilder);
-
-		IPage<Map<String, Object>> pageData = sqlBuilder.selectPage(page);
-		List<Map<String, Object>> list = pageData.getRecords().stream().map(data -> {
-			Map<String, Object> map = new HashMap<>();
-			data.forEach((key, value) -> map.put(fieldNameToCode.get(key), value));
-			return map;
+		return rows.stream().map(data -> {
+			Map<String, Object> result = new HashMap<>();
+			data.forEach((fieldName, value) -> {
+				String fieldCode = fieldNameToCode.get(fieldName);
+				if (fieldCode != null) {
+					result.put(fieldCode, value);
+				}
+			});
+			return result;
 		}).toList();
-		pageData.setRecords(list);
-		return pageData;
 	}
 }

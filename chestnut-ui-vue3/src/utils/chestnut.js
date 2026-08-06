@@ -272,6 +272,66 @@ export function isImage(filename) {
   return ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff', '.svg'].indexOf(suffix) > -1
 }
 
+// 视频扩展名
+const VIDEO_SUFFIXES = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.mkv', '.webm', '.m4v', '.mpg', '.mpeg', '.rmvb', '.rm', '.mxf', '.fla'];
+// 音频扩展名
+const AUDIO_SUFFIXES = ['.mp3', '.wav', '.aac', '.flac', '.ogg', '.wma', '.aiff', '.mid', '.m4a', '.mp2'];
+// iframe 预览扩展名
+const IFRAME_SUFFIXES = ['.pdf'];
+// Word 扩展名（vue-office 仅支持 .docx，但 .doc 也归为 word 类型便于提示）
+const WORD_SUFFIXES = ['.docx', '.doc'];
+// Excel 扩展名（vue-office 支持 .xlsx/.xls）
+const EXCEL_SUFFIXES = ['.xlsx', '.xls'];
+// PPT 扩展名（vue-office 仅支持 .pptx）
+const PPT_SUFFIXES = ['.pptx', '.ppt'];
+
+function getFileSuffix(filename) {
+  if (!filename || filename.indexOf('.') < 0) {
+    return '';
+  }
+  return filename.substring(filename.lastIndexOf('.')).toLowerCase();
+}
+
+export function isVideo(filename) {
+  return VIDEO_SUFFIXES.indexOf(getFileSuffix(filename)) > -1;
+}
+
+export function isAudio(filename) {
+  return AUDIO_SUFFIXES.indexOf(getFileSuffix(filename)) > -1;
+}
+
+export function isPdf(filename) {
+  return IFRAME_SUFFIXES.indexOf(getFileSuffix(filename)) > -1;
+}
+
+export function isWord(filename) {
+  return WORD_SUFFIXES.indexOf(getFileSuffix(filename)) > -1;
+}
+
+export function isExcel(filename) {
+  return EXCEL_SUFFIXES.indexOf(getFileSuffix(filename)) > -1;
+}
+
+export function isPpt(filename) {
+  return PPT_SUFFIXES.indexOf(getFileSuffix(filename)) > -1;
+}
+
+/**
+ * 获取文件预览类型
+ * @param {string} filename 文件名或URL
+ * @returns {'image'|'audio'|'video'|'pdf'|'word'|'excel'|'ppt'|'unknown'} 预览类型
+ */
+export function getPreviewType(filename) {
+  if (isImage(filename)) return 'image';
+  if (isAudio(filename)) return 'audio';
+  if (isVideo(filename)) return 'video';
+  if (isPdf(filename)) return 'pdf';
+  if (isWord(filename)) return 'word';
+  if (isExcel(filename)) return 'excel';
+  if (isPpt(filename)) return 'ppt';
+  return 'unknown';
+}
+
 export function getFileSvgIconClass(path) {
   if (path && path.indexOf(".") > -1) {
     const suffix = path.substring(path.lastIndexOf('.'));

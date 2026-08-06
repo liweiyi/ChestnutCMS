@@ -40,11 +40,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 资源类型：图片
@@ -80,9 +78,9 @@ public class ResourceType_Image implements IResourceType {
 		return SuffixArray;
 	}
 	
-	public static boolean isImage(String path) {
+	public static boolean isImagePath(String path) {
 		String ext = FilenameUtils.getExtension(path);
-		return Objects.nonNull(path) && ArrayUtils.contains(SuffixArray, ext);
+		return isImageExt(ext);
 	}
 
 	public static boolean isImageExt(String ext) {

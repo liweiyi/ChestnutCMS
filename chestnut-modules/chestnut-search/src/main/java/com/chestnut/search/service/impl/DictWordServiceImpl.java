@@ -15,7 +15,7 @@
  */
 package com.chestnut.search.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -27,6 +27,7 @@ import com.chestnut.search.mapper.DictWordMapper;
 import com.chestnut.search.service.IDictWordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -39,13 +40,14 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DictWordServiceImpl extends ServiceImpl<DictWordMapper, DictWord> implements IDictWordService {
 
-	private static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
 	private static final String MODIFY_CACHE_KEY = "search:dict:modify:";
 
 	private final RedisCache redisCache;
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public void batchAddDictWords(CreateDictWordRequest req) {
 		List<DictWord> dictWords = new ArrayList<>();
 		for (String word : req.getWords()) {

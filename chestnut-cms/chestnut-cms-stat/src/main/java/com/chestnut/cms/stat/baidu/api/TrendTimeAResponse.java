@@ -15,7 +15,7 @@
  */
 package com.chestnut.cms.stat.baidu.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -52,10 +52,10 @@ public class TrendTimeAResponse extends BaiduTjLineChatResponse {
         }
         JsonNode resultNode = jsonNode.get("result");
         List<String> fields = new ArrayList<>();
-        resultNode.get("fields").forEach(node -> fields.add(node.asText()));
+        resultNode.get("fields").forEach(node -> fields.add(node.asString()));
 
         setOffset(resultNode.get("offset").asInt());
-        setTimeSpan(resultNode.get("timeSpan").get(0).asText());
+        setTimeSpan(resultNode.get("timeSpan").get(0).asString());
         setTotal(resultNode.get("total").asInt());
 
         setSum(new HashMap<>(fields.size() - 1));

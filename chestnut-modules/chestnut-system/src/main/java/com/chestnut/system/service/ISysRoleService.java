@@ -15,7 +15,7 @@
  */
 package com.chestnut.system.service;
 
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.dto.CreateRoleRequest;
 import com.chestnut.system.domain.dto.UpdateRoleRequest;

@@ -74,7 +74,6 @@
         :show-overflow-tooltip="true"
       ></el-table-column>
       <el-table-column
-      <el-table-column
         prop="component"
         :label="$t('System.Menu.Component')"
         :show-overflow-tooltip="true"
@@ -426,7 +425,7 @@ function validateComponent(rule, value, callback) {
     if (proxy.$tools.isEmpty(value)) {
       callback(new Error(proxy.$t('Common.RuleTips.NotEmpty')));
     } else if (value.length > 255) {
-      callback(new Error(this.$t('Common.RuleTips.MaxLength', [255])));
+      callback(new Error(proxy.$t('Common.RuleTips.MaxLength', [255])));
     } else {
       callback();
     }
@@ -447,18 +446,6 @@ function validatePath(rule, value, callback) {
   } else {
     callback();
   }
-}
-
-
-function normalizer(node) {
-   if (node.children && !node.children.length) {
-      delete node.children;
-   }
-   return {
-      id: node.menuId,
-      label: node.menuName,
-      children: node.children
-   };
 }
 
 /** 查询菜单列表 */

@@ -17,10 +17,10 @@ package com.chestnut.common.volc;
 
 import com.chestnut.common.cloud.CdnRefreshType;
 import com.chestnut.common.cloud.ICloudProvider;
-import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.volcengine.ApiClient;
 import com.volcengine.ApiException;
 import com.volcengine.cdn.CdnApi;
@@ -60,9 +60,9 @@ public class VolcCloudProvider implements ICloudProvider {
 
     @Override
     public void updateConfigProps(ObjectNode oldProps, ObjectNode newProps) {
-        String appSecret = newProps.get("secretKey").asText();
+        String appSecret = newProps.get("secretKey").asString();
         if ("******".equals(appSecret)) {
-            newProps.put("secretKey", oldProps.get("secretKey").asText());
+            newProps.put("secretKey", oldProps.get("secretKey").asString());
         }
     }
 
@@ -70,13 +70,13 @@ public class VolcCloudProvider implements ICloudProvider {
     public void refreshCdn(ObjectNode props, CdnRefreshType type, List<String> urls) {
         VolcConfig config = JacksonUtils.convertValue(props, VolcConfig.class);
         if (Objects.isNull(config)) {
-            throw new GlobalException("Refresh cdn failed, config is null.");
+            throw CommonErrorCode.CLOUD_CONFIG_NULL.exception();
         }
         if (StringUtils.isEmpty(config.getAccessKey())) {
-            throw new GlobalException("Refresh cdn failed, Missing access key.");
+            throw CommonErrorCode.CLOUD_MISSING_ACCESS_KEY.exception();
         }
         if (StringUtils.isEmpty(config.getSecretKey())) {
-            throw new GlobalException("Refresh cdn failed, Missing secret key.");
+            throw CommonErrorCode.CLOUD_MISSING_SECRET_KEY.exception();
         }
         ApiClient apiClient = new ApiClient()
                 .setCredentials(Credentials.getCredentials(config.getAccessKey(),  config.getSecretKey()))
@@ -97,7 +97,7 @@ public class VolcCloudProvider implements ICloudProvider {
             SubmitRefreshTaskResponse response = cdnApi.submitRefreshTask(submitRefreshTaskRequest);
             Error error = response.getResponseMetadata().getError();
             if (Objects.nonNull(error)) {
-                throw new GlobalException("[%s] %s".formatted(error.getCode(), error.getMessage()));
+                throw CommonErrorCode.SYSTEM_ERROR.exception(error.getCode(), error.getMessage());
             }
             log.debug("Refresh cdn complete: {}", String.join(",", urls));
         } catch (ApiException e) {

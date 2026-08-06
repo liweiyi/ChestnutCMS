@@ -19,7 +19,6 @@ import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
-import com.ulisesbocchio.jasyptspringboot.annotation.ConditionalOnMissingBean;
 import freemarker.core.Environment;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
