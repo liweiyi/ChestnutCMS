@@ -74,29 +74,9 @@ public class EmailMessageType implements IMessageType<EmailProps> {
     @Override
     public void send(ObjectNode jsonConfigProps, Message message) {
         EmailProps props = new EmailProps().fromJson(jsonConfigProps);
-        String senderKey = props.getHost() + ":" + props.getPort() + "#" + props.getUser();
-        JavaMailSenderImpl javaMailSender = javaMailSenderMap.get(senderKey);
-        if (Objects.isNull(javaMailSender)) {
-            javaMailSender = new JavaMailSenderImpl();
-            javaMailSender.setHost(props.getHost());
-            javaMailSender.setPort(props.getPort());
-            javaMailSender.setUsername(props.getUser());
-            javaMailSender.setPassword(props.getPassword());
-            javaMailSender.setDefaultEncoding(StandardCharsets.UTF_8.displayName());
-            Properties properties = new Properties();
-            if (YesOrNo.isYes(props.getSecure())) {
-                properties.put("mail.smtp.auth", "true");
-                properties.put("mail.smtp.ssl.enable", "true");
-                properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-                properties.put("mail.smtp.socketFactory.port", "465");
-            }
-            if (Objects.nonNull(props.getProperties())) {
-                properties.putAll(props.getProperties());
-            }
-            javaMailSender.setJavaMailProperties(properties);
-            javaMailSenderMap.put(senderKey, javaMailSender);
-        }
-        final JavaMailSenderImpl mailSender = javaMailSender;
+        String senderKey = getSenderKey(props.getHost(), props.getPort(), props.getUser());
+        JavaMailSenderImpl mailSender = javaMailSenderMap.computeIfAbsent(senderKey,
+                key -> createJavaMailSender(props));
         EmailSendParams emailSendParams = new EmailSendParams().fromJson(message.params());
         for (String mail : emailSendParams.getMails()) {
             // 异步发送，量多可以考虑通过MQ进行处理
@@ -109,5 +89,34 @@ public class EmailMessageType implements IMessageType<EmailProps> {
                 mailSender.send(mailMessage);
             });
         }
+    }
+
+    public void clearSender(String host, Integer port, String user) {
+        javaMailSenderMap.remove(getSenderKey(host, port, user));
+    }
+
+    private String getSenderKey(String host, Integer port, String user) {
+        return host + ":" + port + "#" + user;
+    }
+
+    JavaMailSenderImpl createJavaMailSender(EmailProps props) {
+        JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
+        javaMailSender.setHost(props.getHost());
+        javaMailSender.setPort(props.getPort());
+        javaMailSender.setUsername(props.getUser());
+        javaMailSender.setPassword(props.getPassword());
+        javaMailSender.setDefaultEncoding(StandardCharsets.UTF_8.displayName());
+        Properties properties = new Properties();
+        if (YesOrNo.isYes(props.getSecure())) {
+            properties.put("mail.smtp.auth", "true");
+            properties.put("mail.smtp.ssl.enable", "true");
+            properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            properties.put("mail.smtp.socketFactory.port", "465");
+        }
+        if (Objects.nonNull(props.getProperties())) {
+            properties.putAll(props.getProperties());
+        }
+        javaMailSender.setJavaMailProperties(properties);
+        return javaMailSender;
     }
 }

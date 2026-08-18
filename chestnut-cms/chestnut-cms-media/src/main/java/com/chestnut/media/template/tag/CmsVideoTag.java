@@ -26,6 +26,7 @@ import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -76,8 +77,10 @@ public class CmsVideoTag extends AbstractListTag {
 		}
 
 		LambdaQueryWrapper<CmsVideo> q = new LambdaQueryWrapper<CmsVideo>().eq(CmsVideo::getContentId, contentId);
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		q.orderByAsc(CmsVideo::getSortFlag);
 
 		Page<CmsVideo> pageResult = this.videoService.dao().page(new Page<>(pageIndex, size, page), q);

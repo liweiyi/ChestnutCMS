@@ -26,6 +26,7 @@ import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.vo.TagCatalogVO;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.template.exception.CatalogNotFoundException;
 import com.chestnut.contentcore.util.TemplateUtils;
@@ -87,7 +88,6 @@ public class CmsCatalogTag extends AbstractListTag {
 		if (!CatalogTagLevel.isRoot(level) && Objects.isNull(catalog)) {
 			throw new CatalogNotFoundException(catalogId, alias, env);
 		}
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 
 		LambdaQueryWrapper<CmsCatalog> q = new LambdaQueryWrapper<>();
 		q.eq(CmsCatalog::getSiteId, siteId).eq(CmsCatalog::getVisibleFlag, YesOrNo.YES).ne(CmsCatalog::getTagIgnore, YesOrNo.YES);
@@ -100,7 +100,10 @@ public class CmsCatalogTag extends AbstractListTag {
 		} else if (CatalogTagLevel.isSelf(level)) {
 			q.eq(CmsCatalog::getCatalogId, catalog.getCatalogId());
 		}
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		q.orderByAsc(CmsCatalog::getSortFlag);
 
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);

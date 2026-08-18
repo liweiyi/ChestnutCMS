@@ -23,6 +23,7 @@ import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.word.domain.TagWordGroup;
 import com.chestnut.word.service.ITagWordGroupService;
@@ -83,8 +84,10 @@ public class CmsTagWordGroupTag extends AbstractListTag {
             }
 		}
 
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		q.orderByAsc(TagWordGroup::getSortFlag);
 
 		 Page<TagWordGroup> pageResult = this.tagWordGroupService.page(new Page<>(pageIndex, size, page), q);

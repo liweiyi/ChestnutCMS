@@ -151,7 +151,12 @@
           <el-date-picker v-if="item.type==='DATE'" v-model="form.configProps[item.key]" type="date" />
           <el-date-picker v-if="item.type==='DATE_TIME'" v-model="form.configProps[item.key]" type="datetime" />
           <el-time-picker v-if="item.type==='TIME'" v-model="form.configProps[item.key]" />
-          <el-switch v-if="item.type==='SWITCH'" v-model="form.configProps[item.key]">
+          <el-switch
+            v-if="item.type==='SWITCH'"
+            v-model="form.configProps[item.key]"
+            active-value="Y"
+            inactive-value="N"
+          >
             <template #active-text>
               <span>{{ $t('Common.Yes') }}</span>
             </template>

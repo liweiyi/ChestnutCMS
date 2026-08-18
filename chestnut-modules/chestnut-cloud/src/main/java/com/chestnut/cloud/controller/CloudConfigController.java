@@ -60,6 +60,7 @@ public class CloudConfigController extends BaseRestController {
 
     private final List<ICloudProvider> cloudProviderList;
 
+	@Priv(type = AdminUserType.TYPE)
     @XComment("{API.DOC.CLOUD.GET_TYPE_OPTIONS}")
     @GetMapping("/typeOptions")
     public R<?> getLoginTypeOptions() {

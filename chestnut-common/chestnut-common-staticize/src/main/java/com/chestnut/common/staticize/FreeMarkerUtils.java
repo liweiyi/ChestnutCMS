@@ -54,7 +54,6 @@ public class FreeMarkerUtils {
 				env.getObjectWrapper().wrap(context.getOtherFileName()));
 		env.setGlobalVariable(StaticizeConstants.TemplateVariable_TimeMillis,
 				env.getObjectWrapper().wrap(context.getTimeMillis()));
-		fingerprint(context);
 	}
 	
 	public static TemplateContext getTemplateContext(Environment env) throws TemplateModelException {
@@ -105,7 +104,7 @@ public class FreeMarkerUtils {
 	}
 
 	public static void fingerprint(TemplateContext context) {
-		if (Objects.isNull(context) || context.isPreview()) {
+		if (Objects.isNull(context) || StringUtils.isBlank(context.getDirectory()) || context.isPreview()) {
 			return;
 		}
 		Path path = Path.of(context.getDirectory(), ".well-known/fingerprint.json");

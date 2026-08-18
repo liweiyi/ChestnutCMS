@@ -586,7 +586,7 @@ const zhTW = {
     },
     Security: {
       Basic: "基本資訊",
-      Name: "名稱",
+      Name: "分類名稱",
       PasswordLength: "密碼長度",
       PasswordRule: "密碼組成規則",
       PasswordExpireSeconds: "密碼過期時長（單位：秒）",
@@ -2170,6 +2170,11 @@ const zhTW = {
       SortDown: "下移",
       ParentCategory: "父級分類",
       Name: "名稱",
+      OrderNum: "排序標識",
+      AddTitle: "添加流程分類",
+      EditTitle: "編輯流程分類",
+      DeleteConfirm: "是否確認刪除流程分類“{0}”？",
+      DeleteHasChildren: "該分類下存在子分類，請先刪除子分類",
       TreeRootName: "模型分類",
     },
     Model: {

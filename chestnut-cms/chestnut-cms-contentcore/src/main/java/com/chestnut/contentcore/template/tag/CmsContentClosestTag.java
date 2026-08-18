@@ -28,6 +28,7 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.vo.TagContentVO;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.ICatalogService;
@@ -97,7 +98,6 @@ public class CmsContentClosestTag extends AbstractListTag {
                 throw new CatalogNotFoundException(catalogId, alias, env);
             }
 		}
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 		String status = MapUtils.getString(attrs, ATTR_STATUS, ContentStatus.PUBLISHED);
 
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<>();
@@ -125,7 +125,10 @@ public class CmsContentClosestTag extends AbstractListTag {
 				q.apply(bit > 0, "attributes&{0}<>{1}", attrTotal, bit);
 			}
 		}
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		String sortType = MapUtils.getString(attrs, ATTR_SORT);
 		q.orderByDesc(MapUtils.getBooleanValue(attrs, ATTR_TOP_FLAG, true), CmsContent::getTopFlag);
 		if (CmsContentTag.SortTagAttr.isRecent(sortType)) {

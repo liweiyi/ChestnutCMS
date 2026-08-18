@@ -257,6 +257,7 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 内容类型数据
 	 */
+	@Priv(type = AdminUserType.TYPE)
 	@XComment("{API.DOC.CMS.CATALOG.GET_CONTENT_TYPES}")
 	@GetMapping("/getContentTypes")
 	public R<List<Map<String, String>>> getContentTypes() {
@@ -268,6 +269,7 @@ public class CatalogController extends CmsRestController {
 	/**
 	 * 栏目类型数据
 	 */
+	@Priv(type = AdminUserType.TYPE)
 	@XComment("{API.DOC.CMS.CATALOG.GET_CATALOG_TYPES}")
 	@GetMapping("/getCatalogTypes")
 	public R<List<Map<String, String>>> getCatalogTypes() {

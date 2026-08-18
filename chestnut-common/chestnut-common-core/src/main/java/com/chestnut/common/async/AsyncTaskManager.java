@@ -28,7 +28,9 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -44,7 +46,8 @@ public class AsyncTaskManager {
 
 	private final long ExpireSeconds = 60;
 
-	private static final ThreadLocal<AsyncTask> CURRENT = new ThreadLocal<>();
+	/** 当前线程的异步任务上下文栈。 */
+	private static final ThreadLocal<Deque<AsyncTask>> CURRENT = new ThreadLocal<>();
 
 	private static final ConcurrentHashMap<String, AsyncTask> asyncTaskMap = new ConcurrentHashMap<>();
 
@@ -134,15 +137,28 @@ public class AsyncTaskManager {
     }
 
 	protected static void setCurrent(AsyncTask task) {
-		CURRENT.set(task);
+		Deque<AsyncTask> taskStack = CURRENT.get();
+		if (Objects.isNull(taskStack)) {
+			taskStack = new ArrayDeque<>();
+			CURRENT.set(taskStack);
+		}
+		taskStack.push(task);
 	}
 
 	protected static void removeCurrent() {
-		CURRENT.remove();
+		Deque<AsyncTask> taskStack = CURRENT.get();
+		if (Objects.isNull(taskStack)) {
+			return;
+		}
+		taskStack.poll();
+		if (taskStack.isEmpty()) {
+			CURRENT.remove();
+		}
 	}
 
 	private static AsyncTask currentTask() {
-		return CURRENT.get();
+		Deque<AsyncTask> taskStack = CURRENT.get();
+		return Objects.isNull(taskStack) ? null : taskStack.peek();
 	}
     
     public static void checkInterrupt() throws InterruptedException {

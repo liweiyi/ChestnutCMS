@@ -21,6 +21,7 @@ import com.chestnut.cms.vote.service.ICmsVoteService;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.vote.domain.Vote;
 import com.chestnut.vote.service.IVoteService;
@@ -51,8 +52,10 @@ public class CmsVoteTag extends AbstractListTag {
 		String voteSource = this.cmsVoteService.getVoteSource(siteId);
 		LambdaQueryWrapper<Vote> q = new LambdaQueryWrapper<Vote>().eq(Vote::getSource, voteSource);
 
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 
 		Page<Vote> pageResult = this.voteService.page(new Page<>(pageIndex, size, page), q);
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());

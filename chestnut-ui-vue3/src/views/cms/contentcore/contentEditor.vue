@@ -17,6 +17,12 @@
             <el-col :span="1.5">
               <el-button plain type="primary" icon="View" @click="handlePreview">{{ $t('CMS.ContentCore.Preview') }}</el-button>
             </el-col>
+            <!-- AI 只处理当前表单内容，结果必须人工确认后回填，绝不会触发保存或发布。 -->
+            <el-col v-if="contentType === 'article' && form.linkFlag !== 'Y'" :span="1.5" class="permi-wrap">
+              <el-button v-hasPermi="['ai:assistant:use']" plain type="primary" @click="openArticleAi">
+                <svg-icon icon-class="file-ai" />AI 润色
+              </el-button>
+            </el-col>
             <el-col v-if="!isFlowing" :span="1.5" class="permi-wrap">
               <el-button plain type="warning" v-if="isLock" icon="Unlock" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleChangeLockState">{{ $t('CMS.Content.Unlock') }}</el-button>
               <el-button plain type="primary" v-else icon="Lock" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleChangeLockState">{{ $t('CMS.Content.Lock') }}</el-button>
@@ -329,6 +335,30 @@
         </el-button>
       </template>
     </el-dialog>
+    <el-dialog v-model="articleAiVisible" title="AI 文章助手" width="760px" append-to-body destroy-on-close>
+      <el-alert title="AI 结果不会自动保存。请检查事实、格式和链接后，再决定是否应用到编辑器。"
+                type="warning" :closable="false" show-icon class="mb15" />
+      <el-form label-width="95px">
+        <el-form-item label="处理要求">
+          <el-select v-model="articleAiInstruction" style="width: 100%" allow-create filterable>
+            <el-option label="润色并纠正错别字，保持原意和 HTML 结构" value="润色并纠正错别字，保持原意和 HTML 结构" />
+            <el-option label="精简冗余表达，使文章更清晰，保持 HTML 结构" value="精简冗余表达，使文章更清晰，保持 HTML 结构" />
+            <el-option label="改写为正式、专业的发布稿，保持事实和 HTML 结构" value="改写为正式、专业的发布稿，保持事实和 HTML 结构" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="AI 结果">
+          <el-input v-model="articleAiResult" type="textarea" :rows="18"
+                    placeholder="点击生成后，结果会显示在这里供人工检查" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="articleAiVisible = false">取消</el-button>
+        <el-button :loading="articleAiStreaming" @click="runArticleAi">生成</el-button>
+        <el-button type="primary" :disabled="!articleAiResult || articleAiStreaming" @click="applyArticleAiResult">
+          应用到编辑器
+        </el-button>
+      </template>
+    </el-dialog>
     <!-- 进度条 -->
     <cms-progress :title="progressTitle" v-model:open="openProgress" :taskId="taskId" message-class="top-right" @close="handleProgressClose"></cms-progress>
   </div>
@@ -338,6 +368,7 @@ import { getContentTypes } from "@/api/contentcore/catalog";
 import { getInitContentEditorData, addContent, saveContent, toPublishContent, publishContent, lockContent, unLockContent, moveContent } from "@/api/contentcore/content";
 import { getUEditorCSS, getArticleBodyFormats } from "@/api/contentcore/article"
 import { pushToBaidu } from "@/api/seo/baidupush";
+import { createAiConversation, streamAiMessage } from '@/api/ai/assistant'
 import Ueditor from '@/views/cms/components/UEditorPlus'
 import CmsProgress from '@/views/components/Progress';
 import CmsImageEditor from '@/views/cms/imageAlbum/editor';
@@ -446,6 +477,10 @@ const openContentOpLogDialog = ref(false);
 const openVersionDialog = ref(false);
 const ueditorImportCss = ref("");
 const articleEditorKey = ref(0);
+const articleAiVisible = ref(false);
+const articleAiStreaming = ref(false);
+const articleAiInstruction = ref('润色并纠正错别字，保持原意和 HTML 结构');
+const articleAiResult = ref('');
 const shortTitleLabel = ref(proxy.$t('CMS.Content.ShortTitle'));
 const subTitleLabel = ref(proxy.$t('CMS.Content.SubTitle'));
 
@@ -934,6 +969,48 @@ function handleNewContent() {
   }
   proxy.$router.push({ path: proxy.$route.path, query: query });
   initData();
+}
+
+/** 打开时不请求模型，避免误触产生费用；用户点击“生成”后才创建专用场景对话。 */
+function openArticleAi() {
+  articleAiResult.value = '';
+  articleAiVisible.value = true;
+}
+
+async function runArticleAi() {
+  if (!form.value.contentHtml) {
+    proxy.$message.warning('文章正文为空，暂无可处理内容');
+    return;
+  }
+  articleAiStreaming.value = true;
+  articleAiResult.value = '';
+  try {
+    const response = await createAiConversation({
+      title: `文章助手：${form.value.title || '未命名文章'}`,
+      scene: 'ARTICLE_EDITOR'
+    });
+    await streamAiMessage(response.data.conversationId, {
+      content: articleAiInstruction.value,
+      context: {
+        title: form.value.title || '',
+        contentHtml: form.value.contentHtml
+      }
+    }, event => {
+      if (event.type === 'message.delta') articleAiResult.value += event.data || '';
+      if (event.type === 'error') proxy.$message.error(event.data || 'AI 处理失败');
+    });
+  } catch (error) {
+    proxy.$message.error(error.message || 'AI 处理失败');
+  } finally {
+    articleAiStreaming.value = false;
+  }
+}
+
+/** 只更新本地表单字段，沿用页面既有保存、版本和审批流程。 */
+function applyArticleAiResult() {
+  form.value.contentHtml = articleAiResult.value;
+  articleAiVisible.value = false;
+  proxy.$message.success('AI 结果已回填，请检查后手动保存');
 }
 </script>
 <style scoped>

@@ -586,7 +586,7 @@ const en = {
     },
     Security: {
       Basic: "Basic Information",
-      Name: "Name",
+      Name: "Category Name",
       PasswordLength: "Password Length",
       PasswordRule: "Password Rule",
       PasswordExpireSeconds: "Password Expiration Seconds",
@@ -2183,6 +2183,11 @@ const en = {
       SortDown: "Move Down",
       ParentCategory: "Parent",
       Name: "Name",
+      OrderNum: "Order",
+      AddTitle: "Add Workflow Category",
+      EditTitle: "Edit Workflow Category",
+      DeleteConfirm: "Delete workflow category “{0}”?",
+      DeleteHasChildren: "This category has child categories. Delete them first.",
       TreeRootName: "Model Category",
     },
     Model: {

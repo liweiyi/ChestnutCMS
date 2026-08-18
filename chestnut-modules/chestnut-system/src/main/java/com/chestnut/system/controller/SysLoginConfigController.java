@@ -59,6 +59,8 @@ public class SysLoginConfigController extends BaseRestController {
 	private final ILoginConfigService loginConfigService;
 
     private final List<ILoginType>  loginTypeList;
+
+	@Priv(type = AdminUserType.TYPE)
     @XComment("{API.DOC.SYS.LOGIN_CONFIG.GET_TYPE_OPTIONS}")
     @GetMapping("/typeOptions")
     public R<?> getLoginTypeOptions() {

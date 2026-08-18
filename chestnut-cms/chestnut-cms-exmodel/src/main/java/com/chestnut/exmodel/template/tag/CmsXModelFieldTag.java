@@ -24,6 +24,7 @@ import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.exmodel.exception.XModelNotFoundTemplateException;
 import com.chestnut.xmodel.domain.XModel;
 import com.chestnut.xmodel.domain.XModelField;
@@ -71,8 +72,10 @@ public class CmsXModelFieldTag extends AbstractListTag {
 
 		LambdaQueryWrapper<XModelField> q = new LambdaQueryWrapper<>();
 		q.eq(XModelField::getModelId, modelId);
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
         q.orderByAsc(XModelField::getSortFlag);
 		Page<XModelField> pageResult = this.modelFieldService.page(new Page<>(pageIndex, size, page), q);
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());

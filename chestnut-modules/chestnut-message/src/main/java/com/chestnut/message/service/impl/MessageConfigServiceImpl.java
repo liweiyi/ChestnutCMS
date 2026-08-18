@@ -21,6 +21,8 @@ import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.message.core.IMessageType;
+import com.chestnut.message.core.email.EmailMessageType;
+import com.chestnut.message.core.email.EmailProps;
 import com.chestnut.message.domain.CcMessageConfig;
 import com.chestnut.message.domain.dto.CreateMessageConfigReq;
 import com.chestnut.message.domain.dto.TestMessageConfigReq;
@@ -85,10 +87,12 @@ public class MessageConfigServiceImpl extends ServiceImpl<CcMessageConfigMapper,
 
 		IMessageType<?> messageType = this.getMessageType(req.getType());
 		messageType.validate(req.getConfigProps());
+		EmailProps originalEmailProps = this.getEmailProps(dbConfig);
 
         BeanUtils.copyProperties(req, dbConfig);
         dbConfig.updateBy(req.getOperator().getUsername());
 		this.updateById(dbConfig);
+		this.clearEmailSender(originalEmailProps);
 		this.clearCache(dbConfig);
 	}
 
@@ -96,6 +100,7 @@ public class MessageConfigServiceImpl extends ServiceImpl<CcMessageConfigMapper,
 	public void deleteConfigs(List<Long> configIds) {
 		List<CcMessageConfig> configs = this.listByIds(configIds);
 		this.removeByIds(configIds);
+		configs.stream().map(this::getEmailProps).forEach(this::clearEmailSender);
 		configs.forEach(this::clearCache);
 	}
 
@@ -113,6 +118,21 @@ public class MessageConfigServiceImpl extends ServiceImpl<CcMessageConfigMapper,
 		this.redisCache.deleteObject(CACHE_PREFIX + config.getConfigId());
 		this.applicationContext.publishEvent(new AfterMessagePusherConfigUpdateEvent(this, config));
     }
+
+	private EmailProps getEmailProps(CcMessageConfig config) {
+		if (!EmailMessageType.TYPE.equals(config.getType())) {
+			return null;
+		}
+		return new EmailProps().fromJson(config.getConfigProps());
+	}
+
+	private void clearEmailSender(EmailProps props) {
+		if (props == null) {
+			return;
+		}
+		EmailMessageType emailMessageType = (EmailMessageType) this.getMessageType(EmailMessageType.TYPE);
+		emailMessageType.clearSender(props.getHost(), props.getPort(), props.getUser());
+	}
 
 	@Override
 	public void setApplicationContext(@NotNull ApplicationContext applicationContext) throws BeansException {

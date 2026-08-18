@@ -29,6 +29,7 @@ import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsPageWidget;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
@@ -81,12 +82,14 @@ public class CmsAdvertisementTag extends AbstractListTag {
 		if (adSpace == null) {
 			throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.AD_SPACE_NOT_FOUND}", env.getLocale(), code), env)  ;
 		}
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 
 		LambdaQueryWrapper<CmsAdvertisement> q = new LambdaQueryWrapper<CmsAdvertisement>()
 				.eq(CmsAdvertisement::getAdSpaceId, adSpace.getPageWidgetId())
 				.eq(CmsAdvertisement::getState, EnableOrDisable.ENABLE);
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		Page<CmsAdvertisement> pageResult = this.advertisementService.page(new Page<>(pageIndex, size, page), q);
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);
 		List<AdvertisementVO> list = pageResult.getRecords().stream().map(ad ->{

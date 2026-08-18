@@ -22,6 +22,7 @@ import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSiteProperty;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.service.ISitePropertyService;
 import com.chestnut.contentcore.util.TemplateUtils;
 import freemarker.core.Environment;
@@ -62,12 +63,14 @@ public class CmsSitePropertyTag extends AbstractListTag {
 			throws TemplateException {
 		long siteId = TemplateUtils.evalSiteId(env);
 		String code = MapUtils.getString(attrs, ATTR_CODE);
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 
 		LambdaQueryWrapper<CmsSiteProperty> q = new LambdaQueryWrapper<CmsSiteProperty>()
 				.eq(CmsSiteProperty::getSiteId, siteId)
 				.eq(StringUtils.isNotEmpty(code), CmsSiteProperty::getPropCode, code);
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		Page<CmsSiteProperty> pageResult = this.sitePropertyService.page(new Page<>(pageIndex, size, page), q);
 		return TagPageData.of(pageResult.getRecords(), pageResult.getTotal());
 	}

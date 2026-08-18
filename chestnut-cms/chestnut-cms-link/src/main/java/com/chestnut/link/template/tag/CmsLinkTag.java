@@ -22,6 +22,7 @@ import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.link.domain.CmsLink;
 import com.chestnut.link.domain.CmsLinkGroup;
@@ -67,9 +68,11 @@ public class CmsLinkTag extends AbstractListTag {
 				.eq(CmsLinkGroup::getSiteId, siteId)
 				.eq(CmsLinkGroup::getCode, code));
 		Assert.notNull(group, () -> new LinkGroupNotFoundTemplateException(code, env));
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
 		LambdaQueryWrapper<CmsLink> q = new LambdaQueryWrapper<CmsLink>().eq(CmsLink::getGroupId, group.getLinkGroupId());
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		q.orderByAsc(CmsLink::getSortFlag);
 
 		Page<CmsLink> pageResult = this.linkService.page(new Page<>(pageIndex, size, page), q);

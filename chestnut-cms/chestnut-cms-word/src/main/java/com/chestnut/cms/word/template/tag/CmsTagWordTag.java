@@ -21,6 +21,7 @@ import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.word.cache.TagWordMonitoredCache;
 import com.chestnut.word.domain.TagWord;
@@ -70,8 +71,10 @@ public class CmsTagWordTag extends AbstractListTag {
 		LambdaQueryWrapper<TagWord> q = new LambdaQueryWrapper<TagWord>()
 				.eq(TagWord::getGroupId, tagWordGroup.getGroupId());
 
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		q.orderByAsc(TagWord::getSortFlag);
 
         List<TagWordMonitoredCache.TagWordCache> tagWords = this.tagWordService.getTagWords(tagWordGroup.getOwner(), tagWordGroup.getCode());

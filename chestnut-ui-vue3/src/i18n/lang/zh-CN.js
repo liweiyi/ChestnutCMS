@@ -586,7 +586,7 @@ const zhCN = {
     },
     Security: {
       Basic: "基本信息",
-      Name: "名称",
+      Name: "分类名称",
       PasswordLength: "密码长度",
       PasswordRule: "密码组成规则",
       PasswordExpireSeconds: "密码过期时长（单位：秒）",
@@ -2170,6 +2170,11 @@ const zhCN = {
       SortDown: "下移",
       ParentCategory: "父级分类",
       Name: "名称",
+      OrderNum: "排序标识",
+      AddTitle: "添加流程分类",
+      EditTitle: "编辑流程分类",
+      DeleteConfirm: "是否确认删除流程分类“{0}”？",
+      DeleteHasChildren: "该分类下存在子分类，请先删除子分类",
       TreeRootName: "模型分类",
     },
     Model: {

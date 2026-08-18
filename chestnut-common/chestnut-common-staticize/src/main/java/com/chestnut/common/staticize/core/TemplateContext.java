@@ -22,6 +22,7 @@ import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 模板上下文
@@ -138,5 +139,9 @@ public class TemplateContext {
 	public void setDirectory(String directory) {
 		this.directory = directory;
 		FileExUtils.mkdirs(directory);
+	}
+
+	public String getDirectory() {
+		return Objects.requireNonNullElse(directory, StringUtils.EMPTY);
 	}
 }

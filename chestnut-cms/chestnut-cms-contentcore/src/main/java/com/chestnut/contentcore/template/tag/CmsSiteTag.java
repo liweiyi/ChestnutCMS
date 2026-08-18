@@ -26,6 +26,7 @@ import com.chestnut.common.staticize.tag.TagAttrOption;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.vo.TagSiteVO;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.template.exception.SiteNotFoundException;
 import com.chestnut.contentcore.util.SiteUtils;
@@ -84,8 +85,10 @@ public class CmsSiteTag extends AbstractListTag {
 		} else if (SiteTagLevel.isChild(level)) {
 			q.eq(CmsSite::getParentId, site.getSiteId());
 		}
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		q.orderByAsc(CmsSite::getSortFlag);
 
 		TemplateContext context = FreeMarkerUtils.getTemplateContext(env);

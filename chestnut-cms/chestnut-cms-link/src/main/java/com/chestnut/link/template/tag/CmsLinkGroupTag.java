@@ -21,6 +21,7 @@ import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractListTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.fixed.config.CmsTagConditionEnable;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.link.domain.CmsLinkGroup;
 import com.chestnut.link.service.ILinkGroupService;
@@ -61,8 +62,10 @@ public class CmsLinkGroupTag extends AbstractListTag {
 				.eq(siteId != null && siteId > 0, CmsLinkGroup::getSiteId, siteId)
 				.eq(StringUtils.isNotEmpty(code), CmsLinkGroup::getCode, code);
 
-		String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
-		q.apply(StringUtils.isNotEmpty(condition), condition);
+		if (CmsTagConditionEnable.isEnabled()) {
+			String condition = MapUtils.getString(attrs, TagAttr.AttrName_Condition);
+			q.apply(StringUtils.isNotEmpty(condition), condition);
+		}
 		q.orderByAsc(CmsLinkGroup::getSortFlag);
 
 		 Page<CmsLinkGroup> pageResult = this.linkGroupService.page(new Page<>(pageIndex, size, page), q);
