@@ -233,7 +233,7 @@ public class CDKeyUtil {
 
 		System.out.println("CHAR56>>>>>>>>>>>>");
 		for (int i = 0; i < 10; i++) {
-			long v = RandomUtils.secure().nextInt();
+			long v = RandomUtils.secure().randomInt();
 			String genChar = genChar56(v, 10);
 			System.out.println(v + " | " + genChar + " | " + decodeChar56(genChar));
 		}
@@ -241,7 +241,7 @@ public class CDKeyUtil {
 
 		System.out.println("CHAR32>>>>>>>>>>>>");
 		for (int i = 0; i < 10; i++) {
-			long v = RandomUtils.secure().nextInt();
+			long v = RandomUtils.secure().randomInt();
 			String genChar = genChar32(v, 8);
 			System.out.println(v + " | " + genChar + " | " + decodeChar32(genChar));
 		}
@@ -249,7 +249,7 @@ public class CDKeyUtil {
 
 		System.out.println("CHAR10>>>>>>>>>>>>");
 		for (int i = 0; i < 10; i++) {
-			long v = RandomUtils.secure().nextInt();
+			long v = RandomUtils.secure().randomInt();
 			String genChar = genChar10(v, 14);
 			System.out.println(v + " | " + genChar + " | " + decodeChar10(genChar));
 		}

@@ -368,7 +368,6 @@ import { getContentTypes } from "@/api/contentcore/catalog";
 import { getInitContentEditorData, addContent, saveContent, toPublishContent, publishContent, lockContent, unLockContent, moveContent } from "@/api/contentcore/content";
 import { getUEditorCSS, getArticleBodyFormats } from "@/api/contentcore/article"
 import { pushToBaidu } from "@/api/seo/baidupush";
-import { createAiConversation, streamAiMessage } from '@/api/ai/assistant'
 import Ueditor from '@/views/cms/components/UEditorPlus'
 import CmsProgress from '@/views/components/Progress';
 import CmsImageEditor from '@/views/cms/imageAlbum/editor';
@@ -382,23 +381,15 @@ import CmsContentOplogDialog from '@/views/cms/contentcore/contentOpLogDialog';
 import CmsTemplateSelector from '@/views/cms/contentcore/templateSelector';
 import CmsExmodelEditor from '@/views/cms/components/EXModelEditor';
 import CmsTagEditor from '@/views/cms/components/TagEditor';
-import CmsContentWorkflowInfo from '@/views/cms/contentcore/contentWorkflowInfo';
 
 const { proxy } = getCurrentInstance();
 
 const { CMSContentAttribute } = proxy.useDict('CMSContentAttribute');
 
-const contentPrivStrategyOptions = [
-  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyExtendCatalog"), value: "NONE" },
-  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyValid"), value: "VALID" },
-  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyIgnore"), value: "IGNORE" }
-]
-
 const DIRECT_PUBLISH_STATUSES = new Set(['20', '30', '81'])
 const AUDITABLE_STATUSES = new Set(['0', '40', '60', '82'])
 const contentNeedAudit = ref(false)
 const workflowPolicyLoaded = ref(false)
-let workflowPolicyRequestId = 0
 
 const isLock = computed(() => {
   return form.value.isLock === 'Y' && form.value.lockUser != '';
@@ -409,10 +400,6 @@ const showPublishActions = computed(() => workflowPolicyLoaded.value
   && !isFlowing.value
   && (DIRECT_PUBLISH_STATUSES.has(currentStatus.value)
     || (AUDITABLE_STATUSES.has(currentStatus.value) && !contentNeedAudit.value)))
-const showSubmitAudit = computed(() => workflowPolicyLoaded.value
-  && AUDITABLE_STATUSES.has(currentStatus.value)
-  && contentNeedAudit.value)
-const workflowInstanceId = computed(() => form.value.configProps?.ContentWorkflowInstanceId || '');
 const xmodelVisible = computed(() => {
   return form.value.catalogConfigProps
     && form.value.catalogConfigProps.ContentExtendModel != null
@@ -969,48 +956,6 @@ function handleNewContent() {
   }
   proxy.$router.push({ path: proxy.$route.path, query: query });
   initData();
-}
-
-/** 打开时不请求模型，避免误触产生费用；用户点击“生成”后才创建专用场景对话。 */
-function openArticleAi() {
-  articleAiResult.value = '';
-  articleAiVisible.value = true;
-}
-
-async function runArticleAi() {
-  if (!form.value.contentHtml) {
-    proxy.$message.warning('文章正文为空，暂无可处理内容');
-    return;
-  }
-  articleAiStreaming.value = true;
-  articleAiResult.value = '';
-  try {
-    const response = await createAiConversation({
-      title: `文章助手：${form.value.title || '未命名文章'}`,
-      scene: 'ARTICLE_EDITOR'
-    });
-    await streamAiMessage(response.data.conversationId, {
-      content: articleAiInstruction.value,
-      context: {
-        title: form.value.title || '',
-        contentHtml: form.value.contentHtml
-      }
-    }, event => {
-      if (event.type === 'message.delta') articleAiResult.value += event.data || '';
-      if (event.type === 'error') proxy.$message.error(event.data || 'AI 处理失败');
-    });
-  } catch (error) {
-    proxy.$message.error(error.message || 'AI 处理失败');
-  } finally {
-    articleAiStreaming.value = false;
-  }
-}
-
-/** 只更新本地表单字段，沿用页面既有保存、版本和审批流程。 */
-function applyArticleAiResult() {
-  form.value.contentHtml = articleAiResult.value;
-  articleAiVisible.value = false;
-  proxy.$message.success('AI 结果已回填，请检查后手动保存');
 }
 </script>
 <style scoped>
