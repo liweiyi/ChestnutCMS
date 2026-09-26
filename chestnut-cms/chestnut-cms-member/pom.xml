@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.chestnut</groupId>
         <artifactId>chestnut-cms</artifactId>
-        <version>1.6.0</version>
+        <version>1.6.1</version>
     </parent>
 
     <artifactId>chestnut-cms-member</artifactId>
@@ -22,6 +22,11 @@
         <dependency>
             <groupId>com.chestnut</groupId>
             <artifactId>chestnut-member</artifactId>
+        </dependency>
+        <!-- 内容扩展模型 -->
+        <dependency>
+            <groupId>com.chestnut</groupId>
+            <artifactId>chestnut-cms-exmodel</artifactId>
         </dependency>
     </dependencies>
 

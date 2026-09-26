@@ -15,6 +15,7 @@
  */
 package com.chestnut.contentcore.core;
 
+import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.util.SiteUtils;
 import jodd.io.ZipBuilder;
@@ -50,7 +51,7 @@ public class SiteExportContext implements ISiteThemeContext {
     /**
      * 导出临时目录
      */
-    static final String ExportDir = "_export/theme/";
+    static final String EXPORT_TEMP_DIR = ContentCoreConsts.SITE_EXPORT_DIR + "theme/";
 
     /**
      * 引用资源IDS
@@ -77,7 +78,7 @@ public class SiteExportContext implements ISiteThemeContext {
         String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
         String zipFile = siteResourceRoot + zipPath;
         ZipBuilder zipBuilder = ZipBuilder.createZipFile(new File(zipFile));
-        File exportDir = new File(siteResourceRoot + ExportDir);
+        File exportDir = new File(siteResourceRoot + EXPORT_TEMP_DIR);
         File[] files = exportDir.listFiles();
         if (Objects.nonNull(files)) {
             for (File f : files) {
@@ -97,7 +98,7 @@ public class SiteExportContext implements ISiteThemeContext {
      * @param dest 目标路径，项目资源根目录（resourceRoot）
      */
     public void saveFile(File source, String dest) {
-        dest = ExportDir + SiteDirPath + dest;
+        dest = EXPORT_TEMP_DIR + SiteDirPath + dest;
         File destFile = new File(SiteUtils.getSiteResourceRoot(site) + dest);
         try {
             if (source.isDirectory()) {
@@ -115,7 +116,7 @@ public class SiteExportContext implements ISiteThemeContext {
     }
 
     public void saveData(String tableName, String jsonData, int index) {
-        String path = ExportDir + DataDirPath + tableName + SPLITER + index + ".json";
+        String path = EXPORT_TEMP_DIR + DataDirPath + tableName + SPLITER + index + ".json";
         File f = new File(SiteUtils.getSiteResourceRoot(site) + path);
         try {
             FileUtils.writeStringToFile(f, jsonData, StandardCharsets.UTF_8);
@@ -126,6 +127,6 @@ public class SiteExportContext implements ISiteThemeContext {
 
     public void clearTempFiles() throws IOException {
         String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
-        FileUtils.deleteDirectory(new File(siteResourceRoot + ExportDir));
+        FileUtils.deleteDirectory(new File(siteResourceRoot + EXPORT_TEMP_DIR));
     }
 }

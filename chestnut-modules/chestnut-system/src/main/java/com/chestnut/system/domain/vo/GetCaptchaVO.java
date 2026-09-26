@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.system.enums;
+package com.chestnut.system.domain.vo;
 
-public enum PermissionOwnerType {
-
-	Role, User;
-
-	public static boolean isUser(String ownerType) {
-		return User.name().equals(ownerType);
-	}
-}
+/**
+ * 获取验证码信息
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
+public record GetCaptchaVO(
+        int duration, // 下次刷新间隔时间，单位：秒
+        Object captcha // 验证码详情
+) {}

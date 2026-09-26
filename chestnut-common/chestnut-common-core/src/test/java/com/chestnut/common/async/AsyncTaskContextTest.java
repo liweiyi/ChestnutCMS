@@ -147,7 +147,7 @@ class AsyncTaskContextTest {
     }
 
     @Test
-    void resolvesInterruptAgainstScopedTask() {
+    void resolvesInterruptAgainstCurrentTask() {
         AtomicBoolean continuedAfterInterruptCheck = new AtomicBoolean(false);
         AsyncTask task = new AsyncTask() {
             @Override

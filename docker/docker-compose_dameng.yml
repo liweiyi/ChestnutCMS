@@ -1,0 +1,43 @@
+name: chestnut-dameng
+
+services:
+  dameng:
+    # 用户提供的本地镜像；Apple Silicon 通过 Docker Desktop 的 amd64 支持运行。
+    image: dm8_single:dm8_20241022_rev244896_x86_rh6_64
+    pull_policy: never
+    platform: linux/amd64
+    container_name: cc-dameng
+    # 仅入口准备用户和新卷目录权限，随后降权到 dmdba 运行数据库。
+    user: "0:0"
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      LD_LIBRARY_PATH: /opt/dmdbms/bin
+      INSTANCE_NAME: DMSERVER
+      SYSDBA_PWD: ${DM_SYSDBA_PASSWORD:-Hello1234}
+      SYSAUDITOR_PWD: ${DM_SYSAUDITOR_PASSWORD:-Audit1234}
+      PAGE_SIZE: "32"
+      CASE_SENSITIVE: "1"
+      CHARSET: "1"
+    ports:
+      - "127.0.0.1:5236:5236"
+    volumes:
+      - dameng-data:/opt/dmdbms/data
+      - ./dameng/entrypoint.sh:/opt/chestnut/entrypoint.sh:ro
+      - ./dameng/healthcheck.sh:/opt/chestnut/healthcheck.sh:ro
+    entrypoint: ["/bin/bash", "/opt/chestnut/entrypoint.sh"]
+    healthcheck:
+      test: ["CMD", "/bin/bash", "/opt/chestnut/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    stop_grace_period: 60s
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  dameng-data:
+    name: chestnut-dameng-20241022-data

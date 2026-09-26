@@ -294,8 +294,9 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 	}
 
 	@Override
-	public void deleteResource(List<Long> resourceIds) {
-		List<CmsResource> resources = this.listByIds(resourceIds);
+	public void deleteResource(List<Long> resourceIds, Long siteId) {
+		List<CmsResource> resources = this.lambdaQuery().eq(CmsResource::getSiteId, siteId)
+				.in(CmsResource::getResourceId, resourceIds).list();
 		if (!resources.isEmpty()) {
 			CmsSite site = siteService.getSite(resources.get(0).getSiteId());
 			String fileStorageType = FileStorageTypeProperty.getValue(site.getConfigProps());

@@ -40,6 +40,11 @@ public interface ContentCoreConsts {
 	String Header_CurrentSite = "cc-current-site";
 
 	/**
+	 * 站点资源导出目录，相对站点资源目录
+	 */
+	String SITE_EXPORT_DIR = ".export/";
+
+	/**
 	 * 模板目录，固定在站点发布通道目录下的template目录中
 	 */
 	String TemplateDirectory = "template/";
@@ -50,4 +55,13 @@ public interface ContentCoreConsts {
 	String ConfigPropFieldPrefix = "extend_";
 
 	String CATALOG_PUBLISHING_CACHE_KEY = CMSConfig.CachePrefix + "publish:catalog";
+
+	/**
+	 * 内容并发锁前缀
+	 */
+	String LOCK_CONTENT_EDIT = "cc:lock::cms:content:";
+
+	static String lockContent(Long contentId) {
+		return LOCK_CONTENT_EDIT + contentId;
+	}
 }

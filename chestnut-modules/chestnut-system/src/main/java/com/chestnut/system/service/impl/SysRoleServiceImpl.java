@@ -19,10 +19,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
+import com.chestnut.system.domain.SysDept;
 import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.SysUserRole;
 import com.chestnut.system.domain.dto.CreateRoleRequest;
@@ -32,7 +34,10 @@ import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.mapper.SysRoleMapper;
 import com.chestnut.system.mapper.SysUserRoleMapper;
+import com.chestnut.system.service.ISysDeptService;
 import com.chestnut.system.service.ISysRoleService;
+import com.chestnut.system.service.ISysUserService;
+import com.chestnut.system.utils.SysDeptUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -40,6 +45,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 角色 业务层处理
@@ -55,17 +62,22 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 
 	private final SysUserRoleMapper userRoleMapper;
 
+	private final ISysUserService userService;
+
 	private final RedisCache redisCache;
 
+    private final ISysDeptService deptService;
+
 	@Override
-	public SysRole getRole(String roleCode) {
-		SysRole role = redisCache.getCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + roleCode, SysRole.class);
+	public SysRole getRole(Long roleId) {
+		String cacheKey = SysConstants.CACHE_SYS_ROLE_KEY + roleId;
+		SysRole role = redisCache.getCacheObject(cacheKey, SysRole.class);
 		if (Objects.nonNull(role)) {
 			return role;
 		}
-		role = this.getOne(new LambdaQueryWrapper<SysRole>().eq(SysRole::getRoleKey, roleCode));
+		role = this.getById(roleId);
 		if (Objects.nonNull(role)) {
-			redisCache.setCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + roleCode, role);
+			redisCache.setCacheObject(cacheKey, role);
 		}
 		return role;
 	}
@@ -103,75 +115,93 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void insertRole(CreateRoleRequest req) {
+		SysDept dept = this.deptService.getDept(req.getDeptId());
+		Assert.notNull(dept, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("deptId", req.getDeptId()));
+		SysDeptUtils.checkDeptScope(req.getOperator(), dept::getDeptId, dept::getAncestors);
+
 		boolean checkRoleUnique = this.checkRoleUnique(req.getRoleName(), req.getRoleKey(), null);
 		Assert.isTrue(checkRoleUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("RoleName,RoleKey"));
 
 		SysRole role = new SysRole();
 		BeanUtils.copyProperties(req, role);
 		role.setRoleId(IdUtils.getSnowflakeId());
+		role.setDeptId(dept.getDeptId());
+		role.setDeptAncestors(dept.getAncestors());
 		role.createBy(req.getOperator().getUsername());
 		this.save(role);
-		this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + role.getRoleKey());
+		this.redisCache.deleteObject(SysConstants.CACHE_SYS_ROLE_KEY + role.getRoleId());
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void updateRole(UpdateRoleRequest req) {
 		SysRole db = this.getById(req.getRoleId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getRoleId()));
+
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("roleId", req.getRoleId()));
 		boolean checkRoleUnique = this.checkRoleUnique(req.getRoleName(), req.getRoleKey(), req.getRoleId());
 		Assert.isTrue(checkRoleUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("RoleName,RoleKey"));
-		
+		// 用户是否有角色所属机构权限
+		SysDeptUtils.checkDeptScope(req.getOperator(), db::getDeptId, db::getDeptAncestors);
+
 		db.setRoleName(req.getRoleName());
 		db.setRoleKey(req.getRoleKey());
-		db.setStatus(req.getStatus());
 		db.setRoleSort(req.getRoleSort());
 		db.setRemark(req.getRemark());
 		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
-		this.redisCache.deleteObject(SysConstants.CACHE_SYS_ROLE_KEY + req.getRoleKey());
+		this.redisCache.deleteObject(SysConstants.CACHE_SYS_ROLE_KEY + req.getRoleId());
 	}
 
 	@Override
-	public void updateRoleStatus(UpdateRoleStatusRequest req) {
-		SysRole db = this.getById(req.getRoleId());
+    @Transactional(rollbackFor = Exception.class)
+	public List<Long> updateRoleStatus(UpdateRoleStatusRequest req) {
+        SysRole db = this.getById(req.getRoleId());
 		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getRoleId()));
-		
+
+		SysDeptUtils.checkDeptScope(req.getOperator(), db::getDeptId, db::getDeptAncestors);
+
+		// 影响用户列表
+		List<Long> userIds = this.userRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>()
+						.select(SysUserRole::getUserId).eq(SysUserRole::getRoleId, req.getRoleId()))
+						.stream().map(SysUserRole::getUserId).toList();
+
 		db.setStatus(req.getStatus());
 		db.updateBy(req.getOperator().getUsername());
 		this.updateById(db);
-		this.redisCache.deleteObject(SysConstants.CACHE_SYS_ROLE_KEY + db.getRoleKey());
+		this.redisCache.deleteObject(SysConstants.CACHE_SYS_ROLE_KEY + db.getRoleId());
+		return userIds;
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteRoleByIds(List<Long> roleIds) {
-		List<SysRole> roles = listByIds(roleIds);
+	public Set<Long> deleteRoleByIds(List<Long> roleIds, LoginUser operator) {
+		List<SysRole> roles = this.listByIds(roleIds);
+		Assert.isTrue(!roles.isEmpty(), SysErrorCode.ROLES_EMPTY::exception);
+
 		for (SysRole role : roles) {
-			Long userCount = userRoleMapper
-					.selectCount(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, role.getRoleId()));
-			Assert.isTrue(userCount == 0, () -> SysErrorCode.ROLE_USER_NOT_EMPTY.exception(role.getRoleKey()));
-			this.redisCache.deleteObject(SysConstants.CACHE_SYS_POST_KEY + role.getRoleKey());
+			// 必须是当前登录用户所在部门或其下级部门的角色
+			SysDeptUtils.checkDeptScope(operator, role::getDeptId, role::getDeptAncestors);
+			this.redisCache.deleteObject(SysConstants.CACHE_SYS_ROLE_KEY + role.getRoleId());
 		}
-		this.removeByIds(roleIds);
+		// 影响用户列表
+		Set<Long> userIds = this.userRoleMapper.selectList(new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getRoleId, roleIds))
+				.stream().map(SysUserRole::getUserId).collect(Collectors.toSet());
+		// 删除角色数据
+		this.removeByIds(roles);
+		// 删除角色用户关联关系
+		this.userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getRoleId, roleIds));
+		// 清理缓存
+		List<String> roleCacheKeys = roles.stream().map(role ->
+				SysConstants.CACHE_SYS_ROLE_KEY + role.getRoleId()).toList();
+		this.redisCache.deleteObjects(roleCacheKeys);
+        return userIds;
 	}
 
 	@Override
-	public void deleteAuthUsers(Long roleId, List<Long> userIds) {
-		LambdaQueryWrapper<SysUserRole> q = new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, roleId)
-				.in(SysUserRole::getUserId, userIds);
-		userRoleMapper.delete(q);
-	}
-
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void insertAuthUsers(Long roleId, List<Long> userIds) {
-		// 新增用户与角色管理
-		for (Long userId : userIds) {
-			SysUserRole ur = new SysUserRole();
-			ur.setUserId(userId);
-			ur.setRoleId(roleId);
-			userRoleMapper.insert(ur);
-		}
+	public List<Long> getUserIdsByRole(Long roleId) {
+		return this.userRoleMapper.selectList(
+				new LambdaQueryWrapper<SysUserRole>().select(SysUserRole::getUserId)
+						.eq(SysUserRole::getRoleId, roleId)
+		).stream().map(SysUserRole::getUserId).toList();
 	}
 }

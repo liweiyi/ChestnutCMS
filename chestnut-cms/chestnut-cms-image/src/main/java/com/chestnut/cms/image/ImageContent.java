@@ -17,6 +17,7 @@ package com.chestnut.cms.image;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.cms.image.domain.CmsImage;
+import com.chestnut.cms.image.domain.dto.ImageAlbumDTO;
 import com.chestnut.cms.image.service.IImageService;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.SpringUtils;
@@ -24,9 +25,12 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ImageContent extends AbstractContent<List<CmsImage>> {
 
@@ -58,12 +62,16 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 	}
 
 	@Override
-	protected void save0() {
+	protected void save0(ContentDTO dto) {
+		if (!(dto instanceof ImageAlbumDTO dtoExtendEntity)) {
+			return;
+		}
 		if (!this.hasExtendEntity()) {
 			this.getImageService().dao().remove(new LambdaQueryWrapper<CmsImage>().eq(CmsImage::getContentId,
 					this.getContentEntity().getContentId()));
 			return;
 		}
+		this.setExtendEntity(dtoExtendEntity.getImageList());
 		// 图片数处理
 		List<CmsImage> imageList = this.getExtendEntity();
 		// 先删除数据
@@ -73,21 +81,29 @@ public class ImageContent extends AbstractContent<List<CmsImage>> {
 				.remove(new LambdaQueryWrapper<CmsImage>()
 						.eq(CmsImage::getContentId, this.getContentEntity().getContentId())
 						.notIn(!updateImageIds.isEmpty(), CmsImage::getImageId, updateImageIds));
+		// 查找剩余需要修改的图集
+		Map<Long, CmsImage> oldImageMap = this.getImageService().dao().lambdaQuery()
+				.eq(CmsImage::getContentId, this.getContentEntity().getContentId()).list().stream()
+				.collect(Collectors.toMap(CmsImage::getImageId, a -> a));
 		for (int i = 0; i < imageList.size(); i++) {
 			CmsImage image = imageList.get(i);
-			if (IdUtils.validate(image.getImageId())) {
-				image.setSortFlag(i);
+			image.setContentId(this.getContentEntity().getContentId());
+			image.setSiteId(this.getContentEntity().getSiteId());
+			image.setImageType(FileExUtils.getExtension(image.getPath()));
+			image.setSortFlag(i);
+			if (IdUtils.validate(image.getImageId()) &&  oldImageMap.containsKey(image.getImageId())) {
 				image.updateBy(this.getOperatorUName());
-				this.getImageService().dao().updateById(image);
 			} else {
 				image.setImageId(IdUtils.getSnowflakeId());
-				image.setContentId(this.getContentEntity().getContentId());
-				image.setSiteId(this.getContentEntity().getSiteId());
-				image.setImageType(FileExUtils.getExtension(image.getPath()));
-				image.setSortFlag(i);
 				image.createBy(this.getOperatorUName());
-				this.getImageService().dao().save(image);
 			}
+		}
+	}
+
+	@Override
+	protected void saveToDB0() {
+		if (this.hasExtendEntity()) {
+			this.getImageService().dao().saveOrUpdateBatch(this.getExtendEntity());
 		}
 	}
 

@@ -32,9 +32,11 @@ import com.chestnut.system.config.converter.DictConverter;
 import com.chestnut.system.fixed.dict.Gender;
 import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.fixed.dict.YesOrNo;
+import com.chestnut.system.permission.HasDept;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.ISecurityUser;
 import com.chestnut.system.validator.Dict;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -57,7 +59,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @TableName(value = SysUser.TABLE_NAME, autoResultMap = true)
-public class SysUser extends BaseEntity implements ISecurityUser {
+public class SysUser extends BaseEntity implements ISecurityUser, HasDept {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
@@ -73,6 +75,11 @@ public class SysUser extends BaseEntity implements ISecurityUser {
 	@ExcelIgnore
     @XComment("{ENT.SYS.USER.DEPT_ID}")
 	private Long deptId;
+
+	/** 部门編碼 */
+	@ExcelIgnore
+	@XComment("{ENT.SYS.USER.DEPT_ANCESTORS}")
+	private String deptAncestors;
 
 	@ExcelProperty("{ENT.SYS.USER.DEPT_NAME}")
 	@TableField(exist = false)

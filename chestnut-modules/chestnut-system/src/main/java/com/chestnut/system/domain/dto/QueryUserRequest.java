@@ -18,6 +18,7 @@ package com.chestnut.system.domain.dto;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.validator.Dict;
+import com.chestnut.system.validator.LongId;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -46,5 +47,9 @@ public class QueryUserRequest {
     private String status;
 
     @XComment("{CC.SYS.USER.DEPT_ID}")
+    @LongId
     private Long deptId;
+
+    @XComment("{API.DOC.SYS.DEPT.ONLY_CURRENT}")
+    private boolean onlyCurrentDept;
 }

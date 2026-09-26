@@ -36,17 +36,8 @@ public class CMSProperties {
 	private String resourceRoot;
 	
 	/**
-	 * 缓存名统一前缀
-	 */
-	private String cacheName = "cms:";
-	
-	/**
 	 * 系统启动时是否清空cacheName前缀的所有缓存
 	 */
 	private Boolean resetCache = false;
 
-	/**
-	 * 资源分片文件过期时间，默认：24小时，单位：秒
-	 */
-	private long resourceChunkExpireSeconds = 24 * 60 * 60;
 }

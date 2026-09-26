@@ -12,6 +12,8 @@ const useUserStore = defineStore(
     state: () => ({
       token: auth.getToken(),
       id: '',
+      deptId: undefined,
+      superAdmin: false,
       name: '',
       nickName: '',
       avatar: '',
@@ -55,6 +57,8 @@ const useUserStore = defineStore(
               this.permissions = res.data.permissions
             }
             this.id = user.userId
+            this.deptId = user.deptId
+            this.superAdmin = res.data.superAdmin === true
             this.name = user.userName
             this.nickName = user.nickName
             this.avatar = avatar
@@ -97,6 +101,8 @@ const useUserStore = defineStore(
           logout(this.token).then(() => {
             this.token = ''
             this.roles = []
+            this.deptId = undefined
+            this.superAdmin = false
             this.permissions = []
             auth.removeToken()
             resolve()

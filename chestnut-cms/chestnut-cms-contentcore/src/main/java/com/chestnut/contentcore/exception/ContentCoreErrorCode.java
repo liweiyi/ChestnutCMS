@@ -17,6 +17,12 @@ package com.chestnut.contentcore.exception;
 
 import com.chestnut.common.exception.ErrorCode;
 
+/**
+ * 内容核心管理错误码
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 public enum ContentCoreErrorCode implements ErrorCode {
 
 	/**
@@ -149,6 +155,9 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	 */
 	SITE_FILE_OP_ERR,
 
+    /** 内容静态路径必须位于当前发布通道内，且不得使用保留目录或符号链接。 */
+    INVALID_CONTENT_STATIC_PATH,
+
 	/**
 	 * 模板文件已存在或路径被占用
 	 */
@@ -183,6 +192,11 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	 * 站点导出任务正在进行中
 	 */
 	SITE_EXPORT_TASK_EXISTS,
+
+	/**
+	 * 资源目录不存在或无写权限
+	 */
+	RESOURCE_DIRECTORY_NOT_WRITABLE,
 
 	/**
 	 * 只能删除初稿或已下线内容
@@ -252,7 +266,27 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	/**
 	 * 请求处理映射冲突：{0}
 	 */
-	REQUEST_MAPPING_CONFLICT;
+	REQUEST_MAPPING_CONFLICT,
+
+	/**
+	 * 内容DTO与内容类型不匹配
+	 */
+	DTO_NOT_MATCH_CONTENT_TYPE,
+
+	/**
+	 * 当前站点找不到对应栏目
+	 */
+	MISSING_CATALOG_IN_CURRENT_SITE,
+
+	/**
+	 * 内容正在编辑中，请稍后重试
+	 */
+	CONTENT_EDITING,
+
+	/**
+	 * 内容未找到
+	 */
+	CONTENT_NOT_FOUND;
 
 	@Override
 	public String value() {

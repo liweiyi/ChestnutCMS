@@ -5,7 +5,7 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.6.0
+  version: 1.6.1
   # 版权年份
   copyrightYear: 2022-2026
   system:
@@ -13,6 +13,7 @@ chestnut:
     demoMode: false
     # 文件路径 示例（ Windows配置D:/chestnut/uploadPath，Linux配置 /home/chestnut/uploadPath）
     uploadPath: '/Users/liwy/dev/workspace_gitea/uploadPath'
+    privateUploadPath: '/Users/liwy/dev/workspace_gitea/private_sys_files'
   member:
     uploadPath: '/Users/liwy/dev/workspace_gitea/_xy_member/'
   image:
@@ -26,6 +27,8 @@ chestnut:
       pool:
         threadNamePrefix: "CMS-PUBLISH-"
         queueCapacity: 10000
+  ai:
+    secretKey: "123456789"
 
 # 开发环境配置
 server:

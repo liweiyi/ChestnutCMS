@@ -38,13 +38,17 @@ import com.chestnut.system.domain.dto.UpdateNoticeRequest;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.service.ISysNoticeService;
+import com.chestnut.system.service.PublicImageFileService;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 公告 信息操作处理
@@ -56,6 +60,16 @@ import java.util.List;
 public class SysNoticeController extends BaseRestController {
 
 	private final ISysNoticeService noticeService;
+
+	private final PublicImageFileService publicImageFileService;
+
+	@XComment("{API.DOC.SYS.NOTICE.UPLOAD_IMAGE}")
+	@Priv(type = AdminUserType.TYPE, value = {SysMenuPriv.SysNoticeAdd, SysMenuPriv.SysNoticeEdit})
+	@PostMapping("/image/upload")
+	public R<Map<String, String>> uploadImage(
+			@RequestParam("file") @XComment("{API.DOC.SYS.NOTICE.IMAGE_FILE}") MultipartFile file) throws IOException {
+		return R.ok(Map.of("fileName", publicImageFileService.upload(file, "notice")));
+	}
 
 	/**
 	 * 获取通知公告列表

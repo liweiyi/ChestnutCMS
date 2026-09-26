@@ -54,7 +54,6 @@
             </el-option>
           </el-select>
           <el-button 
-            class="btn-apply-child"
             icon="Finished" 
             type="primary" 
             plain 
@@ -74,7 +73,6 @@
             </el-option>
           </el-select>
           <el-button 
-            class="btn-apply-child"
             icon="Finished" 
             type="primary" 
             plain 
@@ -108,7 +106,6 @@
         <el-form-item :label="$t('CMS.Site.Extend.ShortTitleLabel')" prop="ShortTitleLabel">
           <el-input class="mr5" v-model="formExtend.ShortTitleLabel"></el-input>
           <el-button 
-            class="btn-apply-child"
             icon="Finished" 
             type="primary" 
             plain 
@@ -117,7 +114,6 @@
         <el-form-item :label="$t('CMS.Site.Extend.SubTitleLabel')" prop="SubTitleLabel">
           <el-input class="mr5" v-model="formExtend.SubTitleLabel"></el-input>
           <el-button 
-            class="btn-apply-child"
             icon="Finished" 
             type="primary" 
             plain 
@@ -139,6 +135,25 @@
             :content="$t('CMS.Catalog.Extend.HotWordMaxReplaceCountTip')"
             placement="right"
           ><InfoFilled class="ml5" style="width: var(--font-size);" /></el-tooltip>
+        </el-form-item>
+      </el-card>
+      <el-card shadow="hover">
+        <template #header>
+          <span>{{ $t('CMS.Site.Extend.CommentCardTitle') }}</span>
+        </template>
+        <el-form-item :label="$t('CMS.Site.Extend.EnableComment')" prop="EnableComment">
+          <el-switch
+            v-model="formExtend.EnableComment"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+          <el-button 
+            class="ml10"
+            icon="Finished" 
+            type="primary" 
+            plain 
+            @click="handleApplyToChildren('EnableComment')"
+          >{{ $t('CMS.Catalog.ApplyToChildren') }}</el-button>
         </el-form-item>
       </el-card>
     </el-form>
@@ -295,8 +310,5 @@ const handleApplyToChildren = (propKey) => {
 }
 .catalog-extend-form .el-upload-list {
   width: 300px;
-}
-.catalog-extend-form .btn-apply-child {
-  padding: 10px;
 }
 </style>

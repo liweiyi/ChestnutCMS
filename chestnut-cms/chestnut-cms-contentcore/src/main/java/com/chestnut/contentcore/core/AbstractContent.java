@@ -23,7 +23,9 @@ import com.chestnut.common.utils.*;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.dict.ContentAttribute;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.fixed.dict.ContentOpType;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
@@ -33,7 +35,6 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CatalogUtils;
-import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.ContentLogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.fixed.dict.YesOrNo;
@@ -48,6 +49,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static com.chestnut.common.utils.SortUtils.getDefaultSortValue;
+
+/**
+ * 内容生命周期与公共业务流程抽象实现
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 public abstract class AbstractContent<T> implements IContent<T> {
 
@@ -136,16 +145,17 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	@Override
 	public Long add() {
 		CmsCatalog catalog = this.getCatalogService().getById(this.getCatalogId());
-		if (catalog == null) {
+		if (Objects.isNull(catalog)) {
 			throw CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", this.getCatalog());
 		}
 		if (this.getContentService().checkSameTitle(catalog.getSiteId(), catalog.getCatalogId(),
 				this.getContentEntity().getContentId(), this.getContentEntity().getTitle())) {
 			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
 		}
-		checkRedirectUrl();
+		if (this.getContentEntity().isLinkContent()) {
+			InternalUrlUtils.checkCircularDependencies(this.getContentEntity().getRedirectUrl());
+		}
 
-		SpringUtils.publishEvent(new BeforeContentSaveEvent(this, this, true));
 		content.setSiteId(catalog.getSiteId());
 		content.setCatalogAncestors(catalog.getAncestors());
 		content.setTopCatalog(CatalogUtils.getTopCatalog(catalog));
@@ -163,11 +173,10 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		}
 		content.createBy(this.getOperatorUName());
 		this.add0();
-		this.getContentService().dao().save(this.getContentEntity());
+		this.saveToDB(true);
 		// 栏目内容数+1
 		this.getCatalogService().changeContentCount(catalog.getCatalogId(), 1);
 		ContentLogUtils.addLog(ContentOpType.ADD, this.getContentEntity(), this.getOperator());
-		SpringUtils.publishEvent(new AfterContentSaveEvent(this, this, true));
 		return this.getContentEntity().getContentId();
 	}
 
@@ -183,25 +192,13 @@ public abstract class AbstractContent<T> implements IContent<T> {
 				ContentCoreErrorCode.CONTENT_FLOWING::exception);
 	}
 
-	void checkRedirectUrl() {
-		if (content.isLinkContent()) {
-			// 校验redirectUrl是否是内部链接且非链接数据
-			InternalURL internalURL = InternalUrlUtils.parseInternalUrl(content.getRedirectUrl());
-			if (Objects.nonNull(internalURL)) {
-				IInternalDataType idt = ContentCoreUtils.getInternalDataType(internalURL.getType());
-				Assert.isFalse(idt.isLinkData(internalURL.getId()),
-						ContentCoreErrorCode.DENY_LINK_TO_LINK_INTERNAL_DATA::exception);
-			}
-		}
-	}
-
 	@Override
-	public Long save() {
+	public Long save(ContentDTO dto) {
 		checkEditable();
-		if (this.getContentService().checkSameTitle(this.getContentEntity().getSiteId(),
-				this.getContentEntity().getCatalogId(), this.getContentEntity().getContentId(),
-				this.getContentEntity().getTitle())) {
-			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
+		CmsCatalog targetCatalog = this.getCatalogService().getCatalog(dto.getCatalogId());
+		// 栏目变更校验目标栏目是否存在且是同站点栏目
+		if (Objects.isNull(targetCatalog) || !targetCatalog.getSiteId().equals(this.getSiteId())) {
+			throw ContentCoreErrorCode.MISSING_CATALOG_IN_CURRENT_SITE.exception();
 		}
 		if (ContentStatus.isPublished(content.getStatus())) {
 			boolean editPublishedContent = PublishedContentEditProperty.getValue(this.getSite().getConfigProps());
@@ -209,20 +206,58 @@ public abstract class AbstractContent<T> implements IContent<T> {
 				throw ContentCoreErrorCode.CANNOT_EDIT_PUBLISHED_CONTENT.exception();
 			}
 		}
-		checkRedirectUrl();
-		SpringUtils.publishEvent(new BeforeContentSaveEvent(this, this, false));
+		if (this.getContentService().checkSameTitle(this.getContentEntity().getSiteId(),
+				dto.getCatalogId(), this.getContentEntity().getContentId(),
+				dto.getTitle())) {
+			throw ContentCoreErrorCode.TITLE_REPLEAT.exception();
+		}
+		if (YesOrNo.isYes(dto.getLinkFlag())) {
+			InternalUrlUtils.checkCircularDependencies(dto.getRedirectUrl());
+		}
+		boolean catalogChanged = !targetCatalog.getCatalogId().equals(this.getCatalogId());
+		long oldCatalogId = content.getCatalogId();
+		BeanUtils.copyProperties(dto, this.getContentEntity(), "siteId", "catalogId", "contentType", "likeCount",
+				"commentCount", "favoriteCount", "viewCount", "createTime", "status", "attributes", "publishPipeProps");
+
+		content.setCatalogId(dto.getCatalogId());
+		content.setCatalogAncestors(targetCatalog.getAncestors());
+		content.setTopCatalog(CatalogUtils.getTopCatalog(targetCatalog));
+		Map<String, Map<String, Object>> publishPipProps = new HashMap<>();
+		dto.getPublishPipeProps().forEach(prop -> {
+			publishPipProps.put(prop.getPipeCode(), prop.getProps());
+		});
+		content.setPublishPipeProps(publishPipProps);
+		content.setAttributes(ContentAttribute.convertInt(dto.getAttributes()));
 		if (ContentStatus.isToPublishOrPublished(content.getStatus())) {
 			content.setStatus(ContentStatus.EDITING);
 		}
+		if (catalogChanged) {
+			content.setSortFlag(getDefaultSortValue());
+		}
 		content.updateBy(this.getOperatorUName());
-		this.save0();
-		contentService.dao().updateById(this.getContentEntity());
+		this.save0(dto);
+		this.saveToDB(false);
+		if (catalogChanged) {
+			// 目标栏目内容数量+1
+			this.catalogService.changeContentCount(content.getCatalogId(), 1);
+			// 源栏目内容数量-1
+			this.catalogService.changeContentCount(oldCatalogId, -1);
+		}
 		ContentLogUtils.addLog(ContentOpType.UPDATE, this.getContentEntity(), this.getOperator());
-		SpringUtils.publishEvent(new AfterContentSaveEvent(this, this, false));
 		return this.getContentEntity().getContentId();
 	}
 
-	protected abstract void save0();
+	protected abstract void save0(ContentDTO dto);
+
+	protected void saveToDB(boolean isAdd) {
+		SpringUtils.publishEvent(new BeforeContentSaveEvent(this, this, isAdd));
+		this.getContentService().validateStaticPath(this.getContentEntity());
+		contentService.dao().saveOrUpdate(this.getContentEntity());
+		this.saveToDB0();
+		SpringUtils.publishEvent(new AfterContentSaveEvent(this, this, isAdd));
+	}
+
+	protected abstract void saveToDB0();
 
 	public boolean isDeleteByCatalog() {
 		return MapUtils.getBoolean(this.getParams(), PARAM_IS_DELETE_BY_CATALOG, false);
@@ -381,26 +416,25 @@ public abstract class AbstractContent<T> implements IContent<T> {
 	}
 
 	@Override
-	public void sort(Long targetContentId) {
-		if (targetContentId.equals(this.getContentEntity().getContentId())) {
+	public void sort(CmsContent targetContent) {
+		if (targetContent.getContentId().equals(this.getContentEntity().getContentId())) {
 			return;
 		}
 		checkEditable();
-		CmsContent next = this.getContentService().dao().getById(targetContentId);
-		if (next.getTopFlag() > 0 && this.getContentEntity().getTopFlag() == 0) {
-			this.content.setTopFlag(next.getTopFlag() + 1); // 非置顶内容排到置顶内容前需要置顶
-		} else if (this.getContentEntity().getTopFlag() > 0 && next.getTopFlag() == 0) {
+		if (targetContent.getTopFlag() > 0 && this.getContentEntity().getTopFlag() == 0) {
+			this.content.setTopFlag(targetContent.getTopFlag() + 1); // 非置顶内容排到置顶内容前需要置顶
+		} else if (this.getContentEntity().getTopFlag() > 0 && targetContent.getTopFlag() == 0) {
 			this.content.setTopFlag(0L); // 置顶内容排到非置顶内容前取消置顶
 			this.content.setTopDate(null);
 		}
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
-				.eq(CmsContent::getCatalogId, next.getCatalogId()).gt(CmsContent::getSortFlag, next.getSortFlag())
+				.eq(CmsContent::getCatalogId, targetContent.getCatalogId()).gt(CmsContent::getSortFlag, targetContent.getSortFlag())
 				.orderByAsc(CmsContent::getSortFlag);
 		Page<CmsContent> prev = this.getContentService().dao().page(Page.of(1, 1, false), q);
 		if (prev.getRecords().isEmpty()) {
 			this.content.setSortFlag(SortUtils.getDefaultSortValue());
 		} else {
-			this.content.setSortFlag((next.getSortFlag() + prev.getRecords().get(0).getSortFlag()) / 2);
+			this.content.setSortFlag((targetContent.getSortFlag() + prev.getRecords().get(0).getSortFlag()) / 2);
 		}
 		this.getContentEntity().updateBy(this.getOperatorUName());
 		this.getContentService().dao().updateById(content);

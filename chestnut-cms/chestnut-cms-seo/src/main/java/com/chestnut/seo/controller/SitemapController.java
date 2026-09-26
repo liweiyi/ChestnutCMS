@@ -23,6 +23,7 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.perms.SitePermissionType;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.seo.service.BaiduSitemapService;
 import com.chestnut.system.security.AdminUserType;
@@ -53,7 +54,7 @@ public class SitemapController extends BaseRestController {
 	private final BaiduSitemapService sitemapService;
 
 	@XComment("{API.DOC.CMS.SEO.SITEMAP.GENERATE}")
-	@Priv(type = AdminUserType.TYPE)
+	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
 	@PostMapping("/sitemap")
 	public R<String> generateSitemap(@RequestParam @XComment("{API.DOC.CMS.SEO.SITEMAP.SITE_ID}") Long siteId) {
 		CmsSite site = siteService.getSite(siteId);

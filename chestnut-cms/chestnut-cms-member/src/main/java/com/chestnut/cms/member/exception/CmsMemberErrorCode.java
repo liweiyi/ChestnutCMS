@@ -22,7 +22,18 @@ public enum CmsMemberErrorCode implements ErrorCode {
 	/**
 	 * 无投稿权限
 	 */
-	NO_CONTRIBUTE_PRIV;
+	NO_CONTRIBUTE_PRIV,
+
+	/**
+	 * 警告：越权访问内容！
+	 */
+	CONTENT_ACCESS_DENY,
+
+	/**
+	 * 只能编辑待审核的初稿文章
+	 */
+	NOT_DRAFT_CONTENT
+	;
 
 	@Override
 	public String value() {

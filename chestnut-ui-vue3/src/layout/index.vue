@@ -114,4 +114,11 @@ function setLayout() {
 .mobile .fixed-header {
   width: 100%;
 }
+
+.ai-chat-floating-button {
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
 </style>

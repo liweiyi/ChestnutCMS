@@ -36,6 +36,14 @@ export function updateUser(data) {
   })
 }
 
+export function changeDept(data) {
+  return request({
+    url: '/system/user/changeDept',
+    method: 'post',
+    data: data  
+  })
+}
+
 // 删除用户
 export function delUser(userIds) {
   return request({
@@ -115,14 +123,6 @@ export function updateAuthRole(data) {
   })
 }
 
-// 查询部门下拉树结构
-export function deptTreeSelect() {
-  return request({
-    url: '/system/user/deptTree',
-    method: 'get'
-  })
-}
-
 export function getHomeUserInfo() {
   return request({
     url: '/system/user/profile/homeInfo',
@@ -158,4 +158,3 @@ export function saveUserPreferences(data) {
     data: data  
   })
 }
-

@@ -18,9 +18,10 @@ package com.chestnut.system.service;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.system.domain.SysPermission;
-import com.chestnut.system.domain.dto.SavePermissionRequest;
-import jakarta.annotation.Nullable;
+import com.chestnut.system.permission.IPermissionOwnerType;
+import com.chestnut.system.permission.IPermissionType;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -34,6 +35,10 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	/** 所有权限标识 */
 	String ALL_PERMISSION = "*";
 
+	IPermissionType getPermissionType(String type);
+
+	IPermissionOwnerType<?> getPermissionOwnerType(String ownerType);
+
 	/**
 	 * 获取权限信息
 	 * 
@@ -41,7 +46,7 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	 * @param owner
 	 * @return
 	 */
-	SysPermission getPermission(String ownerType, String owner);
+	SysPermission getPermission(String ownerType, String owner, LoginUser operator);
 
 	/**
 	 * 保存权限数据
@@ -52,14 +57,7 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	 * @param permissionType
 	 * @param operator
 	 */
-    void savePermissions(String ownerType, String owner, Set<String> perms, String permissionType, String operator);
-
-    /**
-	 * 保存菜单权限信息
-	 * 
-	 * @param dto
-	 */
-	void saveMenuPermissions(SavePermissionRequest dto);
+    void savePermissions(String ownerType, String owner, Set<String> perms, String permissionType, LoginUser operator);
 
 	/**
 	 * 获取指定类型权限列表
@@ -69,35 +67,9 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	 * @param permissionType
 	 * @return
 	 */
-	Set<String> getPermissionKeys(String ownerType, String owner, String permissionType);
+	Set<String> getPermissionKeys(String ownerType, String owner, String permissionType, LoginUser operator);
 
-	/**
-	 * 获取用户权限列表
-	 * 
-	 * @param userId
-	 * @param permissionType 指定权限类型
-	 * @return
-	 */
-	Set<String> getUserPermissions(Long userId, @Nullable String permissionType);
-
-	/**
-	 * 重置登录用户权限信息
-	 *
-	 * @param loginUser 登录用户信息
-	 */
-	void resetLoginUserPermissions(LoginUser loginUser);
-
-	/**
-	 * 获取继承权限
-	 *
-	 * @param ownerType 权限所有者类型
-	 * @param owner 权限所有者唯一标识
-	 * @param permissionType 权限类型
-	 * @return
-	 */
-	Set<String> getInheritedPermissionKeys(String ownerType, String owner, String permissionType);
-
-	/**
+	/**ø
 	 * 变更指定类型权限数据
 	 *
 	 * @param ownerType 权限所有者类型
@@ -108,15 +80,6 @@ public interface ISysPermissionService extends IService<SysPermission> {
     SysPermission setPermissionByType(String ownerType, String owner, String permissionType, String permissionJson);
 
 	/**
-	 * 用户授权变更，更新Token权限
-	 *
-	 * @param user 登录用户Token
-	 * @param permissionType 权限类型
-	 * @param permissionJson 权限序列化值
-	 */
-	SysPermission grantUserPermission(LoginUser user, String permissionType, String permissionJson);
-
-	/**
 	 * 授权
 	 *
 	 * @param ownerType 权限所有者类型
@@ -125,4 +88,12 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	 * @param permissionJson 权限序列化值
 	 */
 	SysPermission grantPermission(String ownerType, String owner, String permissionType, String permissionJson);
+
+	/**
+	 * 移除指定所有者权限数据
+	 *
+	 * @param ownerType 所有者类型
+	 * @param owners 所有者标识列表
+	 */
+	void removePermissions(String ownerType, List<String> owners);
 }

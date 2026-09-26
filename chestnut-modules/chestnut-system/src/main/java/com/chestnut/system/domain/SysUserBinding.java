@@ -21,9 +21,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
 import com.chestnut.common.db.domain.BaseEntity;
-import tools.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.io.Serial;
 
@@ -56,8 +56,4 @@ public class SysUserBinding extends BaseEntity {
 
     @TableField(typeHandler = Jackson3TypeHandler.class)
     private ObjectNode properties;
-
-    private String refreshToken;
-
-    private Long tokenExpireTime;
 }

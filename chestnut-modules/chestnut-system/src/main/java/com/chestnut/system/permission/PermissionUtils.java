@@ -19,6 +19,8 @@ import cn.dev33.satoken.error.SaErrorCode;
 import cn.dev33.satoken.exception.NotPermissionException;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.system.permission.impl.RolePermissionOwnerType;
+import com.chestnut.system.permission.impl.UserPermissionOwnerType;
 
 /**
  * 权限工具类
@@ -39,5 +41,13 @@ public class PermissionUtils {
         Assert.isTrue(loginUser.hasPermission(perm),
                 () -> new NotPermissionException(perm, loginUser.getUserType())
                         .setCode(SaErrorCode.CODE_11051));
+    }
+
+    public static void checkOwnerTypePermission(String ownerType, LoginUser loginUser) {
+        if (UserPermissionOwnerType.TYPE.equals(ownerType)) {
+            checkPermission(SysMenuPriv.SysUserGrant, loginUser);
+        } else if (RolePermissionOwnerType.TYPE.equals(ownerType)) {
+            checkPermission(SysMenuPriv.SysRoleGrant, loginUser);
+        }
     }
 }

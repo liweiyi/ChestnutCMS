@@ -22,8 +22,10 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.media.domain.CmsAudio;
+import com.chestnut.media.domain.dto.AudioAlbumDTO;
 import com.chestnut.media.service.IAudioService;
 
 import java.util.List;
@@ -62,13 +64,17 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 	}
 
 	@Override
-	protected void save0() {
+	protected void save0(ContentDTO dto) {
+		if (!(dto instanceof AudioAlbumDTO dtoExtendEntity)) {
+			return;
+		}
 		// 链接或映射内容直接删除所有音频数据
 		if (!this.hasExtendEntity()) {
 			this.getAudioService().dao().remove(new LambdaQueryWrapper<CmsAudio>().eq(CmsAudio::getContentId,
 					this.getContentEntity().getContentId()));
 			return;
 		}
+		this.setExtendEntity(dtoExtendEntity.getAudioList());
 		// 音频数处理
 		List<CmsAudio> audioList = this.getExtendEntity();
 		// 先删除音频
@@ -85,32 +91,25 @@ public class AudioContent extends AbstractContent<List<CmsAudio>> {
 		// 遍历请求音频列表，修改的音频数据path变更需重新设置音频属性
 		for (int i = 0; i < audioList.size(); i++) {
 			CmsAudio audio = audioList.get(i);
-			if (IdUtils.validate(audio.getAudioId())) {
+			audio.setContentId(this.getContentEntity().getContentId());
+			audio.setSiteId(this.getContentEntity().getSiteId());
+			audio.setType(FileExUtils.getExtension(audio.getPath()).toUpperCase());
+			this.getAudioService().progressAudioInfo(audio);
+			audio.setSortFlag(i);
+			if (IdUtils.validate(audio.getAudioId()) && oldAudioMap.containsKey(audio.getAudioId())) {
 				CmsAudio dbAudio = oldAudioMap.get(audio.getAudioId());
-				dbAudio.setTitle(audio.getTitle());
-				dbAudio.setRemark(audio.getRemark());
-				dbAudio.setAuthor(audio.getAuthor());
-				dbAudio.setDescription(audio.getDescription());
-				dbAudio.setSortFlag(i);
-                dbAudio.setCover(audio.getCover());
-				if (dbAudio.getPath().equals(audio.getPath())) {
-					dbAudio.setPath(audio.getPath());
-					dbAudio.setType(FileExUtils.getExtension(audio.getPath()).toUpperCase());
-					this.getAudioService().progressAudioInfo(dbAudio);
-				}
 				dbAudio.updateBy(this.getOperatorUName());
-				this.getAudioService().dao().updateById(dbAudio);
 			} else {
 				audio.setAudioId(IdUtils.getSnowflakeId());
-				audio.setContentId(this.getContentEntity().getContentId());
-				audio.setSiteId(this.getContentEntity().getSiteId());
-				audio.setSiteId(this.getSiteId());
-				audio.setType(FileExUtils.getExtension(audio.getPath()).toUpperCase());
-				audio.setSortFlag(i);
 				audio.createBy(this.getOperatorUName());
-				this.getAudioService().progressAudioInfo(audio);
-				this.getAudioService().dao().save(audio);
 			}
+		}
+	}
+
+	@Override
+	protected void saveToDB0() {
+		if (this.hasExtendEntity()) {
+			this.getAudioService().dao().saveOrUpdateBatch(this.getExtendEntity());
 		}
 	}
 

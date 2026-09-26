@@ -22,14 +22,20 @@ import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.dao.CmsContentDAO;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.domain.dto.CopyContentDTO;
 import com.chestnut.contentcore.domain.dto.MoveContentDTO;
 import com.chestnut.contentcore.domain.dto.SetTopContentDTO;
-import com.chestnut.contentcore.domain.dto.SortContentDTO;
 
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 内容核心管理服务
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 public interface IContentService extends HasDAO<CmsContentDAO> {
 
 	/**
@@ -42,7 +48,7 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	/**
 	 * 更新内容
 	 */
-	AsyncTask saveContent(IContent<?> content);
+	AsyncTask saveContent(ContentDTO req, LoginUser operator);
 
 	/**
 	 * 删除内容
@@ -65,6 +71,13 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
     String getContentStaticPath(CmsContent content, String publishPipeCode);
 
     /**
+     * 保存内容前按真实所属站点校验独立路径，统一分隔符，不创建文件或目录。
+     *
+     * @param content 待保存的内容实体
+     */
+    void validateStaticPath(CmsContent content);
+
+    /**
 	 * 获取内容链接
 	 * 
 	 * @param content 内容
@@ -76,18 +89,20 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	/**
 	 * 锁定内容
 	 * 
-	 * @param contentId 内容ID
+	 * @param content 内容
 	 * @param operator 操作人
 	 */
-	void lock(Long contentId, String operator);
+	void lock(CmsContent content, String operator);
 
 	/**
 	 * 解锁内容
 	 *
-	 * @param contentId 内容ID
+	 * @param content 内容
 	 * @param operator 操作人
 	 */
-	void unLock(Long contentId, String operator);
+	void unLock(CmsContent content, String operator);
+
+	void checkSaveContentPermission(Long contentCatalogId, Long targetCatalogId, LoginUser operator);
 
 	/**
 	 * 复制内容
@@ -99,7 +114,7 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	 */
 	AsyncTask move(MoveContentDTO dto);
 
-	void moveContent(CmsContent cmsContent, CmsCatalog toCatalog, LoginUser operator);
+	void moveContent(Long contentId, CmsCatalog toCatalog, LoginUser operator);
 
 	/**
 	 * 校验重复标题，存在重复标题返回true
@@ -137,7 +152,7 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
     /**
 	 * 排序，将指定内容排到目标内容之前
 	 */
-	void sort(SortContentDTO dto);
+	void sort(CmsContent sortContent, CmsContent targetContent, LoginUser operator);
 
 	void toPublish(CmsContent cmsContent, LoginUser operator);
 

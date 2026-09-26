@@ -96,7 +96,7 @@ public class CustomFormDataController extends CmsRestController {
             Map<String, Object> map = new HashMap<>();
             data.forEach((k, v)  -> {
                 Optional<MetaModelField> first = metaModel.getFields().stream().filter(field -> field.getCode().equals(k)).findFirst();
-                if (first.isPresent()) {
+                if (first.isPresent() && v != null) {
                     IMetaControlType metaControlType = XModelUtils.getMetaControlType(first.get().getControlType());
                     map.put(k, metaControlType.stringAsValue(v.toString()));
                 } else {

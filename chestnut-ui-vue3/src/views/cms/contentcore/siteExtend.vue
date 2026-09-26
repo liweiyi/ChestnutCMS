@@ -395,6 +395,19 @@
         <template #header>
           <span>{{ $t('CMS.Site.Extend.CommentCardTitle') }}</span>
         </template>
+        <el-form-item :label="$t('CMS.Site.Extend.EnableComment')" prop="EnableComment">
+          <el-switch
+            v-model="formExtend.EnableComment"
+            :active-text="$t('Common.Yes')"
+            :inactive-text="$t('Common.No')"
+            active-value="Y"
+            inactive-value="N">
+          </el-switch>
+          <el-tooltip
+            :content="$t('CMS.Site.Extend.EnableCommentTip')"
+            placement="right"
+          ><el-icon class="ml5" style="width: var(--font-size);"><InfoFilled /></el-icon></el-tooltip>
+        </el-form-item>
         <el-form-item :label="$t('CMS.Site.Extend.EnableCommentAudit')" prop="EnableCommentAudit">
           <el-switch
             v-model="formExtend.EnableCommentAudit"
@@ -542,7 +555,7 @@ const handleSaveExtend = () => {
   });
 }
 const handleRefreshBdTongjiToken = () => {
-  refreshBdTongjiToken().then(response => {
+  refreshBdTongjiToken(props.site).then(response => {
     proxy.$modal.msgSuccess(proxy.$t("Common.OpSuccess"),);
   });
 }

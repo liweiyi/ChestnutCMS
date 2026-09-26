@@ -222,7 +222,7 @@ public class ContentVO implements InitByContent {
     /**
      * 扩展属性
      */
-    private Map<String, String> configProps = new HashMap<>();
+    private Map<String, Object> configProps = new HashMap<>();
 
     /**
      * SEO标题

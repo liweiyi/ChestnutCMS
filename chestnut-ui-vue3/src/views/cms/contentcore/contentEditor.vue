@@ -4,33 +4,27 @@
       <el-col :span="24">
         <div class="grid-btn-bar bg-purple-white">
           <el-row :gutter="10">
-            <el-col v-if="!isFlowing" :span="1.5" class="permi-wrap">
+            <el-col v-if="contentEditable" :span="1.5" class="permi-wrap">
               <el-button plain type="success" icon="Edit" v-if="!isUpdateOperate" v-hasPermi="[ $p('Catalog:AddContent:{0}', [ catalogId ]) ]" @click="handleSave">{{ $t("Common.Save") }}</el-button>
               <el-button plain type="success" icon="Edit" v-else v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleSave">{{ $t("Common.Save") }}</el-button>
             </el-col>
             <el-col v-if="showPublishActions" :span="1.5" class="permi-wrap">
-              <el-button plain type="primary" icon="Timer" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleToPublish">{{ $t('CMS.ContentCore.ToPublish') }}</el-button>
+              <el-button plain type="primary" icon="Timer" v-hasPermi="[ $p('Catalog:Publish:{0}', [ catalogId ]) ]" @click="handleToPublish">{{ $t('CMS.ContentCore.ToPublish') }}</el-button>
             </el-col>
             <el-col v-if="showPublishActions" :span="1.5" class="permi-wrap">
-              <el-button plain type="primary" icon="Promotion" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handlePublish">{{ $t('CMS.ContentCore.Publish') }}</el-button>
+              <el-button plain type="primary" icon="Promotion" v-hasPermi="[ $p('Catalog:Publish:{0}', [ catalogId ]) ]" @click="handlePublish">{{ $t('CMS.ContentCore.Publish') }}</el-button>
             </el-col>
             <el-col :span="1.5">
               <el-button plain type="primary" icon="View" @click="handlePreview">{{ $t('CMS.ContentCore.Preview') }}</el-button>
             </el-col>
-            <!-- AI 只处理当前表单内容，结果必须人工确认后回填，绝不会触发保存或发布。 -->
-            <el-col v-if="contentType === 'article' && form.linkFlag !== 'Y'" :span="1.5" class="permi-wrap">
-              <el-button v-hasPermi="['ai:assistant:use']" plain type="primary" @click="openArticleAi">
-                <svg-icon icon-class="file-ai" />AI 润色
-              </el-button>
-            </el-col>
-            <el-col v-if="!isFlowing" :span="1.5" class="permi-wrap">
+            <el-col v-if="contentEditable" :span="1.5" class="permi-wrap">
               <el-button plain type="warning" v-if="isLock" icon="Unlock" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleChangeLockState">{{ $t('CMS.Content.Unlock') }}</el-button>
               <el-button plain type="primary" v-else icon="Lock" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handleChangeLockState">{{ $t('CMS.Content.Lock') }}</el-button>
             </el-col>
-            <el-col v-if="!isFlowing" :span="1.5">
+            <el-col v-if="contentEditable" :span="1.5">
               <el-button plain type="primary" icon="Share" @click="handleRelaContent">{{ $t('CMS.Content.RelaContent') }}</el-button>
             </el-col>
-            <el-col v-if="!isFlowing" :span="1.5" class="permi-wrap">
+            <el-col v-if="contentEditable" :span="1.5" class="permi-wrap">
               <el-button plain type="primary" icon="Files" v-hasPermi="[ $p('Catalog:EditContent:{0}', [ catalogId ]) ]" @click="handlePushToBaidu">{{ $t('CMS.Content.PushToBaidu') }}</el-button>
             </el-col>
             <el-col :span="1.5">
@@ -286,6 +280,16 @@
                       </template>
                     </el-input>
                   </el-form-item>
+                  <el-divider content-position="left">{{ $t('CMS.Content.ExtendComment') }}</el-divider>
+                  <el-form-item :label="$t('CMS.Site.Extend.EnableComment')" prop="EnableComment">
+                    <el-switch
+                      v-model="form.configProps.EnableComment"
+                      :active-text="$t('Common.Yes')"
+                      :inactive-text="$t('Common.No')"
+                      active-value="Y"
+                      inactive-value="N">
+                    </el-switch>
+                  </el-form-item>
                 </el-tab-pane>
               </el-tabs>
             </el-card>
@@ -312,53 +316,6 @@
       @close="handleContentSelectorClose"></cms-content-selector>
     <cms-content-rela-dialog :cid="contentId" v-model:open="openRelaContentDialog" @close="handleRelaContentClose"></cms-content-rela-dialog>
     <cms-content-oplog-dialog :cid="contentId" v-model:open="openContentOpLogDialog" @close="handleOpLogsClose"></cms-content-oplog-dialog>
-    <el-dialog
-      v-model="openSubmitAuditDialog"
-      :title="$t('CMS.Content.Workflow.SubmitDialogTitle')"
-      width="500px"
-      append-to-body
-    >
-      <el-alert :title="$t('CMS.Content.Workflow.SubmitTip')" type="warning" :closable="false" show-icon />
-      <el-form label-width="120px" class="mt20">
-        <el-form-item :label="$t('CMS.Content.Workflow.ActionAfterApproval')">
-          <el-radio-group v-model="actionAfterFlowing">
-            <el-radio label="">{{ $t('CMS.Content.Workflow.NoAction') }}</el-radio>
-            <el-radio label="20">{{ $t('CMS.Content.Workflow.ToPublishAfterApproval') }}</el-radio>
-            <el-radio label="30">{{ $t('CMS.Content.Workflow.PublishAfterApproval') }}</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="openSubmitAuditDialog = false">{{ $t('Common.Cancel') }}</el-button>
-        <el-button type="primary" :loading="submittingAudit" @click="confirmSubmitAudit">
-          {{ $t('Common.Confirm') }}
-        </el-button>
-      </template>
-    </el-dialog>
-    <el-dialog v-model="articleAiVisible" title="AI 文章助手" width="760px" append-to-body destroy-on-close>
-      <el-alert title="AI 结果不会自动保存。请检查事实、格式和链接后，再决定是否应用到编辑器。"
-                type="warning" :closable="false" show-icon class="mb15" />
-      <el-form label-width="95px">
-        <el-form-item label="处理要求">
-          <el-select v-model="articleAiInstruction" style="width: 100%" allow-create filterable>
-            <el-option label="润色并纠正错别字，保持原意和 HTML 结构" value="润色并纠正错别字，保持原意和 HTML 结构" />
-            <el-option label="精简冗余表达，使文章更清晰，保持 HTML 结构" value="精简冗余表达，使文章更清晰，保持 HTML 结构" />
-            <el-option label="改写为正式、专业的发布稿，保持事实和 HTML 结构" value="改写为正式、专业的发布稿，保持事实和 HTML 结构" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="AI 结果">
-          <el-input v-model="articleAiResult" type="textarea" :rows="18"
-                    placeholder="点击生成后，结果会显示在这里供人工检查" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="articleAiVisible = false">取消</el-button>
-        <el-button :loading="articleAiStreaming" @click="runArticleAi">生成</el-button>
-        <el-button type="primary" :disabled="!articleAiResult || articleAiStreaming" @click="applyArticleAiResult">
-          应用到编辑器
-        </el-button>
-      </template>
-    </el-dialog>
     <!-- 进度条 -->
     <cms-progress :title="progressTitle" v-model:open="openProgress" :taskId="taskId" message-class="top-right" @close="handleProgressClose"></cms-progress>
   </div>
@@ -386,20 +343,19 @@ const { proxy } = getCurrentInstance();
 
 const { CMSContentAttribute } = proxy.useDict('CMSContentAttribute');
 
-const DIRECT_PUBLISH_STATUSES = new Set(['20', '30', '81'])
-const AUDITABLE_STATUSES = new Set(['0', '40', '60', '82'])
-const contentNeedAudit = ref(false)
-const workflowPolicyLoaded = ref(false)
 
 const isLock = computed(() => {
   return form.value.isLock === 'Y' && form.value.lockUser != '';
 });
-const currentStatus = computed(() => form.value.status || '0')
-const isFlowing = computed(() => currentStatus.value === '80');
-const showPublishActions = computed(() => workflowPolicyLoaded.value
-  && !isFlowing.value
-  && (DIRECT_PUBLISH_STATUSES.has(currentStatus.value)
-    || (AUDITABLE_STATUSES.has(currentStatus.value) && !contentNeedAudit.value)))
+// 开源版默认显示编辑、发布操作，工作流限制随同步忽略块移除。
+const contentEditable = computed(() => {
+  let editable = true;
+  return editable;
+});
+const showPublishActions = computed(() => {
+  let visible = true;
+  return visible;
+});
 const xmodelVisible = computed(() => {
   return form.value.catalogConfigProps
     && form.value.catalogConfigProps.ContentExtendModel != null
@@ -454,20 +410,12 @@ const publishPipeActiveName = ref("");
 const selectExTemplate = ref(false);
 const publishAfterSave = ref(false);
 const toPublishAfterSave = ref(false);
-const submitAuditAfterSave = ref(false)
-const openSubmitAuditDialog = ref(false)
-const actionAfterFlowing = ref('')
-const submittingAudit = ref(false)
 const publishing = ref(false);
 const openRelaContentDialog = ref(false);
 const openContentOpLogDialog = ref(false);
 const openVersionDialog = ref(false);
 const ueditorImportCss = ref("");
 const articleEditorKey = ref(0);
-const articleAiVisible = ref(false);
-const articleAiStreaming = ref(false);
-const articleAiInstruction = ref('润色并纠正错别字，保持原意和 HTML 结构');
-const articleAiResult = ref('');
 const shortTitleLabel = ref(proxy.$t('CMS.Content.ShortTitle'));
 const subTitleLabel = ref(proxy.$t('CMS.Content.SubTitle'));
 
@@ -628,15 +576,22 @@ function handleSave() {
       if (form.value.linkFlag != 'Y') {
         form.value.redirectUrl = '';
       }
+      const data = {};
+      Object.keys(form.value.configProps).forEach(key => {
+        if (typeof form.value.configProps[key] == 'object') {
+          
+        } else {
+          data[key] = form.value.configProps[key];
+        }
+      })
+      form.value.configProps = data;
       if (isUpdateOperate.value) {
         form.value.opType = "UPDATE"
         saveContent(form.value).then(response => {
           taskId.value = response.data.taskId;
           openProgress.value = true;
           progressTitle.value = proxy.$t('CMS.Content.SaveProgressTitle')
-        }).catch(() => {
-          submitAuditAfterSave.value = false
-        });
+        })
       } else {
         form.value.catalogId = catalogId.value;
         form.value.contentType = contentType.value;
@@ -644,44 +599,12 @@ function handleSave() {
           taskId.value = response.data.taskId;
           openProgress.value = true;
           progressTitle.value = proxy.$t('CMS.Content.SaveProgressTitle')
-        }).catch(() => {
-          submitAuditAfterSave.value = false
-        });
+        })
       }
-    } else {
-      submitAuditAfterSave.value = false
     }
   });
 }
 
-function handleSubmitAudit() {
-  actionAfterFlowing.value = ''
-  openSubmitAuditDialog.value = true
-}
-
-function confirmSubmitAudit() {
-  openSubmitAuditDialog.value = false
-  if (!isUpdateOperate.value || isFormChanged()) {
-    submitAuditAfterSave.value = true
-    handleSave()
-    return
-  }
-  doSubmitAudit()
-}
-
-function doSubmitAudit() {
-  submittingAudit.value = true
-  startContentWorkflow({
-    contentId: form.value.contentId,
-    actionAfterFlowing: actionAfterFlowing.value
-  }).then(() => {
-    proxy.$modal.msgSuccess(proxy.$t('CMS.Content.Workflow.SubmitSuccess'), 'top-right')
-    activeName.value = 'workflow'
-    initData()
-  }).finally(() => {
-    submittingAudit.value = false
-  })
-}
 
 function handleToPublish() {
   if (!isUpdateOperate.value || isFormChanged()) {
@@ -724,11 +647,6 @@ function handleProgressClose (result) {
       publishing.value = false;
       initData();
       return;
-    }
-    if (submitAuditAfterSave.value) {
-      submitAuditAfterSave.value = false
-      doSubmitAudit()
-      return
     }
     if (publishAfterSave.value) {
       publishAfterSave.value = false;
@@ -788,7 +706,6 @@ function handleCatalogSelectorOk(args) {
           form.value.catalogName = catalogs[0].name;
           catalogId.value = catalogs[0].id
           form.value.status = '0'
-          refreshWorkflowPolicy()
           proxy.$router.push({ path: proxy.$route.path, query: { type: contentType.value, catalogId: form.value.catalogId, id: contentId.value } });
         });
       }
@@ -797,7 +714,6 @@ function handleCatalogSelectorOk(args) {
       form.value.catalogId = catalogs[0].id;
       form.value.catalogName = catalogs[0].name;
       catalogId.value = catalogs[0].id
-      refreshWorkflowPolicy()
     }
   } else if(catalogSelectorFor.value === 'linkflag') {
     if (catalogs && catalogs.length > 0) {

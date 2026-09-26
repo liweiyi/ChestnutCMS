@@ -7,7 +7,7 @@
           plain
           icon="Plus"
           @click="handleAdd"
-          v-hasPermi="['message:event:edit']"
+          v-hasPermi="['message:event:save']"
           >{{ $t("Common.Add") }}</el-button
         >
       </el-col>
@@ -95,7 +95,7 @@
             type="primary"
             icon="Promotion"
             @click="handleTest(scope.row)"
-            v-hasPermi="['message:event:edit']"
+            v-hasPermi="['message:event:save']"
             >测试</el-button
           >
           <el-button
@@ -103,7 +103,7 @@
             type="primary"
             icon="Edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['message:event:edit']"
+            v-hasPermi="['message:event:save']"
             >{{ $t("Common.Edit") }}</el-button
           >
           <el-button

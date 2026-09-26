@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.message.domain.dto;
+package com.chestnut.system.mapper;
 
-import com.chestnut.system.validator.LongId;
-import lombok.Getter;
-import lombok.Setter;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.chestnut.system.domain.SysUpdatePatcher;
 
 /**
- * CreateSmsConfigReq
- *
- * @author 兮玥
- * @email 190785909@qq.com
+ * 更新补丁记录 数据层
  */
-@Getter
-@Setter
-public class UpdateSmsConfigReq extends CreateSmsConfigReq {
+public interface SysUpdatePatcherMapper extends BaseMapper<SysUpdatePatcher> {
 
-    @LongId
-    private Long configId;
 }

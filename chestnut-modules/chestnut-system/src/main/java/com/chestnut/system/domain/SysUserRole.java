@@ -39,4 +39,41 @@ public class SysUserRole {
 
 	/** 角色ID */
 	private Long roleId;
+
+	/**
+	 * 冗余字段
+	 */
+	private String userName;
+
+	/**
+	 * 冗余字段
+	 */
+	private String nickName;
+
+	/**
+	 * 冗余字段
+	 */
+	private String realName;
+
+	/**
+	 * 冗余字段
+	 */
+	private String phoneNumber;
+
+	/**
+	 * 冗余字段
+	 */
+	private String email;
+
+	public static SysUserRole of(SysUser user, Long roleId) {
+		SysUserRole ur = new SysUserRole();
+		ur.setRoleId(roleId);
+		ur.setUserId(user.getUserId());
+		ur.setUserName(user.getUserName());
+		ur.setNickName(user.getNickName());
+		ur.setRealName(user.getRealName());
+		ur.setPhoneNumber(user.getPhoneNumber());
+		ur.setEmail(user.getEmail());
+		return ur;
+	}
 }

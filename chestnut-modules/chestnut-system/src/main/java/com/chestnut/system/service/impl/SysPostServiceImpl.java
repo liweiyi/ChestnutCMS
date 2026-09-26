@@ -34,6 +34,7 @@ import com.chestnut.system.service.ISysPostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +50,17 @@ public class SysPostServiceImpl extends ServiceImpl<SysPostMapper, SysPost> impl
 	private final SysUserPostMapper userPostMapper;
 
 	private final RedisCache redisCache;
+
+	@Override
+	public List<SysPost> selectPostsByUserId(Long userId) {
+		List<Long> postIds = this.userPostMapper.selectList(
+				new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, userId)
+		).stream().map(SysUserPost::getPostId).toList();
+		if (CollectionUtils.isEmpty(postIds)) {
+			return List.of();
+		}
+		return this.lambdaQuery().select(SysPost::getPostName).in(SysPost::getPostId, postIds).list();
+	}
 
 	@Override
 	public SysPost getPost(String postCode) {

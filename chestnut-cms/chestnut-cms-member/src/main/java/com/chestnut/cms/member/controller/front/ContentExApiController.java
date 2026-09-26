@@ -17,16 +17,27 @@ package com.chestnut.cms.member.controller.front;
 
 import com.chestnut.cms.member.domain.vo.ContentDynamicDataWithContributorVO;
 import com.chestnut.cms.member.domain.vo.ContributorVO;
+import com.chestnut.cms.member.exception.CmsMemberErrorCode;
+import com.chestnut.cms.member.properties.EnableContributeProperty;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.vo.ContentDynamicDataVO;
+import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.impl.ContentDynamicDataService;
+import com.chestnut.exmodel.service.ExModelService;
 import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.fixed.config.MemberResourcePrefix;
+import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.service.IMemberStatDataService;
+import com.chestnut.system.validator.LongId;
+import com.chestnut.xmodel.dto.XModelFieldDataDTO;
 
 
 import lombok.RequiredArgsConstructor;
@@ -53,6 +64,25 @@ public class ContentExApiController extends BaseRestController {
 	private final IMemberStatDataService memberStatDataService;
 
 	private final ContentDynamicDataService contentDynamicDataService;
+
+	private final ICatalogService catalogService;
+
+	private final ExModelService exModelService;
+
+	/**
+	 * 获取栏目内容扩展模型的表单字段
+	 */
+	@XComment("{API.DOC.CMS.CMS_MEMBER.GET_CONTENT_EXTEND_MODEL_FIELDS}")
+	@Priv(type = MemberUserType.TYPE)
+	@GetMapping("/fields")
+	public R<List<XModelFieldDataDTO>> getContentExtendModelFields(
+			@RequestParam("catalogId") @LongId @XComment("{API.DOC.CMS.CMS_MEMBER.CATALOG_ID}") Long catalogId) {
+		CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
+		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalogId));
+		Assert.isTrue(EnableContributeProperty.getValue(catalog.getConfigProps()),
+				CmsMemberErrorCode.NO_CONTRIBUTE_PRIV::exception);
+		return R.ok(this.exModelService.getContentModelFields(catalog));
+	}
 
 	/**
 	 * 内容动态数据扩展，评论数、点赞数、收藏数、浏览数 + 作者信息

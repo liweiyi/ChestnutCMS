@@ -25,6 +25,7 @@ import com.chestnut.common.security.IUserType;
 import com.chestnut.common.security.SecurityService;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.common.utils.ArrayUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -167,7 +168,7 @@ public class RestfulLogType implements ILogType {
 				Object argValue = argValues[i];
 				if (argValue == null) {
 					args.put(argName, argValue);
-				} else if (!this.isIgnoreArgs(argValue)) {
+				} else if (!ArrayUtils.contains(argName, log.ignoreArgs()) &&  !this.isIgnoreArgs(argValue)) {
 					args.put(argName, argValue);
 				}
 			}

@@ -7,91 +7,65 @@
       auto-complete="off"
       :placeholder="$t('Login.Captcha')"
       class="captcha-code"
-      @keyup="handleCodeChanged"
+      :disabled="!ready || loading"
     >
       <template #prefix>
         <svg-icon icon-class="validCode" class="el-input__icon input-icon" />
       </template>
       <template #append>
-        <img v-if="codeImage!=''" :src="codeImage" @click="reloadCaptcha" class="captcha-img" :style="{ width: `${imgWidth}`, height: `${imgHeight}` }" />
-        <el-link v-else icon="Refresh" underline="never" @click="reloadCaptcha" :style="{ width: `${imgWidth}` }">刷新</el-link>
+        <span v-if="codeImage!=''" class="captcha-image-wrap" :style="{ width: `${imgWidth}`, height: `${imgHeight}` }">
+          <img :src="codeImage" class="captcha-img" :class="{ 'is-refresh-disabled': isRefreshDisabled }" @click="handleReloadCaptcha" />
+          <span v-if="leftSeconds > 0" class="captcha-countdown">{{ leftSeconds }}s</span>
+        </span>
+        <el-link v-else icon="Refresh" underline="never" :disabled="isRefreshDisabled" @click="handleReloadCaptcha" :style="{ width: `${imgWidth}` }">
+          {{ $t('Common.Refresh') }}<span v-if="leftSeconds > 0"> ({{ leftSeconds }}s)</span>
+        </el-link>
       </template>
     </el-input>
+    <div v-if="errorMessage" class="captcha-error">{{ errorMessage }}</div>
   </div>
 </template>
 <script setup>
-import { getCaptcha } from "@/api/system/captcha"
+import useCaptcha from '../useCaptcha'
 
 const { proxy } = getCurrentInstance()
-
-const model = defineModel();
-
+const model = defineModel()
+const emit = defineEmits(['loading-change'])
 const props = defineProps({
-  width: {
-    type: Number,
-    default: 100,
-    required: false,
-  },
-  height: {
-    type: Number,
-    default: 38,
-    required: false,
-  },
-  token: {
-    type: String,
-    default: '',
-    required: false,
-  }
+  width: { type: Number, default: 100 },
+  height: { type: Number, default: 38 },
+  token: { type: String, default: '' },
+  expires: { type: Number, default: 0 }
 })
-
-const loading = ref(false)
-const captchaType = ref("Math")
 const authCode = ref('')
-const codeImage = ref("")
-
-const imgWidth = computed(() => {
-  return props.width > 0 ? props.width + 'px' : 'auto';
+const {
+  loading, ready, images, errorMessage, leftSeconds, isRefreshDisabled,
+  reloadCaptcha, handleReloadCaptcha, resetCaptcha, isValid
+} = useCaptcha({
+  props, model, emit, type: 'Math', t: proxy.$t,
+  imageSources: data => ['data:image/gif;base64,' + data.image]
 })
-const imgHeight = computed(() => {
-  return props.height > 0 ? props.height + 'px' : 'auto';
-})
+const codeImage = computed(() => images.value[0]?.src || '')
+const imgWidth = computed(() => props.width > 0 ? props.width + 'px' : 'auto')
+const imgHeight = computed(() => props.height > 0 ? props.height + 'px' : 'auto')
 
-onMounted(() => {
-  reloadCaptcha()
-})
+watch(ready, value => { if (!value) authCode.value = '' }, { flush: 'sync' })
+watch(authCode, value => {
+  model.value = ready.value && value.trim()
+    ? { type: 'Math', token: props.token, data: value.trim() }
+    : null
+}, { flush: 'sync' })
 
-const reloadCaptcha = () => {
-  if (proxy.$tools.isEmpty(props.token)) {
-    console.warn('token is empty');
-    return;
-  }
-  model.value = {};
-  loading.value = true;
-  authCode.value = "";
-  getCaptcha({ token: props.token }).then(res => {
-    codeImage.value = "data:image/gif;base64," + res.data.image;
-    loading.value = false;
-  }).catch(err => {
-    codeImage.value = "";
-    loading.value = false;
-  })
-}
-
-const handleCodeChanged = () => {
-  model.value = {
-    type: captchaType.value,
-    token: props.token,
-    data: authCode.value
-  };
-}
-
-defineExpose({
-  reloadCaptcha
-});
+defineExpose({ reloadCaptcha, resetCaptcha, isValid })
 </script>
 <style lang="scss" scoped>
 .math-captcha-container {
   width: 100%;
+
+  .captcha-error {
+    color: var(--el-color-danger);
+    font-size: 12px;
+  }
 
   .input-icon {
     height: 1rem;
@@ -103,11 +77,32 @@ defineExpose({
       padding: 0;
       overflow: hidden;
     }
+    .captcha-image-wrap {
+      position: relative;
+      display: inline-flex;
+    }
     .captcha-img {
+      width: 100%;
+      height: 100%;
       cursor: pointer;
       margin-right: 1px;
       border-bottom-right-radius: var(--el-input-border-radius);
       border-top-right-radius: var(--el-input-border-radius);
+    }
+    .captcha-img.is-refresh-disabled {
+      cursor: not-allowed;
+    }
+    .captcha-countdown {
+      position: absolute;
+      right: 3px;
+      bottom: 3px;
+      padding: 0 4px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.65);
+      color: #fff;
+      font-size: 12px;
+      line-height: 18px;
+      pointer-events: none;
     }
   }
 }

@@ -28,6 +28,11 @@ public interface SysConstants {
 	String RESOURCE_PREFIX = "/profile/";
 
     /**
+     * 后台用户头像保存目录
+     */
+    String USER_AVATAR_PATH = "avatar/";
+
+    /**
      * 后台一级菜单的PARENT_ID，兼容历史数据
      */
     String MENU_ROOT_ID = "0";

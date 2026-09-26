@@ -56,6 +56,8 @@ public @interface Log {
 	 */
 	boolean isSaveRequestData() default true;
 
+	String[] ignoreArgs() default {};
+
 	/**
 	 * 是否保存响应的参数
 	 */

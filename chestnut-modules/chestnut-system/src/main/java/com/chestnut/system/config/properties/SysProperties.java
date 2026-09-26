@@ -15,19 +15,29 @@
  */
 package com.chestnut.system.config.properties;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 @Getter
 @Setter
+@Validated
 @ConfigurationProperties(prefix = "chestnut.system")
 public class SysProperties {
 
 	/**
-	 * 资源文件上传根目录
+	 * 公共资源文件上传根目录，必填
 	 */
+	@NotBlank
 	private String uploadPath;
+
+	/**
+	 * 私有资源文件上传根目录，必填
+	 */
+	@NotBlank
+	private String privateUploadPath;
 	
 	/** 演示模式开关 */
 	private boolean demoMode;

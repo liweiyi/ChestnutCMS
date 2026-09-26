@@ -93,6 +93,11 @@ public enum SysErrorCode implements ErrorCode {
 	 * 不允许删除超级管理员
 	 */
 	SUPERADMIN_DELETE, 
+
+	/**
+	 * 不允许重置超级管理员密码
+	 */
+	SUPERADMIN_RESET_PWD,
 	
 	/**
 	 * Lang：未配置文件存储方式
@@ -252,7 +257,31 @@ public enum SysErrorCode implements ErrorCode {
     /**
      * 访问被拒绝
      */
-    ACCESS_DENIED;
+    ACCESS_DENIED,
+
+    /** Changing the department requires confirmation of authorization removal. */
+    DEPT_CHANGE_AUTH_CONFIRM_REQUIRED,
+
+	/**
+	 * 机构越权访问被拒绝
+	 */
+	DEPT_ACCESS_DENY,
+
+	/**
+	 * 默认顶级部门不存在或不止一个
+	 */
+	INVALID_TOP_DEPT,
+
+	/**
+	 * 用户部门与加入角色部门不匹配
+	 */
+	USER_DEPT_NOT_MATCH_ROLE_DEPT,
+
+	/**
+	 * 角色数据未找到
+	 */
+	ROLES_EMPTY
+	;
 	
 	@Override
 	public String value() {

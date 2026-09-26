@@ -23,6 +23,10 @@ import com.tencentcloudapi.sms.v20210111.models.SendSmsRequest;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 @Component(ISmsProvider.BEAN_PREFIX + TencentSmsProvider.ID)
 public class TencentSmsProvider implements ISmsProvider {
 
@@ -48,20 +52,39 @@ public class TencentSmsProvider implements ISmsProvider {
         try {
             SmsClient client = this.createClient(req.getSecretId(), req.getSecretKey(), req.getRegion());
             SendSmsRequest request = new SendSmsRequest();
-            request.setPhoneNumberSet(req.getPhoneNumbers().toArray(new String[0]));
+            String[] phoneNumbers = req.getPhoneNumbers().stream()
+                    .map(TencentSmsProvider::normalizePhoneNumber).toArray(String[]::new);
+            request.setPhoneNumberSet(phoneNumbers);
             request.setSmsSdkAppId(req.getAppId());
             request.setTemplateId(req.getTemplateId());
             request.setSignName(req.getSignName());
             request.setTemplateParamSet(req.getTemplateParams().values().toArray(new String[0]));
             SendSmsResponse res = client.SendSms(request);
 
-            // TODO 收集发送结果
+            if (res == null || res.getSendStatusSet() == null || res.getSendStatusSet().length == 0) {
+                throw new IllegalStateException("Tencent SMS response has no recipient status");
+            }
+            Set<String> pending = new HashSet<>(Arrays.asList(phoneNumbers));
+            for (var status : res.getSendStatusSet()) {
+                if (status == null || !"Ok".equals(status.getCode())
+                        || !pending.remove(normalizePhoneNumber(status.getPhoneNumber()))) {
+                    throw new IllegalStateException("Tencent SMS request was not accepted");
+                }
+            }
+            if (!pending.isEmpty()) {
+                throw new IllegalStateException("Tencent SMS response is missing recipient status");
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private SmsClient createClient(String secretId, String secretKey, String region) {
+    private static String normalizePhoneNumber(String phoneNumber) {
+        return phoneNumber != null && phoneNumber.matches("1[3-9][0-9]{9}")
+                ? "+86" + phoneNumber : phoneNumber;
+    }
+
+    SmsClient createClient(String secretId, String secretKey, String region) {
         Credential cred = new Credential(secretId, secretKey);
 //        HttpProfile httpProfile = new HttpProfile();
 //        httpProfile.setEndpoint("sms.tencentcloudapi.com");

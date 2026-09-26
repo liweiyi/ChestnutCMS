@@ -13,36 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.message.domain.dto;
+package com.chestnut.system.listener.event;
 
-import com.chestnut.common.security.domain.BaseDTO;
-import com.chestnut.system.fixed.dict.EnableOrDisable;
-import com.chestnut.system.validator.Dict;
-import jakarta.validation.constraints.NotBlank;
+import com.chestnut.system.domain.SysUser;
 import lombok.Getter;
-import lombok.Setter;
+import org.springframework.context.ApplicationEvent;
 
-/**
- * CreateSmsConfigReq
- *
- * @author 兮玥
- * @email 190785909@qq.com
- */
 @Getter
-@Setter
-public class CreateSmsConfigReq extends BaseDTO {
+public class AfterSysUserUpdateEvent extends ApplicationEvent {
 
-    @NotBlank
-    private String name;
+	private final SysUser user;
 
-    @NotBlank
-    private String type;
-
-    @NotBlank
-    @Dict(EnableOrDisable.TYPE)
-    private String status;
-
-    private String configJson;
-
-    private String remark;
+	public AfterSysUserUpdateEvent(Object source, SysUser user) {
+		super(source);
+		this.user = user;
+	}
 }

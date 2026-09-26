@@ -56,11 +56,13 @@ public interface ISysPostService extends IService<SysPost> {
 	 */
 	void updatePost(UpdatePostRequest post);
 
-	/**
+    /**
 	 * 获取岗位缓存信息
 	 * 
 	 * @param postCode 岗位编码
 	 * @return 结果
 	 */
 	SysPost getPost(String postCode);
+
+	List<SysPost> selectPostsByUserId(Long userId);
 }

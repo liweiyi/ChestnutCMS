@@ -48,7 +48,8 @@ import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.FileStorageHelper;
 import com.chestnut.contentcore.util.SiteUtils;
-import com.chestnut.system.service.ISysPermissionService;
+import com.chestnut.system.service.ISysUserService;
+import com.chestnut.system.service.impl.UserPermissionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +74,9 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 
 	private final ApplicationContext applicationContext;
 
-	private final ISysPermissionService permissionService;
+	private final ISysUserService userService;
+
+	private final UserPermissionService userPermissionService;
 
 	private final Map<String, IPublishPipeProp> publishPipeProps;
 
@@ -190,11 +193,13 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		this.save(site);
 		this.clearCache(site.getSiteId());
 		// 授权给添加人
-		this.permissionService.grantUserPermission(
-				dto.getOperator(),
+		this.userPermissionService.grantUserPermissions(
+				dto.getOperator().getUserId(),
 				SitePermissionType.ID,
 				CmsPrivUtils.getAllSitePermissions(site.getSiteId())
 		);
+		// 重置登录用户权限
+		this.userPermissionService.resetLoginUser(dto.getOperator().getUserId());
 		this.applicationContext.publishEvent(new AfterSiteAddEvent(this, site, dto));
 		return site;
 	}

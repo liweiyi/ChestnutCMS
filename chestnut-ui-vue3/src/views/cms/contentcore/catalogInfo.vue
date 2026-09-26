@@ -378,7 +378,7 @@
         <el-input type="textarea" :rows="10" v-model="catalogTree" readonly style="width:100%;"></el-input>
       </div>
       <template #footer>
-        <el-button type="primary" v-copyText="catalogTree" v-copyText:callback="clipboardSuccess">{{ $t("Common.Copy") }}</el-button>
+        <el-button type="primary" v-copyText="catalogTree">{{ $t("Common.Copy") }}</el-button>
         <el-button @click="catalogTreeDialogVisible = false">{{ $t("Common.Close") }}</el-button>
       </template>
     </el-dialog>
@@ -800,10 +800,6 @@ const handleExportCatalogTree = () => {
   catalogApi.getCatalogTree(params).then(response => {
     catalogTree.value = response.data;
   });
-}
-
-const clipboardSuccess = () => {
-  proxy.$modal.msgSuccess(proxy.$t('Common.CopySuccess'));
 }
 
 const handleRefreshCdn = (refreshAll) => {

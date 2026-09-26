@@ -20,8 +20,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
-
-import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
@@ -42,7 +40,6 @@ import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.*;
 import com.chestnut.system.domain.vo.UserInfoVO;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
-import com.chestnut.system.mapper.SysUserRoleMapper;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
@@ -50,9 +47,11 @@ import com.chestnut.system.service.ISysDeptService;
 import com.chestnut.system.service.ISysPostService;
 import com.chestnut.system.service.ISysRoleService;
 import com.chestnut.system.service.ISysUserService;
-import com.chestnut.system.service.impl.SysUserServiceImpl.SysUserReadListener;
+import com.chestnut.system.service.impl.UserPermissionService;
+import com.chestnut.system.user.SysUserReadListener;
 import com.chestnut.system.user.preference.IUserPreference;
 import com.chestnut.system.user.preference.MenuShortcutUserPreference;
+import com.chestnut.system.utils.SysDeptUtils;
 import com.chestnut.system.validator.LongId;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Validator;
@@ -92,29 +91,38 @@ public class SysUserController extends BaseRestController {
 
 	private final ISysPostService postService;
 
-	private final SysUserRoleMapper userRoleMapper;
+	private final UserPermissionService userPermissionService;
 
 	protected final Validator validator;
 
 	private final List<IUserPreference> userPreferenceList;
 
-	/**
-	 * 获取用户列表
-	 */
     @XComment("{API.DOC.SYS.USER.GET_LIST}")
 	@ExcelExportable(SysUser.class)
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping("/list")
-	public R<TableData<SysUser>> list(@Validated QueryUserRequest user) {
+	public R<TableData<SysUser>> list(@Validated QueryUserRequest req) {
+		SysUser loginUser = (SysUser) StpAdminUtil.getLoginUser().getUser();
 		PageRequest pr = this.getPageRequest();
-		Page<SysUser> page = userService.lambdaQuery()
-				.like(StringUtils.isNotEmpty(user.getUserName()), SysUser::getUserName, user.getUserName())
-				.like(StringUtils.isNotEmpty(user.getPhoneNumber()), SysUser::getPhoneNumber, user.getPhoneNumber())
-				.eq(IdUtils.validate(user.getDeptId()), SysUser::getDeptId, user.getDeptId())
-				.eq(Objects.nonNull(user.getStatus()), SysUser::getStatus, user.getStatus())
-				.orderByDesc(SysUser::getUserId).page(new Page<>(pr.getPageNumber(), pr.getPageSize()));
+		SysDept dept = this.deptService.getDept(req.getDeptId());
+		Assert.notNull(dept, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("deptId", req.getDeptId()));
+		SysDeptUtils.checkDeptScope(loginUser, dept::getDeptId, dept::getAncestors);
+
+		LambdaQueryWrapper<SysUser> q = new LambdaQueryWrapper<>();
+		q.and(and -> and.eq(SysUser::getDeptId, dept.getDeptId())
+				.or(!req.isOnlyCurrentDept())
+				.likeRight(!req.isOnlyCurrentDept(), SysUser::getDeptAncestors, dept.getAncestors() + SysDeptUtils.ANCESTORS_SPLITTER));
+		q.like(StringUtils.isNotEmpty(req.getUserName()), SysUser::getUserName, req.getUserName())
+			.like(StringUtils.isNotEmpty(req.getPhoneNumber()), SysUser::getPhoneNumber, req.getPhoneNumber())
+			.eq(Objects.nonNull(req.getStatus()), SysUser::getStatus, req.getStatus())
+			.orderByDesc(SysUser::getUserId);
+
+        Page<SysUser> page = userService.page(new Page<>(pr.getPageNumber(), pr.getPageSize()), q);
 		page.getRecords().forEach(u -> {
-			this.deptService.getDept(u.getDeptId()).ifPresent(d -> u.setDeptName(d.getDeptName()));
+			SysDept d = this.deptService.getDept(u.getDeptId());
+			if (Objects.nonNull(d)) {
+				u.setDeptName(d.getDeptName());
+			}
             u.setPassword("******");
 		});
 		return bindDataTable(page);
@@ -122,7 +130,7 @@ public class SysUserController extends BaseRestController {
 
     @XComment("{API.DOC.SYS.USER.IMPORT}")
 	@Log(title = "用户管理", businessType = BusinessType.IMPORT)
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserAdd)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserImport)
 	@PostMapping("/importData")
 	public R<String> importData(
             @XComment("{API.DOC.SYS.USER.IMPORT.FILE}") MultipartFile file,
@@ -132,10 +140,14 @@ public class SysUserController extends BaseRestController {
 			return R.fail("Import file not exists!");
 		}
 		StringWriter logWriter = new StringWriter();
-		SysUserReadListener readListener = new SysUserReadListener(this.userService, this.deptService, this.roleService,
-				this.postService, this.userRoleMapper);
+		SysUserReadListener readListener = new SysUserReadListener(
+				this.userService,
+				this.deptService,
+				this.postService,
+				this.userPermissionService
+		);
 		readListener.setValidator(validator);
-		readListener.setOperator(StpAdminUtil.getLoginUser().getUsername());
+		readListener.setOperator(StpAdminUtil.getLoginUser());
 		readListener.setUpdateSupport(updateSupport);
 		readListener.setLogWriter(logWriter);
 		readListener.setLocale(LocaleContextHolder.getLocale());
@@ -158,9 +170,14 @@ public class SysUserController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
 	@GetMapping(value = { "/detail", "/detail/{userId}" })
 	public R<UserInfoVO> getInfo(@PathVariable(value = "userId", required = false) @XComment("{API.DOC.SYS.USER.ID}") Long userId) {
+        LoginUser operator = StpAdminUtil.getLoginUser();
 		SysUser user = null;
 		if (IdUtils.validate(userId)) {
-			user = userService.getById(userId);
+			user = this.userService.getById(userId);
+			Assert.notNull(user, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("userId", userId));
+			SysDeptUtils.checkDeptScope(operator, user::getDeptId, user::getDeptAncestors);
+
+			user.setPassword("******");
 			user.setAvatarSrc(SystemConfig.getResourcePrefix() + user.getAvatar());
 			user.setRoleIds(
 					roleService.selectRolesByUserId(userId, EnableOrDisable.ENABLE)
@@ -172,39 +189,46 @@ public class SysUserController extends BaseRestController {
 		return R.ok(UserInfoVO.create(user));
 	}
 
-	/**
-	 * 新增用户
-	 */
 	@XComment("{API.DOC.SYS.USER.CREATE_USER}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserAdd)
-	@Log(title = "用户管理", businessType = BusinessType.INSERT)
+	@Log(title = "用户管理", businessType = BusinessType.INSERT, ignoreArgs = { "password" })
 	@PostMapping("/add")
 	public R<Void> add(@Validated @RequestBody CreateUserRequest user) {
 		userService.insertUser(user);
 		return R.ok();
 	}
 
-	/**
-	 * 修改用户
-	 */
 	@XComment("{API.DOC.SYS.USER.UPDATE_USER}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserEdit)
 	@Log(title = "用户管理", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<Void> edit(@Validated @RequestBody UpdateUserRequest user) {
-		userService.updateUser(user);
+	public R<Void> edit(@Validated @RequestBody UpdateUserRequest req) {
+		userService.updateUser(req);
 		return R.ok();
 	}
 
 	/**
-	 * 删除用户
+	 * 调动用户所属机构，并在机构变更时解除该用户的全部角色关联。
+	 *
+	 * @param req 待调动用户及目标机构；操作人由入口权限切面注入
+	 * @return 操作成功响应，无业务数据
 	 */
+	@XComment(value = "{API.DOC.SYS.USER.CHANGE_DEPT}", since = "1.6.1")
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserEdit)
+	@Log(title = "用户管理", businessType = BusinessType.UPDATE)
+	@PostMapping("/changeDept")
+	public R<Void> changeUserDept(@Validated @RequestBody @XComment("{API.DOC.SYS.USER.CHANGE_DEPT_REQ}") ChangeUserDeptRequest req) {
+		this.userPermissionService.changeUserDept(req);
+		return R.ok();
+	}
+
     @XComment("{API.DOC.SYS.USER.DELETE_USER}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserRemove)
 	@Log(title = "用户管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
 	public R<Void> remove(@RequestBody @NotEmpty @XComment("{API.DOC.SYS.USER.IDS}") List<Long> userIds) {
-		userService.deleteUserByIds(userIds);
+        LoginUser operator = StpAdminUtil.getLoginUser();
+		userService.deleteUserByIds(userIds, operator);
 		return R.ok();
 	}
 
@@ -213,39 +237,37 @@ public class SysUserController extends BaseRestController {
 	@Log(title = "用户管理", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PostMapping("/resetPwd")
 	public R<Void> resetPwd(@RequestBody @Validated ResetUserPwdRequest req) {
+        LoginUser operator = StpAdminUtil.getLoginUser();
+        req.setOperator(operator);
 		userService.resetPwd(req);
 		return R.ok();
 	}
 
 	@XComment("{API.DOC.SYS.USER.USER_ROLES}")
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserGrant)
 	@GetMapping("/authRole/{userId}")
-	public R<UserInfoVO> authRole(@PathVariable @LongId @XComment("{API.DOC.SYS.USER.ID}") Long userId) {
+	public R<UserInfoVO> getUserRoles(@PathVariable @LongId @XComment("{API.DOC.SYS.USER.ID}") Long userId) {
+		LoginUser operator = StpAdminUtil.getLoginUser();
 		SysUser user = userService.getById(userId);
 		Assert.notNull(user, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(userId));
+		SysDeptUtils.checkDeptScope(operator, user::getDeptId, user::getDeptAncestors);
 
 		List<SysRole> userRoles = roleService.selectRolesByUserId(userId, EnableOrDisable.ENABLE);
 		user.setRoleIds(userRoles.stream().map(SysRole::getRoleId).toArray(Long[]::new));
-		List<SysRole> roles = this.roleService.list();
-		return R.ok(new UserInfoVO(user, roles));
+		user.setPassword("******");
+
+		List<SysRole> variableRoles = roleService.lambdaQuery().eq(SysRole::getDeptId, user.getDeptId()).list();
+		return R.ok(new UserInfoVO(user, variableRoles));
 	}
 
     @XComment("{API.DOC.SYS.USER.SAVE_USER_ROLES}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserGrant)
 	@Log(title = "用户管理", businessType = BusinessType.GRANT)
 	@PostMapping("/authRole")
-	public R<Void> insertAuthRole(@Validated @RequestBody AuthRoleRequest req) {
-		userService.insertUserAuth(req.getUserId(), req.getRoleIds());
+	public R<Void> resetUserRoles(@Validated @RequestBody AuthRoleRequest req) {
+        LoginUser operator = StpAdminUtil.getLoginUser();
+		userPermissionService.resetUserRoles(req.getUserId(), req.getRoleIds(), operator);
 		return R.ok();
-	}
-
-    @XComment("{API.DOC.SYS.USER.GET_DETP_TREE}")
-	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserList)
-	@GetMapping("/deptTree")
-	public R<List<TreeNode<Long>>> deptTree(@Validated QueryDeptRequest req) {
-		List<SysDept> depts = this.deptService.list(new LambdaQueryWrapper<SysDept>()
-				.like(StringUtils.isNotEmpty(req.getDeptName()), SysDept::getDeptName, req.getDeptName()));
-		return R.ok(deptService.buildDeptTreeSelect(depts));
 	}
 
     @XComment("{API.DOC.SYS.USER.GET_PREFERENCES}")

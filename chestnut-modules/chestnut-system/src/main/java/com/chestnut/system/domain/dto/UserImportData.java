@@ -15,17 +15,16 @@
  */
 package com.chestnut.system.domain.dto;
 
-import java.util.Set;
-
 import cn.idev.excel.annotation.ExcelProperty;
 import com.chestnut.common.utils.poi.converter.StringToSetConverter;
 import com.chestnut.system.annotation.ExcelDictField;
 import com.chestnut.system.config.converter.DictConverter;
 import com.chestnut.system.fixed.dict.UserStatus;
-
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Set;
 
 @Setter
 @Getter
@@ -62,9 +61,6 @@ public class UserImportData {
 
 	@ExcelProperty(value = "岗位编码（多个英文分号分隔）", converter = StringToSetConverter.class)
 	private Set<String> postCodes;
-
-	@ExcelProperty(value = "角色编码（多个英文分号分隔）", converter = StringToSetConverter.class)
-	private Set<String> roleCodes;
 	
 	private String remark;
 }

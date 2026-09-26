@@ -60,10 +60,12 @@ public class AliYunSmsProvider implements ISmsProvider {
                 .setTemplateCode(req.getTemplateId())
                 .setTemplateParam(JacksonUtils.to(req.getTemplateParams()));
         SendSmsResponse res = client.sendSmsWithOptions(sendRequest, runtimeOptions);
-        // TODO 收集发送结果
+        if (res == null || res.getBody() == null || !"OK".equals(res.getBody().getCode())) {
+            throw new IllegalStateException("Aliyun SMS request was not accepted");
+        }
     }
 
-    private Client createClient(String accessKeyId, String accessKeySecret, String region) throws Exception {
+    Client createClient(String accessKeyId, String accessKeySecret, String region) throws Exception {
         com.aliyun.credentials.Client credential = new com.aliyun.credentials.Client();
         com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config().setCredential(credential);
         // Endpoint 请参考 https://api.aliyun.com/product/Dysmsapi

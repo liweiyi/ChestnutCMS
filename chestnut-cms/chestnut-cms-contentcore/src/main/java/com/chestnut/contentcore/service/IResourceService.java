@@ -65,8 +65,9 @@ public interface IResourceService extends IService<CmsResource> {
 	 * 删除资源
 	 * 
 	 * @param resourceIds 素材ID列表
+	 * @param siteId 站点ID
 	 */
-	void deleteResource(List<Long> resourceIds);
+	void deleteResource(List<Long> resourceIds, Long siteId);
 
 	/**
 	 * 获取资源访问路径

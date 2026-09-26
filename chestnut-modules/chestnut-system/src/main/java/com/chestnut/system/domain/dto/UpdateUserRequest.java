@@ -44,10 +44,6 @@ public class UpdateUserRequest extends BaseDTO {
     @XComment("{ENT.SYS.USER.ID}")
     private Long userId;
 
-    @LongId
-    @XComment("{ENT.SYS.USER.DEPT_ID}")
-    private Long deptId;
-
     @Length(max = 30)
     @XComment("{ENT.SYS.USER.NICK_NAME}")
     private String nickName;

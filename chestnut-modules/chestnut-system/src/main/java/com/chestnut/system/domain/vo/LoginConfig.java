@@ -34,11 +34,9 @@ public class LoginConfig {
 
     private List<ThirdLogin> thirds;
 
-    @Getter
-    @Setter
-    public static class ThirdLogin {
-        private Long id;
-        private String type;
+    private Boolean demoMode = false;
+
+    public record ThirdLogin(Long id, String type, String name) {
     }
 
     @Getter

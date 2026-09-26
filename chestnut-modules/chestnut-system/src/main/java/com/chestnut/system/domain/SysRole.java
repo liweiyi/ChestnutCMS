@@ -16,6 +16,8 @@
 package com.chestnut.system.domain;
 
 import cn.idev.excel.annotation.ExcelProperty;
+import cn.idev.excel.annotation.ExcelIgnore;
+import com.baomidou.mybatisplus.annotation.TableField;
 import cn.idev.excel.converters.longconverter.LongStringConverter;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -23,6 +25,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
+import com.chestnut.system.permission.HasDept;
 import com.chestnut.system.validator.Dict;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -42,7 +45,7 @@ import java.io.Serial;
 @Setter
 @XComment("{ENT.SYS.ROLE}")
 @TableName(SysRole.TABLE_NAME)
-public class SysRole extends BaseEntity {
+public class SysRole extends BaseEntity implements HasDept {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
@@ -54,6 +57,19 @@ public class SysRole extends BaseEntity {
 	@ExcelProperty(value = "{ENT.SYS.ROLE.ID}", converter = LongStringConverter.class)
 	@TableId(value = "role_id", type = IdType.INPUT)
 	private Long roleId;
+
+    @ExcelIgnore
+    @XComment("{ENT.SYS.USER.DEPT_ID}")
+    private Long deptId;
+
+	@ExcelIgnore
+	@XComment("{ENT.SYS.USER.DEPT_ID}")
+	private String deptAncestors;
+
+	@TableField(exist = false)
+    @ExcelProperty("{ENT.SYS.USER.DEPT_NAME}")
+    @XComment("{ENT.SYS.USER.DEPT_NAME}")
+    private String deptName;
 
 	/** 角色名称 */
 	@XComment("{ENT.SYS.ROLE.NAME}")

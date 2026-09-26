@@ -23,6 +23,7 @@ import freemarker.cache.FileTemplateLoader;
 import freemarker.cache.MruCacheStorage;
 import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.TemplateLoader;
+import freemarker.core.TemplateClassResolver;
 import freemarker.template.TemplateException;
 import org.apache.commons.lang3.Strings;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -78,6 +79,9 @@ public class FreeMarkerConfig {
 		cfg.setOutputEncoding(StringUtils.isEmpty(properties.getOutputEncoding())
 				? properties.getDefaultEncoding()
 				: properties.getOutputEncoding());
+		// 在加载通用配置后固定安全限制，防止模板通过 ?new 或 ?api 扩大权限。
+		cfg.setNewBuiltinClassResolver(TemplateClassResolver.ALLOWS_NOTHING_RESOLVER);
+		cfg.setAPIBuiltinEnabled(false);
 		return cfg;
 	}
 

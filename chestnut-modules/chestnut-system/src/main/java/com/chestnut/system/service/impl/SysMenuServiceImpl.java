@@ -69,6 +69,10 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
 	public List<RouterVO> buildRouters(List<SysMenu> menus) {
 		List<RouterVO> routers = new LinkedList<>();
 		for (SysMenu menu : menus) {
+			// 按钮只参与权限授权，直接挂在目录下时也不能生成前端路由。
+			if (MenuType.isButton(menu.getMenuType())) {
+				continue;
+			}
 			RouterVO router = new RouterVO();
 			router.setHidden(YesOrNo.isNo(menu.getVisible()));
 			router.setName(getRouteName(menu));

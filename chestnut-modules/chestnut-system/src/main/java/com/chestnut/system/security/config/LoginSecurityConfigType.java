@@ -76,11 +76,6 @@ public class LoginSecurityConfigType implements ISecurityConfigType<LoginSecurit
         jsonNode.put("captchaDuration", Objects.requireNonNullElse(securityConfig.getCaptchaDuration(), 0));
         jsonNode.put("captchaMessageConfigId", 0L);
         jsonNode.put("captchaMessageTemplateId", 0L);
-        ArrayNode loginTypeConfigIds = JacksonUtils.arrayNode();
-        if (StringUtils.isNotEmpty(securityConfig.getLoginTypeConfigIds())) {
-            securityConfig.getLoginTypeConfigIds().forEach(loginTypeConfigIds::add);
-        }
-        jsonNode.set("loginTypeConfigIds", loginTypeConfigIds);
         configs.set(TYPE, jsonNode);
     }
 

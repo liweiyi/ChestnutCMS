@@ -17,296 +17,274 @@ package com.chestnut.contentcore.service.impl;
 
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
-import com.chestnut.common.utils.Assert;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.config.CMSConfig;
-import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.FileAddDTO;
 import com.chestnut.contentcore.domain.vo.FileVO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.config.AllowUploadFileType;
+import com.chestnut.contentcore.fixed.config.OnlineEditableFileType;
 import com.chestnut.contentcore.service.IFileService;
 import com.chestnut.contentcore.service.IPublishPipeService;
-import com.chestnut.contentcore.util.SiteUtils;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
+
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
+import static java.nio.file.StandardOpenOption.*;
 
 @Service
 @RequiredArgsConstructor
 public class FileServiceImpl implements IFileService {
 
-	/**
-	 * 可在线编辑的文件类型
-	 */
-	public static final List<String> EDITABLE_FILE_TYPE = List.of("txt", "shtml", "html", "htm", "js", "css");
-	
-	private final IPublishPipeService publishPipeService;
-	
-	@Override
-	public List<TreeNode<String>> getSiteDirectoryTreeData(CmsSite site) {
-		List<TreeNode<String>> list = new ArrayList<>();
-		// 资源目录
-		File siteResourceRoot = new File(SiteUtils.getSiteResourceRoot(site));
-		FileExUtils.mkdirs(siteResourceRoot.getAbsolutePath());
+    private final IPublishPipeService publishPipeService;
 
-		list.add(new TreeNode<>(siteResourceRoot.getName(), "", siteResourceRoot.getName(), true));
-		// 发布通道目录
-		this.publishPipeService.getAllPublishPipes(site.getSiteId()).forEach(publishPipe -> {
-			File siteRoot = new File(SiteUtils.getSiteRoot(site, publishPipe.getCode()));
-			FileExUtils.mkdirs(siteRoot.getAbsolutePath());
-			list.add(new TreeNode<>(siteRoot.getName(), "", siteRoot.getName(), true));
-		});
-		list.forEach(this::loadChildrenDirectories);
-		return list;
-	}
-	
-	private void loadChildrenDirectories(TreeNode<String> node) {
-		File root = new File(CMSConfig.getResourceRoot() + node.getId());
-		File[] listFiles = root.listFiles(StringUtils::isNotSystemDir);
-		if (Objects.isNull(listFiles)) {
-			return;
-		}
-        for (File file : listFiles) {
-			if (file.isDirectory()) {
-				String id = node.getId() + StringUtils.SLASH + file.getName();
-				if (Objects.isNull(node.getChildren())) {
-					node.setChildren(new ArrayList<>());
-				}
-				TreeNode<String> child = new TreeNode<>(id, node.getId(), file.getName(), false);
-				node.getChildren().add(child);
-				loadChildrenDirectories(child);
-			}
-		}
-	}
+    private SiteFilePaths paths(CmsSite site) throws IOException {
+        List<String> roots = new ArrayList<>();
+        roots.add(site.getPath());
+        // 发布通道启停只影响发布，文件管理允许访问本站所有通道。
+        publishPipeService.getAllPublishPipes(site.getSiteId())
+                .forEach(pipe -> roots.add(site.getPath() + "_" + pipe.getCode()));
+        return new SiteFilePaths(Path.of(CMSConfig.getResourceRoot()), roots);
+    }
 
-	@Override
-	public R<List<FileVO>> getSiteFileList(CmsSite site, String dirPath, String filterFilename) {
-    	String path = FileExUtils.normalizePath(dirPath);
-    	String root = CMSConfig.getResourceRoot();
-    	File file = new File(root + path);
-    	if (!file.exists() || !file.isDirectory()) {
-    		return R.fail("目录参数错误：" + dirPath);
-    	}
-		List<FileVO> list = new ArrayList<>();
-    	File[] listFiles;
-    	if (StringUtils.isEmpty(dirPath) || dirPath.equals("/")) {
-    		// 返回站点资源及发布通道目录
-    		List<CmsPublishPipe> allPublishPipes = this.publishPipeService.getAllPublishPipes(site.getSiteId());
-    		listFiles = new File[allPublishPipes.size() + 1];
-    		listFiles[0] = new File(SiteUtils.getSiteResourceRoot(site));
-    		for (int i = 0; i < allPublishPipes.size(); i++) {
-				listFiles[i + 1] = new File(SiteUtils.getSiteRoot(site, allPublishPipes.get(i).getCode()));
-			}
-    	} else {
-    		// 返回指定目录文件
-        	listFiles = file.listFiles(f -> {
-				if (StringUtils.isSystemDir(f)) {
-					return false;
-				}
-				if (StringUtils.isNotEmpty(filterFilename)) {
-					return f.getName().contains(filterFilename);
-				}
-				return true;
-			});
-    	}
-		if (listFiles != null) {
-			for (int i = 0; i < listFiles.length &&  i < 1000; i++) {
-				// 最多显示1000个文件
-				File f = listFiles[i];
-				String filePath = FileExUtils.normalizePath(f.getAbsolutePath());
-				FileVO vo = new FileVO();
-				vo.setFilePath(filePath.substring(root.length()));
-				vo.setFileName(f.getName());
-				vo.setIsDirectory(f.isDirectory());
-				vo.setFileSize(f.length());
-				vo.setModifyTime(DateUtils.epochMilliToLocalDateTime(f.lastModified()));
-				if (f.isFile()) {
-					String fileType = FileExUtils.getExtension(f.getName());
-					vo.setCanEdit(FileServiceImpl.EDITABLE_FILE_TYPE.contains(fileType));
-				}
-				list.add(vo);
-			}
-		}
-		list.sort((f1, f2) -> {
-			if (f2.getIsDirectory() && !f1.getIsDirectory()) {
-				return 1;
-			} else if (f1.getIsDirectory() && !f2.getIsDirectory()) {
-				return -1;
-			}
-			return f1.getFileName().compareTo(f2.getFileName());
-		});
-		return R.ok(list);
-	}
+    @Override
+    public List<TreeNode<String>> getSiteDirectoryTreeData(CmsSite site) {
+        try {
+            SiteFilePaths paths = paths(site);
+            List<TreeNode<String>> list = new ArrayList<>();
+            for (Path root : paths.roots()) {
+                if (Files.exists(root, NOFOLLOW_LINKS) && paths.visibleAttributes(root) == null) {
+                    continue;
+                }
+                paths.createDirectories(root);
+                String name = root.getFileName().toString();
+                TreeNode<String> node = new TreeNode<>(paths.relative(root), "", name, true);
+                loadChildrenDirectories(paths, root, node);
+                list.add(node);
+            }
+            return list;
+        } catch (IOException e) {
+            throw CommonErrorCode.SYSTEM_ERROR.exception(e);
+        }
+    }
 
-	@Override
-	public void renameFile(CmsSite site, String filePath, String rename) throws IOException {
-		String ext = FilenameUtils.getExtension(rename);
-		if (StringUtils.isNotEmpty(ext)) {
-			this.checkFileType(rename);
-		}
-    	String path = FileExUtils.normalizePath(filePath);
-    	if (path.startsWith("/")) {
-    		path = path.substring(1);
-    	}
-    	this.checkSiteDirectory(site, path);
+    private void loadChildrenDirectories(SiteFilePaths paths, Path directory, TreeNode<String> node)
+            throws IOException {
+        paths.check(directory);
+        try (DirectoryStream<Path> entries = Files.newDirectoryStream(directory)) {
+            for (Path entry : entries) {
+                if (StringUtils.isSystemDir(entry.toFile())) {
+                    continue;
+                }
+                BasicFileAttributes attrs = paths.visibleAttributes(entry);
+                if (attrs == null || !attrs.isDirectory()) {
+                    continue;
+                }
+                TreeNode<String> child = new TreeNode<>(paths.relative(entry), node.getId(),
+                        entry.getFileName().toString(), false);
+                loadChildrenDirectories(paths, entry, child);
+                if (node.getChildren() == null) {
+                    node.setChildren(new ArrayList<>());
+                }
+                node.getChildren().add(child);
+            }
+        }
+    }
 
-    	String root = CMSConfig.getResourceRoot();
-    	File file = new File(root + path);
-    	Assert.isTrue(file.exists(), ContentCoreErrorCode.FILE_NOT_EXIST::exception);
+    @Override
+    public R<List<FileVO>> getSiteFileList(CmsSite site, String dirPath, String filterFilename) {
+        try {
+            SiteFilePaths paths = paths(site);
+            List<FileVO> list = new ArrayList<>();
+            if ("".equals(dirPath) || "/".equals(dirPath)) {
+                // 虚拟根只能枚举授权目录，不能打开 CMS 物理根目录。
+                for (Path root : paths.roots()) {
+                    addFileView(paths, root, list);
+                    if (list.size() >= 1000) {
+                        break;
+                    }
+                }
+            } else {
+                Path directory = paths.resolve(dirPath);
+                if (!Files.isDirectory(directory, NOFOLLOW_LINKS)) {
+                    return R.fail("目录参数错误：" + dirPath);
+                }
+                try (DirectoryStream<Path> entries = Files.newDirectoryStream(directory)) {
+                    for (Path entry : entries) {
+                        if (StringUtils.isSystemDir(entry.toFile())
+                                || (StringUtils.isNotEmpty(filterFilename)
+                                && !entry.getFileName().toString().contains(filterFilename))) {
+                            continue;
+                        }
+                        addFileView(paths, entry, list);
+                        if (list.size() >= 1000) {
+                            break;
+                        }
+                    }
+                }
+            }
+            list.sort(Comparator.comparing(FileVO::getIsDirectory).reversed()
+                    .thenComparing(FileVO::getFileName));
+            return R.ok(list);
+        } catch (IOException e) {
+            throw CommonErrorCode.SYSTEM_ERROR.exception(e);
+        }
+    }
 
-		Path dest = Path.of(file.getParent(), rename);
-    	Assert.isFalse(Files.exists(dest), ContentCoreErrorCode.FILE_ALREADY_EXISTS::exception);
+    private void addFileView(SiteFilePaths paths, Path file, List<FileVO> list) throws IOException {
+        BasicFileAttributes attrs = paths.visibleAttributes(file);
+        if (attrs == null) {
+            return;
+        }
+        FileVO vo = new FileVO();
+        vo.setFilePath(paths.relative(file));
+        vo.setFileName(file.getFileName().toString());
+        vo.setIsDirectory(attrs.isDirectory());
+        vo.setFileSize(attrs.size());
+        vo.setModifyTime(DateUtils.epochMilliToLocalDateTime(attrs.lastModifiedTime().toMillis()));
+        if (attrs.isRegularFile()) {
+            vo.setCanEdit(OnlineEditableFileType.getAllowedExtensions().contains(FileExUtils.getExtension(vo.getFileName())));
+        }
+        list.add(vo);
+    }
 
-    	if (file.isDirectory()) {
-			FileUtils.moveDirectory(file, dest.toFile());
-		} else {
-			FileUtils.moveFile(file, dest.toFile());
-		}
-	}
+    @Override
+    public void renameFile(CmsSite site, String filePath, String rename) throws IOException {
+        SiteFilePaths.validateName(rename);
+        SiteFilePaths paths = paths(site);
+        Path source = paths.resolve(filePath);
+        paths.protectRoot(source);
+        paths.checkTree(source);
+        if (StringUtils.isNotEmpty(FilenameUtils.getExtension(rename))) {
+            checkFileType(rename);
+        }
+        Path target = paths.child(source.getParent(), rename);
+        try {
+            // 不使用 REPLACE_EXISTING，也不通过复制/删除退化为跨目录移动。
+            Files.move(paths.check(source), paths.check(target));
+        } catch (FileAlreadyExistsException e) {
+            throw ContentCoreErrorCode.FILE_ALREADY_EXISTS.exception();
+        }
+    }
 
-	@Override
-	public void addFile(CmsSite site, FileAddDTO dto) throws IOException {
-		String dir = dto.getDir();
-    	dir = FileExUtils.normalizePath(dir);
-    	if (dir.startsWith("/")) {
-    		dir = dir.substring(1);
-    	}
-		dir = Strings.CS.appendIfMissing(dir, "/");
-    	this.checkSiteDirectory(site, dir);
-    	if (!dto.getIsDirectory()) {
-    		this.checkFileType(dto.getFileName());
-    	}
-    	
-    	String root = CMSConfig.getResourceRoot();
-    	File file = new File(root + dir + dto.getFileName());
-    	Assert.isFalse(file.exists(), ContentCoreErrorCode.FILE_ALREADY_EXISTS::exception);
+    @Override
+    public void addFile(CmsSite site, FileAddDTO dto) throws IOException {
+        if (dto == null || dto.getIsDirectory() == null) {
+            throw CommonErrorCode.INVALID_REQUEST_ARG.exception("isDirectory");
+        }
+        SiteFilePaths.validateName(dto.getFileName());
+        SiteFilePaths paths = paths(site);
+        Path parent = paths.resolve(dto.getDir());
+        Path target = paths.child(parent, dto.getFileName());
+        if (!dto.getIsDirectory()) {
+            checkFileType(dto.getFileName());
+        }
+        paths.createDirectories(parent);
+        paths.check(target);
+        try {
+            if (dto.getIsDirectory()) {
+                Files.createDirectory(target);
+            } else {
+                // CREATE_NEW 原子保证不覆盖；包括并发创建的文件或失效符号链接。
+                Files.createFile(target);
+            }
+        } catch (FileAlreadyExistsException e) {
+            throw ContentCoreErrorCode.FILE_ALREADY_EXISTS.exception();
+        }
+    }
 
-    	if (dto.getIsDirectory()) {
-			FileExUtils.mkdirs(file.getAbsolutePath());
-    	} else {
-			FileExUtils.mkdirs(file.getParentFile().getAbsolutePath());
-    		FileUtils.writeStringToFile(file, StringUtils.EMPTY, StandardCharsets.UTF_8);
-    	}
-	}
+    @Override
+    public String readFile(CmsSite site, String filePath) throws IOException {
+        SiteFilePaths paths = paths(site);
+        Path file = paths.resolve(filePath);
+        requireEditableFile(paths, file);
+        try (var input = Files.newInputStream(file, READ, NOFOLLOW_LINKS)) {
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
 
-	@Override
-	public String readFile(CmsSite site, String filePath) throws IOException {
-    	String path = FileExUtils.normalizePath(filePath);
-    	if (path.startsWith("/")) {
-    		path = path.substring(1);
-    	}
-		this.checkSiteDirectory(site, path);
-		String ext = FilenameUtils.getExtension(path);
-		if (!EDITABLE_FILE_TYPE.contains(ext)) {
-    		throw ContentCoreErrorCode.NOT_EDITABLE_FILE.exception();
-    	}
-    	String root = CMSConfig.getResourceRoot();
-    	File file = new File(root + path);
-    	Assert.isTrue(file.exists(), ContentCoreErrorCode.FILE_NOT_EXIST::exception);
+    @Override
+    public void editFile(CmsSite site, String filePath, String fileContent) throws IOException {
+        SiteFilePaths paths = paths(site);
+        Path file = paths.resolve(filePath);
+        requireEditableFile(paths, file);
+        byte[] content = (fileContent == null ? StringUtils.EMPTY : fileContent).getBytes(StandardCharsets.UTF_8);
+        // 编辑只允许已存在的普通文件，不隐式创建。
+        try (var output = Files.newOutputStream(file, WRITE, TRUNCATE_EXISTING, NOFOLLOW_LINKS)) {
+            output.write(content);
+        }
+    }
 
-    	return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-	}
+    private void requireEditableFile(SiteFilePaths paths, Path file) throws IOException {
+        if (!OnlineEditableFileType.getAllowedExtensions().contains(FilenameUtils.getExtension(file.getFileName().toString()))) {
+            throw ContentCoreErrorCode.NOT_EDITABLE_FILE.exception();
+        }
+        if (!paths.requireExisting(file).isRegularFile()) {
+            throw ContentCoreErrorCode.NOT_EDITABLE_FILE.exception();
+        }
+    }
 
-	@Override
-	public void editFile(CmsSite site, String filePath, String fileContent) throws IOException {
-    	String path = FileExUtils.normalizePath(filePath);
-    	if (path.startsWith("/")) {
-    		path = path.substring(1);
-    	}
-		this.checkSiteDirectory(site, path);
-    	if (!EDITABLE_FILE_TYPE.contains(FileExUtils.getExtension(path))) {
-    		throw ContentCoreErrorCode.NOT_EDITABLE_FILE.exception();
-    	}
-    	String root = CMSConfig.getResourceRoot();
-    	File file = new File(root + path);
-    	Assert.isTrue(file.exists(), ContentCoreErrorCode.FILE_NOT_EXIST::exception);
-    	
-    	FileUtils.writeStringToFile(file, fileContent, StandardCharsets.UTF_8);
-	}
+    @Override
+    public void deleteFiles(CmsSite site, String[] filePathArr) throws IOException {
+        if (filePathArr == null || filePathArr.length == 0) {
+            throw CommonErrorCode.INVALID_REQUEST_ARG.exception("filePath");
+        }
+        SiteFilePaths paths = paths(site);
+        List<Path> targets = new ArrayList<>();
+        // 所有目标及其子树先校验，拒绝请求不能导致前面的合法文件被删除。
+        for (String filePath : filePathArr) {
+            Path target = paths.resolve(filePath);
+            paths.protectRoot(target);
+            paths.checkTree(target);
+            targets.add(target);
+        }
+        List<Path> distinct = targets.stream().distinct().toList();
+        for (Path target : distinct) {
+            if (distinct.stream().noneMatch(other -> !other.equals(target) && target.startsWith(other))) {
+                paths.deleteTree(target);
+            }
+        }
+    }
 
-	@Override
-	public void deleteFiles(CmsSite site, String[] filePathArr) throws IOException {
-    	String root = CMSConfig.getResourceRoot();
-		for (String filePath : filePathArr) {
-			String path = FileExUtils.normalizePath(filePath);
-	    	if (path.startsWith("/")) {
-	    		path = path.substring(1);
-	    	}
-	    	this.checkSiteDirectory(site, path);
-	    	File file = new File(root + path);
-	    	if (file.isDirectory()) {
-	    		FileUtils.deleteDirectory(file);
-	    	} else {
-	    		FileUtils.delete(file);
-	    	}
-		}
-	}
+    @Override
+    public void uploadFile(CmsSite site, String dir, MultipartFile file) throws IOException {
+        if (file == null) {
+            throw CommonErrorCode.INVALID_REQUEST_ARG.exception("file");
+        }
+        SiteFilePaths.validateName(file.getOriginalFilename());
+        SiteFilePaths paths = paths(site);
+        Path parent = paths.resolve(dir);
+        Path target = paths.child(parent, file.getOriginalFilename());
+        checkFileType(file.getOriginalFilename());
+        paths.createDirectories(parent);
+        paths.check(target);
+        // 保留覆盖普通同名文件的上传语义，但不能跟随文件链接。
+        try (var input = file.getInputStream();
+             var output = Files.newOutputStream(target, CREATE, WRITE, TRUNCATE_EXISTING, NOFOLLOW_LINKS)) {
+            input.transferTo(output);
+        }
+    }
 
-	@Override
-	public void uploadFile(CmsSite site, String dir, MultipartFile file) throws IOException {
-		dir = FileExUtils.normalizePath(dir);
-		if (dir.startsWith("/")) {
-			dir = dir.substring(1);
-		}
-		dir = Strings.CS.appendIfMissing(dir, "/");
-		this.checkSiteDirectory(site, dir);
-		this.checkFileType(file.getOriginalFilename());
-		FileExUtils.checkFileName(file.getOriginalFilename());
-
-		String resourceRoot = CMSConfig.getResourceRoot();
-		FileUtils.writeByteArrayToFile(new File(resourceRoot + dir + file.getOriginalFilename()), file.getBytes());
-	}
-	
-	/**
-	 * 校验上传文件类型
-	 * 
-	 * @param ext
-	 */
-	private void checkFileType(String ext) {
-		if (AllowUploadFileType.isAllow(ext)) {
-			return;
-		}
-		throw ContentCoreErrorCode.NOT_ALLOW_FILE_TYPE.exception(ext);
-	}
-
-	/**
-	 * 判断上传目录是否是站点相关目录：站点资源目录、站点发布通道目录
-	 * 
-	 * @param site
-	 * @param path 站点相关目录子路径，如果是目录必须以/结尾
-	 * @return
-	 */
-	private void checkSiteDirectory(CmsSite site, String path) {
-		if (path.contains("/")) {
-			path = StringUtils.substringBefore(path, "/");
-		}
-		if (StringUtils.isNotEmpty(path)) {
-			if (path.equals(site.getPath())) {
-				return;
-			}
-			List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(site.getSiteId());
-			for (CmsPublishPipe publishPipe : publishPipes) {
-				if (path.equals(site.getPath() + "_" + publishPipe.getCode())) {
-					return;
-				}
-			}
-		}
-		throw ContentCoreErrorCode.SITE_FILE_OP_ERR.exception(path);
-	}
+    private void checkFileType(String name) {
+        if (!AllowUploadFileType.isAllow(name)) {
+            throw ContentCoreErrorCode.NOT_ALLOW_FILE_TYPE.exception(name);
+        }
+    }
 }

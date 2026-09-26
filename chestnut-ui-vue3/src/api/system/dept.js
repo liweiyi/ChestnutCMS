@@ -42,3 +42,7 @@ export function delDept(deptId) {
     method: 'post'
   })
 }
+
+export function deptTree() {
+  return request({ url: '/system/dept/tree', method: 'get' })
+}

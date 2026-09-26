@@ -28,7 +28,7 @@ public class SecurityUtils {
 	/**
 	 * 超级管理员固定UID
 	 */
-	private static final long SUPER_ADMIN_UID = 1;
+	public static final long SUPER_ADMIN_UID = 1;
 
 	/*
 	 * 共有三种类型可选（ARGON2i,ARGON2d,ARGON2id;）

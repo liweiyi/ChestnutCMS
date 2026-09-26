@@ -16,18 +16,21 @@
 package com.chestnut.article;
 
 import com.chestnut.article.domain.CmsArticleDetail;
+import com.chestnut.article.domain.dto.ArticleDTO;
 import com.chestnut.article.properties.AutoArticleLogo;
 import com.chestnut.article.properties.AutoArticleLogoMinSize;
 import com.chestnut.article.service.IArticleService;
 import com.chestnut.common.async.AsyncTaskManager;
+import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.HtmlUtils;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.common.utils.image.ImageUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsResource;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -53,6 +56,8 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 			return;
 		}
 		CmsArticleDetail articleDetail = this.getExtendEntity();
+		Assert.isTrue(StringUtils.isNotBlank(articleDetail.getContentHtml()), () -> CommonErrorCode.NOT_EMPTY.exception("contentHtml"));
+
 		articleDetail.setContentId(this.getContentEntity().getContentId());
 		articleDetail.setSiteId(this.getContentEntity().getSiteId());
 		// 处理文章正文远程图片
@@ -75,13 +80,27 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 	}
 
 	@Override
-	protected void save0() {
-		// 非映射内容或标题内容修改文章详情
+	protected void save0(ContentDTO dto) {
+		if (!(dto instanceof ArticleDTO dtoExtendEntity)) {
+			return;
+		}
+        // 非映射内容或标题内容修改文章详情
 		if (!this.hasExtendEntity()) {
 			this.getArticleService().dao().removeById(this.getContentEntity().getContentId());
 			return;
 		}
-		CmsArticleDetail articleDetail = this.getExtendEntity();
+		CmsArticleDetail articleDetail = new CmsArticleDetail();
+		articleDetail.setContentId(this.getContentEntity().getContentId());
+		articleDetail.setSiteId(this.getContentEntity().getSiteId());
+		articleDetail.setFormat(dtoExtendEntity.getFormat());
+		articleDetail.setContentHtml(dtoExtendEntity.getContentHtml());
+		articleDetail.setDownloadRemoteImage(dtoExtendEntity.getDownloadRemoteImage());
+		articleDetail.setPageTitles(dtoExtendEntity.getPageTitles());
+		IArticleBodyFormat format = this.getArticleService().getArticleBodyFormat(articleDetail.getFormat());
+		if (Objects.nonNull(format)) {
+			String contentHtml = format.onSave(articleDetail.getContentHtml());
+			articleDetail.setContentHtml(contentHtml);
+		}
 		// 处理文章正文远程图片
 		if (YesOrNo.isYes(articleDetail.getDownloadRemoteImage())) {
 			AsyncTaskManager.setTaskPercent(90);
@@ -98,7 +117,14 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 				this.getContentEntity().setImages(List.of(firstImage));
 			}
 		}
-		this.getArticleService().dao().saveOrUpdate(articleDetail);
+		this.setExtendEntity(articleDetail);
+	}
+
+	@Override
+	protected void saveToDB0() {
+		if (this.hasExtendEntity()) {
+			this.getArticleService().dao().saveOrUpdate(this.getExtendEntity());
+		}
 	}
 
 	/**

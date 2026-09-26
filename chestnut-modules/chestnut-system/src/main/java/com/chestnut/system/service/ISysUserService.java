@@ -16,12 +16,9 @@
 package com.chestnut.system.service;
 
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.system.domain.SysUser;
-import com.chestnut.system.domain.dto.CreateBindingUserRequest;
-import com.chestnut.system.domain.dto.CreateUserRequest;
-import com.chestnut.system.domain.dto.ResetUserPwdRequest;
-import com.chestnut.system.domain.dto.UpdateUserRequest;
-import org.springframework.web.multipart.MultipartFile;
+import com.chestnut.system.domain.dto.*;
 
 import java.util.List;
 
@@ -29,22 +26,6 @@ import java.util.List;
  * 用户 业务层
  */
 public interface ISysUserService extends IService<SysUser> {
-
-	/**
-	 * 根据用户ID查询用户所属角色组
-	 *
-	 * @param userId 用户ID
-	 * @return 结果
-	 */
-	String selectUserRoleGroup(Long userId);
-
-	/**
-	 * 根据用户ID查询用户所属岗位组
-	 *
-	 * @param userId 用户ID
-	 * @return 结果
-	 */
-	String selectUserPostGroup(Long userId);
 
 	/**
 	 * 校验用户名称是否唯一
@@ -73,12 +54,14 @@ public interface ISysUserService extends IService<SysUser> {
 	 */
 	boolean checkEmailUnique(String email, Long userId);
 
+	void updateUserProfile(UpdateUserProfileRequest req);
+
 	/**
 	 * 新增用户信息
 	 * 
 	 * @param user 用户信息
 	 */
-	void insertUser(CreateUserRequest user);
+	SysUser insertUser(CreateUserRequest user);
 
     SysUser createBindingUser(CreateBindingUserRequest req);
 
@@ -94,17 +77,7 @@ public interface ISysUserService extends IService<SysUser> {
 	 * 
 	 * @param user 用户信息
 	 */
-	void updateUser(UpdateUserRequest user);
-
-	/**
-	 * 用户授权角色
-	 * 
-	 * @param userId
-	 *            用户ID
-	 * @param roleIds
-	 *            角色组
-	 */
-	void insertUserAuth(Long userId, List<Long> roleIds);
+	SysUser updateUser(UpdateUserRequest user);
 
 	/**
 	 * 重置用户密码
@@ -115,8 +88,9 @@ public interface ISysUserService extends IService<SysUser> {
 	 * 批量删除用户信息
 	 * 
 	 * @param userIds 需要删除的用户ID
+	 * @param operator 由 Controller 获取并传入的可信操作人，用于校验机构数据范围
 	 */
-	void deleteUserByIds(List<Long> userIds);
+	void deleteUserByIds(List<Long> userIds, LoginUser operator);
 
 	/**
 	 * 解锁用户

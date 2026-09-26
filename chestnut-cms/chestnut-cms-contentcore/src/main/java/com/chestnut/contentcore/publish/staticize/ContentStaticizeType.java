@@ -79,6 +79,7 @@ public class ContentStaticizeType implements IStaticizeType {
             CmsContent content = this.contentService.dao().getById(contentId);
             if (Objects.isNull(content)) {
                 logger.warn("Content not found: {}", contentId);
+                return;
             }
             this.contentStaticize(content);
         }

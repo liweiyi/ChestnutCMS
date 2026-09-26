@@ -1,5 +1,14 @@
 <template>
   <div class="app-container">
+    <cc-spliter storage-key="sys-role">
+      <cc-spliter-column width="15%" style="padding-right: 10px;">
+        <el-input v-model="deptName" :placeholder="$t('System.User.Placeholder.DeptName')"
+          clearable prefix-icon="Search" style="margin-bottom: 20px" />
+        <el-tree ref="treeRef" :data="deptOptions" :props="defaultProps" node-key="id"
+          :expand-on-click-node="false" :filter-node-method="filterNode" default-expand-all
+          highlight-current @node-click="handleNodeClick" />
+      </cc-spliter-column>
+      <cc-spliter-column style="padding-right: 10px;">
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5" class="permi-wrap">
         <el-button
@@ -75,6 +84,10 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item prop="onlyCurrentDept">
+          <el-switch v-model="queryParams.onlyCurrentDept" :disabled="onlyCurrentDisabled"
+            :active-text="$t('System.DeptScope.OnlyCurrent')" @change="handleQuery" />
+        </el-form-item>
         <el-form-item>
           <el-button-group>
             <el-button type="primary" icon="Search" @click="handleQuery">{{ $t('Common.Search') }}</el-button>
@@ -84,11 +97,13 @@
       </el-form>
     </el-row>
 
-    <el-table v-loading="loading" :data="roleList" @selection-change="handleSelectionChange">
+    <el-table ref="dataTableRef" v-loading="loading" :data="roleList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column :label="$t('System.Role.RoleId')" align="center" width="80" prop="roleId" :show-overflow-tooltip="true" />
       <el-table-column :label="$t('System.Role.RoleName')" prop="roleName" :show-overflow-tooltip="true" />
       <el-table-column :label="$t('System.Role.RoleKey')" prop="roleKey" :show-overflow-tooltip="true" />
+      <el-table-column :label="$t('System.User.Dept')" prop="deptName" :show-overflow-tooltip="true">
+        <template #default="scope">{{ scope.row.deptName || $t('System.DeptScope.Unassigned') }}</template>
+      </el-table-column>
       <el-table-column :label="$t('System.Role.Sort')" align="center" width="80" prop="roleSort" />
       <el-table-column :label="$t('System.Role.Status')" align="center" width="80">
         <template #default="scope">
@@ -147,9 +162,18 @@
       @pagination="getList"
     />
 
+      </cc-spliter-column>
+    </cc-spliter>
     <!-- 添加或修改角色配置对话框 -->
     <el-dialog :title="title" v-model="open" width="500px" append-to-body :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+        <el-form-item v-if="form.roleId && form.roleId > 0" :label="$t('System.Role.RoleId')" prop="roleId">
+          <el-button link icon="CopyDocument" v-copyText="form.roleId">{{ form.roleId }}</el-button>
+        </el-form-item>
+        <el-form-item :label="$t('System.User.Dept')" prop="deptId">
+          <el-tree-select v-model="form.deptId" :data="deptOptions" :props="defaultProps" :disabled="form.roleId && form.roleId > 0"
+            check-strictly :render-after-expand="false" :placeholder="$t('System.User.Placeholder.Dept')" />
+        </el-form-item>
         <el-form-item :label="$t('System.Role.RoleName')" prop="roleName">
           <el-input v-model="form.roleName" :placeholder="$t('System.Role.Placeholder.RoleName')" />
         </el-form-item>
@@ -159,7 +183,7 @@
         <el-form-item :label="$t('System.Role.Sort')" prop="roleSort">
           <el-input-number v-model="form.roleSort" controls-position="right" :min="0" />
         </el-form-item>
-        <el-form-item :label="$t('System.Role.Status')" prop="status">
+        <el-form-item v-if="!form.roleId || form.roleId <= 0" :label="$t('System.Role.Status')" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio
               v-for="dict in EnableOrDisable"
@@ -203,6 +227,8 @@
 </template>
 
 <script setup name="SystemRoleIndex">
+import { useDeptScope } from '@/composables/useDeptScope';
+import useUserStore from '@/store/modules/user';
 import { codeValidator } from '@/utils/validate';
 import { listRole, getRole, delRole, addRole, updateRole, changeRoleStatus } from "@/api/system/role";
 import RolePermission from '@/views/system/permission/permsTab';
@@ -211,7 +237,7 @@ import AuthUser from './authUser';
 const { proxy } = getCurrentInstance()
 const { EnableOrDisable } = proxy.useDict("EnableOrDisable")
 
-const loading = ref(true)
+const loading = ref(false)
 const ids = ref([])
 const single = ref(true)
 const multiple = ref(true)
@@ -228,6 +254,8 @@ const currentRoleId = ref(undefined)
 const data = reactive({
   queryParams: {
     pageNum: 1,
+    deptId: undefined,
+    onlyCurrentDept: false,
     pageSize: 10,
     roleName: undefined,
     roleKey: undefined,
@@ -235,6 +263,11 @@ const data = reactive({
   },
   form: {},
   rules: {
+    deptId: [{ validator: (_rule, value, callback) => {
+      if ((!value || String(value) === '0') && (!form.value.roleId || !useUserStore().superAdmin || originalDeptId.value)) {
+        callback(new Error(proxy.$t('Common.RuleTips.NotEmpty')))
+      } else callback()
+    }, trigger: 'change' }],
     roleName: [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
       { max: 30, message: proxy.$t('Common.RuleTips.MaxLength', [ 30 ]), trigger: "blur" }
@@ -257,14 +290,28 @@ const data = reactive({
 })
 
 const { queryParams, form, rules } = toRefs(data)
-
-function getList() {
-  loading.value = true
-  listRole(queryParams.value).then(response => {
-    roleList.value = response.data.rows
-    total.value = parseInt(response.data.total)
-    loading.value = false
-  })
+const originalDeptId = ref(undefined);
+const { deptOptions, deptName, defaultProps, onlyCurrentDisabled, filterNode, handleNodeClick, getDeptTree } = useDeptScope(queryParams, proxy, getList);
+watch(deptName, value => proxy.$refs.treeRef?.filter(value));
+let listRequestId = 0;
+async function getList() {
+  const requestId = ++listRequestId;
+  proxy.$refs.dataTableRef?.clearSelection();
+  ids.value = [];
+  single.value = true;
+  multiple.value = true;
+  roleList.value = [];
+  total.value = 0;
+  if (queryParams.value.deptId === undefined) { loading.value = false; return; }
+  loading.value = true;
+  try {
+    const response = await listRole({ ...queryParams.value });
+    if (requestId !== listRequestId) return;
+    roleList.value = response.data.rows;
+    total.value = Number(response.data.total);
+  } finally {
+    if (requestId === listRequestId) loading.value = false;
+  }
 }
 
 function handleStatusChange(row) {
@@ -293,6 +340,7 @@ function reset() {
     roleName: undefined,
     roleKey: undefined,
     roleSort: 0,
+    deptId: String(queryParams.value.deptId) === "0" ? undefined : queryParams.value.deptId,
     status: "0",
     remark: undefined
   };
@@ -305,6 +353,7 @@ function handleQuery() {
 
 function resetQuery() {
   proxy.resetForm("queryFormRef");
+  queryParams.value.onlyCurrentDept = false;
   handleQuery();
 }
 
@@ -334,6 +383,7 @@ function handleUpdate(row) {
   const roleId = row.roleId || ids.value
   getRole(roleId).then(response => {
     form.value = response.data;
+    originalDeptId.value = form.value.deptId;
     open.value = true;
     title.value = proxy.$t('System.Role.Dialog.Edit');
   });
@@ -349,7 +399,7 @@ function handleUserDialogClose() {
 }
 
 function submitForm() {
-  proxy.$refs["formRef"].validate(valid => {
+  proxy.$refs["formRef"].validate(async valid => {
     if (valid) {
       if (form.value.roleId != undefined) {
         updateRole(form.value).then(response => {
@@ -379,10 +429,10 @@ function handleDelete(row) {
 }
 
 function handleExport() {
-  proxy.download('system/role/list', {
+  proxy.exportExcel('system/role/list', {
     ...queryParams.value
   }, `role_${proxy.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
 }
 
-getList()
+getDeptTree().catch(() => { loading.value = false; });
 </script>

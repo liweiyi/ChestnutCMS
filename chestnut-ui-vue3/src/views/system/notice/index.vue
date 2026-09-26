@@ -153,7 +153,8 @@
           </el-col>
           <el-col :span="24">
             <el-form-item :label="$t('System.Notice.NoticeContent')" prop="noticeContent">
-              <editor v-model="form.noticeContent" :min-height="192"/>
+              <editor v-model="form.noticeContent" :min-height="192"
+                      upload-action="/system/notice/image/upload"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -324,4 +325,3 @@ function handleDelete(row) {
 
 getList();
 </script>
- 

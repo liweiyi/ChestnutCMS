@@ -15,8 +15,6 @@
  */
 package com.chestnut.system.config;
 
-import com.chestnut.common.utils.SpringUtils;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.config.properties.SysProperties;
@@ -29,37 +27,73 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 @Slf4j
 @Configuration
 @EnableConfigurationProperties(SysProperties.class)
 public class SystemConfig implements WebMvcConfigurer {
 	
 	/**
-	 * 通用资源文件上传目录
+	 * 公开访问资源文件上传目录
 	 */
-	private static String UPLOAD_DIRECTORY;
+	private static String PUBLIC_UPLOAD_DIRECTORY;
+
+	/**
+	 * 私有资源文件上传目录
+	 */
+	private static String PRIVATE_FILE_UPLOAD_DIR;
 	
 	private final SysProperties properties;
-	
+
 	public SystemConfig(SysProperties properties) {
-		UPLOAD_DIRECTORY = properties.getUploadPath();
-		if (StringUtils.isEmpty(UPLOAD_DIRECTORY)) {
-			UPLOAD_DIRECTORY = SpringUtils.getAppParentDirectory() + SysConstants.RESOURCE_PREFIX;
+		String publicDirectory = requireConfiguredPath(properties.getUploadPath(), "chestnut.system.uploadPath");
+		String privateDirectory = requireConfiguredPath(properties.getPrivateUploadPath(), "chestnut.system.privateUploadPath");
+		Path publicPath = prepareDirectory(publicDirectory);
+		Path privatePath = prepareDirectory(privateDirectory);
+		if (privatePath.startsWith(publicPath) || publicPath.startsWith(privatePath)) {
+			throw new IllegalStateException("Public and private upload directories must not overlap");
 		}
-		UPLOAD_DIRECTORY = Strings.CS.appendIfMissing(FileExUtils.normalizePath(UPLOAD_DIRECTORY), "/");
-		FileExUtils.mkdirs(UPLOAD_DIRECTORY);
-		properties.setUploadPath(UPLOAD_DIRECTORY);
-		log.info("System upload directory: " + UPLOAD_DIRECTORY);
+		PUBLIC_UPLOAD_DIRECTORY = Strings.CS.appendIfMissing(FileExUtils.normalizePath(publicPath.toString()), "/");
+		PRIVATE_FILE_UPLOAD_DIR = Strings.CS.appendIfMissing(FileExUtils.normalizePath(privatePath.toString()), "/");
+		properties.setUploadPath(PUBLIC_UPLOAD_DIRECTORY);
+		properties.setPrivateUploadPath(PRIVATE_FILE_UPLOAD_DIR);
+		log.info("System upload directory: " + PUBLIC_UPLOAD_DIRECTORY);
+		log.info("System private upload directory: " + PRIVATE_FILE_UPLOAD_DIR);
 		this.properties = properties;
+	}
+
+	private static String requireConfiguredPath(String path, String propertyName) {
+		if (path == null || path.isBlank()) {
+			throw new IllegalStateException(propertyName + " must be configured");
+		}
+		return path;
+	}
+
+	private static Path prepareDirectory(String directory) {
+		try {
+			return Files.createDirectories(Path.of(directory).toAbsolutePath().normalize()).toRealPath();
+		} catch (IOException e) {
+			throw new IllegalStateException("Cannot initialize upload directory: " + directory, e);
+		}
 	}
 	
 	/**
-	 * 获取资源文件上传根目录
+	 * 获取公共资源文件上传根目录
 	 */
-	public static String getUploadDir() {
-		return UPLOAD_DIRECTORY;
+	public static String getPublicFileUploadDir() {
+		return PUBLIC_UPLOAD_DIRECTORY;
 	}
-	
+
+	/**
+	 * 获取私有资源文件上传根目录
+	 */
+	public static String getPrivateFileUploadDir() {
+		return PRIVATE_FILE_UPLOAD_DIR;
+	}
+
 	/**
 	 * 获取资源文件预览地址前缀
 	 */
@@ -78,8 +112,9 @@ public class SystemConfig implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		// 演示模式
 		if (properties.isDemoMode()) {
-			registry.addInterceptor(new DemoModeInterceptor()).addPathPatterns("/**").excludePathPatterns("/login",
-					"/logout", "/captchaImage");
+			registry.addInterceptor(new DemoModeInterceptor())
+					.addPathPatterns("/**")
+					.excludePathPatterns("/login", "/logout", "/captchaImage");
 		}
 	}
 }

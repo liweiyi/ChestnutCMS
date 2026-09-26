@@ -15,13 +15,13 @@
  */
 package com.chestnut.contentcore.controller;
 
+import cn.dev33.satoken.annotation.SaMode;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.anno.Priv;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
-
-
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -44,9 +44,13 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.system.domain.SysPermission;
+import com.chestnut.system.permission.PermissionUtils;
+import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysPermissionService;
+import com.chestnut.system.service.ISysUserService;
+import com.chestnut.system.service.impl.UserPermissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -62,10 +66,10 @@ import java.util.stream.Stream;
  * @email 190785909@qq.com
  */
 @XComment("{API.DOC.CMS.PERMISSION.MODULE}")
-@Priv(type = AdminUserType.TYPE)
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/cms/perms")
+@Priv(type = AdminUserType.TYPE, value = { SysMenuPriv.SysUserGrant, SysMenuPriv.SysRoleGrant },  mode = SaMode.OR)
 public class CmsPermissionController extends BaseRestController {
 
 	private final ISiteService siteService;
@@ -76,6 +80,10 @@ public class CmsPermissionController extends BaseRestController {
 
 	private final ISysPermissionService permissionService;
 
+	private final ISysUserService userService;
+
+	private final UserPermissionService userPermissionService;
+
 	private final SitePermissionType sitePermissionType;
 
 	private final CatalogPermissionType catalogPermissionType;
@@ -85,15 +93,17 @@ public class CmsPermissionController extends BaseRestController {
 	@XComment("{API.DOC.CMS.PERMISSION.GET_SITE_PERMS}")
 	@GetMapping("/site")
 	public R<?> getSitePermissions(@RequestParam String ownerType, @RequestParam String owner) {
-		List<CmsSite> sites = this.siteService.lambdaQuery().list();
+        LoginUser operator = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkOwnerTypePermission(ownerType, operator);
 
 		Set<String> permissionKeys = new HashSet<>();
-		SysPermission permission = this.permissionService.getPermission(ownerType, owner);
+		SysPermission permission = this.permissionService.getPermission(ownerType, owner, operator);
 		if (Objects.nonNull(permission)) {
 			String json = permission.getPermissions().get(SitePermissionType.ID);
 			permissionKeys.addAll(this.sitePermissionType.deserialize(json));
 		}
-		Set<String> inheritedPerms = this.permissionService.getInheritedPermissionKeys(ownerType, owner, SitePermissionType.ID);
+		Set<String> inheritedPerms = this.userPermissionService.getInheritedPermissionKeys(ownerType, owner, SitePermissionType.ID);
+		List<CmsSite> sites = this.siteService.lambdaQuery().list();
 		List<SitePrivVO> sitePrivs = sites.stream().map(site -> {
 			SitePrivVO vo = new SitePrivVO();
 			vo.setSiteId(site.getSiteId());
@@ -119,6 +129,9 @@ public class CmsPermissionController extends BaseRestController {
 	@XComment("{API.DOC.CMS.PERMISSION.SAVE_SITE_PERMS}")
 	@PostMapping("/site")
 	public R<Void> saveSitePermissions(@RequestBody @Validated SaveSitePermissionDTO dto) {
+        LoginUser operator = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkOwnerTypePermission(dto.getOwnerType(), operator);
+
 		Set<String> perms = new HashSet<>();
 		dto.getPerms().forEach(vo -> {
 			vo.getPerms().forEach((k, v) -> {
@@ -128,18 +141,22 @@ public class CmsPermissionController extends BaseRestController {
 			});
 		});
 		this.permissionService.savePermissions(dto.getOwnerType(), dto.getOwner(), perms,
-				SitePermissionType.ID, StpAdminUtil.getLoginUser().getUsername());
+				SitePermissionType.ID, operator);
+		this.userPermissionService.resetLoginUser(dto.getOwnerType(), dto.getOwner());
 		return R.ok();
 	}
 
 	@XComment("{API.DOC.CMS.PERMISSION.GET_SITE_OPTIONS}")
 	@GetMapping("/site/options")
 	public R<?> getSiteOptions(@RequestParam String ownerType, @RequestParam String owner) {
+        LoginUser operator = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkOwnerTypePermission(ownerType, operator);
+
 		List<CmsSite> list = this.siteService.lambdaQuery()
 				.select(List.of(CmsSite::getSiteId, CmsSite::getName))
 				.list();
-		Set<String> permissionKeys = this.permissionService.getPermissionKeys(ownerType, owner, SitePermissionType.ID);
-		Set<String> inheritedPermissionKeys = this.permissionService.getInheritedPermissionKeys(ownerType, owner, SitePermissionType.ID);
+		Set<String> permissionKeys = this.permissionService.getPermissionKeys(ownerType, owner, SitePermissionType.ID, operator);
+		Set<String> inheritedPermissionKeys = this.userPermissionService.getInheritedPermissionKeys(ownerType, owner, SitePermissionType.ID);
 		permissionKeys.addAll(inheritedPermissionKeys);
 		List<Map<String, Object>> data = list.stream()
 				.filter(site -> permissionKeys.contains(SitePrivItem.View.getPermissionKey(site.getSiteId())))
@@ -156,6 +173,9 @@ public class CmsPermissionController extends BaseRestController {
 	@GetMapping("/catalog")
 	public R<?> getCatalogPermissions(@RequestParam String ownerType, @RequestParam String owner,
 			@RequestParam @XComment("{API.DOC.CMS.CATALOG.SITE_ID}") Long siteId) {
+        LoginUser operator = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkOwnerTypePermission(ownerType, operator);
+
 		List<Map<String, String>> privItems = Stream.of(CatalogPrivItem.values())
 				.map(ssp -> Map.of("id", ssp.name(), "name", ssp.label())).toList();
 		if (!IdUtils.validate(siteId)) {
@@ -166,13 +186,13 @@ public class CmsPermissionController extends BaseRestController {
 
 		List<CmsCatalog> catalogs = this.catalogService.lambdaQuery()
 				.eq(CmsCatalog::getSiteId, site.getSiteId()).list();
-		SysPermission permission = this.permissionService.getPermission(ownerType, owner);
+		SysPermission permission = this.permissionService.getPermission(ownerType, owner, operator);
 		Set<String> permissionKeys = new HashSet<>();
 		if (Objects.nonNull(permission)) {
 			String json = permission.getPermissions().get(CatalogPermissionType.ID);
 			permissionKeys.addAll(this.catalogPermissionType.deserialize(json));
 		}
-		Set<String> inheritedPerms = this.permissionService.getInheritedPermissionKeys(ownerType, owner, CatalogPermissionType.ID);
+		Set<String> inheritedPerms = this.userPermissionService.getInheritedPermissionKeys(ownerType, owner, CatalogPermissionType.ID);
 		List<CatalogPrivVO> catalogPrivs = catalogs.stream().map(catalog -> {
 			CatalogPrivVO vo = new CatalogPrivVO();
 			vo.setCatalogId(catalog.getCatalogId());
@@ -209,7 +229,10 @@ public class CmsPermissionController extends BaseRestController {
 	@XComment("{API.DOC.CMS.PERMISSION.SAVE_CATALOG_PERMS}")
 	@PostMapping("/catalog")
 	public R<Void> saveCatalogPermissions(@RequestBody @Validated SaveCatalogPermissionDTO dto) {
-		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner());
+        LoginUser operator = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkOwnerTypePermission(dto.getOwnerType(), operator);
+
+		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner(), operator);
 		Set<String> permissionKeys = new HashSet<>();
 		if (Objects.nonNull(permission)) {
 			String json = permission.getPermissions().get(CatalogPermissionType.ID);
@@ -217,7 +240,8 @@ public class CmsPermissionController extends BaseRestController {
 		}
 		this.invokeCatalogPerms(permissionKeys, dto.getPerms());
 		this.permissionService.savePermissions(dto.getOwnerType(), dto.getOwner(), permissionKeys,
-				CatalogPermissionType.ID, StpAdminUtil.getLoginUser().getUsername());
+				CatalogPermissionType.ID, operator);
+		this.userPermissionService.resetLoginUser(dto.getOwnerType(), dto.getOwner());
 		return R.ok();
 	}
 
@@ -241,6 +265,9 @@ public class CmsPermissionController extends BaseRestController {
 	@GetMapping("/pageWidget")
 	public R<?> getPageWidgetPermissions(@RequestParam String ownerType, @RequestParam String owner,
 										 @RequestParam @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
+        LoginUser operator = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkOwnerTypePermission(ownerType, operator);
+
 		List<Map<String, String>> privItems = Stream.of(CatalogPrivItem.values())
 				.map(ssp -> Map.of("id", ssp.name(), "name", ssp.label())).toList();
 		if (!IdUtils.validate(siteId)) {
@@ -250,13 +277,13 @@ public class CmsPermissionController extends BaseRestController {
 		Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
 		List<CmsPageWidget> pageWidgets = this.pageWidgetService.lambdaQuery().eq(CmsPageWidget::getSiteId, site.getSiteId()).list();
-		SysPermission permission = this.permissionService.getPermission(ownerType, owner);
+		SysPermission permission = this.permissionService.getPermission(ownerType, owner, operator);
 		Set<String> permissionKeys = new HashSet<>();
 		if (Objects.nonNull(permission)) {
 			String json = permission.getPermissions().get(PageWidgetPermissionType.ID);
 			permissionKeys.addAll(this.pageWidgetPermissionType.deserialize(json));
 		}
-		Set<String> inheritedPerms = this.permissionService.getInheritedPermissionKeys(ownerType, owner, PageWidgetPermissionType.ID);
+		Set<String> inheritedPerms = this.userPermissionService.getInheritedPermissionKeys(ownerType, owner, PageWidgetPermissionType.ID);
 		List<PageWidgetPrivVO> pageWidgetPrivs = pageWidgets.stream().map(pageWidget -> {
 			PageWidgetPrivVO vo = new PageWidgetPrivVO();
 			vo.setPageWidgetId(pageWidget.getPageWidgetId());
@@ -281,7 +308,10 @@ public class CmsPermissionController extends BaseRestController {
 	@XComment("{API.DOC.CMS.PERMISSION.SAVE_PAGE_WIDGET_PERMS}")
 	@PostMapping("/pageWidget")
 	public R<Void> savePageWidgetPermissions(@RequestBody @Validated SavePageWidgetPermissionDTO dto) {
-		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner());
+        LoginUser operator = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkOwnerTypePermission(dto.getOwnerType(), operator);
+
+		SysPermission permission = this.permissionService.getPermission(dto.getOwnerType(), dto.getOwner(), operator);
 		Set<String> permissionKeys = new HashSet<>();
 		if (Objects.nonNull(permission)) {
 			String json = permission.getPermissions().get(PageWidgetPermissionType.ID);
@@ -299,7 +329,8 @@ public class CmsPermissionController extends BaseRestController {
 			});
 		});
 		this.permissionService.savePermissions(dto.getOwnerType(), dto.getOwner(), permissionKeys,
-				PageWidgetPermissionType.ID, StpAdminUtil.getLoginUser().getUsername());
+				PageWidgetPermissionType.ID, operator);
+		this.userPermissionService.resetLoginUser(dto.getOwnerType(), dto.getOwner());
 		return R.ok();
 	}
 }

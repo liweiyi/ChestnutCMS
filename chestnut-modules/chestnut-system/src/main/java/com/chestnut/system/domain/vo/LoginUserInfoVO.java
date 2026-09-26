@@ -49,6 +49,9 @@ import java.util.Map;
 @Setter
 public class LoginUserInfoVO {
 
+    @XComment("{API.DOC.SYS.LOGIN.SUPER_ADMIN}")
+    private boolean superAdmin;
+
     private LoginUserData user;
 
     private List<String> roles;

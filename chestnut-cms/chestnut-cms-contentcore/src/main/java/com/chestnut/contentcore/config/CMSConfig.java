@@ -22,6 +22,7 @@ import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.config.properties.CMSProperties;
 import com.chestnut.contentcore.config.properties.CMSPublishProperties;
+import com.chestnut.contentcore.core.ICmsInitializer;
 import com.chestnut.contentcore.publish.CmsStaticizeService;
 import com.chestnut.contentcore.publish.IPublishStrategy;
 import com.chestnut.contentcore.publish.strategies.ThreadPoolPublishStrategy;
@@ -30,16 +31,19 @@ import freemarker.cache.FileTemplateLoader;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.resource.PathResourceResolver;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
 /**
  * CMS配置
@@ -52,19 +56,18 @@ import java.util.Collection;
 @EnableConfigurationProperties({ CMSProperties.class, CMSPublishProperties.class })
 public class CMSConfig implements WebMvcConfigurer {
 
-	public static String CachePrefix = "cms:";
-
-	private static String CACHE_PREFIX;
+	public static final String CachePrefix = "cms:";
 
 	private static String RESOURCE_ROOT;
 	
 	private final RedisCache redisCache;
 	
 	private final CMSProperties properties;
+
+	private final List<ICmsInitializer> cmsInitializers;
 	
-	public CMSConfig(CMSProperties properties, RedisCache redisCache) {
-		// CMS缓存前缀
-		CACHE_PREFIX = properties.getCacheName();
+	public CMSConfig(CMSProperties properties, RedisCache redisCache, List<ICmsInitializer> cmsInitializers) {
+		this.cmsInitializers = cmsInitializers;
 		// 站点资源存放根目录
 		RESOURCE_ROOT = properties.getResourceRoot();
 		if (StringUtils.isEmpty(RESOURCE_ROOT)) {
@@ -74,8 +77,7 @@ public class CMSConfig implements WebMvcConfigurer {
 		FileExUtils.mkdirs(RESOURCE_ROOT);
 		properties.setResourceRoot(RESOURCE_ROOT);
         log.info("ResourceRoot: {}", RESOURCE_ROOT);
-		CachePrefix = properties.getCacheName();
-		
+
 		this.properties = properties;
 		this.redisCache = redisCache;
 	}
@@ -83,10 +85,6 @@ public class CMSConfig implements WebMvcConfigurer {
 	@Bean
 	public FileTemplateLoader cmsFileTemplateLoader() throws IOException {
 		return new FileTemplateLoader(new File(RESOURCE_ROOT));
-	}
-
-	public String getCachePrefix() {
-		return CACHE_PREFIX;
 	}
 
 	/**
@@ -107,15 +105,32 @@ public class CMSConfig implements WebMvcConfigurer {
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		// Local file upload directory
 		registry.addResourceHandler(ContentCoreConsts.RESOURCE_PREVIEW_PREFIX + "**")
-				.addResourceLocations("file:" + getResourceRoot());
+				.addResourceLocations("file:" + getResourceRoot())
+				.resourceChain(false)
+				.addResolver(new PathResourceResolver() {
+					@Override
+					protected Resource getResource(@NonNull String resourcePath, @NonNull Resource location)
+							throws IOException {
+						// 保留 Spring 原有的资源可读性、路径范围校验
+						Resource resource = super.getResource(resourcePath, location);
+						if (resource == null) {
+							return null;
+						}
+						for (ICmsInitializer initializer : cmsInitializers) {
+							if (initializer.isPrivateResource(resourcePath, resource)) {
+								return null;
+							}
+						}
+						return resource;
+					}
+				});
 	}
 	
 	@PostConstruct
 	public void resetCache() {
 		if (this.properties.getResetCache()) {
-			Collection<String> keys = this.redisCache.keys(this.properties.getCacheName() + "*");
-			this.redisCache.deleteObjects(keys);
-			log.info("Clear redis caches with prefix `{}`", this.properties.getCacheName());
+			this.redisCache.deleteByPrefix(CachePrefix);
+			log.info("Clear redis caches with prefix `{}`", CachePrefix);
 		}
 	}
 

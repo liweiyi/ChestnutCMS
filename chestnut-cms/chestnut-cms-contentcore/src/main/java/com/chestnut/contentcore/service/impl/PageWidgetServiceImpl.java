@@ -28,13 +28,13 @@ import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.mapper.CmsPageWidgetMapper;
-import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.perms.PageWidgetPermissionType;
 import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.security.StpAdminUtil;
-import com.chestnut.system.service.ISysPermissionService;
+import com.chestnut.system.service.ISysUserService;
+import com.chestnut.system.service.impl.UserPermissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,7 +52,9 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
 
     private final PageWidgetMonitoredCache pageWidgetCache;
 
-    private final ISysPermissionService permissionService;
+    private final ISysUserService userService;
+
+    private final UserPermissionService userPermissionService;
 
     @Override
     public CmsPageWidget getPageWidget(Long siteId, String code) {
@@ -90,11 +92,13 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
 
         pw.add();
         // 授权给添加人
-        this.permissionService.grantUserPermission(
-                pw.getOperator(),
-                CatalogPermissionType.ID,
+        this.userPermissionService.grantUserPermissions(
+                pw.getOperator().getUserId(),
+                PageWidgetPermissionType.ID,
                 CmsPrivUtils.getAllPageWidgetPermissions(pw.getPageWidgetEntity().getPageWidgetId())
         );
+        // 重置登录用户权限
+        this.userPermissionService.resetLoginUser(pw.getOperator().getUserId());
     }
 
     @Override

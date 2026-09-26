@@ -157,10 +157,11 @@ public class ContentIndexService implements CommandLineRunner {
 		// 删除站点索引文档数据
 		long total = this.contentService.dao().lambdaQuery().eq(CmsContent::getSiteId, site.getSiteId()).count();
 		long pageSize = 1000;
-		for (int i = 0; i * pageSize < total; i++) {
+		for (int i = 1; i * pageSize < total; i++) {
 			List<Long> contentIds = this.contentService.dao().lambdaQuery()
 					.select(List.of(CmsContent::getContentId))
 					.eq(CmsContent::getSiteId, site.getSiteId())
+					.orderByAsc(CmsContent::getContentId)
 					.page(new Page<>(i, pageSize, false))
 					.getRecords().stream().map(CmsContent::getContentId).toList();
 			deleteContentDoc(site.getSiteId(), contentIds);
@@ -243,13 +244,13 @@ public class ContentIndexService implements CommandLineRunner {
 					.eq(CmsContent::getStatus, ContentStatus.PUBLISHED)
 					.ne(CmsContent::getLinkFlag, YesOrNo.YES)
 					.eq(!includeChild, CmsContent::getCatalogId, catalog.getCatalogId())
-					.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors());
+					.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors())
+					.orderByAsc(CmsContent::getContentId);
 			long total = this.contentService.dao().count(q);
 			long pageSize = 200;
-			int count = 1;
-			for (int i = 0; i * pageSize < total; i++) {
+			for (int i = 1; (i - 1) * pageSize < total; i++) {
                 try {
-					AsyncTaskManager.setTaskProgressInfo((int) (count++ * pageSize * 100 / total),
+					AsyncTaskManager.setTaskProgressInfo((int) ((i - 1) * pageSize * 100 / total),
 							CmsSearchTips.BUILDING_CATALOG_INDEX, catalog.getName());
 					AsyncTaskManager.checkInterrupt(); // 允许中断
 					Page<CmsContent> page = contentService.dao().page(new Page<>(i, pageSize, false), q);

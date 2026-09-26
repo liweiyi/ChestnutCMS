@@ -35,6 +35,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 内容编辑请求数据
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @XComment("{API.DOC.CMS.CONTENT.CONTENT_DTO}")
 @Getter 
 @Setter
@@ -236,7 +242,7 @@ public class ContentDTO implements InitByContent {
     private Map<String, Object> template;
 
 	/**
-	 * 独立路径
+	 * 独立路径：相对当前发布通道根目录的文件路径；禁止 template/、include/、assets/。
 	 */
 	private String staticPath;
 
@@ -258,8 +264,13 @@ public class ContentDTO implements InitByContent {
 	/**
 	 * 栏目扩展配置
 	 */
-	private Map<String, Object> catalogConfigProps = new HashMap<>(); 
-	
+	private Map<String, Object> catalogConfigProps = new HashMap<>();
+
+	/**
+	 * 内容扩展配置
+	 */
+	private Map<String, String> configProps = new HashMap<>();
+
 	/**
 	 * 自定义参数
 	 */

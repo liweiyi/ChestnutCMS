@@ -21,17 +21,15 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.PageRequest;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.ServletUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.security.web.TableData;
+import com.chestnut.common.utils.*;
+import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.core.IResourceType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Resource;
 import com.chestnut.contentcore.core.impl.ResourceType_Image;
@@ -50,8 +48,6 @@ import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
-
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
@@ -154,9 +150,11 @@ public class ResourceController extends CmsRestController {
     @XComment("{API.DOC.CMS.RESOURCE_MGMT.GET_DETAIL}")
     @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@GetMapping("/{resourceId}")
-	public R<CmsResource> getInfo(@PathVariable("resourceId") @LongId @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_ID}") Long resourceId) {
-		CmsResource resource = this.resourceService.getById(resourceId);
-        Assert.notNull(resource, () -> ContentCoreErrorCode.RESOURCE_NOT_FOUND.exception());
+	public R<CmsResource> getInfo(@PathVariable("resourceId") @LongId @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_ID}") Long resourceId, HttpServletRequest request) {
+		Long siteId = ConvertUtils.toLong(request.getHeader(ContentCoreConsts.Header_CurrentSite));
+		CmsResource resource = this.resourceService.lambdaQuery().eq(CmsResource::getSiteId, siteId)
+				.eq(CmsResource::getResourceId, resourceId).one();
+        Assert.notNull(resource, ContentCoreErrorCode.RESOURCE_NOT_FOUND::exception);
 
         String iurl = InternalDataType_Resource.getInternalUrl(resource);
         resource.setSrc(InternalUrlUtils.getActualPreviewUrl(iurl));
@@ -203,9 +201,10 @@ public class ResourceController extends CmsRestController {
     @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@Log(title = "删除素材", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
-	public R<Void> delResources(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_IDS}") List<Long> resourceIds) {
+	public R<Void> delResources(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_IDS}") List<Long> resourceIds, HttpServletRequest request) {
 		Assert.notEmpty(resourceIds, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("resourceIds"));
-		this.resourceService.deleteResource(resourceIds);
+		Long siteId = ConvertUtils.toLong(request.getHeader(ContentCoreConsts.Header_CurrentSite));
+		this.resourceService.deleteResource(resourceIds, siteId);
 		return R.ok();
 	}
 
@@ -230,8 +229,11 @@ public class ResourceController extends CmsRestController {
     @XComment("{API.DOC.CMS.RESOURCE_MGMT.DOWNLOAD}")
     @Priv(type = AdminUserType.TYPE, value = { ContentCorePriv.ResourceView, CmsPrivUtils.PRIV_SITE_VIEW_PLACEHOLDER}, mode = SaMode.AND)
 	@GetMapping("/download/{resourceId}")
-	public void downloadResourceFile(@PathVariable @LongId @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_ID}") Long resourceId, HttpServletResponse response) {
-		CmsResource resource = this.resourceService.getById(resourceId);
+	public void downloadResourceFile(@PathVariable @LongId @XComment("{API.DOC.CMS.RESOURCE_MGMT.RESOURCE_ID}") Long resourceId,
+				HttpServletRequest request, HttpServletResponse response) {
+		Long siteId = ConvertUtils.toLong(request.getHeader(ContentCoreConsts.Header_CurrentSite));
+		CmsResource resource = this.resourceService.lambdaQuery().eq(CmsResource::getSiteId, siteId)
+				.eq(CmsResource::getResourceId, resourceId).one();
 		Assert.notNull(resource, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("resourceId", resourceId));
 		this.resourceService.downloadResource(resource, response);
 	}

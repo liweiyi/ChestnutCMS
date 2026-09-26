@@ -22,8 +22,10 @@ import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.core.AbstractContent;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.media.domain.CmsVideo;
+import com.chestnut.media.domain.dto.VideoAlbumDTO;
 import com.chestnut.media.service.IVideoService;
 
 import java.util.List;
@@ -69,13 +71,17 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 	}
 
 	@Override
-	protected void save0() {
+	protected void save0(ContentDTO dto) {
+		if (!(dto instanceof VideoAlbumDTO dtoExtendEntity)) {
+			return;
+		}
 		// 链接或映射内容直接删除所有视频数据
 		if (!this.hasExtendEntity()) {
 			this.getVideoService().dao().remove(new LambdaQueryWrapper<CmsVideo>().eq(CmsVideo::getContentId,
 					this.getContentEntity().getContentId()));
 			return;
 		}
+		this.setExtendEntity(dtoExtendEntity.getVideoList());
 		// 视频数处理
 		List<CmsVideo> videoList = this.getExtendEntity();
 		// 先删除视频
@@ -92,36 +98,27 @@ public class VideoContent extends AbstractContent<List<CmsVideo>> {
 		// 遍历请求视频列表，修改的视频数据path变更需重新设置视频属性
 		for (int i = 0; i < videoList.size(); i++) {
 			CmsVideo video = videoList.get(i);
-			if (IdUtils.validate(video.getVideoId())) {
+			video.setContentId(this.getContentEntity().getContentId());
+			video.setSiteId(this.getSiteId());
+			video.setSortFlag(i);
+			if (!TYPE_SHARE.equals(video.getType())) {
+				video.setType(FileExUtils.getExtension(video.getPath()).toUpperCase());
+				this.getVideoService().progressVideoInfo(video);
+			}
+			if (IdUtils.validate(video.getVideoId()) &&  oldVideoMap.containsKey(video.getVideoId())) {
 				CmsVideo dbVideo = oldVideoMap.get(video.getVideoId());
-				dbVideo.setTitle(video.getTitle());
-				dbVideo.setDescription(video.getDescription());
-				dbVideo.setRemark(video.getRemark());
-				dbVideo.setSortFlag(i);
-				if (!dbVideo.getPath().equals(video.getPath())) {
-					dbVideo.setPath(video.getPath());
-					dbVideo.setType(video.getType());
-					if (!TYPE_SHARE.equals(video.getType())) {
-						dbVideo.setType(FileExUtils.getExtension(dbVideo.getPath()).toUpperCase());
-						this.getVideoService().progressVideoInfo(dbVideo);
-					}
-				}
-				dbVideo.setCover(video.getCover());
 				dbVideo.updateBy(this.getOperatorUName());
-				this.getVideoService().dao().updateById(dbVideo);
 			} else {
 				video.setVideoId(IdUtils.getSnowflakeId());
-				video.setContentId(this.getContentEntity().getContentId());
-				video.setSiteId(this.getSiteId());
-				video.setSortFlag(i);
 				video.createBy(this.getOperatorUName());
-				if (!TYPE_SHARE.equals(video.getType())) {
-					video.setType(FileExUtils.getExtension(video.getPath()).toUpperCase());
-					this.getVideoService().progressVideoInfo(video);
-				}
-				this.getVideoService().progressVideoInfo(video);
-				this.getVideoService().dao().save(video);
 			}
+		}
+	}
+
+	@Override
+	protected void saveToDB0() {
+		if (this.hasExtendEntity()) {
+			this.getVideoService().dao().saveOrUpdateBatch(this.getExtendEntity());
 		}
 	}
 

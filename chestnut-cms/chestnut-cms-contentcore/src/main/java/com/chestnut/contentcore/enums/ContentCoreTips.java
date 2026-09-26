@@ -258,6 +258,11 @@ public enum ContentCoreTips implements TipMessage {
      * 来源数据不存在
      */
     MISSING_COPY_SOURCE,
+
+    /**
+     * 内容未找到：{0}
+     */
+    CONTENT_NOT_FOUND_BY_ID,
     ;
 
     @Override

@@ -1,3 +1,6 @@
+import { i18n } from '@/i18n'
+import { ElMessage } from 'element-plus'
+
 /**
 * v-copyText 复制文本内容
 */
@@ -11,6 +14,8 @@ export default {
         copyTextToClipboard(el.$copyValue)
         if (el.$copyCallback) {
           el.$copyCallback(el.$copyValue)
+        } else {
+          ElMessage({ message: i18n.global.t('Common.CopySuccess'), type: 'success' })
         }
       }
       el.addEventListener("click", handler)

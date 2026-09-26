@@ -159,6 +159,12 @@ const zhTW = {
     Password: '密碼',
     RememberMe: '記住密碼',
     Captcha: '驗證碼',
+    CaptchaLoading: '驗證碼載入中…',
+    CaptchaWaiting: '請等待 {0} 秒後重新取得驗證碼',
+    CaptchaExpired: '驗證碼已過期，請重新驗證',
+    CaptchaLoadFailed: '驗證碼載入失敗，請重試',
+    CaptchaAccountChanged: '用戶名已變更，請重新驗證',
+    CaptchaRequired: '請先完成當前賬號的驗證碼驗證',
     CaptchaTip: '點擊按鈕開始驗證',
     CaptchaSuccess: '驗證成功',
     CaptchaFail: '驗證失敗，請重試',
@@ -172,8 +178,11 @@ const zhTW = {
     PasswordRuleTip: "請輸入您的密碼",
     CaptchaRuleTip: "請輸入驗證碼",
     Language: '語言',
+    OtherMethods: '其他方式登錄',
+    Feishu: {
+      GetLoginUrlFail: '獲取飛書登錄地址失敗',
+    },
     Wechat: {
-      Title: "微信登錄",
       GetLoginUrlFail: "獲取微信登錄地址失敗",
     }
   },
@@ -286,6 +295,12 @@ const zhTW = {
     LastLoginIP: "上次登錄IP"
   },
   System: {
+    DeptScope: {
+      All: "全部機構",
+      OnlyCurrent: "僅目前機構",
+      Unassigned: "未分配機構",
+      ConfirmChange: "變更機構將自動解除 {0} 條不匹配的角色授權，是否繼續？",
+    },
     User: {
       UserId: "用戶ID",
       UserName: "用戶名",
@@ -315,6 +330,8 @@ const zhTW = {
       SelectUser: "選擇用戶",
       IsAllocatedRole: "已分配",
       LoginRedirectTip: "登錄成功，正在跳轉...",
+      ChangeDept: "調動部門",
+      ChangeDeptConfirmMsg: "變更所屬部門後，將解除該用戶的全部角色關聯，保留直接授予用戶的權限。確認調動嗎？",
       Dialog: {
         Add: "添加用戶資訊",
         Edit: "編輯用戶資訊",
@@ -749,6 +766,39 @@ const zhTW = {
     Logs: {
       LogId: "日誌分類ID",
       LogName: "日誌分類名稱",
+      CdnRefresh: {
+        ConfigName: "雲配置",
+        Url: "刷新/預熱 URL",
+        UrlPlaceholder: "完整 URL（精確匹配）",
+        TaskType: "任務",
+        Type: "類型",
+        Time: "時間（北京時間）",
+        Status: "狀態",
+        QueryTip: "預設查詢最近24小時，時間均為北京時間。阿里雲僅支援查詢最近3天的刷新/預熱任務。",
+        NoConfig: "請先在雲配置中新增騰訊雲或阿里雲帳號。",
+        QueryTypes: {
+          url: "路徑刷新",
+          directory: "目錄刷新",
+          preheat: "URL預熱",
+        },
+        TaskTypes: {
+          refresh: "刷新",
+          preheat: "預熱",
+        },
+        Types: {
+          url: "路徑",
+          directory: "目錄",
+        },
+        Statuses: {
+          PROCESSING: "處理中",
+          SUCCESS: "成功",
+          FAILED: "失敗",
+          TIMEOUT: "逾時",
+          CANCELED: "已取消",
+          INVALID: "無效",
+          UNKNOWN: "未知",
+        },
+      },
       Console: {
         AutoRefresh: "自動刷新",
         LockScroll: "鎖定滾動",
@@ -850,6 +900,65 @@ const zhTW = {
       ErrMessage: "錯誤資訊",
       Stop: "中止",
       ReadyTime: "任務就緒時間"
+    }
+  },
+  AI: {
+    Chat: {
+      Title: "AI 聊天",
+      Open: "開啟 AI 聊天",
+      ExpandToolbar: "展開 AI 工具列",
+      CollapseToolbar: "收起 AI 工具列",
+      StatelessTip: "聊天記錄僅保留於目前視窗，重新整理後將被清除",
+      SelectModel: "請選擇 AI 模型",
+      NewConversation: "新對話",
+      EmptyTitle: "開始與 AI 對話",
+      EmptyDescription: "選擇一個已啟用的模型，然後輸入你的問題。目前版本不會在伺服器保存聊天記錄。",
+      NoModels: "暫無可用模型",
+      NoModelsTip: "請先在模型設定中新增並啟用至少一個 AI 模型。",
+      InputPlaceholder: "請輸入訊息，Enter 傳送，Shift + Enter 換行",
+      SendTip: "每次請求最多攜帶最近 20 條視窗會話訊息",
+      Send: "傳送",
+      Stop: "停止生成",
+      User: "你",
+      Assistant: "AI 助手",
+      Copy: "複製",
+      Copied: "回覆已複製",
+      CopyFailed: "複製失敗，請手動選取內容",
+      RequestFailed: "AI 聊天請求失敗，請稍後再試",
+      InvalidStream: "AI 回傳的資料流格式無效"
+    },
+    Model: {
+      Name: "設定名稱",
+      ProviderType: "供應商類型",
+      BaseUrl: "服務位址",
+      ApiKey: "API Key",
+      ApiKeyStatus: "金鑰狀態",
+      ModelName: "模型名稱",
+      Status: "狀態",
+      IsDefault: "預設模型",
+      SupportsTools: "工具調用",
+      TimeoutSeconds: "逾時時間",
+      SortFlag: "排序",
+      Test: "測試",
+      TestSuccess: "模型 API 連線測試成功",
+      TestFailed: "模型 API 連線測試失敗，請檢查服務位址、模型名稱和 API Key",
+      Configured: "已設定",
+      NotConfigured: "未設定",
+      ApiKeyEditTip: "基於安全考量不會回顯已儲存的 API Key，留空將保留原金鑰。",
+      ConfirmDelete: "是否確認刪除選中的 {0} 筆模型設定？",
+      Dialog: {
+        Add: "新增 AI 模型設定",
+        Edit: "編輯 AI 模型設定"
+      },
+      Placeholder: {
+        Name: "請輸入設定名稱",
+        ProviderType: "請選擇供應商類型",
+        BaseUrl: "請輸入模型服務基礎位址",
+        ApiKey: "請輸入 API Key（選填）",
+        ApiKeyEdit: "留空則保留原 API Key",
+        ModelName: "請輸入遠端模型名稱",
+        Status: "請選擇狀態"
+      }
     }
   },
   CMS: {
@@ -1066,6 +1175,8 @@ const zhTW = {
         CustomFormCardTitle: "自定義表單配置",
         EnableCustomFormCaptcha: "是否開啟驗證碼",
         CommentCardTitle: " 評論配置",
+        EnableComment: "是否開啟評論",
+        EnableCommentTip: "關閉站點評論後全站無法評論，開啟後欄目、內容亦可獨立配置是否開啟評論。",
         EnableCommentAudit: "是否需要審核",
         SEO: "搜索引擎優化配置",
         BaiduPushAccessSecret: "百度收錄API秘鑰",
@@ -1294,6 +1405,7 @@ const zhTW = {
       CloseContentEditorTip: "關閉頁面會導致未保存的內容丟失，確認關閉嗎？",
       ExtendConfig: "擴展配置",
       ExtendTemplate: "擴展模板",
+      ExtendComment: "評論配置",
       ContentPriv: "瀏覽權限",
       ViewCount: "瀏覽量",
       FavoriteCount: "收藏數",

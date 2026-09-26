@@ -20,8 +20,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.web.BaseRestController;
-
-
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.TimeUtils;
@@ -42,7 +40,8 @@ import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.system.validator.LongId;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -99,8 +98,8 @@ public class ContentApiController extends BaseRestController {
 			@RequestParam(value = "attrs", required = false) String hasAttributes,
 			@RequestParam(value = "no_attrs", required = false) String noAttributes,
 			@RequestParam(value = "st", required = false, defaultValue = "Recent") String sortType,
-			@RequestParam(value = "ps", required = false, defaultValue = "16") Integer pageSize,
-			@RequestParam(value = "pn", required = false, defaultValue = "1") Long pageNumber,
+			@RequestParam(value = "ps", required = false, defaultValue = "16") @Min(1) @Max(100) Integer pageSize,
+			@RequestParam(value = "pn", required = false, defaultValue = "1") @Min(1) @Max(10000) Long pageNumber,
 			@RequestParam(value = "pp") String publishPipeCode,
 			@RequestParam(value = "preview", required = false, defaultValue = "false") Boolean preview
 	) {
@@ -167,9 +166,9 @@ public class ContentApiController extends BaseRestController {
 
 	@XComment("{API.DOC.CMS.CONTENT_API.GET_DETAIL}")
 	@GetMapping("/detail/{contentId}")
-	public R<?> getContentDetail(@PathVariable @LongId Long contentId, HttpServletRequest request) {
+	public R<?> getContentDetail(@PathVariable @LongId Long contentId) {
 		CmsContent content = this.contentService.dao().getById(contentId);
-		if (Objects.isNull(content)) {
+		if (Objects.isNull(content) || !ContentStatus.isPublished(content.getStatus())) {
 			return R.fail("Content not found.");
 		}
 		for (ICoreDataHandler coreDataHandler : coreDataHandlers) {

@@ -99,7 +99,7 @@
             type="primary"
             icon="MagicStick"
             @click="handleTest(scope.row)"
-            v-hasPermi="['message:config:test']"
+            v-hasPermi="['message:config:add','message:config:edit']"
             >{{ $t("Message.Config.TestSend") }}</el-button
           >
           <el-button

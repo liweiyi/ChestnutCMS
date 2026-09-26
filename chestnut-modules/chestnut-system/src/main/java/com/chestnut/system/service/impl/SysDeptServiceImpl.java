@@ -16,27 +16,39 @@
 package com.chestnut.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
-import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.redis.RedisCache;
+import com.chestnut.common.security.SecurityUtils;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.domain.SysDept;
+import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.CreateDeptRequest;
 import com.chestnut.system.domain.dto.UpdateDeptRequest;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.mapper.SysDeptMapper;
+import com.chestnut.system.mapper.SysRoleMapper;
 import com.chestnut.system.mapper.SysUserMapper;
 import com.chestnut.system.service.ISysDeptService;
+import com.chestnut.system.utils.SysDeptUtils;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * 部门管理 服务实现
@@ -46,14 +58,18 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
-public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> implements ISysDeptService {
+public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> implements ISysDeptService, CommandLineRunner {
 
 	private final SysUserMapper userMapper;
 
 	private final RedisCache redisCache;
 
+    private final SysRoleMapper roleMapper;
+
+	private final RedissonClient redissonClient;
+
 	@Override
-	public Optional<SysDept> getDept(Long deptId) {
+	public SysDept getDept(Long deptId) {
 		SysDept dept = redisCache.getCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + deptId, SysDept.class);
 		if (Objects.isNull(dept)) {
 			dept = this.getById(deptId);
@@ -61,19 +77,33 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 				redisCache.setCacheObject(SysConstants.CACHE_SYS_DEPT_KEY + deptId, dept);
 			}
 		}
-		return Optional.ofNullable(dept);
+		Assert.notNull(dept, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("deptId", deptId));
+		return dept;
+	}
+
+	@Override
+	public List<SysDept> getDepartmentsByUserId(Long userId, Consumer<LambdaQueryChainWrapper<SysDept>> consumer) {
+		LambdaQueryChainWrapper<SysDept> q = this.lambdaQuery();
+		if (!SecurityUtils.isSuperAdmin(userId)) {
+			SysUser user = this.userMapper.selectById(userId);
+			SysDept dept = this.getDept(user.getDeptId());
+			q.and(and -> and.eq(SysDept::getDeptId, user.getDeptId())
+					.or().likeRight(SysDept::getAncestors, dept.getAncestors() + SysDeptUtils.ANCESTORS_SPLITTER));
+		}
+		consumer.accept(q);
+        return q.orderByAsc(SysDept::getParentId).orderByAsc(SysDept::getOrderNum).list();
 	}
 
 	@Override
 	public List<SysDept> buildDeptTree(List<SysDept> depts) {
 		List<SysDept> returnList = new ArrayList<>();
-		List<Long> tempList = new ArrayList<>();
+		List<Long> tempIds = new ArrayList<>();
 		for (SysDept dept : depts) {
-			tempList.add(dept.getDeptId());
+			tempIds.add(dept.getDeptId());
 		}
 		for (SysDept dept : depts) {
 			// 如果是顶级节点, 遍历该父节点的所有子节点
-			if (!tempList.contains(dept.getParentId())) {
+			if (!tempIds.contains(dept.getParentId())) {
 				recursionFn(depts, dept);
 				returnList.add(dept);
 			}
@@ -82,21 +112,6 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 			returnList = depts;
 		}
 		return returnList;
-	}
-
-	@Override
-	public List<TreeNode<Long>> buildDeptTreeSelect(List<SysDept> depts) {
-		List<SysDept> deptTrees = buildDeptTree(depts);
-		return deptTrees.stream().map(this::buildTreeSelect).collect(Collectors.toList());
-	}
-
-	private TreeNode<Long> buildTreeSelect(SysDept dept) {
-		TreeNode<Long> ts = new TreeNode<>(dept.getDeptId(), dept.getParentId(), dept.getDeptName(), false);
-		ts.setId(dept.getDeptId());
-		ts.setLabel(dept.getDeptName());
-		List<TreeNode<Long>> children = dept.getChildren().stream().map(this::buildTreeSelect).collect(Collectors.toList());
-		ts.setChildren(children);
-		return ts;
 	}
 
 	private boolean checkDeptNameUnique(Long parentId, String deptName, Long deptId) {
@@ -108,12 +123,16 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 	}
 
 	@Override
+    @Transactional(rollbackFor = Exception.class)
 	public void insertDept(CreateDeptRequest req) {
-		SysDept parent = this.getById(req.getParentId());
+		LoginUser operator = req.getOperator();
+		SysDept parent = this.getDept(req.getParentId());
 		// 如果父节点不为正常状态,则不允许新增子节点
 		Assert.isTrue(Objects.nonNull(parent) && parent.isEnable(), SysErrorCode.DISABLE_DEPT_ADD_CHILD::exception);
 
-		boolean unique = this.checkDeptNameUnique(req.getParentId(),req.getDeptName(), 0L);
+		SysDeptUtils.checkDeptScope(operator, parent::getDeptId, parent::getAncestors);
+
+		boolean unique = this.checkDeptNameUnique(req.getParentId(), req.getDeptName(), 0L);
 		Assert.isTrue(unique, () -> CommonErrorCode.DATA_CONFLICT.exception(req.getDeptName()));
 
 		SysDept dept = new SysDept();
@@ -125,19 +144,24 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 		dept.setEmail(req.getEmail());
 		dept.setStatus(req.getStatus());
 		dept.setDeptId(IdUtils.getSnowflakeId());
-		dept.setAncestors(parent.getAncestors() + "," + dept.getParentId());
+		dept.setAncestors(SysDeptUtils.getDeptAncestors(parent.getAncestors(), dept.getDeptId()));
 		dept.createBy(req.getOperator().getUsername());
 		this.save(dept);
 		this.redisCache.deleteObject(SysConstants.CACHE_SYS_DEPT_KEY + dept.getDeptId());
 	}
 
 	@Override
+    @Transactional(rollbackFor = Exception.class)
 	public void updateDept(UpdateDeptRequest req) {
-		SysDept db = this.getById(req.getDeptId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getDeptId()));
-		if (EnableOrDisable.isEnable(db.getStatus()) && EnableOrDisable.isDisable(req.getStatus())
-				&& this.lambdaQuery().likeRight(SysDept::getAncestors, db.getAncestors() + "," + db.getDeptId()).count() > 0) {
-			throw SysErrorCode.HAS_ENABLE_CHILD_DEPT.exception();
+		LoginUser operator = req.getOperator();
+		SysDept db = this.getDept(req.getDeptId());
+		Assert.isTrue(Objects.nonNull(db), () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("deptId", req.getDeptId()));
+		SysDeptUtils.checkDeptScope(operator, db::getDeptId, db::getAncestors);
+
+		if (EnableOrDisable.isEnable(db.getStatus()) && EnableOrDisable.isDisable(req.getStatus())) {
+			Long childCount = this.lambdaQuery().eq(SysDept::getStatus, EnableOrDisable.ENABLE)
+					.likeRight(SysDept::getAncestors, db.getAncestors() + SysDeptUtils.ANCESTORS_SPLITTER).count();
+			Assert.isTrue(childCount == 0, SysErrorCode.HAS_ENABLE_CHILD_DEPT::exception);
 		}
 
 		boolean unique = this.checkDeptNameUnique(req.getParentId(), req.getDeptName(), req.getDeptId());
@@ -156,7 +180,13 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 	}
 
 	@Override
-	public void deleteDeptById(Long deptId) {
+    @Transactional(rollbackFor = Exception.class)
+	public void deleteDeptById(Long deptId, LoginUser operator) {
+		SysDept dept = this.getDept(deptId);
+		SysDeptUtils.checkDeptScope(operator, dept::getDeptId, dept::getAncestors);
+
+		boolean hasRole = roleMapper.selectCount(new LambdaQueryWrapper<SysRole>().eq(SysRole::getDeptId, deptId)) > 0;
+		Assert.isFalse(hasRole, SysErrorCode.ORG_DEL_ROLE::exception);
 		boolean hasChildren = this.lambdaQuery().eq(SysDept::getParentId, deptId).count() > 0;
 		Assert.isFalse(hasChildren, SysErrorCode.DEPT_DEL_FAIL_HAS_CHILD::exception);
 
@@ -191,5 +221,27 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 
 	private boolean hasChild(List<SysDept> list, SysDept t) {
 		return !getChildList(list, t).isEmpty();
+	}
+
+	@Override
+	public SysDept getTopDept() {
+		List<SysDept> list = this.lambdaQuery().eq(SysDept::getParentId, 0).list();
+		Assert.isTrue(list.size() == 1, SysErrorCode.INVALID_TOP_DEPT::exception);
+		return list.get(0);
+	}
+
+	@Override
+	public void run(String... args) throws Exception {
+		RLock lock = redissonClient.getLock(SysConstants.CACHE_SYS_DEPT_KEY + 0);
+		try {
+			boolean tryLock = lock.tryLock(5, TimeUnit.SECONDS);
+			if (!tryLock) {
+				return;
+			}
+		} finally {
+			if (lock.isLocked()) {
+				lock.unlock();
+			}
+		}
 	}
 }

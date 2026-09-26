@@ -10,7 +10,7 @@
             <template #content>
               {{ generateIconCode(item) }}
             </template>
-            <div class="icon-item" v-copyText="generateIconCode(item)" v-copyText:callback="clipboardSuccess">
+            <div class="icon-item" v-copyText="generateIconCode(item)">
               <svg-icon :icon-class="item" />
               <span>{{ item }}</span>
             </div>
@@ -23,7 +23,7 @@
             <template #content>
               {{ generateElementIconCode(item) }}
             </template>
-            <div class="icon-item" v-copyText="generateElementIconCode(item)" v-copyText:callback="clipboardSuccess">
+            <div class="icon-item" v-copyText="generateElementIconCode(item)">
               <el-icon>
                 <component :is="item" />
               </el-icon>
@@ -49,9 +49,6 @@ function generateIconCode(symbol) {
 }
 function generateElementIconCode(symbol) {
   return `<el-icon><${symbol} /></el-icon>`
-}
-function clipboardSuccess() {
-  proxy.$modal.msgSuccess(proxy.$t('Common.CopySuccess'));
 }
 </script>
 

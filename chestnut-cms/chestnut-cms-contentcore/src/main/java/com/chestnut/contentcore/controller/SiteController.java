@@ -443,7 +443,7 @@ public class SiteController extends CmsRestController {
     @GetMapping("/downloadTheme/{siteId}")
     public ResponseEntity<StreamingResponseBody> downloadTheme(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
         CmsSite site = this.siteService.getSite(siteId);
-        File file = new File(SiteUtils.getSiteResourceRoot(site) + SiteThemeService.ThemeZipPath);
+        File file = new File(SiteUtils.getSiteResourceRoot(site) + SiteThemeService.THEME_ZIP_PATH);
         if (!file.exists()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

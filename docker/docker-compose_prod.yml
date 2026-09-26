@@ -20,5 +20,6 @@ services:
     volumes:
       - ./logs:/home/app/logs
       - ./uploadPath:/home/app/uploadPath
+      - ./private_sys_files:/home/app/private_sys_files
       - ./_xy_member:/home/app/_xy_member
       - ./wwwroot_release:/home/app/wwwroot_release

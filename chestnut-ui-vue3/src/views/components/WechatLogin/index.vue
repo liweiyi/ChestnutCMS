@@ -1,7 +1,8 @@
 <template>
   <div class="wechat-login-container">
-    <el-button v-show="showLoginButton" :title="$t('Login.Wechat.Title')" link @click="handleLogin">
-      <svg-icon icon-class="wechat" :style="{ width: props.iconSize, height: props.iconSize }" />
+    <el-button v-show="showLoginButton" :loading="loading" link @click="handleLogin">
+      <svg-icon icon-class="wechat" :style="{ width: props.iconSize, height: props.iconSize }" class="mr5" />
+      <el-text>{{ props.name }}</el-text>
     </el-button>
     <el-dialog
       v-model="open"
@@ -22,8 +23,6 @@
 </template>
 <script setup name="WechatLogin">
 import { getLoginUrl } from '@/api/system/wechat'
-import useUserStore from '@/store/modules/user'
-const userStore = useUserStore()
 
 const { proxy } = getCurrentInstance()
 
@@ -35,7 +34,12 @@ const props = defineProps({
   iconSize: {
     type: String,
     required: false,
-    default: '28px',
+    default: '1rem',
+  },
+  name: {
+    type: String,
+    required: false,
+    default: '',
   }
 });
 
@@ -60,3 +64,8 @@ function handleLogin() {
   open.value = true;
 }
 </script>
+<style lang='scss' scoped>
+.wechat-login-container {
+  padding: 5px 10px;
+}
+</style>

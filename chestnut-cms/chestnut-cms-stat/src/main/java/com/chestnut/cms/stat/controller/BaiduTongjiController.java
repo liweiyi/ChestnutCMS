@@ -31,10 +31,13 @@ import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.utils.DateUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.service.ISiteService;
+import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
 
 
+import com.chestnut.system.validator.LongId;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.validation.annotation.Validated;
@@ -56,12 +59,15 @@ import java.util.List;
 @RequestMapping("/cms/stat/baidu")
 public class BaiduTongjiController extends CmsRestController {
 
+	private final ISiteService siteService;
+
 	private final ICmsStatService cmsStatService;
 
+	@Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
 	@XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI.REFRESH_TOKEN}")
 	@PostMapping("/refreshToken")
-	public R<Void> refreshAccessToken() {
-		CmsSite site = this.getCurrentSite();
+	public R<Void> refreshAccessToken(@RequestParam @LongId Long siteId) {
+		CmsSite site = this.siteService.getSite(siteId);
 		this.cmsStatService.refreshBaiduAccessToken(site);
 		return R.ok();
 	}

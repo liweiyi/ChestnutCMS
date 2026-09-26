@@ -67,7 +67,7 @@
             link
             type="danger"
             icon="Download"
-            v-hasPermi="[ $p('PageWidget:Edit:{0}', [ scope.row.pageWidgetId ]) ]"
+            v-hasPermi="[ $p('PageWidget:Offline:{0}', [ scope.row.pageWidgetId ]) ]"
             @click="handleOffline(scope.row)">{{ $t("CMS.Content.Offline") }}</el-button>
           <el-button 
             link

@@ -46,3 +46,6 @@ nbdist/
 !*/build/*.html
 !*/build/*.xml
 /chestnut-admin/logs
+.workbuddy/
+doc/
+docs/

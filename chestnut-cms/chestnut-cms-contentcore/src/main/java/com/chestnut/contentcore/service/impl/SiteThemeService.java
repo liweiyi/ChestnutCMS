@@ -23,11 +23,13 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.ContentCoreConsts;
 import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.*;
 import com.chestnut.contentcore.core.impl.CatalogType_Link;
 import com.chestnut.contentcore.domain.*;
 import com.chestnut.contentcore.enums.ContentCoreTips;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.service.*;
 import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
@@ -40,6 +42,8 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -52,6 +56,8 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class SiteThemeService {
+
+    public final static String THEME_ZIP_PATH = ContentCoreConsts.SITE_EXPORT_DIR + "SiteTheme.zip";
 
     private final AsyncTaskManager asyncTaskManager;
 
@@ -76,6 +82,10 @@ public class SiteThemeService {
     private final Map<String, IContentType> contentTypes;
 
     public AsyncTask importSiteTheme(CmsSite site, final File zipFile, LoginUser operator) {
+        Path resourceRoot = Path.of(CMSConfig.getResourceRoot());
+        if (!Files.isDirectory(resourceRoot) || !Files.isWritable(resourceRoot)) {
+            throw ContentCoreErrorCode.RESOURCE_DIRECTORY_NOT_WRITABLE.exception();
+        }
         AsyncTask asyncTask = new AsyncTask() {
 
             @Override
@@ -324,8 +334,6 @@ public class SiteThemeService {
         return asyncTask;
     }
 
-    public static final String ThemeZipPath = "_export/SiteTheme.zip";
-
     public AsyncTask exportSiteTheme(CmsSite site) {
         AsyncTask asyncTask = new AsyncTask() {
 
@@ -493,8 +501,7 @@ public class SiteThemeService {
                 // 其他模块数据处理
                 contentCoreHandlers.forEach(h -> h.onSiteExport(context));
                 // ############ 导出压缩文件 #################
-                context.createZipFile(ThemeZipPath);
-//                context.clearTempFiles();
+                context.createZipFile(THEME_ZIP_PATH);
                 AsyncTaskManager.setTaskProgressInfo(100, ContentCoreTips.EXPORT_COMPLETED);
             }
         };

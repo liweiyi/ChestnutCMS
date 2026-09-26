@@ -149,6 +149,8 @@ public class ModelDataServiceImpl implements IModelDataService {
 			if (Objects.isNull(fieldValue) || fieldValue.toString().isBlank()) {
 				fieldValue = StringUtils.isBlank(field.getDefaultValue()) ? null : field.getDefaultValue();
 			}
+			// 包括默认值在内统一净化，净化为空后不再回填默认值。
+			fieldValue = mmt.sanitizeFieldValue(field, fieldValue);
 			// 校验
 			this.validateFieldValue(field.getName(), fieldValue, field.getValidations());
 			fieldValue = MetaFieldType.parse(field.getFieldType(), fieldValue);
@@ -223,7 +225,7 @@ public class ModelDataServiceImpl implements IModelDataService {
 		});
 		// 自定义字段
 		model.getFields().forEach(f -> {
-			Object v = row.get(f.getFieldName());
+			Object v = mmt.sanitizeFieldValue(f, row.get(f.getFieldName()));
 			IMetaControlType controlType = getControlType(f.getControlType());
             if (Objects.isNull(v)) {
 				v = StringUtils.EMPTY;
@@ -376,6 +378,8 @@ public class ModelDataServiceImpl implements IModelDataService {
 
 	private List<Map<String, Object>> mapFieldNamesToCodes(List<Map<String, Object>> rows,
 														 MetaModel model, IMetaModelType mmt) {
+		Map<String, MetaModelField> customFields = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		model.getFields().forEach(field -> customFields.put(field.getFieldName(), field));
 		Map<String, String> fieldNameToCode = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		fieldNameToCode.putAll(model.getFields().stream()
 				.collect(Collectors.toMap(MetaModelField::getFieldName, MetaModelField::getCode)));
@@ -386,7 +390,8 @@ public class ModelDataServiceImpl implements IModelDataService {
 			data.forEach((fieldName, value) -> {
 				String fieldCode = fieldNameToCode.get(fieldName);
 				if (fieldCode != null) {
-					result.put(fieldCode, value);
+					MetaModelField field = customFields.get(fieldName);
+					result.put(fieldCode, field == null ? value : mmt.sanitizeFieldValue(field, value));
 				}
 			});
 			return result;

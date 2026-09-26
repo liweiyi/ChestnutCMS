@@ -15,12 +15,8 @@
  */
 package com.chestnut.system.controller;
 
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
-import com.chestnut.common.exception.CommonErrorCode;
-
-
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
@@ -28,14 +24,12 @@ import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.config.SystemConfig;
-import com.chestnut.system.domain.SysMenu;
-import com.chestnut.system.domain.SysUser;
+import com.chestnut.system.domain.*;
 import com.chestnut.system.domain.dto.UpdateUserProfileRequest;
 import com.chestnut.system.domain.vo.DashboardUserVO;
 import com.chestnut.system.domain.vo.ShortcutVO;
@@ -44,9 +38,11 @@ import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.*;
+import com.chestnut.system.service.impl.UserPermissionService;
 import com.chestnut.system.user.preference.MenuShortcutUserPreference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 个人信息 业务处理
@@ -67,9 +64,15 @@ import java.util.Objects;
 @RequestMapping("/system/user/profile")
 public class SysProfileController extends BaseRestController {
 
+	private final ISysDeptService deptService;
+
 	private final ISysUserService userService;
 
-	private final ISysDeptService deptService;
+	private final ISysRoleService roleService;
+
+	private final ISysPostService postService;
+
+	private final UserPermissionService userPermissionService;
 
 	private final ISecurityConfigService securityConfigService;
 
@@ -80,41 +83,22 @@ public class SysProfileController extends BaseRestController {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		SysUser user = (SysUser) loginUser.getUser();
 		user.setAvatarSrc(SystemConfig.getResourcePrefix() + user.getAvatar());
-		String roleGroup = userService.selectUserRoleGroup(loginUser.getUserId());
-		String postGroup = userService.selectUserPostGroup(loginUser.getUserId());
+
+		List<SysRole> roles = this.roleService.selectRolesByUserId(loginUser.getUserId());
+		String roleGroup = roles.stream().map(SysRole::getRoleName).collect(Collectors.joining(","));
+		List<SysPost> posts = postService.selectPostsByUserId(loginUser.getUserId());
+		String postGroup = posts.stream().map(SysPost::getPostName).collect(Collectors.joining(","));
 		return R.ok(new UserProfileVO(user, roleGroup, postGroup));
 	}
 	@XComment("{API.DOC.SYS.PROFILE.UPDATE_INFO}")
 	@PostMapping("/updateInfo")
+	@Transactional(rollbackFor = Exception.class)
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE)
 	public R<?> updateProfile(@RequestBody @Validated UpdateUserProfileRequest req) {
-		LoginUser loginUser = StpAdminUtil.getLoginUser();
-
-		boolean checkPhoneUnique = this.userService.checkPhoneUnique(req.getPhoneNumber(), loginUser.getUserId());
-		Assert.isTrue(checkPhoneUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("PhoneNumber"));
-
-		boolean checkEmailUnique = this.userService.checkPhoneUnique(req.getEmail(), loginUser.getUserId());
-		Assert.isTrue(checkEmailUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("Email"));
-
-		LambdaUpdateWrapper<SysUser> q = new LambdaUpdateWrapper<SysUser>()
-				.set(SysUser::getNickName, req.getNickName())
-				.set(SysUser::getPhoneNumber, req.getPhoneNumber())
-				.set(SysUser::getEmail, req.getEmail())
-				.set(SysUser::getSex, req.getSex())
-				.set(SysUser::getBirthday, req.getBirthday())
-				.eq(SysUser::getUserId, loginUser.getUserId());
-		if (this.userService.update(q)) {
-			SysUser sysUser = (SysUser) loginUser.getUser();
-			sysUser.setNickName(req.getNickName());
-			sysUser.setRealName(req.getRealName());
-			sysUser.setPhoneNumber(req.getPhoneNumber());
-			sysUser.setEmail(req.getEmail());
-			sysUser.setSex(req.getSex());
-			sysUser.setBirthday(req.getBirthday());
-			StpAdminUtil.setLoginUser(loginUser);
-			return R.ok();
-		}
-		return R.fail();
+		this.userService.updateUserProfile(req);
+		// 更新用户token数据
+		this.userPermissionService.resetLoginUser(req.getOperator().getUserId());
+		return R.ok();
 	}
 	@XComment("{API.DOC.SYS.PROFILE.UPDATE_PWD}")
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE, isSaveRequestData = false)
@@ -182,7 +166,10 @@ public class SysProfileController extends BaseRestController {
 		if (StringUtils.isNotEmpty(user.getAvatar())) {
 			vo.setAvatar(SystemConfig.getResourcePrefix() + user.getAvatar());
 		}
-		this.deptService.getDept(user.getDeptId()).ifPresent(dept -> vo.setDeptName(dept.getDeptName()));
+		SysDept dept = this.deptService.getDept(user.getDeptId());
+		if (Objects.nonNull(dept)) {
+			vo.setDeptName(dept.getDeptName());
+		}
 		return R.ok(vo);
 	}
 	@XComment("{API.DOC.SYS.PROFILE.GET_SHORTCUTS}")

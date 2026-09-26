@@ -159,6 +159,12 @@ const en = {
     Password: 'Password',
     RememberMe: 'Remember me',
     Captcha: 'Captcha',
+    CaptchaLoading: 'Loading captcha…',
+    CaptchaWaiting: 'Please wait {0} seconds before requesting another captcha',
+    CaptchaExpired: 'Captcha expired. Please verify again',
+    CaptchaLoadFailed: 'Failed to load captcha. Please retry',
+    CaptchaAccountChanged: 'Account changed. Please verify again',
+    CaptchaRequired: 'Please complete captcha verification for the current account',
     CaptchaTip: 'Click the button to start verification',
     CaptchaSuccess: 'Verification successful',
     CaptchaFail: 'Verification failed, please try again',
@@ -172,8 +178,11 @@ const en = {
     PasswordRuleTip: "Password canot be empty!",
     CaptchaRuleTip: "Captcha cannot be empty!",
     Language: 'Language',
+    OtherMethods: 'Other sign-in options',
+    Feishu: {
+      GetLoginUrlFail: 'Failed to get the Feishu login URL',
+    },
     Wechat: {
-      Title: "WeChat Login",
       GetLoginUrlFail: "Get WeChat login URL failed.",
     }
   },
@@ -286,6 +295,12 @@ const en = {
     LastLoginIP: "Last login ip"
   },
   System: {
+    DeptScope: {
+      All: "All departments",
+      OnlyCurrent: "Current department only",
+      Unassigned: "Unassigned",
+      ConfirmChange: "Changing department will remove {0} incompatible role assignments. Continue?",
+    },
     User: {
       UserId: "User ID",
       UserName: "User Name",
@@ -315,6 +330,8 @@ const en = {
       SelectUser: "Select User",
       IsAllocatedRole: "Allocated",
       LoginRedirectTip: "Login successful, redirecting...",
+      ChangeDept: "Change Department",
+      ChangeDeptConfirmMsg: "Changing the department will remove all role assignments for this user. Directly granted user permissions will be retained. Continue?",
       Dialog: {
         Add: "Add User",
         Edit: "Edit User",
@@ -749,6 +766,39 @@ const en = {
     Logs: {
       LogId: "ID",
       LogName: "Name",
+      CdnRefresh: {
+        ConfigName: "Cloud Configuration",
+        Url: "Refresh/Prefetch URL",
+        UrlPlaceholder: "Complete URL (exact match)",
+        TaskType: "Task",
+        Type: "Type",
+        Time: "Time (UTC+8)",
+        Status: "Status",
+        QueryTip: "Defaults to the last 24 hours. All times are UTC+8. Alibaba Cloud only supports refresh/prefetch tasks from the last 3 days.",
+        NoConfig: "Add a Tencent Cloud or Alibaba Cloud account in Cloud Configuration first.",
+        QueryTypes: {
+          url: "URL Refresh",
+          directory: "Directory Refresh",
+          preheat: "URL Prefetch",
+        },
+        TaskTypes: {
+          refresh: "Refresh",
+          preheat: "Prefetch",
+        },
+        Types: {
+          url: "URL",
+          directory: "Directory",
+        },
+        Statuses: {
+          PROCESSING: "Processing",
+          SUCCESS: "Success",
+          FAILED: "Failed",
+          TIMEOUT: "Timed Out",
+          CANCELED: "Canceled",
+          INVALID: "Invalid",
+          UNKNOWN: "Unknown",
+        },
+      },
       Console: {
         AutoRefresh: "Auto Refresh",
         LockScroll: "Lock Scroll",
@@ -850,6 +900,65 @@ const en = {
       ErrMessage: "Err Message",
       Stop: "Stop",
       ReadyTime: "Ready Time"
+    }
+  },
+  AI: {
+    Chat: {
+      Title: "AI Chat",
+      Open: "Open AI Chat",
+      ExpandToolbar: "Expand AI toolbar",
+      CollapseToolbar: "Collapse AI toolbar",
+      StatelessTip: "Chat history stays in this window only and is cleared on refresh",
+      SelectModel: "Select an AI model",
+      NewConversation: "New Chat",
+      EmptyTitle: "Start a conversation with AI",
+      EmptyDescription: "Select an enabled model and enter your message. This version does not store chat history on the server.",
+      NoModels: "No available models",
+      NoModelsTip: "Create and enable at least one AI model in Model Configuration first.",
+      InputPlaceholder: "Enter a message. Press Enter to send and Shift + Enter for a new line",
+      SendTip: "Each request includes up to the latest 20 messages from this window",
+      Send: "Send",
+      Stop: "Stop",
+      User: "You",
+      Assistant: "AI Assistant",
+      Copy: "Copy",
+      Copied: "Response copied",
+      CopyFailed: "Copy failed. Select the content manually",
+      RequestFailed: "The AI chat request failed. Please try again later",
+      InvalidStream: "The AI response stream is invalid"
+    },
+    Model: {
+      Name: "Configuration Name",
+      ProviderType: "Provider Type",
+      BaseUrl: "Base URL",
+      ApiKey: "API Key",
+      ApiKeyStatus: "Key Status",
+      ModelName: "Model Name",
+      Status: "Status",
+      IsDefault: "Default Model",
+      SupportsTools: "Tool Calling",
+      TimeoutSeconds: "Timeout",
+      SortFlag: "Sort",
+      Test: "Test",
+      TestSuccess: "The model API connection test succeeded",
+      TestFailed: "The model API connection test failed. Check the base URL, model name, and API Key",
+      Configured: "Configured",
+      NotConfigured: "Not Configured",
+      ApiKeyEditTip: "The saved API Key is never displayed. Leave this field blank to keep the existing key.",
+      ConfirmDelete: "Are you sure you want to delete the selected {0} model configuration(s)?",
+      Dialog: {
+        Add: "Add AI Model Configuration",
+        Edit: "Edit AI Model Configuration"
+      },
+      Placeholder: {
+        Name: "Enter a configuration name",
+        ProviderType: "Select a provider type",
+        BaseUrl: "Enter the model service base URL",
+        ApiKey: "Enter an API Key (optional)",
+        ApiKeyEdit: "Leave blank to keep the existing API Key",
+        ModelName: "Enter the remote model name",
+        Status: "Select a status"
+      }
     }
   },
   CMS: {
@@ -1066,6 +1175,8 @@ const en = {
         CustomFormCardTitle: "Custom Form Configuration",
         EnableCustomFormCaptcha: "Enable Captcha On Submit",
         CommentCardTitle: " Comment Configuration",
+        EnableComment: "Enable Comment",
+        EnableCommentTip: "Commenting is unavailable when site comment disabled. When enabled, catalog and content can be independently configured to allow or disable comments.",
         EnableCommentAudit: "Enable Comment Audit",
         SEO: "SEO Configuration",
         BaiduPushAccessSecret: "Baidu Push API Secret",
@@ -1294,6 +1405,7 @@ const en = {
       CloseContentEditorTip: "Closing the page will lose unsaved content. Are you sure to close?",
       ExtendConfig: "Extend",
       ExtendTemplate: "Extend Template",
+      ExtendComment: "Comment configuration",
       ContentPriv: "View Permission",
       ViewCount: "Views",
       FavoriteCount: "Favorities",

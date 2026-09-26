@@ -109,7 +109,14 @@ public interface IInternalDataType {
 		return StringUtils.EMPTY;
 	}
 
-    /**
+	/**
+	 * 获取可访问数据的页面内容（已发布状态）
+	 */
+	default String getPageViewData(RequestData requestData) throws IOException, TemplateException {
+		return this.getPageData(requestData);
+	}
+
+	/**
      * 处理模板页面内容，写入输出流
      * @param requestData 请求数据
      * @param writer 输出流

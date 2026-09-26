@@ -100,7 +100,7 @@ public class SysLoginConfigController extends BaseRestController {
 
     @XComment("{API.DOC.SYS.LOGIN_CONFIG.CREATE}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
-	@Log(title = "登录配置", businessType = BusinessType.INSERT)
+	@Log(title = "登录配置", businessType = BusinessType.INSERT, isSaveRequestData = false)
 	@PostMapping("/add")
 	public R<Void> addConfig(@Validated @RequestBody CreateLoginConfigRequest req) {
 		this.loginConfigService.addConfig(req);
@@ -109,7 +109,7 @@ public class SysLoginConfigController extends BaseRestController {
 
     @XComment("{API.DOC.SYS.LOGIN_CONFIG.UPDATE}")
     @Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysSecurityList)
-	@Log(title = "登录配置", businessType = BusinessType.UPDATE)
+	@Log(title = "登录配置", businessType = BusinessType.UPDATE, isSaveRequestData = false)
 	@PostMapping("/update")
 	public R<Void> saveConfig(@Validated @RequestBody UpdateLoginConfigRequest req) {
 		this.loginConfigService.saveConfig(req);

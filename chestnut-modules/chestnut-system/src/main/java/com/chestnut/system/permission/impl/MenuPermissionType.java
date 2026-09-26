@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.system.permission;
+package com.chestnut.system.permission.impl;
 
 import cn.dev33.satoken.annotation.SaMode;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.system.permission.IPermissionType;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;

@@ -40,7 +40,6 @@ import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberService;
 import com.chestnut.system.fixed.config.SysUploadImageTypes;
 import com.chestnut.system.fixed.dict.UserStatus;
-import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISecurityConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -119,7 +118,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		// 变更未封禁或锁定状态时注销登录状态
 		if (!Strings.CS.equals(member.getStatus(), oldStatus)
 				&& (MemberStatus.isDisbale(member.getStatus()) || UserStatus.isLocked(member.getStatus()))) {
-			StpAdminUtil.logout(member.getUserId());
+			StpMemberUtil.logout(member.getUserId());
 		}
 	}
 
@@ -155,6 +154,8 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		member.setUpdateTime(LocalDateTime.now());
 		member.setUpdateBy(req.getOperator().getUsername());
 		this.updateById(member);
+		// 注销用户登录状态
+		StpMemberUtil.logout(member.getUserId());
 	}
 
 	/**

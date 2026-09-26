@@ -25,6 +25,9 @@ import java.util.Map;
 
 /**
  * 评论是否需要审核
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Component(IProperty.BEAN_NAME_PREFIX + EnableCommentAudit.ID)
 public class EnableCommentAudit implements IProperty {

@@ -15,7 +15,9 @@
  */
 package com.chestnut.customform;
 
+import com.chestnut.common.utils.HtmlUtils;
 import com.chestnut.customform.domain.CmsCustomFormData;
+import com.chestnut.exmodel.MetaControlType_UEditor;
 import com.chestnut.xmodel.core.BaseModelData;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModelField;
@@ -59,6 +61,14 @@ public class CmsCustomFormMetaModelType implements IMetaModelType {
     @Override
     public List<MetaModelField> getFixedFields() {
         return List.of(FIELD_DATA_ID, FIELD_SITE_ID, FIELD_MODEL_ID, FIELD_CLIENT_IP, FIELD_UUID, FIELD_CREATE_TIME);
+    }
+
+    @Override
+    public Object sanitizeFieldValue(MetaModelField field, Object value) {
+        if (value != null && MetaControlType_UEditor.TYPE.equals(field.getControlType())) {
+            return HtmlUtils.cleanRichText(value.toString());
+        }
+        return value;
     }
 
     /**

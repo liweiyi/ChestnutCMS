@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.chestnut</groupId>
 		<artifactId>chestnut-cms</artifactId>
-		<version>1.6.0</version>
+		<version>1.6.1</version>
 	</parent>
 
 	<artifactId>chestnut-cms-media</artifactId>
@@ -19,21 +19,6 @@
 		    <groupId>ws.schild</groupId>
 		    <artifactId>jave-core</artifactId>
 		</dependency>
-		<!-- linux系统使用 -->
-		<dependency>
-		    <groupId>ws.schild</groupId>
-		    <artifactId>jave-nativebin-linux64</artifactId>
-		</dependency>
-		<!-- window系统使用 -->
-		<dependency>
-			<groupId>ws.schild</groupId>
-			<artifactId>jave-nativebin-win64</artifactId>
-		</dependency>
-		<!-- 苹果OSX系统使用
-		<dependency>
-			<groupId>ws.schild</groupId>
-			<artifactId>jave-nativebin-osx64</artifactId>
-		</dependency> -->
 
 		<!-- 内容核心 -->
 		<dependency>
@@ -41,4 +26,77 @@
 			<artifactId>chestnut-cms-contentcore</artifactId>
 		</dependency>
 	</dependencies>
+
+	<!-- 按部署平台显式选择，例如 -Pmedia-linux64；不按构建机操作系统自动选择。 -->
+	<profiles>
+		<profile>
+			<id>media-linux64</id>
+			<dependencies>
+				<dependency>
+					<groupId>ws.schild</groupId>
+					<artifactId>jave-nativebin-linux64</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>media-win64</id>
+			<dependencies>
+				<dependency>
+					<groupId>ws.schild</groupId>
+					<artifactId>jave-nativebin-win64</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>media-osxm1</id>
+			<dependencies>
+				<dependency>
+					<groupId>ws.schild</groupId>
+					<artifactId>jave-nativebin-osxm1</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<profile>
+			<id>media-osx64</id>
+			<dependencies>
+				<dependency>
+					<groupId>ws.schild</groupId>
+					<artifactId>jave-nativebin-osx64</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+		<!-- 默认兼容 Linux、Windows 和 macOS 本地开发；显式选择单平台 Profile 后自动停用。 -->
+		<profile>
+			<id>media-all</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>ws.schild</groupId>
+					<artifactId>jave-nativebin-linux64</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>ws.schild</groupId>
+					<artifactId>jave-nativebin-win64</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>ws.schild</groupId>
+					<artifactId>jave-nativebin-osxm1</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>ws.schild</groupId>
+					<artifactId>jave-nativebin-osx64</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 </project>

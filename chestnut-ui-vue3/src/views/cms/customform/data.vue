@@ -84,7 +84,7 @@
                 <el-icon><View /></el-icon>
               </template>
               <template #default>
-                <div class="rich-content" v-html="scope.row[field.code]"></div>
+                <div class="rich-content" v-html="sanitizeCustomFormRichText(scope.row[field.code])"></div>
               </template>
             </el-popover>
           </div>
@@ -172,6 +172,7 @@
   import CmsResourceUploader from '@/views/cms/components/ResourceUploder';
   import CmsContentSelector from '@/views/cms/components/ContentSelector';
   import Ueditor from '@/views/cms/components/UEditorPlus'
+  import { sanitizeCustomFormData, sanitizeCustomFormRichText } from '@/utils/customform-richtext';
   
   const { proxy } = getCurrentInstance()
   
@@ -224,24 +225,32 @@
   });
   
   onMounted(() => {
-    loadCustomFormFields();
     loadCustomFormDataList();
   });
   
+  let fieldsRequest;
   function loadCustomFormFields() {
-    listModelAllField(queryParams.value.formId, false).then(response => {
-      fields.value = response.data.rows;
-      loading.value = false;
-    });
+    if (!fieldsRequest) {
+      fieldsRequest = listModelAllField(queryParams.value.formId, false).then(response => {
+        fields.value = response.data.rows;
+      }).catch(error => {
+        fieldsRequest = undefined;
+        throw error;
+      });
+    }
+    return fieldsRequest;
   }
   
-  function loadCustomFormDataList() {
+  async function loadCustomFormDataList() {
     loading.value = true;
-    listCustomFormDatas(queryParams.value).then(response => {
+    try {
+      await loadCustomFormFields();
+      const response = await listCustomFormDatas(queryParams.value);
       dataList.value = response.data.rows;
       total.value = parseInt(response.data.total);
+    } finally {
       loading.value = false;
-    });
+    }
   }
   
   function handleQuery() {
@@ -264,14 +273,14 @@
     title.value = proxy.$t('CMS.CustomForm.AddTitle');
   }
   
-  function handleEdit(row) {
+  async function handleEdit(row) {
     form.value = {};
     const dataId = row.dataId ? row.dataId : ids.value[0];
-    getCustomFormData(queryParams.value.formId, dataId).then(response => {
-      form.value = response.data;
-      open.value = true;
-      title.value = proxy.$t('CMS.CustomForm.EditDataTitle');
-    });
+    await loadCustomFormFields();
+    const response = await getCustomFormData(queryParams.value.formId, dataId);
+    form.value = sanitizeCustomFormData(response.data, fields.value);
+    open.value = true;
+    title.value = proxy.$t('CMS.CustomForm.EditDataTitle');
   }
   
   function handleCancel() {

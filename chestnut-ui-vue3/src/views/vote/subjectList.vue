@@ -223,7 +223,7 @@
             <el-input v-if="scope.row.type==='Text'" type="text" v-model="scope.row.content"></el-input>
           </template>
         </el-table-column>
-        <el-table-column width="220">
+        <el-table-column width="240">
           <template #default="scope">
             <el-button
               plain

@@ -17,7 +17,7 @@ package com.chestnut.system.domain.dto;
 
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.system.validator.LongId;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,7 +33,7 @@ public class AuthRoleRequest {
 	private Long userId;
 
 	@XComment("{CC.SYS.USER.ROLE_IDS}")
-	@NotEmpty
+	@NotNull
 	private List<Long> roleIds;
 }
 

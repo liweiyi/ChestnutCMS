@@ -7,9 +7,9 @@ export function getSiteList() {
   })
 }
 
-export function refreshBdTongjiToken() {
+export function refreshBdTongjiToken(siteId) {
   return request({
-    url: '/cms/stat/baidu/refreshToken',
+    url: '/cms/stat/baidu/refreshToken?siteId=' + siteId,
     method: 'post'
   })
 }

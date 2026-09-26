@@ -31,6 +31,9 @@ import org.hibernate.validator.constraints.Length;
 @XComment("{API.DOC.SYS.ROLE.CREATE_ROLE_REQ}")
 public class CreateRoleRequest extends BaseDTO {
 
+    @XComment("{ENT.SYS.USER.DEPT_ID}")
+    private Long deptId;
+
 	@NotBlank
 	@Length(max = 30)
 	@XComment("{API.DOC.SYS.ROLE.ROLE_NAME}")

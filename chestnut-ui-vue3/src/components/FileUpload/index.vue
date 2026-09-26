@@ -48,7 +48,7 @@ const props = defineProps({
   // 上传接口地址
   action: {
     type: String,
-    default: "/common/upload"
+    required: true
   },
   // 上传携带的参数
   data: {
@@ -91,7 +91,7 @@ const emit = defineEmits()
 const number = ref(0)
 const uploadList = ref([])
 const baseUrl = import.meta.env.VITE_APP_BASE_API
-const uploadFileUrl = ref(import.meta.env.VITE_APP_BASE_API + props.action) // 上传文件服务器地址
+const uploadFileUrl = computed(() => import.meta.env.VITE_APP_BASE_API + props.action)
 const headers = ref({ ...proxy.$auth.getTokenHeader() })
 const fileList = ref([])
 const showTip = computed(

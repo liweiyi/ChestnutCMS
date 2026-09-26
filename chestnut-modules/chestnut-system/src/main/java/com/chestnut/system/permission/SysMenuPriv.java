@@ -120,4 +120,6 @@ public interface SysMenuPriv {
 	String SysUserResetPwd = "system:user:resetPwd";
 
     String SysUserGrant = "system:user:grant";
+
+	String SysUserImport = "system:user:import";
 }

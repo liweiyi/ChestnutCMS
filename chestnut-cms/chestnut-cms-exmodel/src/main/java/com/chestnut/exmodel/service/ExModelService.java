@@ -54,6 +54,23 @@ public class ExModelService {
 
     private final Map<String, IMetaControlType> controlTypeMap;
 
+    /**
+     * 获取栏目内容扩展模型的表单字段
+     */
+    public List<XModelFieldDataDTO> getContentModelFields(CmsCatalog catalog) {
+        String modelId = ContentExtendModelProperty.getValue(catalog.getConfigProps());
+        if (!NumberUtils.isCreatable(modelId)) {
+            return List.of();
+        }
+
+        MetaModel metaModel = this.modelService.getMetaModel(Long.valueOf(modelId));
+        return metaModel.getFields().stream().map(field -> {
+            IMetaControlType controlType = this.controlTypeMap.get(IMetaControlType.BEAN_PREFIX + field.getControlType());
+            Object defaultValue = controlType.stringAsValue(Objects.toString(field.getDefaultValue(), ""));
+            return XModelFieldDataDTO.newInstance(field, defaultValue);
+        }).toList();
+    }
+
     public List<XModelFieldDataDTO> getModelData(CmsContent content) {
 
         CmsCatalog catalog = this.catalogService.getCatalog(content.getCatalogId());

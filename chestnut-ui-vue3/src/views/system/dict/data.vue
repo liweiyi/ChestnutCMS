@@ -7,7 +7,7 @@
           plain
           icon="Plus"
           @click="handleAdd"
-          v-hasPermi="['system:dict:add','system:dict:edit']"
+          v-hasPermi="['system:dict:add']"
         >{{ $t('Common.Add') }}</el-button>
       </el-col>
       <el-col :span="1.5" class="permi-wrap">
@@ -17,7 +17,7 @@
           icon="Edit"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['system:dict:add','system:dict:edit']"
+          v-hasPermi="['system:dict:edit']"
         >{{ $t('Common.Edit') }}</el-button>
       </el-col>
       <el-col :span="1.5" class="permi-wrap">
@@ -27,7 +27,7 @@
           icon="Delete"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:dict:add','system:dict:edit']"
+          v-hasPermi="['system:dict:remove']"
         >{{ $t('Common.Delete') }}</el-button>
       </el-col>
       <el-col :span="1.5" class="permi-wrap">
@@ -85,14 +85,14 @@
             type="success"
             icon="Edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:dict:add','system:dict:edit']"
+            v-hasPermi="['system:dict:edit']"
           >{{ $t('Common.Edit') }}</el-button>
           <el-button
             link
             type="danger"
             icon="Delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['system:dict:add','system:dict:edit']"
+            v-hasPermi="['system:dict:remove']"
           >{{ $t('Common.Delete') }}</el-button>
         </template>
       </el-table-column>

@@ -20,20 +20,22 @@ import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
-
-
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.system.domain.SysMenu;
 import com.chestnut.system.domain.SysPermission;
 import com.chestnut.system.domain.dto.SavePermissionRequest;
 import com.chestnut.system.domain.vo.GetMenuPermissionVO;
-import com.chestnut.system.permission.MenuPermissionType;
+import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.permission.SysMenuPriv;
+import com.chestnut.system.permission.impl.MenuPermissionType;
 import com.chestnut.system.security.AdminUserType;
+import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.service.ISysMenuService;
 import com.chestnut.system.service.ISysPermissionService;
+import com.chestnut.system.service.impl.UserPermissionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
@@ -50,7 +52,7 @@ import java.util.Set;
  * @email 190785909@qq.com
  */
 @XComment("{API.DOC.SYS.PERMISSION.MODULE}")
-@Priv(type = AdminUserType.TYPE)
+@Priv(type = AdminUserType.TYPE, value = { SysMenuPriv.SysUserGrant, SysMenuPriv.SysRoleGrant },  mode = SaMode.OR)
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/system/permission")
@@ -62,12 +64,17 @@ public class SysPermissionController extends BaseRestController {
 	
 	private final MenuPermissionType menuPermissionType;
 
+	private final UserPermissionService userPermissionService;
+
     @XComment("{API.DOC.SYS.PERMISSION.SAVE}")
-    @Priv(type = AdminUserType.TYPE, value = { SysMenuPriv.SysUserGrant, SysMenuPriv.SysRoleGrant },  mode = SaMode.OR)
 	@Log(title = "权限设置", businessType = BusinessType.UPDATE)
 	@PostMapping
 	public R<Void> saveMenuPermission(@Validated @RequestBody SavePermissionRequest dto) {
-		this.permissionService.saveMenuPermissions(dto);
+		LoginUser operator = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkOwnerTypePermission(dto.getOwnerType(), operator);
+
+		this.permissionService.savePermissions(dto.getOwnerType(), dto.getOwner(), dto.getPermissions(), dto.getPermType(), dto.getOperator());
+		this.userPermissionService.resetLoginUser(dto.getOwnerType(), dto.getOwner());
 		return R.ok();
 	}
 
@@ -76,15 +83,17 @@ public class SysPermissionController extends BaseRestController {
 	public R<GetMenuPermissionVO> getMenuPerms(
 			@RequestParam @XComment("{API.DOC.SYS.PERMISSION.OWNER_TYPE}") String ownerType,
 			@RequestParam @XComment("{API.DOC.SYS.PERMISSION.OWNER}") String owner) {
+        LoginUser operator = StpAdminUtil.getLoginUser();
+
 		List<SysMenu> menus = this.menuService.lambdaQuery().orderByAsc(SysMenu::getOrderNum).list();
         I18nUtils.replaceI18nFields(menus, LocaleContextHolder.getLocale());
-		SysPermission permission = this.permissionService.getPermission(ownerType, owner);
+		SysPermission permission = this.permissionService.getPermission(ownerType, owner, operator);
 		Set<String> perms = Set.of();
 		if (Objects.nonNull(permission)) {
 			String json  = permission.getPermissions().get(menuPermissionType.getId());
 			perms = menuPermissionType.deserialize(json);
 		}
-		Set<String> disabledPerms = this.permissionService.getInheritedPermissionKeys(ownerType, owner, MenuPermissionType.ID);
+		Set<String> disabledPerms = this.userPermissionService.getInheritedPermissionKeys(ownerType, owner, MenuPermissionType.ID);
 		GetMenuPermissionVO vo = new GetMenuPermissionVO();
 		vo.setMenus(menus);
 		vo.setPerms(perms);

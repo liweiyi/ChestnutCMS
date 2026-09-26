@@ -29,7 +29,7 @@ export function addContent(data) {
 // 修改内容
 export function saveContent(data) {
   return request({
-    url: '/cms/content/update?contentType=' + data.contentType,
+    url: '/cms/content/update?contentId=' + data.contentId,
     method: 'post',
     data: data
   })

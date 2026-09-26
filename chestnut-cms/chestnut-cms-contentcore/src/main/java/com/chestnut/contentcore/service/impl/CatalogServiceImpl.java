@@ -49,7 +49,7 @@ import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.*;
 import com.chestnut.system.fixed.dict.YesOrNo;
-import com.chestnut.system.service.ISysPermissionService;
+import com.chestnut.system.service.impl.UserPermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
@@ -80,7 +80,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 
 	private final CmsContentMapper contentMapper;
 
-	private final ISysPermissionService permissionService;
+	private final UserPermissionService userPermissionService;
 
 	private final AsyncTaskManager asyncTaskManager;
 
@@ -192,11 +192,13 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		catalog.createBy(dto.getOperator().getUsername());
 		this.save(catalog);
 		// 授权给添加人
-		this.permissionService.grantUserPermission(
-				dto.getOperator(),
+		this.userPermissionService.grantUserPermissions(
+				dto.getOperator().getUserId(),
 				CatalogPermissionType.ID,
 				CmsPrivUtils.getAllCatalogPermissions(catalog.getCatalogId())
 		);
+		// 重置登录用户权限
+		this.userPermissionService.resetLoginUser(dto.getOperator().getUserId());
 		return catalog;
 	}
 
@@ -273,12 +275,14 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		if (saveBatch(catalogs)) {
 			// 授权给添加人
 			catalogs.forEach(catalog -> {
-				this.permissionService.grantUserPermission(
-						dto.getOperator(),
+				this.userPermissionService.grantUserPermissions(
+						dto.getOperator().getUserId(),
 						CatalogPermissionType.ID,
 						CmsPrivUtils.getAllCatalogPermissions(catalog.getCatalogId())
 				);
 			});
+			// 重置登录用户权限
+			this.userPermissionService.resetLoginUser(dto.getOperator().getUserId());
 		}
 	}
 

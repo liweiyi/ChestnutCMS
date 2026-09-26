@@ -20,6 +20,8 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.InternalURL;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IPublishService;
 import freemarker.template.TemplateException;
@@ -61,6 +63,14 @@ public class InternalDataType_Content implements IInternalDataType {
         CmsContent content = contentService.dao().getById(requestData.getDataId());
         Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", requestData.getDataId()));
 
+        return this.publishService.getContentPageData(content, requestData);
+    }
+
+    @Override
+    public String getPageViewData(RequestData requestData) throws IOException, TemplateException {
+        CmsContent content = contentService.dao().getById(requestData.getDataId());
+        Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", requestData.getDataId()));
+        Assert.isTrue(ContentStatus.isPublished(content.getStatus()), ContentCoreErrorCode.CONTENT_NOT_FOUND::exception);
         return this.publishService.getContentPageData(content, requestData);
     }
 

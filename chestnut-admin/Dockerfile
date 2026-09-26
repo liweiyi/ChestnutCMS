@@ -32,7 +32,7 @@ ENV TZ="Asia/Shanghai" \
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone \
 	&& mkdir -p logs
     
-VOLUME ["/home/app/logs","/home/app/uploadPath","/home/app/wwwroot_release","/home/app/_xy_member"]
+VOLUME ["/home/app/logs","/home/app/uploadPath","/home/app/private_sys_files","/home/app/wwwroot_release","/home/app/_xy_member"]
 
 EXPOSE $SERVER_PORT $NETTY_SOCKET_PORT
 

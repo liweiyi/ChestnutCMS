@@ -2,13 +2,11 @@ import axios from 'axios'
 import { ElNotification , ElMessageBox, ElMessage, ElLoading } from 'element-plus'
 import errorCode from '@/utils/errorCode'
 import { tansParams, blobValidate } from '@/utils/chestnut'
-import cache from '@/plugins/cache'
 import { saveAs } from 'file-saver'
 import useUserStore from '@/store/modules/user'
 import { i18n } from '@/i18n'
 import cms from '@/plugins/cms'
 import auth from '@/plugins/auth'
-import router from '../router'
 
 let downloadLoadingInstance
 // 是否显示重新登录

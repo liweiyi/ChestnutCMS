@@ -304,6 +304,7 @@ public class ContentCoreListener {
 			}
 			while (true) {
 				LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<CmsContent>()
+						.select(CmsContent::getContentId)
 						.eq(CmsContent::getCatalogId, mergeCatalog.getCatalogId())
 						.gt(CmsContent::getContentId, lastContentId)
 						.orderByAsc(CmsContent::getContentId);
@@ -312,7 +313,7 @@ public class ContentCoreListener {
 					for (CmsContent content : page.getRecords()) {
 						AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
 								"正在合并内容：" + mergeCatalog.getName() + "[" + count + " / " + total + "]");
-						this.contentService.moveContent(content, targetCatalog, event.getOperator());
+						this.contentService.moveContent(content.getContentId(), targetCatalog, event.getOperator());
 						count++;
 					}
 					lastContentId = page.getRecords().get(page.getRecords().size() - 1).getContentId();

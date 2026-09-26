@@ -24,6 +24,7 @@ import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.dto.CheckCaptchaRequest;
+import com.chestnut.system.domain.vo.GetCaptchaVO;
 import com.chestnut.system.security.config.LoginSecurity;
 import com.chestnut.system.security.config.LoginSecurityConfigType;
 import com.chestnut.system.service.ISecurityConfigService;
@@ -82,8 +83,10 @@ public class CaptchaController extends BaseRestController {
 				.put("messageConfigId", Objects.requireNonNullElse(config.getCaptchaMessageConfigId(), 0L))
 				.put("messageTemplateId", Objects.requireNonNullElse(config.getCaptchaMessageTemplateId(), 0L)));
 		Object o = captchaType.create(captchaData);
-		return R.ok(o);
+        return R.ok(new GetCaptchaVO(config.getCaptchaDuration(), o));
 	}
+
+
 
     @XComment("{API.DOC.CAPTCHA.CHECK_CAPTCHA}")
 	@IgnoreDemoMode

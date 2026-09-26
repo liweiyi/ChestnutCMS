@@ -39,7 +39,17 @@ public enum SystemUserTips {
     /**
      * 导入完成，成功数：{0}，失败数：{1}
      */
-    IMPORT_SUCCESS;
+    IMPORT_SUCCESS,
+
+    /**
+     * 部门不存在或存在同名部门：{0}
+     */
+    DEPT_NOT_EXISTS_OR_DUPLICATE,
+
+    /**
+     * 越权访问部门：{0}
+     */
+    DEPT_ACCESS_DENY;
 
     public String locale(Object... args) {
         return I18nUtils.parse("TIPS.SYS.USER." + this.name(), args);

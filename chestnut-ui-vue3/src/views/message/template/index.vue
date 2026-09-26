@@ -144,7 +144,8 @@
             <el-input type="textarea" :rows="10" v-model="form.content" />
           </div>
           <div v-else style="width: 100%;">
-            <editor v-if="form.type === 'Email'" v-model="form.content" :min-height="192"/>
+            <editor v-if="form.type === 'Email'" v-model="form.content" :min-height="192"
+                    upload-action="/message/template/image/upload"/>
             <div v-if="form.type === 'DingTalkRobot' || form.type === 'FeiShuRobot'">
               <code-mirror 
                 class="template-editor"

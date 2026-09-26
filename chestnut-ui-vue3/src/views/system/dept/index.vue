@@ -57,7 +57,7 @@
       :data="deptList"
       row-key="deptId"
       :default-expand-all="isExpandAll"
-      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+      :tree-props="{ children: 'children' }"
     >
       <el-table-column
         prop="deptName"
@@ -341,7 +341,7 @@ function getList() {
     if (valid) {
       loading.value = true;
       listDept(queryParams).then((response) => {
-        deptList.value = proxy.handleTree(response.data.rows, "0", "deptId");
+        deptList.value = response.data.rows;
         loading.value = false;
       });
     }
@@ -389,7 +389,7 @@ function handleAdd(row) {
   open.value = true;
   title.value = proxy.$t("System.Dept.Dialog.Add");
   listDept().then((response) => {
-    deptOptions.value = proxy.handleTree(response.data.rows, "0", "deptId");
+    deptOptions.value = response.data.rows;
   });
 }
 

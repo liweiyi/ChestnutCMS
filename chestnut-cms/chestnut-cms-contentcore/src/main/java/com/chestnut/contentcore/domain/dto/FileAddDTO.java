@@ -16,8 +16,10 @@
 package com.chestnut.contentcore.domain.dto;
 
 import com.chestnut.common.annotation.XComment;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,7 +39,8 @@ public class FileAddDTO {
 	 * 文件/目录名
 	 */
 	@XComment("{API.DOC.CMS.FILE.FILE_NAME}")
-	@NotEmpty
+	@NotBlank
+	@Pattern(regexp = "^[^/\\\\]*$", message = "{VALIDATOR.CMS.FILE_NAME.REGEXP_ERR}")
 	private String fileName;
 
 	/*

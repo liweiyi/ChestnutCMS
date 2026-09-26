@@ -18,12 +18,18 @@ package com.chestnut.seo.controller;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
+import com.chestnut.common.security.domain.LoginUser;
+import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.perms.CatalogPermissionType;
+import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.seo.service.BaiduPushService;
+import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.security.AdminUserType;
 
 
+import com.chestnut.system.security.StpAdminUtil;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,14 +55,18 @@ public class SitePushController extends CmsRestController {
 
 	private final BaiduPushService baiduPushService;
 
+	private final IContentService contentService;
+
 	@XComment("{API.DOC.CMS.SEO.SITE_PUSH.BAIDU_PUSH}")
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/baidu_push")
 	public R<List<BaiduPushService.BaiduPushResult>> generateSitemap(@RequestBody @NotEmpty @XComment("{API.DOC.CMS.SEO.SITE_PUSH.CONTENT_IDS}") List<Long> contentIds) {
+		CmsContent content = contentService.dao().getById(contentIds.get(0));
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.EditContent.getPermissionKey(content.getCatalogId()), loginUser);
+
 		CmsSite site = getCurrentSite();
-
 		List<BaiduPushService.BaiduPushResult> results = baiduPushService.pushContents(site, contentIds);
-
 		return R.ok(results);
 	}
 }

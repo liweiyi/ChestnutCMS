@@ -17,27 +17,23 @@ package com.chestnut.cms.member.controller.front;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.chestnut.article.ArticleContent;
 import com.chestnut.article.ArticleContentType;
-
-
 import com.chestnut.article.IArticleBodyFormat;
-import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.format.ArticleBodyFormat_RichText;
 import com.chestnut.article.service.IArticleService;
 import com.chestnut.cms.member.domain.dto.ArticleContributeDTO;
 import com.chestnut.cms.member.domain.vo.MemberContentVO;
 import com.chestnut.cms.member.properties.EnableContributeProperty;
+import com.chestnut.cms.member.service.MemberContributeService;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
-import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.HtmlUtils;
-import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
@@ -48,18 +44,14 @@ import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.ResourceUploadDTO;
 import com.chestnut.contentcore.fixed.dict.ContentStatus;
 import com.chestnut.contentcore.listener.event.AfterContentDeleteEvent;
-import com.chestnut.contentcore.listener.event.AfterContentSaveEvent;
-import com.chestnut.contentcore.listener.event.BeforeContentSaveEvent;
 import com.chestnut.contentcore.service.ICatalogService;
 import com.chestnut.contentcore.service.IContentService;
 import com.chestnut.contentcore.service.IResourceService;
 import com.chestnut.contentcore.service.ISiteService;
-import com.chestnut.contentcore.util.CatalogUtils;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.member.security.MemberUserType;
 import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.system.annotation.IgnoreDemoMode;
-import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -79,8 +71,6 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static com.chestnut.common.utils.SortUtils.getDefaultSortValue;
 
 /**
  * 会员个人中心
@@ -107,7 +97,12 @@ public class MemberContributeApiController extends BaseRestController implements
 
 	private final IArticleService articleService;
 
+	private final ArticleContentType articleContentType;
+
+	private final MemberContributeService memberContributeService;
+
 	private ApplicationContext applicationContext;
+
 
 	@XComment("{API.DOC.CMS.CMS_MEMBER.DELETE_CONTRIBUTE}")
 	@IgnoreDemoMode
@@ -151,15 +146,12 @@ public class MemberContributeApiController extends BaseRestController implements
 	@PostMapping
 	public R<Void> articleContribute(@RequestBody @Validated ArticleContributeDTO dto) {
 		CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
-		if (catalog == null) {
-			return R.fail("参数`catalogId`错误：" + dto.getCatalogId());
-		}
+		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", dto.getCatalogId()));
 		if (!EnableContributeProperty.getValue(catalog.getConfigProps())) {
 			return R.fail("参数`catalogId`异常：" + dto.getCatalogId());
 		}
 		String contentHtml = HtmlUtils.cleanRichText(dto.getContentHtml());
-		Assert.isTrue(StringUtils.isNotBlank(contentHtml),
-				() -> CommonErrorCode.NOT_EMPTY.exception("contentHtml"));
+		Assert.isTrue(StringUtils.isNotBlank(contentHtml), () -> CommonErrorCode.NOT_EMPTY.exception("contentHtml"));
 		dto.setContentHtml(contentHtml);
 
 		Operator operator = Operator.of(StpMemberUtil.getLoginUser());
@@ -167,88 +159,8 @@ public class MemberContributeApiController extends BaseRestController implements
 		if (Objects.isNull(articleBodyFormat)) {
 			dto.setFormat(ArticleBodyFormat_RichText.ID);
 		}
-		if (IdUtils.validate(dto.getContentId())) {
-			CmsContent cmsContent = this.contentService.dao().getById(dto.getContentId());
-			if (!operator.getUserId().equals(cmsContent.getContributorId())) {
-				return R.fail("内容ID错误");
-			}
-			if (!ContentStatus.isDraft(cmsContent.getStatus())) {
-				return R.fail("只能编辑待审核的初稿文章");
-			}
-			cmsContent.setTitle(dto.getTitle());
-			cmsContent.setSummary(dto.getSummary());
-			if (StringUtils.isNotEmpty(dto.getLogo())) {
-				cmsContent.setImages(List.of(dto.getLogo()));
-			} else {
-				cmsContent.setImages(List.of());
-			}
-			cmsContent.setTags(dto.getTags().toArray(String[]::new));
-			// 重置发布状态
-			cmsContent.setStatus(ContentStatus.DRAFT);
-			cmsContent.updateBy(operator.getUsername());
-			if (!dto.getCatalogId().equals(cmsContent.getCatalogId())) {
-				CmsCatalog fromCatalog = this.catalogService.getCatalog(cmsContent.getCatalogId());
-				CmsCatalog toCatalog = this.catalogService.getCatalog(dto.getCatalogId());
-				cmsContent.setCatalogId(toCatalog.getCatalogId());
-				cmsContent.setCatalogAncestors(toCatalog.getAncestors());
-				cmsContent.setTopCatalog(CatalogUtils.getTopCatalog(toCatalog));
-				cmsContent.setSortFlag(getDefaultSortValue());
-				// 目标栏目内容数量+1
-				this.catalogService.changeContentCount(toCatalog.getCatalogId(), 1);
-				// 源栏目内容数量-1
-				this.catalogService.changeContentCount(fromCatalog.getCatalogId(), -1);
-			}
-			CmsArticleDetail articleDetail = this.articleService.dao().getById(cmsContent.getContentId());
-			articleDetail.setContentHtml(dto.getContentHtml());
-			articleDetail.setFormat(dto.getFormat());
 
-			ArticleContent content = new ArticleContent();
-			content.setContentEntity(cmsContent);
-			content.setExtendEntity(articleDetail);
-			content.setOperator(operator);
-            content.setParams(dto.getParams());
-			applicationContext.publishEvent(new BeforeContentSaveEvent(this, content, false));
-			content.save();
-			applicationContext.publishEvent(new AfterContentSaveEvent(this, content, false));
-		} else {
-			CmsContent contentEntity = new CmsContent();
-			contentEntity.setContentType(ArticleContentType.ID);
-			contentEntity.setContentId(IdUtils.getSnowflakeId());
-			contentEntity.setCatalogId(dto.getCatalogId());
-			contentEntity.setTitle(dto.getTitle());
-			contentEntity.setSummary(dto.getSummary());
-			contentEntity.setSiteId(catalog.getSiteId());
-			contentEntity.setLinkFlag(YesOrNo.NO);
-			contentEntity.setIsLock(YesOrNo.NO);
-			if (StringUtils.isNotEmpty(dto.getLogo())) {
-				contentEntity.setImages(List.of(dto.getLogo()));
-			} else {
-				contentEntity.setImages(List.of());
-			}
-			if (StringUtils.isNotEmpty(dto.getTags())) {
-				contentEntity.setTags(dto.getTags().toArray(String[]::new));
-			}
-			contentEntity.setContributorId(StpMemberUtil.getLoginIdAsLong());
-
-			CmsArticleDetail extendEntity = new CmsArticleDetail();
-			extendEntity.setContentId(contentEntity.getContentId());
-			extendEntity.setSiteId(contentEntity.getSiteId());
-			extendEntity.setContentHtml(dto.getContentHtml());
-			extendEntity.setFormat(dto.getFormat());
-			extendEntity.setDownloadRemoteImage(YesOrNo.NO);
-
-			ArticleContent content = new ArticleContent();
-			content.setContentEntity(contentEntity);
-			content.setExtendEntity(extendEntity);
-            content.setParams(dto.getParams());
-			if (content.hasExtendEntity() && StringUtils.isEmpty(extendEntity.getContentHtml())) {
-				throw CommonErrorCode.NOT_EMPTY.exception("contentHtml");
-			}
-			content.setOperator(operator);
-			applicationContext.publishEvent(new BeforeContentSaveEvent(this, content, true));
-			content.add();
-			applicationContext.publishEvent(new AfterContentSaveEvent(this, content, true));
-		}
+		memberContributeService.contribute(dto, operator);
 		return R.ok();
 	}
 

@@ -21,6 +21,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
@@ -28,20 +29,25 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.security.web.TableData;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
+import com.chestnut.contentcore.core.IProperty;
+import com.chestnut.contentcore.core.IPublishPipeProp;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.*;
+import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 import com.chestnut.contentcore.domain.vo.ListContentVO;
-import com.chestnut.contentcore.enums.ContentCoreTips;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentAttribute;
-import com.chestnut.contentcore.fixed.dict.ContentCopyType;
 import com.chestnut.contentcore.listener.event.AfterContentEditorInitEvent;
+import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.perms.CatalogPermissionType.CatalogPrivItem;
 import com.chestnut.contentcore.properties.ShortTitleLabelProperty;
 import com.chestnut.contentcore.properties.SubTitleLabelProperty;
@@ -67,7 +73,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 内容管理控制器
@@ -91,6 +96,8 @@ public class ContentController extends CmsRestController {
 	private final IPublishService publishService;
 
 	private final IResourceService resourceService;
+
+	private final IPublishPipeService publishPipeService;
 
 	private final ApplicationContext applicationContext;
 
@@ -156,16 +163,61 @@ public class ContentController extends CmsRestController {
 			@PathVariable("contentType") @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}") String contentType,
 			@PathVariable("contentId") @XComment("{API.DOC.CMS.CONTENT.CONTENT_ID}") Long contentId
 	) {
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		IContentType ct = ContentCoreUtils.getContentType(contentType);
 		// 获取初始化数据
-		ContentVO vo = ct.initEditor(catalogId, contentId);
-		vo.setShowSubTitle(ShowContentSubTitlePreference.getValue(StpAdminUtil.getLoginUser()));
-		CmsCatalog catalog = catalogService.getCatalog(catalogId);
+		CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
+		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalogId));
+		CmsContent contentEntity = null;
+		if (IdUtils.validate(contentId)) {
+			contentEntity = this.contentService.dao().getById(contentId);
+			Assert.notNull(contentEntity, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+			Assert.isTrue(contentEntity.getContentType().equals(contentType), ContentCoreErrorCode.DTO_NOT_MATCH_CONTENT_TYPE::exception);
+			if (!catalog.getCatalogId().equals(contentEntity.getCatalogId())) {
+				catalog = this.catalogService.getCatalog(catalogId); // 纠正catalogId
+			}
+			// 校验用户栏目权限
+			PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.View.getPermissionKey(contentEntity.getCatalogId()), loginUser);
+		} else {
+			// 校验用户栏目权限
+			PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.View.getPermissionKey(catalogId), loginUser);
+		}
+		ContentVO vo = ct.initEditor(catalog, contentEntity);
+		vo.setShowSubTitle(ShowContentSubTitlePreference.getValue(loginUser));
 		CmsSite site = siteService.getSite(catalog.getSiteId());
 		String shortTitleLabel = ShortTitleLabelProperty.getValue(catalog.getConfigProps(), site.getConfigProps());
 		String subTitleLabel = SubTitleLabelProperty.getValue(catalog.getConfigProps(), site.getConfigProps());
 		vo.setShortTitleLabel(shortTitleLabel);
 		vo.setSubTitleLabel(subTitleLabel);
+		vo.setCatalogName(catalog.getName());
+		if (Objects.nonNull(contentEntity)) {
+			// 内容引导图缩略图处理
+			resourceService.dealDefaultThumbnail(site, vo.getImages(), thumbnails -> {
+				vo.setImagesSrc(thumbnails);
+				vo.setLogoSrc(thumbnails.get(0));
+			});
+			// 扩展属性
+			Map<String, Object> configProps = ConfigPropertyUtils.parseConfigProps(contentEntity.getConfigProps(), IProperty.UseType.Content);
+			vo.setConfigProps(configProps);
+			// 发布通道数据
+			List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
+					IPublishPipeProp.PublishPipePropUseType.Content, contentEntity.getPublishPipeProps());
+			vo.setPublishPipeProps(publishPipeProps);
+		} else {
+			vo.setContentId(IdUtils.getSnowflakeId());
+			vo.setCatalogId(catalog.getCatalogId());
+			vo.setContentType(ct.getId());
+			// 扩展属性
+			Map<String, Object> configProps = ConfigPropertyUtils.parseConfigProps(Map.of(), IProperty.UseType.Content);
+			vo.setConfigProps(configProps);
+			// 发布通道初始数据
+			List<CmsPublishPipe> publishPipes = this.publishPipeService.getPublishPipes(catalog.getSiteId());
+			vo.setPublishPipe(publishPipes.stream().map(CmsPublishPipe::getCode).toArray(String[]::new));
+			// 发布通道模板数据
+			List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(catalog.getSiteId(),
+					IPublishPipeProp.PublishPipePropUseType.Content, null);
+			vo.setPublishPipeProps(publishPipeProps);
+		}
 		// 事件扩展
 		this.applicationContext.publishEvent(new AfterContentEditorInitEvent(this, vo));
 		return R.ok(vo);
@@ -178,8 +230,11 @@ public class ContentController extends CmsRestController {
 			throws IOException {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		IContentType ct = ContentCoreUtils.getContentType(contentType);
-		IContent<?> content = ct.readFrom(request.getInputStream());
-		PermissionUtils.checkPermission(CatalogPrivItem.AddContent.getPermissionKey(content.getCatalogId()), loginUser);
+
+		ContentDTO dto = ct.parseRequest(request.getInputStream());
+		PermissionUtils.checkPermission(CatalogPrivItem.AddContent.getPermissionKey(dto.getCatalogId()), loginUser);
+
+		IContent<?> content = ct.dto2content(dto);
 		content.setOperator(Operator.of(loginUser));
 
 		AsyncTask task = this.contentService.addContent(content);
@@ -189,17 +244,17 @@ public class ContentController extends CmsRestController {
 	@XComment("{API.DOC.CMS.CONTENT.UPDATE}")
 	@Log(title = "UpdateContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/update")
-	public R<Map<String, Object>> saveContent(@RequestParam("contentType") @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}") String contentType, HttpServletRequest request)
+	public R<Map<String, Object>> saveContent(@RequestParam("contentId") @XComment("{API.DOC.CMS.CONTENT.CONTENT_TYPE}") @LongId Long contentId, HttpServletRequest request)
 			throws IOException {
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
-		IContentType ct = ContentCoreUtils.getContentType(contentType);
 
-		IContent<?> content = ct.readFrom(request.getInputStream());
-		content.setOperator(Operator.of(loginUser));
-		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(content.getCatalogId()),
-				StpAdminUtil.getLoginUser());
+		CmsContent cmsContent = contentService.dao().getById(contentId);
+		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 
-		AsyncTask task = this.contentService.saveContent(content);
+		ContentDTO dto = ct.parseRequest(request.getInputStream());
+		this.contentService.checkSaveContentPermission(cmsContent.getCatalogId(), dto.getCatalogId(), loginUser);
+
+		AsyncTask task = this.contentService.saveContent(dto, loginUser);
 		return R.ok(Map.of("taskId", task.getTaskId()));
 	}
 
@@ -215,11 +270,11 @@ public class ContentController extends CmsRestController {
 	@Log(title = "PublishContent", businessType = BusinessType.OTHER)
 	@PostMapping("/publish")
 	public R<String> publish(@RequestBody @Validated PublishContentDTO publishContentDTO) throws TemplateException, IOException {
-		CmsContent content = contentService.dao().getById(publishContentDTO.getContentIds().get(0));
-		LoginUser loginUser = StpAdminUtil.getLoginUser();
-		PermissionUtils.checkPermission(CatalogPrivItem.Publish.getPermissionKey(content.getCatalogId()), loginUser);
-
 		List<CmsContent> list = this.contentService.dao().listByIds(publishContentDTO.getContentIds());
+		for (CmsContent content : list) {
+			LoginUser loginUser = StpAdminUtil.getLoginUser();
+			PermissionUtils.checkPermission(CatalogPrivItem.Publish.getPermissionKey(content.getCatalogId()), loginUser);
+		}
 		AsyncTask task = this.publishService.publishContents(list, StpAdminUtil.getLoginUser());
 		return R.ok(task.getTaskId());
 	}
@@ -228,7 +283,13 @@ public class ContentController extends CmsRestController {
 	@Log(title = "LockContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/lock/{contentId}")
 	public R<String> lock(@PathVariable("contentId") @LongId @XComment("{API.DOC.CMS.CONTENT.CONTENT_ID}") Long contentId) {
-		this.contentService.lock(contentId, StpAdminUtil.getLoginUser().getUsername());
+		CmsContent content = contentService.dao().getById(contentId);
+		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(content.getCatalogId()), loginUser);
+
+		this.contentService.lock(content, StpAdminUtil.getLoginUser().getUsername());
 		return R.ok(StpAdminUtil.getLoginUser().getUsername());
 	}
 
@@ -236,7 +297,13 @@ public class ContentController extends CmsRestController {
 	@Log(title = "UnlockContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/unlock/{contentId}")
 	public R<Void> unLock(@PathVariable("contentId") @LongId @XComment("{API.DOC.CMS.CONTENT.CONTENT_ID}") Long contentId) {
-		this.contentService.unLock(contentId, StpAdminUtil.getLoginUser().getUsername());
+		CmsContent content = contentService.dao().getById(contentId);
+		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(content.getCatalogId()), loginUser);
+
+		this.contentService.unLock(content, StpAdminUtil.getLoginUser().getUsername());
 		return R.ok();
 	}
 
@@ -277,7 +344,16 @@ public class ContentController extends CmsRestController {
 	@Log(title = "SortContent", businessType = BusinessType.UPDATE)
 	@PostMapping("/sort")
 	public R<Void> sort(@RequestBody @Validated SortContentDTO dto) {
-		this.contentService.sort(dto);
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		CmsContent sortContent = this.contentService.dao().getById(dto.getContentId());
+		Assert.notNull(sortContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", dto.getContentId()));
+		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(sortContent.getCatalogId()), loginUser);
+
+		CmsContent targetContent = this.contentService.dao().getById(dto.getTargetContentId());
+		Assert.notNull(targetContent, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", dto.getTargetContentId()));
+		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(targetContent.getCatalogId()), loginUser);
+
+		this.contentService.sort(sortContent, targetContent, loginUser);
 		return R.ok();
 	}
 
@@ -309,21 +385,29 @@ public class ContentController extends CmsRestController {
 	@Log(title = "AddContentAttr", businessType = BusinessType.UPDATE)
 	@PostMapping("/attr")
 	public R<Void> addContentsAttribute(@RequestBody @Validated ChangeContentAttrDTO dto) {
-		this.contentService.dao().listByIds(dto.getContentIds()).forEach(content -> {
-			int attributes = ContentAttribute.append(content.getAttributes(), ContentAttribute.bit(dto.getAttr()));
-			this.contentService.dao().lambdaUpdate().set(CmsContent::getAttributes, attributes).eq(CmsContent::getContentId, content.getContentId()).update();
-		});
-		return R.ok();
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		List<CmsContent> contents = this.contentService.dao().listByIds(dto.getContentIds());
+        for (CmsContent c : contents) {
+			PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(c.getCatalogId()), loginUser);
+
+            int attributes = ContentAttribute.append(c.getAttributes(), ContentAttribute.bit(dto.getAttr()));
+            this.contentService.dao().lambdaUpdate().set(CmsContent::getAttributes, attributes).eq(CmsContent::getContentId, c.getContentId()).update();
+        }
+        return R.ok();
 	}
 
 	@XComment("{API.DOC.CMS.CONTENT.REMOVE_ATTR}")
 	@Log(title = "RemoveContentAttr", businessType = BusinessType.UPDATE)
 	@PostMapping("/attr/delete")
 	public R<Void> removeContentsAttribute(@RequestBody @Validated ChangeContentAttrDTO dto) {
-		this.contentService.dao().listByIds(dto.getContentIds()).forEach(content -> {
-			int attributes = ContentAttribute.remove(content.getAttributes(), ContentAttribute.bit(dto.getAttr()));
-			this.contentService.dao().lambdaUpdate().set(CmsContent::getAttributes, attributes).eq(CmsContent::getContentId, content.getContentId()).update();
-		});
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		List<CmsContent> contents = this.contentService.dao().listByIds(dto.getContentIds());
+		for (CmsContent c : contents) {
+			PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(c.getCatalogId()), loginUser);
+
+			int attributes = ContentAttribute.remove(c.getAttributes(), ContentAttribute.bit(dto.getAttr()));
+			this.contentService.dao().lambdaUpdate().set(CmsContent::getAttributes, attributes).eq(CmsContent::getContentId, c.getContentId()).update();
+		}
 		return R.ok();
 	}
 }

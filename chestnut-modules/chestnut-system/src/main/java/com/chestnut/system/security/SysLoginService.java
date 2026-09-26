@@ -22,20 +22,25 @@ import com.chestnut.common.security.enums.DeviceType;
 import com.chestnut.common.utils.IP2RegionUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.system.domain.SysDept;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.domain.dto.LoginBody;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
-
 import com.chestnut.system.fixed.dict.UserStatus;
-import com.chestnut.system.service.*;
+import com.chestnut.system.service.ISecurityConfigService;
+import com.chestnut.system.service.ISysDeptService;
+import com.chestnut.system.service.ISysLogininforService;
+import com.chestnut.system.service.ISysUserService;
+import com.chestnut.system.service.impl.UserPermissionService;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -56,8 +61,8 @@ public class SysLoginService {
 	private final ISysLogininforService logininfoService;
 
 	private final ISecurityConfigService securityConfigService;
-	
-	private final ISysPermissionService permissionService;
+
+	private final UserPermissionService userPermissionService;
 
 	/**
 	 * 登录验证
@@ -69,10 +74,14 @@ public class SysLoginService {
 		// 验证码校验
 		this.securityConfigService.validateLoginCaptcha(loginBody);
 		// 查找用户
-		SysUser user = this.userService.lambdaQuery().eq(SysUser::getUserName, loginBody.getUsername()).one();
-		if (Objects.isNull(user)) {
+		List<SysUser> users = this.userService.lambdaQuery()
+				.eq(SysUser::getUserName, loginBody.getUsername())
+				.or().eq(SysUser::getPhoneNumber, loginBody.getUsername())
+				.or().eq(SysUser::getEmail, loginBody.getUsername()).list();
+		if (users.size() != 1) {
 			throw SysErrorCode.USER_NOT_EXISTS.exception();
 		}
+		SysUser user = users.get(0);
 		if (user.isLocked()) {
 			throw SysErrorCode.USER_LOCKED
 					.exception(Objects.isNull(user.getLockEndTime()) ? "forever" : user.getLockEndTime().toString());
@@ -103,8 +112,11 @@ public class SysLoginService {
         user.setLoginIp(ServletUtils.getIpAddr(ServletUtils.getRequest()));
         user.setLoginDate(LocalDateTime.now());
         userService.updateById(user);
-        deptService.getDept(user.getDeptId()).ifPresent(d -> user.setDeptName(d.getDeptName()));
-        // 生成token
+		SysDept dept = deptService.getDept(user.getDeptId());
+		if (Objects.nonNull(dept)) {
+			user.setDeptName(dept.getDeptName());
+		}
+		// 生成token
         LoginUser loginUser = createLoginUser(user);
         StpAdminUtil.login(user.getUserId(), DeviceType.PC.value());
         loginUser.setToken(StpAdminUtil.getTokenValueByLoginId(user.getUserId()));
@@ -129,7 +141,7 @@ public class SysLoginService {
 		loginUser.setBrowser(ua.getBrowser() + "/" + ua.getBrowserVersion());
 		loginUser.setUser(user);
 
-		Set<String> permissions = this.permissionService.getUserPermissions(user.getUserId(), null);
+		Set<String> permissions = this.userPermissionService.getLoginUserPermissions(loginUser);
 		loginUser.setPermissions(permissions.stream().toList());
 		return loginUser;
 	}

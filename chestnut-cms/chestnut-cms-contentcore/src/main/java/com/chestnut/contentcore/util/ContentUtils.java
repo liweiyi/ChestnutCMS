@@ -78,11 +78,13 @@ public class ContentUtils {
         list.forEach(vo -> {
             if (IdUtils.validate(vo.getCopyId())) {
                 CmsContent copySourceContent = copySourceContents.get(vo.getCopyId());
-                String siteName = null;
-                String catalogName = null;
+                String title = "";
+                String siteName = "";
+                String catalogName = "";
                 if (Objects.isNull(copySourceContent)) {
                     siteName = ContentCoreTips.MISSING_COPY_SOURCE.locale();
                 } else {
+                    title = copySourceContent.getTitle();
                     CmsSite copySourceSite = siteMap.get(copySourceContent.getSiteId());
                     if (Objects.isNull(copySourceSite)) {
                         copySourceSite = siteService.getSite(copySourceContent.getSiteId());
@@ -105,7 +107,7 @@ public class ContentUtils {
                     }
                 }
                 ContentCopyType.ContentCopyInfo copyInfo = new ContentCopyType.ContentCopyInfo(vo.getCopyType(),
-                        vo.getCopyId(), siteName, catalogName, copySourceContent.getTitle());
+                        vo.getCopyId(), siteName, catalogName, title);
                 vo.setCopyInfo(copyInfo);
             }
         });

@@ -40,7 +40,19 @@ public class QueryRoleUserRequest {
     @XComment("{API.DOC.SYS.ROLE.USER_NAME}")
     private String userName;
 
+    @Length(max = 30)
+    @XComment("{API.DOC.SYS.ROLE.NICK_NAME}")
+    private String nickName;
+
+    @Length(max = 30)
+    @XComment("{API.DOC.SYS.ROLE.REAL_NAME}")
+    private String realName;
+
     @Length(max = 20)
     @XComment("{API.DOC.SYS.ROLE.PHONE_NUMBER}")
     private String phoneNumber;
+
+    @Length(max = 20)
+    @XComment("Email")
+    private String email;
 }

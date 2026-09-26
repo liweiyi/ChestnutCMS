@@ -15,9 +15,11 @@
  */
 package com.chestnut.contentcore.util;
 
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.InternalURL;
+import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.exception.InternalUrlParseException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -173,5 +175,18 @@ public class InternalUrlUtils {
 		}
 		html.append(contentHtml.substring(index));
 		return html.toString();
+	}
+
+	/**
+	 * 校验指定url是否是内部链接且指向了另一个链接类型数据，主要针对链接内容和链接栏目，避免出现循环调用
+	 */
+	public static void checkCircularDependencies(String url) {
+		if (!isInternalUrl(url)) {
+			return;
+		}
+		InternalURL internalURL = InternalURL.parse(url);
+		IInternalDataType idt = ContentCoreUtils.getInternalDataType(internalURL.getType());
+		Assert.isFalse(idt.isLinkData(internalURL.getId()),
+				ContentCoreErrorCode.DENY_LINK_TO_LINK_INTERNAL_DATA::exception);
 	}
 }

@@ -16,7 +16,9 @@
 package com.chestnut.contentcore.core;
 
 import com.chestnut.contentcore.domain.BCmsContent;
+import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.domain.vo.ContentVO;
 
 import java.io.InputStream;
@@ -73,24 +75,32 @@ public interface IContentType extends Comparable<IContentType> {
 	/**
 	 * 加载内容数据，根据cmsContent.contentId拉取内容扩展表数据
 	 * 
-	 * @param xContent
+	 * @param xContent CmsContent
 	 */
 	IContent<?> loadContent(CmsContent xContent);
 
-    /**
-     * 从输入流读取内容数据
-     * 
-     * @param is 输入流
-     */
-    IContent<?> readFrom(InputStream is);
+	/**
+	 * 请求输入流转DTO
+	 *
+	 * @param is 输入流
+	 * @return ContentDTO
+	 */
+	ContentDTO parseRequest(InputStream is);
+
+	/**
+	 * DTO 转 IContent
+	 * @param dto dto
+	 * @return IContent
+	 */
+	IContent<?> dto2content(ContentDTO dto);
     
     /**
      * 初始化内容编辑页面数据
      * 
-     * @param catalogId 栏目ID
-     * @param contentId 内容ID
+     * @param catalog 栏目
+     * @param content 内容
      */
-    ContentVO initEditor(Long catalogId, Long contentId);
+    ContentVO initEditor(CmsCatalog catalog, CmsContent content);
 
     /**
      * 恢复内容扩展实体备份表数据

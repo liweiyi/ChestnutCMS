@@ -15,32 +15,39 @@
  */
 package com.chestnut.system.service.impl;
 
-import cn.idev.excel.context.AnalysisContext;
-import cn.idev.excel.read.listener.ReadListener;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.conditions.update.LambdaUpdateChainWrapper;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.SecurityUtils;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
-import com.chestnut.common.validation.BeanValidators;
 import com.chestnut.system.SysConstants;
 import com.chestnut.system.config.SystemConfig;
-import com.chestnut.system.domain.*;
+import com.chestnut.system.domain.SysDept;
+import com.chestnut.system.domain.SysUser;
+import com.chestnut.system.domain.SysUserPost;
+import com.chestnut.system.domain.SysUserRole;
 import com.chestnut.system.domain.dto.*;
-import com.chestnut.system.enums.PermissionOwnerType;
 import com.chestnut.system.exception.SysErrorCode;
-import com.chestnut.system.exception.SystemUserTips;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
 import com.chestnut.system.fixed.dict.Gender;
 import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.listener.event.AfterSysUserAddEvent;
-import com.chestnut.system.mapper.*;
+import com.chestnut.system.listener.event.AfterSysUserUpdateEvent;
+import com.chestnut.system.mapper.SysUserMapper;
+import com.chestnut.system.mapper.SysUserPostMapper;
+import com.chestnut.system.mapper.SysUserRoleMapper;
+import com.chestnut.system.permission.impl.UserPermissionOwnerType;
 import com.chestnut.system.security.StpAdminUtil;
-import com.chestnut.system.service.*;
-import jakarta.validation.Validator;
+import com.chestnut.system.service.ISecurityConfigService;
+import com.chestnut.system.service.ISysDeptService;
+import com.chestnut.system.service.ISysPermissionService;
+import com.chestnut.system.service.ISysUserService;
+import com.chestnut.system.utils.SysDeptUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Strings;
 import org.slf4j.Logger;
@@ -49,16 +56,11 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -70,43 +72,17 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	private static final Logger log = LoggerFactory.getLogger(SysUserServiceImpl.class);
 
-	private final ISysRoleService roleService;
-
-	private final SysPostMapper postMapper;
-
 	private final SysUserPostMapper userPostMapper;
 
 	private final SysUserRoleMapper userRoleMapper;
 
 	private final ISecurityConfigService securityConfigService;
 
-	private final SysPermissionMapper permissionMapper;
+	private final ISysDeptService deptService;
 
-    private final SysDeptMapper deptMapper;
+	private final ISysPermissionService permissionService;
 
     private final ApplicationContext applicationContext;
-
-	@Override
-	public String selectUserRoleGroup(Long userId) {
-		List<SysRole> list = roleService.selectRolesByUserId(userId);
-		if (CollectionUtils.isEmpty(list)) {
-			return StringUtils.EMPTY;
-		}
-		return list.stream().map(SysRole::getRoleName).collect(Collectors.joining(","));
-	}
-
-	@Override
-	public String selectUserPostGroup(Long userId) {
-		List<Long> postIds = this.userPostMapper.selectList(
-				new LambdaQueryWrapper<SysUserPost>().eq(SysUserPost::getUserId, userId)
-		).stream().map(SysUserPost::getPostId).toList();
-		if (CollectionUtils.isEmpty(postIds)) {
-			return StringUtils.EMPTY;
-		}
-		return postMapper.selectList(
-				new LambdaQueryWrapper<SysPost>().select(SysPost::getPostName).in(SysPost::getPostId, postIds)
-		).stream().map(SysPost::getPostName).collect(Collectors.joining(","));
-	}
 
 	@Override
 	public boolean checkUserNameUnique(String username, Long userId) {
@@ -146,8 +122,41 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	}
 
 	@Override
+	public void updateUserProfile(UpdateUserProfileRequest req) {
+		LoginUser loginUser = req.getOperator();
+
+		boolean checkPhoneUnique = this.checkPhoneUnique(req.getPhoneNumber(), loginUser.getUserId());
+		Assert.isTrue(checkPhoneUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("PhoneNumber"));
+
+		boolean checkEmailUnique = this.checkEmailUnique(req.getEmail(), loginUser.getUserId());
+		Assert.isTrue(checkEmailUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("Email"));
+
+		LambdaUpdateWrapper<SysUser> q = new LambdaUpdateWrapper<SysUser>()
+				.set(SysUser::getNickName, req.getNickName())
+				.set(SysUser::getRealName, req.getRealName())
+				.set(SysUser::getPhoneNumber, req.getPhoneNumber())
+				.set(SysUser::getEmail, req.getEmail())
+				.set(SysUser::getSex, req.getSex())
+				.set(SysUser::getBirthday, req.getBirthday())
+				.eq(SysUser::getUserId, loginUser.getUserId());
+		this.update(q);
+		// 角色关联荣誉字段更新
+		new LambdaUpdateChainWrapper<>(userRoleMapper)
+				.set(SysUserRole::getNickName, req.getNickName())
+				.set(SysUserRole::getPhoneNumber, req.getPhoneNumber())
+				.set(SysUserRole::getEmail, req.getEmail())
+				.set(SysUserRole::getRealName, req.getRealName())
+				.eq(SysUserRole::getUserId, loginUser.getUserId())
+				.update();
+	}
+
+	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void insertUser(CreateUserRequest req) {
+	public SysUser insertUser(CreateUserRequest req) {
+		SysDept dept = this.deptService.getDept(req.getDeptId());
+		Assert.notNull(dept, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("deptId", req.getDeptId()));
+		SysDeptUtils.checkDeptScope(req.getOperator(), dept::getDeptId, dept::getAncestors);
+
 		boolean checkUserUnique = this.checkUserUnique(req.getUserName(), req.getPhoneNumber(), req.getEmail(), null);
 		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phoneNumber,email]"));
 		// 校验密码
@@ -157,12 +166,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		// 强制首次登陆修改密码
 		this.securityConfigService.forceModifyPwdAfterUserAdd(user);
 		user.setUserId(IdUtils.getSnowflakeId());
+		user.setDeptId(dept.getDeptId());
+		user.setDeptAncestors(dept.getAncestors());
 		user.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
 		user.createBy(req.getOperator().getUsername());
 		this.save(user);
 		// 新增用户岗位关联
 		syncUserPost(user.getUserId(), req.getPostIds(), false);
         applicationContext.publishEvent(new AfterSysUserAddEvent(this, user));
+        return user;
 	}
 
     @Override
@@ -185,8 +197,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         }
         user.setSex(StringUtils.defaultIfEmpty(req.getSex(), Gender.UNKNOWN));
         // 默认顶级机构
-        SysDept topDept = this.deptMapper.selectOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getParentId, 0L));
+        SysDept topDept = this.deptService.getTopDept();
         user.setDeptId(topDept.getDeptId());
+		user.setDeptAncestors(topDept.getAncestors());
         user.setStatus(EnableOrDisable.ENABLE);
         user.createBy(SysConstants.SYS_OPERATOR);
         this.save(user);
@@ -203,53 +216,82 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 		user.setUserId(IdUtils.getSnowflakeId());
 		user.setPassword(SecurityUtils.passwordEncode(user.getPassword()));
-		user.setCreateTime(LocalDateTime.now());
+		// 默认顶级机构
+		SysDept topDept = this.deptService.getTopDept();
+		user.setDeptId(topDept.getDeptId());
+		user.setDeptAncestors(topDept.getAncestors());
+		user.setStatus(EnableOrDisable.ENABLE);
+		user.createBy(SysConstants.SYS_OPERATOR);
 		this.save(user);
+		applicationContext.publishEvent(new AfterSysUserAddEvent(this, user));
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void updateUser(UpdateUserRequest req) {
+	public SysUser updateUser(UpdateUserRequest req) {
 		SysUser db = this.getById(req.getUserId());
 		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getUserId()));
 		boolean checkUserUnique = this.checkUserUnique(db.getUserName(), req.getPhoneNumber(), req.getEmail(), req.getUserId());
 		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phoneNumber,email]"));
+		// 校验机构范围
+		SysDeptUtils.checkDeptScope(req.getOperator(), db::getDeptId, db::getDeptAncestors);
 
 		String oldStatus = db.getStatus();
-        BeanUtils.copyProperties(req, db);
-		db.updateBy(req.getOperator().getUsername());
-		this.updateById(db);
+		boolean isBasicInfoChanged = !Strings.CS.equals(db.getNickName(), req.getNickName())
+				|| !Strings.CS.equals(db.getPhoneNumber(), req.getPhoneNumber())
+				|| !Strings.CS.equals(db.getEmail(), req.getEmail())
+				|| !Strings.CS.equals(db.getRealName(), req.getRealName());
+		this.lambdaUpdate()
+				.set(SysUser::getNickName, req.getNickName())
+				.set(SysUser::getPhoneNumber, req.getPhoneNumber())
+				.set(SysUser::getEmail, req.getEmail())
+				.set(SysUser::getRealName, req.getRealName())
+				.set(SysUser::getStatus, req.getStatus())
+				.set(SysUser::getSex, req.getSex())
+				.set(SysUser::getBirthday, req.getBirthday())
+				.set(SysUser::getPostIds, req.getPostIds())
+				.set(SysUser::getRemark, req.getRemark())
+				.set(SysUser::getUpdateBy, req.getOperator().getUser())
+				.set(SysUser::getUpdateTime, LocalDateTime.now())
+				.eq(SysUser::getUserId, db.getUserId())
+				.update();
 		// 用户与岗位关联
 		syncUserPost(db.getUserId(), req.getPostIds(), true);
 		// 变更未封禁或锁定状态时注销登录状态
-		if (!Strings.CS.equals(db.getStatus(), oldStatus)
-				&& (UserStatus.isDisable(db.getStatus()) || UserStatus.isLocked(db.getStatus()))) {
+		if (!Strings.CS.equals(req.getStatus(), oldStatus)
+				&& (UserStatus.isDisable(req.getStatus()) || UserStatus.isLocked(req.getStatus()))) {
 			StpAdminUtil.logout(req.getUserId());
 		}
-	}
-
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public void insertUserAuth(final Long userId, final List<Long> roleIds) {
-		userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
-		if (StringUtils.isNotEmpty(roleIds)) {
-			List<SysUserRole> list = roleIds.stream().map(roleId -> new SysUserRole(userId, roleId)).toList();
-			list.forEach(userRoleMapper::insert);
+		// 更新角色关联冗余字段信息
+		if (isBasicInfoChanged) {
+			new LambdaUpdateChainWrapper<>(userRoleMapper)
+					.set(SysUserRole::getNickName, req.getNickName())
+					.set(SysUserRole::getPhoneNumber, req.getPhoneNumber())
+					.set(SysUserRole::getEmail, req.getEmail())
+					.set(SysUserRole::getRealName, req.getRealName())
+					.eq(SysUserRole::getUserId, db.getUserId())
+					.update();
 		}
+		this.applicationContext.publishEvent(new AfterSysUserUpdateEvent(this, db));
+		return db;
 	}
 
 	@Override
+    @Transactional(rollbackFor = Exception.class)
 	public void resetPwd(ResetUserPwdRequest req) {
 		SysUser db = this.getById(req.getUserId());
-		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("userId", req.getUserId()));
-
+		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getUserId()));
+		Assert.isFalse(SecurityUtils.isSuperAdmin(db.getUserId()), SysErrorCode.SUPERADMIN_RESET_PWD::exception);
+		// 校验机构范围
+		SysDeptUtils.checkDeptScope(req.getOperator(), db::getDeptId, db::getDeptAncestors);
+		// 密码策略校验
 		this.securityConfigService.validPassword(db, req.getPassword());
 		this.securityConfigService.forceModifyPwdAfterResetPwd(db);
 
-		db.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
-		db.setUpdateTime(LocalDateTime.now());
-		db.setUpdateBy(req.getOperator().getUsername());
-		this.updateById(db);
+		String password = SecurityUtils.passwordEncode(req.getPassword());
+		this.lambdaUpdate().set(SysUser::getPassword, password).eq(SysUser::getUserId, db.getUserId()).update();
+		// 注销用户登录状态
+		StpAdminUtil.logout(db.getUserId());
 	}
 
 	public void syncUserPost(Long userId, Long[] postIds, boolean update) {
@@ -269,20 +311,25 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteUserByIds(List<Long> userIds) {
-		for (Long userId : userIds) {
-			Assert.isFalse(SecurityUtils.isSuperAdmin(userId), SysErrorCode.SUPERADMIN_DELETE::exception);
+	public void deleteUserByIds(List<Long> userIds, LoginUser operator) {
+		// 超管账户校验
+		Assert.isFalse(userIds.contains(SecurityUtils.SUPER_ADMIN_UID), SysErrorCode.SUPERADMIN_DELETE::exception);
+
+		SysUser operatorUser = this.getById(operator.getUserId());
+		List<SysUser> users = this.listByIds(userIds);
+		for (SysUser user : users) {
+			// 部门范围校验
+			SysDept dept = this.deptService.getDept(user.getDeptId());
+			SysDeptUtils.checkDeptScope(operatorUser, dept::getDeptId, dept::getAncestors);
 			// 注销已登录token
-			StpAdminUtil.logout(userId);
+			StpAdminUtil.logout(user.getUserId());
 		}
 		// 删除用户与角色关联
 		userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getUserId, userIds));
 		// 删除用户与岗位关联
 		userPostMapper.delete(new LambdaQueryWrapper<SysUserPost>().in(SysUserPost::getUserId, userIds));
 		// 删除用户权限配置
-		this.permissionMapper.delete(new LambdaQueryWrapper<SysPermission>()
-				.eq(SysPermission::getOwnerType, PermissionOwnerType.User.name())
-				.in(SysPermission::getOwner, userIds));
+		this.permissionService.removePermissions(UserPermissionOwnerType.TYPE, userIds.stream().map(Object::toString).toList());
 		// 删除用户数据
 		this.removeByIds(userIds);
 	}
@@ -306,125 +353,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			// 文件后缀名
 			String ext = FileExUtils.getExtension(fileBytes);
 			// 上传相对路径
-			String path = "avatar/" + DateUtils.datePath() + "/" + userId + "." + ext;
+			String path = SysConstants.USER_AVATAR_PATH + DateUtils.datePath() + "/" + userId + "." + ext;
 			// 写入文件
-			FileUtils.writeByteArrayToFile(new File(SystemConfig.getUploadDir() + path), fileBytes);
+			FileUtils.writeByteArrayToFile(new File(SystemConfig.getPublicFileUploadDir() + path), fileBytes);
 			return path;
 		} catch (IOException e) {
 			throw CommonErrorCode.SYSTEM_ERROR.exception(e.getMessage());
 		}
 	}
 
-    @RequiredArgsConstructor
-	public static class SysUserReadListener implements ReadListener<UserImportData> {
 
-		private final ISysUserService userService;
-
-		private final ISysDeptService deptService;
-
-		private final ISysRoleService roleService;
-
-		private final ISysPostService postService;
-
-		private final SysUserRoleMapper userRoleMapper;
-
-		@Setter
-		private Validator validator;
-
-        @Setter
-		private boolean isUpdateSupport;
-
-		@Setter
-		private String operator;
-
-		private int successCount;
-
-		private int failCount;
-
-		@Setter
-		private StringWriter logWriter;
-
-		@Setter
-		private Locale locale;
-
-		@Override
-		public void invoke(UserImportData data, AnalysisContext context) {
-			try {
-				log.debug(context.readRowHolder().getRowIndex() + "/"
-						+ context.readSheetHolder().getApproximateTotalRowNumber() + ": " + data.getUserName());
-				SysUser u = this.userService
-						.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, data.getUserName()));
-				if (Objects.isNull(u)) {
-					BeanValidators.validateWithException(this.validator, data);
-					SysDept dept = this.deptService
-							.getOne(new LambdaQueryWrapper<SysDept>().eq(SysDept::getDeptName, data.getDeptName()));
-					if (Objects.isNull(dept)) {
-						failCount++;
-						logWriter.append(SystemUserTips.USER_DEPT_NOT_EXISTS.locale(locale, data.getUserName())).append("<br/>");
-						return;
-					}
-					u = new SysUser();
-					u.setDeptId(dept.getDeptId());
-					if (StringUtils.isNotEmpty(data.getPostCodes())) {
-						Long[] postIds = data.getPostCodes().stream().map(postCode -> {
-							SysPost post = this.postService.getPost(postCode);
-							return Objects.isNull(post) ? 0L : post.getPostId();
-						}).filter(roleId -> roleId != 0).toArray(Long[]::new);
-						u.setPostIds(postIds);
-					}
-					u.setUserName(data.getUserName());
-					u.setNickName(data.getNickName());
-					u.setPassword(data.getPassword());
-					u.setPhoneNumber(data.getPhoneNumber());
-					u.setEmail(data.getEmail());
-					u.setSex(data.getGender());
-					u.setStatus(data.getStatus());
-					u.setRemark(data.getRemark());
-					u.setPassword(data.getPassword());
-					u.setCreateBy(this.operator);
-					CreateUserRequest req = new CreateUserRequest();
-					BeanUtils.copyProperties(u, req);
-					this.userService.insertUser(req);
-					if (StringUtils.isNotEmpty(data.getRoleCodes())) {
-						for (String roleCode : data.getRoleCodes()) {
-							SysRole role = this.roleService.getRole(roleCode);
-							if (Objects.nonNull(role)) {
-								SysUserRole ur = new SysUserRole();
-								ur.setUserId(u.getUserId());
-								ur.setRoleId(role.getRoleId());
-								this.userRoleMapper.insert(ur);
-							}
-						}
-					}
-					successCount++;
-				} else if (this.isUpdateSupport) {
-					BeanValidators.validateWithException(this.validator, data);
-					u.setUserName(data.getUserName());
-					u.setNickName(data.getNickName());
-					u.setPhoneNumber(data.getPhoneNumber());
-					u.setEmail(data.getEmail());
-					u.setSex(data.getGender());
-					u.setStatus(data.getStatus());
-					u.setRemark(data.getRemark());
-					u.setPassword(data.getPassword());
-					u.setUpdateBy(this.operator);
-					UpdateUserRequest req = new UpdateUserRequest();
-					BeanUtils.copyProperties(u, req);
-					this.userService.updateUser(req);
-					successCount++;
-				} else {
-					failCount++;
-					logWriter.append(SystemUserTips.USER_EXISTS.locale(locale, data.getUserName())).append("<br/>");
-				}
-			} catch (Exception e) {
-				failCount++;
-				logWriter.append(SystemUserTips.IMPORT_FAIL.locale(locale, data.getUserName(), e.getMessage())).append("<br/>");
-			}
-		}
-
-		@Override
-		public void doAfterAllAnalysed(AnalysisContext context) {
-			logWriter.append(SystemUserTips.IMPORT_FAIL.locale(locale, successCount, failCount));
-		}
-	}
 }

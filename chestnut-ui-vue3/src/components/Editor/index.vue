@@ -9,7 +9,7 @@
       :show-file-list="false"
       :headers="headers"
       class="editor-img-uploader"
-      v-if="type == 'url'"
+      v-if="type == 'url' && uploadAction"
     >
       <i ref="uploadRef" class="editor-img-uploader"></i>
     </el-upload>
@@ -34,12 +34,16 @@ import "@vueup/vue-quill/dist/vue-quill.snow.css"
 const { proxy } = getCurrentInstance()
 
 const quillEditorRef = ref()
-const uploadUrl = ref(import.meta.env.VITE_APP_BASE_API + "/common/upload") // 上传的图片服务器地址
 const headers = ref({
   ...proxy.$auth.getTokenHeader()
 })
 
 const props = defineProps({
+  /* 由使用方提供具有对应业务权限的图片上传接口 */
+  uploadAction: {
+    type: String,
+    required: true,
+  },
   /* 编辑器的内容 */
   modelValue: {
     type: String,
@@ -70,6 +74,8 @@ const props = defineProps({
     default: "url",
   }
 })
+
+const uploadUrl = computed(() => import.meta.env.VITE_APP_BASE_API + props.uploadAction)
 
 const options = ref({
   theme: "snow",
@@ -114,7 +120,7 @@ watch(() => props.modelValue, (v) => {
 
 // 如果设置了上传地址则自定义图片上传事件
 onMounted(() => {
-  if (props.type == 'url') {
+  if (props.type == 'url' && props.uploadAction) {
     let quill = quillEditorRef.value.getQuill()
     let toolbar = quill.getModule("toolbar")
     toolbar.addHandler("image", (value) => {
@@ -130,7 +136,7 @@ onMounted(() => {
 
 // 上传前校检格式和大小
 function handleBeforeUpload(file) {
-  const type = ["image/jpeg", "image/jpg", "image/png", "image/svg"]
+  const type = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"]
   const isJPG = type.includes(file.type)
   //检验文件格式
   if (!isJPG) {

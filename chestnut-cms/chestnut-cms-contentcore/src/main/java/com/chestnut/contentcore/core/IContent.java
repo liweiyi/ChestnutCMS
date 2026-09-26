@@ -19,6 +19,7 @@ import com.chestnut.common.security.domain.Operator;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.system.SysConstants;
 
 import java.time.LocalDateTime;
@@ -80,7 +81,7 @@ public interface IContent<T> {
 	/**
 	 * 更新内容信息
 	 */
-	Long save();
+	Long save(ContentDTO req);
 
 	/**
 	 * 删除内容
@@ -148,7 +149,7 @@ public interface IContent<T> {
 	/**
 	 * 排序
 	 */
-	void sort(Long targetContentId);
+	void sort(CmsContent targetContent);
 
 	/**
 	 * 下线

@@ -63,7 +63,7 @@
               plain
               icon="Upload"
               @click="handleImport"
-              v-hasPermi="['system:user:add']"
+              v-hasPermi="['system:user:import']"
             >{{ $t('Common.Import') }}</el-button>
           </el-col>
           <el-col :span="1.5">
@@ -110,7 +110,11 @@
               />
             </el-select>
           </el-form-item>
-          <el-form-item>
+          <el-form-item prop="onlyCurrentDept">
+          <el-switch v-model="queryParams.onlyCurrentDept" :disabled="onlyCurrentDisabled"
+            :active-text="$t('System.DeptScope.OnlyCurrent')" @change="handleQuery" />
+        </el-form-item>
+        <el-form-item>
             <el-button-group>
               <el-button type="primary" icon="Search" @click="handleQuery">{{ $t('Common.Search') }}</el-button>
               <el-button icon="Refresh" @click="resetQuery">{{ $t('Common.Reset') }}</el-button>
@@ -118,7 +122,7 @@
           </el-form-item>
         </el-form>
 
-        <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
+        <el-table ref="dataTableRef" v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column :label="$t('System.User.UserName')" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
           <el-table-column :label="$t('System.User.NickName')" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
@@ -156,6 +160,7 @@
                   v-hasPermi="['system:user:remove']"
                 >{{ $t('Common.Delete') }}</el-button>
                 <el-dropdown
+                  v-if="scope.row.userId !== '1'"
                   @command="(command) => handleCommand(command, scope.row)">
                   <el-button class="btn-more" type="primary" link icon="More"></el-button>
                   <template #dropdown>
@@ -166,12 +171,17 @@
                         icon="Key"
                       >{{ $t('System.User.ResetPwd') }}</el-dropdown-item>
                       <el-dropdown-item 
-                        v-if="scope.row.userId !== '1' && checkPermi(['system:user:edit'])"
+                        v-if="checkPermi(['system:user:edit'])"
+                        command="handleChangeDept" 
+                        icon="TopRight"
+                      >{{ $t('System.User.ChangeDept') }}</el-dropdown-item>
+                      <el-dropdown-item 
+                        v-if="checkPermi(['system:user:grant'])"
                         command="handleAuthRole" 
                         icon="CircleCheck"
                        >{{ $t('System.User.RoleSetting') }}</el-dropdown-item>
                       <el-dropdown-item 
-                        v-if="scope.row.userId !== '1' && checkPermi(['system:user:grant'])"
+                        v-if="checkPermi(['system:user:grant'])"
                         command="handleGrantPerms" 
                         icon="CircleCheck"
                       >{{ $t('System.Role.PermissionSetting') }}</el-dropdown-item>
@@ -195,6 +205,9 @@
     <!-- 添加或修改用户配置对话框 -->
     <el-dialog :title="title" v-model="open" width="600px" append-to-body>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+        <el-form-item v-if="form.userId && form.userId > 0" :label="$t('System.User.UserId')" prop="roleId">
+          <el-button link icon="CopyDocument" v-copyText="form.userId">{{ form.userId }}</el-button>
+        </el-form-item>
         <el-form-item v-if="form.userId == undefined" :label="$t('System.User.UserName')" prop="userName">
           <el-input v-model="form.userName" :placeholder="$t('System.User.Placeholder.UserName')" maxlength="30" />
         </el-form-item>
@@ -207,7 +220,7 @@
         <el-form-item v-if="form.userId == undefined" :label="$t('System.User.Password')" prop="password">
           <el-input v-model="form.password" :placeholder="$t('System.User.Placeholder.Password')" type="password" maxlength="20" show-password/>
         </el-form-item>
-        <el-form-item :label="$t('System.User.Dept')" prop="deptId">
+        <el-form-item v-if="form.userId == undefined" :label="$t('System.User.Dept')" prop="deptId">
           <el-tree-select
             v-model="form.deptId"
             :data="deptOptions"
@@ -312,7 +325,7 @@
               plain
               icon="Document"
               @click="handleSaveAuthRole"
-              v-hasPermi="['system:user:edit']"
+              v-hasPermi="['system:user:grant']"
             >{{ $t('Common.Save') }}</el-button>
           </el-col>
         </el-row>
@@ -336,20 +349,45 @@
       :before-close="handleGrantPermsClose">
       <role-permission owner-type='User' :owner='owner'></role-permission>
     </el-drawer>
+    <!-- 调用部门弹窗 -->
+    <el-dialog :title="$t('System.User.ChangeDept')" v-model="openDeptSelector" width="600px" append-to-body>
+      <el-form ref="formChangeDeptRef" :model="formChangeDept" :rules="formChangeDeptRules" label-width="100px">
+        <el-form-item  :label="$t('System.User.UserName')" prop="userName">
+          <el-text>{{ formChangeDept.userName }}</el-text>
+        </el-form-item>
+        <el-form-item :label="$t('System.User.Dept')" prop="deptId">
+          <el-tree-select
+            v-model="formChangeDept.deptId"
+            :data="deptOptions"
+            :props="defaultProps"
+            :render-after-expand="false"
+            check-strictly
+            :placeholder="$t('System.User.Placeholder.Dept')"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="handleChangeDeptSave">{{ $t('Common.Submit') }}</el-button>
+          <el-button @click="openDeptSelector = false">{{ $t('Common.Cancel') }}</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
+import { useDeptScope } from '@/composables/useDeptScope';
 import { userNameValidator, emailValidator, phoneNumberValidator } from '@/utils/validate';
 import { getPostOptions } from "@/api/system/post";
-import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, deptTreeSelect, getAuthRole, updateAuthRole } from "@/api/system/user";
+import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, getAuthRole, updateAuthRole, changeDept } from "@/api/system/user";
 import RolePermission from '@/views/system/permission/permsTab';
 
 const { proxy } = getCurrentInstance();
 const { SysUserStatus, Gender, EnableOrDisable } = proxy.useDict('SysUserStatus', 'Gender', 'EnableOrDisable');
 
 // 响应式数据
-const loading = ref(true);
+const loading = ref(false);
 const ids = ref([]);
 const single = ref(true);
 const multiple = ref(true);
@@ -357,12 +395,13 @@ const showSearch = ref(true);
 const total = ref(0);
 const userList = ref([]);
 const title = ref("");
-const deptOptions = ref([]);
+
 const open = ref(false);
-const deptName = ref(undefined);
+
 const postOptions = ref([]);
 const roleOptions = ref([]);
 const openRoleDialog = ref(false);
+const openDeptSelector = ref(false);
 
 const data = reactive({
   queryParams: {
@@ -371,7 +410,8 @@ const data = reactive({
     userName: undefined,
     phoneNumber: undefined,
     status: undefined,
-    deptId: undefined
+    deptId: undefined,
+    onlyCurrentDept: false
   },
   form: {},
   rules: {
@@ -418,17 +458,45 @@ const data = reactive({
     headers: { ...proxy.$auth.getTokenHeader() },
     // 上传的地址
     url: import.meta.env.VITE_APP_BASE_API + "/system/user/importData"
+  },
+  formChangeDept: {},
+  formChangeDeptRules: {
+    userId: [
+      { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+    ],
+    deptId: [
+      { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+    ]
   }
 })
-const { queryParams, form, rules, upload } = toRefs(data)
+const { queryParams, form, rules, upload, formChangeDept, formChangeDeptRules } = toRefs(data)
+const originalDeptId = ref(undefined);
+const { deptOptions, deptName, defaultProps, onlyCurrentDisabled, filterNode, handleNodeClick, getDeptTree } = useDeptScope(queryParams, proxy, getList);
+let listRequestId = 0;
+async function getList() {
+  const requestId = ++listRequestId;
+  proxy.$refs.dataTableRef?.clearSelection();
+  ids.value = [];
+  single.value = true;
+  multiple.value = true;
+  userList.value = [];
+  total.value = 0;
+  if (queryParams.value.deptId === undefined) { loading.value = false; return; }
+  loading.value = true;
+  try {
+    const response = await listUser({ ...queryParams.value });
+    if (requestId !== listRequestId) return;
+    userList.value = response.data.rows;
+    total.value = Number(response.data.total);
+  } finally {
+    if (requestId === listRequestId) loading.value = false;
+  }
+}
+
 const openPermissionDialog = ref(false);
 const owner = ref(undefined);
 
-const defaultProps = {
-  value: "id",
-  children: "children",
-  label: "label"
-};
+
 
 const columns = ref([
   { key: 0, label: proxy.$t('System.User.UserId'), visible: true },
@@ -442,33 +510,8 @@ const columns = ref([
 
 // 监听器
 watch(deptName, (val) => {
-  proxy.$refs.treeRef.filter(val);
+  proxy.$refs.treeRef?.filter(val);
 });
-
-const getList = () => {
-  loading.value = true;
-  listUser(queryParams.value).then(response => {
-    userList.value = response.data.rows;
-    total.value = parseInt(response.data.total);
-    loading.value = false;
-  });
-};
-
-const getDeptTree = () => {
-  deptTreeSelect().then(response => {
-    deptOptions.value = response.data;
-  });
-};
-
-const filterNode = (value, data) => {
-  if (!value) return true;
-  return data.label.indexOf(value) !== -1;
-};
-
-const handleNodeClick = (data) => {
-  queryParams.deptId = data.id;
-  handleQuery();
-};
 
 // 取消按钮
 const cancel = () => {
@@ -480,21 +523,21 @@ const cancel = () => {
 const reset = () => {
   proxy.resetForm("formRef")
   form.value = {
+    deptId: String(queryParams.value.deptId) === "0" ? undefined : queryParams.value.deptId,
     status: "0"
   };
 };
 
 /** 搜索按钮操作 */
 const handleQuery = () => {
-  queryParams.pageNum = 1;
+  queryParams.value.pageNum = 1;
   getList();
 };
 
 /** 重置按钮操作 */
 const resetQuery = () => {
   proxy.resetForm("queryFormRef")
-  queryParams.deptId = undefined;
-  proxy.$refs.treeRef.setCurrentKey(null);
+  queryParams.value.onlyCurrentDept = false;
   handleQuery();
 };
 
@@ -519,6 +562,9 @@ const handleCommand = (command, row) => {
   switch (command) {
     case "handleResetPwd":
       handleResetPwd(row);
+      break;
+    case "handleChangeDept":
+      handleChangeDept(row);
       break;
     case "handleAuthRole":
       handleAuthRole(row);
@@ -554,6 +600,7 @@ const handleUpdate = (row) => {
   const userId = row.userId || ids.value;
   getUser(userId).then(response => {
     form.value = response.data.user;
+    originalDeptId.value = form.value.deptId;
     open.value = true;
     title.value = proxy.$t('System.User.Dialog.Edit');
     form.value.password = "";
@@ -573,6 +620,33 @@ const handleResetPwd = (row) => {
   }).catch(() => {});
 };
 
+const handleChangeDept = (row) => {
+  formChangeDept.value = {
+    userId: row.userId,
+    userName: row.userName,
+    deptId: row.deptId
+  }
+  openDeptSelector.value = true;
+}
+
+const handleChangeDeptSave = () => {
+  proxy.$modal.confirm(proxy.$t('System.User.ChangeDeptConfirmMsg'), proxy.$t('Common.Tips'), {
+    confirmButtonText: proxy.$t('Common.Confirm'),
+    cancelButtonText: proxy.$t('Common.Cancel'),
+    closeOnClickModal: false
+  }).then(() => {
+    proxy.$refs.formChangeDeptRef.validate(async valid => {
+      if (valid) {
+        changeDept(formChangeDept.value).then(response => {
+          proxy.$modal.msgSuccess(proxy.$t('Common.SaveSuccess'));
+          openDeptSelector.value = false;
+          getList();
+        });
+      }
+    });
+  }).catch(() => {});
+}
+
 /** 分配角色操作 */
 const handleAuthRole = (row) => {
   reset();
@@ -580,6 +654,7 @@ const handleAuthRole = (row) => {
   openRoleDialog.value = true;
   getAuthRole(row.userId).then(response => {
     form.value = response.data.user;
+    originalDeptId.value = form.value.deptId;
     roleOptions.value = response.data.roles;
     const userRoleIds = response.data.user.roleIds;
     proxy.$nextTick(() => {
@@ -602,7 +677,7 @@ const handleSaveAuthRole = () => {
 
 /** 提交按钮 */
 const submitForm = () => {
-  proxy.$refs.formRef.validate(valid => {
+  proxy.$refs.formRef.validate(async valid => {
     if (valid) {
       if (form.value.userId != undefined) {
         updateUser(form.value).then(response => {
@@ -635,7 +710,7 @@ const handleDelete = (row) => {
 /** 导出按钮操作 */
 const handleExport = () => {
   proxy.exportExcel('system/user/list', {
-    ...queryParams
+    ...queryParams.value
   }, `user_${proxy.parseTime(new Date(),'{y}{m}{d}{h}{i}{s}')}.xlsx`)
 };
 
@@ -677,8 +752,7 @@ function loadPostOptions() {
 }
 
 loadPostOptions();
-getList();
-getDeptTree();
+getDeptTree().catch(() => { loading.value = false; });
 </script>
 <style lang="scss" scoped>
 .btn-more:focus-visible {

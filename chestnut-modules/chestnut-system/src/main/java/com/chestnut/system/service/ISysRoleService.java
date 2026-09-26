@@ -16,12 +16,14 @@
 package com.chestnut.system.service;
 
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.system.domain.SysRole;
 import com.chestnut.system.domain.dto.CreateRoleRequest;
 import com.chestnut.system.domain.dto.UpdateRoleRequest;
 import com.chestnut.system.domain.dto.UpdateRoleStatusRequest;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 角色业务层
@@ -31,10 +33,6 @@ import java.util.List;
  */
 public interface ISysRoleService extends IService<SysRole> {
 
-	default List<SysRole> selectRolesByUserId(Long userId) {
-		return selectRolesByUserId(userId, null);
-	}
-
 	/**
 	 * 根据用户ID查询角色列表
 	 * 
@@ -42,6 +40,10 @@ public interface ISysRoleService extends IService<SysRole> {
 	 * @return 角色列表
 	 */
 	List<SysRole> selectRolesByUserId(Long userId, String status);
+
+	default List<SysRole> selectRolesByUserId(Long userId) {
+		return selectRolesByUserId(userId, null);
+	}
 
 	/**
 	 * 根据用户ID查询角色权限
@@ -66,39 +68,34 @@ public interface ISysRoleService extends IService<SysRole> {
 	void updateRole(UpdateRoleRequest role);
 
 	/**
-	 * 修改角色状态
-	 * 
-	 * @param req 角色信息
-	 */
-	void updateRoleStatus(UpdateRoleStatusRequest req);
+     * 修改角色状态
+     *
+     * @param req 角色信息
+     * @return
+     */
+	List<Long> updateRoleStatus(UpdateRoleStatusRequest req);
 
 	/**
 	 * 批量删除角色信息
 	 * 
 	 * @param roleIds 需要删除的角色ID
+	 * @param operator 由 Controller 获取并传入的可信操作人，用于校验机构数据范围
+	 * @return 受影响用户ID列表
 	 */
-	void deleteRoleByIds(List<Long> roleIds);
-
-	/**
-	 * 批量取消授权用户角色
-	 * 
-	 * @param roleId 角色ID
-	 * @param userIds 需要取消授权的用户数据ID
-	 */
-	void deleteAuthUsers(Long roleId, List<Long> userIds);
-
-	/**
-	 * 批量选择授权用户角色
-	 * 
-	 * @param roleId 角色ID
-	 * @param userIds 需要删除的用户数据ID
-	 */
-	void insertAuthUsers(Long roleId, List<Long> userIds);
+	Set<Long> deleteRoleByIds(List<Long> roleIds, LoginUser operator);
 
 	/**
 	 * 获取缓存角色信息
 	 * 
-	 * @param roleCode 角色编码
+	 * @param roleId 角色ID
 	 */
-	SysRole getRole(String roleCode);
+	SysRole getRole(Long roleId);
+
+	/**
+	 * 根据角色返回关联用户ID列表
+	 *
+	 * @param roleId 角色ID
+	 * @return 用户ID列表
+	 */
+	List<Long> getUserIdsByRole(Long roleId);
 }

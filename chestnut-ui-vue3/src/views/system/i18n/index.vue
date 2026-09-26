@@ -44,7 +44,7 @@
           plain
           icon="RefreshLeft"
           @click="handleRefreshCache"
-          v-hasPermi="['system:i18ndict:add','system:i18ndict:edit']"
+          v-hasPermi="['system:i18ndict:remove']"
         >{{ $t('Common.RefreshCache') }}</el-button>
       </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>

@@ -63,4 +63,12 @@ public interface IMetaModelType {
      * 模型数据表固定字段
      */
     List<MetaModelField> getFixedFields();
+
+    /**
+     * 净化自定义字段的存储值。写入时在默认值确定后、校验前调用，读取时在控件转换前调用。
+     * 实现应保留空值和字段类型，且支持重复净化；默认不改变其他模型的行为。
+     */
+    default Object sanitizeFieldValue(MetaModelField field, Object value) {
+        return value;
+    }
 }

@@ -16,7 +16,9 @@
 package com.chestnut.contentcore.core;
 
 import com.chestnut.contentcore.domain.CmsContent;
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.io.Resource;
+
+import java.io.IOException;
 
 /**
  * 内容核心数据引用处理器
@@ -25,6 +27,18 @@ import jakarta.servlet.http.HttpServletRequest;
  * @email 190785909@qq.com
  */
 public interface ICoreDataHandler {
+
+    /**
+     * 判断指定资源是否是私有文件，私有文件不可通过preview/路径访问
+     *
+     * @param resourcePath 相对于资源映射根目录的请求路径，可能包含 URL 编码
+     * @param resource Spring 已解析并通过基础路径校验的目标文件
+     * @return 是否禁止直接预览，true 表示私有资源或不安全路径
+     * @throws IOException 读取或校验资源路径失败
+     */
+    default boolean isPrivateResource(String resourcePath, Resource resource) throws IOException {
+        return false;
+    }
 
     default void onSiteExport(SiteExportContext context) {}
 

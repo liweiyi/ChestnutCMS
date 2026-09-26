@@ -20,8 +20,6 @@ import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
-
-
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.Assert;
@@ -131,7 +129,7 @@ public class CoreController extends BaseRestController {
 		try {
 			IInternalDataType.RequestData data = new IInternalDataType.RequestData(dataId, pageIndex, publishPipe,
 					false, ServletUtils.getParamMap(ServletUtils.getRequest()));
-			String pageData = internalDataType.getPageData(data);
+			String pageData = internalDataType.getPageViewData(data);
 			response.getWriter().write(pageData);
 		} catch (Exception e) {
 			e.printStackTrace(response.getWriter());

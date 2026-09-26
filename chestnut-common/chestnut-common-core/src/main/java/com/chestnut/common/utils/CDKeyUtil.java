@@ -189,7 +189,7 @@ public class CDKeyUtil {
 
 		long[] b = new long[codeLength];
 		for (int i = codeLength - 2; i >= 0; i--) {
-			b[i] = (a[i] - a[0] * i + CHARS_LENGTH * i) % CHARS_LENGTH;
+			b[i] = (a[i] - a[0] * i + (long) CHARS_LENGTH * i) % CHARS_LENGTH;
 		}
 
 		long res = 0;

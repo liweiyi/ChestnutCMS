@@ -27,16 +27,18 @@ import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.contentcore.ContentCoreConsts;
+import com.chestnut.contentcore.config.CMSConfig;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
 import com.chestnut.contentcore.core.IInternalDataType;
 import com.chestnut.contentcore.core.impl.InternalDataType_Content;
 import com.chestnut.contentcore.dao.CmsContentDAO;
 import com.chestnut.contentcore.domain.*;
+import com.chestnut.contentcore.domain.dto.ContentDTO;
 import com.chestnut.contentcore.domain.dto.CopyContentDTO;
 import com.chestnut.contentcore.domain.dto.MoveContentDTO;
 import com.chestnut.contentcore.domain.dto.SetTopContentDTO;
-import com.chestnut.contentcore.domain.dto.SortContentDTO;
 import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.fixed.dict.ContentCopyType;
@@ -57,10 +59,13 @@ import com.chestnut.system.fixed.config.BackendContext;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.security.AdminUserType;
+import com.chestnut.system.security.StpAdminUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.Strings;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -70,8 +75,15 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
+/**
+ * 内容核心管理服务实现
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -92,6 +104,8 @@ public class ContentServiceImpl implements IContentService {
 	private final AsyncTaskManager asyncTaskManager;
 
 	private final CmsContentDAO dao;
+
+	private final RedissonClient redissonClient;
 
 	@Override
 	public CmsContentDAO dao() {
@@ -183,6 +197,9 @@ public class ContentServiceImpl implements IContentService {
 		Map<Long, Integer> catalogContentIncr = new HashMap<>();
 		List<BCmsContent> backupContents = this.dao().getBackupByIds(backupIds);
 		for (BCmsContent backupContent : backupContents) {
+			LoginUser loginUser = StpAdminUtil.getLoginUser();
+			PermissionUtils.checkPermission(CatalogPrivItem.AddContent.getPermissionKey(backupContent.getCatalogId()), loginUser);
+
 			IContentType contentType = ContentCoreUtils.getContentType(backupContent.getContentType());
 			contentType.recover(backupContent);
 
@@ -202,6 +219,9 @@ public class ContentServiceImpl implements IContentService {
 				BCmsContent::getContentType
 		));
 		for (BCmsContent backupContent : backupContents) {
+			LoginUser loginUser = StpAdminUtil.getLoginUser();
+			PermissionUtils.checkPermission(CatalogPrivItem.DeleteContent.getPermissionKey(backupContent.getCatalogId()), loginUser);
+
 			IContentType contentType = ContentCoreUtils.getContentType(backupContent.getContentType());
 			contentType.deleteBackups(backupContent.getContentId());
 		}
@@ -215,9 +235,9 @@ public class ContentServiceImpl implements IContentService {
 				.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors())
 				.count();
 		Operator operator = Operator.of(loginUser);
-		for (int i = 0; i * pageSize < total; i++) {
-			AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize / total),
-					"正在栏目删除内容：" + (i * pageSize) + " / " + total);
+		for (int i = 1; (i - 1) * pageSize < total; i++) {
+			AsyncTaskManager.setTaskProgressInfo((int) ((i - 1) * pageSize / total),
+					"正在栏目删除内容：" + ((i - 1) * pageSize) + " / " + total);
 			this.dao().lambdaQuery()
 					.eq(!includeChild, CmsContent::getCatalogId, catalog.getCatalogId())
 					.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors())
@@ -230,6 +250,35 @@ public class ContentServiceImpl implements IContentService {
 					});
 		}
 	}
+
+    @Override
+    public void validateStaticPath(CmsContent content) {
+        if (StringUtils.isBlank(content.getStaticPath())) {
+            content.setStaticPath(null);
+            return;
+        }
+        try {
+            String relative = SiteFilePaths.strictRelative(content.getStaticPath());
+            String first = relative.split("/", 2)[0].toLowerCase(Locale.ROOT);
+            if (Set.of("template", "include", "assets").contains(first)) {
+                throw ContentCoreErrorCode.INVALID_CONTENT_STATIC_PATH.exception();
+            }
+            CmsSite site = this.siteService.getSite(content.getSiteId());
+            for (CmsPublishPipe pipe : this.publishPipeService.getPublishPipes(site.getSiteId())) {
+                SiteFilePaths paths = new SiteFilePaths(Path.of(CMSConfig.getResourceRoot()),
+                        List.of(site.getPath() + "_" + pipe.getCode()));
+                paths.checkFile(paths.resolveRelative(paths.roots().get(0), relative));
+            }
+            content.setStaticPath(relative);
+        } catch (GlobalException e) {
+            if (e.getErrorCode() == ContentCoreErrorCode.SITE_FILE_OP_ERR) {
+                throw ContentCoreErrorCode.INVALID_CONTENT_STATIC_PATH.exception();
+            }
+            throw e;
+        } catch (IOException e) {
+            throw CommonErrorCode.SYSTEM_ERROR.exception(e);
+        }
+    }
 
     @Override
     public String getContentStaticPath(CmsContent content, String publishPipeCode) {
@@ -276,9 +325,7 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public void lock(Long contentId, String operator) {
-		CmsContent content = this.dao().getById(contentId);
-		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+	public void lock(CmsContent content, String operator) {
 		Assert.isFalse(ContentStatus.isFlowing(content.getStatus()), ContentCoreErrorCode.CONTENT_FLOWING::exception);
 		boolean checkLock = content.isLock() && StringUtils.isNotEmpty(content.getLockUser())
 				&& !Strings.CS.equals(content.getLockUser(), operator);
@@ -292,9 +339,7 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public void unLock(Long contentId, String operator) {
-		CmsContent content = this.dao().getById(contentId);
-		Assert.notNull(content, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+	public void unLock(CmsContent content, String operator) {
 		Assert.isFalse(ContentStatus.isFlowing(content.getStatus()), ContentCoreErrorCode.CONTENT_FLOWING::exception);
 		if (!content.isLock()) {
 			return;
@@ -331,13 +376,13 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public AsyncTask saveContent(IContent<?> content) {
+	public AsyncTask saveContent(ContentDTO dto, LoginUser operator) {
 		ContentServiceImpl aopProxy = SpringUtils.getAopProxy(this);
 		AsyncTask task = new AsyncTask() {
 
 			@Override
 			public void run0() {
-				aopProxy.saveContent0(content);
+				aopProxy.saveContent0(dto, operator);
                 AsyncTaskManager.setTaskProgressInfo(100, ContentCoreTips.SAVE_SUCCESS, this.getLocale());
 			}
 		};
@@ -346,9 +391,33 @@ public class ContentServiceImpl implements IContentService {
 		return task;
 	}
 
-	@Transactional(rollbackFor = Exception.class)
-	public void saveContent0(IContent<?> content) {
-		content.save();
+	@Override
+	public void checkSaveContentPermission(Long contentCatalogId, Long targetCatalogId, LoginUser operator) {
+		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(contentCatalogId), operator);
+		if (!contentCatalogId.equals(targetCatalogId)) {
+			// 栏目变更要校验目标栏目的新增内容权限
+			PermissionUtils.checkPermission(CatalogPrivItem.AddContent.getPermissionKey(targetCatalogId), operator);
+		}
+	}
+
+	public void saveContent0(ContentDTO dto, LoginUser operator) {
+		RLock lock = redissonClient.getLock(ContentCoreConsts.lockContent(dto.getContentId()));
+		if (!lock.tryLock()) {
+			throw ContentCoreErrorCode.CONTENT_EDITING.exception();
+		}
+		try {
+			CmsContent cmsContent = this.dao().getById(dto.getContentId());
+			this.checkSaveContentPermission(cmsContent.getCatalogId(), dto.getCatalogId(), operator);
+
+			IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
+			IContent<?> content = ct.loadContent(cmsContent);
+			content.setParams(dto.getParams());
+			content.setOperator(Operator.of(operator));
+
+			this.transactionTemplate.executeWithoutResult(__ -> content.save(dto));
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
@@ -396,10 +465,20 @@ public class ContentServiceImpl implements IContentService {
 	private CmsContent copy0(CmsContent cmsContent, CmsCatalog toCatalog, Integer copyType, LoginUser loginUser) {
 		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.COPYING_CONTENT.locale(AsyncTaskManager.getLocale(),
 				cmsContent.getTitle(), toCatalog.getName()));
-		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
-		IContent<?> content = ct.loadContent(cmsContent);
-		content.setOperator(Operator.of(loginUser));
-		return transactionTemplate.execute(transactionStatus -> content.copyTo(toCatalog, copyType));
+		RLock lock = redissonClient.getLock(ContentCoreConsts.lockContent(cmsContent.getContentId()));
+		if (!lock.tryLock()) {
+			throw ContentCoreErrorCode.CONTENT_EDITING.exception();
+		}
+		try {
+			this.checkSaveContentPermission(cmsContent.getCatalogId(), toCatalog.getCatalogId(), loginUser);
+
+			IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
+			IContent<?> content = ct.loadContent(cmsContent);
+			content.setOperator(Operator.of(loginUser));
+			return transactionTemplate.execute(transactionStatus -> content.copyTo(toCatalog, copyType));
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
@@ -414,11 +493,7 @@ public class ContentServiceImpl implements IContentService {
 
 				List<Long> contentIds = dto.getContentIds();
 				for (Long contentId : contentIds) {
-					CmsContent cmsContent = dao().getById(contentId);
-					if (Objects.nonNull(cmsContent)) {
-						moveContent(cmsContent, catalog, dto.getOperator());
-						SpringUtils.publishEvent(new AfterContentMoveEvent(this, catalog, cmsContent));
-					}
+					moveContent(contentId, catalog, dto.getOperator());
 				}
 				this.setProgressInfo(100, ContentCoreTips.MOVE_CONTENT_SUCCESS.locale(this.getLocale()));
 			}
@@ -429,25 +504,43 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	@Override
-	public void moveContent(CmsContent cmsContent, CmsCatalog toCatalog, LoginUser loginUser) {
-		// 校验权限
-		PermissionUtils.checkPermission(CatalogPermissionType.CatalogPrivItem.AddContent.getPermissionKey(toCatalog.getCatalogId()), loginUser);
-		if (cmsContent.getCatalogId().equals(toCatalog.getCatalogId())) {
-			log.warn("Cannot move content to source catalog!");
-			return;
+	public void moveContent(Long contentId, CmsCatalog toCatalog, LoginUser loginUser) {
+		RLock lock = redissonClient.getLock(ContentCoreConsts.lockContent(contentId));
+		if (!lock.tryLock()) {
+			throw ContentCoreErrorCode.CONTENT_EDITING.exception();
 		}
-		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.MOVING_CONTENT.locale(AsyncTaskManager.getLocale(),
-				cmsContent.getTitle(), toCatalog.getName()));
-		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
-		IContent<?> content = ct.loadContent(cmsContent);
-		content.setOperator(Operator.of(loginUser));
-		transactionTemplate.executeWithoutResult(transactionStatus -> content.moveTo(toCatalog));
+		try {
+			CmsContent cmsContent = this.dao().getById(contentId);
+			if (Objects.isNull(cmsContent)) {
+				AsyncTaskManager.addErrMessage(ContentCoreTips.CONTENT_NOT_FOUND_BY_ID, contentId);
+				return;
+			}
+			Assert.notNull(contentId, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", contentId));
+			if (cmsContent.getCatalogId().equals(toCatalog.getCatalogId())) {
+				log.warn("Cannot move content to source catalog!");
+				return;
+			}
+			// 校验权限
+			this.checkSaveContentPermission(cmsContent.getCatalogId(), toCatalog.getCatalogId(), loginUser);
+			AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.MOVING_CONTENT.locale(AsyncTaskManager.getLocale(),
+					cmsContent.getTitle(), toCatalog.getName()));
+			IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
+			IContent<?> content = ct.loadContent(cmsContent);
+			content.setOperator(Operator.of(loginUser));
+			transactionTemplate.executeWithoutResult(transactionStatus -> content.moveTo(toCatalog));
+			SpringUtils.publishEvent(new AfterContentMoveEvent(this, toCatalog, cmsContent));
+		}  finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
 	public void setTop(SetTopContentDTO dto) {
 		List<CmsContent> contents = this.dao().listByIds(dto.getContentIds());
+		// 先校验内容编辑权限
 		for (CmsContent c : contents) {
+			PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(c.getCatalogId()), dto.getOperator());
+
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
 			content.setOperator(Operator.of(dto.getOperator()));
@@ -463,6 +556,9 @@ public class ContentServiceImpl implements IContentService {
 				.in(CmsContent::getContentId, contentIds)
 				.list();
 		for (CmsContent c : contents) {
+			// 先校验内容编辑权限
+			PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(c.getCatalogId()), operator);
+
 			IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
 			IContent<?> content = ct.loadContent(c);
 			content.setOperator(Operator.of(operator));
@@ -479,6 +575,9 @@ public class ContentServiceImpl implements IContentService {
 			public void run0() {
 				List<CmsContent> contents = dao().listByIds(contentIds);
 				for (CmsContent c : contents) {
+					LoginUser loginUser = StpAdminUtil.getLoginUser();
+					PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(c.getCatalogId()), loginUser);
+
 					offline0(c, operator, locale);
 				}
 				this.setProgressInfo(100, ContentCoreTips.OFFLINE_SUCCESS.locale(locale));
@@ -491,6 +590,9 @@ public class ContentServiceImpl implements IContentService {
 
 	@Override
 	public void offline(CmsContent cmsContent, LoginUser operator) {
+		LoginUser loginUser = StpAdminUtil.getLoginUser();
+		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(cmsContent.getCatalogId()), loginUser);
+
 		offline0(cmsContent, operator, LocaleContextHolder.getLocale());
 	}
 
@@ -517,12 +619,14 @@ public class ContentServiceImpl implements IContentService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void sort(SortContentDTO dto) {
-		CmsContent c = this.dao().getById(dto.getContentId());
-		IContentType ct = ContentCoreUtils.getContentType(c.getContentType());
-		IContent<?> content = ct.loadContent(c);
-		content.setOperator(Operator.of(dto.getOperator()));
-		content.sort(dto.getTargetContentId());
+	public void sort(CmsContent sortContent, CmsContent targetContent, LoginUser operator) {
+		if (targetContent.getContentId().equals(sortContent.getContentId())) {
+			return;
+		}
+		IContentType ct = ContentCoreUtils.getContentType(sortContent.getContentType());
+		IContent<?> content = ct.loadContent(sortContent);
+		content.setOperator(Operator.of(operator));
+		content.sort(targetContent);
 		SpringUtils.publishEvent(new AfterContentSortEvent(this, content));
 	}
 
@@ -530,6 +634,7 @@ public class ContentServiceImpl implements IContentService {
 	public void toPublish(List<Long> contentIds, LoginUser operator) {
 		List<CmsContent> contents = this.dao().listByIds(contentIds);
 		for (CmsContent c : contents) {
+			PermissionUtils.checkPermission(CatalogPrivItem.Publish.getPermissionKey(c.getCatalogId()), operator);
 			toPublish(c, operator);
 		}
 	}
@@ -539,6 +644,7 @@ public class ContentServiceImpl implements IContentService {
 		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 		IContent<?> content = ct.loadContent(cmsContent);
 		content.setOperator(Operator.of(loginUser));
+
 		boolean toPublished = transactionTemplate.execute(transactionStatus -> content.toPublish());
 		if (toPublished) {
 			SpringUtils.publishEvent(new AfterContentToPublishEvent(this, content));

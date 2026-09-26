@@ -23,6 +23,7 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.config.SystemConfig;
+import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.domain.SysLoginConfig;
 import com.chestnut.system.domain.SysMenu;
 import com.chestnut.system.domain.SysSecurityConfig;
@@ -31,10 +32,7 @@ import com.chestnut.system.domain.dto.LoginBody;
 import com.chestnut.system.domain.vo.LoginConfig;
 import com.chestnut.system.domain.vo.LoginUserInfoVO;
 import com.chestnut.system.exception.SysErrorCode;
-import com.chestnut.system.fixed.dict.LoginLogType;
-import com.chestnut.system.fixed.dict.SuccessOrFail;
-import com.chestnut.system.fixed.dict.UserStatus;
-import com.chestnut.system.fixed.dict.YesOrNo;
+import com.chestnut.system.fixed.dict.*;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.security.SysLoginService;
@@ -53,7 +51,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * 登录验证
@@ -66,6 +63,8 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 public class SysLoginController extends BaseRestController {
+
+    private final SysProperties sysProperties;
 
 	private final SysLoginService loginService;
 
@@ -89,11 +88,13 @@ public class SysLoginController extends BaseRestController {
     @GetMapping("/checkUsername")
     public R<?> checkUsername(@RequestParam @NotBlank String username) {
         // 先校验用户名
-        Optional<SysUser> opt = this.userService.lambdaQuery().eq(SysUser::getUserName, username).oneOpt();
-        if (opt.isEmpty()) {
+        List<SysUser> users = this.userService.lambdaQuery().eq(SysUser::getUserName, username)
+                .or().eq(SysUser::getPhoneNumber, username)
+                .or().eq(SysUser::getEmail, username).list();
+        if (users.size() != 1) {
             throw SysErrorCode.USER_NOT_EXISTS.exception();
         }
-        SysUser user = opt.get();
+        SysUser user = users.get(0);
         if (user.isLocked()) {
             throw SysErrorCode.USER_LOCKED.exception(Objects.isNull(user.getLockEndTime()) ? "forever" : user.getLockEndTime().toString());
         } else if (UserStatus.isDisable(user.getStatus())) {
@@ -158,6 +159,7 @@ public class SysLoginController extends BaseRestController {
 		List<String> permissions = loginUser.getPermissions();
 		LoginUserInfoVO vo = new LoginUserInfoVO();
 		vo.setUser(user);
+        vo.setSuperAdmin(loginUser.isSuperAdministrator());
 		vo.setRoles(roles);
 		vo.setPermissions(permissions);
         SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
@@ -204,6 +206,12 @@ public class SysLoginController extends BaseRestController {
         LoginConfig loginConfig = new LoginConfig();
         loginConfig.getCaptcha().setEnabled(false);
         loginConfig.setThirds(List.of());
+        loginConfig.setDemoMode(sysProperties.isDemoMode());
+
+        List<LoginConfig.ThirdLogin> thirdLogins = this.loginConfigService.lambdaQuery()
+                .eq(SysLoginConfig::getStatus, EnableOrDisable.ENABLE).list()
+                .stream().map(lc -> new LoginConfig.ThirdLogin(lc.getConfigId(), lc.getType(), lc.getConfigName())).toList();
+        loginConfig.setThirds(thirdLogins);
 
         SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
         if (Objects.nonNull(securityConfig)) {
@@ -213,18 +221,6 @@ public class SysLoginController extends BaseRestController {
                 loginConfig.getCaptcha().setType(loginSecurity.getCaptchaType());
                 loginConfig.getCaptcha().setExpires(Objects.requireNonNullElse(loginSecurity.getCaptchaExpires(), 0));
                 loginConfig.getCaptcha().setDuration(Objects.requireNonNullElse(loginSecurity.getCaptchaDuration(), 0));
-            }
-            if (Objects.nonNull(loginSecurity.getLoginTypeConfigIds())) {
-                List<LoginConfig.ThirdLogin> thirdLogins = loginSecurity.getLoginTypeConfigIds().stream().map(configId -> {
-                    SysLoginConfig config = this.loginConfigService.getLoginConfig(configId);
-                    LoginConfig.ThirdLogin thirdLogin = new LoginConfig.ThirdLogin();
-                    thirdLogin.setType(config.getType());
-                    thirdLogin.setId(configId);
-                    return thirdLogin;
-                }).toList();
-                loginConfig.setThirds(thirdLogins);
-            } else {
-                loginConfig.setThirds(List.of());
             }
         }
         return R.ok(loginConfig);

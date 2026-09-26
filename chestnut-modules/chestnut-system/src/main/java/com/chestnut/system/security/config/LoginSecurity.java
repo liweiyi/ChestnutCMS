@@ -69,9 +69,4 @@ public class LoginSecurity {
      * 验证码消息模板ID。
      */
     private Long captchaMessageTemplateId;
-
-    /**
-     * 第三方登录配置ID，多个用逗号分隔
-     */
-    private List<Long> loginTypeConfigIds;
 }

@@ -15,6 +15,7 @@
  */
 package com.chestnut.xmodel.dto;
 
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.xmodel.core.IMetaModelType;
 import com.chestnut.xmodel.core.MetaModelField;
 import com.chestnut.xmodel.util.XModelUtils;
@@ -26,22 +27,31 @@ import java.util.Map;
 
 @Getter
 @Setter
+@XComment("{API.DOC.META.FIELD_DATA_DTO}")
 public class XModelFieldDataDTO {
 
+	@XComment("{SYS.XMODEL_FIELD.NAME}")
     private String label;
-    
+
+	@XComment("{API.DOC.META.FIELD_NAME}")
     private String fieldName;
 
+	@XComment("{API.DOC.META.FIELD_TYPE}")
 	private String fieldType;
-    	
+
+	@XComment("{SYS.XMODEL_FIELD.CONTROL_TYPE}")
     private String controlType;
 
+	@XComment("{SYS.XMODEL_FIELD.VALIDATIONS}")
 	private List<Map<String, Object>> validations;
-    
+
+	@XComment("{SYS.XMODEL_FIELD.OPTIONS}")
     private List<Map<String, String>> options;
-    
+
+	@XComment("{SYS.XMODEL_FIELD.VALUE}")
     private Object value;
 
+	@XComment("{SYS.XMODEL_FIELD.VALUE_OBJ}")
 	private Object valueObj;
 
 	public static XModelFieldDataDTO newInstance(MetaModelField field, Object value) {

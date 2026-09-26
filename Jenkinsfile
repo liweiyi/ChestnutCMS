@@ -58,7 +58,7 @@ pipeline {
 				dir('./ChestnutCMS') {
 					withEnv(['JAVA_HOME=/var/jenkins_home/jdks/jdk17', 'PATH+JAVA=/var/jenkins_home/jdks/jdk17/bin']) {
 						withMaven(maven: 'M3.9.9') {
-							sh 'mvn -U clean package -pl chestnut-build/chestnut-official -am -Dmaven.test.skip=true'
+							sh 'mvn -U clean package -pl chestnut-admin -am -Pmedia-linux64 -Dmaven.test.skip=true'
 						}
 					}
 				}
