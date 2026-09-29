@@ -144,11 +144,13 @@ public class Member extends BaseEntity implements ISecurityUser {
 	@Override
 	public void disableUser() {
 		this.status = MemberStatus.DISABLE;
+		this.modified = true;
 	}
 
 	@Override
 	public void lockUser(LocalDateTime lockEndTime) {
 		this.status = MemberStatus.LOCK;
+		this.modified = true;
 	}
 
 	@Override

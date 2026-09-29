@@ -131,10 +131,12 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 				// 触发会员经验值操作
 				memberExpConfigService.triggerExpOperation(CommentExpOperation.ID, comment.getUid());
 			} else {
-				this.commentLikeMapper.delete(new LambdaQueryWrapper<CommentLike>()
+				int deleted = this.commentLikeMapper.delete(new LambdaQueryWrapper<CommentLike>()
 						.eq(CommentLike::getCommentId, comment.getCommentId()).eq(CommentLike::getUid, uid));
-				this.commentService.lambdaUpdate().set(Comment::getLikeCount, comment.getLikeCount() - 1)
-						.eq(Comment::getCommentId, comment.getCommentId()).update();
+				if (deleted > 0) {
+					this.commentService.lambdaUpdate().set(Comment::getLikeCount, comment.getLikeCount() - 1)
+							.eq(Comment::getCommentId, comment.getCommentId()).update();
+				}
 			}
 		} finally {
 			lock.unlock();

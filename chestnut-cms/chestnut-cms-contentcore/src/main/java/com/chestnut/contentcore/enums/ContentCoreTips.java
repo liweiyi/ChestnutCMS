@@ -105,9 +105,14 @@ public enum ContentCoreTips implements TipMessage {
     SAVE_SUCCESS,
 
     /**
-     * 正在删除内容：{0}
+     * 正在删除内容数据：{0}
      */
     DELETING_CONTENT,
+
+    /**
+     * 正在删除页面部件数据：{0}
+     */
+    DELETING_PAGE_WIDGET,
 
     /**
      * 删除内容成功

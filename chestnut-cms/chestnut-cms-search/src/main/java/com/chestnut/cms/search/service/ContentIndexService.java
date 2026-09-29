@@ -34,6 +34,7 @@ import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.ArrayUtils;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.HtmlUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IContent;
 import com.chestnut.contentcore.core.IContentType;
@@ -336,7 +337,7 @@ public class ContentIndexService implements CommandLineRunner {
 		data.put("link", InternalUrlUtils.getInternalUrl(InternalDataType_Content.ID, content.getContentEntity().getContentId()));
 		data.put("title", content.getContentEntity().getTitle());
 		data.put("summary", content.getContentEntity().getSummary());
-		data.put("fullText", content.getFullText());
+		data.put("fullText", HtmlUtils.clean(content.getFullText()));
 		// 扩展模型数据
 		this.extendModelService.getModelData(content.getContentEntity()).forEach(fd -> {
 			data.put(fd.getFieldName(), normalizeIndexValue(fd.getValue()));

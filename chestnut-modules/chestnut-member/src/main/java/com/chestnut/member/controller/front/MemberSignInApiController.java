@@ -15,10 +15,12 @@
  */
 package com.chestnut.member.controller.front;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.utils.DateUtils;
 import com.chestnut.member.domain.MemberSignInLog;
 import com.chestnut.member.domain.dto.MemberComplementHistoryRequest;
 import com.chestnut.member.security.MemberUserType;
@@ -31,7 +33,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,26 +51,29 @@ public class MemberSignInApiController extends BaseRestController {
 	@GetMapping
 	public R<?> getMonthSignInLog(@RequestParam(value = "year", required = false) @XComment("{API.DOC.MEMBER.SIGN_IN_YEAR}") Integer year,
 			@RequestParam(value = "month", required = false) @XComment("{API.DOC.MEMBER.SIGN_IN_MONTH}") Integer month) {
-		LocalDateTime now = LocalDateTime.now();
+		LocalDate now = LocalDate.now();
 		if (Objects.isNull(year)) {
 			year = now.getYear();
 		}
 		if (Objects.isNull(month)) {
 			month = now.getMonthValue();
 		}
-		LocalDateTime startTime = LocalDateTime.of(year, month, 1, 0, 0, 0);
-
-		int endYear = year;
-		int endMonth = month;
-		if (month == 12) {
-			endYear = year + 1;
-			endMonth = 1;
-		}
-		LocalDateTime endTime = LocalDateTime.of(endYear, endMonth, 1, 0, 0, 0);
-		List<MemberSignInLog> list = this.memberSignInLogService.lambdaQuery()
-				.eq(MemberSignInLog::getMemberId, StpMemberUtil.getLoginId()).ge(MemberSignInLog::getLogTime, startTime)
-				.lt(MemberSignInLog::getLogTime, endTime).list();
+		List<MemberSignInLog> list = memberSignInLogService.list(
+				monthSignInLogQuery(StpMemberUtil.getLoginIdAsLong(), YearMonth.of(year, month)));
 		return this.bindDataTable(list);
+	}
+
+	/**
+	 * 按实际签到日期查询整月记录。补签记录的 logTime 是补签操作时间，可能落在另一个月，
+	 * 因此只能用 yyyyMMdd 格式的 signInKey 筛选。月初和月末均包含在查询范围内。
+	 */
+	static LambdaQueryWrapper<MemberSignInLog> monthSignInLogQuery(long memberId, YearMonth month) {
+		int firstDayKey = Integer.parseInt(month.atDay(1).format(DateUtils.FORMAT_YYYYMMDD));
+		int lastDayKey = Integer.parseInt(month.atEndOfMonth().format(DateUtils.FORMAT_YYYYMMDD));
+		return new LambdaQueryWrapper<MemberSignInLog>()
+				.eq(MemberSignInLog::getMemberId, memberId)
+				.ge(MemberSignInLog::getSignInKey, firstDayKey)
+				.le(MemberSignInLog::getSignInKey, lastDayKey);
 	}
 
 	@XComment("{API.DOC.MEMBER.SIGN_IN}")

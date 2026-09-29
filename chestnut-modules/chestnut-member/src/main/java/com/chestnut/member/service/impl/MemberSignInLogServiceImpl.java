@@ -27,8 +27,11 @@ import com.chestnut.member.mapper.MemberSignInLogMapper;
 import com.chestnut.member.service.IMemberExpConfigService;
 import com.chestnut.member.service.IMemberSignInLogService;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -38,41 +41,61 @@ public class MemberSignInLogServiceImpl extends ServiceImpl<MemberSignInLogMappe
 
 	private final IMemberExpConfigService memberExpConfigService;
 
+	private final RedissonClient redissonClient;
+
+	private final static String SIGN_IN_LOCK_KEY = "cc:member:signin:lock:";
+
 	@Override
 	public void doSignIn(Long memberId) {
-		LocalDateTime now = LocalDateTime.now();
-		Integer signInKey = Integer.valueOf(now.format(DateUtils.FORMAT_YYYYMMDD));
+		RLock lock = redissonClient.getLock(SIGN_IN_LOCK_KEY + memberId);
+		try {
+			lock.lock();
 
-		Long count = this.lambdaQuery().eq(MemberSignInLog::getMemberId, memberId)
-				.eq(MemberSignInLog::getSignInKey, signInKey).count();
-		Assert.isTrue(count == 0, MemberErrorCode.SIGN_IN_COMPLETED::exception);
-		
-		MemberSignInLog signInLog = new MemberSignInLog();
-		signInLog.setLogId(IdUtils.getSnowflakeId());
-		signInLog.setMemberId(memberId);
-		signInLog.setSignInKey(signInKey);
-		signInLog.setLogTime(now);
-		this.save(signInLog);
-		// 触发会员经验值操作
-		this.memberExpConfigService.triggerExpOperation(SignInExpOperation.ID, signInLog.getMemberId());
+			LocalDateTime now = LocalDateTime.now();
+			Integer signInKey = Integer.valueOf(now.format(DateUtils.FORMAT_YYYYMMDD));
+
+			Long count = this.lambdaQuery().eq(MemberSignInLog::getMemberId, memberId)
+					.eq(MemberSignInLog::getSignInKey, signInKey).count();
+			Assert.isTrue(count == 0, MemberErrorCode.SIGN_IN_COMPLETED::exception);
+
+			MemberSignInLog signInLog = new MemberSignInLog();
+			signInLog.setLogId(IdUtils.getSnowflakeId());
+			signInLog.setMemberId(memberId);
+			signInLog.setSignInKey(signInKey);
+			signInLog.setLogTime(now);
+			this.save(signInLog);
+			// 触发会员经验值操作
+			this.memberExpConfigService.triggerExpOperation(SignInExpOperation.ID, signInLog.getMemberId());
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
 	public void complementHistory(MemberComplementHistoryRequest req) {
-		LocalDateTime signInDay = LocalDateTime.of(req.getYear(), req.getMonth(), req.getDay(), 0, 0, 0);
-		Integer signInKey = Integer.valueOf(signInDay.format(DateUtils.FORMAT_YYYYMMDD));
+		RLock lock = redissonClient.getLock(SIGN_IN_LOCK_KEY + req.getOperator().getUserId());
+		try {
+			lock.lock();
+			LocalDateTime signInDay = LocalDateTime.of(req.getYear(), req.getMonth(), req.getDay(), 0, 0, 0);
+			if (!signInDay.toLocalDate().isBefore(LocalDate.now())) {
+				throw MemberErrorCode.INVALID_COMPLEMENT_SIGN_IN_DATE.exception();
+			}
+			Integer signInKey = Integer.valueOf(signInDay.format(DateUtils.FORMAT_YYYYMMDD));
 
-		Long count = this.lambdaQuery().eq(MemberSignInLog::getMemberId, req.getOperator().getUserId())
-				.eq(MemberSignInLog::getSignInKey, signInKey).count();
-		Assert.isTrue(count == 0, MemberErrorCode.SIGN_IN_COMPLETED::exception);
-		
-		MemberSignInLog signInLog = new MemberSignInLog();
-		signInLog.setLogId(IdUtils.getSnowflakeId());
-		signInLog.setMemberId(req.getOperator().getUserId());
-		signInLog.setSignInKey(signInKey);
-		signInLog.setLogTime(LocalDateTime.now());
-		this.save(signInLog);
-		// 触发会员经验值操作
-		this.memberExpConfigService.triggerExpOperation(SignInExpOperation.ID, signInLog.getMemberId());
+			Long count = this.lambdaQuery().eq(MemberSignInLog::getMemberId, req.getOperator().getUserId())
+					.eq(MemberSignInLog::getSignInKey, signInKey).count();
+			Assert.isTrue(count == 0, MemberErrorCode.SIGN_IN_COMPLETED::exception);
+
+			MemberSignInLog signInLog = new MemberSignInLog();
+			signInLog.setLogId(IdUtils.getSnowflakeId());
+			signInLog.setMemberId(req.getOperator().getUserId());
+			signInLog.setSignInKey(signInKey);
+			signInLog.setLogTime(LocalDateTime.now());
+			this.save(signInLog);
+			// 触发会员经验值操作
+			this.memberExpConfigService.triggerExpOperation(SignInExpOperation.ID, signInLog.getMemberId());
+		} finally {
+			lock.unlock();
+		}
 	}
 }

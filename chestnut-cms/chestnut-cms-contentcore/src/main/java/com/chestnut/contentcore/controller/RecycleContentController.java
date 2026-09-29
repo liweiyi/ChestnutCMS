@@ -25,15 +25,12 @@ import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.security.web.TableData;
-
-
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.domain.BCmsContent;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.perms.ContentCorePriv;
 import com.chestnut.contentcore.service.IContentService;
-import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.CmsRestController;
 import com.chestnut.system.security.AdminUserType;
@@ -94,7 +91,7 @@ public class RecycleContentController extends CmsRestController {
 	@Log(title = "删除回收站内容", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")
 	public R<Void> deleteRecycleContents(@RequestBody @NotEmpty List<Long> backupIds) {
-		this.contentService.deleteRecycleContents(backupIds);
+		this.contentService.deleteRecycleContents(backupIds, StpAdminUtil.getLoginUser());
 		return R.ok();
 	}
 }

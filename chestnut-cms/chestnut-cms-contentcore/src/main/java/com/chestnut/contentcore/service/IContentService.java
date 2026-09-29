@@ -169,10 +169,10 @@ public interface IContentService extends HasDAO<CmsContentDAO> {
 	/**
 	 * 删除备份表数据
 	 */
-	void deleteRecycleContents(List<Long> backupIds);
+	void deleteRecycleContents(List<Long> backupIds, LoginUser operator);
 
 	/**
 	 * 待发布指定内容
 	 */
-    void toPublish(List<Long> contentIds, LoginUser loginUser);
+    void toPublish(List<Long> contentIds, LoginUser operator);
 }

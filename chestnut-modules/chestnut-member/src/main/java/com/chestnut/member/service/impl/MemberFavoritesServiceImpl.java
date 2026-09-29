@@ -28,6 +28,8 @@ import com.chestnut.member.mapper.MemberFavoritesMapper;
 import com.chestnut.member.service.IMemberFavoritesService;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -50,6 +52,10 @@ public class MemberFavoritesServiceImpl extends ServiceImpl<MemberFavoritesMappe
 
     private ApplicationContext applicationContext;
 
+    private final RedissonClient redissonClient;
+
+    private final static String SIGN_IN_LOCK_KEY = "cc:member:favorite:lock:";
+
     @Override
     public List<MemberFavorites> getMemberFavorites(Long memberId, String dataType, Integer limit, Long offset) {
         return this.lambdaQuery()
@@ -63,39 +69,53 @@ public class MemberFavoritesServiceImpl extends ServiceImpl<MemberFavoritesMappe
 
     @Override
     public void favorite(Long memberId, String dataType, Long dataId) {
-        Long count = this.lambdaQuery()
-                .eq(MemberFavorites::getMemberId, memberId)
-                .eq(MemberFavorites::getDataType, dataType)
-                .eq(MemberFavorites::getDataId, dataId)
-                .count();
-        Assert.isTrue(count == 0, MemberErrorCode.FAVORITED::exception);
+        RLock lock = redissonClient.getLock(SIGN_IN_LOCK_KEY + memberId);
+        try {
+            lock.lock();
 
-        this.applicationContext.publishEvent(new BeforeMemberFavoriteEvent(this, dataType, dataId));
+            Long count = this.lambdaQuery()
+                    .eq(MemberFavorites::getMemberId, memberId)
+                    .eq(MemberFavorites::getDataType, dataType)
+                    .eq(MemberFavorites::getDataId, dataId)
+                    .count();
+            Assert.isTrue(count == 0, MemberErrorCode.FAVORITED::exception);
 
-        MemberFavorites favorites = new MemberFavorites();
-        favorites.setLogId(IdUtils.getSnowflakeId());
-        favorites.setMemberId(memberId);
-        favorites.setDataType(dataType);
-        favorites.setDataId(dataId);
-        favorites.setCreateTime(LocalDateTime.now());
-        this.save(favorites);
+            this.applicationContext.publishEvent(new BeforeMemberFavoriteEvent(this, dataType, dataId));
 
-        this.applicationContext.publishEvent(new AfterMemberFavoriteEvent(this, favorites));
+            MemberFavorites favorites = new MemberFavorites();
+            favorites.setLogId(IdUtils.getSnowflakeId());
+            favorites.setMemberId(memberId);
+            favorites.setDataType(dataType);
+            favorites.setDataId(dataId);
+            favorites.setCreateTime(LocalDateTime.now());
+            this.save(favorites);
+
+            this.applicationContext.publishEvent(new AfterMemberFavoriteEvent(this, favorites));
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public void cancelFavorite(Long memberId, String dataType, Long dataId) {
-        Optional<MemberFavorites> opt = this.lambdaQuery()
-                .eq(MemberFavorites::getMemberId, memberId)
-                .eq(MemberFavorites::getDataType, dataType)
-                .eq(MemberFavorites::getDataId, dataId)
-                .oneOpt();
-        Assert.isTrue(opt.isPresent(), MemberErrorCode.NOT_FAVORITED::exception);
+        RLock lock = redissonClient.getLock(SIGN_IN_LOCK_KEY + memberId);
+        try {
+            lock.lock();
 
-        MemberFavorites memberFavorites = opt.get();
-        this.removeById(memberFavorites);
+            Optional<MemberFavorites> opt = this.lambdaQuery()
+                    .eq(MemberFavorites::getMemberId, memberId)
+                    .eq(MemberFavorites::getDataType, dataType)
+                    .eq(MemberFavorites::getDataId, dataId)
+                    .oneOpt();
+            Assert.isTrue(opt.isPresent(), MemberErrorCode.NOT_FAVORITED::exception);
 
-        this.applicationContext.publishEvent(new AfterMemberCancelFavoriteEvent(this, memberFavorites));
+            MemberFavorites memberFavorites = opt.get();
+            this.removeById(memberFavorites);
+
+            this.applicationContext.publishEvent(new AfterMemberCancelFavoriteEvent(this, memberFavorites));
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override

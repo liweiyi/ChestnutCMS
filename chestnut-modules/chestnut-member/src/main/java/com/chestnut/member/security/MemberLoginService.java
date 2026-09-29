@@ -81,6 +81,9 @@ public class MemberLoginService {
 		if (!SecurityUtils.matches(dto.getPassword(), member.getPassword())) {
 			// 密码错误处理策略
 			this.securityConfigService.processLoginPasswordError(member);
+			if (member.isModified()) {
+				this.memberService.updateById(member);
+			}
 			// 记录日志
 			this.logininfoService.recordLogininfor(MemberUserType.TYPE, member.getMemberId(),
 					member.getUserName(), LoginLogType.LOGIN, SuccessOrFail.FAIL, "Invalid password.");

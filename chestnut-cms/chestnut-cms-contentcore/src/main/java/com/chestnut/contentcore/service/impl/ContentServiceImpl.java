@@ -59,7 +59,6 @@ import com.chestnut.system.fixed.config.BackendContext;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.security.AdminUserType;
-import com.chestnut.system.security.StpAdminUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -175,8 +174,8 @@ public class ContentServiceImpl implements IContentService {
 		for (CmsContent mappingContent : mappingList) {
 			log.debug("CC.Content[{}].delete: mapping content delete", content.getContentEntity().getContentId());
 			try {
-				IContentType mappingContentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
-				IContent<?> mappingIContent = mappingContentType.loadContent(cmsContent);
+				IContentType mappingContentType = ContentCoreUtils.getContentType(mappingContent.getContentType());
+				IContent<?> mappingIContent = mappingContentType.loadContent(mappingContent);
 				mappingIContent.setOperator(Operator.of(loginUser));
 				mappingIContent.setParams(params);
 				transactionTemplate.executeWithoutResult(transactionStatus -> {
@@ -197,8 +196,7 @@ public class ContentServiceImpl implements IContentService {
 		Map<Long, Integer> catalogContentIncr = new HashMap<>();
 		List<BCmsContent> backupContents = this.dao().getBackupByIds(backupIds);
 		for (BCmsContent backupContent : backupContents) {
-			LoginUser loginUser = StpAdminUtil.getLoginUser();
-			PermissionUtils.checkPermission(CatalogPrivItem.AddContent.getPermissionKey(backupContent.getCatalogId()), loginUser);
+			PermissionUtils.checkPermission(CatalogPrivItem.AddContent.getPermissionKey(backupContent.getCatalogId()), operator);
 
 			IContentType contentType = ContentCoreUtils.getContentType(backupContent.getContentType());
 			contentType.recover(backupContent);
@@ -213,14 +211,14 @@ public class ContentServiceImpl implements IContentService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void deleteRecycleContents(List<Long> backupIds) {
+	public void deleteRecycleContents(List<Long> backupIds, LoginUser operator) {
 		List<BCmsContent> backupContents = this.dao().listBackupContentByIds(backupIds, List.of(
 				BCmsContent::getContentId,
+				BCmsContent::getCatalogId,
 				BCmsContent::getContentType
 		));
 		for (BCmsContent backupContent : backupContents) {
-			LoginUser loginUser = StpAdminUtil.getLoginUser();
-			PermissionUtils.checkPermission(CatalogPrivItem.DeleteContent.getPermissionKey(backupContent.getCatalogId()), loginUser);
+			PermissionUtils.checkPermission(CatalogPrivItem.DeleteContent.getPermissionKey(backupContent.getCatalogId()), operator);
 
 			IContentType contentType = ContentCoreUtils.getContentType(backupContent.getContentType());
 			contentType.deleteBackups(backupContent.getContentId());
@@ -234,20 +232,31 @@ public class ContentServiceImpl implements IContentService {
 				.eq(!includeChild, CmsContent::getCatalogId, catalog.getCatalogId())
 				.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors())
 				.count();
+		if (total == 0) {
+			return;
+		}
 		Operator operator = Operator.of(loginUser);
-		for (int i = 1; (i - 1) * pageSize < total; i++) {
-			AsyncTaskManager.setTaskProgressInfo((int) ((i - 1) * pageSize / total),
-					"正在栏目删除内容：" + ((i - 1) * pageSize) + " / " + total);
-			this.dao().lambdaQuery()
+		int index = 1;
+		while(true) {
+			AsyncTaskManager.setTaskProgressInfo((int) (index * pageSize / total),
+					ContentCoreTips.DELETING_CONTENT, (index * pageSize) + " / " + total);
+			List<CmsContent> records = this.dao().lambdaQuery()
 					.eq(!includeChild, CmsContent::getCatalogId, catalog.getCatalogId())
 					.likeRight(includeChild, CmsContent::getCatalogAncestors, catalog.getAncestors())
-					.page(new Page<>(i, pageSize, false)).getRecords().forEach(content -> {
-						IContentType contentType = ContentCoreUtils.getContentType(content.getContentType());
-						IContent<?> icontent = contentType.loadContent(content);
-						icontent.setOperator(operator);
-						icontent.getParams().put(IContent.PARAM_IS_DELETE_BY_CATALOG, true);
-						icontent.delete();
-					});
+					.page(new Page<>(1, pageSize, false)).getRecords();
+			if (!records.isEmpty()) {
+				records.forEach(content -> {
+					IContentType contentType = ContentCoreUtils.getContentType(content.getContentType());
+					IContent<?> icontent = contentType.loadContent(content);
+					icontent.setOperator(operator);
+					icontent.getParams().put(IContent.PARAM_IS_DELETE_BY_CATALOG, true);
+					icontent.delete();
+				});
+			}
+			if (records.isEmpty() || records.size() < pageSize) {
+				break; // 已删完
+			}
+			index++;
 		}
 	}
 
@@ -575,8 +584,7 @@ public class ContentServiceImpl implements IContentService {
 			public void run0() {
 				List<CmsContent> contents = dao().listByIds(contentIds);
 				for (CmsContent c : contents) {
-					LoginUser loginUser = StpAdminUtil.getLoginUser();
-					PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(c.getCatalogId()), loginUser);
+					PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(c.getCatalogId()), operator);
 
 					offline0(c, operator, locale);
 				}
@@ -590,8 +598,7 @@ public class ContentServiceImpl implements IContentService {
 
 	@Override
 	public void offline(CmsContent cmsContent, LoginUser operator) {
-		LoginUser loginUser = StpAdminUtil.getLoginUser();
-		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(cmsContent.getCatalogId()), loginUser);
+		PermissionUtils.checkPermission(CatalogPrivItem.EditContent.getPermissionKey(cmsContent.getCatalogId()), operator);
 
 		offline0(cmsContent, operator, LocaleContextHolder.getLocale());
 	}
@@ -605,7 +612,7 @@ public class ContentServiceImpl implements IContentService {
 		// 映射关联内容同步下线
 		if (!cmsContent.isLinkContent() && !ContentCopyType.isMapping(cmsContent.getCopyType())) {
 			List<CmsContent> mappingList = dao().lambdaQuery()
-					.gt(CmsContent::getCopyType, ContentCopyType.Mapping)
+					.eq(CmsContent::getCopyType, ContentCopyType.Mapping)
 					.eq(CmsContent::getCopyId, cmsContent.getContentId())
 					.list();
 			for (CmsContent c : mappingList) {

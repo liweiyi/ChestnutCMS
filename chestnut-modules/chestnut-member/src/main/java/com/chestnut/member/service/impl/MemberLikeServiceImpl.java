@@ -28,6 +28,8 @@ import com.chestnut.member.mapper.MemberLikeMapper;
 import com.chestnut.member.service.IMemberLikeService;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -50,41 +52,59 @@ public class MemberLikeServiceImpl extends ServiceImpl<MemberLikeMapper, MemberL
 
     private ApplicationContext applicationContext;
 
+    private final RedissonClient redissonClient;
+
+    private final static String SIGN_IN_LOCK_KEY = "cc:member:like:lock:";
+
     @Override
     public void like(Long memberId, String dataType, Long dataId) {
-        Long count = this.lambdaQuery()
-                .eq(MemberLike::getMemberId, memberId)
-                .eq(MemberLike::getDataType, dataType)
-                .eq(MemberLike::getDataId, dataId)
-                .count();
-        Assert.isTrue(count == 0, MemberErrorCode.LIKED::exception);
+        RLock lock = redissonClient.getLock(SIGN_IN_LOCK_KEY + memberId);
+        try {
+            lock.lock();
 
-        this.applicationContext.publishEvent(new BeforeMemberLikeEvent(this, dataType, dataId));
+            Long count = this.lambdaQuery()
+                    .eq(MemberLike::getMemberId, memberId)
+                    .eq(MemberLike::getDataType, dataType)
+                    .eq(MemberLike::getDataId, dataId)
+                    .count();
+            Assert.isTrue(count == 0, MemberErrorCode.LIKED::exception);
 
-        MemberLike like = new MemberLike();
-        like.setLogId(IdUtils.getSnowflakeId());
-        like.setMemberId(memberId);
-        like.setDataType(dataType);
-        like.setDataId(dataId);
-        like.setCreateTime(LocalDateTime.now());
-        this.save(like);
+            this.applicationContext.publishEvent(new BeforeMemberLikeEvent(this, dataType, dataId));
 
-        this.applicationContext.publishEvent(new AfterMemberLikeEvent(this, like));
+            MemberLike like = new MemberLike();
+            like.setLogId(IdUtils.getSnowflakeId());
+            like.setMemberId(memberId);
+            like.setDataType(dataType);
+            like.setDataId(dataId);
+            like.setCreateTime(LocalDateTime.now());
+            this.save(like);
+
+            this.applicationContext.publishEvent(new AfterMemberLikeEvent(this, like));
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
     public void cancelLike(Long memberId, String dataType, Long dataId) {
-        Optional<MemberLike> opt = this.lambdaQuery()
+        RLock lock = redissonClient.getLock(SIGN_IN_LOCK_KEY + memberId);
+        try {
+            lock.lock();
+
+            Optional<MemberLike> opt = this.lambdaQuery()
                 .eq(MemberLike::getMemberId, memberId)
                 .eq(MemberLike::getDataType, dataType)
                 .eq(MemberLike::getDataId, dataId)
                 .oneOpt();
-        Assert.isTrue(opt.isPresent(), MemberErrorCode.NOT_LIKED::exception);
+            Assert.isTrue(opt.isPresent(), MemberErrorCode.NOT_LIKED::exception);
 
-        MemberLike memberLike = opt.get();
-        this.removeById(memberLike);
+            MemberLike memberLike = opt.get();
+            this.removeById(memberLike);
 
-        this.applicationContext.publishEvent(new AfterMemberCancelLikeEvent(this, memberLike));
+            this.applicationContext.publishEvent(new AfterMemberCancelLikeEvent(this, memberLike));
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override

@@ -1,30 +1,19 @@
 import axios from 'axios'
 import { ElNotification , ElMessageBox, ElMessage, ElLoading } from 'element-plus'
 import errorCode from '@/utils/errorCode'
-import { tansParams, blobValidate } from '@/utils/chestnut'
+import { tansParams, blobValidate, getResponseCodeErrMsg } from '@/utils/chestnut'
 import { saveAs } from 'file-saver'
 import useUserStore from '@/store/modules/user'
 import { i18n } from '@/i18n'
 import cms from '@/plugins/cms'
 import auth from '@/plugins/auth'
+import { createRepeatSubmitGuard } from '@/utils/repeatSubmit'
 
 let downloadLoadingInstance
 // 是否显示重新登录
 export let isRelogin = { show: false }
 
-// 防重复提交：以 "method:url" 为 key，存储每个接口最近一次请求的 data 和 time
-// 容量上限 100，超出时 FIFO 移除最旧的记录
-// data 超过 DATA_COMPARE_LIMIT 时不存储内容，仅凭 method+url 判重
-const PENDING_REQUEST_MAX = 100
-const DATA_COMPARE_LIMIT = 100 * 1024 // 100KB
-const pendingRequestMap = new Map()
-const buildRequestKey = (config) => `${config.method}:${config.url}`
-const setPendingRequest = (key, value) => {
-  if (!pendingRequestMap.has(key) && pendingRequestMap.size >= PENDING_REQUEST_MAX) {
-    pendingRequestMap.delete(pendingRequestMap.keys().next().value)
-  }
-  pendingRequestMap.set(key, value)
-}
+const repeatSubmitGuard = createRepeatSubmitGuard()
 
 axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
 // 创建axios实例
@@ -55,21 +44,12 @@ service.interceptors.request.use(config => {
     config.url = url
   }
   if (!ignoreRepeatSubmit && (config.method === 'post' || config.method === 'put')) {
-    const dataStr = typeof config.data === 'object' ? JSON.stringify(config.data) : config.data
-    const key = buildRequestKey(config)
-    const prev = pendingRequestMap.get(key)
-    const interval = 1000 // 间隔时间(ms)，小于此时间视为重复提交
-    if (prev && Date.now() - prev.time < interval) {
-      // prev.data 为 null 表示上次是大数据请求，仅凭 method+url 判重；否则需数据内容也一致
-      const dataMatch = prev.data === null || prev.data === dataStr
-      if (dataMatch) {
-        const message = i18n.global.t('Common.RepeatSubmit')
-        console.warn(`[${config.url}]: ` + message)
-        return Promise.reject(new Error(message))
-      }
+    // getUri 使用 Axios 的参数序列化规则，包含 config.params 与 URL 自带的查询参数。
+    if (repeatSubmitGuard.isRepeated(config, service.getUri(config))) {
+      const message = i18n.global.t('Common.RepeatSubmit')
+      console.warn(`[${config.url}]: ` + message)
+      return Promise.reject(new Error(message))
     }
-    const isLargeData = dataStr && dataStr.length >= DATA_COMPARE_LIMIT
-    setPendingRequest(key, { data: isLargeData ? null : dataStr, time: Date.now() })
   }
   return config
 }, error => {
@@ -79,7 +59,7 @@ service.interceptors.request.use(config => {
 
 // 响应拦截器
 service.interceptors.response.use(res => {
-    pendingRequestMap.delete(buildRequestKey(res.config))
+    repeatSubmitGuard.clear(res.config)
     // 未设置状态码则默认成功状态
     const code = res.data.code || 200
     // 获取错误信息
@@ -125,9 +105,7 @@ service.interceptors.response.use(res => {
     }
   },
   error => {
-    if (error.config) {
-      pendingRequestMap.delete(buildRequestKey(error.config))
-    }
+    repeatSubmitGuard.clear(error.config)
     console.log('err' + error)
     let { message } = error
     if (message == "Network Error") {

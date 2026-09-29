@@ -26,6 +26,7 @@ import com.chestnut.contentcore.core.IPageWidget;
 import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsCatalog;
 import com.chestnut.contentcore.domain.CmsPageWidget;
+import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
 import com.chestnut.contentcore.mapper.CmsPageWidgetMapper;
 import com.chestnut.contentcore.perms.PageWidgetPermissionType;
@@ -138,7 +139,7 @@ public class PageWidgetServiceImpl extends ServiceImpl<CmsPageWidgetMapper, CmsP
         List<CmsPageWidget> list = this.lambdaQuery().likeRight(CmsPageWidget::getCatalogAncestors, catalog.getAncestors()).list();
         for (int i = 0; i < list.size(); i++) {
             CmsPageWidget pageWidget = list.get(i);
-            AsyncTaskManager.setTaskProgressInfo((i * 100) / list.size(), "正在删除页面部件：" + i + " / " + list.size());
+            AsyncTaskManager.setTaskProgressInfo((i * 100) / list.size(), ContentCoreTips.DELETING_PAGE_WIDGET,  i + " / " + list.size());
             IPageWidgetType pwt = this.getPageWidgetType(pageWidget.getType());
             IPageWidget pw = pwt.loadPageWidget(pageWidget);
             pw.delete();

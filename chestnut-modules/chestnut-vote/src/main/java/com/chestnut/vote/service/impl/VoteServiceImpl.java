@@ -54,6 +54,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -81,6 +82,8 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 	private final Map<String, IVoteItemType> voteItemTypes;
 	
 	private final RedissonClient redissonClient;
+
+	private final TransactionTemplate transactionTemplate;
 	
 	/**
 	 * 获取问卷调查参与用户类型
@@ -129,7 +132,7 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 		voteVO.setDayLimit(vote.getDayLimit());
 		voteVO.setTotalLimit(vote.getTotalLimit());
 		voteVO.setViewType(vote.getViewType());
-		voteVO.setTotal(voteVO.getTotal());
+		voteVO.setTotal(vote.getTotal());
 
 		Map<Long, List<VoteSubjectItemVO>> itemMap = this.itemMapper
 				.selectList(new LambdaQueryWrapper<VoteSubjectItem>().eq(VoteSubjectItem::getVoteId, vote.getVoteId())
@@ -283,40 +286,47 @@ public class VoteServiceImpl extends ServiceImpl<VoteMapper, Vote> implements IV
 		lock.lock();
 		try {
 			VoteVO vote = this.getVote(voteId);
+			transactionTemplate.executeWithoutResult(status -> {
+				List<VoteLog> voteLogs = voteLogMapper.selectList(new LambdaQueryWrapper<VoteLog>()
+						.eq(VoteLog::getVoteId, voteId));
+				Vote voteUpdate = new Vote();
+				voteUpdate.setVoteId(voteId);
+				voteUpdate.setTotal(voteLogs.size());
+				voteMapper.updateById(voteUpdate);
 
-			List<VoteLog> voteLogs = voteLogMapper.selectList(new LambdaQueryWrapper<VoteLog>()
-					.eq(VoteLog::getVoteId, vote.getVoteId()));
-			// 问卷调查参与数
-			vote.setTotal(voteLogs.size());
-			this.lambdaUpdate().set(Vote::getTotal, voteLogs.size()).eq(Vote::getVoteId, vote.getVoteId()).update();
-			// 单选/多选主题选项票数
-			vote.getSubjects().forEach(subject -> {
-				if (!VoteSubjectType.isInput(subject.getType())) {
-					Map<Long, Integer> itemTotalMap = new HashMap<>();
-					List<Long> itemIds = subject.getItems().stream().map(VoteSubjectItemVO::getItemId).toList();
+				// 所有选项都写回，包括重算后为零票的选项。
+				for (VoteSubjectVO subject : vote.getSubjects()) {
+					if (VoteSubjectType.INPUT.equals(subject.getType())) {
+						continue;
+					}
+					Set<Long> itemIds = subject.getItems().stream()
+							.map(VoteSubjectItemVO::getItemId).collect(Collectors.toSet());
+					Map<Long, Integer> itemTotals = new HashMap<>();
 					for (VoteLog voteLog : voteLogs) {
-						Optional<VoteSubmitRequest.SubjectResult> opt = voteLog.getResult().stream().filter(r ->
-								r.getSubjectId().equals(subject.getSubjectId()) && r.getType().equals(subject.getTitle())
-						).findFirst();
-						if (opt.isPresent()) {
-							VoteSubmitRequest.SubjectResult result = opt.get();
-							for (String itemIdStr : result.getResult()) {
-								long itemId = Long.parseLong(itemIdStr);
-								if (itemIds.contains(itemId)) {
-									itemTotalMap.put(itemId, itemTotalMap.getOrDefault(itemId, 0) + 1);
-								}
+						Optional<VoteSubmitRequest.SubjectResult> result = voteLog.getResult().stream()
+								.filter(r -> Objects.equals(r.getSubjectId(), subject.getSubjectId())
+										&& Objects.equals(r.getType(), subject.getType()))
+								.findFirst();
+						if (result.isEmpty()) {
+							continue;
+						}
+						for (String itemIdString : result.get().getResult()) {
+							long itemId = Long.parseLong(itemIdString);
+							if (itemIds.contains(itemId)) {
+								itemTotals.merge(itemId, 1, Integer::sum);
 							}
 						}
 					}
-					for (Map.Entry<Long, Integer> entry : itemTotalMap.entrySet()) {
-                        new LambdaUpdateChainWrapper<>(itemMapper).set(VoteSubjectItem::getTotal, entry.getValue())
-								.eq(VoteSubjectItem::getItemId, entry.getKey())
-								.update();
+					for (VoteSubjectItemVO item : subject.getItems()) {
+						VoteSubjectItem itemUpdate = new VoteSubjectItem();
+						itemUpdate.setItemId(item.getItemId());
+						itemUpdate.setTotal(itemTotals.getOrDefault(item.getItemId(), 0));
+						itemMapper.updateById(itemUpdate);
 					}
 				}
 			});
-			// 更新缓存
-			this.redisCache.setCacheObject(CACHE_PREFIX + vote.getVoteId(), vote);
+			// 事务提交后失效缓存，下次请求从数据库读取完整的新统计。
+			this.clearVoteCache(voteId);
 		} finally {
 			lock.unlock();
 		}

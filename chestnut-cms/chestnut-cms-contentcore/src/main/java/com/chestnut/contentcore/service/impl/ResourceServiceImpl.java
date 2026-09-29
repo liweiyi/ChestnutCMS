@@ -150,6 +150,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 
 		CmsResource resource = this.getById(dto.getResourceId());
 		Assert.notNull(resource, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("resourceId", dto.getResourceId()));
+		Assert.isTrue(resource.getSiteId().equals(dto.getSite().getSiteId()), ContentCoreErrorCode.NO_CURRENT_SITE_PRIV::exception);
 
 		String oldResourceType = resource.getResourceType();
 		String oldPath = resource.getPath();

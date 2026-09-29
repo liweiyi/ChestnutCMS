@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.chestnut</groupId>
         <artifactId>chestnut-common</artifactId>
-        <version>1.6.1</version>
+        <version>1.6.2</version>
     </parent>
 
     <artifactId>chestnut-common-cloud-aliyun</artifactId>

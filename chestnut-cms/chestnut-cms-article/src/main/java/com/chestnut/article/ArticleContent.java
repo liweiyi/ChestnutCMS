@@ -185,7 +185,7 @@ public class ArticleContent extends AbstractContent<CmsArticleDetail> {
 			CmsArticleDetail articleDetail = this.getArticleService().dao().getById(this.getContentEntity().getContentId());
 			this.setExtendEntity(articleDetail);
 		}
-		return super.getFullText() + StringUtils.SPACE + HtmlUtils.clean(this.getExtendEntity().getContentHtml());
+		return super.getFullText() + StringUtils.SPACE + this.getExtendEntity().getContentHtml();
 	}
 
 	public IArticleService getArticleService() {

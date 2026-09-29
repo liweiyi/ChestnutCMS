@@ -28,6 +28,7 @@ import com.chestnut.customform.CmsCustomFormMetaModelType;
 import com.chestnut.customform.CustomFormConsts;
 import com.chestnut.customform.domain.CmsCustomForm;
 import com.chestnut.customform.exception.CustomFormErrorCode;
+import com.chestnut.customform.fixed.dict.CustomFormStatus;
 import com.chestnut.customform.service.ICustomFormApiService;
 import com.chestnut.customform.service.ICustomFormService;
 import com.chestnut.member.security.StpMemberUtil;
@@ -36,8 +37,6 @@ import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.domain.vo.ImageCaptchaVO;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.validator.LongId;
-
-
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.MapUtils;
@@ -46,6 +45,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * <p>
@@ -101,7 +101,7 @@ public class CustomFormApiController extends BaseRestController {
 			throw CommonErrorCode.INVALID_REQUEST_ARG.exception("formId");
 		}
 		CmsCustomForm form = this.customFormService.getById(formId);
-		Assert.notNull(form, CustomFormErrorCode.FORM_NOT_FOUND::exception);
+		Assert.isTrue(Objects.nonNull(form) && CustomFormStatus.PUBLISHED == form.getStatus(), CustomFormErrorCode.FORM_NOT_FOUND::exception);
 		// 判断登录
 		if (YesOrNo.isYes(form.getNeedLogin()) && !StpMemberUtil.isLogin()) {
 			throw CustomFormErrorCode.NOT_LOGIN.exception();

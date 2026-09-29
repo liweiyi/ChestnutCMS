@@ -42,7 +42,12 @@ public enum VoteErrorCode implements ErrorCode {
 	/**
 	 * 问卷调查还未开始或已过期
 	 */
-	TIME_ERR;
+	TIME_ERR,
+
+	/**
+	 * 提交问卷保存失败
+	 */
+	VOTE_SUBMIT_FAIL;
 	
 	@Override
 	public String value() {

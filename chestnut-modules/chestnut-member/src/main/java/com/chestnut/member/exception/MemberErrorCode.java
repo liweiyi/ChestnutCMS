@@ -38,6 +38,11 @@ public enum MemberErrorCode implements ErrorCode {
 	 * 已完成签到
 	 */
 	SIGN_IN_COMPLETED,
+
+	/**
+	 * 补签日期错误
+	 */
+	INVALID_COMPLEMENT_SIGN_IN_DATE,
 	
 	/**
 	 * 经验配置“{0}”已存在
