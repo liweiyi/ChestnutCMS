@@ -5,7 +5,9 @@
                  width="500px"
                  :close-on-click-modal="false"
                  append-to-body
-                 center>
+                 center
+                 @close="handleClosing"
+                 @closed="handleClosed">
       <div class="percent_info">{{progressMessage}}</div>
       <div class="err_messages" v-if="hasErrMessages()">
         <div v-for="(msg, i) in errMessages" :key="i">{{ msg }}</div>
@@ -130,18 +132,20 @@ const hasErrMessages = () => {
   return errMessages.value && errMessages.value.length > 0;
 }
 
-// 取消按钮
-const handleClose = () => {
-  if (!visible.value) {
-    clearInterval(timer.value);
-    emit('update:open', false);
-    emit("close", { status: resultStatus.value });
-    percent.value = 0;
-    progressMessage.value = "";
-    errMessages.value = [];
-    progressStatus.value = undefined;
-    resultStatus.value = undefined;
-  }
+const handleClosing = () => {
+  visible.value = false;
+}
+
+// 弹窗完全关闭后再通知父组件，避免连续任务在滚动锁释放前重新打开弹窗。
+const handleClosed = () => {
+  const result = { status: resultStatus.value };
+  clearInterval(timer.value);
+  percent.value = 0;
+  progressMessage.value = "";
+  errMessages.value = [];
+  progressStatus.value = undefined;
+  resultStatus.value = undefined;
+  emit("close", result);
 }
 
 // 监听器
@@ -151,7 +155,8 @@ watch(() => props.open, (newVal) => {
 
 watch(visible, (newVal) => {
   if (!newVal) {
-    handleClose();
+    clearInterval(timer.value);
+    emit('update:open', false);
   } else {
     startInterval();
   }

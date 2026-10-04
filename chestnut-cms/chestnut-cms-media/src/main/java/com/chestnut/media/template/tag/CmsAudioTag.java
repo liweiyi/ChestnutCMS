@@ -42,6 +42,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 音频内容列表模板标签
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @RequiredArgsConstructor
 @Component
 public class CmsAudioTag extends AbstractListTag {
@@ -72,6 +78,9 @@ public class CmsAudioTag extends AbstractListTag {
 			throw new InvalidTagAttrValueException(getTagName(), ATTR_CONTENT_ID, String.valueOf(contentId), env);
 		}
 		CmsContent c = this.contentService.dao().getById(contentId);
+        if (c == null) {
+            return TagPageData.of(List.of(), 0);
+        }
 		if (ContentCopyType.isMapping(c.getCopyType())) {
 			contentId = c.getCopyId();
 		}

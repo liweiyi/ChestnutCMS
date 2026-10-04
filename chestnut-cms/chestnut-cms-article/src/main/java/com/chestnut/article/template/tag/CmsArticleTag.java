@@ -46,6 +46,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * 文章正文与分页模板标签
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Component
 @RequiredArgsConstructor
 public class CmsArticleTag extends AbstractTag {
@@ -85,6 +91,10 @@ public class CmsArticleTag extends AbstractTag {
 			throw new TemplateException(I18nUtils.get("{FREEMARKER.ERR.INVALID_CONTENT_ID}", env.getLocale(), contentId), env);
 		}
 		CmsContent content = this.contentMapper.selectById(contentId);
+        if (content == null) {
+            return Map.of(TemplateVariable_ArticleContent, this.wrap(env, StringUtils.EMPTY),
+                    StaticizeConstants.TemplateVariable_Data, this.wrap(env, new ArticleTagData(null, StringUtils.EMPTY)));
+        }
 		if (content.isLinkContent()) {
 			return Map.of(TemplateVariable_ArticleContent, this.wrap(env, StringUtils.EMPTY));
 		}
@@ -141,6 +151,12 @@ public class CmsArticleTag extends AbstractTag {
 		return DESC;
 	}
 
+    /**
+     * 文章标签只读正文输出数据。
+     *
+     * @author 兮玥
+     * @email 190785909@qq.com
+     */
 	@Getter
 	@Setter
 	@NoArgsConstructor

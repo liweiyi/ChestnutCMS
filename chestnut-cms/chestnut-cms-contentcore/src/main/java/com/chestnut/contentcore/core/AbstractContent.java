@@ -460,10 +460,6 @@ public abstract class AbstractContent<T> implements IContent<T> {
 		ContentLogUtils.addLog(ContentOpType.OFFLINE, this.getContentEntity(), this.getOperator());
 	}
 
-	@Override
-	public void archive() {
-		// TODO 归档
-	}
 
 	@Override
 	public String getFullText() {

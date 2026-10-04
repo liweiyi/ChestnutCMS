@@ -162,11 +162,6 @@ public interface IContent<T> {
 	boolean toPublish();
 
 	/**
-	 * 归档
-	 */
-	void archive();
-
-	/**
 	 * 全文检索分词内容
 	 */
 	String getFullText();

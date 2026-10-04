@@ -46,6 +46,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * 活动内容的上一篇和下一篇模板列表。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Component
 @RequiredArgsConstructor
 public class CmsContentClosestTag extends AbstractListTag {
@@ -79,7 +85,7 @@ public class CmsContentClosestTag extends AbstractListTag {
 		Long contentId = MapUtils.getLong(attrs, ATTR_CONTENT_ID);
 
 		CmsContent content = this.contentService.dao().getById(contentId);
-		Assert.notNull(content, () -> new TemplateException(StringUtils.messageFormat("Tag attr[contentid={0}] data not found.", contentId), env));
+        if (content == null) return TagPageData.of(List.of(), 0);
 
 		CmsCatalog catalog = null;
 		long catalogId = MapUtils.getLongValue(attrs, ATTR_CATALOG_ID);
@@ -194,6 +200,12 @@ public class CmsContentClosestTag extends AbstractListTag {
 		return tagAttrs;
 	}
 
+	/**
+	 * 相邻内容查询方向。
+	 *
+	 * @author 兮玥
+	 * @email 190785909@qq.com
+	 */
 	enum TypeTagAttr {
 		Prev(ATTR_OPTION_TYPE_PREV), Next(ATTR_OPTION_TYPE_NEXT);
 
