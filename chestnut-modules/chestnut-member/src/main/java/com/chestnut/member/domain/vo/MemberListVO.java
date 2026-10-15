@@ -16,10 +16,10 @@
 package com.chestnut.member.domain.vo;
 
 import com.chestnut.common.security.domain.BaseDTO;
+import com.chestnut.common.annotation.XComment;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /***
@@ -45,7 +45,12 @@ public class MemberListVO extends BaseDTO {
 	private String nickName;
 	
 	/**
-	 * 手机号
+	 * 手机号区号
+	 */
+	private String phoneCallingCode;
+
+	/**
+	 * 手机本地号码
 	 */
 	private String phoneNumber;
 	
@@ -62,7 +67,11 @@ public class MemberListVO extends BaseDTO {
 	/**
 	 * 状态
 	 */
-	private String status; 
+	private String status;
+
+	/** 锁定结束时间 */
+	@XComment("{API.DOC.MEMBER.LOCK_END_TIME}")
+	private LocalDateTime lockEndTime;
 	
 	/**
 	 * 来源类型

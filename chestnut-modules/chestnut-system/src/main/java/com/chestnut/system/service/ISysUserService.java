@@ -79,6 +79,10 @@ public interface ISysUserService extends IService<SysUser> {
 	 */
 	SysUser updateUser(UpdateUserRequest user);
 
+	void changeStatus(ChangeUserStatusRequest req);
+
+	void batchChangeStatus(BatchChangeAccountStatusRequest req);
+
 	/**
 	 * 重置用户密码
 	 */

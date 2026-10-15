@@ -144,7 +144,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-for="item in configTypeProps" :label="item.label" :key="item.key">
+        <el-form-item v-for="item in configTypeProps" :label="item.label" :key="item.key" :prop="`configProps.${item.key}`">
           <el-input v-if="item.type==='INPUT'" v-model="form.configProps[item.key]" />
           <el-input-number v-if="item.type==='INPUT_NUMBER'" v-model="form.configProps[item.key]" />
           <pairs-input v-if="item.type==='INPUT_PAIRS'" v-model="form.configProps[item.key]" :keyName="item.pairsKeyName" :valueName="item.pairsValueName" />
@@ -189,6 +189,16 @@
             />
           </el-checkbox-group>
         </el-form-item>
+        <el-form-item :label="$t('Message.Config.RateLimits')" prop="configProps.rateLimits">
+          <div>
+            <pairs-input
+              v-model="form.configProps.rateLimits"
+              :key-name="$t('Message.Config.RateLimitWindow')"
+              :value-name="$t('Message.Config.RateLimitCount')"
+            />
+            <div class="el-form-item-tip"><el-text type="info" size="small">{{ $t('Message.Config.RateLimitTip') }}</el-text></div>
+          </div>
+        </el-form-item>
         <el-form-item :label="$t('Common.Remark')" prop="remark">
           <el-input v-model="form.remark" type="textarea" :rows="3" />
         </el-form-item>
@@ -200,25 +210,22 @@
     </el-dialog>
     <el-dialog :title="$t('Message.Config.TestSend')" v-model="openTest" width="800px" append-to-body>
       <el-form ref="formTestRef" :loading="submitLoading" :model="formTest" :rules="rulesTest" label-width="140px">
-        <el-form-item v-if="formTest.type === 'SMS'" :label="$t('Message.Config.SMS.TestPhone')" prop="phoneNumbers">
-          <el-input-tag v-model="formTest.params.phoneNumbers" />
+        <el-form-item v-if="formTest.type === 'SMS'" :label="$t('Message.Config.SMS.TestPhone')" prop="params.phoneNumber">
+          <PhoneNumberInput v-model="formTest.params.phoneNumber" v-model:phone-calling-code="formTest.params.phoneCallingCode" />
         </el-form-item>
-        <el-form-item v-if="formTest.type === 'SMS'" :label="$t('Message.Config.SMS.TestTemplateId')" prop="templateId">
-          <el-input v-model="formTest.params.templateId" />
-        </el-form-item>
-        <el-form-item v-if="formTest.type === 'SMS'" :label="$t('Message.Config.SMS.TestTemplateParams')" prop="templateVariables">
+        <el-form-item v-if="formTest.type === 'SMS'" :label="$t('Message.Config.SMS.TestTemplateParams')" prop="params.templateVariables">
           <pairs-input v-model="formTest.params.templateVariables" />
         </el-form-item>
-        <el-form-item v-if="formTest.type === 'Email'" :label="$t('Message.Config.Email.TestTo')" prop="to">
-          <el-input-tag v-model="formTest.params.mails" />
+        <el-form-item v-if="formTest.type === 'Email'" :label="$t('Message.Config.Email.TestTo')" prop="params.receiver">
+          <el-input v-model.trim="formTest.params.receiver" type="email" />
         </el-form-item>
-        <el-form-item v-if="formTest.type === 'Email'" :label="$t('Message.Config.TestTitle')" prop="title">
+        <el-form-item v-if="formTest.type === 'Email'" :label="$t('Message.Config.TestTitle')" prop="params.title">
           <el-input v-model="formTest.params.title" />
         </el-form-item>
-        <el-form-item v-if="formTest.type === 'Email'" :label="$t('Message.Config.TestContent')" prop="content">
+        <el-form-item v-if="formTest.type === 'Email'" :label="$t('Message.Config.TestContent')" prop="params.content">
           <el-input v-model="formTest.params.content" type="textarea" :rows="10" />
         </el-form-item>
-        <el-form-item v-if="formTest.type === 'DingTalkRobot' || formTest.type === 'FeiShuRobot'" :label="$t('Message.Config.TestContent')" prop="content">
+        <el-form-item v-if="formTest.type === 'DingTalkRobot' || formTest.type === 'FeiShuRobot'" :label="$t('Message.Config.TestContent')" prop="params.content">
           <el-input v-model="formTest.params.content" type="textarea" :rows="10" />
         </el-form-item>
       </el-form>
@@ -233,6 +240,9 @@
 <script setup name="MessageConfigIndex">
 import * as messageConfigApi from "@/api/tool/message/config.js";
 import PairsInput from '@/views/components/PairsInput';
+import PhoneNumberInput from '@/components/PhoneNumberInput';
+import { DEFAULT_PHONE_COUNTRY_CODE, normalizePhoneNumber, validatePhoneNumber } from '@/utils/phoneNumber';
+import { isValidRateLimits } from './rateLimits.js';
 
 const { proxy } = getCurrentInstance();
 
@@ -243,6 +253,10 @@ const typeRules = {
     ],
     'type': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
+    ],
+    'configProps.rateLimits': [
+      { validator: (_rule, value, callback) => callback(isValidRateLimits(value)
+        ? undefined : new Error(proxy.$t('Message.Config.RateLimitInvalid'))), trigger: ['change', 'blur'] },
     ],
   },
   sms: {},
@@ -283,25 +297,25 @@ const typeRules = {
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ],
   },
-  dingtalk: {
+  dingtalkrobot: {
     'name': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ],
     'type': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ],
-    'configProps.webhook': [
+    'configProps.webHook': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ]
   },
-  feishu: {
+  feishurobot: {
     'name': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ],
     'type': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ],
-    'configProps.webhook': [
+    'configProps.webHook': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ]
   },
@@ -309,16 +323,16 @@ const typeRules = {
 
 const testRules = {
   sms: {
-    'params.phoneNumbers': [
-      { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
-    ],
-    'params.templateId': [
-      { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
+    'params.phoneNumber': [
+      { required: true, whitespace: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
+      { validator: (_rule, value, callback) => callback(validatePhoneNumber(value, formTest.value.params.phoneCallingCode)
+        ? undefined : new Error(proxy.$t('Common.RuleTips.PhoneNumber'))), trigger: ['change', 'blur'] },
     ],
   },
   email: {
-    'params.mails': [
-      { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
+    'params.receiver': [
+      { required: true, whitespace: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
+      { type: 'email', message: proxy.$t('Common.RuleTips.Email'), trigger: ['change', 'blur'] },
     ],
     'params.title': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
@@ -327,12 +341,12 @@ const testRules = {
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ],
   },
-  dingtalk: {
+  dingtalkrobot: {
     'params.content': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ],
   },
-  feishu: {
+  feishurobot: {
     'params.content': [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
     ],
@@ -414,6 +428,7 @@ function handleAdd() {
   form.value = {
     configProps: {}
   };
+  rules.value = { ...typeRules.default };
   title.value = proxy.$t("Message.Config.AddTitle");
   open.value = true;
 }
@@ -425,7 +440,7 @@ function handleUpdate(row) {
   }
   messageConfigApi.getConfigDetail(row.configId).then(response => {
     form.value = response.data;
-    initRateLimitProps(form.value.type);
+    handleTypeChange(form.value.type);
   });
   title.value = proxy.$t("Message.Config.EditTitle");
   open.value = true;
@@ -469,26 +484,12 @@ function handleDelete(row) {
 }
 
 function handleTypeChange(value) {
-  rules.value = typeRules[value.toLowerCase()] || {};
-  initRateLimitProps(value);
-}
-
-function initRateLimitProps(type) {
-  if (type !== 'Email' && type !== 'SMS') {
-    return;
-  }
+  rules.value = { ...typeRules.default, ...typeRules[value?.toLowerCase()] };
   form.value.configProps = form.value.configProps || {};
-  if (!form.value.configProps.rateLimits) {
-    const windowSeconds = form.value.configProps.rateLimitWindowSeconds || 60;
-    const maxCount = form.value.configProps.rateLimitMaxCount || 1;
-    form.value.configProps.rateLimits = { [windowSeconds]: String(maxCount) };
-  }
-  delete form.value.configProps.rateLimitWindowSeconds;
-  delete form.value.configProps.rateLimitMaxCount;
 }
 
 function handleSmsTypeChange(value) {
-  rules.value = typeRules[`sms_${value.toLowerCase()}`] || {};
+  rules.value = { ...typeRules.default, ...typeRules[`sms_${value.toLowerCase()}`] };
 }
 
 function cancelTest() {
@@ -504,13 +505,14 @@ function handleTest(row) {
   };
   rulesTest.value = testRules[row.type.toLowerCase()] || {};
   
-  if (row.type === 'sms') {
-    formTest.value.params.phoneNumbers = [];
-  } else if (row.type === 'email') {
-    formTest.value.params.to = [];
+  if (row.type === 'SMS') {
+    formTest.value.params.phoneCallingCode = DEFAULT_PHONE_COUNTRY_CODE;
+    formTest.value.params.phoneNumber = '';
+  } else if (row.type === 'Email') {
+    formTest.value.params.receiver = '';
     formTest.value.params.title = `邮件通知测试消息 - ${new Date().toLocaleString()}`;
     formTest.value.params.content = `测试消息，请忽略。<br/>时间：${new Date().toLocaleString()}`;
-  } else if (row.type === 'dingtalk') {
+  } else if (row.type === 'DingTalkRobot') {
     formTest.value.params.content = `{
       "msgtype": "text",
       "text": {
@@ -520,7 +522,7 @@ function handleTest(row) {
         "isAtAll": true
       }
     }`;
-  } else if (row.type === 'feishu') {
+  } else if (row.type === 'FeiShuRobot') {
     formTest.value.params.content = `{
       "msg_type": "text",
       "content": {
@@ -535,12 +537,22 @@ function handleTestSend() {
   submitLoading.value = true;
   proxy.$refs["formTestRef"].validate((valid) => {
     if (valid) {
-      messageConfigApi.testConfig(formTest.value).then(response => {
+      const { phoneNumber, phoneCallingCode, ...params } = formTest.value.params;
+      const request = formTest.value.type === 'SMS' ? {
+        ...formTest.value,
+        params: {
+          ...params,
+          receiver: normalizePhoneNumber(phoneNumber, phoneCallingCode)
+        }
+      } : formTest.value;
+      messageConfigApi.testConfig(request).then(response => {
         submitLoading.value = false;
         proxy.$modal.msgSuccess(proxy.$t("Common.OpSuccess"));
       }).catch(() => {
         submitLoading.value = false;
       });
+    } else {
+      submitLoading.value = false;
     }
   });
 }

@@ -18,8 +18,18 @@ package com.chestnut.member.permission;
 public interface MemberPriv {
 
 	String MemberList = "member:view";
+
+	String MemberFollow = "member:follow:view";
+
+	String MemberFollowCancel = "member:follow:cancel";
 	
 	String MemberLevel = "member:level:view";
+
+	String MemberLevelManage = "member:level:manage";
+
+	String MemberFavorites = "member:favorites:view";
+
+	String MemberInteractionLog = "member:interaction:view";
 	
 	String MemberExp = "member:exp:view";
 

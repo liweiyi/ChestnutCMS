@@ -15,6 +15,10 @@
  */
 package com.chestnut.member.domain.vo;
 
-public record ExpOperationVO(String id, String name) {
+import com.chestnut.common.annotation.XComment;
+
+@XComment("{API.DOC.MEMBER.GET_EXP_OP_TYPES}")
+public record ExpOperationVO(@XComment("{API.DOC.MEMBER.OP_TYPE}") String id,
+                             @XComment("{CC.ENTITY.NAME}") String name) {
 
 }

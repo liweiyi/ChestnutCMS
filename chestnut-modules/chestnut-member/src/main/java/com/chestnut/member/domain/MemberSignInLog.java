@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.chestnut.common.annotation.XComment;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -35,6 +36,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @TableName(MemberSignInLog.TABLE_NAME)
+@XComment("{API.DOC.MEMBER.INTERACTION_SIGN_IN_RECORD}")
 public class MemberSignInLog implements Serializable {
 
 	@Serial
@@ -43,20 +45,24 @@ public class MemberSignInLog implements Serializable {
 	public static final String TABLE_NAME = "cc_member_signin_log";
 
 	@TableId(value = "log_id", type = IdType.INPUT)
+	@XComment("{API.DOC.MEMBER.INTERACTION_LOG_ID}")
     private Long logId;
 	
 	/**
 	 * 会员ID
 	 */
+	@XComment("{API.DOC.MEMBER.MEMBER_ID}")
 	private Long memberId;
 	
 	/**
 	 * 签到日期唯一标识，格式：yyyyMMdd
 	 */
+	@XComment("{API.DOC.MEMBER.INTERACTION_SIGN_IN_DATE}")
 	private Integer signInKey;
 	
 	/**
 	 * 签到时间
 	 */
+	@XComment("{API.DOC.MEMBER.INTERACTION_RECORD_TIME}")
 	private LocalDateTime logTime;
 }

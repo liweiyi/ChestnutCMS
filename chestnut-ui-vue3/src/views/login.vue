@@ -1,7 +1,17 @@
 <template>
   <div class="login">
-    <el-form ref="loginRef" :model="loginForm" :rules="loginRules" class="login-form">
+    <div class="login-form">
       <h3 class="title">{{ $t("APP.TITLE") }}</h3>
+      <el-radio-group
+        v-if="smsLoginEnabled"
+        v-model="loginMode"
+        :disabled="loading || smsLoggingIn"
+        class="login-mode-switch"
+      >
+        <el-radio-button value="password">{{ $t('Login.PasswordLogin') }}</el-radio-button>
+        <el-radio-button value="sms">{{ $t('Login.SmsLogin') }}</el-radio-button>
+      </el-radio-group>
+      <el-form v-show="loginMode === 'password'" ref="loginRef" :model="loginForm" :rules="loginRules">
       <el-form-item prop="username">
         <el-input
           ref="usernameRef"
@@ -65,7 +75,15 @@
           <router-link class="link-type" :to="'/register'">{{ $t('Login.Register') }}</router-link>
         </div>
       </el-form-item>
-      <el-form-item>
+      </el-form>
+      <sms-login
+        v-if="smsLoginEnabled"
+        v-show="loginMode === 'sms'"
+        :active="loginMode === 'sms' && smsLoginEnabled"
+        @success="onLoginSuccess"
+        @loading-change="smsLoggingIn = $event"
+      />
+      <div class="login-methods">
         <el-row justify="space-between" style="width: 100%;">
           <el-col :span="12">
             <language-select id="lang-select" :arrow="true" class="right-menu-item hover-effect" />
@@ -87,8 +105,8 @@
             </el-dropdown>
           </el-col>
         </el-row>
-      </el-form-item>
-    </el-form>
+      </div>
+    </div>
     <!--  底部  -->
     <div class="el-login-footer">
       <span>{{ $t('APP.Copyright') }}</span>
@@ -103,7 +121,9 @@ import { encrypt, decrypt } from "@/utils/jsencrypt"
 import LanguageSelect from '@/components/LanguageSelect'
 import CaptchaMath from './components/captcha/math'
 import CaptchaText from './components/captcha/text'
+import SmsLogin from './components/SmsLogin'
 import useUserStore from '@/store/modules/user'
+import { isSmsLoginEnabled, resolveLoginMode } from '@/utils/loginTypes'
 
 const { proxy } = getCurrentInstance()
 
@@ -112,6 +132,8 @@ const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
+const loginMode = ref('password')
+const smsLoggingIn = ref(false)
 // 验证码配置
 const captchaData = ref(null)
 const captchaLoading = ref(false)
@@ -138,9 +160,23 @@ const loginConfig = ref({
     enabled: false
   },
   thirds: [],
+  loginTypes: {},
 });
+const smsLoginEnabled = computed(() => isSmsLoginEnabled(loginConfig.value))
 const thirdLoginOptions = computed(() => (loginConfig.value.thirds || [])
   .filter(third => ['wechat', 'feishu'].includes(third.type) && third.id))
+
+watch(smsLoginEnabled, enabled => {
+  loginMode.value = resolveLoginMode(loginMode.value, loginConfig.value)
+  if (!enabled) smsLoggingIn.value = false
+}, { flush: 'sync' })
+
+watch(loginMode, async mode => {
+  await nextTick()
+  if (disposed) return
+  proxy.$refs.loginRef?.clearValidate()
+  if (mode === 'password' && loginMode.value === 'password') usernameRef.value?.focus()
+})
 
 function captchaComponent() {
   return proxy.$refs[`${loginConfig.value.captcha.type}CaptchaRef`]
@@ -226,7 +262,7 @@ onBeforeUnmount(() => {
 })
 
 async function handleLogin() {
-  if (loading.value) return
+  if (disposed || loading.value || smsLoggingIn.value || loginMode.value !== 'password') return
   loading.value = true
   try {
     await loadLoginConfig()
@@ -255,12 +291,7 @@ async function handleLogin() {
     }
     try {
       await userStore.login(loginData)
-      const query = route.query
-      const otherQueryParams = Object.keys(query).reduce((acc, cur) => {
-        if (cur !== "redirect") acc[cur] = query[cur]
-        return acc
-      }, {})
-      router.push({ path: redirect.value || '/', query: otherQueryParams })
+      onLoginSuccess()
     } catch {
       if (loginConfig.value.captcha.enabled) {
         captchaComponent()?.resetCaptcha()
@@ -274,6 +305,14 @@ async function handleLogin() {
   } finally {
     loading.value = false
   }
+}
+
+function onLoginSuccess() {
+  const otherQueryParams = Object.keys(route.query).reduce((acc, key) => {
+    if (key !== 'redirect') acc[key] = route.query[key]
+    return acc
+  }, {})
+  router.push({ path: redirect.value || '/', query: otherQueryParams })
 }
 
 function getCookie() {
@@ -303,6 +342,17 @@ getCookie()
   margin: 0px auto 30px auto;
   text-align: center;
   color: #707070;
+}
+
+.login-mode-switch {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.login-methods {
+  margin-bottom: 22px;
 }
 
 .third-login {

@@ -18,7 +18,6 @@ package com.chestnut.message.core.sms;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,7 +46,6 @@ public class SmsSendRequest {
 
     private Map<String, String> templateParams;
 
-    private List<String> phoneNumbers;
-
-    private Integer phoneNumberLimit;
+    /** 单个接收人的完整国际号码。 */
+    private String phoneNumber;
 }

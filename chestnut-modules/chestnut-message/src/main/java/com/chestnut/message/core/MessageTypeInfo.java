@@ -17,7 +17,6 @@ package com.chestnut.message.core;
 
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,12 +39,15 @@ public class MessageTypeInfo {
 
     private String value;
 
+    private boolean supportedTemplate;
+
     private List<PropDefinition> props = new ArrayList<>();
 
     public static MessageTypeInfo of(IMessageType<?> messageType) {
         MessageTypeInfo info = new MessageTypeInfo();
         info.label = I18nUtils.get(messageType.getName());
         info.value = messageType.getType();
+        info.supportedTemplate = messageType.supportedTemplate();
         Field[] fields = messageType.getPropsClass().getDeclaredFields();
         List<PropDefinition> props = new ArrayList<>(fields.length);
         for (Field field : fields) {

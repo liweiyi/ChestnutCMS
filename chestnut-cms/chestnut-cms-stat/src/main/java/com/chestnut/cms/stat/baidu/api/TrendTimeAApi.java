@@ -19,10 +19,10 @@ import com.chestnut.cms.stat.baidu.BaiduTjMetrics;
 import com.chestnut.common.utils.HttpUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
-import tools.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.net.URI;
 import java.util.List;
@@ -82,10 +82,10 @@ public class TrendTimeAApi extends BaiduTjDataApi {
         String url = API_URL + "?method=trend/time/a&access_token=" + getAccess_token() + "&site_id=" + getSite_id()
                 + "&start_date=" + start_date + "&end_date=" + end_date + "&gran=" + gran
                 + "&metrics=" + metrics.stream().map(BaiduTjMetrics::name).collect(Collectors.joining(","));
-        url = StringUtils.appendIfNotEmpty(url, area, "&area=" + area);
-        url = StringUtils.appendIfNotEmpty(url, source, "&source=" + source);
-        url = StringUtils.appendIfNotEmpty(url, clientDevice, "&clientDevice=" + clientDevice);
-        url = StringUtils.appendIfNotEmpty(url, visitor, "&visitor=" + visitor);
+        url = StringUtils.appendIfNotEmpty(url, area, v -> "&area=" + v);
+        url = StringUtils.appendIfNotEmpty(url, source,v -> "&source=" + v);
+        url = StringUtils.appendIfNotEmpty(url, clientDevice, v -> "&clientDevice=" + v);
+        url = StringUtils.appendIfNotEmpty(url, visitor, v -> "&visitor=" + v);
         return url;
     }
 }

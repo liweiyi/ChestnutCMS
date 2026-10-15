@@ -17,8 +17,10 @@ package com.chestnut.system.domain.vo;
 
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * LoginConfig
@@ -33,6 +35,8 @@ public class LoginConfig {
     private CaptchaConfig captcha = new CaptchaConfig();
 
     private List<ThirdLogin> thirds;
+
+    private Map<String, ObjectNode> loginTypes;
 
     private Boolean demoMode = false;
 

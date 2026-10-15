@@ -1,9 +1,10 @@
 import router from '@/router'
 import { i18n } from '@/i18n'
 import { ElMessageBox, } from 'element-plus'
-import { login, logout, getInfo } from '@/api/login'
+import { login, loginWithSms, logout, getInfo } from '@/api/login'
 import auth from '@/plugins/auth'
 import { isHttp, isEmpty } from "@/utils/validate"
+import { normalizePhoneParts } from '@/utils/phoneNumber'
 import defAva from '@/assets/images/profile.jpg'
 
 const useUserStore = defineStore(
@@ -34,6 +35,15 @@ const useUserStore = defineStore(
             reject(error)
           })
         })
+      },
+      async smsLogin(userInfo) {
+        const phone = userInfo.phoneCallingCode === undefined ? normalizePhoneParts(userInfo.phoneNumber)
+          : normalizePhoneParts(userInfo.phoneNumber, userInfo.phoneCallingCode)
+        const res = await loginWithSms({
+          ...phone,
+          code: userInfo.code.trim()
+        })
+        this.tokenLogin(res.data)
       },
       tokenLogin(token) {
         auth.setToken(token)

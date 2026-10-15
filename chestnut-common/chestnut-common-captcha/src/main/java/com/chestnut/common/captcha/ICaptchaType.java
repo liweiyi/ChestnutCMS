@@ -15,6 +15,10 @@
  */
 package com.chestnut.common.captcha;
 
+import jakarta.annotation.Nonnull;
+
+import java.util.concurrent.TimeUnit;
+
 /**
  * 验证码类型
  *
@@ -25,12 +29,47 @@ public interface ICaptchaType {
 
     String BEAN_PREFIX = "CaptchaType_";
 
+    /**
+     * 自定义验证码过期时间属性KEY
+     */
+    String EXPIRE_SECONDS_PROP_KEY = "expireSeconds";
+
     String getType();
 
     String getName();
 
-    default String getCacheKey(String token) {
-        return "cc:captcha:" + getType().toLowerCase() + ":" + token;
+    /**
+     * 获取验证码存储实现
+     */
+    ICaptchaStorage getStorage();
+
+    /**
+     * 获取验证码缓存键名
+     *
+     * @param scene 业务场景标识
+     * @param token 验证码归属标识
+     * @return 缓存键名
+     */
+    default String getCacheKey(@Nonnull String scene, @Nonnull String token) {
+        return "cc:captcha:" + getType().toLowerCase() + ":" + scene + ":" + token.trim();
+    }
+
+    default String getSuccessCacheKey(@Nonnull String scene, @Nonnull String token) {
+        return "cc:captcha:success:" + getType().toLowerCase() + ":" + scene + ":" + token;
+    }
+
+    /**
+     * 校验验证码发送频率
+     *
+     * @param expireSeconds 验证码过期时间
+     * @param captchaDuration 验证码发送频率
+     */
+    default void checkLimit(String scene, String token, long expireSeconds, int captchaDuration) {
+        String cacheKey = this.getCacheKey(scene, token);
+        long expire = this.getStorage().getExpires(cacheKey, TimeUnit.SECONDS);
+        if (expire > 0 && expireSeconds - expire < captchaDuration) {
+            throw CaptchaErrorCode.CAPTCHA_LIMIT.exception();
+        }
     }
 
     /**

@@ -95,6 +95,8 @@ public class SysProfileController extends BaseRestController {
 	@Transactional(rollbackFor = Exception.class)
 	@Log(title = "个人中心", businessType = BusinessType.UPDATE)
 	public R<?> updateProfile(@RequestBody @Validated UpdateUserProfileRequest req) {
+		req.setPhoneCallingCode(StringUtils.trim(req.getPhoneCallingCode()));
+		req.setPhoneNumber(StringUtils.trim(req.getPhoneNumber()));
 		this.userService.updateUserProfile(req);
 		// 更新用户token数据
 		this.userPermissionService.resetLoginUser(req.getOperator().getUserId());

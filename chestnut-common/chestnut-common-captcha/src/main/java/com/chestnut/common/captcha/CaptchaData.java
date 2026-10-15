@@ -15,10 +15,10 @@
  */
 package com.chestnut.common.captcha;
 
-import tools.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * 验证码数据
@@ -35,6 +35,11 @@ public class CaptchaData {
 	 * 验证码类型
 	 */
 	private String type;
+
+	/**
+	 * 业务场景
+	 */
+	private String scene;
 
 	/**
 	 * 验证码唯一标识

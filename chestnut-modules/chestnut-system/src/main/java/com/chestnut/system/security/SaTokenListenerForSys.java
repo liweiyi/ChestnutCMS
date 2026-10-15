@@ -15,12 +15,11 @@
  */
 package com.chestnut.system.security;
 
-import org.springframework.stereotype.Component;
-
 import cn.dev33.satoken.config.SaTokenConfig;
 import cn.dev33.satoken.listener.SaTokenListenerForSimple;
 
-@Component
+//@Component
+@Deprecated
 public class SaTokenListenerForSys extends SaTokenListenerForSimple {
 
 	@Override

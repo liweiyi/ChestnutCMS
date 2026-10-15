@@ -21,11 +21,11 @@ import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.message.core.IMessageType;
+import com.chestnut.message.core.MessageRateLimitConfig;
 import com.chestnut.message.core.email.EmailMessageType;
 import com.chestnut.message.core.email.EmailProps;
 import com.chestnut.message.domain.CcMessageConfig;
 import com.chestnut.message.domain.dto.CreateMessageConfigReq;
-import com.chestnut.message.domain.dto.TestMessageConfigReq;
 import com.chestnut.message.domain.dto.UpdateMessageConfigReq;
 import com.chestnut.message.exception.MessageErrorCode;
 import com.chestnut.message.listener.event.AfterMessagePusherConfigUpdateEvent;
@@ -71,6 +71,7 @@ public class MessageConfigServiceImpl extends ServiceImpl<CcMessageConfigMapper,
 	@Override
 	public void addConfig(CreateMessageConfigReq req) {
 		IMessageType<?> messageType = this.getMessageType(req.getType());
+		MessageRateLimitConfig.normalize(req.getConfigProps());
 		messageType.validate(req.getConfigProps());
 
 		CcMessageConfig config = new CcMessageConfig();
@@ -86,6 +87,7 @@ public class MessageConfigServiceImpl extends ServiceImpl<CcMessageConfigMapper,
 		Assert.notNull(dbConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("configId", req.getConfigId()));
 
 		IMessageType<?> messageType = this.getMessageType(req.getType());
+		MessageRateLimitConfig.normalize(req.getConfigProps());
 		messageType.validate(req.getConfigProps());
 		EmailProps originalEmailProps = this.getEmailProps(dbConfig);
 
@@ -103,16 +105,6 @@ public class MessageConfigServiceImpl extends ServiceImpl<CcMessageConfigMapper,
 		configs.stream().map(this::getEmailProps).forEach(this::clearEmailSender);
 		configs.forEach(this::clearCache);
 	}
-
-    @Override
-    public void testSend(TestMessageConfigReq req) {
-        CcMessageConfig messageConfig = this.getMessageConfig(req.getConfigId());
-        IMessageType<?> messageType = this.getMessageType(messageConfig.getType());
-        String title = req.getParams().has("title") ? req.getParams().get("title").asString() : "";
-        String content = req.getParams().has("content") ? req.getParams().get("content").asString() : "";
-        IMessageType.Message msg = new IMessageType.Message(title, content, req.getParams());
-        messageType.send(messageConfig.getConfigProps(), msg);
-    }
 
     private void clearCache(CcMessageConfig config) {
 		this.redisCache.deleteObject(CACHE_PREFIX + config.getConfigId());

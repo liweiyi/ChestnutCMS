@@ -17,27 +17,23 @@ package com.chestnut.message.service.impl;
 
 import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.message.core.IMessageType;
 import com.chestnut.message.core.MessageRateLimitConfig;
 import com.chestnut.message.core.MessageRateLimitConfig.RateLimitWindow;
-import com.chestnut.message.core.email.EmailMessageType;
-import com.chestnut.message.core.sms.SmsMessageType;
 import com.chestnut.message.domain.CcMessageConfig;
 import com.chestnut.message.domain.CcMessageTemplate;
-import com.chestnut.message.domain.dto.UserMessageSendRequest;
 import com.chestnut.message.exception.MessageErrorCode;
 import com.chestnut.message.monitor.MessageTemplateMonitoredCache;
 import com.chestnut.message.service.IMessageConfigService;
-import com.chestnut.message.service.IMessageSendService;
 import com.chestnut.message.service.IMessageTemplateService;
 import freemarker.template.TemplateException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
@@ -47,19 +43,16 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
+/**
+ * 所有消息发送入口共用的投递服务，在调用渠道适配器之前执行频控。
+ */
 @Service
 @RequiredArgsConstructor
-public class MessageSendServiceImpl implements IMessageSendService {
+public class MessageDeliveryService {
 
     private static final String RATE_LIMIT_KEY_PREFIX = "cc:message:rate:";
-
-    private static final Pattern BUSINESS_SCENE_PATTERN = Pattern.compile("[A-Za-z0-9._-]{1,100}");
-
-    private static final Pattern PHONE_PATTERN = Pattern.compile("\\+?[0-9]{6,20}");
 
     private static final DefaultRedisScript<Long> RATE_LIMIT_SCRIPT = new DefaultRedisScript<>("""
             for index, key in ipairs(KEYS) do
@@ -79,60 +72,67 @@ public class MessageSendServiceImpl implements IMessageSendService {
             return 0
             """, Long.class);
 
+    private final RedisTemplate<String, Object> redisTemplate;
+
     private final IMessageConfigService messageConfigService;
 
     private final IMessageTemplateService messageTemplateService;
 
     private final MessageTemplateMonitoredCache messageTemplateCache;
 
-    private final RedisTemplate<String, Object> redisTemplate;
-
-    @Override
-    public void sendUserMessage(UserMessageSendRequest req) {
+    /**
+     * 发起消息发送
+     */
+    public void sendMessage(IMessageType.SendMessageReq req) {
         Assert.notNull(req, MessageErrorCode.INVALID_USER_MESSAGE_REQUEST::exception);
-        String messageType = req.getMessageType();
-        Assert.isTrue(EmailMessageType.TYPE.equals(messageType) || SmsMessageType.TYPE.equals(messageType),
-                () -> MessageErrorCode.UNSUPPORTED_USER_MESSAGE_TYPE.exception(messageType));
-        Assert.isTrue(StringUtils.isNotEmpty(req.getBusinessScene())
-                        && BUSINESS_SCENE_PATTERN.matcher(req.getBusinessScene()).matches(),
-                MessageErrorCode.INVALID_BUSINESS_SCENE::exception);
-        Assert.isTrue(Objects.nonNull(req.getConfigId()) && req.getConfigId() > 0
-                        && Objects.nonNull(req.getTemplateId()) && req.getTemplateId() > 0,
-                MessageErrorCode.INVALID_USER_MESSAGE_REQUEST::exception);
-
-        String receiver = normalizeReceiver(messageType, req.getUserIdentifier());
-        CcMessageConfig config = messageConfigService.getMessageConfig(req.getConfigId());
-        Assert.notNull(config, () -> MessageErrorCode.MESSAGE_CONFIG_NOT_FOUND.exception(req.getConfigId()));
-        CcMessageTemplate template = messageTemplateCache.get(req.getTemplateId());
-        Assert.notNull(template, () -> MessageErrorCode.MESSAGE_TEMPLATE_NOT_FOUND.exception(req.getTemplateId()));
-        Assert.isTrue(messageType.equals(config.getType()) && messageType.equals(template.getType()),
-                MessageErrorCode.MESSAGE_TYPE_MISMATCH::exception);
-
-        ObjectNode variables = Objects.requireNonNullElseGet(req.getParams(), JacksonUtils::objectNode);
-        IMessageType<?> type = messageConfigService.getMessageType(messageType);
-        IMessageType.Message message = buildMessage(messageType, receiver, config, template, variables);
-        MessageRateLimitConfig rateLimitConfig = MessageRateLimitConfig.fromJson(config.getConfigProps());
-        checkRateLimit(messageType, req.getBusinessScene(), receiver, rateLimitConfig);
-        type.send(config.getConfigProps(), message);
+        Assert.isTrue(IdUtils.validate(req.getMessageConfigId()), MessageErrorCode.INVALID_USER_MESSAGE_REQUEST::exception);
+        // 获取消息配置信息
+        CcMessageConfig config = messageConfigService.getMessageConfig(req.getMessageConfigId());
+        Assert.notNull(config, () -> MessageErrorCode.MESSAGE_CONFIG_NOT_FOUND.exception(req.getMessageConfigId()));
+        // 获取消息类型
+        IMessageType<?> mt = this.messageConfigService.getMessageType(config.getType());
+        Assert.notNull(mt, () -> MessageErrorCode.UNSUPPORTED_MESSAGE_TYPE.exception(config.getType()));
+        // 校验发送参数
+        mt.checkSendRequest(req);
+        // 读取消息模版
+        CcMessageTemplate template = null;
+        if (mt.supportedTemplate()) {
+            template = messageTemplateCache.get(req.getMessageTemplateId());
+            Assert.notNull(template, () -> MessageErrorCode.MESSAGE_TEMPLATE_NOT_FOUND.exception(req.getMessageTemplateId()));
+            Assert.isTrue(config.getType().equals(template.getType()), MessageErrorCode.MESSAGE_TYPE_MISMATCH::exception);
+        }
+        // 消息自定义参数
+        ObjectNode variables = Objects.requireNonNullElseGet(req.getTemplateVariables(), JacksonUtils::objectNode);
+        // 构建通用消息发送对象
+        IMessageType.Message message = buildMessage(mt, req.getReceiver(), config, template, variables);
+        String rateLimitKeyPrefix = mt.getType() + ":" + config.getConfigId();
+        MessageRateLimitConfig rateLimits = MessageRateLimitConfig.fromJson(config.getConfigProps());
+        // 异步频控发送
+        if (!rateLimits.windows().isEmpty()) {
+            String rateLimitKey = StringUtils.appendIfNotEmpty(rateLimitKeyPrefix, message.receiver(), v -> ":" + sha256(v));
+            checkRateLimit(rateLimitKey, rateLimits);
+        }
+        // 发送
+        mt.send(message);
     }
 
-    private IMessageType.Message buildMessage(String messageType, String receiver, CcMessageConfig config,
-                                               CcMessageTemplate template, ObjectNode variables) {
+    public void testSendMessage(CcMessageConfig config, String receiver, String title, String content, ObjectNode templateVariables) {
+        // 测试发送
+        IMessageType<?> mt = this.messageConfigService.getMessageType(config.getType());
+        ObjectNode messageProps = config.getConfigProps().deepCopy();
+        messageProps.set("templateVariables", Objects.requireNonNullElse(templateVariables, JacksonUtils.objectNode()));
+        IMessageType.Message message = new IMessageType.Message(title, content, receiver, messageProps);
+        mt.send(message);
+    }
+
+    private IMessageType.Message buildMessage(IMessageType<?> messageType, String receiver, CcMessageConfig config,
+                                              CcMessageTemplate template, ObjectNode templateVariables) {
         try {
-            String title = StringUtils.isEmpty(template.getTitle()) ? ""
-                    : messageTemplateService.parseTemplateTitle(template, variables);
-            String content = StringUtils.isEmpty(template.getContent()) ? ""
-                    : messageTemplateService.parseTemplateContent(template, variables);
-            ObjectNode sendParams = JacksonUtils.objectNode();
-            ArrayNode receivers = JacksonUtils.arrayNode().add(receiver);
-            if (EmailMessageType.TYPE.equals(messageType)) {
-                sendParams.set("mails", receivers);
-            } else {
-                sendParams.set("phoneNumbers", receivers);
-                sendParams.put("templateId", config.getConfigProps().required("templateId").asString());
-                sendParams.set("templateVariables", variables);
-            }
-            return new IMessageType.Message(title, content, sendParams);
+            ObjectNode messageProps = config.getConfigProps().deepCopy();
+            messageProps.set("templateVariables", templateVariables);
+            String title = messageType.supportedTemplate() ? parseTitleVariables(template, templateVariables) : null;
+            String content = messageType.supportedTemplate() ? parseContentVariables(template, templateVariables) : null;
+            return new IMessageType.Message(title, content, receiver, messageProps);
         } catch (IOException | TemplateException | RuntimeException e) {
             if (e instanceof GlobalException globalException) {
                 throw globalException;
@@ -141,9 +141,22 @@ public class MessageSendServiceImpl implements IMessageSendService {
         }
     }
 
-    private void checkRateLimit(String messageType, String businessScene, String receiver,
-                                MessageRateLimitConfig config) {
-        String keyPart = messageType + ":" + businessScene + ":" + sha256(receiver);
+    private String parseTitleVariables(CcMessageTemplate template, ObjectNode variables) throws TemplateException, IOException {
+        if (Objects.isNull(template) || StringUtils.isBlank(template.getTitle())) {
+            return null;
+        }
+        return messageTemplateService.parseTemplateTitle(template, variables);
+    }
+
+    private String parseContentVariables(CcMessageTemplate template, ObjectNode variables) throws TemplateException, IOException {
+        if (Objects.isNull(template) || StringUtils.isBlank(template.getContent())) {
+            return null;
+        }
+        return messageTemplateService.parseTemplateContent(template, variables);
+    }
+
+    private void checkRateLimit(String keyPart, MessageRateLimitConfig config) {
+        // 机器人按配置计数；短信、邮件在配置内按接收人计数。
         String redisKeyPrefix = RATE_LIMIT_KEY_PREFIX + "{" + keyPart + "}:";
         List<RateLimitWindow> windows = config.windows();
         List<String> redisKeys = new ArrayList<>(windows.size());
@@ -169,21 +182,6 @@ public class MessageSendServiceImpl implements IMessageSendService {
         } catch (Exception e) {
             throw MessageErrorCode.MESSAGE_RATE_LIMIT_ERROR.exception(e);
         }
-    }
-
-    private String normalizeReceiver(String messageType, String userIdentifier) {
-        Assert.notEmpty(userIdentifier, MessageErrorCode.INVALID_MESSAGE_RECEIVER::exception);
-        if (EmailMessageType.TYPE.equals(messageType)) {
-            String email = userIdentifier.trim().toLowerCase(Locale.ROOT);
-            int at = email.lastIndexOf('@');
-            Assert.isTrue(at > 0 && at < email.length() - 1,
-                    MessageErrorCode.INVALID_MESSAGE_RECEIVER::exception);
-            return email;
-        }
-        String phone = userIdentifier.replaceAll("[\\s-]", "");
-        Assert.isTrue(PHONE_PATTERN.matcher(phone).matches(),
-                MessageErrorCode.INVALID_MESSAGE_RECEIVER::exception);
-        return phone;
     }
 
     private String sha256(String value) {

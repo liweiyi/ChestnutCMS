@@ -53,11 +53,15 @@ public class MemberRegisterRequest {
 	@Email
 	private String email;
 	
-	/**
-	 * 手机号
-	 */
+	/** 手机号区号 */
+	@Length(max = 4)
+	@Pattern(regexp = "^$|^\\+[1-9][0-9]{0,2}$")
+	private String phoneCallingCode;
+
+	/** 手机本地号码 */
 	@XComment("{API.DOC.MEMBER.PHONE}")
-	@Pattern(regexp = RegexConsts.REGEX_PHONE, message = "{VALID.MEMBER.PHONE_PATTERN}")
+	@Length(max = 14)
+	@Pattern(regexp = "^$|^[0-9]{1,14}$", message = "{VALID.MEMBER.PHONE_PATTERN}")
 	private String phonenumber;
 
 	/**

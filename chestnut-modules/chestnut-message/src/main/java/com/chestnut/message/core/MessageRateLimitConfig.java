@@ -27,45 +27,42 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 用户消息发送频控配置。
+ * 所有消息类型共用的发送频控配置，保存在消息配置的 configProps.rateLimits 中。
+ * 缺失、null 或空对象表示没有频控窗口。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 public record MessageRateLimitConfig(List<RateLimitWindow> windows) {
 
     public static final String RATE_LIMITS_PROP = "rateLimits";
-
-    /**
-     * 兼容旧版单窗口配置。
-     */
-    static final String LEGACY_WINDOW_SECONDS_PROP = "rateLimitWindowSeconds";
-
-    static final String LEGACY_MAX_COUNT_PROP = "rateLimitMaxCount";
-
-    public static final int DEFAULT_WINDOW_SECONDS = 60;
-
-    public static final int DEFAULT_MAX_COUNT = 1;
 
     public MessageRateLimitConfig {
         windows = List.copyOf(windows);
     }
 
     public static MessageRateLimitConfig fromJson(JsonNode json) {
-        if (json != null && json.has(RATE_LIMITS_PROP)) {
-            return new MessageRateLimitConfig(readWindows(json.get(RATE_LIMITS_PROP)));
+        if (json == null || json.isNull()) {
+            return new MessageRateLimitConfig(List.of());
         }
-        return new MessageRateLimitConfig(List.of(readLegacyWindow(json)));
+        Assert.isTrue(json.isObject(), MessageErrorCode.INVALID_RATE_LIMIT_CONFIG::exception);
+        return new MessageRateLimitConfig(readWindows(json.get(RATE_LIMITS_PROP)));
     }
 
     public static void normalize(ObjectNode json) {
-        Assert.notNull(json, MessageErrorCode.INVALID_RATE_LIMIT_CONFIG::exception);
+        if (json == null) {
+            return;
+        }
         MessageRateLimitConfig config = fromJson(json);
+        if (config.windows().isEmpty()) {
+            return;
+        }
         ObjectNode rateLimits = JacksonUtils.objectNode();
         config.windows().forEach(window -> rateLimits.put(
                 String.valueOf(window.windowSeconds()),
                 String.valueOf(window.maxCount())
         ));
         json.set(RATE_LIMITS_PROP, rateLimits);
-        json.remove(LEGACY_WINDOW_SECONDS_PROP);
-        json.remove(LEGACY_MAX_COUNT_PROP);
     }
 
     public Map<String, String> toMap() {
@@ -78,8 +75,10 @@ public record MessageRateLimitConfig(List<RateLimitWindow> windows) {
     }
 
     private static List<RateLimitWindow> readWindows(JsonNode rateLimits) {
-        Assert.isTrue(rateLimits != null && rateLimits.isObject() && !rateLimits.isEmpty(),
-                MessageErrorCode.INVALID_RATE_LIMIT_CONFIG::exception);
+        if (rateLimits == null || rateLimits.isNull()) {
+            return List.of();
+        }
+        Assert.isTrue(rateLimits.isObject(), MessageErrorCode.INVALID_RATE_LIMIT_CONFIG::exception);
         List<RateLimitWindow> windows = new ArrayList<>();
         rateLimits.properties().forEach(entry -> windows.add(new RateLimitWindow(
                 parsePositiveInt(entry.getKey()),
@@ -93,20 +92,8 @@ public record MessageRateLimitConfig(List<RateLimitWindow> windows) {
         return windows;
     }
 
-    private static RateLimitWindow readLegacyWindow(JsonNode json) {
-        int windowSeconds = readLegacyPositiveInt(json, LEGACY_WINDOW_SECONDS_PROP, DEFAULT_WINDOW_SECONDS);
-        int maxCount = readLegacyPositiveInt(json, LEGACY_MAX_COUNT_PROP, DEFAULT_MAX_COUNT);
-        return new RateLimitWindow(windowSeconds, maxCount);
-    }
-
-    private static int readLegacyPositiveInt(JsonNode json, String field, int defaultValue) {
-        if (json == null || !json.has(field) || json.get(field).isNull()) {
-            return defaultValue;
-        }
-        return parsePositiveInt(json.get(field).asString());
-    }
-
     private static int parsePositiveInt(String value) {
+        Assert.notNull(value, MessageErrorCode.INVALID_RATE_LIMIT_CONFIG::exception);
         try {
             int parsed = Integer.parseInt(value.trim());
             Assert.isTrue(parsed > 0, MessageErrorCode.INVALID_RATE_LIMIT_CONFIG::exception);

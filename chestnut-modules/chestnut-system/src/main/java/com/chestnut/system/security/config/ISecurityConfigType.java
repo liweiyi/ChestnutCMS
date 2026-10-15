@@ -24,6 +24,9 @@ public interface ISecurityConfigType<T> {
 
     String getType();
 
+    /**
+     * 获取配置
+     */
     T getConfig(ObjectNode configs);
 
     /**

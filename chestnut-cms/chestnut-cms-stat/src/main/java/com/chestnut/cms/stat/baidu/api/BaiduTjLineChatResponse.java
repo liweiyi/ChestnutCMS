@@ -77,7 +77,8 @@ public class BaiduTjLineChatResponse extends BaiduTjResponse {
             List<YAxisData> yAxisDataList = xAxisList.get(index).getYAxisDataList();
             for (int i = 0; i < yAxisDataList.size(); i++) {
                 YAxisData yAxisData = yAxisDataList.get(i);
-                yAxisData.setValue(yAxisDataArray.get(i).asDouble());
+                JsonNode v = yAxisDataArray.get(i);
+                yAxisData.setValue(v.isDouble() ? v.asDouble() : 0d);
             }
             index++;
         }

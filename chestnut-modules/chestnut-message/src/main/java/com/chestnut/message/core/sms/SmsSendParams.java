@@ -15,16 +15,17 @@
  */
 package com.chestnut.message.core.sms;
 
+import com.chestnut.common.utils.Assert;
+import com.chestnut.message.exception.MessageErrorCode;
 import com.chestnut.message.core.Control;
 import com.chestnut.message.core.IMessageType;
-import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
+import tools.jackson.databind.JsonNode;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * SmsSendParams
@@ -36,26 +37,23 @@ import java.util.List;
 @Setter
 public class SmsSendParams implements IMessageType.Props<SmsSendParams> {
 
-    @Control(label = "{SMS.PROP.PHONE_NUMBERS}", type = Control.ControlType.INPUT_TAG)
-    private List<String> phoneNumbers;
-
     @Control(label = "{SMS.PROP.TEMPLATE_ID}")
     private String templateId;
 
     @Control(label = "{SMS.PROP.TEMPLATE_VARIABLES}")
-    private HashMap<String, String> templateVariables;
+    private Map<String, String> templateVariables;
 
     @Override
     public SmsSendParams fromJson(JsonNode json) {
-        this.phoneNumbers = new ArrayList<>();
-        for (JsonNode jsonNode : json.required("phoneNumbers").values()) {
-            this.phoneNumbers.add(jsonNode.asString());
+        this.templateId = json == null ? null : json.path("templateId").asString(null);
+        this.templateVariables = new LinkedHashMap<>();
+        JsonNode templateVariablesNode = json == null ? null : json.get("templateVariables");
+        if (Objects.nonNull(templateVariablesNode) && !templateVariablesNode.isNull()) {
+            Assert.isTrue(templateVariablesNode.isObject(), MessageErrorCode.INVALID_USER_MESSAGE_REQUEST::exception);
+            templateVariablesNode.properties().forEach(entry -> {
+                this.templateVariables.put(entry.getKey(), entry.getValue().asString());
+            });
         }
-        this.templateId = json.required("templateId").asString();
-        this.templateVariables = new HashMap<>();
-        json.required("templateVariables").properties().forEach(entry -> {
-            this.templateVariables.put(entry.getKey(), entry.getValue().asString());
-        });
         return this;
     }
 }

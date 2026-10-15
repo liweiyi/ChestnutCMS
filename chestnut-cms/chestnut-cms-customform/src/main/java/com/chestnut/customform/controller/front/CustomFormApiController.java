@@ -61,6 +61,8 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class CustomFormApiController extends BaseRestController {
 
+	private static final String CAPTCHA_SCENE = "customform";
+
 	private final ICustomFormService customFormService;
 
 	private final ICustomFormApiService customFormApiService;
@@ -87,6 +89,7 @@ public class CustomFormApiController extends BaseRestController {
 		// TODO 目前固定使用数学计算验证码，待修改成自定义表单后台配置
 		ICaptchaType captchaType = captchaService.getCaptchaType(MathCaptchaType.TYPE);
 		CaptchaData captchaData = new CaptchaData(MathCaptchaType.TYPE);
+		captchaData.setScene(CAPTCHA_SCENE);
 		captchaData.setToken(uuid);
 		Object captcha = captchaType.create(captchaData);
 		return R.ok(captcha);
@@ -133,6 +136,7 @@ public class CustomFormApiController extends BaseRestController {
 		Assert.notEmpty(captchaJson, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("captcha"));
 		CaptchaData captchaData = JacksonUtils.from(captchaJson, CaptchaData.class);
 		captchaData.setToken(uuid);
+		captchaData.setScene(CAPTCHA_SCENE);
 		ICaptchaType captchaType = captchaService.getCaptchaType(MathCaptchaType.TYPE);
 		if (!captchaType.isTokenValidated(captchaData)) {
 			throw CommonErrorCode.INVALID_CAPTCHA.exception();

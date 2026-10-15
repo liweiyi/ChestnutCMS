@@ -1,15 +1,23 @@
 import request from '@/utils/request'
+import { LOGIN_TYPES } from '../utils/loginTypes.js'
+import { createLoginRequest } from './loginRequest.js'
 
 // 登录方法
 export function login(data) {
+  return request(createLoginRequest(LOGIN_TYPES.PASSWORD, data))
+}
+
+export function sendSmsCode(data) {
   return request({
-    url: '/login',
-    headers: {
-      isToken: false
-    },
+    url: '/login/sms/code',
+    headers: { isToken: false },
     method: 'post',
-    data: data
+    data
   })
+}
+
+export function loginWithSms(data) {
+  return request(createLoginRequest(LOGIN_TYPES.SMS, data))
 }
 
 // 注册方法
@@ -62,4 +70,3 @@ export function getLoginConfig() {
     timeout: 20000,
   })
 }
-

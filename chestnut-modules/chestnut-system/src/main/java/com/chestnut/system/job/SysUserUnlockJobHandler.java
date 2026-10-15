@@ -15,8 +15,6 @@
  */
 package com.chestnut.system.job;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.system.domain.SysUser;
 import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.schedule.IScheduledHandler;
@@ -28,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 后台锁定用户定时解锁任务<br/>
@@ -61,16 +58,12 @@ public class SysUserUnlockJobHandler extends IJobHandler implements IScheduledHa
 		logger.info("Job start: {}", JOB_NAME);
 		long s = System.currentTimeMillis();
 
-		long pageSize = 500;
-		LambdaQueryWrapper<SysUser> q = new LambdaQueryWrapper<SysUser>()
+		sysUserService.lambdaUpdate()
+				.set(SysUser::getStatus, UserStatus.ENABLE)
+				.set(SysUser::getLockEndTime, null)
 				.eq(SysUser::getStatus, UserStatus.LOCK)
-				.lt(SysUser::getLockEndTime, LocalDateTime.now());
-		long total = sysUserService.count(q);
-		for (int i = 0; i * pageSize < total; i++) {
-			Page<SysUser> page = sysUserService.page(new Page<>(i, pageSize, false), q);
-			List<Long> userIds = page.getRecords().stream().map(SysUser::getUserId).toList();
-			sysUserService.lambdaUpdate().set(SysUser::getStatus, UserStatus.ENABLE).in(SysUser::getUserId, userIds).update();
-		}
+				.le(SysUser::getLockEndTime, LocalDateTime.now())
+				.update();
 		logger.info("Job '{}' completed, cost: {}ms", JOB_NAME, System.currentTimeMillis() - s);
 	}
 

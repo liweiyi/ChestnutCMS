@@ -15,7 +15,6 @@
  */
 package com.chestnut.system.security;
 
-import com.chestnut.common.captcha.CaptchaService;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysUser;
@@ -43,8 +42,6 @@ public class SysRegisterService {
 	private final ISysUserService userService;
 
 	private final ISysLogininforService logininfoService;
-
-	private final CaptchaService captchaService;
 
     private final ISecurityConfigService securityConfigService;
 

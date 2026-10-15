@@ -18,19 +18,17 @@ package com.chestnut.system.security.config;
 import com.chestnut.common.captcha.math.MathCaptchaType;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.JacksonUtils;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.fixed.dict.PasswordRetryStrategy;
 import com.chestnut.system.fixed.dict.YesOrNo;
 import com.chestnut.system.security.ISecurityUser;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -54,7 +52,7 @@ public class LoginSecurityConfigType implements ISecurityConfigType<LoginSecurit
     @Override
     public LoginSecurity getConfig(ObjectNode configs) {
         JsonNode node = configs.get(TYPE);
-        if (Objects.isNull(node)) {
+        if (Objects.isNull(node) || node.isNull()) {
             return new LoginSecurity();
         }
         return JacksonUtils.convertValue(node, LoginSecurity.class);
@@ -74,8 +72,6 @@ public class LoginSecurityConfigType implements ISecurityConfigType<LoginSecurit
         jsonNode.put("captchaType", Objects.requireNonNullElse(securityConfig.getCaptchaType(), MathCaptchaType.TYPE));
         jsonNode.put("captchaExpires", Objects.requireNonNullElse(securityConfig.getCaptchaExpires(), 600));
         jsonNode.put("captchaDuration", Objects.requireNonNullElse(securityConfig.getCaptchaDuration(), 0));
-        jsonNode.put("captchaMessageConfigId", 0L);
-        jsonNode.put("captchaMessageTemplateId", 0L);
         configs.set(TYPE, jsonNode);
     }
 

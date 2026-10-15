@@ -18,11 +18,11 @@ package com.chestnut.system.domain.dto;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.Gender;
-import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -57,9 +57,15 @@ public class UpdateUserRequest extends BaseDTO {
     @XComment("{ENT.SYS.USER.MAIL}")
     private String email;
 
-    @Length(max = 20)
+    @Length(max = 14)
+    @Pattern(regexp = "[0-9]*")
     @XComment("{ENT.SYS.USER.PHONE}")
     private String phoneNumber;
+
+    @XComment("{ENT.SYS.USER.PHONE_CALLING_CODE}")
+    @Length(max = 4)
+    @Pattern(regexp = "^$|^\\+[1-9][0-9]{0,2}$")
+    private String phoneCallingCode;
 
     @NotBlank
     @Dict(value = Gender.TYPE)
@@ -68,10 +74,6 @@ public class UpdateUserRequest extends BaseDTO {
 
     @XComment("{ENT.SYS.USER.BIRTHDAY}")
     private LocalDateTime birthday;
-
-    @Dict(UserStatus.TYPE)
-    @XComment("{ENT.SYS.USER.STATUS}")
-    private String status;
 
     @XComment("{ENT.SYS.USER.POST_IDS}")
     private Long[] postIds;

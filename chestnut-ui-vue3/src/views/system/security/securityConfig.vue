@@ -209,28 +209,28 @@
           <el-form-item :label="$t('System.Security.CaptchaRetryDuration')" prop="configs.Login.captchaDuration">
             <el-input-number v-model="form.configs.Login.captchaDuration" controls-position="right" :min="0"></el-input-number>
           </el-form-item>
-          <el-form-item
-            v-if="form.configs.Login.captchaType === 'SMS'"
-            :label="$t('System.Security.CaptchaMessageConfigId')"
-            prop="configs.Login.captchaMessageConfigId">
-            <el-input v-model="form.configs.Login.captchaMessageConfigId" />
+          <el-form-item :label="$t('System.Security.SmsLoginEnable')" prop="configs.Login.smsLoginEnable">
+            <el-switch v-model="form.configs.Login.smsLoginEnable" active-value="Y" inactive-value="N" />
           </el-form-item>
-          <el-form-item
-            v-if="form.configs.Login.captchaType === 'SMS'"
-            :label="$t('System.Security.CaptchaMessageTemplateId')"
-            prop="configs.Login.captchaMessageTemplateId">
-            <el-input v-model="form.configs.Login.captchaMessageTemplateId" />
-          </el-form-item>
-          <el-form-item :label="$t('System.Security.ThirdLogin')" prop="configs.Login.loginTypeConfigIds">
-            <el-checkbox-group v-model="form.configs.Login.loginTypeConfigIds">
-              <el-checkbox
-                v-for="item in loginConfigOptions"
-                :key="item.value"
-                :label="item.value"
-                :value="item.value">
-                {{ item.label }}
-              </el-checkbox>
-            </el-checkbox-group>
+          <el-form-item v-if="form.configs.Login.smsLoginEnable === 'Y'" :label="$t('System.Security.SmsMessageConfigId')" prop="configs.Login.smsMessageConfigId">
+            <el-select
+              v-model="form.configs.Login.smsMessageConfigId"
+              :placeholder="$t('System.Security.SmsMessageRequired')"
+              filterable
+              remote
+              clearable
+              :remote-method="loadSmsConfigOptions"
+              :loading="smsConfigLoading"
+              style="width: 100%"
+              @change="handleSmsConfigChange"
+            >
+              <el-option
+                v-for="item in smsConfigOptions"
+                :key="item.configId"
+                :label="item.name"
+                :value="String(item.configId)"
+              />
+            </el-select>
           </el-form-item>
         </el-card>
       </el-form>
@@ -240,7 +240,7 @@
 <script setup name="SysSecurityIndex">
 import { listSecurityConfigs, getSecurityConfig, addSecurityConfig, saveSecurityConfig, deleteSecurityConfig, changeConfigStatus } from "@/api/system/security";
 import { getCaptchaTypeOptions } from "@/api/system/captcha";
-import { getLoginConfigs } from "@/api/system/login";
+import { getConfigList, getConfigDetail } from "@/api/tool/message/config";
 
 const { proxy } = getCurrentInstance()
 const { SecurityPasswordRule, SecurityPasswordSensitive, SecurityPasswordRetryStrategy } = proxy.useDict('SecurityPasswordRule', 'SecurityPasswordSensitive', 'SecurityPasswordRetryStrategy')
@@ -263,6 +263,14 @@ const objects = reactive({
   },
 })
 const { form, queryParams } = toRefs(objects);
+
+const validateSmsMessageId = (rule, value, callback) => {
+  if (form.value.configs.Login.smsLoginEnable !== 'Y' || /^[1-9]\d*$/.test(String(value ?? ''))) {
+    callback();
+  } else {
+    callback(new Error(proxy.$t('System.Security.SmsMessageRequired')));
+  }
+};
 
 // 表单校验规则
 const rules = reactive({
@@ -287,12 +295,28 @@ const rules = reactive({
   'configs.Login.passwordRetryStrategy': [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
   ],
+  'configs.Login.smsMessageConfigId': [
+    { validator: validateSmsMessageId, trigger: ['blur', 'change'] }
+  ],
   'configs.Password.weakPasswords': [
     { max: 500, message: proxy.$t('Common.RuleTips.MaxLength', [ 500 ]), trigger: "blur" }
   ]
 })
 const captchaTypeOptions = ref([]);
-const loginConfigOptions = ref([]);
+const smsConfigLoading = ref(false);
+const smsConfigRows = ref([]);
+const selectedSmsConfig = ref();
+let smsConfigRequestId = 0;
+let smsConfigDetailRequestId = 0;
+const smsConfigOptions = computed(() => {
+  const selected = selectedSmsConfig.value;
+  const selectedId = String(form.value?.configs?.Login?.smsMessageConfigId ?? '');
+  if (selected && String(selected.configId) === selectedId
+      && !smsConfigRows.value.some(item => String(item.configId) === selectedId)) {
+    return [selected, ...smsConfigRows.value];
+  }
+  return smsConfigRows.value;
+});
 const newPattern = ref('');
 const patternSearch = ref('');
 const patternSelection = ref([]);
@@ -306,21 +330,58 @@ const filteredPatterns = computed(() => {
 
 onMounted(() => {
   loadCaptchaTypeOptions();
-  loadLoginConfigOptions();
   getList();
 });
 
 const loadCaptchaTypeOptions = () => {
   getCaptchaTypeOptions().then(response => {
-    captchaTypeOptions.value = response.data;
+    captchaTypeOptions.value = response.data.filter(item => item.value !== 'SMS'); // 用户名密码登录不支持手机验证码，前端直接过滤掉
   });
 }
 
-const loadLoginConfigOptions = () => {
-  getLoginConfigs().then(response => {
-    loginConfigOptions.value = response.data;
-  });
-}
+const loadSmsConfigOptions = async (keyword = '') => {
+  const requestId = ++smsConfigRequestId;
+  smsConfigLoading.value = true;
+  try {
+    const response = await getConfigList({
+      type: 'SMS', name: keyword.trim() || undefined, pageNum: 1, pageSize: 50,
+    });
+    if (requestId === smsConfigRequestId) {
+      smsConfigRows.value = response.data.rows;
+    }
+  } catch {
+    if (requestId === smsConfigRequestId) smsConfigRows.value = [];
+  } finally {
+    if (requestId === smsConfigRequestId) smsConfigLoading.value = false;
+  }
+};
+
+const loadSelectedSmsConfig = async () => {
+  const selectedId = form.value.configs.Login.smsMessageConfigId;
+  const requestId = ++smsConfigDetailRequestId;
+  selectedSmsConfig.value = undefined;
+  if (!/^[1-9]\d*$/.test(String(selectedId ?? ''))) return;
+  try {
+    const response = await getConfigDetail(selectedId);
+    if (requestId === smsConfigDetailRequestId && response.data.type === 'SMS'
+        && String(form.value?.configs?.Login?.smsMessageConfigId) === String(selectedId)) {
+      selectedSmsConfig.value = response.data;
+    }
+  } catch {
+    // 请求层展示配置读取错误，保留当前选择供用户重新选择。
+  }
+};
+
+watch(() => open.value && form.value?.configs?.Login?.smsLoginEnable === 'Y', visible => {
+  if (visible) {
+    loadSmsConfigOptions();
+    loadSelectedSmsConfig();
+  } else {
+    smsConfigRequestId++;
+    smsConfigDetailRequestId++;
+    smsConfigLoading.value = false;
+  }
+});
 
 // 方法
 const getList = () => {
@@ -338,6 +399,10 @@ const cancel = () => {
 }
 
 const reset = () => {
+  smsConfigRows.value = [];
+  selectedSmsConfig.value = undefined;
+  smsConfigRequestId++;
+  smsConfigDetailRequestId++;
   proxy.resetForm("formRef");
   form.value = {
     configs: {
@@ -359,8 +424,8 @@ const reset = () => {
         captchaType: 'NONE',
         captchaExpires: 1,
         captchaDuration: 0,
-        captchaMessageConfigId: 0,
-        captchaMessageTemplateId: 0,
+        smsLoginEnable: 'N',
+        smsMessageConfigId: undefined,
       },
       Biz: {
         secondaryVerifications: [],
@@ -390,6 +455,10 @@ const handleUpdate = (row) => {
   loading.value = true;
   const configId = row.configId || ids.value
   getSecurityConfig(configId).then(response => {
+    response.data.configs.Login = { ...form.value.configs.Login, ...response.data.configs.Login };
+    const smsConfigId = response.data.configs.Login.smsMessageConfigId;
+    response.data.configs.Login.smsMessageConfigId = /^[1-9]\d*$/.test(String(smsConfigId ?? ''))
+      ? String(smsConfigId) : undefined;
     response.data.configs.Password.weakPasswords = response.data.configs.Password.weakPasswords.join('\n');
     if (!response.data.configs.Biz) {
       response.data.configs.Biz = { secondaryVerifications: [] };
@@ -405,15 +474,24 @@ const handleUpdate = (row) => {
 const submitForm = () => {
   proxy.$refs['formRef'].validate(valid => {
     if (valid) {
-      form.value.configs.Password.weakPasswords = form.value.configs.Password.weakPasswords.split('\n');
+      const payload = {
+        ...form.value,
+        configs: {
+          ...form.value.configs,
+          Password: {
+            ...form.value.configs.Password,
+            weakPasswords: form.value.configs.Password.weakPasswords.split('\n'),
+          },
+        },
+      };
       if (form.value.configId != undefined) {
-        saveSecurityConfig(form.value).then(res => {
+        saveSecurityConfig(payload).then(res => {
           proxy.$modal.msgSuccess(proxy.$t("Common.OpSuccess"));
           open.value = false;
           getList();
         });
       } else {
-        addSecurityConfig(form.value).then(res => {
+        addSecurityConfig(payload).then(res => {
           proxy.$modal.msgSuccess(proxy.$t("Common.OpSuccess"));
           open.value = false;
           getList();
@@ -422,6 +500,11 @@ const submitForm = () => {
     }
   });
 }
+
+const handleSmsConfigChange = (configId) => {
+  smsConfigDetailRequestId++;
+  selectedSmsConfig.value = smsConfigRows.value.find(item => String(item.configId) === String(configId));
+};
 
 const handleDelete = (row) => {
   const configIds = row.configId ? [ row.configId ] : ids.value;

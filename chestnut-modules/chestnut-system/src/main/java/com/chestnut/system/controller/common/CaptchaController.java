@@ -16,15 +16,18 @@
 package com.chestnut.system.controller.common;
 
 import com.chestnut.common.annotation.XComment;
-import com.chestnut.common.captcha.*;
+import com.chestnut.common.captcha.CaptchaCheckResult;
+import com.chestnut.common.captcha.CaptchaData;
+import com.chestnut.common.captcha.CaptchaService;
+import com.chestnut.common.captcha.ICaptchaType;
 import com.chestnut.common.domain.R;
-import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.web.BaseRestController;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.dto.CheckCaptchaRequest;
 import com.chestnut.system.domain.vo.GetCaptchaVO;
+import com.chestnut.system.security.SysLoginService;
 import com.chestnut.system.security.config.LoginSecurity;
 import com.chestnut.system.security.config.LoginSecurityConfigType;
 import com.chestnut.system.service.ISecurityConfigService;
@@ -34,7 +37,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 验证码操作处理
@@ -50,8 +52,6 @@ public class CaptchaController extends BaseRestController {
     private final ISecurityConfigService securityConfigService;
 
     private final List<ICaptchaType> captchaTypes;
-
-    private final RedisCache redisCache;
 
     private final LoginSecurityConfigType loginSecurityConfigType;
 
@@ -70,23 +70,17 @@ public class CaptchaController extends BaseRestController {
         }
         LoginSecurity config = loginSecurityConfigType.getConfig(securityConfig.getConfigs());
         ICaptchaType captchaType = captchaService.getCaptchaType(config.getCaptchaType());
-        // 校验刷新间隔
         if (config.getCaptchaDuration() > 0) {
-            String cacheKey = captchaType.getCacheKey(token);
-            long expire = this.redisCache.getExpire(cacheKey, TimeUnit.SECONDS);
-            if (expire > 0 && config.getCaptchaExpires() - expire < config.getCaptchaDuration()) {
-                throw CaptchaErrorCode.CAPTCHA_LIMIT.exception();
-            }
+            // 校验刷新间隔
+            captchaType.checkLimit(SysLoginService.CAPTCHA_SCENE, token,
+                    config.getCaptchaExpires(), config.getCaptchaDuration());
         }
 		CaptchaData captchaData = new CaptchaData(config.getCaptchaType(), token);
-		captchaData.setProperties(JacksonUtils.objectNode()
-				.put("messageConfigId", Objects.requireNonNullElse(config.getCaptchaMessageConfigId(), 0L))
-				.put("messageTemplateId", Objects.requireNonNullElse(config.getCaptchaMessageTemplateId(), 0L)));
+        captchaData.setScene(SysLoginService.CAPTCHA_SCENE);
+		captchaData.setProperties(JacksonUtils.objectNode());
 		Object o = captchaType.create(captchaData);
         return R.ok(new GetCaptchaVO(config.getCaptchaDuration(), o));
 	}
-
-
 
     @XComment("{API.DOC.CAPTCHA.CHECK_CAPTCHA}")
 	@IgnoreDemoMode
@@ -101,6 +95,7 @@ public class CaptchaController extends BaseRestController {
         try {
 			CaptchaData captchaData = new CaptchaData();
 			captchaData.setType(config.getCaptchaType());
+            captchaData.setScene(SysLoginService.CAPTCHA_SCENE);
 			captchaData.setToken(req.getToken());
 			captchaData.setData(req.getData());
 			CaptchaCheckResult result = captchaType.check(captchaData);

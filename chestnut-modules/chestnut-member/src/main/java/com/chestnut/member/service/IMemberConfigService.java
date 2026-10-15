@@ -16,7 +16,7 @@
 package com.chestnut.member.service;
 
 import com.baomidou.mybatisplus.spring.service.IService;
-import com.chestnut.member.config.IMemberConfig;
+import com.chestnut.member.core.IMemberConfig;
 import com.chestnut.member.domain.MemberConfig;
 import com.chestnut.member.domain.dto.UpdateMemberConfigRequest;
 import com.chestnut.member.domain.vo.MemberConfigDefinitionVO;

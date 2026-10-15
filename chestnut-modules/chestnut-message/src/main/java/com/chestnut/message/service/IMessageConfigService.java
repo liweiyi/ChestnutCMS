@@ -19,7 +19,6 @@ import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.message.core.IMessageType;
 import com.chestnut.message.domain.CcMessageConfig;
 import com.chestnut.message.domain.dto.CreateMessageConfigReq;
-import com.chestnut.message.domain.dto.TestMessageConfigReq;
 import com.chestnut.message.domain.dto.UpdateMessageConfigReq;
 
 import java.util.List;
@@ -41,6 +40,4 @@ public interface IMessageConfigService extends IService<CcMessageConfig> {
 	void updateConfig(UpdateMessageConfigReq config);
 
 	void deleteConfigs(List<Long> configIds);
-
-    void testSend(TestMessageConfigReq req);
 }

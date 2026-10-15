@@ -15,6 +15,7 @@
  */
 package com.chestnut.message.core.sms.tencent;
 
+import com.chestnut.common.utils.ValidationUtils;
 import com.chestnut.message.core.sms.ISmsProvider;
 import com.chestnut.message.core.sms.SmsSendRequest;
 import com.tencentcloudapi.common.Credential;
@@ -23,9 +24,6 @@ import com.tencentcloudapi.sms.v20210111.models.SendSmsRequest;
 import com.tencentcloudapi.sms.v20210111.models.SendSmsResponse;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 @Component(ISmsProvider.BEAN_PREFIX + TencentSmsProvider.ID)
 public class TencentSmsProvider implements ISmsProvider {
@@ -46,42 +44,28 @@ public class TencentSmsProvider implements ISmsProvider {
 
     @Override
     public void send(SmsSendRequest req) throws Exception {
-        if (req.getPhoneNumbers().size() > 1000) {
-            throw new RuntimeException("PhoneNumber size exceed 1000.");
-        }
+        ValidationUtils.validatePhoneNumber(req.getPhoneNumber());
         try {
             SmsClient client = this.createClient(req.getSecretId(), req.getSecretKey(), req.getRegion());
             SendSmsRequest request = new SendSmsRequest();
-            String[] phoneNumbers = req.getPhoneNumbers().stream()
-                    .map(TencentSmsProvider::normalizePhoneNumber).toArray(String[]::new);
-            request.setPhoneNumberSet(phoneNumbers);
+            request.setPhoneNumberSet(new String[]{req.getPhoneNumber()});
             request.setSmsSdkAppId(req.getAppId());
             request.setTemplateId(req.getTemplateId());
             request.setSignName(req.getSignName());
             request.setTemplateParamSet(req.getTemplateParams().values().toArray(new String[0]));
             SendSmsResponse res = client.SendSms(request);
 
-            if (res == null || res.getSendStatusSet() == null || res.getSendStatusSet().length == 0) {
-                throw new IllegalStateException("Tencent SMS response has no recipient status");
+            if (res == null || res.getSendStatusSet() == null || res.getSendStatusSet().length != 1) {
+                throw new IllegalStateException("Tencent SMS response must contain one recipient status");
             }
-            Set<String> pending = new HashSet<>(Arrays.asList(phoneNumbers));
-            for (var status : res.getSendStatusSet()) {
-                if (status == null || !"Ok".equals(status.getCode())
-                        || !pending.remove(normalizePhoneNumber(status.getPhoneNumber()))) {
-                    throw new IllegalStateException("Tencent SMS request was not accepted");
-                }
-            }
-            if (!pending.isEmpty()) {
-                throw new IllegalStateException("Tencent SMS response is missing recipient status");
+            var status = res.getSendStatusSet()[0];
+            if (status == null || !"Ok".equals(status.getCode())
+                    || !req.getPhoneNumber().equals(status.getPhoneNumber())) {
+                throw new IllegalStateException("Tencent SMS request was not accepted for the recipient");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static String normalizePhoneNumber(String phoneNumber) {
-        return phoneNumber != null && phoneNumber.matches("1[3-9][0-9]{9}")
-                ? "+86" + phoneNumber : phoneNumber;
     }
 
     SmsClient createClient(String secretId, String secretKey, String region) {

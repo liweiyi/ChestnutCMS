@@ -61,6 +61,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -91,20 +93,21 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		return count == 0;
 	}
 
-	private boolean checkUserUnique(String username, String phoneNumber, String email, Long userId) {
+	private boolean checkUserUnique(String username, String fullPhoneNumber, String email, Long userId) {
 		LambdaQueryWrapper<SysUser> q = new LambdaQueryWrapper<SysUser>()
 				.and(wrapper -> wrapper
-						.eq(StringUtils.isNotEmpty(username), SysUser::getUserName, username).or()
-						.eq(StringUtils.isNotEmpty(phoneNumber), SysUser::getPhoneNumber, phoneNumber)
-						.or().eq(StringUtils.isNotEmpty(email), SysUser::getEmail, email))
+						.eq(StringUtils.isNotEmpty(username), SysUser::getUserName, username)
+						.or(StringUtils.isNotEmpty(fullPhoneNumber)).eq(StringUtils.isNotEmpty(fullPhoneNumber), SysUser::getPhoneNumber, fullPhoneNumber)
+						.or(StringUtils.isNotEmpty(email)).eq(StringUtils.isNotEmpty(email), SysUser::getEmail, email))
 				.ne(IdUtils.validate(userId), SysUser::getUserId, userId);
 		return this.count(q) == 0;
 	}
 
 	@Override
-	public boolean checkPhoneUnique(String phoneNumber, Long userId) {
-		if (StringUtils.isNotEmpty(phoneNumber)) {
-			long count = this.count(new LambdaQueryWrapper<SysUser>().eq(SysUser::getPhoneNumber, phoneNumber)
+	public boolean checkPhoneUnique(String fullPhoneNumber, Long userId) {
+		if (StringUtils.isNotBlank(fullPhoneNumber)) {
+			long count = this.count(new LambdaQueryWrapper<SysUser>()
+					.eq(SysUser::getPhoneNumber, fullPhoneNumber)
 					.ne(IdUtils.validate(userId), SysUser::getUserId, userId));
 			return count == 0;
 		}
@@ -125,8 +128,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	public void updateUserProfile(UpdateUserProfileRequest req) {
 		LoginUser loginUser = req.getOperator();
 
-		boolean checkPhoneUnique = this.checkPhoneUnique(req.getPhoneNumber(), loginUser.getUserId());
-		Assert.isTrue(checkPhoneUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("PhoneNumber"));
+		String phoneCallingCode = StringUtils.EMPTY;
+		String fullPhoneNumber = StringUtils.EMPTY;
+		if (!StringUtils.isAnyBlank(req.getPhoneNumber(), req.getPhoneCallingCode())) {
+			phoneCallingCode = req.getPhoneCallingCode();
+			fullPhoneNumber = req.getPhoneCallingCode() + req.getPhoneNumber();
+			ValidationUtils.validatePhoneNumber(fullPhoneNumber);
+			boolean checkPhoneUnique = this.checkPhoneUnique(fullPhoneNumber, loginUser.getUserId());
+			Assert.isTrue(checkPhoneUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("PhoneNumber"));
+		}
 
 		boolean checkEmailUnique = this.checkEmailUnique(req.getEmail(), loginUser.getUserId());
 		Assert.isTrue(checkEmailUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("Email"));
@@ -134,7 +144,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		LambdaUpdateWrapper<SysUser> q = new LambdaUpdateWrapper<SysUser>()
 				.set(SysUser::getNickName, req.getNickName())
 				.set(SysUser::getRealName, req.getRealName())
-				.set(SysUser::getPhoneNumber, req.getPhoneNumber())
+				.set(SysUser::getPhoneNumber, fullPhoneNumber)
+				.set(SysUser::getPhoneCallingCode, phoneCallingCode)
 				.set(SysUser::getEmail, req.getEmail())
 				.set(SysUser::getSex, req.getSex())
 				.set(SysUser::getBirthday, req.getBirthday())
@@ -143,7 +154,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		// 角色关联荣誉字段更新
 		new LambdaUpdateChainWrapper<>(userRoleMapper)
 				.set(SysUserRole::getNickName, req.getNickName())
-				.set(SysUserRole::getPhoneNumber, req.getPhoneNumber())
+				.set(SysUserRole::getPhoneNumber, fullPhoneNumber)
+				.set(SysUserRole::getPhoneCallingCode, req.getPhoneCallingCode())
 				.set(SysUserRole::getEmail, req.getEmail())
 				.set(SysUserRole::getRealName, req.getRealName())
 				.eq(SysUserRole::getUserId, loginUser.getUserId())
@@ -157,11 +169,20 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		Assert.notNull(dept, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("deptId", req.getDeptId()));
 		SysDeptUtils.checkDeptScope(req.getOperator(), dept::getDeptId, dept::getAncestors);
 
-		boolean checkUserUnique = this.checkUserUnique(req.getUserName(), req.getPhoneNumber(), req.getEmail(), null);
+		String phoneCallingCode = StringUtils.EMPTY;
+		String fullPhoneNumber = StringUtils.EMPTY;
+		if (!StringUtils.isAnyBlank(req.getPhoneNumber(), req.getPhoneCallingCode())) {
+			phoneCallingCode =  req.getPhoneCallingCode();
+			fullPhoneNumber = req.getPhoneCallingCode() + req.getPhoneNumber();
+			ValidationUtils.validatePhoneNumber(fullPhoneNumber);
+		}
+		boolean checkUserUnique = this.checkUserUnique(req.getUserName(), fullPhoneNumber, req.getEmail(), null);
 		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phoneNumber,email]"));
 		// 校验密码
 		SysUser user = new SysUser();
 		BeanUtils.copyProperties(req, user);
+		user.setPhoneCallingCode(phoneCallingCode);
+		user.setPhoneNumber(fullPhoneNumber);
 		this.securityConfigService.validPassword(user, req.getPassword());
 		// 强制首次登陆修改密码
 		this.securityConfigService.forceModifyPwdAfterUserAdd(user);
@@ -209,6 +230,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	@Override
 	public void registerUser(SysUser user) {
+		user.setUserName(StringUtils.trim(user.getUserName()));
+		if (!StringUtils.isAnyBlank(user.getPhoneNumber(), user.getPhoneCallingCode())) {
+			String fullPhoneNumber = user.getPhoneCallingCode() + user.getPhoneNumber();
+			user.setPhoneCallingCode(user.getPhoneCallingCode());
+			user.setPhoneNumber(fullPhoneNumber);
+		}
 		boolean checkUserUnique = this.checkUserUnique(user.getUserName(), user.getPhoneNumber(), user.getEmail(), null);
 		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phoneNumber,email]"));
 
@@ -229,44 +256,48 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public SysUser updateUser(UpdateUserRequest req) {
+		req.setPhoneCallingCode(StringUtils.trim(req.getPhoneCallingCode()));
+		req.setPhoneNumber(StringUtils.trim(req.getPhoneNumber()));
 		SysUser db = this.getById(req.getUserId());
 		Assert.notNull(db, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getUserId()));
-		boolean checkUserUnique = this.checkUserUnique(db.getUserName(), req.getPhoneNumber(), req.getEmail(), req.getUserId());
+
+		String phoneCallingCode = StringUtils.EMPTY;
+		String fullPhoneNumber = StringUtils.EMPTY;
+		if (!StringUtils.isAnyBlank(req.getPhoneNumber(), req.getPhoneCallingCode())) {
+			phoneCallingCode = req.getPhoneCallingCode();
+			fullPhoneNumber = req.getPhoneCallingCode() + req.getPhoneNumber();
+			ValidationUtils.validatePhoneNumber(fullPhoneNumber);
+		}
+		boolean checkUserUnique = this.checkUserUnique(db.getUserName(), fullPhoneNumber, req.getEmail(), req.getUserId());
 		Assert.isTrue(checkUserUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("[username,phoneNumber,email]"));
 		// 校验机构范围
 		SysDeptUtils.checkDeptScope(req.getOperator(), db::getDeptId, db::getDeptAncestors);
 
-		String oldStatus = db.getStatus();
 		boolean isBasicInfoChanged = !Strings.CS.equals(db.getNickName(), req.getNickName())
-				|| !Strings.CS.equals(db.getPhoneNumber(), req.getPhoneNumber())
+				|| !Strings.CS.equals(db.getPhoneNumber(), fullPhoneNumber)
 				|| !Strings.CS.equals(db.getEmail(), req.getEmail())
 				|| !Strings.CS.equals(db.getRealName(), req.getRealName());
 		this.lambdaUpdate()
 				.set(SysUser::getNickName, req.getNickName())
-				.set(SysUser::getPhoneNumber, req.getPhoneNumber())
+				.set(SysUser::getPhoneNumber, fullPhoneNumber)
+				.set(SysUser::getPhoneCallingCode, phoneCallingCode)
 				.set(SysUser::getEmail, req.getEmail())
 				.set(SysUser::getRealName, req.getRealName())
-				.set(SysUser::getStatus, req.getStatus())
 				.set(SysUser::getSex, req.getSex())
 				.set(SysUser::getBirthday, req.getBirthday())
-				.set(SysUser::getPostIds, req.getPostIds())
 				.set(SysUser::getRemark, req.getRemark())
-				.set(SysUser::getUpdateBy, req.getOperator().getUser())
+				.set(SysUser::getUpdateBy, req.getOperator().getUsername())
 				.set(SysUser::getUpdateTime, LocalDateTime.now())
 				.eq(SysUser::getUserId, db.getUserId())
 				.update();
 		// 用户与岗位关联
 		syncUserPost(db.getUserId(), req.getPostIds(), true);
-		// 变更未封禁或锁定状态时注销登录状态
-		if (!Strings.CS.equals(req.getStatus(), oldStatus)
-				&& (UserStatus.isDisable(req.getStatus()) || UserStatus.isLocked(req.getStatus()))) {
-			StpAdminUtil.logout(req.getUserId());
-		}
 		// 更新角色关联冗余字段信息
 		if (isBasicInfoChanged) {
 			new LambdaUpdateChainWrapper<>(userRoleMapper)
 					.set(SysUserRole::getNickName, req.getNickName())
-					.set(SysUserRole::getPhoneNumber, req.getPhoneNumber())
+					.set(SysUserRole::getPhoneNumber, fullPhoneNumber)
+					.set(SysUserRole::getPhoneCallingCode, phoneCallingCode)
 					.set(SysUserRole::getEmail, req.getEmail())
 					.set(SysUserRole::getRealName, req.getRealName())
 					.eq(SysUserRole::getUserId, db.getUserId())
@@ -274,6 +305,75 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		}
 		this.applicationContext.publishEvent(new AfterSysUserUpdateEvent(this, db));
 		return db;
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void changeStatus(ChangeUserStatusRequest req) {
+		Assert.isTrue(IdUtils.validate(req.getUserId()),
+				() -> CommonErrorCode.INVALID_REQUEST_ARG.exception("userId"));
+		Assert.isTrue(UserStatus.ENABLE.equals(req.getStatus()) || UserStatus.DISABLE.equals(req.getStatus())
+				|| UserStatus.LOCK.equals(req.getStatus()),
+				() -> CommonErrorCode.INVALID_REQUEST_ARG.exception("status"));
+		Assert.isTrue(req.isLockEndTimeValid(),
+				() -> CommonErrorCode.INVALID_REQUEST_ARG.exception("lockEndTime"));
+		SysUser user = this.getById(req.getUserId());
+		Assert.notNull(user, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("userId", req.getUserId()));
+		Assert.isFalse(SecurityUtils.isSuperAdmin(user.getUserId()), SysErrorCode.SUPERADMIN_CHANGE_STATUS::exception);
+		SysDeptUtils.checkDeptScope(req.getOperator(), user::getDeptId, user::getDeptAncestors);
+		LocalDateTime now = LocalDateTime.now();
+		String status = req.getStatus();
+		if (UserStatus.LOCK.equals(status) && !req.getLockEndTime().isAfter(now)) {
+			status = UserStatus.ENABLE;
+		}
+		this.lambdaUpdate()
+				.set(SysUser::getStatus, status)
+				.set(SysUser::getLockEndTime, UserStatus.LOCK.equals(status) ? req.getLockEndTime() : null)
+				.set(SysUser::getUpdateBy, req.getOperator().getUsername())
+				.set(SysUser::getUpdateTime, now)
+				.eq(SysUser::getUserId, user.getUserId())
+				.update();
+		if (UserStatus.DISABLE.equals(status) || UserStatus.LOCK.equals(status)) {
+			StpAdminUtil.logout(user.getUserId());
+		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void batchChangeStatus(BatchChangeAccountStatusRequest req) {
+		Assert.notNull(req, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("request"));
+		Assert.isTrue(IdUtils.validate(req.getIds()), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("ids"));
+		Assert.isTrue(req.isActionValid(), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("action"));
+		Assert.isTrue(req.isLockEndTimeValid(), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("lockEndTime"));
+		List<Long> ids = req.getIds().stream().distinct().toList();
+		Map<Long, SysUser> users = this.listByIds(ids).stream()
+				.collect(Collectors.toMap(SysUser::getUserId, user -> user));
+		// 在写入及注销会话前检查整批数据，防止部分账号成功、部分账号越权或不存在。
+		for (Long id : ids) {
+			SysUser user = users.get(id);
+			Assert.notNull(user, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("userId", id));
+			Assert.isFalse(SecurityUtils.isSuperAdmin(id), SysErrorCode.SUPERADMIN_CHANGE_STATUS::exception);
+			SysDeptUtils.checkDeptScope(req.getOperator(), user::getDeptId, user::getDeptAncestors);
+		}
+		LocalDateTime now = LocalDateTime.now();
+		String status = UserStatus.ENABLE;
+		if (BatchChangeAccountStatusRequest.DISABLE.equals(req.getAction())) {
+			status = UserStatus.DISABLE;
+		} else if (BatchChangeAccountStatusRequest.LOCK.equals(req.getAction()) && req.getLockEndTime().isAfter(now)) {
+			status = UserStatus.LOCK;
+		}
+		this.lambdaUpdate()
+				.set(SysUser::getStatus, status)
+				.set(SysUser::getLockEndTime, UserStatus.LOCK.equals(status) ? req.getLockEndTime() : null)
+				.set(SysUser::getUpdateBy, req.getOperator().getUsername())
+				.set(SysUser::getUpdateTime, now)
+				.in(SysUser::getUserId, ids)
+				.eq(BatchChangeAccountStatusRequest.REMOVE_DISABLEMENT.equals(req.getAction()), SysUser::getStatus, UserStatus.DISABLE)
+				.eq(BatchChangeAccountStatusRequest.UNLOCK.equals(req.getAction()), SysUser::getStatus, UserStatus.LOCK)
+				.update();
+		if (UserStatus.DISABLE.equals(status) || UserStatus.LOCK.equals(status)) {
+			ids.forEach(StpAdminUtil::logout);
+		}
 	}
 
 	@Override
@@ -342,9 +442,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		if (!UserStatus.isLocked(user.getStatus())) {
 			return;
 		}
-		user.setStatus(UserStatus.ENABLE);
-		user.setLockEndTime(null);
-		this.updateById(user);
+		this.lambdaUpdate()
+				.set(SysUser::getStatus, UserStatus.ENABLE)
+				.set(SysUser::getLockEndTime, null)
+				.eq(SysUser::getUserId, userId)
+				.eq(SysUser::getStatus, UserStatus.LOCK)
+				.update();
 	}
 
 	@Override
@@ -361,6 +464,4 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			throw CommonErrorCode.SYSTEM_ERROR.exception(e.getMessage());
 		}
 	}
-
-
 }

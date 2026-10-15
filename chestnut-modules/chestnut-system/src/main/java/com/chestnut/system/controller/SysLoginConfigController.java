@@ -32,7 +32,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.system.domain.SysLoginConfig;
 import com.chestnut.system.domain.dto.CreateLoginConfigRequest;
 import com.chestnut.system.domain.dto.UpdateLoginConfigRequest;
-import com.chestnut.system.security.ILoginType;
+import com.chestnut.system.security.IThirdPartyLoginProvider;
 import com.chestnut.system.permission.SysMenuPriv;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.service.ILoginConfigService;
@@ -58,13 +58,13 @@ public class SysLoginConfigController extends BaseRestController {
 
 	private final ILoginConfigService loginConfigService;
 
-    private final List<ILoginType>  loginTypeList;
+    private final List<IThirdPartyLoginProvider>  loginTypeList;
 
 	@Priv(type = AdminUserType.TYPE)
     @XComment("{API.DOC.SYS.LOGIN_CONFIG.GET_TYPE_OPTIONS}")
     @GetMapping("/typeOptions")
     public R<?> getLoginTypeOptions() {
-        return bindSelectOptions(loginTypeList, ILoginType::getType, ILoginType::getName);
+        return bindSelectOptions(loginTypeList, IThirdPartyLoginProvider::getId, IThirdPartyLoginProvider::getName);
     }
 
     @XComment("{API.DOC.SYS.LOGIN_CONFIG.GET_OPTIONS}")
@@ -93,7 +93,7 @@ public class SysLoginConfigController extends BaseRestController {
 	public R<SysLoginConfig> getConfig(@RequestParam @LongId @XComment("{API.DOC.SYS.LOGIN_CONFIG.ID}") Long configId) {
         SysLoginConfig config = loginConfigService.getById(configId);
 		Assert.notNull(config, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(configId));
-        ILoginType loginType = this.loginConfigService.getLoginType(config.getType());
+        IThirdPartyLoginProvider loginType = this.loginConfigService.getThirdPartyLoginProvider(config.getType());
         loginType.dealSensitive(config.getConfigProps());
         return R.ok(config);
 	}

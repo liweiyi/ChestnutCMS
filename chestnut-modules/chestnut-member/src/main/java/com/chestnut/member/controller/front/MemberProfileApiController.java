@@ -23,9 +23,8 @@ import com.chestnut.common.security.SecurityUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
-import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.member.config.MemberConfig_AccountEmailMessage;
+import com.chestnut.member.core.impl.MemberConfig_AccountEmailMessage;
 import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.dto.ChangeMemberEmailRequest;
 import com.chestnut.member.domain.dto.ModifyMemberInfoRequest;
@@ -37,9 +36,9 @@ import com.chestnut.member.service.IMemberConfigService;
 import com.chestnut.member.service.IMemberService;
 import com.chestnut.member.service.IMemberStatDataService;
 import com.chestnut.member.util.MemberUtils;
+import com.chestnut.message.core.IMessageType;
 import com.chestnut.message.core.email.EmailMessageType;
-import com.chestnut.message.domain.dto.UserMessageSendRequest;
-import com.chestnut.message.service.IMessageSendService;
+import com.chestnut.message.service.impl.MessageDeliveryService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
 import com.chestnut.system.service.ISecurityConfigService;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +64,7 @@ public class MemberProfileApiController extends BaseRestController {
 
 	private final IMemberConfigService memberConfigService;
 
-	private final IMessageSendService messageSendService;
+	private final MessageDeliveryService messageDeliveryService;
 
 	private final MemberConfig_AccountEmailMessage accountEmailMessage;
 
@@ -137,13 +136,11 @@ public class MemberProfileApiController extends BaseRestController {
 			Member member = this.memberService.getById(StpMemberUtil.getLoginIdAsLong());
 			String code = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 999999));
 			Long[] messageConfig = memberConfigService.getConfigValue(accountEmailMessage);
-			messageSendService.sendUserMessage(new UserMessageSendRequest(
-					EmailMessageType.TYPE,
-					MemberConfig_AccountEmailMessage.CHANGE_EMAIL_SCENE,
+			messageDeliveryService.sendMessage(new IMessageType.SendMessageReq(
 					member.getEmail(),
 					messageConfig[MemberConfig_AccountEmailMessage.CONFIG_ID_INDEX],
 					messageConfig[MemberConfig_AccountEmailMessage.TEMPLATE_ID_INDEX],
-					JacksonUtils.objectNode().put("code", code)
+					EmailMessageType.createSendParameters(code)
 			));
 
 			redisCache.setCacheObject(SMS_CODE_CACHE_PREFIX + member.getMemberId(), code, 600, TimeUnit.SECONDS);

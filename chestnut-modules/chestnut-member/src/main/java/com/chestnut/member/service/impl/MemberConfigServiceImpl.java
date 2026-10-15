@@ -20,7 +20,7 @@ import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.utils.JacksonUtils;
-import com.chestnut.member.config.IMemberConfig;
+import com.chestnut.member.core.IMemberConfig;
 import com.chestnut.member.domain.MemberConfig;
 import com.chestnut.member.domain.dto.UpdateMemberConfigRequest;
 import com.chestnut.member.domain.vo.MemberConfigDefinitionVO;

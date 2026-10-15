@@ -16,33 +16,17 @@
 package com.chestnut.message.domain.dto;
 
 import com.chestnut.common.annotation.XComment;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import tools.jackson.databind.node.ObjectNode;
+import lombok.Setter;
 
-/**
- * 用户发起的消息发送请求。
- */
 @Getter
-@AllArgsConstructor
-@XComment("{API.DOC.MSG.USER_SEND_REQ}")
-public class UserMessageSendRequest {
+@Setter
+@XComment("{API.DOC.SYS.LOGIN.SMS_CODE_REQUEST}")
+public class SendSmsLoginCodeReq {
 
-    @XComment("{API.DOC.MSG.MSG_TYPE}")
-    private final String messageType;
+    @XComment("{ENT.SYS.USER.PHONE_CALLING_CODE}")
+    private String phoneCallingCode;
 
-    @XComment("{API.DOC.MSG.BUSINESS_SCENE}")
-    private final String businessScene;
-
-    @XComment("{API.DOC.MSG.USER_IDENTIFIER}")
-    private final String userIdentifier;
-
-    @XComment("{API.DOC.MSG.CONFIG_ID}")
-    private final Long configId;
-
-    @XComment("{API.DOC.MSG.TEMPLATE_ID}")
-    private final Long templateId;
-
-    @XComment("{API.DOC.MSG.SEND_PARAMS}")
-    private final ObjectNode params;
+    @XComment("{API.DOC.SYS.LOGIN.PHONE_NUMBER}")
+    private String phoneNumber;
 }

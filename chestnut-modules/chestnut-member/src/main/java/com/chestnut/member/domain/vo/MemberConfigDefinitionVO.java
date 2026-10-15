@@ -17,8 +17,8 @@ package com.chestnut.member.domain.vo;
 
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.i18n.I18nUtils;
-import com.chestnut.member.config.IMemberConfig;
-import com.chestnut.member.config.MemberConfigControlType;
+import com.chestnut.member.core.IMemberConfig;
+import com.chestnut.member.core.MemberConfigControlType;
 import lombok.Getter;
 import lombok.Setter;
 

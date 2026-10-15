@@ -18,8 +18,10 @@ package com.chestnut.member.service;
 import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.dto.CreateMemberRequest;
+import com.chestnut.member.domain.dto.ChangeMemberStatusRequest;
 import com.chestnut.member.domain.dto.ResetMemberPasswordRequest;
 import com.chestnut.member.domain.dto.UpdateMemberRequest;
+import com.chestnut.system.domain.dto.BatchChangeAccountStatusRequest;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,6 +41,10 @@ public interface IMemberService extends IService<Member> {
 	 * @param req 会员信息
 	 */
 	void updateMember(UpdateMemberRequest req);
+
+	void changeStatus(ChangeMemberStatusRequest req);
+
+	void batchChangeStatus(BatchChangeAccountStatusRequest req);
 	
 	/**
 	 * 删除会员信息

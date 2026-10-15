@@ -25,7 +25,7 @@ import com.chestnut.system.domain.dto.CreateLoginConfigRequest;
 import com.chestnut.system.domain.dto.UpdateLoginConfigRequest;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.EnableOrDisable;
-import com.chestnut.system.security.ILoginType;
+import com.chestnut.system.security.IThirdPartyLoginProvider;
 import com.chestnut.system.mapper.SysLoginConfigMapper;
 import com.chestnut.system.service.ILoginConfigService;
 import lombok.RequiredArgsConstructor;
@@ -42,13 +42,13 @@ public class LoginConfigServiceImpl extends ServiceImpl<SysLoginConfigMapper, Sy
 
 	private final static String CACHE_KEY = "sys:login:config:";
 
-    private final Map<String, ILoginType> loginTypeMap;
+    private final Map<String, IThirdPartyLoginProvider> thirdPartyLoginProviderMap;
 
 	private final RedisCache redisCache;
 
     @Override
-    public ILoginType getLoginType(String type) {
-        ILoginType loginType = this.loginTypeMap.get(ILoginType.BEAN_PREFIX + type);
+    public IThirdPartyLoginProvider getThirdPartyLoginProvider(String type) {
+        IThirdPartyLoginProvider loginType = this.thirdPartyLoginProviderMap.get(IThirdPartyLoginProvider.BEAN_PREFIX + type);
         Assert.notNull(loginType, () -> SysErrorCode.UNSUPPORTED_LOGIN_TYPE.exception(type));
         return loginType;
     }
@@ -77,7 +77,7 @@ public class LoginConfigServiceImpl extends ServiceImpl<SysLoginConfigMapper, Sy
         SysLoginConfig dbConfig = this.getById(req.getConfigId());
 		Assert.notNull(dbConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getConfigId()));
 
-        ILoginType loginType = this.getLoginType(dbConfig.getType());
+        IThirdPartyLoginProvider loginType = this.getThirdPartyLoginProvider(dbConfig.getType());
         loginType.updateConfigProps(dbConfig.getConfigProps(), req.getConfigProps());
 
         dbConfig.setConfigName(req.getConfigName());

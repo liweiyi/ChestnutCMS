@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.member.config;
+package com.chestnut.member.domain.vo;
 
-/**
- * 会员配置项控件类型。
- */
-public enum MemberConfigControlType {
+import com.chestnut.common.annotation.XComment;
 
-    INPUT,
-
-    INPUT_NUMBER,
-
-    SWITCH,
-
-    MESSAGE
+@XComment("{API.DOC.MEMBER.REGISTER.SMS_CODE_RESPONSE}")
+public record SendSmsRegisterCodeVO(
+        String phoneNumber,
+        @XComment("{API.DOC.MEMBER.REGISTER.CODE_EXPIRES}") int expireSeconds,
+        @XComment("{API.DOC.MEMBER.REGISTER.CODE_RETRY_DURATION}") int retryDuration
+) {
 }

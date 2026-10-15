@@ -19,6 +19,7 @@ import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.system.fixed.dict.Gender;
 import com.chestnut.system.validator.Dict;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
@@ -41,12 +42,16 @@ public class UpdateUserProfileRequest extends BaseDTO {
 	private String email;
 
 	@NotBlank
-	@Length(max = 20)
+	@Length(max = 14)
+	@Pattern(regexp = "[0-9]+")
 	private String phoneNumber;
+
+	@Length(max = 4)
+	@Pattern(regexp = "^$|^\\+[1-9][0-9]{0,2}$")
+	private String phoneCallingCode;
 
 	@Dict(value = Gender.TYPE)
 	private String sex;
 
 	private LocalDateTime birthday;
 }
-

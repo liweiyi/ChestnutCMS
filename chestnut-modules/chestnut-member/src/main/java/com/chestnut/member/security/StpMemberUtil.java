@@ -16,20 +16,18 @@
 package com.chestnut.member.security;
 
 import cn.dev33.satoken.SaManager;
-import cn.dev33.satoken.config.SaTokenConfig;
-import cn.dev33.satoken.context.SaHolder;
-import cn.dev33.satoken.context.model.SaRequest;
-import cn.dev33.satoken.context.model.SaStorage;
 import cn.dev33.satoken.fun.SaFunction;
 import cn.dev33.satoken.listener.SaTokenEventCenter;
 import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpLogic;
 import cn.dev33.satoken.stp.parameter.SaLoginParameter;
-import cn.dev33.satoken.util.SaTokenConsts;
 import com.chestnut.common.security.domain.LoginUser;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.IP2RegionUtils;
+import com.chestnut.member.domain.Member;
+import eu.bitwalker.useragentutils.UserAgent;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -1138,5 +1136,20 @@ public class StpMemberUtil {
 		if (isLogin()) {
 			getTokenSession().set(SaSession.USER, loginUser);
 		}
+	}
+
+	public static LoginUser createLoginUser(Member member, String userAgent) {
+		LoginUser loginUser = new LoginUser();
+		loginUser.setUserId(member.getMemberId());
+		loginUser.setUserType(MemberUserType.TYPE);
+		loginUser.setUsername(member.getUserName());
+		loginUser.setLoginTime(Instant.now().toEpochMilli());
+		loginUser.setLoginLocation(IP2RegionUtils.ip2Region(member.getLastLoginIp()));
+		loginUser.setIpaddr(member.getLastLoginIp());
+		UserAgent ua = UserAgent.parseUserAgentString(userAgent);
+		loginUser.setOs(ua.getOperatingSystem().name());
+		loginUser.setBrowser(ua.getBrowser() + "/" + ua.getBrowserVersion());
+		loginUser.setUser(member);
+		return loginUser;
 	}
 }

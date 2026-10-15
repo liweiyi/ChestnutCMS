@@ -58,6 +58,13 @@ public enum SysErrorCode implements ErrorCode {
 	 * Lang: 验证码错误
 	 */
 	CAPTCHA_ERR,
+
+    SMS_LOGIN_DISABLED,
+    SMS_LOGIN_UNAVAILABLE,
+    SMS_LOGIN_CONFIG_INVALID,
+    SMS_LOGIN_SEND_TOO_FREQUENT,
+    SMS_LOGIN_CODE_INVALID,
+    SMS_LOGIN_SEND_FAILED,
 	
 	/**
 	 * Lang: 密码不符合安全校验规则
@@ -98,6 +105,8 @@ public enum SysErrorCode implements ErrorCode {
 	 * 不允许重置超级管理员密码
 	 */
 	SUPERADMIN_RESET_PWD,
+
+	SUPERADMIN_CHANGE_STATUS,
 	
 	/**
 	 * Lang：未配置文件存储方式

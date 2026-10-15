@@ -46,10 +46,3 @@ export function deleteConfigs(configIds) {
     data: configIds
   });
 }
-
-export function getLoginConfigs() {
-  return request({
-    url: "/system/login/config/options",
-    method: "get"
-  });
-}

@@ -31,6 +31,22 @@ export function updateMember(data) {
   })
 }
 
+export function changeMemberStatus(data) {
+  return request({
+    url: '/member/changeStatus',
+    method: 'post',
+    data
+  })
+}
+
+export function batchChangeMemberStatus(data) {
+  return request({
+    url: '/member/changeStatus/batch',
+    method: 'post',
+    data
+  })
+}
+
 export function deleteMembers(memberIds) {
   return request({
     url: '/member/delete',

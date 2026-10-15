@@ -27,6 +27,11 @@ public enum CommonErrorCode implements ErrorCode {
 	 * Lang: 未实现
 	 */
     NOT_IMPLEMENTED_YET,
+
+	/**
+	 * 参数【{0}】不能为空
+	 */
+	NOT_NULL,
 	
 	/**
 	 * Lang: 参数【{0}】不能为空
@@ -146,7 +151,37 @@ public enum CommonErrorCode implements ErrorCode {
 	/**
 	 * 未配置百度推送密钥
 	 */
-	BAIDU_PUSH_SECRET_NOT_CONFIGURED;
+	BAIDU_PUSH_SECRET_NOT_CONFIGURED,
+
+	/**
+	 * 手机号区号错误
+	 */
+	INVALID_PHONE_CALLING_CODE,
+
+	/**
+	 * 手机号格式非法
+	 */
+	INVALID_PHONE_NUMBER,
+
+	/**
+	 * Email格式非法
+	 */
+	INVALID_EMAIL,
+
+	/**
+	 * IP地址格式非法
+	 */
+	INVALID_IP_ADDRESS,
+
+	/**
+	 * 文件名称非法
+	 */
+	INVALID_FILENAME,
+
+	/**
+	 * 用户名必须以字母开头，且只能使用大小写字母+数字+下划线
+	 */
+	INVALID_USERNAME;
 
 	@Override
 	public String value() {

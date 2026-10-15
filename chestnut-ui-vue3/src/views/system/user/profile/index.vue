@@ -19,7 +19,7 @@
                      </li>
                      <li class="list-group-item">
                         <svg-icon icon-class="phone" />{{ $t('AccountCenter.PhoneNumber') }}
-                        <div class="pull-right">{{ user.phoneNumber }}</div>
+                        <div class="pull-right">{{ normalizePhoneNumber(user.phoneNumber, user.phoneCallingCode) }}</div>
                      </li>
                      <li class="list-group-item">
                         <svg-icon icon-class="email" />{{ $t('AccountCenter.Email') }}
@@ -67,6 +67,7 @@
 </template>
 
 <script setup name="Profile">
+import { normalizePhoneNumber, normalizeStoredPhoneParts } from '@/utils/phoneNumber'
 import userAvatar from "./userAvatar"
 import userInfo from "./userInfo"
 import resetPwd from "./resetPwd"
@@ -85,6 +86,7 @@ const { user, roleGroup, postGroup } = toRefs(data)
 function getUser() {
   getUserProfile().then(response => {
     user.value = response.data.user
+    Object.assign(user.value, normalizeStoredPhoneParts(user.value.phoneNumber, user.value.phoneCallingCode))
     roleGroup.value = response.data.roleGroup
     postGroup.value = response.data.postGroup
   })

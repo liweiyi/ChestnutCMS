@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.member.config;
+package com.chestnut.member.core.impl;
 
+import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.member.core.IMemberConfig;
+import com.chestnut.member.core.MemberConfigControlType;
 import com.chestnut.message.core.email.EmailMessageType;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
@@ -24,24 +28,25 @@ import tools.jackson.databind.node.ObjectNode;
 import java.util.List;
 
 /**
- * 会员账号邮件验证码消息配置。
+ * 会员注册邮件验证码消息配置。
  *
  * <p>数组第一个元素为消息配置 ID，第二个元素为消息模板 ID。</p>
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
-@Component(IMemberConfig.BEAN_PREFIX + MemberConfig_AccountEmailMessage.ID)
-public class MemberConfig_AccountEmailMessage implements IMemberConfig<Long[]> {
+@Component(IMemberConfig.BEAN_PREFIX + MemberConfig_RegisterEmailMessage.ID)
+public class MemberConfig_RegisterEmailMessage implements IMemberConfig<Long[]> {
 
-    public static final String ID = "accountEmailMessage";
+    public static final String ID = "registerEmailMessage";
 
     public static final int CONFIG_ID_INDEX = 0;
 
     public static final int TEMPLATE_ID_INDEX = 1;
 
-    public static final String CHANGE_EMAIL_SCENE = "member.change_mail.mail_code";
+    private static final String LEGACY_CONFIG_ID = "registerEmailConfigId";
 
-    private static final String LEGACY_CONFIG_ID = "accountEmailConfigId";
-
-    private static final String LEGACY_TEMPLATE_ID = "accountEmailTemplateId";
+    private static final String LEGACY_TEMPLATE_ID = "registerEmailTemplateId";
 
     @Override
     public String getId() {
@@ -50,7 +55,7 @@ public class MemberConfig_AccountEmailMessage implements IMemberConfig<Long[]> {
 
     @Override
     public String getName() {
-        return "{MEMBER.CONFIG.ACCOUNT_EMAIL_MESSAGE}";
+        return "{MEMBER.CONFIG.REGISTER_EMAIL_MESSAGE}";
     }
 
     @Override
@@ -80,7 +85,7 @@ public class MemberConfig_AccountEmailMessage implements IMemberConfig<Long[]> {
 
     @Override
     public int getOrder() {
-        return 20;
+        return 21;
     }
 
     @Override
@@ -101,5 +106,13 @@ public class MemberConfig_AccountEmailMessage implements IMemberConfig<Long[]> {
     private Long readLegacyId(ObjectNode configs, String id) {
         JsonNode value = configs == null ? null : configs.get(id);
         return value == null || value.isNull() ? 0L : JacksonUtils.convertValue(value, Long.class);
+    }
+
+    public record MemberEmailRegisterMessageConfig(Long messageConfigId, Long messageTemplateConfigId) {
+
+        public static MemberEmailRegisterMessageConfig decode(Long[] configIds) {
+            Assert.isTrue(configIds.length == 2, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("configIds"));
+            return new MemberEmailRegisterMessageConfig(configIds[CONFIG_ID_INDEX], configIds[TEMPLATE_ID_INDEX]);
+        }
     }
 }

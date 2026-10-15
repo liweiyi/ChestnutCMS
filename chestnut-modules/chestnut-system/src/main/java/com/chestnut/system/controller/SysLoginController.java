@@ -21,6 +21,7 @@ import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.config.SystemConfig;
 import com.chestnut.system.config.properties.SysProperties;
@@ -28,14 +29,13 @@ import com.chestnut.system.domain.SysLoginConfig;
 import com.chestnut.system.domain.SysMenu;
 import com.chestnut.system.domain.SysSecurityConfig;
 import com.chestnut.system.domain.SysUser;
-import com.chestnut.system.domain.dto.LoginBody;
 import com.chestnut.system.domain.vo.LoginConfig;
 import com.chestnut.system.domain.vo.LoginUserInfoVO;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.*;
 import com.chestnut.system.security.AdminUserType;
+import com.chestnut.system.security.ILoginType;
 import com.chestnut.system.security.StpAdminUtil;
-import com.chestnut.system.security.SysLoginService;
 import com.chestnut.system.security.config.LoginSecurity;
 import com.chestnut.system.security.config.LoginSecurityConfigType;
 import com.chestnut.system.security.config.PasswordSecurity;
@@ -45,12 +45,14 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 登录验证
@@ -65,8 +67,6 @@ import java.util.Objects;
 public class SysLoginController extends BaseRestController {
 
     private final SysProperties sysProperties;
-
-	private final SysLoginService loginService;
 
 	private final ISysMenuService menuService;
 
@@ -84,10 +84,12 @@ public class SysLoginController extends BaseRestController {
 
     private final ISecurityConfigService securityConfigService;
 
+    private final Map<String, ILoginType> loginTypeMap;
+
     @XComment("{API.DOC.SYS.LOGIN.CHECK_USERNAME}")
     @GetMapping("/checkUsername")
     public R<?> checkUsername(@RequestParam @NotBlank String username) {
-        // 先校验用户名
+        // 先校验用户名，手机号默认使用+86进行校验
         List<SysUser> users = this.userService.lambdaQuery().eq(SysUser::getUserName, username)
                 .or().eq(SysUser::getPhoneNumber, username)
                 .or().eq(SysUser::getEmail, username).list();
@@ -100,25 +102,22 @@ public class SysLoginController extends BaseRestController {
         } else if (UserStatus.isDisable(user.getStatus())) {
             throw SysErrorCode.USER_DISABLED.exception();
         }
-        // 生成令牌
-        if (this.userService.lambdaQuery().eq(SysUser::getUserName, username).count() == 0) {
-            throw SysErrorCode.USER_NOT_EXISTS.exception();
-        }
         return R.ok();
     }
 
 	/**
 	 * 登录方法
 	 * 
-	 * @param loginBody 登录信息
 	 * @return 结果
 	 */
     @XComment("{API.DOC.SYS.LOGIN.LOGIN}")
 	@PostMapping("/login")
-	public R<?> login(@Validated @RequestBody LoginBody loginBody) {
-		// 生成令牌
-		String token = loginService.login(loginBody);
-		return R.ok(token);
+	public R<?> login(@RequestParam String type, @RequestBody ObjectNode requestBody) {
+        ILoginType loginType = this.loginTypeMap.get(ILoginType.BEAN_PREFIX + type);
+        Assert.notNull(loginType, () -> SysErrorCode.UNSUPPORTED_LOGIN_TYPE.exception(type));
+        // 生成令牌
+        String token = loginType.doLogin(requestBody);
+        return R.ok(token);
 	}
 
     @XComment("{API.DOC.SYS.LOGIN.LOGOUT}")
@@ -207,14 +206,18 @@ public class SysLoginController extends BaseRestController {
         loginConfig.getCaptcha().setEnabled(false);
         loginConfig.setThirds(List.of());
         loginConfig.setDemoMode(sysProperties.isDemoMode());
-
+        // 三方登录配置
         List<LoginConfig.ThirdLogin> thirdLogins = this.loginConfigService.lambdaQuery()
                 .eq(SysLoginConfig::getStatus, EnableOrDisable.ENABLE).list()
                 .stream().map(lc -> new LoginConfig.ThirdLogin(lc.getConfigId(), lc.getType(), lc.getConfigName())).toList();
         loginConfig.setThirds(thirdLogins);
 
         SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
+        // 登录配置
+        Map<String, ObjectNode> loginTypes = loginTypeMap.values().stream().collect(Collectors.toMap(ILoginType::getType, t -> t.getLoginConfig(securityConfig)));
+        loginConfig.setLoginTypes(loginTypes);
         if (Objects.nonNull(securityConfig)) {
+            // 验证码配置
             LoginSecurity loginSecurity = loginSecurityConfigType.getConfig(securityConfig.getConfigs());
             loginConfig.getCaptcha().setEnabled(YesOrNo.isYes(loginSecurity.getCaptchaEnable()));
             if (loginConfig.getCaptcha().isEnabled()) {

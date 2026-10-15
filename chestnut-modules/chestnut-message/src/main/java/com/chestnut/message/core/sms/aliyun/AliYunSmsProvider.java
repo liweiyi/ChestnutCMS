@@ -21,9 +21,11 @@ import com.aliyun.dysmsapi20170525.models.SendSmsResponse;
 import com.aliyun.teautil.models.RuntimeOptions;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.ValidationUtils;
 import com.chestnut.message.core.sms.ISmsProvider;
 import com.chestnut.message.core.sms.SmsSendRequest;
 import org.springframework.stereotype.Component;
+
 
 @Component(ISmsProvider.BEAN_PREFIX + AliYunSmsProvider.ID)
 public class AliYunSmsProvider implements ISmsProvider {
@@ -44,9 +46,7 @@ public class AliYunSmsProvider implements ISmsProvider {
 
     @Override
     public void send(SmsSendRequest req) throws Exception {
-        if (req.getPhoneNumbers().size() > 1000) {
-            throw new RuntimeException("PhoneNumber size exceed 1000.");
-        }
+        String phoneNumber = toProviderPhoneNumber(req.getPhoneNumber());
         Client client = this.createClient(req.getSecretId(), req.getSecretKey(), req.getRegion());
         RuntimeOptions runtimeOptions = new RuntimeOptions();
         runtimeOptions.setConnectTimeout(5000);  // 链接超时
@@ -55,7 +55,7 @@ public class AliYunSmsProvider implements ISmsProvider {
         runtimeOptions.setMaxAttempts(3); // 最大重试次数
 
         SendSmsRequest sendRequest = new SendSmsRequest()
-                .setPhoneNumbers(String.join(",", req.getPhoneNumbers()))
+                .setPhoneNumbers(phoneNumber)
                 .setSignName(req.getSignName())
                 .setTemplateCode(req.getTemplateId())
                 .setTemplateParam(JacksonUtils.to(req.getTemplateParams()));
@@ -63,6 +63,12 @@ public class AliYunSmsProvider implements ISmsProvider {
         if (res == null || res.getBody() == null || !"OK".equals(res.getBody().getCode())) {
             throw new IllegalStateException("Aliyun SMS request was not accepted");
         }
+    }
+
+    private static String toProviderPhoneNumber(String phoneNumber) {
+        ValidationUtils.validatePhoneNumber(phoneNumber);
+        // SendSms 2017-05-25：国内使用本地号码，国际/港澳台使用区号和号码，不带 +。
+        return phoneNumber.startsWith("+86") ? phoneNumber.substring(3) : phoneNumber.substring(1);
     }
 
     Client createClient(String accessKeyId, String accessKeySecret, String region) throws Exception {

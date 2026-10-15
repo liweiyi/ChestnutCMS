@@ -15,11 +15,14 @@
  */
 package com.chestnut.member.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.member.core.IMemberFavoriteDataType;
 import com.chestnut.member.domain.MemberFavorites;
+import com.chestnut.member.domain.vo.MemberFavoriteVO;
 import com.chestnut.member.exception.MemberErrorCode;
 import com.chestnut.member.listener.event.AfterMemberCancelFavoriteEvent;
 import com.chestnut.member.listener.event.AfterMemberFavoriteEvent;
@@ -37,7 +40,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 会员内容收藏服务类
@@ -55,6 +62,38 @@ public class MemberFavoritesServiceImpl extends ServiceImpl<MemberFavoritesMappe
     private final RedissonClient redissonClient;
 
     private final static String SIGN_IN_LOCK_KEY = "cc:member:favorite:lock:";
+
+    private final Map<String, IMemberFavoriteDataType> memberFavoritesMap;
+
+    @Override
+    public IMemberFavoriteDataType getMemberFavoriteDataType(String type) {
+        return this.memberFavoritesMap.get(IMemberFavoriteDataType.BEAN_PREFIX + type);
+    }
+
+    @Override
+    public IPage<MemberFavoriteVO> getMemberFavoritesPage(Long memberId, int pageNum, int pageSize) {
+        Page<MemberFavorites> page = this.lambdaQuery().eq(MemberFavorites::getMemberId, memberId)
+                .orderByDesc(MemberFavorites::getCreateTime, MemberFavorites::getLogId)
+                .page(new Page<>(pageNum, pageSize, true));
+        Map<String, List<MemberFavorites>> groups = page.getRecords().stream()
+                .collect(Collectors.groupingBy(MemberFavorites::getDataType));
+        Map<String, Map<String, IMemberFavoriteDataType.MemberFavoriteData>> dataByType = new HashMap<>();
+        groups.forEach((type, favorites) -> {
+            IMemberFavoriteDataType reader = this.getMemberFavoriteDataType(type);
+            if (reader == null) return;
+            List<String> ids = favorites.stream().map(favorite -> favorite.getDataId().toString()).distinct().toList();
+            Map<String, IMemberFavoriteDataType.MemberFavoriteData> data = new HashMap<>();
+            reader.getDataList(ids).stream().filter(item -> Objects.equals(type, item.type()))
+                    .forEach(item -> data.put(item.id(), item));
+            dataByType.put(type, data);
+        });
+        // Resolve by both type and ID, retaining the original page order and unavailable records.
+        return page.convert(favorite -> {
+            IMemberFavoriteDataType.MemberFavoriteData data = dataByType.getOrDefault(favorite.getDataType(), Map.of())
+                    .get(favorite.getDataId().toString());
+            return MemberFavoriteVO.from(favorite, data == null ? null : data.name());
+        });
+    }
 
     @Override
     public List<MemberFavorites> getMemberFavorites(Long memberId, String dataType, Integer limit, Long offset) {

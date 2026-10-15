@@ -17,7 +17,6 @@ import com.chestnut.system.exception.SystemUserTips;
 import com.chestnut.system.service.ISysDeptService;
 import com.chestnut.system.service.ISysPostService;
 import com.chestnut.system.service.ISysUserService;
-import com.chestnut.system.service.impl.UserPermissionService;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -40,8 +39,6 @@ public class SysUserReadListener implements ReadListener<UserImportData> {
 	private final ISysDeptService deptService;
 
 	private final ISysPostService postService;
-
-	private final UserPermissionService userPermissionService;
 
 	@Setter
 	private Validator validator;
@@ -67,7 +64,8 @@ public class SysUserReadListener implements ReadListener<UserImportData> {
 		try {
 			log.debug(context.readRowHolder().getRowIndex() + "/"
 					+ context.readSheetHolder().getApproximateTotalRowNumber() + ": " + data.getUserName());
-			SysUser u = this.userService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUserName, data.getUserName()));
+			SysUser u = this.userService.getOne(new LambdaQueryWrapper<SysUser>()
+					.eq(SysUser::getUserName, data.getUserName()));
 			if (Objects.isNull(u)) {
 				List<SysDept> deptList = this.deptService.getDepartmentsByUserId(operator.getUserId(),
 						q -> q.eq(SysDept::getDeptName, data.getDeptName()));
@@ -93,12 +91,13 @@ public class SysUserReadListener implements ReadListener<UserImportData> {
 				u.setNickName(data.getNickName());
 				u.setPassword(data.getPassword());
 				u.setPhoneNumber(data.getPhoneNumber());
+				u.setPhoneCallingCode(data.getPhoneCallingCode());
 				u.setEmail(data.getEmail());
 				u.setSex(data.getGender());
-				u.setStatus(data.getStatus());
 				u.setRemark(data.getRemark());
 				u.setPassword(data.getPassword());
 				u.setCreateBy(this.operator.getUsername());
+				u.setStatus(data.getStatus());
 				CreateUserRequest req = new CreateUserRequest();
 				BeanUtils.copyProperties(u, req);
 				req.setOperator(operator);
@@ -109,9 +108,9 @@ public class SysUserReadListener implements ReadListener<UserImportData> {
 				u.setUserName(data.getUserName());
 				u.setNickName(data.getNickName());
 				u.setPhoneNumber(data.getPhoneNumber());
+				u.setPhoneCallingCode(data.getPhoneCallingCode());
 				u.setEmail(data.getEmail());
 				u.setSex(data.getGender());
-				u.setStatus(data.getStatus());
 				u.setRemark(data.getRemark());
 				u.setPassword(data.getPassword());
 				u.setUpdateBy(this.operator.getUsername());

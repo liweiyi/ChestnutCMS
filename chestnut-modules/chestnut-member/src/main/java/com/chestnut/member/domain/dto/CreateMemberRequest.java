@@ -55,8 +55,11 @@ public class CreateMemberRequest extends BaseDTO {
     @XComment("{API.DOC.MEMBER.NICK_NAME}")
     private String nickName;
 
-    @Length(max = 20)
-    @Pattern(regexp = RegexConsts.REGEX_PHONE)
+    @Length(max = 4)
+    @Pattern(regexp = "^$|^\\+[1-9][0-9]{0,2}$")
+    private String phoneCallingCode;
+
+    @Length(max = 14)
     @XComment("{API.DOC.MEMBER.PHONE}")
     private String phoneNumber;
 

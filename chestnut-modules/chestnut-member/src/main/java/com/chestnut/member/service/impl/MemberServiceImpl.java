@@ -19,14 +19,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.security.SecurityUtils;
-import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.CDKeyUtil;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.image.ImageUtils;
 import com.chestnut.member.config.MemberConfig;
 import com.chestnut.member.core.IMemberStatData;
 import com.chestnut.member.domain.*;
+import com.chestnut.member.domain.dto.ChangeMemberStatusRequest;
 import com.chestnut.member.domain.dto.CreateMemberRequest;
 import com.chestnut.member.domain.dto.ResetMemberPasswordRequest;
 import com.chestnut.member.domain.dto.UpdateMemberRequest;
@@ -38,8 +36,8 @@ import com.chestnut.member.mapper.MemberMapper;
 import com.chestnut.member.mapper.MemberSignInLogMapper;
 import com.chestnut.member.security.StpMemberUtil;
 import com.chestnut.member.service.IMemberService;
+import com.chestnut.system.domain.dto.BatchChangeAccountStatusRequest;
 import com.chestnut.system.fixed.config.SysUploadImageTypes;
-import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.service.ISecurityConfigService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +46,7 @@ import org.apache.commons.lang3.Strings;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +54,8 @@ import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -73,10 +73,16 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 
 	@Override
 	public void addMember(CreateMemberRequest req) {
-		boolean allBlank = StringUtils.isAllBlank(req.getUserName(), req.getPhoneNumber(), req.getEmail());
+		ValidationUtils.PhoneNumber phoneNumber = ValidationUtils.PhoneNumber.create(req.getPhoneCallingCode(), req.getPhoneNumber());
+
+		boolean allBlank = StringUtils.isAllBlank(req.getUserName(), phoneNumber.getFullPhoneNumber(), req.getEmail());
 		Assert.isFalse(allBlank, MemberErrorCode.USERNAME_PHONE_EMAIL_ALL_EMPTY::exception);
 
-		this.checkMemberUnique(req.getUserName(), req.getPhoneNumber(), req.getEmail(), null);
+		String fullPhoneNumber = phoneNumber.getFullPhoneNumber();
+		if (StringUtils.isNotEmpty(fullPhoneNumber)) {
+			phoneNumber.validate();
+		}
+		this.checkMemberUnique(req.getUserName(), fullPhoneNumber, req.getEmail(), null);
 
 		Member member = new Member();
 		member.setMemberId(IdUtils.getSnowflakeId());
@@ -85,7 +91,10 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 			member.setUserName(CDKeyUtil.genChar56(member.getMemberId(), 10));
 		}
 		member.setEmail(req.getEmail());
-		member.setPhoneNumber(req.getPhoneNumber());
+		if (StringUtils.isNotEmpty(fullPhoneNumber)) {
+			member.setPhoneCallingCode(phoneNumber.phoneCallingCode());
+			member.setPhoneNumber(fullPhoneNumber);
+		}
 		member.setNickName(req.getNickName());
 		member.setBirthday(req.getBirthday());
 		member.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
@@ -101,24 +110,90 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 
 	@Override
 	public void updateMember(UpdateMemberRequest req) {
+		ValidationUtils.PhoneNumber phoneNumber = ValidationUtils.PhoneNumber.create(req.getPhoneCallingCode(), req.getPhoneNumber());
+
 		Member member = this.getById(req.getMemberId());
 		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", req.getMemberId()));
 
-		this.checkMemberUnique(req.getUserName(), req.getPhoneNumber(), req.getEmail(), req.getMemberId());
-		String oldStatus = member.getStatus();
+		String fullPhoneNumber = phoneNumber.getFullPhoneNumber();
+		boolean hasPhone = StringUtils.isNotEmpty(fullPhoneNumber);
+		if (hasPhone) {
+			phoneNumber.validate();
+		}
+		this.checkMemberUnique(req.getUserName(), fullPhoneNumber, req.getEmail(), req.getMemberId());
+		this.lambdaUpdate()
+				.set(req.getEmail() != null, Member::getEmail, req.getEmail())
+				.set(Member::getPhoneCallingCode, hasPhone ? phoneNumber.phoneCallingCode() : "")
+				.set(Member::getPhoneNumber, hasPhone ? fullPhoneNumber : "")
+				.set(req.getNickName() != null, Member::getNickName, req.getNickName())
+				.set(req.getBirthday() != null, Member::getBirthday, req.getBirthday())
+				.set(req.getRemark() != null, Member::getRemark, req.getRemark())
+				.set(Member::getUpdateBy, req.getOperator().getUsername())
+				.set(Member::getUpdateTime, LocalDateTime.now())
+				.eq(Member::getMemberId, member.getMemberId())
+				.update();
+	}
 
-		member.setEmail(req.getEmail());
-		member.setPhoneNumber(req.getPhoneNumber());
-		member.setNickName(req.getNickName());
-		member.setBirthday(req.getBirthday());
-		member.setStatus(req.getStatus());
-		member.setRemark(req.getRemark());
-		member.updateBy(req.getOperator().getUsername());
-		this.updateById(member);
-		// 变更未封禁或锁定状态时注销登录状态
-		if (!Strings.CS.equals(member.getStatus(), oldStatus)
-				&& (MemberStatus.isDisbale(member.getStatus()) || UserStatus.isLocked(member.getStatus()))) {
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void changeStatus(ChangeMemberStatusRequest req) {
+		Assert.isTrue(IdUtils.validate(req.getMemberId()),
+				() -> CommonErrorCode.INVALID_REQUEST_ARG.exception("memberId"));
+		Assert.isTrue(MemberStatus.ENABLE.equals(req.getStatus()) || MemberStatus.DISABLE.equals(req.getStatus())
+				|| MemberStatus.LOCK.equals(req.getStatus()),
+				() -> CommonErrorCode.INVALID_REQUEST_ARG.exception("status"));
+		Assert.isTrue(req.isLockEndTimeValid(),
+				() -> CommonErrorCode.INVALID_REQUEST_ARG.exception("lockEndTime"));
+		Member member = this.getById(req.getMemberId());
+		Assert.notNull(member, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", req.getMemberId()));
+		LocalDateTime now = LocalDateTime.now();
+		String status = req.getStatus();
+		if (MemberStatus.LOCK.equals(status) && !req.getLockEndTime().isAfter(now)) {
+			status = MemberStatus.ENABLE;
+		}
+		this.lambdaUpdate()
+				.set(Member::getStatus, status)
+				.set(Member::getLockEndTime, MemberStatus.LOCK.equals(status) ? req.getLockEndTime() : null)
+				.set(Member::getUpdateBy, req.getOperator().getUsername())
+				.set(Member::getUpdateTime, now)
+				.eq(Member::getMemberId, member.getMemberId())
+				.update();
+		if (MemberStatus.DISABLE.equals(status) || MemberStatus.LOCK.equals(status)) {
 			StpMemberUtil.logout(member.getUserId());
+		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void batchChangeStatus(BatchChangeAccountStatusRequest req) {
+		Assert.notNull(req, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("request"));
+		Assert.isTrue(IdUtils.validate(req.getIds()), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("ids"));
+		Assert.isTrue(req.isActionValid(), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("action"));
+		Assert.isTrue(req.isLockEndTimeValid(), () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("lockEndTime"));
+		List<Long> ids = req.getIds().stream().distinct().toList();
+		Map<Long, Member> members = this.listByIds(ids).stream()
+				.collect(Collectors.toMap(Member::getMemberId, member -> member));
+		for (Long id : ids) {
+			Assert.notNull(members.get(id), () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", id));
+		}
+		LocalDateTime now = LocalDateTime.now();
+		String status = MemberStatus.ENABLE;
+		if (BatchChangeAccountStatusRequest.DISABLE.equals(req.getAction())) {
+			status = MemberStatus.DISABLE;
+		} else if (BatchChangeAccountStatusRequest.LOCK.equals(req.getAction()) && req.getLockEndTime().isAfter(now)) {
+			status = MemberStatus.LOCK;
+		}
+		this.lambdaUpdate()
+				.set(Member::getStatus, status)
+				.set(Member::getLockEndTime, MemberStatus.LOCK.equals(status) ? req.getLockEndTime() : null)
+				.set(Member::getUpdateBy, req.getOperator().getUsername())
+				.set(Member::getUpdateTime, now)
+				.in(Member::getMemberId, ids)
+				.eq(BatchChangeAccountStatusRequest.REMOVE_DISABLEMENT.equals(req.getAction()), Member::getStatus, MemberStatus.DISABLE)
+				.eq(BatchChangeAccountStatusRequest.UNLOCK.equals(req.getAction()), Member::getStatus, MemberStatus.LOCK)
+				.update();
+		if (MemberStatus.DISABLE.equals(status) || MemberStatus.LOCK.equals(status)) {
+			ids.forEach(StpMemberUtil::logout);
 		}
 	}
 
@@ -153,7 +228,12 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 		member.setPassword(SecurityUtils.passwordEncode(req.getPassword()));
 		member.setUpdateTime(LocalDateTime.now());
 		member.setUpdateBy(req.getOperator().getUsername());
-		this.updateById(member);
+		this.lambdaUpdate()
+				.set(Member::getPassword, member.getPassword())
+				.set(Member::getUpdateTime, member.getUpdateTime())
+				.set(Member::getUpdateBy, member.getUpdateBy())
+				.eq(Member::getMemberId, member.getMemberId())
+				.update();
 		// 注销用户登录状态
 		StpMemberUtil.logout(member.getUserId());
 	}
@@ -161,17 +241,17 @@ public class MemberServiceImpl extends ServiceImpl<MemberMapper, Member> impleme
 	/**
 	 * 校验用户名、手机号、邮箱是否已存在
 	 */
-	private void checkMemberUnique(String userName, String phoneNumber, String email, Long memberId) {
-		Optional<Member> oneOpt = this.lambdaQuery()
-				.and(wrapper -> wrapper.eq(StringUtils.isNotEmpty(userName), Member::getUserName, userName).or()
-						.eq(StringUtils.isNotEmpty(phoneNumber), Member::getPhoneNumber, phoneNumber).or()
-						.eq(StringUtils.isNotEmpty(email), Member::getEmail, email))
-				.ne(IdUtils.validate(memberId), Member::getMemberId, memberId).oneOpt();
-		if (oneOpt.isPresent()) {
-			Member member = oneOpt.get();
+	private void checkMemberUnique(String userName, String fullPhoneNumber, String email, Long memberId) {
+		List<Member> matches = this.lambdaQuery()
+				.and(wrapper -> wrapper.eq(StringUtils.isNotEmpty(userName), Member::getUserName, userName)
+						.or(StringUtils.isNotEmpty(fullPhoneNumber), or -> or.eq(Member::getPhoneNumber, fullPhoneNumber))
+						.or(StringUtils.isNotEmpty(email), or -> or.eq(StringUtils.isNotEmpty(email), Member::getEmail, email)))
+				.ne(IdUtils.validate(memberId), Member::getMemberId, memberId).list();
+		for (Member member : matches) {
 			Assert.isFalse(StringUtils.isNotEmpty(userName) && userName.equals(member.getUserName()),
 					MemberErrorCode.USERNAME_CONFLICT::exception);
-			Assert.isFalse(StringUtils.isNotEmpty(phoneNumber) && phoneNumber.equals(member.getPhoneNumber()),
+			Assert.isFalse(StringUtils.isNotEmpty(fullPhoneNumber)
+					&& Strings.CS.equals(member.getPhoneNumber(), fullPhoneNumber),
 					MemberErrorCode.PHONE_CONFLICT::exception);
 			Assert.isFalse(StringUtils.isNotEmpty(email) && email.equals(member.getEmail()),
 					MemberErrorCode.EMAIL_CONFLICT::exception);

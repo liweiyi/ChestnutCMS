@@ -23,6 +23,7 @@ import java.io.File;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -801,9 +802,9 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 		return toBinary(str, true);
 	}
 
-	public static String appendIfNotEmpty(String str, String value, String appendStr) {
+	public static String appendIfNotEmpty(String str, String value, Function<String, String> appendStr) {
 		if (isNotEmpty(value)) {
-			str += appendStr;
+			str += appendStr.apply(value);
 		}
 		return str;
 	}

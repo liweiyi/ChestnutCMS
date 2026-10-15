@@ -55,6 +55,9 @@ public enum CaptchaErrorCode implements ErrorCode {
      */
     INVALID_PHONE_NUMBER,
 
+    /**
+     * 短信验证码的消息配置无效
+     */
     INVALID_SMS_CONFIG_ID;
 
 	@Override

@@ -60,6 +60,9 @@ public class SysUserRole {
 	 */
 	private String phoneNumber;
 
+	/** 与账号同步的拨号区号。 */
+	private String phoneCallingCode;
+
 	/**
 	 * 冗余字段
 	 */
@@ -73,6 +76,7 @@ public class SysUserRole {
 		ur.setNickName(user.getNickName());
 		ur.setRealName(user.getRealName());
 		ur.setPhoneNumber(user.getPhoneNumber());
+		ur.setPhoneCallingCode(user.getPhoneCallingCode());
 		ur.setEmail(user.getEmail());
 		return ur;
 	}

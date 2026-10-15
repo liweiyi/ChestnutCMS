@@ -15,20 +15,21 @@
  */
 package com.chestnut.message.core.email;
 
-import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.common.utils.ValidationUtils;
 import com.chestnut.message.core.IMessageType;
-import com.chestnut.message.core.MessageRateLimitConfig;
 import com.chestnut.message.exception.MessageErrorCode;
 import com.chestnut.system.fixed.dict.YesOrNo;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,9 +48,11 @@ public class EmailMessageType implements IMessageType<EmailProps> {
 
     public static final String NAME = "{MessageType." + TYPE + "}";
 
-    private final AsyncTaskManager asyncTaskManager;
-
     private final ConcurrentHashMap<String, JavaMailSenderImpl> javaMailSenderMap = new ConcurrentHashMap<>();
+
+    public static ObjectNode createSendParameters(String code) {
+        return JacksonUtils.objectNode().put("code", code);
+    }
 
     @Override
     public String getType() {
@@ -67,27 +70,39 @@ public class EmailMessageType implements IMessageType<EmailProps> {
     }
 
     @Override
-    public void validate(ObjectNode configs) {
-        MessageRateLimitConfig.normalize(configs);
+    public boolean requiresReceiver() {
+        return true;
     }
 
     @Override
-    public void send(ObjectNode jsonConfigProps, Message message) {
-        EmailProps props = new EmailProps().fromJson(jsonConfigProps);
+    public void checkSendRequest(SendMessageReq req) {
+        IMessageType.super.checkSendRequest(req);
+        Assert.notEmpty(req.getReceiver(), MessageErrorCode.INVALID_MESSAGE_RECEIVER::exception);
+        ValidationUtils.validateEmail(req.getReceiver(), MessageErrorCode.INVALID_MESSAGE_RECEIVER::exception);
+        req.setReceiver(this.normalizeReceiver(req.getReceiver()));
+    }
+
+    private String normalizeReceiver(String receiver) {
+        String[] split = receiver.split("@");
+        return split[0] + "@" + split[1].toLowerCase(Locale.ROOT); // 邮箱域名统一转小写
+    }
+
+    @Override
+    public void send(Message message) {
+        EmailProps props = new EmailProps().fromJson(message.configProps());
         String senderKey = getSenderKey(props.getHost(), props.getPort(), props.getUser());
         JavaMailSenderImpl mailSender = javaMailSenderMap.computeIfAbsent(senderKey,
                 key -> createJavaMailSender(props));
-        EmailSendParams emailSendParams = new EmailSendParams().fromJson(message.params());
-        for (String mail : emailSendParams.getMails()) {
-            // 异步发送，量多可以考虑通过MQ进行处理
-            asyncTaskManager.execute(() -> {
-                SimpleMailMessage mailMessage = new SimpleMailMessage();
-                mailMessage.setFrom(props.getFrom());
-                mailMessage.setTo(mail);
-                mailMessage.setSubject(message.title());
-                mailMessage.setText(message.content());
-                mailSender.send(mailMessage);
-            });
+        try {
+            MimeMessage mailMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mailMessage, StandardCharsets.UTF_8.name());
+            helper.setFrom(props.getFrom());
+            helper.setTo(message.receiver());
+            helper.setSubject(message.title());
+            helper.setText(message.content(), true);
+            mailSender.send(mailMessage);
+        } catch (Exception e) {
+            throw MessageErrorCode.SEND_MESSAGE_FAIL.exception(e, e.getMessage());
         }
     }
 

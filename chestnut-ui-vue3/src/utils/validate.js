@@ -1,4 +1,5 @@
 import { i18n } from '@/i18n'
+import { validatePhoneNumber, validPhoneCallingCode } from './phoneNumber.js'
 
 /**
  * 路径匹配器
@@ -131,8 +132,7 @@ export function emailValidator(rule, value, callback) {
 }
 
 export function validPhoneNumber(phoneNumber) {
-  const reg = /^1[3|4|5|6|7|8|9][0-9]\d{8}$/
-  return reg.test(phoneNumber)
+  return validatePhoneNumber(phoneNumber)
 }
 
 export function phoneNumberValidator(rule, value, callback) {
@@ -144,6 +144,17 @@ export function phoneNumberValidator(rule, value, callback) {
     }
   } else {
     callback();
+  }
+}
+
+export function createPhoneNumberValidator(getPhoneCallingCode) {
+  return (rule, value, callback) => {
+    if (isBlank(value)) return callback()
+    const callingCode = getPhoneCallingCode()
+    if (!validPhoneCallingCode(callingCode) || !validatePhoneNumber(value, callingCode)) {
+      return callback(new Error(i18n.global.t('Common.RuleTips.PhoneNumber')))
+    }
+    callback()
   }
 }
 

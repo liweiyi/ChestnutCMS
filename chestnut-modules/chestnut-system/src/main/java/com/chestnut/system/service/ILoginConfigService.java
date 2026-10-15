@@ -19,13 +19,13 @@ import com.baomidou.mybatisplus.spring.service.IService;
 import com.chestnut.system.domain.SysLoginConfig;
 import com.chestnut.system.domain.dto.CreateLoginConfigRequest;
 import com.chestnut.system.domain.dto.UpdateLoginConfigRequest;
-import com.chestnut.system.security.ILoginType;
+import com.chestnut.system.security.IThirdPartyLoginProvider;
 
 import java.util.List;
 
 public interface ILoginConfigService extends IService<SysLoginConfig> {
 
-    ILoginType getLoginType(String type);
+    IThirdPartyLoginProvider getThirdPartyLoginProvider(String type);
 
     /**
 	 * 获取登录配置信息

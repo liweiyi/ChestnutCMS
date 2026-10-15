@@ -16,7 +16,9 @@
 package com.chestnut.system.security;
 
 import cn.dev33.satoken.session.SaSession;
-import com.chestnut.common.security.SecurityUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.enums.DeviceType;
 import com.chestnut.common.utils.IP2RegionUtils;
@@ -24,12 +26,10 @@ import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.domain.SysDept;
 import com.chestnut.system.domain.SysUser;
-import com.chestnut.system.domain.dto.LoginBody;
 import com.chestnut.system.exception.SysErrorCode;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
 import com.chestnut.system.fixed.dict.UserStatus;
-import com.chestnut.system.service.ISecurityConfigService;
 import com.chestnut.system.service.ISysDeptService;
 import com.chestnut.system.service.ISysLogininforService;
 import com.chestnut.system.service.ISysUserService;
@@ -40,7 +40,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -54,64 +53,59 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class SysLoginService {
 
+	public static final String CAPTCHA_SCENE = "syslogin";
+
 	private final ISysDeptService deptService;
 
 	private final ISysUserService userService;
 
 	private final ISysLogininforService logininfoService;
 
-	private final ISecurityConfigService securityConfigService;
-
 	private final UserPermissionService userPermissionService;
 
 	/**
-	 * 登录验证
-	 * 
-	 * @param loginBody 用户名
-	 * @return 结果
+	 * 查找正常用户，根据指定字段查询或查询username+email+phonenumber
 	 */
-	public String login(LoginBody loginBody) {
-		// 验证码校验
-		this.securityConfigService.validateLoginCaptcha(loginBody);
-		// 查找用户
-		List<SysUser> users = this.userService.lambdaQuery()
-				.eq(SysUser::getUserName, loginBody.getUsername())
-				.or().eq(SysUser::getPhoneNumber, loginBody.getUsername())
-				.or().eq(SysUser::getEmail, loginBody.getUsername()).list();
-		if (users.size() != 1) {
+	public SysUser findValidUser(String accountName, SFunction<SysUser, ?> findColumn) {
+		LambdaQueryWrapper<SysUser> q = new LambdaQueryWrapper<>();
+		if (Objects.nonNull(findColumn)) {
+			q.eq(findColumn, accountName);
+		} else {
+			q.eq(SysUser::getUserName, accountName)
+					.or().eq(SysUser::getEmail, accountName)
+					.or().eq(SysUser::getPhoneNumber, accountName);
+		}
+		Page<SysUser> users = userService.page(new Page<>(1, 2, false), q);
+		if (users.getRecords().size() != 1) {
+			// 以防万一存在重复用户，最多查2条数据，只要返回值不等于1都算非正常用户
 			throw SysErrorCode.USER_NOT_EXISTS.exception();
 		}
-		SysUser user = users.get(0);
+		SysUser user = users.getRecords().get(0);
 		if (user.isLocked()) {
-			throw SysErrorCode.USER_LOCKED
-					.exception(Objects.isNull(user.getLockEndTime()) ? "forever" : user.getLockEndTime().toString());
-		} else if (UserStatus.isDisable(user.getStatus())) {
+			throw SysErrorCode.USER_LOCKED.exception(user.getLockEndTime() == null
+					? "forever" : user.getLockEndTime().toString());
+		}
+		if (UserStatus.DISABLE.equals(user.getStatus())) {
 			throw SysErrorCode.USER_DISABLED.exception();
 		}
-        if (StringUtils.isEmpty(user.getPassword())) {
-            throw SysErrorCode.PASSWORD_ERROR.exception(); // 第三方登录账号可能无密码
-        }
-		// 密码校验
-		if (!SecurityUtils.matches(loginBody.getPassword(), user.getPassword())) {
-			// 密码错误处理策略
-			this.securityConfigService.processLoginPasswordError(user);
-			if (user.isModified()) {
-				this.userService.updateById(user);
-			}
-			// 记录日志
-			this.logininfoService.recordLogininfor(AdminUserType.TYPE, user.getUserId(),
-					user.getUserName(), LoginLogType.LOGIN, SuccessOrFail.FAIL, "Invalid password.");
-			throw SysErrorCode.PASSWORD_ERROR.exception();
-		}
-		this.securityConfigService.onLoginSuccess(user);
-        return this.userLogin(user);
+		return user;
 	}
 
+	/**
+	 * 系统用户登录
+	 *
+	 * @param user 用户信息
+	 * @return 登录TOKEN
+	 */
     public String userLogin(SysUser user) {
         // 记录用户最近登录时间和ip地址
         user.setLoginIp(ServletUtils.getIpAddr(ServletUtils.getRequest()));
         user.setLoginDate(LocalDateTime.now());
-        userService.updateById(user);
+        userService.lambdaUpdate()
+                .set(SysUser::getLoginIp, user.getLoginIp())
+                .set(SysUser::getLoginDate, user.getLoginDate())
+                .eq(SysUser::getUserId, user.getUserId())
+                .update();
 		SysDept dept = deptService.getDept(user.getDeptId());
 		if (Objects.nonNull(dept)) {
 			user.setDeptName(dept.getDeptName());

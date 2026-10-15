@@ -131,7 +131,7 @@
           <template #header>
             <b>事件信息</b>
           </template>
-          <el-form-item :label="$t('Message.Event.Key')" prop="id">
+          <el-form-item :label="$t('Message.Event.Key')" prop="eventId">
             <el-input v-model="form.eventId">
               <template #append>
                 <el-button icon="Search" @click="handleSelectInnerEvent" />
@@ -165,7 +165,7 @@
           </template>
           
           <div class="notify-config-list">
-            <div v-for="(item, index) in form.notifies" :key="item.eventId">
+            <div v-for="(item, index) in form.notifies" :key="item.configId">
               <div class="el-form-item el-form-item--label-right">
                 <label class="el-form-item__label" style="width: 140px;">{{ index + 1 }}. {{ $t("Message.Event.NotifyConfig") }}</label>
                 <div class="el-form-item__content">
@@ -173,30 +173,22 @@
                   <el-button link type="primary" icon="Delete" @click="handleDeleteNotify(index)">{{ $t("Common.Delete") }}</el-button>
                 </div>
               </div>
-              <div v-if="$tools.isNotEmpty(item.type) && item.type !== 'sms'" class="el-form-item el-form-item--label-right">
+              <div v-if="$tools.isNotEmpty(item.type) && item.type !== 'SMS'" class="el-form-item el-form-item--label-right">
                 <label class="el-form-item__label" style="width: 140px;">{{ $t("Message.Event.Template") }}</label>
                 <div class="el-form-item__content">
-                  <message-template-input v-model="item.templateId" v-model:type="item.type" />
+                  <message-template-input v-model="item.templateId" :type="item.type" />
                 </div>
               </div>
-              <div v-if="item.type === 'sms'" class="el-form-item el-form-item--label-right">
-                <label class="el-form-item__label" style="width: 140px;">{{ $t("Message.Event.SMSTemplateId") }}</label>
-                <div class="el-form-item__content">
-                  <el-input v-model="item.params.templateId" />
-                </div>
-              </div>
-              <div v-if="item.type === 'sms'" class="el-form-item el-form-item--label-right">
-                <label class="el-form-item__label" style="width: 140px;">{{ $t("Message.Event.PhoneNumberSet") }}</label>
-                <div class="el-form-item__content">
-                  <el-input-tag v-model="item.params.phoneNumberSet" :placeholder="$t('OPS.Notify.PhoneNumberSetPlaceholder')" />
-                </div>
-              </div>
-              <div v-if="item.type === 'email'" class="el-form-item el-form-item--label-right">
-                <label class="el-form-item__label" style="width: 140px;">{{ $t("Message.Event.EmailTo") }}</label>
-                <div class="el-form-item__content">
-                  <el-input-tag v-model="item.params.to" :placeholder="$t('OPS.Notify.EmailToPlaceholder')" />
-                </div>
-              </div>
+              <el-form-item v-if="item.type === 'SMS'" :label="$t('Message.Event.PhoneNumberTo')"
+                :prop="`notifies.${index}.receivers`" :rules="receiverRules(item)">
+                <el-input-tag v-model="item.receivers" :placeholder="$t('Message.Event.SMSReceiversPlaceholder')"
+                  @change="item.receivers = normalizePhoneNumbers($event)" />
+              </el-form-item>
+              <el-form-item v-if="item.type === 'Email'" :label="$t('Message.Event.EmailTo')"
+                :prop="`notifies.${index}.receivers`" :rules="receiverRules(item)">
+                <el-input-tag v-model="item.receivers" :placeholder="$t('Message.Event.EmailReceiversPlaceholder')"
+                  @change="item.receivers = ($event || []).map(receiver => receiver.trim())" />
+              </el-form-item>
               <el-divider />
             </div>
           </div>
@@ -232,7 +224,8 @@ import MessageTemplateInput from "../template/templateInput.vue";
 import MessageConfigSelector from "../config/configSelector.vue";
 import PairsInput from '@/views/components/PairsInput'
 import MessageInnerEventSelector from "./innerEventSelector.vue";
-import { codeValidator } from '@/utils/validate';
+import { codeValidator, validEmail } from '@/utils/validate';
+import { normalizePhoneNumbers, validatePhoneNumber } from '@/utils/phoneNumber';
 
 const openTest = ref(false);
 const { proxy } = getCurrentInstance();
@@ -257,7 +250,17 @@ const data = reactive({
   rules: {
     eventId: [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
-      { validator: codeValidator, trigger: 'blur' },
+      { validator: (rule, value, callback) => {
+        if (proxy.$tools.isNotEmpty(value)) {
+          if (!(/^[A-Za-z0-9_-]+$/.test(value))) {
+            callback(new Error(proxy.$t('Message.Event.RuleTips.EventId')));
+          } else {
+            callback();
+          }
+        } else {
+          callback();
+        }
+      }, trigger: 'blur' },
     ],
     name: [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: 'blur' },
@@ -319,7 +322,7 @@ function handleSelectionChange(selection) {
 function handleAdd() {
   form.value = {
     create: true,
-    status: '1', // 0: 禁用, 1: 启用
+    status: '0', // 0: 启用, 1: 禁用
     notifies: []
   };
   title.value = proxy.$t("Message.Event.AddTitle");
@@ -333,15 +336,37 @@ function handleUpdate(row) {
   }
   messageEventApi.getEventDetail(row.eventId).then(response => {
     form.value = response.data;
+    for (const notify of form.value.notifies || []) {
+      notify.params ||= {};
+      notify.receivers = notify.type === 'SMS'
+        ? normalizePhoneNumbers(notify.receivers) : (notify.receivers || []).map(receiver => receiver.trim());
+    }
   });
   title.value = proxy.$t("Message.Event.EditTitle");
   open.value = true;
 }
 
+function receiverRules(notify) {
+  return [
+    { required: true, type: 'array', min: 1, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: ['change', 'blur'] },
+    { validator: (_rule, value, callback) => {
+      const isPhone = notify.type === 'SMS';
+      const valid = Array.isArray(value) && value.every(receiver => isPhone
+        ? validatePhoneNumber(receiver) : validEmail(receiver.trim()));
+      callback(valid ? undefined : new Error(proxy.$t(isPhone ? 'Common.RuleTips.PhoneNumber' : 'Common.RuleTips.Email')));
+    }, trigger: ['change', 'blur'] }
+  ];
+}
+
 function submitForm() {
   proxy.$refs["formRef"].validate((valid) => {
     if (valid) {
-      messageEventApi.saveEvent(form.value).then((response) => {
+      const notifies = form.value.notifies.map(notify => ({
+        ...notify,
+        receivers: [...new Set(notify.type === 'SMS'
+          ? normalizePhoneNumbers(notify.receivers) : (notify.receivers || []).map(receiver => receiver.trim()))]
+      }));
+      messageEventApi.saveEvent({ ...form.value, notifies }).then((response) => {
         proxy.$modal.msgSuccess(proxy.$t("Common.SaveSuccess"));
         open.value = false;
         loadEventList();
@@ -364,7 +389,7 @@ function handleAddNotify() {
 }
 
 function handleSelectConfigOk(selected) {
-  const notify = form.value.notifies.find((item) => item.eventId === selected.eventId);
+  const notify = form.value.notifies.find((item) => item.configId === selected.configId);
   if (notify) {
     proxy.$modal.msgWarning(proxy.$t("Common.ConfigAlreadyExists"));
     return;
@@ -374,10 +399,8 @@ function handleSelectConfigOk(selected) {
     type: selected.type,
     name: selected.name,
     templateId: undefined,
-    params: {
-      phoneNumberSet: [],
-      toAddress: []
-    }
+    receivers: [],
+    params: {}
   });
   openConfigSelector.value = false;
 }

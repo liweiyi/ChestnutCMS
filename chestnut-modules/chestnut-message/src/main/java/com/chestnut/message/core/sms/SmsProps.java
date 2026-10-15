@@ -17,14 +17,11 @@ package com.chestnut.message.core.sms;
 
 import com.chestnut.message.core.Control;
 import com.chestnut.message.core.IMessageType;
-import com.chestnut.message.core.MessageRateLimitConfig;
 import com.chestnut.message.core.sms.aliyun.AliYunSmsProvider;
 import com.chestnut.message.core.sms.tencent.TencentSmsProvider;
 import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Map;
 
 /**
  * SmsProps
@@ -60,9 +57,6 @@ public class SmsProps implements IMessageType.Props<SmsProps> {
     @Control(label = "{SMS.PROP.TEMPLATE_ID}")
     private String templateId;
 
-    @Control(label = "{MESSAGE.PROP.RATE_LIMITS}", type = Control.ControlType.INPUT_PAIRS)
-    private Map<String, String> rateLimits;
-
     @Override
     public SmsProps fromJson(JsonNode json) {
         this.provider = json.get("provider").asString();
@@ -72,8 +66,6 @@ public class SmsProps implements IMessageType.Props<SmsProps> {
         this.signName = json.get("signName").asString();
         this.region = json.get("region").asString();
         this.templateId = json.get("templateId").asString();
-        MessageRateLimitConfig rateLimitConfig = MessageRateLimitConfig.fromJson(json);
-        this.rateLimits = rateLimitConfig.toMap();
         return this;
     }
 }

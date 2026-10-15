@@ -17,7 +17,6 @@ package com.chestnut.message.core.email;
 
 import com.chestnut.message.core.Control;
 import com.chestnut.message.core.IMessageType;
-import com.chestnut.message.core.MessageRateLimitConfig;
 import tools.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -53,9 +52,6 @@ public class EmailProps implements IMessageType.Props<EmailProps> {
     @Control(label = "{EMAIL.PROP.FROM}")
     private String from;
 
-    @Control(label = "{MESSAGE.PROP.RATE_LIMITS}", type = Control.ControlType.INPUT_PAIRS, pairsKeyName = "{MESSAGE.PROP.RATE_LIMITS.KEY_NAME}", pairsValueName = "{MESSAGE.PROP.RATE_LIMITS.VALUE_NAME}")
-    private Map<String, String> rateLimits;
-
     @Control(label = "Properties", type = Control.ControlType.INPUT_PAIRS)
     private Map<String, String> properties;
 
@@ -67,8 +63,6 @@ public class EmailProps implements IMessageType.Props<EmailProps> {
         this.user = json.get("user").asString();
         this.password = json.get("password").asString();
         this.from = json.get("from").asString();
-        MessageRateLimitConfig rateLimitConfig = MessageRateLimitConfig.fromJson(json);
-        this.rateLimits = rateLimitConfig.toMap();
         if (json.has("properties")) {
             this.properties = new HashMap<>();
             json.get("properties").properties().forEach(e -> {

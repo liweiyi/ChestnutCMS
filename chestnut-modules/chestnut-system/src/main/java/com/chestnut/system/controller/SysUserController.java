@@ -143,8 +143,7 @@ public class SysUserController extends BaseRestController {
 		SysUserReadListener readListener = new SysUserReadListener(
 				this.userService,
 				this.deptService,
-				this.postService,
-				this.userPermissionService
+				this.postService
 		);
 		readListener.setValidator(validator);
 		readListener.setOperator(StpAdminUtil.getLoginUser());
@@ -193,8 +192,10 @@ public class SysUserController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserAdd)
 	@Log(title = "用户管理", businessType = BusinessType.INSERT, ignoreArgs = { "password" })
 	@PostMapping("/add")
-	public R<Void> add(@Validated @RequestBody CreateUserRequest user) {
-		userService.insertUser(user);
+	public R<Void> add(@Validated @RequestBody CreateUserRequest req) {
+		req.setPhoneCallingCode(StringUtils.trim(req.getPhoneCallingCode()));
+		req.setPhoneNumber(StringUtils.trim(req.getPhoneNumber()));
+		userService.insertUser(req);
 		return R.ok();
 	}
 
@@ -222,7 +223,25 @@ public class SysUserController extends BaseRestController {
 		return R.ok();
 	}
 
-    @XComment("{API.DOC.SYS.USER.DELETE_USER}")
+	@XComment("{API.DOC.SYS.USER.CHANGE_STATUS}")
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserEdit)
+	@Log(title = "修改用户状态", businessType = BusinessType.UPDATE)
+	@PostMapping("/changeStatus")
+	public R<Void> changeStatus(@RequestBody @Validated @XComment("{API.DOC.SYS.USER.CHANGE_STATUS_REQ}") ChangeUserStatusRequest req) {
+		this.userService.changeStatus(req);
+		return R.ok();
+	}
+
+	@XComment("{API.DOC.SYS.USER.BATCH_CHANGE_STATUS}")
+	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserEdit)
+	@Log(title = "批量修改用户状态", businessType = BusinessType.UPDATE)
+	@PostMapping("/changeStatus/batch")
+	public R<Void> batchChangeStatus(@RequestBody @Validated @XComment("{API.DOC.SYS.ACCOUNT.BATCH_CHANGE_STATUS_REQ}") BatchChangeAccountStatusRequest req) {
+		this.userService.batchChangeStatus(req);
+		return R.ok();
+	}
+
+	@XComment("{API.DOC.SYS.USER.DELETE_USER}")
 	@Priv(type = AdminUserType.TYPE, value = SysMenuPriv.SysUserRemove)
 	@Log(title = "用户管理", businessType = BusinessType.DELETE)
 	@PostMapping("/delete")

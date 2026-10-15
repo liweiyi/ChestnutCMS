@@ -18,6 +18,8 @@ package com.chestnut.common.captcha.text;
 import com.chestnut.common.captcha.*;
 import com.chestnut.common.captcha.config.properties.CaptchaProperties;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.image.ImageUtils;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +62,11 @@ public class TextCaptchaType implements ICaptchaType {
     }
 
     @Override
+    public ICaptchaStorage getStorage() {
+        return this.captchaStorage;
+    }
+
+    @Override
     public Object create(CaptchaData captchaData) {
         Assert.notEmpty(captchaData.getToken(), CaptchaErrorCode.CAPTCHA_TOKEN_NOT_EMPTY::exception);
         try {
@@ -67,7 +74,13 @@ public class TextCaptchaType implements ICaptchaType {
             BufferedImage image = textKaptchaProducer.createImage(capStr);
             String imageBase64Str = ImageUtils.imageToBase64(image, IMAGE_TYPE_GIF);
             // 写入缓存
-            captchaStorage.set(this.getCacheKey(captchaData.getToken()), capStr, captchaProperties.getExpireSeconds());
+            long expireSeconds = captchaProperties.getExpireSeconds();
+            long configExpireSeconds = JacksonUtils.getAsLongElse(captchaData.getProperties(), EXPIRE_SECONDS_PROP_KEY, 0L);
+            if (configExpireSeconds > 0) {
+                expireSeconds = configExpireSeconds;
+            }
+            String cacheKey = this.getCacheKey(captchaData.getScene(), captchaData.getToken());
+            captchaStorage.set(cacheKey, capStr, expireSeconds);
             // 返回客户端
             return new TextCaptchaVO(captchaData.getToken(), imageBase64Str);
         } catch (IOException e) {
@@ -77,28 +90,35 @@ public class TextCaptchaType implements ICaptchaType {
 
     @Override
     public CaptchaCheckResult check(CaptchaData captchaData) {
-        try {
-            if (!validate(captchaData.getToken(), captchaData.getData())) {
-                return CaptchaCheckResult.fail();
-            }
-            return CaptchaCheckResult.success();
-        } finally {
-            this.captchaStorage.delete(this.getCacheKey(captchaData.getToken()));
+        Assert.notEmpty(captchaData.getToken(), CaptchaErrorCode.CAPTCHA_TOKEN_NOT_EMPTY::exception);
+        boolean checked = checkCaptcha(captchaData);
+        if (!checked) {
+            return CaptchaCheckResult.fail();
         }
+
+        long expireSeconds = captchaProperties.getExpireSeconds();
+        long configExpireSeconds = JacksonUtils.getAsLongElse(captchaData.getProperties(), EXPIRE_SECONDS_PROP_KEY, 0L);
+        if (configExpireSeconds > 0) {
+            expireSeconds = configExpireSeconds;
+        }
+        String successKey = this.getSuccessCacheKey(captchaData.getScene(), captchaData.getToken());
+        this.captchaStorage.set(successKey, "1", expireSeconds);
+        return CaptchaCheckResult.success();
     }
 
-    private boolean validate(String token, String code) {
-        Assert.notEmpty(token, CaptchaErrorCode.CAPTCHA_TOKEN_NOT_EMPTY::exception);
-        String cacheKey = this.getCacheKey(token);
-        if (!this.captchaStorage.has(cacheKey)) {
-            return false;
-        }
-        String cacheCode = this.captchaStorage.get(cacheKey);
-        return cacheCode.equals(code);
+    private boolean checkCaptcha(CaptchaData captchaData) {
+        String cacheKey = this.getCacheKey(captchaData.getScene(), captchaData.getToken());
+        String cacheCode = this.captchaStorage.consume(cacheKey);
+        return StringUtils.isNotBlank(cacheCode) && cacheCode.equals(captchaData.getData());
     }
 
     @Override
     public boolean isTokenValidated(CaptchaData captchaData) {
-        return validate(captchaData.getToken(), captchaData.getData());
+        String successKey = this.getSuccessCacheKey(captchaData.getScene(), captchaData.getToken());
+        if (this.captchaStorage.consume(successKey) != null) {
+            return true;
+        }
+        // 如果不存在尝试校验验证码
+        return checkCaptcha(captchaData);
     }
 }

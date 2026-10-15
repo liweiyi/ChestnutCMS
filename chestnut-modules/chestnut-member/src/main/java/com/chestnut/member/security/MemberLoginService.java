@@ -15,32 +15,34 @@
  */
 package com.chestnut.member.security;
 
-import cn.dev33.satoken.session.SaSession;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.chestnut.common.security.SecurityUtils;
-import com.chestnut.common.security.domain.LoginUser;
-import com.chestnut.common.security.enums.DeviceType;
-import com.chestnut.common.utils.IP2RegionUtils;
-import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.StringUtils;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.chestnut.common.captcha.CaptchaCheckResult;
+import com.chestnut.common.captcha.CaptchaData;
+import com.chestnut.common.captcha.CaptchaService;
+import com.chestnut.common.captcha.ICaptchaType;
+import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.JacksonUtils;
+import com.chestnut.member.core.impl.MemberConfig_LoginCaptchaDuration;
+import com.chestnut.member.core.impl.MemberConfig_LoginCaptchaEnable;
+import com.chestnut.member.core.impl.MemberConfig_LoginCaptchaExpireSeconds;
+import com.chestnut.member.core.impl.MemberConfig_LoginCaptchaType;
 import com.chestnut.member.domain.Member;
-import com.chestnut.member.domain.dto.MemberLoginRequest;
-import com.chestnut.member.domain.dto.MemberRegisterRequest;
 import com.chestnut.member.exception.MemberErrorCode;
 import com.chestnut.member.fixed.dict.MemberStatus;
+import com.chestnut.member.service.IMemberConfigService;
 import com.chestnut.member.service.IMemberService;
-import com.chestnut.system.exception.SysErrorCode;
-import com.chestnut.system.fixed.dict.LoginLogType;
-import com.chestnut.system.fixed.dict.SuccessOrFail;
-import com.chestnut.system.fixed.dict.UserStatus;
+import com.chestnut.system.domain.dto.CheckCaptchaRequest;
+import com.chestnut.system.domain.vo.GetCaptchaVO;
 import com.chestnut.system.service.ISecurityConfigService;
-import com.chestnut.system.service.ISysLogininforService;
-import eu.bitwalker.useragentutils.UserAgent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -49,119 +51,131 @@ import java.util.Objects;
  * @author 兮玥
  * @email 190785909@qq.com
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MemberLoginService {
-	
-	private final ISysLogininforService logininfoService;
 
+	private static final String CAPTCHA_SCENE_MEMBER_LOGIN = "memberlogin";
+	
 	private final IMemberService memberService;
 
 	private final ISecurityConfigService securityConfigService;
 
+	private final IMemberConfigService memberConfigService;
+
+	private final CaptchaService captchaService;
+
+	private final MemberConfig_LoginCaptchaEnable loginCaptchaEnable;
+
+	private final MemberConfig_LoginCaptchaType loginCaptchaType;
+
+	private final MemberConfig_LoginCaptchaExpireSeconds loginCaptchaExpireSeconds;
+
+	private final MemberConfig_LoginCaptchaDuration loginCaptchaDuration;
+
 	/**
-	 * 登录验证
-	 *
-	 * @return 结果
+	 * 查找正常用户，根据指定字段查询或查询username+email+phonenumber
 	 */
-	public String login(MemberLoginRequest dto) {
-		// 查找用户
-		Member member = this.memberService.lambdaQuery()
-				.eq(Member::getUserName, dto.getUsername())
-				.or().eq(Member::getEmail, dto.getUsername())
-				.or().eq(Member::getPhoneNumber, dto.getUsername())
-				.one();
-		if (Objects.isNull(member)) {
+	public Member findValidMember(String accountName, SFunction<Member, ?> findColumn) {
+		LambdaQueryWrapper<Member> q = new LambdaQueryWrapper<>();
+		if (Objects.nonNull(findColumn)) {
+			q.eq(findColumn, accountName);
+		} else {
+			q.eq(Member::getUserName, accountName)
+				.or().eq(Member::getEmail, accountName)
+				.or().eq(Member::getPhoneNumber, accountName);
+		}
+		List<Member> matches = this.memberService.list(q);
+		if (matches.size() != 1) {
 			throw MemberErrorCode.MEMBER_NOT_EXISTS.exception();
 		}
-		if (UserStatus.isDisable(member.getStatus())) {
+		Member member = matches.get(0);
+		if (MemberStatus.isDisable(member.getStatus())) {
 			throw MemberErrorCode.MEMBER_DISABLED.exception();
+		} else if (member.isLocked()) {
+			throw MemberErrorCode.MEMBER_LOCKED.exception();
 		}
-		// 密码校验
-		if (!SecurityUtils.matches(dto.getPassword(), member.getPassword())) {
-			// 密码错误处理策略
-			this.securityConfigService.processLoginPasswordError(member);
-			if (member.isModified()) {
-				this.memberService.updateById(member);
+		return member;
+	}
+
+	/**
+	 * 获取登录验证码
+	 *
+	 * @param token 验证码标识：用户名/邮箱/手机号
+	 * @return 验证码结果
+	 */
+	public GetCaptchaVO getCaptcha(String token) {
+		Boolean captchaEnabled = memberConfigService.getConfigValue(loginCaptchaEnable);
+		if (!captchaEnabled) {
+			throw CommonErrorCode.INVALID_REQUEST_ARG.exception("Login captcha is not enabled.");
+		}
+		String captchaTypeId = memberConfigService.getConfigValue(this.loginCaptchaType);
+		ICaptchaType captchaType = captchaService.getCaptchaType(captchaTypeId);
+		long expireSeconds = memberConfigService.getConfigValue(this.loginCaptchaExpireSeconds);
+		int captchaDuration = memberConfigService.getConfigValue(this.loginCaptchaDuration);
+		// 校验刷新间隔
+		captchaType.checkLimit(CAPTCHA_SCENE_MEMBER_LOGIN, token, expireSeconds, captchaDuration);
+		// 创建验证码
+		CaptchaData captchaData = new CaptchaData(captchaTypeId, token);
+		captchaData.setScene(CAPTCHA_SCENE_MEMBER_LOGIN);
+		captchaData.setProperties(JacksonUtils.objectNode().put(ICaptchaType.EXPIRE_SECONDS_PROP_KEY, Long.valueOf(expireSeconds)));
+		Object o = captchaType.create(captchaData);
+		return new GetCaptchaVO(captchaDuration, o);
+	}
+
+	/**
+	 * 校验验证码
+	 */
+	public CaptchaCheckResult checkCaptcha(CheckCaptchaRequest req) {
+		String captchaTypeId = this.memberConfigService.getConfigValue(this.loginCaptchaType);
+		ICaptchaType captchaType = captchaService.getCaptchaType(captchaTypeId);
+		try {
+			CaptchaData captchaData = new CaptchaData();
+			captchaData.setType(captchaTypeId);
+			captchaData.setScene(CAPTCHA_SCENE_MEMBER_LOGIN);
+			captchaData.setToken(req.getToken());
+			captchaData.setData(req.getData());
+			Integer expireSeconds = memberConfigService.getConfigValue(this.loginCaptchaExpireSeconds);
+			captchaData.setProperties(JacksonUtils.objectNode().put(ICaptchaType.EXPIRE_SECONDS_PROP_KEY, Long.valueOf(expireSeconds)));
+			return captchaType.check(captchaData);
+		} catch (Exception e) {
+			log.error("Check member login captcha failed.", e);
+			return CaptchaCheckResult.fail();
+		}
+	}
+
+	/**
+	 * 校验会员登录验证码是否已校验通过
+	 *
+	 * @param node 请求参数
+	 * @param bindingMemberToken 当前登录的用户验证码token
+	 */
+	public void validateCaptcha(JsonNode node, String bindingMemberToken) {
+		JsonNode captcha = node.get("captcha");
+		if (Objects.nonNull(captcha) && !captcha.isNull()) {
+			// 校验验证码参数是否与当前登录用户一致
+			String token = captcha.required("token").asString();
+			Assert.isTrue(Strings.CS.equals(token, bindingMemberToken), MemberErrorCode.INVALID_LOGIN_CAPTCHA::exception);
+			// 校验当前验证码类型是否与配置一致
+			String type = captcha.required("type").asString();
+			String configCaptchaType = memberConfigService.getConfigValue(this.loginCaptchaType);
+			Assert.isTrue(Strings.CS.equals(type, configCaptchaType), MemberErrorCode.INVALID_LOGIN_CAPTCHA::exception);
+
+			CaptchaData captchaData = new CaptchaData();
+			captchaData.setType(type);
+			captchaData.setScene(CAPTCHA_SCENE_MEMBER_LOGIN);
+			captchaData.setToken(token);
+			captchaData.setData(captcha.path("data").asString(""));
+			if (captcha.has("properties")) {
+				captchaData.setProperties(captcha.get("properties").asObject());
 			}
-			// 记录日志
-			this.logininfoService.recordLogininfor(MemberUserType.TYPE, member.getMemberId(),
-					member.getUserName(), LoginLogType.LOGIN, SuccessOrFail.FAIL, "Invalid password.");
-			throw SysErrorCode.PASSWORD_ERROR.exception();
+			ICaptchaType captchaType = captchaService.getCaptchaType(captchaData.getType());
+			boolean validated = captchaType.isTokenValidated(captchaData);
+			if (validated) {
+				return;
+			}
 		}
-		this.securityConfigService.onLoginSuccess(member);
-		// 记录用户最近登录时间和ip地址
-		member.setLastLoginIp(dto.getIp());
-		member.setLastLoginTime(LocalDateTime.now());
-		memberService.updateById(member);
-		// 生成token
-		LoginUser loginUser = createLoginUser(member, dto.getUserAgent());
-		StpMemberUtil.login(member.getUserId(), DeviceType.PC.value());
-		loginUser.setToken(StpMemberUtil.getTokenValueByLoginId(member.getUserId()));
-		StpMemberUtil.getTokenSession().set(SaSession.USER, loginUser);
-		// 日志
-		this.logininfoService.recordLogininfor(MemberUserType.TYPE, member.getUserId(),
-				loginUser.getUsername(), LoginLogType.LOGIN, SuccessOrFail.SUCCESS, StringUtils.EMPTY);
-		return StpMemberUtil.getTokenValue();
-	}
-
-	private LoginUser createLoginUser(Member member, String userAgent) {
-		LoginUser loginUser = new LoginUser();
-		loginUser.setUserId(member.getMemberId());
-		loginUser.setUserType(MemberUserType.TYPE);
-		loginUser.setUsername(member.getUserName());
-		loginUser.setLoginTime(Instant.now().toEpochMilli());
-		loginUser.setLoginLocation(IP2RegionUtils.ip2Region(member.getLastLoginIp()));
-		loginUser.setIpaddr(member.getLastLoginIp());
-		UserAgent ua = UserAgent.parseUserAgentString(userAgent);
-		loginUser.setOs(ua.getOperatingSystem().name());
-		loginUser.setBrowser(ua.getBrowser() + "/" + ua.getBrowserVersion());
-		loginUser.setUser(member);
-		return loginUser;
-	}
-
-	public String register(MemberRegisterRequest dto) {
-		// 查找用户
-		LambdaQueryWrapper<Member> q = new LambdaQueryWrapper<>();
-		if ("email".equals(dto.getType())) {
-			q.eq(Member::getEmail, dto.getEmail());
-		} else if ("phone".equals(dto.getType())) {
-			q.eq(Member::getPhoneNumber, dto.getPhonenumber());
-		} else {
-			q.eq(Member::getUserName, dto.getUserName());
-		}
-		Member member = this.memberService.getOne(q);
-		if (Objects.nonNull(member)) {
-			throw MemberErrorCode.ACCOUNT_EXISTS.exception();
-		}
-		// 密码规则校验
-		this.securityConfigService.validPassword(null, dto.getPassword());
-
-		member = new Member();
-		member.setMemberId(IdUtils.getSnowflakeId());
-		// TODO 抽象注册类型
-		if ("email".equals(dto.getType())) {
-			member.setEmail(dto.getEmail());
-			member.setUserName(member.getMemberId().toString());
-		} else if ("phone".equals(dto.getType())) {
-			member.setPhoneNumber(dto.getPhonenumber());
-			member.setUserName(member.getMemberId().toString());
-		} else {
-			member.setUserName(dto.getUserName());
-		}
-		member.setPassword(SecurityUtils.passwordEncode(dto.getPassword()));
-		member.setStatus(MemberStatus.ENABLE);
-		// 记录用户最近登录时间和ip地址
-		member.setLastLoginIp(dto.getIp());
-		member.setLastLoginTime(LocalDateTime.now());
-		member.createBy(member.getUserName());
-		this.memberService.save(member);
-
-		// 生成token
-		LoginUser loginUser = createLoginUser(member, dto.getUserAgent());
-		StpMemberUtil.login(member.getUserId(), DeviceType.PC.value());
-		loginUser.setToken(StpMemberUtil.getTokenValueByLoginId(member.getUserId()));
-		StpMemberUtil.getTokenSession().set(SaSession.USER, loginUser);
-		return StpMemberUtil.getTokenValue();
+		throw MemberErrorCode.INVALID_LOGIN_CAPTCHA.exception();
 	}
 }

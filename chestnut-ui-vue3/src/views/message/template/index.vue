@@ -121,8 +121,9 @@
       @pagination="loadTemplateList"
     />
 
-    <el-dialog :title="title" v-model="open" width="1000px" append-to-body>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="140px">
+    <el-dialog :title="title" v-model="open" width="1000px" top="5vh"
+               style="max-width: calc(100vw - 32px);" append-to-body>
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="140px" class="template-form">
         <el-form-item :label="$t('Message.Template.Name')" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
@@ -137,14 +138,17 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="form.type === 'Email'" :label="$t('Message.Template.Title')" prop="title">
-          <el-input v-model="form.title" />
+          <el-input ref="titleInputRef" v-model="form.title"
+                    @focus="variableTarget = 'title'" @blur="rememberTextSelection('title')" />
         </el-form-item>
         <el-form-item v-if="form.type" :label="$t('Message.Template.Content')" prop="content">
           <div v-if="form.type === 'SMS'" style="width: 100%;">
-            <el-input type="textarea" :rows="10" v-model="form.content" />
+            <el-input ref="smsInputRef" type="textarea" :rows="10" v-model="form.content"
+                      @blur="rememberTextSelection('content')" />
           </div>
           <div v-else style="width: 100%;">
-            <editor v-if="form.type === 'Email'" v-model="form.content" :min-height="192"
+            <editor v-if="form.type === 'Email'" :key="editorSession" ref="emailEditorRef"
+                    v-model="form.content" :min-height="192" @focus="variableTarget = 'content'"
                     upload-action="/message/template/image/upload"/>
             <div v-if="form.type === 'DingTalkRobot' || form.type === 'FeiShuRobot'">
               <code-mirror 
@@ -182,6 +186,39 @@
             </div>
           </div>
         </el-form-item>
+        <el-form-item v-if="form.type === 'Email' || form.type === 'SMS'"
+                      :label="$t('Message.Template.Variables')">
+          <div class="template-variables">
+            <p>{{ $t('Message.Template.VariableUsage', { syntax: variableSyntax }) }}</p>
+            <p>{{ $t('Message.Template.VariableScope') }}</p>
+            <div v-if="form.type === 'Email'" class="variable-target">
+              <span>{{ $t('Message.Template.InsertTarget') }}</span>
+              <el-radio-group v-model="variableTarget" size="small">
+                <el-radio-button value="title">{{ $t('Message.Template.Title') }}</el-radio-button>
+                <el-radio-button value="content">{{ $t('Message.Template.Content') }}</el-radio-button>
+              </el-radio-group>
+            </div>
+            <div class="variable-row">
+              <el-button size="small" type="primary" plain @mousedown.prevent
+                         @click="insertVariable(form.type === 'SMS' ? 'Code' : 'code')">
+                {{ form.type === 'SMS' ? '${Code}' : '${code}' }}
+              </el-button>
+              <span>{{ $t(form.type === 'SMS' ? 'Message.Template.SmsCodeVariable' : 'Message.Template.EmailCodeVariable') }}</span>
+            </div>
+            <div class="custom-variable">
+              <el-input v-model="customVariableName" size="small"
+                        :aria-label="$t('Message.Template.CustomVariable')"
+                        :placeholder="$t('Message.Template.VariableNamePlaceholder')"
+                        @keydown.enter.prevent="insertCustomVariable" />
+              <el-button size="small" @mousedown.prevent @click="insertCustomVariable">
+                {{ $t('Message.Template.InsertVariable') }}
+              </el-button>
+            </div>
+            <p>{{ $t('Message.Template.VariableInsertTip') }}</p>
+            <p>{{ $t('Message.Template.VariableDefaultTip', { syntax: variableDefaultSyntax }) }}</p>
+            <p v-if="form.type === 'SMS'">{{ $t('Message.Template.SmsProviderTip') }}</p>
+          </div>
+        </el-form-item>
         <el-form-item :label="$t('Common.Remark')" prop="remark">
           <el-input v-model="form.remark" type="textarea" :rows="3" />
         </el-form-item>
@@ -205,6 +242,15 @@ import * as messageTemplateApi from "@/api/tool/message/template";
 
 const { proxy } = getCurrentInstance();
 const cmEditorRef = ref(null);
+const titleInputRef = ref(null);
+const smsInputRef = ref(null);
+const emailEditorRef = ref(null);
+const editorSession = ref(0);
+const variableTarget = ref('content');
+const customVariableName = ref('');
+const textSelections = { title: null, content: null };
+const variableSyntax = '${variable}';
+const variableDefaultSyntax = "${variable!''}";
 
 const validateKeywords = (rule, value, callback) => {
   if (proxy.$tools.isEmpty(value)) {
@@ -261,14 +307,66 @@ const data = reactive({
 
 const { cmOptions, queryParams, form, rules } = toRefs(data);
 
+watch(() => form.value.type, resetVariableInsertion);
+
+function resetVariableInsertion() {
+  variableTarget.value = 'content';
+  customVariableName.value = '';
+  textSelections.title = null;
+  textSelections.content = null;
+  editorSession.value++;
+}
+
+function getTextInput(target) {
+  return target === 'title' ? titleInputRef.value?.input : smsInputRef.value?.textarea;
+}
+
+function rememberTextSelection(target) {
+  const input = getTextInput(target);
+  if (input) {
+    textSelections[target] = { start: input.selectionStart, end: input.selectionEnd };
+  }
+}
+
+async function insertVariable(name) {
+  const token = '${' + name + '}';
+  if (form.value.type === 'Email' && variableTarget.value === 'content') {
+    emailEditorRef.value?.insertText(token);
+    return;
+  }
+  const target = form.value.type === 'SMS' ? 'content' : 'title';
+  const input = getTextInput(target);
+  if (!input) return;
+  if (document.activeElement === input) rememberTextSelection(target);
+  const value = form.value[target] || '';
+  const selection = textSelections[target];
+  const start = Math.min(selection?.start ?? value.length, value.length);
+  const end = Math.min(selection?.end ?? start, value.length);
+  form.value[target] = value.slice(0, start) + token + value.slice(end);
+  const cursor = start + token.length;
+  textSelections[target] = { start: cursor, end: cursor };
+  await nextTick();
+  input.focus();
+  input.setSelectionRange(cursor, cursor);
+}
+
+function insertCustomVariable() {
+  const name = customVariableName.value.trim();
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+    proxy.$modal.msgWarning(proxy.$t('Message.Template.VariableNameInvalid'));
+    return;
+  }
+  insertVariable(name);
+}
+
 onMounted(() => {
   loadTypeOptions();
   loadTemplateList();
 });
 
 function loadTypeOptions() {
-  messageConfigApi.getTypeOptions().then(response => {
-    typeOptions.value = response.data.filter(item => item.value !== 'SMS'); // 暂不支持短信模板配置
+  messageConfigApi.getSupportTemplateTypeOptions().then(response => {
+    typeOptions.value = response.data;
   });
 }
 
@@ -302,6 +400,7 @@ function handleSelectionChange(selection) {
 }
 
 function handleAdd() {
+  resetVariableInsertion();
   form.value = {};
   title.value = proxy.$t("Message.Template.AddTitle");
   open.value = true;
@@ -313,6 +412,7 @@ function handleUpdate(row) {
     return;
   }
   messageTemplateApi.getTemplateDetail(row.templateId).then(response => {
+    resetVariableInsertion();
     form.value = response.data;
   });
   title.value = proxy.$t("Message.Template.EditTitle");
@@ -518,6 +618,44 @@ function handleFeiShuDemo(type) {
 }
 </script>
 <style scoped lang="scss">
+.template-form {
+  max-height: calc(90vh - 140px);
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.template-variables {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 4px;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-regular);
+  font-size: 13px;
+  line-height: 1.6;
+
+  p {
+    margin: 0 0 8px;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.variable-target, .variable-row, .custom-variable {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.custom-variable .el-input {
+  width: 240px;
+  max-width: 100%;
+}
+
 .template-editor {
   height: 50vh;
   width: 100%;

@@ -13,28 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.common.utils;
+package com.chestnut.member.domain.vo;
 
-import com.chestnut.common.validation.RegexConsts;
+import com.chestnut.common.annotation.XComment;
 
-import java.util.regex.Pattern;
-
-/**
- * ValidateUtils
- *
- * @author 兮玥
- * @email 190785909@qq.com
- */
-public class ValidateUtils {
-
-    public static final Pattern PatternChineseMainlandPhoneNumber = Pattern.compile(RegexConsts.REGEX_PHONE);
-
-    /**
-     * 校验中国大陆手机号码
-     *
-     * @param phoneNumber 手机号码
-     */
-    public static boolean validateChineseMainlandPhoneNumber(String phoneNumber) {
-        return PatternChineseMainlandPhoneNumber.matcher(phoneNumber).matches();
-    }
+@XComment("{API.DOC.MEMBER.REGISTER.MAIL_CODE_RESPONSE}")
+public record SendEmailRegisterCodeVO(
+        String email,
+        @XComment("{API.DOC.MEMBER.REGISTER.CODE_EXPIRES}") int expireSeconds,
+        @XComment("{API.DOC.MEMBER.REGISTER.CODE_RETRY_DURATION}") int retryDuration
+) {
 }

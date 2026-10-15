@@ -45,6 +45,9 @@ public class UserImportData {
 	@ExcelProperty("手机号")
 	private String phoneNumber;
 
+	@ExcelProperty("手机号区号")
+	private String phoneCallingCode;
+
 	@ExcelProperty("Email")
 	private String email;
 

@@ -22,12 +22,14 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.member.fixed.dict.MemberStatus;
 import com.chestnut.member.security.MemberUserType;
+import com.chestnut.system.fixed.dict.UserStatus;
 import com.chestnut.system.security.ISecurityUser;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serial;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /***
  * 会员表
@@ -81,10 +83,15 @@ public class Member extends BaseEntity implements ISecurityUser {
 	private String description;
 	
 	/**
-	 * 手机号
+	 * 手机号区号，例如：+86
+	 */
+	private String phoneCallingCode;
+
+	/**
+	 * 带区号的完整手机号码，例如：+8618888888888
 	 */
 	private String phoneNumber;
-	
+
 	/**
 	 * Email
 	 */
@@ -98,7 +105,12 @@ public class Member extends BaseEntity implements ISecurityUser {
 	/**
 	 * 状态
 	 */
-	private String status; 
+	private String status;
+
+	/**
+	 * 锁定结束时间
+	 */
+	private LocalDateTime lockEndTime;
 	
 	/**
 	 * 来源类型
@@ -150,7 +162,13 @@ public class Member extends BaseEntity implements ISecurityUser {
 	@Override
 	public void lockUser(LocalDateTime lockEndTime) {
 		this.status = MemberStatus.LOCK;
+		this.lockEndTime = lockEndTime;
 		this.modified = true;
+	}
+
+	public boolean isLocked() {
+		// 状态为锁定状态，并且锁定解锁时间为空或者未过期
+		return UserStatus.isLocked(this.status) && (Objects.isNull(this.getLockEndTime()) || LocalDateTime.now().isBefore(this.getLockEndTime()));
 	}
 
 	@Override

@@ -37,8 +37,12 @@
         <el-table-column :label="$t('System.User.UserName')" prop="userName" :show-overflow-tooltip="true" />
         <el-table-column :label="$t('System.User.NickName')" prop="nickName" :show-overflow-tooltip="true" />
         <el-table-column :label="$t('System.User.Email')" prop="email" :show-overflow-tooltip="true" />
-        <el-table-column :label="$t('System.User.PhoneNumber')" prop="phoneNumber" :show-overflow-tooltip="true" />
-        <el-table-column :label="$t('System.User.Status')" align="center" prop="status">
+        <el-table-column :label="$t('System.User.PhoneNumber')" :show-overflow-tooltip="true">
+          <template #default="scope">
+            {{ scope.row.phoneCallingCode }}-{{ scope.row.phoneNumber }}
+          </template>
+        </el-table-column>
+          <el-table-column :label="$t('System.User.Status')" align="center" prop="status">
           <template #default="scope">
             <dict-tag :options="SysUserStatus" :value="scope.row.status" />
           </template>
@@ -68,6 +72,7 @@
 
 <script setup name="SelectUser">
 import { authUserAdd, unallocatedUserList } from '@/api/system/role';
+import { normalizeStoredPhoneParts } from '@/utils/phoneNumber';
 
 const props = defineProps({
   roleId: {
@@ -116,7 +121,9 @@ function handleSelectionChange(selection) {
 // 查询表数据
 function getList() {
   unallocatedUserList(queryParams).then(res => {
-    userList.value = res.data.rows;
+    userList.value = res.data.rows.map(user => ({
+      ...user, ...normalizeStoredPhoneParts(user.phoneNumber, user.phoneCallingCode)
+    }));
     total.value = parseInt(res.data.total);
   });
 }

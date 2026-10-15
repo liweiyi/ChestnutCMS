@@ -18,8 +18,6 @@ package com.chestnut.system.security.config;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 public class LoginSecurity {
@@ -59,14 +57,4 @@ public class LoginSecurity {
      * 验证码重新生成间隔时长，单位：秒
      */
     private Integer captchaDuration;
-
-    /**
-     * 验证码消息配置ID。
-     */
-    private Long captchaMessageConfigId;
-
-    /**
-     * 验证码消息模板ID。
-     */
-    private Long captchaMessageTemplateId;
 }

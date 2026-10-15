@@ -74,6 +74,32 @@
               @click="handleExport"
             >{{ $t('Common.Export') }}</el-button>
           </el-col>
+          <el-col :span="1.5" v-hasPermi="['system:user:edit']">
+            <el-dropdown :disabled="batchDisabled" @command="command => handleBatchCommand(command, selectedAccounts)">
+              <el-button type="danger" plain icon="CircleClose" :disabled="batchDisabled" :loading="batchPending">
+                {{ $t('AccountStatus.BatchDisable') }}<el-icon class="el-icon--right"><ArrowDown /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="disable" :disabled="batchDisabled">{{ $t('Common.Disable') }}</el-dropdown-item>
+                  <el-dropdown-item command="removeDisablement" :disabled="batchDisabled">{{ $t('AccountStatus.RemoveDisablement') }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </el-col>
+          <el-col :span="1.5" v-hasPermi="['system:user:edit']">
+            <el-dropdown :disabled="batchDisabled" @command="command => handleBatchCommand(command, selectedAccounts)">
+              <el-button type="warning" plain icon="Lock" :disabled="batchDisabled" :loading="batchPending">
+                {{ $t('AccountStatus.BatchLock') }}<el-icon class="el-icon--right"><ArrowDown /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="lock" :disabled="batchDisabled">{{ $t('AccountStatus.Lock') }}</el-dropdown-item>
+                  <el-dropdown-item command="unlock" :disabled="batchDisabled">{{ $t('AccountStatus.Unlock') }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </el-col>
           <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
         </el-row>
         <el-form v-show="showSearch" :model="queryParams" ref="queryFormRef" class="el-form-search" :inline="true">
@@ -127,7 +153,7 @@
           <el-table-column :label="$t('System.User.UserName')" prop="userName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
           <el-table-column :label="$t('System.User.NickName')" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
           <el-table-column :label="$t('System.User.Dept')" prop="deptName" v-if="columns[3].visible" :show-overflow-tooltip="true" />
-          <el-table-column :label="$t('System.User.PhoneNumber')" prop="phoneNumber" v-if="columns[4].visible" width="120" />
+          <el-table-column :label="$t('System.User.PhoneNumber')" prop="phoneNumber" v-if="columns[4].visible" min-width="160" :show-overflow-tooltip="true" :formatter="row => normalizePhoneNumber(row.phoneNumber, row.phoneCallingCode)" />
           <el-table-column :label="$t('System.User.Status')" align="center" prop="status" v-if="columns[5].visible" width="80">
             <template #default="scope">
               <dict-tag :options="SysUserStatus" :value="scope.row.status" />
@@ -160,11 +186,19 @@
                   v-hasPermi="['system:user:remove']"
                 >{{ $t('Common.Delete') }}</el-button>
                 <el-dropdown
-                  v-if="scope.row.userId !== '1'"
+                  v-if="String(scope.row.userId) !== '1'"
                   @command="(command) => handleCommand(command, scope.row)">
-                  <el-button class="btn-more" type="primary" link icon="More"></el-button>
+                  <el-button class="btn-more" type="primary" link icon="More" :loading="isStatusPending(scope.row)"></el-button>
                   <template #dropdown>
                     <el-dropdown-menu>
+                      <el-dropdown-item
+                        v-if="checkPermi(['system:user:edit'])"
+                        command="handleDisable" icon="CircleClose" :disabled="statusBusy"
+                      >{{ $t(scope.row.status === '1' ? 'AccountStatus.RemoveDisablement' : 'Common.Disable') }}</el-dropdown-item>
+                      <el-dropdown-item
+                        v-if="checkPermi(['system:user:edit'])"
+                        command="handleLock" icon="Lock" :disabled="statusBusy"
+                      >{{ $t(scope.row.status === '2' ? 'AccountStatus.Unlock' : 'AccountStatus.Lock') }}</el-dropdown-item>
                       <el-dropdown-item 
                         v-if="checkPermi(['system:user:resetPwd'])"
                         command="handleResetPwd" 
@@ -231,7 +265,7 @@
           />
         </el-form-item>
         <el-form-item :label="$t('System.User.PhoneNumber')" prop="phoneNumber">
-          <el-input v-model="form.phoneNumber" :placeholder="$t('System.User.Placeholder.PhoneNumber')" maxlength="11" />
+          <PhoneNumberInput v-model="form.phoneNumber" v-model:phone-calling-code="form.phoneCallingCode" :placeholder="$t('System.User.Placeholder.PhoneNumber')" />
         </el-form-item>
         <el-form-item :label="$t('System.User.Email')" prop="email">
           <el-input v-model="form.email" :placeholder="$t('System.User.Placeholder.Email')" maxlength="50" />
@@ -246,10 +280,10 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item :label="$t('System.User.Status')" prop="status">
+        <el-form-item v-if="form.userId == undefined" :label="$t('System.User.Status')" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio
-              v-for="dict in SysUserStatus"
+              v-for="dict in SysUserStatus.filter(item => ['0', '1'].includes(item.value))"
               :key="dict.value"
               :label="dict.value"
             >{{dict.label}}</el-radio>
@@ -373,14 +407,20 @@
         </div>
       </template>
     </el-dialog>
+    <AccountStatusDialog v-model:open="lockOpen" :account="lockAccountLabel" :lock-end-time="lockAccountEndTime" :submit="submitLock" />
   </div>
 </template>
 
 <script setup>
+import PhoneNumberInput from '@/components/PhoneNumberInput';
+import AccountStatusDialog from '@/components/AccountStatusDialog';
+import useAccountStatus from '@/composables/useAccountStatus';
+import { withoutAccountStatus } from '@/utils/accountStatus';
+import { normalizePhoneNumber, normalizePhoneParts, normalizeStoredPhoneParts } from '@/utils/phoneNumber';
 import { useDeptScope } from '@/composables/useDeptScope';
-import { userNameValidator, emailValidator, phoneNumberValidator } from '@/utils/validate';
+import { userNameValidator, emailValidator, createPhoneNumberValidator } from '@/utils/validate';
 import { getPostOptions } from "@/api/system/post";
-import { listUser, getUser, delUser, addUser, updateUser, resetUserPwd, getAuthRole, updateAuthRole, changeDept } from "@/api/system/user";
+import { listUser, getUser, delUser, addUser, updateUser, changeUserStatus, batchChangeUserStatus, resetUserPwd, getAuthRole, updateAuthRole, changeDept } from "@/api/system/user";
 import RolePermission from '@/views/system/permission/permsTab';
 
 const { proxy } = getCurrentInstance();
@@ -389,12 +429,26 @@ const { SysUserStatus, Gender, EnableOrDisable } = proxy.useDict('SysUserStatus'
 // 响应式数据
 const loading = ref(false);
 const ids = ref([]);
+const selectedAccounts = ref([]);
 const single = ref(true);
 const multiple = ref(true);
 const showSearch = ref(true);
 const total = ref(0);
 const userList = ref([]);
 const title = ref("");
+const { lockOpen, lockAccountLabel, lockAccountEndTime, batchPending, statusBusy, isStatusPending,
+  toggleDisabled, toggleLocked, handleBatchCommand, submitLock } = useAccountStatus({
+  idField: 'userId',
+  changeStatus: changeUserStatus,
+  batchChangeStatus: batchChangeUserStatus,
+  batchAccountLabel: count => proxy.$t('AccountStatus.SelectedAccounts', { count }),
+  onSuccess: async () => {
+    proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'));
+    await getList();
+  }
+});
+const batchDisabled = computed(() => !selectedAccounts.value.length || statusBusy.value || lockOpen.value
+  || selectedAccounts.value.some(account => String(account.userId) === '1'));
 
 const open = ref(false);
 
@@ -413,7 +467,7 @@ const data = reactive({
     deptId: undefined,
     onlyCurrentDept: false
   },
-  form: {},
+  form: { phoneCallingCode: '+86' },
   rules: {
     userName: [
       { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
@@ -441,8 +495,8 @@ const data = reactive({
       { max: 50, message: proxy.$t('Common.RuleTips.MaxLength', [ 50 ]), trigger: "change" }
     ],
     phoneNumber: [
-      { validator: phoneNumberValidator, trigger: [ "blur", "change" ] },
-      { max: 20, message: proxy.$t('Common.RuleTips.MaxLength', [ 20 ]), trigger: "change" }
+      { validator: createPhoneNumberValidator(() => form.value.phoneCallingCode), trigger: [ "blur", "change" ] },
+      { max: 15, message: proxy.$t('Common.RuleTips.MaxLength', [ 15 ]), trigger: "change" }
     ]
   },
   upload: {
@@ -476,6 +530,7 @@ let listRequestId = 0;
 async function getList() {
   const requestId = ++listRequestId;
   proxy.$refs.dataTableRef?.clearSelection();
+  selectedAccounts.value = [];
   ids.value = [];
   single.value = true;
   multiple.value = true;
@@ -486,7 +541,9 @@ async function getList() {
   try {
     const response = await listUser({ ...queryParams.value });
     if (requestId !== listRequestId) return;
-    userList.value = response.data.rows;
+    userList.value = response.data.rows.map(user => ({
+      ...user, ...normalizeStoredPhoneParts(user.phoneNumber, user.phoneCallingCode)
+    }));
     total.value = Number(response.data.total);
   } finally {
     if (requestId === listRequestId) loading.value = false;
@@ -524,6 +581,7 @@ const reset = () => {
   proxy.resetForm("formRef")
   form.value = {
     deptId: String(queryParams.value.deptId) === "0" ? undefined : queryParams.value.deptId,
+    phoneCallingCode: '+86',
     status: "0"
   };
 };
@@ -543,6 +601,7 @@ const resetQuery = () => {
 
 // 多选框选中数据
 const handleSelectionChange = (selection) => {
+  selectedAccounts.value = [...selection];
   ids.value = selection.map(item => item.userId);
   single.value = selection.length != 1;
   multiple.value = !selection.length;
@@ -560,6 +619,12 @@ const handleRoleDialogClose = () => {
 // 更多操作触发
 const handleCommand = (command, row) => {
   switch (command) {
+    case "handleDisable":
+      toggleDisabled(row);
+      break;
+    case "handleLock":
+      toggleLocked(row);
+      break;
     case "handleResetPwd":
       handleResetPwd(row);
       break;
@@ -600,6 +665,7 @@ const handleUpdate = (row) => {
   const userId = row.userId || ids.value;
   getUser(userId).then(response => {
     form.value = response.data.user;
+    Object.assign(form.value, normalizeStoredPhoneParts(form.value.phoneNumber, form.value.phoneCallingCode));
     originalDeptId.value = form.value.deptId;
     open.value = true;
     title.value = proxy.$t('System.User.Dialog.Edit');
@@ -654,6 +720,7 @@ const handleAuthRole = (row) => {
   openRoleDialog.value = true;
   getAuthRole(row.userId).then(response => {
     form.value = response.data.user;
+    Object.assign(form.value, normalizeStoredPhoneParts(form.value.phoneNumber, form.value.phoneCallingCode));
     originalDeptId.value = form.value.deptId;
     roleOptions.value = response.data.roles;
     const userRoleIds = response.data.user.roleIds;
@@ -677,10 +744,11 @@ const handleSaveAuthRole = () => {
 
 /** 提交按钮 */
 const submitForm = () => {
+  Object.assign(form.value, normalizePhoneParts(form.value.phoneNumber, form.value.phoneCallingCode));
   proxy.$refs.formRef.validate(async valid => {
     if (valid) {
       if (form.value.userId != undefined) {
-        updateUser(form.value).then(response => {
+        updateUser(withoutAccountStatus(form.value)).then(response => {
           proxy.$modal.msgSuccess(proxy.$t('Common.EditSuccess'));
           open.value = false;
           getList();

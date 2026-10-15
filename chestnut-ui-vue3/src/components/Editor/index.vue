@@ -19,7 +19,10 @@
       ref="quillEditorRef"
       v-model:content="content"
       contentType="html"
-      @textChange="(e) => $emit('update:modelValue', content)"
+      @textChange="() => emit('update:modelValue', content)"
+      @selectionChange="handleSelectionChange"
+      @ready="handleReady"
+      @focus="emit('focus')"
       :options="options"
       :style="styles"
     />
@@ -28,12 +31,15 @@
 
 <script setup>
 import axios from 'axios'
-import { QuillEditor } from "@vueup/vue-quill"
+import { Delta, QuillEditor } from "@vueup/vue-quill"
 import "@vueup/vue-quill/dist/vue-quill.snow.css"
 
 const { proxy } = getCurrentInstance()
+const emit = defineEmits(['update:modelValue', 'focus'])
 
 const quillEditorRef = ref()
+let editorQuill = null
+let lastSelection = null
 const headers = ref({
   ...proxy.$auth.getTokenHeader()
 })
@@ -114,9 +120,45 @@ const styles = computed(() => {
 const content = ref("")
 watch(() => props.modelValue, (v) => {
   if (v !== content.value) {
+    lastSelection = null
+    // 清除当前选区，避免内容替换后恢复上一份内容的光标位置。
+    editorQuill?.setSelection(null, 'api')
     content.value = v == undefined ? "<p></p>" : v
   }
 }, { immediate: true })
+
+function handleReady(quill) {
+  editorQuill = quill
+}
+
+function handleSelectionChange({ range }) {
+  if (range) {
+    lastSelection = { index: range.index, length: range.length }
+  }
+}
+
+// 由使用方插入纯文本，无需访问编辑器内部实例。
+function insertText(text) {
+  if (props.readOnly || !editorQuill?.isEnabled() || typeof text !== 'string' || !text) {
+    return false
+  }
+  const range = editorQuill.getSelection() || lastSelection
+  const end = Math.max(0, editorQuill.getLength() - 1)
+  const index = Math.min(Math.max(0, range?.index ?? end), end)
+  const length = Math.min(Math.max(0, range?.length ?? 0), end - index)
+  // 混合选区的颜色等格式可能返回数组，仅保留共同的单值格式。
+  const formats = Object.fromEntries(
+    Object.entries(editorQuill.getFormat(index, length)).filter(([, value]) => !Array.isArray(value))
+  )
+  editorQuill.updateContents(new Delta().retain(index).delete(length).insert(text, formats), 'user')
+  const cursor = index + text.length
+  lastSelection = { index: cursor, length: 0 }
+  editorQuill.focus()
+  editorQuill.setSelection(cursor, 0, 'user')
+  return true
+}
+
+defineExpose({ insertText })
 
 // 如果设置了上传地址则自定义图片上传事件
 onMounted(() => {

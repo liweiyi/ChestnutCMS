@@ -66,8 +66,14 @@ public class CreateUserRequest extends BaseDTO {
     private String email;
 
     @XComment("{ENT.SYS.USER.PHONE}")
-    @Length(max = 20)
+    @Length(max = 14)
+    @Pattern(regexp = "[0-9]*")
     private String phoneNumber;
+
+    @XComment("{ENT.SYS.USER.PHONE_CALLING_CODE}")
+    @Length(max = 4)
+    @Pattern(regexp = "^$|^\\+[1-9][0-9]{0,2}$")
+    private String phoneCallingCode;
 
     @XComment("{ENT.SYS.USER.GENDER}")
     @NotBlank

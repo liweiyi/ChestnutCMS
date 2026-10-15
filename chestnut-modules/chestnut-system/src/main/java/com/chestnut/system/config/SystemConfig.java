@@ -21,6 +21,7 @@ import com.chestnut.system.config.properties.SysProperties;
 import com.chestnut.system.intercepter.DemoModeInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -103,18 +104,18 @@ public class SystemConfig implements WebMvcConfigurer {
 	
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		/** 本地文件上传路径 */
+		/* 本地文件上传路径 */
 		registry.addResourceHandler(getResourcePrefix() + "**")
 				.addResourceLocations("file:" + this.properties.getUploadPath());
 	}
 	
 	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
+	public void addInterceptors(@NonNull InterceptorRegistry registry) {
 		// 演示模式
 		if (properties.isDemoMode()) {
 			registry.addInterceptor(new DemoModeInterceptor())
 					.addPathPatterns("/**")
-					.excludePathPatterns("/login", "/logout", "/captchaImage");
+					.excludePathPatterns("/login", "/login/sms/code", "/logout", "/captchaImage");
 		}
 	}
 }

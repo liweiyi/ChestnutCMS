@@ -3,8 +3,8 @@
       <el-form-item :label="$t('AccountCenter.NickName')" prop="nickName">
          <el-input v-model="form.nickName" maxlength="30" />
       </el-form-item>
-      <el-form-item :label="$t('AccountCenter.PhoneNumber')" prop="phonenumber">
-         <el-input v-model="form.phoneNumber" maxlength="11" />
+      <el-form-item :label="$t('AccountCenter.PhoneNumber')" prop="phoneNumber">
+         <PhoneNumberInput v-model="form.phoneNumber" v-model:phone-calling-code="form.phoneCallingCode" />
       </el-form-item>
       <el-form-item :label="$t('AccountCenter.Email')" prop="email">
          <el-input v-model="form.email" maxlength="50" />
@@ -23,7 +23,9 @@
 </template>
 
 <script setup>
-import { emailValidator, phoneNumberValidator } from '@/utils/validate';
+import PhoneNumberInput from '@/components/PhoneNumberInput';
+import { normalizePhoneParts } from '@/utils/phoneNumber';
+import { emailValidator, createPhoneNumberValidator } from '@/utils/validate';
 import { updateUserProfile } from "@/api/system/user"
 
 const props = defineProps({
@@ -50,17 +52,19 @@ const rules = ref({
   ],
   phoneNumber: [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
-    { validator: phoneNumberValidator, trigger: "change" },
-    { max: 20, message: proxy.$t('Common.RuleTips.MaxLength', [ 20 ]), trigger: "change" }
+    { validator: createPhoneNumberValidator(() => form.value.phoneCallingCode), trigger: "change" },
+    { max: 15, message: proxy.$t('Common.RuleTips.MaxLength', [ 15 ]), trigger: "change" }
   ]
 })
 
 function submit() {
+  Object.assign(form.value, normalizePhoneParts(form.value.phoneNumber, form.value.phoneCallingCode))
   proxy.$refs.userRef.validate(valid => {
     if (valid) {
       updateUserProfile(form.value).then(response => {
         proxy.$modal.msgSuccess(proxy.$t('Common.SaveSuccess'))
         props.user.phoneNumber = form.value.phoneNumber
+        props.user.phoneCallingCode = form.value.phoneCallingCode
         props.user.email = form.value.email
       })
     }
@@ -73,7 +77,7 @@ function close() {
 
 watch(() => props.user, user => {
   if (user) {
-    form.value = { nickName: user.nickName, phoneNumber: user.phoneNumber, email: user.email, sex: user.sex }
+    form.value = { nickName: user.nickName, ...normalizePhoneParts(user.phoneNumber, user.phoneCallingCode), email: user.email, sex: user.sex }
   }
 },{ immediate: true })
 </script>

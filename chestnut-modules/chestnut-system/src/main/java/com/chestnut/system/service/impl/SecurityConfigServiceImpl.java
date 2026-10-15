@@ -41,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +66,9 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 	private final CaptchaService captchaService;
 
 	private final ISysLogininforService logininfoService;
-	
+
+	private final List<ISecurityConfigValidator>  validators;
+
 	@Override
 	public SysSecurityConfig getSecurityConfig() {
 		SysSecurityConfig config = this.redisCache.getCacheObject(CACHE_KEY_CONFIG, SysSecurityConfig.class, () -> {
@@ -108,6 +111,7 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 
 	@Override
 	public void addConfig(CreateSecurityConfigRequest req) {
+		validateConfig(req.getConfigs());
 		SysSecurityConfig config = new SysSecurityConfig();
 		BeanUtils.copyProperties(req, config);
 		config.setConfigId(IdUtils.getSnowflakeId());
@@ -120,6 +124,7 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 	public void saveConfig(UpdateSecurityConfigRequest req) {
 		SysSecurityConfig dbConfig = this.getById(req.getConfigId());
 		Assert.notNull(dbConfig, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(req.getConfigId()));
+		validateConfig(req.getConfigs());
 
 		BeanUtils.copyProperties(req, dbConfig);
 		dbConfig.updateBy(req.getOperator().getUsername());
@@ -140,6 +145,7 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 		Assert.notNull(config, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception(configId));
 
 		if (!config.isEnable()) {
+			validateConfig(config.getConfigs());
 			this.lambdaUpdate().set(SysSecurityConfig::getStatus, EnableOrDisable.DISABLE)
 					.eq(SysSecurityConfig::getStatus, EnableOrDisable.ENABLE)
 					.update();
@@ -197,6 +203,11 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 		loginSecurityConfigType.onLoginSuccess(user);
 	}
 
+	/**
+	 * 校验用户名密码登录的验证码
+	 *
+	 * @param loginBody 用户名密码登录请求
+	 */
 	public void validateLoginCaptcha(LoginBody loginBody) {
 		SysSecurityConfig securityConfig = this.getSecurityConfig();
 		if (Objects.isNull(securityConfig) || !securityConfig.isEnable()) {
@@ -216,6 +227,15 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 			throw SysErrorCode.CAPTCHA_ERR.exception();
 		}
 	}
+
+    private void validateConfig(ObjectNode configs) {
+		if (Objects.isNull(configs)) {
+			return;
+		}
+		for (ISecurityConfigValidator validator : this.validators) {
+			validator.validate(configs);
+		}
+    }
 
 	private void clearConfigCache() {
 		this.redisCache.deleteObject(CACHE_KEY_CONFIG);

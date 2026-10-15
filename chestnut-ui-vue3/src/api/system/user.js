@@ -36,6 +36,22 @@ export function updateUser(data) {
   })
 }
 
+export function changeUserStatus(data) {
+  return request({
+    url: '/system/user/changeStatus',
+    method: 'post',
+    data
+  })
+}
+
+export function batchChangeUserStatus(data) {
+  return request({
+    url: '/system/user/changeStatus/batch',
+    method: 'post',
+    data
+  })
+}
+
 export function changeDept(data) {
   return request({
     url: '/system/user/changeDept',

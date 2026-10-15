@@ -16,11 +16,11 @@
 package com.chestnut.xmodel.core.impl;
 
 import com.chestnut.common.utils.ObjectUtils;
+import com.chestnut.common.utils.ValidationUtils;
 import com.chestnut.xmodel.core.IMetaFieldValidation;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * 手机号码校验
@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
  */
 @Component(IMetaFieldValidation.BEAN_PREFIX + MetaFieldValidation_PhoneNumber.TYPE)
 public class MetaFieldValidation_PhoneNumber implements IMetaFieldValidation {
-
-    static final String PhoneNumberPattern = "^1[3-9]\\d{9}$";
 
     static final String TYPE = "PhoneNumber";
 
@@ -45,6 +43,11 @@ public class MetaFieldValidation_PhoneNumber implements IMetaFieldValidation {
         if (ObjectUtils.isNullOrEmptyStr(fieldValue)) {
             return true;
         }
-        return Pattern.matches(PhoneNumberPattern, fieldValue.toString());
+        String phoneNumber = fieldValue.toString();
+        if (phoneNumber.startsWith("+")) {
+            return ValidationUtils.PatternPhoneNumber.matcher(phoneNumber).matches();
+        } else {
+            return ValidationUtils.PatternChineseMainlandPhoneNumber.matcher(phoneNumber).matches();
+        }
     }
 }

@@ -18,8 +18,6 @@ package com.chestnut.member.domain.dto;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.domain.BaseDTO;
 import com.chestnut.common.validation.RegexConsts;
-import com.chestnut.member.fixed.dict.MemberStatus;
-import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -59,11 +57,13 @@ public class UpdateMemberRequest extends BaseDTO {
     @Length(max = 30)
     private String nickName;
 
-    /**
-     * 手机号
-     */
-    @Length(max = 20)
-    @Pattern(regexp = RegexConsts.REGEX_PHONE)
+    /** 手机号区号 */
+    @Length(max = 4)
+    @Pattern(regexp = "^$|^\\+[1-9][0-9]{0,2}$")
+    private String phoneCallingCode;
+
+    /** 手机本地号码 */
+    @Length(max = 14)
     private String phoneNumber;
 
     /**
@@ -77,13 +77,6 @@ public class UpdateMemberRequest extends BaseDTO {
      * 出生日期
      */
     private LocalDateTime birthday;
-
-    /**
-     * 状态
-     */
-    @Length(max = 1)
-    @Dict(MemberStatus.TYPE)
-    private String status;
 
     /**
      * 备注

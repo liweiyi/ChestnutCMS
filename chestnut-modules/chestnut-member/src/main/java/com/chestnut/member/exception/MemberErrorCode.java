@@ -122,7 +122,22 @@ public enum MemberErrorCode implements ErrorCode {
 	/**
 	 * 会员配置值无效
 	 */
-	INVALID_CONFIG_VALUE;
+	INVALID_CONFIG_VALUE,
+
+	/**
+	 * 登录失败：验证码错误
+	 */
+	INVALID_LOGIN_CAPTCHA,
+
+	/**
+	 * 不支持的会员登录方式
+	 */
+	UNSUPPORTED_LOGIN_TYPE,
+
+	/**
+	 * 用户被锁定，锁定结束时间：{0}
+	 */
+	MEMBER_LOCKED;
 	
 	@Override
 	public String value() {

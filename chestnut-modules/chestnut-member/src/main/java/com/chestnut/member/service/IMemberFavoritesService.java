@@ -16,11 +16,24 @@
 package com.chestnut.member.service;
 
 import com.baomidou.mybatisplus.spring.service.IService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.chestnut.member.core.IMemberFavoriteDataType;
 import com.chestnut.member.domain.MemberFavorites;
+import com.chestnut.member.domain.vo.MemberFavoriteVO;
 
 import java.util.List;
 
 public interface IMemberFavoritesService extends IService<MemberFavorites> {
+
+    /**
+     * 根据收藏数据类型标识获取内容读取实现。
+     */
+    IMemberFavoriteDataType getMemberFavoriteDataType(String type);
+
+    /**
+     * 分页读取指定会员的收藏，按数据类型批量补全收藏名称。
+     */
+    IPage<MemberFavoriteVO> getMemberFavoritesPage(Long memberId, int pageNum, int pageSize);
 
     /**
      * 获取指定用户收藏内容列表

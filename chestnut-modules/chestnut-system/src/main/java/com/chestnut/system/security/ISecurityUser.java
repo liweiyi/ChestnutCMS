@@ -45,6 +45,11 @@ public interface ISecurityUser {
 	 */
 	String getPhoneNumber();
 
+	/** 手机拨号区号，未设置时返回空值。 */
+	default String getPhoneCallingCode() {
+		return null;
+	}
+
 	/**
 	 * Email
 	 */

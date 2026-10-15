@@ -10,6 +10,32 @@
       <el-col :span="1.5">
         <el-button plain type="danger" icon="Delete" :disabled="multiple" @click="handleDelete">{{ $t("Common.Delete") }}</el-button>
       </el-col>
+      <el-col :span="1.5" v-hasPermi="['member:view']">
+        <el-dropdown :disabled="batchDisabled" @command="command => handleBatchCommand(command, selectedAccounts)">
+          <el-button type="danger" plain icon="CircleClose" :disabled="batchDisabled" :loading="batchPending">
+            {{ $t('AccountStatus.BatchDisable') }}<el-icon class="el-icon--right"><ArrowDown /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="disable" :disabled="batchDisabled">{{ $t('Common.Disable') }}</el-dropdown-item>
+              <el-dropdown-item command="removeDisablement" :disabled="batchDisabled">{{ $t('AccountStatus.RemoveDisablement') }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </el-col>
+      <el-col :span="1.5" v-hasPermi="['member:view']">
+        <el-dropdown :disabled="batchDisabled" @command="command => handleBatchCommand(command, selectedAccounts)">
+          <el-button type="warning" plain icon="Lock" :disabled="batchDisabled" :loading="batchPending">
+            {{ $t('AccountStatus.BatchLock') }}<el-icon class="el-icon--right"><ArrowDown /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item command="lock" :disabled="batchDisabled">{{ $t('AccountStatus.Lock') }}</el-dropdown-item>
+              <el-dropdown-item command="unlock" :disabled="batchDisabled">{{ $t('AccountStatus.Unlock') }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </el-col>
       <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
     <el-row v-show="showSearch">
@@ -44,13 +70,13 @@
       </el-form>
     </el-row>
 
-    <el-table v-loading="loading" :data="dataList" @selection-change="handleSelectionChange">
+    <el-table ref="dataTableRef" v-loading="loading" :data="dataList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column :label="$t('Member.UserName')" :show-overflow-tooltip="true" prop="userName" />
       <el-table-column :label="$t('Member.NickName')" :show-overflow-tooltip="true" prop="nickName" />
       <el-table-column label="Email" width="180" :show-overflow-tooltip="true" prop="email" />
       <el-table-column :label="$t('Member.PhoneNumber')" align="center" width="180" :show-overflow-tooltip="true"
-        prop="phoneNumber" />
+        prop="phoneNumber" :formatter="row => normalizePhoneNumber(row.phoneNumber, row.phoneCallingCode)" />
       <el-table-column :label="$t('Member.Status')" align="center" prop="status" width="80">
         <template #default="scope">
           <dict-tag :options="MemberStatus" :value="scope.row.status" />
@@ -71,8 +97,18 @@
           </el-text>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('Common.Operation')" fixed="right" align="center" width="350">
+      <el-table-column :label="$t('Common.Operation')" fixed="right" align="center" width="470">
         <template #default="scope">
+          <el-button type="danger" link icon="CircleClose"
+            :loading="isStatusPending(scope.row)" :disabled="statusBusy"
+            v-hasPermi="['member:view']" @click="toggleDisabled(scope.row)">
+            {{ $t(scope.row.status === '1' ? 'AccountStatus.RemoveDisablement' : 'Common.Disable') }}
+          </el-button>
+          <el-button type="warning" link icon="Lock"
+            :loading="isStatusPending(scope.row)" :disabled="statusBusy"
+            v-hasPermi="['member:view']" @click="toggleLocked(scope.row)">
+            {{ $t(scope.row.status === '2' ? 'AccountStatus.Unlock' : 'AccountStatus.Lock') }}
+          </el-button>
           <el-button type="text" icon="Key" @click="handleResetPwd(scope.row)">{{ $t('Member.ResetPwd') }}</el-button>
           <el-button type="text" icon="Edit" @click="handleUpdate(scope.row)">{{ $t("Common.Edit") }}</el-button>
           <el-button type="text" icon="Delete" @click="handleDelete(scope.row)">{{ $t("Common.Delete") }}</el-button>
@@ -97,7 +133,7 @@
           <el-input v-model="form.email" />
         </el-form-item>
         <el-form-item :label="$t('Member.PhoneNumber')" prop="phoneNumber">
-          <el-input v-model="form.phoneNumber" />
+          <PhoneNumberInput v-model="form.phoneNumber" v-model:phone-calling-code="form.phoneCallingCode" />
         </el-form-item>
         <el-form-item :label="$t('Member.NickName')" prop="nickName">
           <el-input v-model="form.nickName" />
@@ -109,9 +145,9 @@
           <el-date-picker v-model="form.birthday" format="YYYY-MM-DD" value-format="YYYY-MM-DD HH:mm:ss"
             type="date"></el-date-picker>
         </el-form-item>
-        <el-form-item :label="$t('Member.Status')">
+        <el-form-item v-if="form.memberId == undefined" :label="$t('Member.Status')" prop="status">
           <el-radio-group v-model="form.status">
-            <el-radio v-for="dict in MemberStatus" :key="dict.value"
+            <el-radio v-for="dict in MemberStatus.filter(item => ['0', '1'].includes(item.value))" :key="dict.value"
               :label="dict.value">{{ dict.label }}</el-radio>
           </el-radio-group>
         </el-form-item>
@@ -125,18 +161,37 @@
       </template>
     </el-dialog>
 
+    <AccountStatusDialog v-model:open="lockOpen" :account="lockAccountLabel" :lock-end-time="lockAccountEndTime" :submit="submitLock" />
   </div>
 </template>
 <script setup name="MemberMemberList">
-import { isBlank, userNameValidator, emailValidator, phoneNumberValidator } from '@/utils/validate';
-import { getMemberList, getMemberDetail, addMember, updateMember, deleteMembers, resetMemberPassword } from "@/api/member/member";
+import PhoneNumberInput from '@/components/PhoneNumberInput';
+import AccountStatusDialog from '@/components/AccountStatusDialog';
+import useAccountStatus from '@/composables/useAccountStatus';
+import { withoutAccountStatus } from '@/utils/accountStatus';
+import { normalizePhoneNumber, normalizePhoneParts, normalizeStoredPhoneParts } from '@/utils/phoneNumber';
+import { isBlank, userNameValidator, emailValidator, createPhoneNumberValidator } from '@/utils/validate';
+import { getMemberList, getMemberDetail, addMember, updateMember, changeMemberStatus, batchChangeMemberStatus, deleteMembers, resetMemberPassword } from "@/api/member/member";
 
 const { proxy } = getCurrentInstance();
+const { lockOpen, lockAccountLabel, lockAccountEndTime, batchPending, statusBusy, isStatusPending,
+  toggleDisabled, toggleLocked, handleBatchCommand, submitLock } = useAccountStatus({
+  idField: 'memberId',
+  changeStatus: changeMemberStatus,
+  batchChangeStatus: batchChangeMemberStatus,
+  batchAccountLabel: count => proxy.$t('AccountStatus.SelectedAccounts', { count }),
+  onSuccess: async () => {
+    proxy.$modal.msgSuccess(proxy.$t('Common.OpSuccess'));
+    await getList();
+  }
+});
 const { MemberStatus } = proxy.useDict('MemberStatus');
 
 const loading = ref(true);
 const showSearch = ref(true);
 const ids = ref([]);
+const selectedAccounts = ref([]);
+const batchDisabled = computed(() => !selectedAccounts.value.length || statusBusy.value || lockOpen.value);
 const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
@@ -154,6 +209,7 @@ const objects = reactive({
     pageSize: 10,
   },
   form: {
+    phoneCallingCode: '+86',
     status: '0',
   },
 });
@@ -188,9 +244,9 @@ const rules = reactive({
     { max: 50, message: proxy.$t('Common.RuleTips.MaxLength', [50]), trigger: ["change", "blur"] },
   ],
   phoneNumber: [
-    { validator: phoneNumberValidator, trigger: "blur" },
+    { validator: createPhoneNumberValidator(() => form.value.phoneCallingCode), trigger: "blur" },
     { validator: validateMember, trigger: "blur" },
-    { max: 20, message: proxy.$t('Common.RuleTips.MaxLength', [20]), trigger: ["change", "blur"] },
+    { max: 15, message: proxy.$t('Common.RuleTips.MaxLength', [15]), trigger: ["change", "blur"] },
   ],
   status: [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
@@ -205,10 +261,18 @@ onMounted(() => {
 })
 
 function getList() {
+  proxy.$refs.dataTableRef?.clearSelection();
+  selectedAccounts.value = [];
+  ids.value = [];
+  single.value = true;
+  multiple.value = true;
   loading.value = true;
-  getMemberList(queryParams.value).then(response => {
-    dataList.value = response.data.rows;
+  return getMemberList(queryParams.value).then(response => {
+    dataList.value = response.data.rows.map(member => ({
+      ...member, ...normalizeStoredPhoneParts(member.phoneNumber, member.phoneCallingCode)
+    }));
     total.value = parseInt(response.data.total);
+  }).finally(() => {
     loading.value = false;
   });
 }
@@ -232,6 +296,7 @@ function resetQuery() {
 }
 
 function handleSelectionChange(selection) {
+  selectedAccounts.value = [...selection];
   ids.value = selection.map(item => item.memberId)
   single.value = selection.length != 1
   multiple.value = !selection.length
@@ -239,7 +304,7 @@ function handleSelectionChange(selection) {
 
 function reset() {
   proxy.resetForm("form");
-  form.value = { status: '0' };
+  form.value = { phoneCallingCode: '+86', status: '0' };
 }
 
 function handleAdd() {
@@ -253,6 +318,7 @@ function handleUpdate(row) {
   const memberId = row.memberId ? row.memberId : ids.value[0];
   getMemberDetail(memberId).then(response => {
     form.value = response.data;
+    Object.assign(form.value, normalizeStoredPhoneParts(form.value.phoneNumber, form.value.phoneCallingCode));
     open.value = true;
     title.value = proxy.$t('Member.EditTitle');
   });
@@ -264,10 +330,11 @@ function handleCancel() {
 }
 
 function handleSubmitForm() {
+  Object.assign(form.value, normalizePhoneParts(form.value.phoneNumber, form.value.phoneCallingCode));
   proxy.$refs.formRef.validate(valid => {
     if (valid) {
       if (form.value.memberId != undefined) {
-        updateMember(form.value).then(response => {
+        updateMember(withoutAccountStatus(form.value)).then(response => {
           proxy.$modal.msgSuccess(proxy.$t('Common.SaveSuccess'));
           open.value = false;
           getList();

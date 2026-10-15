@@ -13,17 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.message.service;
+package com.chestnut.system.security;
 
-import com.chestnut.message.domain.dto.UserMessageSendRequest;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
- * 用户消息统一发送服务。
+ * 后端第三方登录提供者
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
-public interface IMessageSendService {
+public interface IThirdPartyLoginProvider {
+
+    String BEAN_PREFIX = "ThirdPartyLoginProvider_";
 
     /**
-     * 发送用户发起的邮件或短信，并按业务场景和接收者执行频控。
+     * 唯一标识
      */
-    void sendUserMessage(UserMessageSendRequest req);
+    String getId();
+
+    /**
+     * 名称
+     */
+    String getName();
+
+    /**
+     * 配置脱敏处理
+     */
+    void dealSensitive(ObjectNode configProps);
+
+    /**
+     * 更新登录配置
+     */
+    void updateConfigProps(ObjectNode oldProps, ObjectNode newProps);
 }

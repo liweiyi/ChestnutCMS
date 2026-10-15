@@ -22,7 +22,12 @@ public enum MessageTips implements TipMessage {
     /**
      * 正在发送消息：{0}，{1}，{2}
      */
-    SENDING_MESSAGE,;
+    SENDING_MESSAGE,
+
+    /**
+     * 消息发送失败：{0}
+     */
+    SEND_MESSAGE_FAIL,;
 
     @Override
     public String value() {

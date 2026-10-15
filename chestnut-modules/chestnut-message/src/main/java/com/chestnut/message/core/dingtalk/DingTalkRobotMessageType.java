@@ -20,11 +20,11 @@ import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.message.core.IMessageType;
 import com.chestnut.message.exception.MessageErrorCode;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -65,9 +65,9 @@ public class DingTalkRobotMessageType implements IMessageType<DingTalkRobotConfi
     }
 
     @Override
-    public void send(ObjectNode jsonConfigProps, Message message) {
+    public void send(Message message) {
         try {
-            DingTalkRobotConfigProps configProps = new DingTalkRobotConfigProps().fromJson(jsonConfigProps);
+            DingTalkRobotConfigProps configProps = new DingTalkRobotConfigProps().fromJson(message.configProps());
             ObjectNode jsonContent = JacksonUtils.parseObjectNode(message.content());
             String url = configProps.getWebHook();
             if (StringUtils.isNotEmpty(configProps.getSecret())) {

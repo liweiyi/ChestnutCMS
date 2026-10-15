@@ -15,15 +15,14 @@
  */
 package com.chestnut.member.fixed.dict;
 
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.system.fixed.FixedDictType;
 import com.chestnut.system.service.ISysDictTypeService;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * 用户状态
@@ -52,10 +51,10 @@ public class MemberStatus extends FixedDictType {
 		return ENABLE.equals(v);
 	}
 	
-	public static boolean isDisbale(String v) {
+	public static boolean isDisable(String v) {
 		return DISABLE.equals(v);
 	}
-	
+
 	public static boolean isLocked(String v) {
 		return LOCK.equals(v);
 	}

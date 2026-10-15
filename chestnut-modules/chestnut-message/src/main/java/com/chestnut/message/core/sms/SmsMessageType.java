@@ -15,13 +15,20 @@
  */
 package com.chestnut.message.core.sms;
 
+import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.ValidationUtils;
 import com.chestnut.message.core.IMessageType;
-import com.chestnut.message.core.MessageRateLimitConfig;
+import com.chestnut.message.domain.CcMessageConfig;
+import com.chestnut.message.exception.MessageErrorCode;
 import com.chestnut.message.service.impl.SmsService;
-import tools.jackson.databind.node.ObjectNode;
+import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.node.ObjectNode;
+
 
 /**
  * 手机短信消息
@@ -39,6 +46,10 @@ public class SmsMessageType implements IMessageType<SmsProps> {
 
     private final SmsService smsService;
 
+    public static ObjectNode createSendParameters(String code) {
+        return JacksonUtils.objectNode().put("Code", code);
+    }
+
     @Override
     public String getType() {
         return TYPE;
@@ -55,15 +66,37 @@ public class SmsMessageType implements IMessageType<SmsProps> {
     }
 
     @Override
-    public void validate(ObjectNode configs) {
-        MessageRateLimitConfig.normalize(configs);
+    public boolean supportedTemplate() {
+        return false;
     }
 
     @Override
-    public void send(ObjectNode jsonConfigProps, Message message) {
+    public boolean requiresReceiver() {
+        return true;
+    }
+
+    @Override
+    public void checkSendRequest(SendMessageReq req) {
+        IMessageType.super.checkSendRequest(req);
+        ValidationUtils.validatePhoneNumber(req.getReceiver());
+    }
+
+    @Override
+    public ObjectNode buildSendParams(@Nonnull CcMessageConfig messageConfig, ObjectNode variables) {
+        String templateId = messageConfig.getConfigProps() == null ? ""
+                : messageConfig.getConfigProps().path("templateId").asString("");
+        Assert.isTrue(!templateId.isBlank(), MessageErrorCode.TEMPLATE_ID_NOT_EMPTY::exception);
+        ObjectNode params = JacksonUtils.objectNode();
+        params.put("templateId", templateId);
+        params.set("templateVariables", variables);
+        return params;
+    }
+
+    @Override
+    public void send(Message message) {
         try {
-            SmsProps configProps = new SmsProps().fromJson(jsonConfigProps);
-            SmsSendParams sendParams = new SmsSendParams().fromJson(message.params());
+            SmsProps configProps = new SmsProps().fromJson(message.configProps());
+            SmsSendParams sendParams = new SmsSendParams().fromJson(message.configProps());
 
             SmsSendRequest req = new SmsSendRequest();
             req.setProvider(configProps.getProvider());
@@ -72,7 +105,7 @@ public class SmsMessageType implements IMessageType<SmsProps> {
             req.setAppId(configProps.getAppId());
             req.setRegion(configProps.getRegion());
             req.setSignName(configProps.getSignName());
-            req.setPhoneNumbers(sendParams.getPhoneNumbers());
+            req.setPhoneNumber(message.receiver());
             if (StringUtils.isNotEmpty(sendParams.getTemplateId())) {
                 req.setTemplateId(sendParams.getTemplateId());
             } else {
@@ -81,7 +114,10 @@ public class SmsMessageType implements IMessageType<SmsProps> {
             req.setTemplateParams(sendParams.getTemplateVariables());
             smsService.sendSms(req);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            if (e instanceof GlobalException globalException) {
+                throw globalException;
+            }
+            throw MessageErrorCode.SEND_MESSAGE_FAIL.exception(e, e.getMessage());
         }
     }
 }

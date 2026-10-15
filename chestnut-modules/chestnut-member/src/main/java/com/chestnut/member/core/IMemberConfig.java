@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.chestnut.member.config;
+package com.chestnut.member.core;
 
 import com.chestnut.common.utils.JacksonUtils;
 import tools.jackson.databind.JsonNode;

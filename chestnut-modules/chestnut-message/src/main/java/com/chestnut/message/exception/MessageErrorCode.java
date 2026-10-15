@@ -41,8 +41,6 @@ public enum MessageErrorCode implements ErrorCode {
 
     INVALID_USER_MESSAGE_REQUEST,
 
-    INVALID_BUSINESS_SCENE,
-
     INVALID_MESSAGE_RECEIVER,
 
     INVALID_RATE_LIMIT_CONFIG,

@@ -31,7 +31,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginBody {
-	
+
 	/**
 	 * 用户名
 	 */

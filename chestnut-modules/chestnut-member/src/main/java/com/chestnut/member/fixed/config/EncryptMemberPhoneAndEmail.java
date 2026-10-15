@@ -15,12 +15,11 @@
  */
 package com.chestnut.member.fixed.config;
 
-import org.springframework.stereotype.Component;
-
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.system.fixed.FixedConfig;
 import com.chestnut.system.service.ISysConfigService;
+import org.springframework.stereotype.Component;
 
 @Component(FixedConfig.BEAN_PREFIX + EncryptMemberPhoneAndEmail.ID)
 public class EncryptMemberPhoneAndEmail extends FixedConfig {
@@ -53,9 +52,13 @@ public class EncryptMemberPhoneAndEmail extends FixedConfig {
 	}
 	
 	public static String encryptPhone(String phone) {
-		if (StringUtils.isEmpty(phone) || phone.length() != 11) {
+		if (StringUtils.isBlank(phone)) {
 			return phone;
 		}
-		return phone.replaceAll("(?<=\\d{3})\\d(?=\\d{3})", "*");
+		int visiblePrefix = Math.min(3, phone.length() - 1);
+		int visibleSuffix = Math.min(3, phone.length() - visiblePrefix - 1);
+		return phone.substring(0, visiblePrefix)
+				+ "*".repeat(phone.length() - visiblePrefix - visibleSuffix)
+				+ phone.substring(phone.length() - visibleSuffix);
 	}
 }

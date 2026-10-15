@@ -28,6 +28,7 @@ import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.security.web.TableData;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
+import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.message.MessagePriv;
 import com.chestnut.message.core.IMessageType;
@@ -37,15 +38,17 @@ import com.chestnut.message.domain.dto.CreateMessageConfigReq;
 import com.chestnut.message.domain.dto.QueryMessageConfigReq;
 import com.chestnut.message.domain.dto.TestMessageConfigReq;
 import com.chestnut.message.domain.dto.UpdateMessageConfigReq;
+import com.chestnut.message.exception.MessageErrorCode;
 import com.chestnut.message.service.IMessageConfigService;
+import com.chestnut.message.service.impl.MessageDeliveryService;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.validator.LongId;
-
-
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.List;
 
@@ -65,6 +68,8 @@ public class MessageConfigController extends BaseRestController {
 	private final List<IMessageType<?>> messageTypes;
 
 	private final IMessageConfigService messageConfigService;
+
+	private final MessageDeliveryService messageDeliveryService;
 
 	@XComment("{API.DOC.MSG.GET_MSG_TYPES}")
 	@GetMapping("/types")
@@ -127,7 +132,25 @@ public class MessageConfigController extends BaseRestController {
     @Log(title = "测试消息配置", businessType = BusinessType.OTHER)
     @PostMapping("/test")
     public R<Void> testSend(@RequestBody @Validated TestMessageConfigReq req) {
-        this.messageConfigService.testSend(req);
+		CcMessageConfig messageConfig = this.messageConfigService.getMessageConfig(req.getConfigId());
+		Assert.notNull(messageConfig, () -> MessageErrorCode.MESSAGE_CONFIG_NOT_FOUND.exception(req.getConfigId()));
+		String title = req.getParams().path("title").asString("");
+		String content = req.getParams().path("content").asString("");
+		JsonNode receiverNode = req.getParams().get("receiver");
+		Assert.isTrue(receiverNode == null || receiverNode.isNull() || receiverNode.isString(),
+				MessageErrorCode.INVALID_MESSAGE_RECEIVER::exception);
+		String receiver = receiverNode == null ? null : receiverNode.asString(null);
+		// 测试接口保留 params.receiver；进入基础投递链路后地址与渠道参数分离。
+		ObjectNode sendParams = req.getParams().deepCopy();
+		sendParams.remove("receiver");
+		ObjectNode templateVariables;
+		JsonNode jsonNode = req.getParams().get("templateVariables");
+		if (jsonNode != null && jsonNode.isObject()) {
+			templateVariables = jsonNode.asObject();
+		} else {
+			templateVariables = JacksonUtils.objectNode();
+		}
+		messageDeliveryService.testSendMessage(messageConfig, receiver, title, content, templateVariables);
         return R.ok();
     }
 }

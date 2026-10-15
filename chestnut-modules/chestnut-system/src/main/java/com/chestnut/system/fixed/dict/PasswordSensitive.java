@@ -68,7 +68,7 @@ public class PasswordSensitive extends FixedDictType {
 		for (String v : values) {
 			if (ACCOUNT.equals(v) && password.contains(user.getUserName())) {
 				return false;
-			} else if (PHONE_NUMBER.equals(v) && StringUtils.isNotEmpty(user.getPhoneNumber()) && password.contains(user.getPhoneNumber())) {
+			} else if (PHONE_NUMBER.equals(v) && containsPhoneNumber(password, user)) {
 				return false;
 			} else if (EMAIL.equals(v) && StringUtils.isNotEmpty(user.getEmail()) && password.contains(user.getEmail().substring(0, user.getEmail().lastIndexOf("@")))) {
 				return false;
@@ -81,6 +81,23 @@ public class PasswordSensitive extends FixedDictType {
 			}
 		}
 		return true;
+	}
+
+	private static boolean containsPhoneNumber(String password, ISecurityUser user) {
+		if (StringUtils.isEmpty(user.getPhoneNumber())) {
+			return false;
+		}
+		if (password.contains(user.getPhoneNumber())) {
+			return true;
+		}
+		String phoneNumber = user.getPhoneNumber();
+		if (StringUtils.isNotEmpty(user.getPhoneCallingCode())
+				&& phoneNumber.startsWith(user.getPhoneCallingCode())
+				&& phoneNumber.length() > user.getPhoneCallingCode().length()) {
+			phoneNumber = phoneNumber.substring(user.getPhoneCallingCode().length());
+			return password.contains(phoneNumber);
+		}
+		return false;
 	}
 
 	public static <T> void decode(List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {

@@ -13,7 +13,7 @@
         show-icon
       />
 
-      <el-form :model="configs" label-width="190px" style="max-width: 1100px">
+      <el-form :model="configs" label-width="240px" style="max-width: 1100px">
         <el-form-item
           v-for="definition in definitions"
           :key="definition.id"
@@ -62,6 +62,16 @@
               </el-select>
             </div>
           </div>
+          <el-select
+            v-else-if="definition.controlType === 'CAPTCHA_SELECTOR'"
+            v-model="configs[definition.id]">
+            <el-option
+              v-for="item in captchaTypeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
           <el-switch
             v-else-if="definition.controlType === 'SWITCH'"
             v-model="configs[definition.id]"
@@ -94,6 +104,9 @@
 import * as memberConfigApi from '@/api/member/config'
 import * as messageConfigApi from '@/api/tool/message/config'
 import * as messageTemplateApi from '@/api/tool/message/template'
+import { getCaptchaTypeOptions } from "@/api/system/captcha";
+import { reactive } from 'vue';
+
 
 const { proxy } = getCurrentInstance()
 
@@ -107,8 +120,20 @@ const definitions = ref([])
 const configs = reactive({})
 const configOptionsByType = reactive({})
 const templateOptionsByType = reactive({})
+const captchaTypeOptions = ref({})
 const configLoading = reactive({})
 const templateLoading = reactive({})
+
+onMounted(() => {
+  loadCaptchaTypeOptions();
+});
+
+const loadCaptchaTypeOptions = () => {
+  getCaptchaTypeOptions().then(response => {
+    captchaTypeOptions.value = response.data.filter(item => item.value !== 'SMS'); // 登录不支持手机验证码，前端直接过滤掉
+  });
+}
+
 
 async function loadConfig() {
   loading.value = true

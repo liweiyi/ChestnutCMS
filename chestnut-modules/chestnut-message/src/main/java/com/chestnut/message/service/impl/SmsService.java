@@ -16,6 +16,8 @@
 package com.chestnut.message.service.impl;
 
 import com.chestnut.common.utils.Assert;
+import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.ValidationUtils;
 import com.chestnut.message.core.sms.ISmsProvider;
 import com.chestnut.message.core.sms.SmsSendRequest;
 import com.chestnut.message.exception.MessageErrorCode;
@@ -48,6 +50,8 @@ public class SmsService {
      * @param req
      */
     public void sendSms(SmsSendRequest req) throws Exception {
+        ValidationUtils.validatePhoneNumber(req.getPhoneNumber());
+        Assert.isTrue(StringUtils.isNotBlank(req.getTemplateId()), MessageErrorCode.TEMPLATE_ID_NOT_EMPTY::exception);
         ISmsProvider provider = this.getSmsProvider(req.getProvider());
         provider.send(req);
     }

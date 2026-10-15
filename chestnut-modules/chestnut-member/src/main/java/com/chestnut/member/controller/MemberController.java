@@ -29,6 +29,7 @@ import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.member.domain.Member;
 import com.chestnut.member.domain.dto.CreateMemberRequest;
+import com.chestnut.member.domain.dto.ChangeMemberStatusRequest;
 import com.chestnut.member.domain.dto.ResetMemberPasswordRequest;
 import com.chestnut.member.domain.dto.UpdateMemberRequest;
 import com.chestnut.member.domain.vo.MemberListVO;
@@ -37,6 +38,7 @@ import com.chestnut.member.fixed.dict.MemberStatus;
 import com.chestnut.member.permission.MemberPriv;
 import com.chestnut.member.service.IMemberService;
 import com.chestnut.system.security.AdminUserType;
+import com.chestnut.system.domain.dto.BatchChangeAccountStatusRequest;
 import com.chestnut.system.validator.Dict;
 import com.chestnut.system.validator.LongId;
 
@@ -111,6 +113,22 @@ public class MemberController extends BaseRestController {
 	@PostMapping("/update")
 	public R<Void> updateMember(@RequestBody @Validated UpdateMemberRequest req) {
 		this.memberService.updateMember(req);
+		return R.ok();
+	}
+
+	@XComment("{API.DOC.MEMBER.CHANGE_STATUS}")
+	@Log(title = "修改会员状态", businessType = BusinessType.UPDATE)
+	@PostMapping("/changeStatus")
+	public R<Void> changeStatus(@RequestBody @Validated @XComment("{API.DOC.MEMBER.CHANGE_STATUS_REQ}") ChangeMemberStatusRequest req) {
+		this.memberService.changeStatus(req);
+		return R.ok();
+	}
+
+	@XComment("{API.DOC.MEMBER.BATCH_CHANGE_STATUS}")
+	@Log(title = "批量修改会员状态", businessType = BusinessType.UPDATE)
+	@PostMapping("/changeStatus/batch")
+	public R<Void> batchChangeStatus(@RequestBody @Validated @XComment("{API.DOC.SYS.ACCOUNT.BATCH_CHANGE_STATUS_REQ}") BatchChangeAccountStatusRequest req) {
+		this.memberService.batchChangeStatus(req);
 		return R.ok();
 	}
 

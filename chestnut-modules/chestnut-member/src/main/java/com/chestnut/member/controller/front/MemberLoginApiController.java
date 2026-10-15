@@ -15,44 +15,51 @@
  */
 package com.chestnut.member.controller.front;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.common.annotation.XComment;
+import com.chestnut.common.captcha.CaptchaCheckResult;
 import com.chestnut.common.domain.R;
-import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.redis.RedisCache;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.BaseRestController;
+import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
-import com.chestnut.member.config.MemberConfig_RegisterEmailMessage;
+import com.chestnut.member.core.IMemberLoginType;
+import com.chestnut.member.core.impl.EmailPasswordMemberLoginType;
+import com.chestnut.member.core.impl.SmsMemberLoginType;
+import com.chestnut.member.core.impl.UsernamePasswordMemberLoginType;
 import com.chestnut.member.domain.Member;
-import com.chestnut.member.domain.dto.MemberLoginRequest;
-import com.chestnut.member.domain.dto.MemberRegisterRequest;
 import com.chestnut.member.domain.vo.MemberCache;
 import com.chestnut.member.domain.vo.MemberMenuVO;
+import com.chestnut.member.domain.vo.SendEmailRegisterCodeVO;
+import com.chestnut.member.domain.vo.SendSmsRegisterCodeVO;
+import com.chestnut.member.exception.MemberErrorCode;
+import com.chestnut.member.fixed.dict.MemberStatus;
 import com.chestnut.member.security.MemberLoginService;
 import com.chestnut.member.security.StpMemberUtil;
-import com.chestnut.member.service.IMemberConfigService;
 import com.chestnut.member.service.IMemberService;
 import com.chestnut.member.service.IMemberStatDataService;
 import com.chestnut.member.util.MemberUtils;
-import com.chestnut.message.core.email.EmailMessageType;
-import com.chestnut.message.domain.dto.UserMessageSendRequest;
-import com.chestnut.message.service.IMessageSendService;
 import com.chestnut.system.annotation.IgnoreDemoMode;
+import com.chestnut.system.domain.dto.CheckCaptchaRequest;
+import com.chestnut.system.domain.vo.GetCaptchaVO;
+import com.chestnut.system.domain.vo.SmsLoginCodeVO;
 import com.chestnut.system.fixed.dict.LoginLogType;
 import com.chestnut.system.fixed.dict.SuccessOrFail;
 import com.chestnut.system.service.ISysLogininforService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import tools.jackson.databind.node.ObjectNode;
 
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @XComment("{API.DOC.MEMBER.LOGIN_API_MODULE}")
 @Slf4j
@@ -69,11 +76,11 @@ public class MemberLoginApiController extends BaseRestController {
 
 	private final ISysLogininforService logininforService;
 
-	private final IMessageSendService messageSendService;
+	private final EmailPasswordMemberLoginType emailPasswordMemberLoginType;
 
-	private final IMemberConfigService memberConfigService;
+	private final SmsMemberLoginType smsMemberLoginType;
 
-	private final MemberConfig_RegisterEmailMessage registerEmailMessage;
+	private final Map<String, IMemberLoginType> loginTypeMap;
 
 	private final RedisCache redisCache;
 
@@ -101,30 +108,99 @@ public class MemberLoginApiController extends BaseRestController {
 		return R.ok(memberCache);
 	}
 
+	/**
+	 * 获取登录验证码
+	 */
+	@XComment("{API.DOC.MEMBER.GET_LOGIN_CAPTCHA}")
+	@GetMapping("/get_captcha")
+	public R<?> getCaptcha(@RequestParam @NotBlank String token) {
+		// 先校验用户名是否存在
+		List<Member> matches = this.memberService.list(new LambdaQueryWrapper<Member>()
+				.select(Member::getPhoneNumber, Member::getStatus, Member::getLockEndTime)
+				.eq(Member::getUserName, token)
+				.or().eq(Member::getEmail, token)
+				.or().eq(Member::getPhoneNumber, token));
+		if (matches.size() != 1) {
+			throw MemberErrorCode.MEMBER_NOT_EXISTS.exception();
+		}
+		Member member = matches.get(0);
+		if (MemberStatus.isDisable(member.getStatus())) {
+			throw MemberErrorCode.MEMBER_DISABLED.exception();
+		} else if (member.isLocked()) {
+			throw MemberErrorCode.MEMBER_LOCKED.exception();
+		}
+		GetCaptchaVO captcha = this.memberLoginService.getCaptcha(token);
+		return R.ok(captcha);
+	}
+
+	/**
+	 * 校验登录验证码
+	 */
+	@XComment("{API.DOC.CAPTCHA.CHECK_LOGIN_CAPTCHA}")
+	@IgnoreDemoMode
+	@PostMapping("/check_captcha")
+	public R<?> checkCaptcha(@RequestBody CheckCaptchaRequest req) {
+		CaptchaCheckResult captchaCheckResult = this.memberLoginService.checkCaptcha(req);
+		return R.ok(captchaCheckResult);
+	}
+
+	/**
+	 * 获取手机号免密登录验证码
+	 */
+	@XComment("{API.DOC.MEMBER.GET_SMS_LOGIN_CODE}")
+	@GetMapping("/get_sms_login_code")
+	public R<?> getSMSLoginCode(@RequestParam String phoneNumber) {
+		SmsLoginCodeVO vo = smsMemberLoginType.sendLoginSmsCode(phoneNumber);
+		return R.ok(vo);
+	}
+
+	/**
+	 * 获取手机号註冊短信验证码
+	 */
+	@XComment("{API.DOC.MEMBER.GET_SMS_LOGIN_CODE}")
+	@GetMapping("/get_sms_register_code")
+	public R<?> getSMSRegisterCode(@RequestParam String phoneNumber) {
+		SendSmsRegisterCodeVO vo = smsMemberLoginType.sendRegisterCode(phoneNumber);
+		return R.ok(vo);
+	}
+
 	@XComment("{API.DOC.MEMBER.LOGIN}")
 	@IgnoreDemoMode
 	@PostMapping("/login")
-	public R<?> login(@RequestBody @Validated MemberLoginRequest dto) {
-		dto.setUserAgent(ServletUtils.getUserAgent());
-		dto.setIp(ServletUtils.getIpAddr(ServletUtils.getRequest()));
-		String token = memberLoginService.login(dto);
+	public R<?> login(@RequestParam(required = false) String type, @RequestBody ObjectNode req) {
+		String ip = ServletUtils.getIpAddr(ServletUtils.getRequest());
+		String userAgent = ServletUtils.getUserAgent();
+		// 默认用户名密码登录兼容历史
+		String loginTypeId = Objects.requireNonNullElse(type, UsernamePasswordMemberLoginType.TYPE);
+		IMemberLoginType loginType = this.loginTypeMap.get(IMemberLoginType.BEAN_PREFIX + loginTypeId);
+		Assert.notNull(loginType, MemberErrorCode.UNSUPPORTED_LOGIN_TYPE::exception);
+		String token = loginType.login(req, ip, userAgent);
 		return R.ok(token);
 	}
 
 	@XComment("{API.DOC.MEMBER.REGISTER}")
 	@IgnoreDemoMode
 	@PostMapping("/register")
-	public R<?> resgiter(@RequestBody @Validated MemberRegisterRequest dto, HttpServletRequest request) {
-		String uuid = ServletUtils.getHeader(request, "uuid");
-		String authCode = this.redisCache.getCacheObject(SMS_CODE_CACHE_PREFIX + uuid, String.class);
-		if (StringUtils.isEmpty(authCode) || !dto.getAuthCode().equals(authCode)) {
-			return R.fail("验证码错误");
-		}
-		dto.setUserAgent(ServletUtils.getUserAgent());
-		dto.setIp(ServletUtils.getIpAddr(ServletUtils.getRequest()));
-		String token = this.memberLoginService.register(dto);
+	public R<?> resgiter(@RequestBody ObjectNode req, HttpServletRequest request) {
+		String ip = ServletUtils.getIpAddr(request);
+		String userAgent = ServletUtils.getUserAgent(request);
+		String loginTypeId = mappingOldType(req.path("type").asString());
+		IMemberLoginType loginType = this.loginTypeMap.get(IMemberLoginType.BEAN_PREFIX + loginTypeId);
+		Assert.notNull(loginType, MemberErrorCode.UNSUPPORTED_LOGIN_TYPE::exception);
+		String token = loginType.register(req, ip, userAgent);
 		return R.ok(token);
 	}
+
+	private String mappingOldType(String oldType) {
+		// 兼容历史
+		return switch (oldType) {
+			case "phone" -> SmsMemberLoginType.TYPE;
+			case "email" -> EmailPasswordMemberLoginType.TYPE;
+			case "username" -> UsernamePasswordMemberLoginType.TYPE;
+			default -> oldType;
+		};
+	}
+
 
 	@XComment("{API.DOC.MEMBER.LOGOUT}")
 	@IgnoreDemoMode
@@ -146,32 +222,19 @@ public class MemberLoginApiController extends BaseRestController {
 
 	@XComment("{API.DOC.MEMBER.SEND_REGISTER_SMS_CODE}")
 	@IgnoreDemoMode
+	@GetMapping("/register_mail_code")
+	public R<?> sendEmailRegisterCode(@RequestParam @Email @XComment("{API.DOC.MEMBER.EMAIL}") String email) {
+		SendEmailRegisterCodeVO vo = emailPasswordMemberLoginType.sendEmailCode(email);
+		return R.ok(vo);
+	}
+
+	// 兼容历史接口
+	@Deprecated(forRemoval = true, since = "1.6.3")
+	@XComment("{API.DOC.MEMBER.SEND_REGISTER_SMS_CODE}")
+	@IgnoreDemoMode
 	@GetMapping("/register_sms_code")
 	public R<?> sendRegisterSmsCode(@RequestParam @Email @XComment("{API.DOC.MEMBER.EMAIL}") String email) {
-		try {
-			Long count = this.memberService.lambdaQuery().eq(Member::getEmail, email).count();
-			if (count > 0) {
-				return R.fail("邮箱已注册！");
-			}
-			String code = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 999999));
-			Long[] messageConfig = memberConfigService.getConfigValue(registerEmailMessage);
-			messageSendService.sendUserMessage(new UserMessageSendRequest(
-					EmailMessageType.TYPE,
-					MemberConfig_RegisterEmailMessage.REGISTER_EMAIL_SCENE,
-					email,
-					messageConfig[MemberConfig_RegisterEmailMessage.CONFIG_ID_INDEX],
-					messageConfig[MemberConfig_RegisterEmailMessage.TEMPLATE_ID_INDEX],
-					JacksonUtils.objectNode().put("code", code)
-			));
-
-			String uuid = IdUtils.simpleUUID();
-			redisCache.setCacheObject(SMS_CODE_CACHE_PREFIX + uuid, code, 600, TimeUnit.SECONDS);
-			return R.ok(uuid);
-		} catch (GlobalException e) {
-			throw e;
-		} catch (Exception e) {
-			log.error("邮件发送失败", e);
-			return R.fail("发送错误，请联系管理员！");
-		}
+		SendEmailRegisterCodeVO vo = emailPasswordMemberLoginType.sendEmailCode(email);
+		return R.ok(IdUtils.simpleUUID()); // 历史兼容返回一个UUID，实际已无用
 	}
 }

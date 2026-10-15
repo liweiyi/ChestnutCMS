@@ -36,7 +36,6 @@ import com.chestnut.system.permission.HasDept;
 import com.chestnut.system.security.AdminUserType;
 import com.chestnut.system.security.ISecurityUser;
 import com.chestnut.system.validator.Dict;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -107,9 +106,14 @@ public class SysUser extends BaseEntity implements ISecurityUser, HasDept {
 	@Length(max = 50)
 	private String email;
 
-	/** 手机号码 */
+	/** 手机拨号区号 */
+	@ExcelProperty("{ENT.SYS.USER.PHONE_CALLING_CODE}")
+	@Length(max = 4)
+	private String phoneCallingCode;
+
+	/** 手机本地号码 */
 	@ExcelProperty("{ENT.SYS.USER.PHONE}")
-	@Length(max = 11)
+	@Length(max = 14)
 	private String phoneNumber;
 
 	/** 用户性别 */

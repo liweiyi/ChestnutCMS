@@ -18,7 +18,9 @@ package com.chestnut.common.captcha.storage;
 import com.chestnut.common.captcha.ICaptchaStorage;
 import com.chestnut.common.redis.RedisCache;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,11 +32,19 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class RedisCaptchaStorage implements ICaptchaStorage {
 
+    private static final DefaultRedisScript<String> CONSUME_SCRIPT = new DefaultRedisScript<>("""
+            local value = redis.call('get', KEYS[1])
+            if value then
+                redis.call('del', KEYS[1])
+            end
+            return value
+            """, String.class);
+
     private final RedisCache redisCache;
 
     @Override
-    public String get(String key) {
-        return redisCache.getCacheObject(key, String.class);
+    public String consume(String key) {
+        return redisCache.getRedisTemplate().execute(CONSUME_SCRIPT, List.of(key));
     }
 
     @Override
@@ -48,7 +58,7 @@ public class RedisCaptchaStorage implements ICaptchaStorage {
     }
 
     @Override
-    public boolean has(String key) {
-        return redisCache.hasKey(key);
+    public long getExpires(String key, TimeUnit timeUnit) {
+        return this.redisCache.getExpire(key, timeUnit);
     }
 }

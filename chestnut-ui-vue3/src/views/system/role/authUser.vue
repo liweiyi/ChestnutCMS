@@ -54,7 +54,7 @@
          <el-table-column :label="$t('System.User.UserName')" prop="userName" :show-overflow-tooltip="true" />
          <el-table-column :label="$t('System.User.NickName')" prop="nickName" :show-overflow-tooltip="true" />
          <el-table-column :label="$t('System.User.Email')" prop="email" :show-overflow-tooltip="true" />
-         <el-table-column :label="$t('System.User.PhoneNumber')" prop="phoneNumber" :show-overflow-tooltip="true" />
+         <el-table-column :label="$t('System.User.PhoneNumber')" prop="phoneNumber" :show-overflow-tooltip="true" :formatter="row => normalizePhoneNumber(row.phoneNumber, row.phoneCallingCode)" />
          <el-table-column :label="$t('System.User.Status')" align="center" prop="status">
             <template #default="scope">
                <dict-tag :options="SysUserStatus" :value="scope.row.status" />
@@ -86,6 +86,7 @@
 <script setup name="AuthUser">
 import selectUser from "./selectUser"
 import { allocatedUserList, authUserCancel } from "@/api/system/role"
+import { normalizePhoneNumber, normalizeStoredPhoneParts } from '@/utils/phoneNumber'
 
 const props = defineProps({
   roleId: {
@@ -121,7 +122,9 @@ watch(() => props.roleId, (newVal) => {
 function getList() {
   loading.value = true
   allocatedUserList(queryParams).then(response => {
-    userList.value = response.data.rows
+    userList.value = response.data.rows.map(user => ({
+      ...user, ...normalizeStoredPhoneParts(user.phoneNumber, user.phoneCallingCode)
+    }))
     total.value = parseInt(response.data.total)
     loading.value = false
   })

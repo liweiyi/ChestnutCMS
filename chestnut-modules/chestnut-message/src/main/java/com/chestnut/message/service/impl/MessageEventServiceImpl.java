@@ -25,19 +25,20 @@ import com.chestnut.message.domain.CcMessageConfig;
 import com.chestnut.message.domain.CcMessageEvent;
 import com.chestnut.message.domain.CcMessageTemplate;
 import com.chestnut.message.domain.dto.SaveMessageEventReq;
+import com.chestnut.message.exception.MessageErrorCode;
 import com.chestnut.message.exception.MessageTips;
 import com.chestnut.message.mapper.CcMessageEventMapper;
 import com.chestnut.message.monitor.MessageTemplateMonitoredCache;
 import com.chestnut.message.service.IMessageConfigService;
 import com.chestnut.message.service.IMessageEventService;
-import com.chestnut.message.service.IMessageTemplateService;
-import tools.jackson.databind.node.ObjectNode;
+import com.chestnut.system.fixed.dict.EnableOrDisable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.util.List;
 import java.util.Objects;
@@ -52,12 +53,34 @@ public class MessageEventServiceImpl extends ServiceImpl<CcMessageEventMapper, C
 
     private final IMessageConfigService messageConfigService;
 
-    private final IMessageTemplateService messageTemplateService;
-
     private final MessageTemplateMonitoredCache templateMonitoredCache;
+
+    private final MessageDeliveryService messageDeliveryService;
 
     @Override
     public void saveEvent(SaveMessageEventReq req) {
+        for (CcMessageEvent.EventNotify notify : req.getNotifies()) {
+            CcMessageConfig config = messageConfigService.getMessageConfig(notify.getConfigId());
+            Assert.notNull(config, () -> MessageErrorCode.MESSAGE_CONFIG_NOT_FOUND.exception(notify.getConfigId()));
+            IMessageType<?> type = messageConfigService.getMessageType(config.getType());
+            if (type.requiresReceiver()) {
+                List<String> receivers = List.of();
+                if (Objects.nonNull(notify.getReceivers())) {
+                    receivers = notify.getReceivers().stream().filter(StringUtils::isNotBlank).distinct().toList();
+                }
+                Assert.isTrue(StringUtils.isNotEmpty(receivers), MessageErrorCode.INVALID_MESSAGE_RECEIVER::exception);
+                notify.setReceivers(receivers);
+            } else {
+                notify.setReceivers(List.of());
+            }
+            if (type.supportedTemplate()) {
+                CcMessageTemplate template = templateMonitoredCache.get(notify.getTemplateId());
+                Assert.notNull(template, () -> MessageErrorCode.MESSAGE_TEMPLATE_NOT_FOUND.exception(notify.getTemplateId()));
+                Assert.isTrue(config.getType().equals(template.getType()), MessageErrorCode.MESSAGE_TYPE_MISMATCH::exception);
+            }
+            notify.setType(config.getType());
+            notify.setName(config.getName());
+        }
         RLock lock = redissonClient.getLock("MessageEvent-" + req.getEventId());
         lock.lock();
         try {
@@ -87,35 +110,46 @@ public class MessageEventServiceImpl extends ServiceImpl<CcMessageEventMapper, C
     public void triggerEvent(String eventId, ObjectNode templateVariables) {
         CcMessageEvent event = this.getById(eventId);
         Assert.notNull(event, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("eventId", eventId));
-
+        if (EnableOrDisable.isDisable(event.getStatus())) {
+            return;
+        }
         for (int i = 0; i < event.getNotifies().size(); i++) {
             CcMessageEvent.EventNotify notify = event.getNotifies().get(i);
-            CcMessageTemplate template = templateMonitoredCache.get(notify.getTemplateId());
-            if (Objects.isNull(template)) {
-                return;
-            }
             AsyncTaskManager.setTaskProgressInfo((i + 1) * 100 / event.getNotifies().size(), MessageTips.SENDING_MESSAGE,
-                    notify.getConfigId(), notify.getType(), notify.getName());
+                    notify.getType(), notify.getName(), notify.getConfigId());
             try {
-                String title = template.getTitle();
-                String content = template.getContent();
-                if (StringUtils.isNotEmpty(template.getTitle())) {
-                    title = messageTemplateService.parseTemplateTitle(template, templateVariables);
+                CcMessageConfig messageConfig = this.messageConfigService.getMessageConfig(notify.getConfigId());
+                IMessageType<?> mt = this.messageConfigService.getMessageType(messageConfig.getType());
+                if (mt.requiresReceiver()) {
+                    // 不再兼容历史，一律从receivers中读取接收人
+                    for (String receiver : notify.getReceivers()) {
+                        this.asyncSendMessage(eventId, notify, receiver, templateVariables);
+                    }
+                } else {
+                    this.asyncSendMessage(eventId, notify, null, templateVariables);
                 }
-                if (StringUtils.isNotEmpty(template.getContent())) {
-                    content = messageTemplateService.parseTemplateContent(template, templateVariables);
-                }
-                CcMessageConfig messageConfig = messageConfigService.getMessageConfig(notify.getConfigId());
-                IMessageType<?> messageType = messageConfigService.getMessageType(messageConfig.getType());
-                ObjectNode jsonSendParams = notify.getParams();
-                jsonSendParams.set("templateVariables", templateVariables);
-                IMessageType.Message message = new IMessageType.Message(title, content, jsonSendParams);
-                messageType.send(messageConfig.getConfigProps(), message);
             } catch (Exception e) {
-                AsyncTaskManager.addErrMessage("发送消息失败：configId=%s,type=%s,name=%s"
-                        .formatted(notify.getConfigId(), notify.getType(), notify.getName()));
-                log.error("Send message fail: {}", e.getMessage());
+                this.reportSendFailure(eventId, notify, e);
             }
         }
+    }
+
+    private void asyncSendMessage(String eventId, CcMessageEvent.EventNotify notify, String receiver, ObjectNode variables) {
+        try {
+            this.messageDeliveryService.sendMessage(new IMessageType.SendMessageReq(
+                    receiver,
+                    notify.getConfigId(),
+                    notify.getTemplateId(),
+                    variables
+            ));
+        } catch (Exception e) {
+            reportSendFailure(eventId, notify, e);
+        }
+    }
+
+    private void reportSendFailure(String eventId, CcMessageEvent.EventNotify notify, Exception exception) {
+        AsyncTaskManager.addErrMessage("发送消息失败：configId=%s,type=%s,name=%s"
+                .formatted(notify.getConfigId(), notify.getType(), notify.getName()));
+        log.error("Send event message fail: eventId={}, configId={}", eventId, notify.getConfigId(), exception);
     }
 }

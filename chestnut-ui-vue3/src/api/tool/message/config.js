@@ -1,15 +1,17 @@
 import request from '@/utils/request'
 
-export function getTypeOptions(supportTemplate) {
+export function getTypeOptions() {
   return request({
     url: '/message/config/types',
-    method: 'get',
-    params: { supportTemplate }
+    method: 'get'
   })
 }
 
 export function getSupportTemplateTypeOptions() {
-  return getTypeOptions('Y')
+  return getTypeOptions().then(response => ({
+    ...response,
+    data: response.data.filter(item => item.supportedTemplate === true)
+  }))
 }
 
 export function getConfigList(query) {
