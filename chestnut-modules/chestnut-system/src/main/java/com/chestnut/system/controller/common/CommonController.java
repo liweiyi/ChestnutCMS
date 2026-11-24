@@ -15,6 +15,8 @@
  */
 package com.chestnut.system.controller.common;
 
+import com.chestnut.system.exception.SystemTips;
+
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
@@ -36,6 +38,9 @@ import java.nio.file.Path;
 
 /**
  * 通用请求处理
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @XComment("{API.DOC.COMMON.MODULE}")
 @RequiredArgsConstructor
@@ -71,15 +76,15 @@ public class CommonController extends BaseRestController {
 		Path root = Path.of(SystemConfig.getPublicFileUploadDir()).toRealPath();
 		Path relative = Path.of(path);
 		if (relative.isAbsolute()) {
-			throw new SecurityException("Absolute download path is not allowed");
+			throw SystemTips.DOWNLOAD_PATH_DENIED.exception();
 		}
 		Path file = root.resolve(relative).normalize();
 		if (!file.startsWith(root)) {
-			throw new SecurityException("Download path must point to a public file");
+			throw SystemTips.DOWNLOAD_PATH_DENIED.exception();
 		}
 		Path realFile = file.toRealPath();
 		if (!realFile.startsWith(root) || !Files.isRegularFile(realFile)) {
-			throw new SecurityException("Download path must point to a public file");
+			throw SystemTips.DOWNLOAD_PATH_DENIED.exception();
 		}
 		return realFile;
 	}

@@ -200,7 +200,7 @@ const form_upload = reactive({
 
 const tagInputVisible = ref(false);
 const tagInputValue = ref('');
-const currentSiteId = ref(proxy.$cms.getCurrentSite());
+const currentSiteId = ref(resolveSiteId());
 
 // 上传参数
 const upload = reactive({
@@ -208,7 +208,7 @@ const upload = reactive({
   accept: "", // 文件类型限制
   acceptSize: 0,
   limit: props.uploadLimit, // 文件数限制
-  headers: { ...proxy.$auth.getTokenHeader(), ...proxy.$cms.currentSiteHeader() },
+  headers: { ...proxy.$auth.getTokenHeader(), [proxy.$cms.currentSiteKey()]: currentSiteId.value },
   url: import.meta.env.VITE_APP_BASE_API + "/cms/resource/upload", // 上传的地址
   fileList: [], // 上传的文件列表
   data : {} // 附带参数
@@ -227,9 +227,29 @@ const filterQuery = reactive({
   resourceType: props.rtype,
   owner: false,
   name: undefined,
-  siteId: '0'
+  siteId: currentSiteId.value
 });
 const dateRange = ref([]);
+
+function resolveSiteId() {
+  const siteId = String(props.siteId ?? '').trim();
+  return siteId && siteId !== '0' ? siteId : proxy.$cms.getCurrentSite();
+}
+
+function refreshSiteContext() {
+  const siteId = resolveSiteId();
+  const changed = String(currentSiteId.value ?? '') !== String(siteId ?? '');
+  currentSiteId.value = siteId;
+  filterQuery.siteId = siteId;
+  upload.headers = { ...proxy.$auth.getTokenHeader(), [proxy.$cms.currentSiteKey()]: siteId };
+  if (changed) {
+    resourcesLoaded.value = false;
+    resourceList.value = [];
+    resourceTotal.value = 0;
+    loadingList.value = false;
+    filterQuery.pageNum = 1;
+  }
+}
 
 const showLocal = computed(() => {
   return form_upload.source == 'local';
@@ -289,14 +309,16 @@ function loadMyResources() {
 }
 
 function loadResources() {
-
+  refreshSiteContext();
   loadingList.value = true;
   if (dateRange.value && dateRange.value.length == 2) {
     filterQuery.beginTime = dateRange.value[0];
     filterQuery.endTime = dateRange.value[1];
   }
   filterQuery.resourceType = props.rtype || ''
-  getResourceSelectList(filterQuery).then(response => {
+  const query = { ...filterQuery };
+  getResourceSelectList(query).then(response => {
+    if (String(query.siteId ?? '') !== String(resolveSiteId() ?? '')) return;
     resourceList.value = response.data.rows;
     resourceList.value.forEach(r => r.selected = false);
     resourceTotal.value = parseInt(response.data.total);
@@ -335,6 +357,7 @@ function handleFileChange(file, fileList) {
 }
 
 function handleFileBeforeUpload(file) {
+  refreshSiteContext();
   if (upload.acceptSize > 0 && file.size > upload.acceptSize) {
     proxy.$message.error(proxy.$t('CMS.Resource.UploadFileSizeLimit', [ fileSizeName.value ]));
     return false;
@@ -383,10 +406,13 @@ function onFileUploaded(isSuccess, fileList, result) {
   }
 }
 
-function handleOk() {
+async function handleOk() {
+  refreshSiteContext();
   if (activeName.value === "local") {
     if (form_upload.source === 'local') {
       Object.keys(form_upload).forEach(key => upload.data[key] = form_upload[key]);
+      // Apply fresh token/site headers to el-upload before it creates requests.
+      await nextTick();
       proxy.$refs.uploadRef.submit();
     } else {
       const url = form_upload.path;
@@ -470,12 +496,13 @@ function reset() {
 
 watch(() => props.open, (newVal) => {
   visible.value = newVal;
-});
+}, { immediate: true });
 
 watch(visible, (newVal) => {
   if (!newVal) {
     noticeClose();
   } else {
+    refreshSiteContext();
     upload.isUploading = false;
     uploadedCount.value = 0;
   }
@@ -485,12 +512,10 @@ watch(() => props.rtype, (newVal) => {
   loadResourceTypes();
 });
 
-watch(() => props.siteId, (newVal) => {
-  filterQuery.siteId = newVal;
-  if (newVal != '0') {
-    currentSiteId.value = newVal;
-  }
-});
+watch(() => props.siteId, () => {
+  refreshSiteContext();
+  if (visible.value && activeName.value === 'resources') loadResources();
+}, { immediate: true });
 
 onMounted(() => {
   loadResourceTypes();

@@ -7,20 +7,15 @@ const en = {
     CountryCallingCode: 'Country/region calling code',
     Search: 'Search',
     Reset: 'Reset',
-    More: 'More',
     None: 'None',
-    OK: 'OK',
     Confirm: 'Confirm',
     Cancel: 'Cancel',
-    Open: 'Open',
     Close: 'Close',
     Submit: 'Submit',
     GoBack: 'Go Back',
     Success: 'Success',
     Fail: 'Fail',
-    Normal: 'Normal',
     OpSuccess: 'Success',
-    OpFail: 'Failed',
     AddSuccess: 'Add Success',
     SaveSuccess: "Save Success",
     EditSuccess: 'Edit Success',
@@ -59,7 +54,6 @@ const en = {
     CreateTime: 'Create Time',
     CreateBy: 'Create User',
     UpdateTime: 'Update Time',
-    UpdateBy: 'Update User',
     Operation: 'Operation',
     Select: 'Select',
     Upload: 'Upload',
@@ -70,10 +64,6 @@ const en = {
     Collapse: 'Collapse',
     CheckAll: 'Check All',
     CheckInverse: 'Inverse',
-    TreeLinkage: 'Linkage',
-    MoveUp: "Move Up",
-    MoveDown: "Move Down",
-    Back: 'Back',
     ConfirmDelete: 'Are you sure to delete?',
     ConfirmClean: 'Are you sure to clean? Cleaned data cannot be recovered, please be careful.',
     Today: 'Today',
@@ -89,19 +79,15 @@ const en = {
     RepeatSubmit: 'The request is being processed,  please do not submit repeatedly.',
     ServerConnectFailed: 'Server connection failed.',
     ServerConnectTimeout: 'Server connection timeout.',
-    SecondaryVerification: 'Secondary Verification',
     ServerApiError: 'Server api error: {0}',
     Loading: 'Loading...',
     DownloadFailed: 'Download failed, please contact the administrator.',
     InvalidFileSuffix: 'Unsupport file format, only "{0}" is supported.',
     SelectFirst: 'Please select first.',
-    Width: "Width",
-    Height: "Height",
     Downloading: "Downloading...",
     Downloaded: "Download completed.",
     DownloadTimeout: "Download timeout.",
     Others: "Others",
-    Unknown: "Unknown",
     Recover: "Recover",
     InputPassword: "Input password",
     SelectedCount: "Selected {0} items",
@@ -112,8 +98,6 @@ const en = {
     },
     Unit: {
       Year: "yr",
-      Month: "mo",
-      Week: "week",
       Day: "d",
       Hour: "h",
       Minute: "min",
@@ -133,16 +117,9 @@ const en = {
   },
   Error: {
     Err401: "[401] Forbidden!",
-    Forbidden: "Unauthenticated!",
-    ForbiddenTip: "Sorry, you have not been authenticated yet. Please try logging in again.",
-    GoLogin: "Go to the login page",
     Err403: "[403] Deny access!",
     NoPermission: "Deny access!",
-    NoPermissionTip: "Sorry, you do not have access permission. Please apply for relevant resource access permission from the administrator.",
-    GoHome: "Go to the home page",
     Err404: "[404] The access resource does not exist!",
-    Err404Tip: "Sorry, the page you are looking for does not exist. Try checking for errors in the URL, then press the refresh button on the browser or try to find other content in our application.",
-    PageNotFound: "Page not found!",
     Unknown: 'Unknown system error, please notify then administrator!'
   },
   Router: {
@@ -191,19 +168,9 @@ const en = {
     CaptchaLoadFailed: 'Failed to load captcha. Please retry',
     CaptchaAccountChanged: 'Account changed. Please verify again',
     CaptchaRequired: 'Please complete captcha verification for the current account',
-    CaptchaTip: 'Click the button to start verification',
-    CaptchaSuccess: 'Verification successful',
     CaptchaFail: 'Verification failed, please try again',
-    CaptchaClickWord: 'Click word verification code',
-    CaptchaClickWordTip: 'Please click the text in order: {0}',
-    CaptchaClickWordSuccessTip: 'Verification successful, time cost: {0} seconds.',
-    CaptchaSlider: 'Slider puzzle verification code',
-    CaptchaSliderTip: 'Please drag the slider to complete the puzzle',
-    CaptchaSliderSuccessTip: 'Verification successful, time cost: {0} seconds.',
     AccountRuleTip: "Account cannot be empty!",
     PasswordRuleTip: "Password canot be empty!",
-    CaptchaRuleTip: "Captcha cannot be empty!",
-    Language: 'Language',
     OtherMethods: 'Other sign-in options',
     Feishu: {
       GetLoginUrlFail: 'Failed to get the Feishu login URL',
@@ -224,7 +191,6 @@ const en = {
     Basic: 'Basic',
     ResetPassword: 'Reset Password',
     NickName: 'Nick Name',
-    RealName: 'Real Name',
     Gender: 'Gender',
     GenderMale: 'Male',
     GenderFemale: 'Female',
@@ -236,7 +202,6 @@ const en = {
     ConfirmPwdPlaceHolder: 'Please confirm new password',
     NewPwdLenTip: 'Should be {0} - {1} characters in length.',
     NewPwdSensitiveTip: 'Cannot contain user sensitive information.',
-    NewPwdTip: 'Insecure new password .',
     NewPwdRuleLETTER_NUMBERTip: 'Must contain letters and numbers.',
     NewPwdRuleUPPER_LOW_LETTER_NUMBERTip: 'Must contain uppercase and lowercase letters and numbers.',
     NewPwdRuleLETTER_NUMBER_SPECIALTip: 'Must contain letters, numbers, special characters.',
@@ -246,73 +211,23 @@ const en = {
   Component: {
     Progress: {
       TaskIsRunning: "Task is running...",
-      Completed: " completed",
     },
     CommonImageViewer: {
       UploadSizeErr: "Uploaded file size cannot exceed {0}!",
       Uploading: "Uploading...",
       Tips: "Support: jpg/png, Size limit: 2MB"
     },
-    Crontab: {
-      Second: "Second",
-      Minute: "Minute",
-      Hour: "Hour",
-      Day: "Day",
-      Month: "Month",
-      Week: "Week",
-      Year: "Year",
-      TimeExpression: "Time Expression",
-      CronExpression: "Cron Expression",
-      Next5RunTime: "Next 5 run time",
-      Waiting: "Waiting..."
-    },
-    IconSelect: {
-      Placeholder: "Input icon name"
-    },
-    RightToolbar: {
-      Show: "Show",
-      Hide: "Hide",
-      ShowOrHide: "Show / Hide",
-      HideSearch: "Hide Search",
-      ShowSearch: "Show Search",
-      ShowTableColumn: "Show/Hide Table Columns"
-    },
-    Screenfull: {
-      UnSupported: "Your browser is not support full-screen mode."
-    },
-    TopNav: {
-      MoreMenu: "More+"
-    },
     Layout: {
-      Settings: {
-        ThemeStyle: 'Theme Style',
-        ThemeColor: 'Theme Color',
-        SystemLayoutConfig: 'Layout Configuration',
-        EnableTopNav: 'Enable TopNav',
-        EnableTagsViews: 'Enable Tags-Views',
-        EnableFixedHeader: 'Fixed Header',
-        ShowLogo: 'Show Logo',
-        EnableDynamicTitle: 'Enable Dynamic Title',
-      },
       Navbar: {
         Git: 'Git',
         Doc: 'Doc',
         ThemeMode: 'Theme Mode',
-        FullScreen: 'Full Screen',
         LayoutSize: 'Layout Size',
         Language: 'Language',
         ConfirmLogoutTip: 'Confirm to logout?',
         PublishTask: "Publish Task",
         ClearPublishTask: "Clear All Tasks"
       },
-      TagViews: {
-        RefreshPage: "Refresh",
-        CloseCurrent: "Close Current",
-        CloseOther: "Close Others",
-        CloseLeft: "Close Lefts",
-        CloseRight: "Close Rights",
-        CloseAll: "Close All"
-      }
     }
   },
   Home: {
@@ -322,10 +237,8 @@ const en = {
   },
   System: {
     DeptScope: {
-      All: "All departments",
       OnlyCurrent: "Current department only",
       Unassigned: "Unassigned",
-      ConfirmChange: "Changing department will remove {0} incompatible role assignments. Continue?",
     },
     User: {
       UserId: "User ID",
@@ -342,8 +255,6 @@ const en = {
       Role: "Roles",
       ResetPwd: "Reset Password",
       RoleSetting: "Role Setting",
-      Enable: "enable",
-      Disable: "disable",
       InputNewPwd: 'Please input new password for user "{0}"',
       ChangePwdSucc: 'Reset success, new password is: {0}',
       ImportResult: "Import Result",
@@ -354,7 +265,6 @@ const en = {
       EditAvatar: 'Edit Avatar',
       UploadAvatar: 'Click to upload avatar',
       SelectUser: "Select User",
-      IsAllocatedRole: "Allocated",
       LoginRedirectTip: "Login successful, redirecting...",
       ChangeDept: "Change Department",
       ChangeDeptConfirmMsg: "Changing the department will remove all role assignments for this user. Directly granted user permissions will be retained. Continue?",
@@ -375,7 +285,6 @@ const en = {
         Password: "Input password",
         Gender: "Select gender",
         Post: "Select posts",
-        Role: "Select roles"
       }
     },
     UserPreference: {
@@ -385,12 +294,9 @@ const en = {
       OpenContentEditorW: "New Window For Content Editor",
       ShowContentSubTitle: "Show Content Subtitle",
       CatalogTreeExpandMode: "Catalog Tree Expand Mode",
-      CatalogTreeExpandMode_Normal: "Common",
       CatalogTreeExpandMode_Accordion: "Accordion",
     },
     UserRole: {
-      UserInfo: "User Information",
-      Roles: "User Roles",
       AddUser: "Add User",
       RemoveUser: "Remove User"
     },
@@ -401,17 +307,14 @@ const en = {
       Sort: "Sort",
       Status: "Status",
       UserSetting: "User Setting",
-      MenuPerms: "Menu Perms",
       PermissionSetting: "Permission Setting",
       Enable: "enable",
       Disable: "disable",
       ConfirmChangeStatus: 'Are you sure to {0} "{1}"?',
-      DataScope: "Data Permissions",
       ConfirmRemoveUser: "Are you sure to remove users?",
       Dialog: {
         Add: "Add Role",
         Edit: "Edit Role",
-        DataScope: "Grant Data Permissions"
       },
       Placeholder: {
         RoleName: "Input role name",
@@ -423,7 +326,6 @@ const en = {
       MenuPriv: "Meun",
       SitePriv: "Site",
       CatalogPriv: "Catalog",
-      ContentPriv: "Content",
       PageWidgetPriv: "Page Widget"
     },
     Menu: {
@@ -450,8 +352,6 @@ const en = {
       RouterParamsTips: 'Router default parameters, eg: `{\'{\'}"id": 1, "name": "chestnut"{\'}\'}`',
       IsCache: "Is Cache",
       IsCacheTips: "Cached with `keep-alive`, need component's name same with path.",
-      EnableCache: "Cache",
-      DisableCache: "Non Cache",
       Visible: "Is Visible",
       VisibleTips: "Router is not show in sidebar but accessible when invisible.",
       ConfirmDelete: 'Are you sure to delete menu "{0}"?',
@@ -461,7 +361,6 @@ const en = {
       },
       Placeholder: {
         MenuName: "Input menu name",
-        Status: "Menu Status",
         ParentMenu: "Select parent menu",
         Icon: "Click to choose icon",
         RouterLink: "Input router link",
@@ -469,7 +368,6 @@ const en = {
         Perms: "Input permisison key",
         RouterParams: "Input router parameters",
       },
-      Shortcut: "Shortcut"
     },
     Dept: {
       DeptName: "Dept Name",
@@ -510,10 +408,8 @@ const en = {
       }
     },
     Dict: {
-      DictId: "ID",
       DictName: "Dict Name",
       DictType: "Dict Type",
-      DictCode: "Dict Code",
       DictLabel: "Dict Label",
       DictValue: "Dict Value",
       DictSort: "Sort",
@@ -528,7 +424,6 @@ const en = {
         Warning: "Warning",
         Danger: "Danger"
       },
-      Status: "Status",
       DataList: "Dictionary Datas",
       ConfirmDelete: 'Are you sure to delete dict with ids: {0}?',
       ConfirmDeleteDatas: 'Are you sure to delete dict datas with codes: {0}?',
@@ -541,21 +436,17 @@ const en = {
       Placeholder: {
         DictName: "Input dict name",
         DictType: "Input dict type",
-        DictCode: "Input dict data code",
         DictLabel: "Input dict data label",
         DictValue: "Input dict data value",
         CssClass: "Input dict data css class",
         ListClass: "Input dict data list class",
-        Status: "Input status"
       }
     },
     Config: {
-      ConfigId: "Config ID",
       ConfigName: "Config Name",
       ConfigKey: "Config Key",
       ConfigValue: "Config Value",
       ConfigType: "Fixed Config",
-      ConfirmDelete: 'Are you sure to delete config with ids: {0}?',
       Dialog: {
         Add: "Add Config",
         Edit: "Edit Config"
@@ -564,7 +455,6 @@ const en = {
         ConfigName: "Input config name",
         ConfigKey: "Input config key",
         ConfigValue: "Input config value",
-        ConfigType: "Fixed Config",
       }
     },
     Notice: {
@@ -572,23 +462,13 @@ const en = {
       NoticeType: "Notice Type",
       NoticeContent: "Content",
       Status: "Status",
-      ConfirmDelete: 'Are you sure to delete noitces with ids: {0}?',
       Dialog: {
         Add: "Add Notice",
         Edit: "Edit Notice"
       }
     },
     I18n: {
-      LangTag: "Language Tag",
-      LangKey: "Language Key",
-      LangValue: "Language Value",
       EditorTitle: "Edit i18n `{0}`",
-      Refreshing: "Refreshing...",
-      RefreshSuccess: "Refresh success",
-      Dialog: {
-        Add: "Add I18n",
-        Edit: "Edit I18n"
-      }
     },
     OpLog: {
       Title: "Title",
@@ -597,7 +477,6 @@ const en = {
       ResponseCode: "Res Code",
       OpTime: "Op Time",
       Cost: "Op Cost",
-      LogId: "Log ID",
       RequestMethod: "Request Method",
       IP: "IP",
       Location: "Location",
@@ -612,25 +491,20 @@ const en = {
       ConfirmClean: 'Are you sure to clean all logs?'
     },
     LoginInfo: {
-      LogId: "Log ID",
       IP: "IP",
       UserType: 'User Type',
       UserId: "UID",
       UserName: "User Name",
       Status: "Status",
       LoginTime: "Login Time",
-      Unlock: "Unlock",
       Location: "Location",
       Browser: "Browser",
       OS: "OS",
       OpMsg: "Message",
-      ConfirmUnlock: 'Are you sure to unlock user: {0}?',
-      UnlockSuccess: 'Unlock user "{0}" success.'
     },
     Security: {
       Basic: "Basic Information",
       Name: "Category Name",
-      PasswordLength: "Password Length",
       PasswordRule: "Password Rule",
       PasswordExpireSeconds: "Password Expiration Seconds",
       PasswordRetryLimit: "Password Retry Day Limit",
@@ -663,14 +537,6 @@ const en = {
       CaptchaType: "Password Login Captcha Type",
       CaptchaExpireSeconds: "Captcha Expire Seconds",
       CaptchaRetryDuration: "Captcha Retry Duration",
-      BizConfigCard: "Business Security Configuration",
-      SecondaryVerifications: "Secondary Verification APIs",
-      SecondaryVerificationsSearch: "Search by path",
-      SecondaryVerificationsPlaceholder: "Enter API path, e.g. /system/user/delete/**",
-      SecondaryVerificationPath: "API Path",
-      SecondaryVerificationsTip: "Supports Ant-style path patterns, e.g. /system/** or /api/user/delete/{id}. Each entry is an independent rule.",
-      BizVerifyExpireSeconds: "Expiration Seconds",
-      CSP: "Content-Security-Policy",
       Tab: {
         SecurityConfig: "Security Configuration",
         LoginConfig: "Login Configuration",
@@ -680,26 +546,9 @@ const en = {
         Name: "Name",
         Type: "Type",
         Desc: "Description",
-        Image: "Image",
         Status: "Status",
         AddTitle: "Add Login Configuration",
         EditTitle: "Edit Login Configuration",
-        Wechat: {
-          AppId: "App ID",
-          AppSecret: "App Secret",
-          RedirectUri: "Redirect URI",
-          Style: "Font Color",
-          Href: "Custom Style URL",
-          Stylelite: "Qrcode Style",
-          FastLogin: "Fast Login",
-          ColorScheme: "Color Theme",
-        },
-        Feishu: {
-          AppId: "App ID",
-          AppSecret: "App Secret",
-          Scope: "Scope",
-          RedirectUri: "Redirect URI",
-        }
       }
     },
     CloudConfig: {
@@ -725,54 +574,10 @@ const en = {
     }
   },
   Monitor: {
-    Job: {
-      JobId: "Job ID",
-      JobName: "Job Name",
-      JobGroup: "Job Group",
-      Status: "Status",
-      InvokeTarget: "Invoke Target",
-      CronExpression: "Cron",
-      CronGenerator: "Cron Generator",
-      GenCron: "Generate Cron",
-      Concurrent: "Concurrent",
-      Allow: "Allow",
-      Forbid: "Forbid",
-      Enable: "Enable",
-      Disable: "Disable",
-      MisfirePolicy: "Policy",
-      DefaultPolicy: "Default",
-      RunNow: "Run Immediately",
-      RunOnce: "Run Once",
-      Manual: "Manual Run",
-      Details: "Job Details",
-      BeanExample: "Bean invoke eg: ryTask.ryParams('ry')",
-      ClassExample: "Class invoke eg: com.test.quartz.task.RyTask.ryParams('ry')",
-      ParamsTips: "Support Parameter: String, Boolean, Long, Float, Integer",
-      NextRunTime: "Next Run Time",
-      ConfirmDelete: 'Are you sure to delete jobs with ids: {0}?',
-      ConfirmChangeStatus: 'Are  you sure to "{0}" job "{1}"?',
-      ConfirmRunOnce: 'Are you sure to run job "{0}" once immediately?',
-      Logs: "Job Logs",
-      ExecTime: "Execute Time",
-      JobLogId: "Log ID",
-      JobLogMessage: "Log Message",
-      LogDetails: "Details",
-      ExceptionInfo: "Exception Info",
-      ConfirmClean: 'Are you sure to clean all logs?',
-      Dialog: {
-        Add: "Add Job",
-        Edit: "Edit Job",
-        Log: "Log Details",
-      },
-      Placeholder: {
-        InvokeTarget: "Input invoke target string"
-      }
-    },
     ScheduledTask: {
       Type: "Type",
       Name: "Name",
       Status: "Status",
-      ReadyTime: "Ready Time",
       ExecOnce: "Execute Once",
       Logs: "Logs",
       TriggerType: "Trigger",
@@ -928,65 +733,6 @@ const en = {
       ReadyTime: "Ready Time"
     }
   },
-  AI: {
-    Chat: {
-      Title: "AI Chat",
-      Open: "Open AI Chat",
-      ExpandToolbar: "Expand AI toolbar",
-      CollapseToolbar: "Collapse AI toolbar",
-      StatelessTip: "Chat history stays in this window only and is cleared on refresh",
-      SelectModel: "Select an AI model",
-      NewConversation: "New Chat",
-      EmptyTitle: "Start a conversation with AI",
-      EmptyDescription: "Select an enabled model and enter your message. This version does not store chat history on the server.",
-      NoModels: "No available models",
-      NoModelsTip: "Create and enable at least one AI model in Model Configuration first.",
-      InputPlaceholder: "Enter a message. Press Enter to send and Shift + Enter for a new line",
-      SendTip: "Each request includes up to the latest 20 messages from this window",
-      Send: "Send",
-      Stop: "Stop",
-      User: "You",
-      Assistant: "AI Assistant",
-      Copy: "Copy",
-      Copied: "Response copied",
-      CopyFailed: "Copy failed. Select the content manually",
-      RequestFailed: "The AI chat request failed. Please try again later",
-      InvalidStream: "The AI response stream is invalid"
-    },
-    Model: {
-      Name: "Configuration Name",
-      ProviderType: "Provider Type",
-      BaseUrl: "Base URL",
-      ApiKey: "API Key",
-      ApiKeyStatus: "Key Status",
-      ModelName: "Model Name",
-      Status: "Status",
-      IsDefault: "Default Model",
-      SupportsTools: "Tool Calling",
-      TimeoutSeconds: "Timeout",
-      SortFlag: "Sort",
-      Test: "Test",
-      TestSuccess: "The model API connection test succeeded",
-      TestFailed: "The model API connection test failed. Check the base URL, model name, and API Key",
-      Configured: "Configured",
-      NotConfigured: "Not Configured",
-      ApiKeyEditTip: "The saved API Key is never displayed. Leave this field blank to keep the existing key.",
-      ConfirmDelete: "Are you sure you want to delete the selected {0} model configuration(s)?",
-      Dialog: {
-        Add: "Add AI Model Configuration",
-        Edit: "Edit AI Model Configuration"
-      },
-      Placeholder: {
-        Name: "Enter a configuration name",
-        ProviderType: "Select a provider type",
-        BaseUrl: "Enter the model service base URL",
-        ApiKey: "Enter an API Key (optional)",
-        ApiKeyEdit: "Leave blank to keep the existing API Key",
-        ModelName: "Enter the remote model name",
-        Status: "Select a status"
-      }
-    }
-  },
   CMS: {
     Dashboard: {
       PublishStrategy: "Publish Strategy",
@@ -994,16 +740,12 @@ const en = {
     },
     ContentCore: {
       ContentType: "Content Type",
-      CatalogType: "Catalog Type",
-      InternalDataType: "Internal Data Type",
-      ResourceType: "Resource Type",
       InternalUrl: "Internal Url",
       SelectCatalog: "Select Catalog",
       SelectContent: "Select Content",
       ToPublish: "To Publish",
       Publish: "Publish",
       Preview: "Preview",
-      Browse: "Browse",
       ToPublishSuccess: "To Publish Success",
       PublishSuccess: "Publish success.",
       PublishProgressTitle: "Publish task",
@@ -1055,7 +797,6 @@ const en = {
       VideoModifier: {
         DialogTitle: "Video Infomation",
         Cover: "Cover",
-        UploadCover: "Upload",
         FrameCover: "Frame Screenshot",
         FrameCoverSeconds: "Screenshot Seconds",
         Screenshot: "Screenshot",
@@ -1074,8 +815,6 @@ const en = {
       BaiduMap: {
         DialogTitle: "Baidu Map",
         City: "City",
-        Address: "Address",
-        DynamicMap: "Dynamic Map",
         MarkerPosition: "Marker",
         NoAccessKey: "Missing system config `BaiduMapAccessKey`.",
         GoSysConfig: "Config Now!"
@@ -1091,9 +830,17 @@ const en = {
       SensitiveWordCheck: "Sensitive Word",
       FallibleWordCheck: "Fallible Word",
       NoSensitiveWord: "No sensitive word.",
-      NoFallibleWord: "No fallible word."
+      NoFallibleWord: "No fallible word.",
+      WordCheck: 'Check text',
+      Xiumi: 'Xiumi',
+      XiumiDialog: 'Xiumi content editor'
     },
     Site: {
+      ParentSite: "Parent site",
+      Move: "Move",
+      SortFlag: "Sort Value",
+      TopLevel: "Top-level Site",
+      MoveParentPlaceholder: "Leave blank to move to the top level",
       SiteId: "Site ID",
       Name: "Site Name",
       Path: "Site Path",
@@ -1117,6 +864,8 @@ const en = {
       GoAddPublishPipe: "Add",
       ExModelCardTitle: "Ex-Model Configuration",
       CurrentSelectorTitle: "Change Current Site",
+      NoAccessibleSite: "No accessible sites available",
+      InitializationFailed: "Failed to initialize the current site. Please try again.",
       AlreayCurrentSite: "Please select a non current site.",
       ImportTheme: "Import Theme",
       ExportTheme: "Export Theme",
@@ -1148,7 +897,6 @@ const en = {
         BasicCardTitle: "Basic",
         EnableIndex: "Enable Content Index",
         EnableSearchLog: "Enable Search Log",
-        WordAnalyzeType: "Word Anaylze Type",
         TitleRepeatCheck: "Title Repeat Check",
         TitlteRepeatCheckNone: "None",
         TitlteRepeatCheckSite: "Check in site",
@@ -1163,7 +911,6 @@ const en = {
         CatalogPageSizeTip: "When the value is less than or equal to 0, use system default value: 10",
         ContentConfCardTitle: "Content",
         AutoArticleLogo: "Auto Article Cover",
-        AutoArticleVersion: "Auto Article Version",
         RecycleKeepDays: "Recycle expire days",
         RecycleKeepDaysTip: "Keep forever with 0",
         ResourceConfCardTitle: "Resource Storage",
@@ -1198,8 +945,6 @@ const en = {
         BaiduDomain: "Baidu Domains",
         BaiduDomainTip: "Domain names separated by commas.",
         SiteApiUrl: "Site Api Url",
-        CustomFormCardTitle: "Custom Form Configuration",
-        EnableCustomFormCaptcha: "Enable Captcha On Submit",
         CommentCardTitle: " Comment Configuration",
         EnableComment: "Enable Comment",
         EnableCommentTip: "Commenting is unavailable when site comment disabled. When enabled, catalog and content can be independently configured to allow or disable comments.",
@@ -1214,17 +959,8 @@ const en = {
         MemberResourceUrl: "Member Resource Domain",
         ShortTitleLabel: "Short Title Label",
         SubTitleLabel: "Sub Title Label",
-        EnableStat: "Enabel Visit Stat",
-        EnableDynamicStatScript: "Enable dynamic stat script",
-        EnableHyperLogLog: "Enable HyperLogLog",
         CloudCardTitle: "Cloud Configuration",
         CdnCloudConfig: "CDN Cloud Configuration",
-        AutoRefreshCDN: "Auto Refresh CDN",
-        ContentPrivStrategy: "Content Priv Strategy",
-        ContentPrivStrategyExtendCatalog: "Extend Catalog",
-        ContentPrivStrategyExtendSite: "Extend Site",
-        ContentPrivStrategyValid: "Valid",
-        ContentPrivStrategyIgnore: "Ignore",
       },
       Property: {
         QueryPlaceholder: "Input name/code",
@@ -1242,15 +978,6 @@ const en = {
         ContentDetail: " Detail Template",
         SelectCatalogFirst: "Please select catalog first.",
         CustomForm: "Custom Form Template",
-        SearchResult: "Search Page Template",
-        AccountCentre: "Account Centre Template",
-        MemberLogin: "Member Login Template",
-        MemberRegister: "Member Register Template",
-        MemberForgetPwd: "Member Forget Password Template",
-        MemberSetting: "Member Setting Template",
-        MemberBindEmail: "Member Bind Email Template",
-        MemberResetPwd: "Member Reset Password Template",
-        MemberContribute: "Member Contribute Template",
       },
       Dashboard: {
         MissingSiteUrl: "The site domain not configured.",
@@ -1326,7 +1053,6 @@ const en = {
         CatalogPageSize: "Page list Size",
         CatalogPageSizeTip: "When the value is -1, the set value of the site is taken",
         EnableIndex: "Enable Content Index",
-        EnableSearchLog: "Enable Search Log",
         CatalogExModel: "Catalog Ex-Model",
         ContentExModel: "Content Ex-Model",
         ContentConfig: "Content Configuration",
@@ -1335,7 +1061,6 @@ const en = {
         HotWordMaxReplaceCount: "Replace Limit",
         HotWordMaxReplaceCountTip: "The max replaced number in each article, with 0 indicating no limit.",
         EnableContribute: "Enable Contribute",
-        ContentWorkflow: "Content Workflow"
       }
     },
     Content: {
@@ -1364,11 +1089,7 @@ const en = {
       Hot: "Hot",
       CancelHot: "Cancel Hot",
       SEOConfig: "SEO",
-      ImportWord: "Import Word",
-      UploadWord: "Upload Word Files",
-      SaveUploadWordFile: "Save uploaded Word document.",
       CopyType: "Copy Type",
-      CopyId: "Source ID",
       CopySite: "Source Site",
       CopyCatalog: "Source Catalog",
       CopyContent: "Source Content",
@@ -1396,7 +1117,6 @@ const en = {
       StatusBefore: " Status",
       DeleteTime: "Delete Time",
       DeleteUser: "Delete User",
-      BackToList: "Go Back",
       Lock: "Lock",
       Unlock: "Unlock",
       LinkFlag: "Link Content",
@@ -1417,7 +1137,6 @@ const en = {
       SourceUrl: "Source Url",
       PublishDate: "Publish Date",
       OfflineDate: "Offline Date",
-      PublishPipe: "Publish Pipe",
       StaticPath: "Static Path",
       Template: "Template",
       DeleteProgressTitle: "Delete contents",
@@ -1432,61 +1151,14 @@ const en = {
       ExtendConfig: "Extend",
       ExtendTemplate: "Extend Template",
       ExtendComment: "Comment configuration",
-      ContentPriv: "View Permission",
       ViewCount: "Views",
       FavoriteCount: "Favorities",
       LikeCount: "Likes",
       CommentCount: "Comments",
       RelaContent: "Related contents",
       PushToBaidu: "Push To Baidu",
-      PushToBaiduResult: "[ {0} ] Success: {1}, remain: {2}.<br/>",
       ImportCSSTip: "Import site/catalog publish-pipe prop 'UEditor CSS'.",
       OpLog: "Logs",
-      Version: "Version",
-      VersionNo: "Version",
-      Compare: "Compare",
-      CompareToLatest: "Compare To Latest",
-      SaveNewVersion: "Save New Version",
-      LatestVersion: "Latest Version",
-      VersionDiff: "Version Diff",
-      Workflow: {
-        Title: "Workflow",
-        NoRecord: "No approval workflow record",
-        NoProgress: "No workflow task",
-        ProcessName: "Process",
-        Starter: "Starter",
-        StartTime: "Start Time",
-        EndTime: "End Time",
-        Progress: "Approval Progress",
-        Assignee: "Assignee",
-        CompletedAt: "Completed At",
-        Comment: "Comment",
-        Running: "Running",
-        Processing: "Pending",
-        Approved: "Approved",
-        Rejected: "Rejected",
-        Revoked: "Revoked",
-        Revoke: "Revoke",
-        RevokeConfirm: "Revoking restores the content to editing. Revoke this approval process?",
-        RevokeSuccess: "Approval process revoked",
-        Urge: "Urge",
-        Urged: "Urged",
-        UrgeConfirm: "Urge the current approval process?",
-        UrgeSuccess: "The approval process was urged",
-        Submit: "Submit for Approval",
-        SubmitDialogTitle: "Submit Content for Approval",
-        SubmitTip: "After submission, the content cannot be edited until approval finishes or is revoked. Choose what happens after approval.",
-        ActionAfterApproval: "After approval",
-        NoAction: "Mark as approved only",
-        ToPublishAfterApproval: "Set to pending publication",
-        PublishAfterApproval: "Publish automatically",
-        SubmitSuccess: "Content submitted for approval"
-      },
-      VersionDiffTip: {
-        Replace: "Replace",
-        Add: "Add",
-        Remove: "Remove"
-      }
     },
     ContentOpLog: {
       Type: "Type",
@@ -1497,18 +1169,6 @@ const en = {
     },
     Article: {
       Format: "Article Format",
-      Markdown: {
-        Placeholder: "Input...",
-        InsertLink: "Insert Link",
-        InsertCatalog: "Insert Catalog Link",
-        InsertContent: "Insert Content Link",
-        UploadImage: "Upload Image",
-        UploadVideo: "Upload Video",
-        UploadAudio: "Upload Audio",
-        UploadFile: "Upload File",
-        ImageText: "Image Alt",
-        ImageLink: "Image Link",
-      }
     },
     Image: {
       Title: "Title",
@@ -1565,42 +1225,6 @@ const en = {
       SetLogo: "Set Album Cover",
       TimePoint: "Time Point (Unit: second)"
     },
-    FileContent: {
-      Preview: "Preview",
-      Intro: "Introduce"
-    },
-    Book: {
-      Basic: "Book Info",
-      PublicationDate: "Pub. Date",
-      Publisher: "Publisher",
-      NumberOfPages: "Num. of pages",
-      NumberOfWords: "Num. of words",
-      Producer: "Producer",
-      OriginalTitle: "Original title",
-      Translators: "Translators",
-      Price: "Price",
-      CurrencyFen: "Fen",
-      Completed: "Completed",
-      Intro: "Introduce",
-      ChapterList: "Chapters",
-      InputChapterTitle: "Chapter title",
-      SortAsc: "ASC",
-      SortDesc: "DESC",
-      PublishDate: "Publish date",
-      PublishImmediately: "Publish Immediately",
-      ChapterTitle: "Chapter title",
-      Publish: "Publish",
-      ToPublish: "Scheduled",
-      Offline: "Offline",
-      ToPublishDialogTitle: "Scheduled Publish",
-      PublishSuccess: "Publish Success",
-      OfflineSuccess: "Offline Success",
-      ToPublishSuccess: "Scheduled Publish Success",
-      CloseChapterEditorTip: "Chapter data not saved, are you sure to quit?",
-      Route: {
-        EditChapter: "Edit book chapter"
-      }
-    },
     PageWidget: {
       Type: "Type",
       Name: "Name",
@@ -1648,9 +1272,13 @@ const en = {
     },
     Resource: {
       Name: "Name",
+      NameOrId: "Resource name or ID",
       Type: "Type",
-      StorageType: "Storage Type",
       FileSize: "File Size",
+      MinFileSize: "Minimum",
+      MaxFileSize: "Maximum",
+      FileSizeUnit: "File size unit",
+      InvalidFileSizeRange: "Minimum file size cannot exceed maximum file size",
       UploadResource: "Upload",
       UploadTip1: "Drag the file here or click to upload.",
       UploadTip2: "The file format can only be {0}, and cannot exceed {1}.",
@@ -1658,8 +1286,6 @@ const en = {
       AcceptSize: "Accept size: {0}",
       AddDialogTitle: "Add Resource",
       EditDialogTitle: "Eidt Resource",
-      PreviewTitle: "Resource Preview",
-      FileTypeErrMsg: "The file format is incorrect.",
       SelectorTitle: "Resources",
       LocalUpload: "Local Upload",
       RemoteLink: "Remote Link",
@@ -1673,12 +1299,6 @@ const en = {
       UploadLimit: "The files cannot exceed: {0}",
       UploadFileSizeLimit: "The file size exceed: {0}",
       RemoteLinkErr: "The link cannot be empty and must start with http(s)://",
-      UploadSuccess: "Upload Success",
-      UploadFail: "Upload Failed",
-      Uploading: "Uploading...",
-      Md5ing: "MD5ing...",
-      Paused: "Paused...",
-      Waiting: "Waiting..."
     },
     PublishPipe: {
       Name: "Name",
@@ -1753,8 +1373,6 @@ const en = {
       RequestArgs: "Request Args",
       DefaultValue: "Default Value",
       CustomDynamicTemplate: "Custom Dynamic Page",
-      DocGen: "Generate Document",
-      DocGenLang: "Language",
       CustomDynamicPage: {
         Name: "Name",
         Code: "Code",
@@ -1772,23 +1390,9 @@ const en = {
       AddTitle: "Add ex-model",
       EditTitle: "Edit ex-model",
       Fields: "Fields",
-      GoBack: "Go Back",
-      FieldName: "Name",
-      FieldCode: "Code",
-      FieldType: "Field Type",
-      FieldControlType: "Control Type",
-      FieldMappingName: "Field Name",
-      FieldMandatory: "Mandatory",
-      FieldDefaultValue: "Default Value",
-      FieldOptions: "Field Options",
-      FieldOptionsInput: "Input",
-      FieldOptionsDict: "Dictionary",
-      AddFieldTitle: "Add ex-model field",
-      EditFieldTitle: "Edit ex-model field",
       RouteExModelField: "Ex-Model Fields",
       Placeholder: {
         Query: "Input model name/code",
-        FieldQuery: "Input field name/code"
       }
     },
     FriendLink: {
@@ -1796,13 +1400,11 @@ const en = {
       GroupCode: "Code",
       AddTitle: "Add friend-link group",
       EditTitle: "Edit friend-link group",
-      GoBack: "Go Back",
       LinkName: "Name",
       LinkUrl: "URL",
       SortFlag: "Sort",
       AddLinkTitle: "Add friend-link",
       EditLinkTitle: "Edit friend-link",
-      RouteLinkList: "Friend-Links",
       Placeholder: {
         GroupQuery: "Input group name/code",
         LinkQuery: "Input name/url"
@@ -1832,91 +1434,124 @@ const en = {
       RouteFieldList: "Custom Form Fields",
       Fields: "Fields",
       RouteData: "Custom Form Data",
-      AddDataTitle: "Add Custom Form Data",
       EditDataTitle: "Edit Custom Form Data",
       DataList: "Form Data"
     },
-    StatPro: {
-      PV: "PV",
-      UV: "UV",
-      IP: "IP",
-      AvgVisitTime: "Avg Visit Time",
-      Rate: "Rate",
-      PVRate: "PV Rate",
-      UVRate: "UV Rate",
-      IPRate: "IP Rate",
-      Hour: "Hour",
-      Day: "Day",
-      Week: "Week",
-      Month: "Month",
-      OS: "OS",
-      Browser: "Browser",
-      DisplaySize: "Display Size",
-      ColorDepth: "Color Depth",
-      NetworkOp: "Network",
-      Lang: "Language",
-      SupportedCookie: "Supported Cookie",
-      SupportedJava: "Supported Java",
-      VisitorType: "Visitor Type",
-      NewVisitor: "New Visitor",
-      OldVisitor: "Old Visitor",
-      Date: "Date",
-      Time: "Time",
-      EventType: "Event Type",
-      UUID: "UID",
-      VisitTrend: "Trend Overview",
-      NewVisitorNum: "New Visitors",
-      NewVisitorPV: "PV(New)",
-      NewVisitorVT: "Avg Visit Time(New)",
-      OldVisitorNum: "Old Visitors",
-      OldVisitorPV: "PV(Old)",
-      OldVisitorVT: "Avg Visit Time(Old)",
-      Placeholder: {
-        IP: "Input ip...",
-        UUID: "Input uid",
-      },
-      Region: {
-        Name: "Region",
-        Country: "Country",
-        Province: "Province",
-        ByProvince: "Province",
-        ByCountry: "Country",
-        MapChart: "Map Chart",
-        District: "District"
-      },
-      Source: {
-        Type: "Source Type",
-        Flag: "Source Key",
-      }
-    },
-    SiteEvent: {
-      Type: "Type",
-      Name: "Name",
-      Desc: "Description",
-      StartTime: "Start Time",
-      EndTime: "End Time",
-      Status: "Status",
-      Enable: "Enable",
-      Disable: "Disable",
-      Publish: "Publish",
-      AddTitle: "Add site event",
-      EditTitle: "Edit site event"
-    },
-    ImageCropper: {
-      Crop: "Image Crop",
-      Rotate: "Rotate Scale",
-      RotateLeft: "Rotate Left 90°",
-      RotateRight: "Rotate Right 90°",
-      FlipX: "Flip Horizontal",
-      FlipY: "Flip Vertical",
-      ZoomIn: "Zoom In 10%",
-      ZoomOut: "Zoom Out 10%",
-      Apply: "Apply",
-      OriginalRatio: "Original Ratio",
+    ImageOptimizer: {
+      Title: "Optimize image",
+      Crop: "Crop",
+      Rotate90: "Rotate 90°",
+      FlipHorizontal: "Flip horizontally",
+      FlipVertical: "Flip vertically",
+      OutputSize: "Output size",
+      OutputFormat: "Output format",
+      Compression: "Compression",
+      AnimatedFormatHint: "Animated images stay in GIF format to preserve every frame.",
+      JpegTransparencyHint: "JPEG fills transparent areas with white.",
+      EnableCrop: "Enable cropping",
       Width: "Width",
       Height: "Height",
-      FixedAspectRatio: "Fixed Aspect Ratio",
-      PresetSize: "Preset Size",
+      Ratio: "Aspect ratio",
+      FreeRatio: "Free",
+      OriginalRatio: "Original ratio",
+      PresetSize: "Preset size",
+      NoPreset: "Custom",
+      Pixels: "Pixels",
+      Percentage: "Percentage",
+      Strategy: "Compression strategy",
+      Quality: "Quality",
+      QualityVeryLow: "Very low",
+      QualityLow: "Low",
+      QualityMedium: "Medium",
+      QualityHigh: "High",
+      QualityVeryHigh: "Very high",
+      QualityLossless: "Lossless",
+      EffortFaster: "Faster",
+      EffortFast: "Fast",
+      EffortBalanced: "Balanced",
+      EffortStrong: "Strong",
+      EffortExtreme: "Extreme",
+      QualityHint: "Higher quality generally produces a clearer image and a larger file.",
+      PaletteQualityHint: "The five quality levels use limits of 32 / 64 / 128 / 192 / 256 colors. Current limit: {colors}; transparency uses one slot.",
+      LosslessQualityHint: "Preserves pixels without loss. The file may not become smaller.",
+      EffortHint: "Stronger strategies spend more time encoding to try to reduce file size.",
+      EffortUnavailable: "This format uses a fixed encoding strategy. Adjust quality and output size instead.",
+      LosslessUnavailable: "Lossless quality is not supported for this format.",
+      Colors: "Colors",
+      Dither: "Dithering",
+      Recommended: "Restore recommended settings",
+      Reset: "Reset",
+      Process: "Start processing",
+      Cancel: "Cancel processing",
+      Download: "Download",
+      DownloadOriginal: "Download original",
+      OriginalRetained: "No smaller file was produced. The original image has been kept.",
+      OriginalRetainedHint: "The original image is unchanged, so there is no need to save another copy or replace it.",
+      SaveCopy: "Save as resource",
+      Replace: "Replace original",
+      Original: "Original",
+      Result: "Result",
+      Compare: "Slide to compare",
+      Fit: "Fit to window",
+      ActualSize: "Actual size",
+      ZoomIn: "Zoom in",
+      ZoomOut: "Zoom out",
+      Play: "Play",
+      Pause: "Pause",
+      Loading: "Loading original image…",
+      Pending: "Settings changed. Process again to update the result.",
+      Ready: "Processing complete",
+      Empty: "Choose settings and start processing to preview the result.",
+      Error: "Processing failed",
+      Retry: "Retry",
+      Format: "Format",
+      Size: "File size",
+      Dimensions: "Dimensions",
+      Saving: "Saving…",
+      SaveSuccess: "Resource saved",
+      ReplaceConfirm: "Replacing this resource affects all content that references it. Continue?",
+      CopySuffix: " (optimized)",
+      FileSuffix: "-optimized",
+      CopyName: "Resource name",
+      SaveUnavailable: "The resource library does not support saving AVIF or JPEG XL yet. Download the result instead.",
+      SaveFormatUnavailable: "The current resource settings do not allow saving this format. Download the result instead.",
+      ReplaceFormatUnavailable: "Replacing the original would change its file extension and break existing links. Save as a new resource.",
+      ServerNotice: "The server still applies its watermark and thumbnail settings when saving to the resource library. The saved image may differ from this local preview.",
+      ReadFailed: "Unable to read the original file. Check that it exists, that you have access, and that external images allow cross-origin requests.",
+      UnsupportedAnimation: "Animated images in this format are not supported yet. Use GIF to preserve the animation.",
+      UnsupportedFormat: "This image format is not supported yet.",
+      InvalidImage: "The image is invalid or could not be decoded.",
+      InvalidDimensions: "Enter valid dimensions within the crop region or original image size.",
+      ProcessFailed: "Image processing failed. Adjust the settings and try again.",
+      StaleResult: "The result does not include your latest settings. Process again before saving.",
+      SizeLimit: "The result exceeds the resource upload limit: {size}",
+      NoReduction: "The result is not smaller. Try changing the dimensions, quality, or compression strategy.",
+      SizeIncreased: "Size increased",
+      StageDecode: "Decoding and correcting orientation",
+      StageCrop: "Cropping image",
+      StageResize: "Resizing image",
+      StageQuantize: "Optimizing palette",
+      StageEncode: "Encoding image",
+      StagePreview: "Creating preview",
+      StageDownload: "Reading original file",
+      Standard: "Standard",
+      Progressive: "Progressive",
+      Lossless: "Lossless",
+      Palette: "Palette compression",
+      Lossy: "Lossy",
+      NearLossless: "Near lossless",
+      Faithful: "Preserve fidelity",
+      Reduction: "Size change",
+      Elapsed: "{seconds} seconds",
+      PercentHint: "Percentage is relative to the current crop region, up to 100%.",
+      CropHint: "Drag the selection or enter a width and height to crop.",
+      LocalProcessing: "Images are processed in your browser and only uploaded when saved.",
+      AnimationNotice: "GIF keeps the full animation, frame timing, and loop settings.",
+      Frames: "Frames",
+      Percent: "%",
+      Off: "Off",
+      On: "On",
+      Close: "Close"
     }
   },
   WordMgr: {
@@ -1946,7 +1581,6 @@ const en = {
     },
     HotWord: {
       AddGroup: "Add Hot Word Gropu",
-      ParentGroup: "Parent Group",
       GroupName: "Group Name",
       GroupCode: "Group Code",
       AddGroupTitle: "Add Hot Word Group",
@@ -2013,7 +1647,6 @@ const en = {
       NewVisitor: "New Visitor",
       OldVisitor: "Old Visitor",
       VisitSource: "Visit Source",
-      EngineSource: "Search Engine Source",
       SearchWordSource: "Search Word Source",
       SearchWord: "Search Word",
       SelectSite: "Select Baidu Statistics Site",
@@ -2055,7 +1688,6 @@ const en = {
   Vote: {
     Title: "Title",
     Code: "Code",
-    CodeTip: "Only letters, numbers and underline can be used.",
     Status: "Status",
     TimeRange: "Time Range",
     Total: "Total",
@@ -2084,7 +1716,6 @@ const en = {
       DataName: "Data name",
       LikeLogs: "Like logs",
       SignInLogs: "Sign-in logs",
-      LogId: "Log ID",
       DataId: "Data ID",
       LikeTime: "Like time",
       SignInDate: "Sign-in date",
@@ -2145,10 +1776,6 @@ const en = {
     RestPwdSuccess: "Success, the new password is '{0}'.",
     AddTitle: "Add member",
     EditTitle: "Edit member",
-    AuthContentPriv: "Permission Config",
-    Permission: {
-      ContentPriv: "Content View Permission"
-    },
     LevelType: "Level Type",
     Level: {
       Type: "Type",
@@ -2166,30 +1793,12 @@ const en = {
     AddExpOpTitle: "Add exp config",
     EditExpOpTitle: "Edit exp config",
     RuleTips: {
-      UserName: "Must starts with letter and only letters, numbers and underline can be useds.",
       Member: "The username phonenumber and email cannot all be empty."
     },
     Selector: {
       Title: "Select Member",
       MemberList: "Member List",
       SelectedMemberList: "Selected Members"
-    },
-    Role: {
-      RoleId: "Role ID",
-      RoleName: "Role Name",
-      RoleKey: "Role Key",
-      Sort: "Sort",
-      AddTitle: "Add Member Role",
-      EditTitle: "Edit Member Role",
-      UserSetting: "Member Setting",
-      AuthContentPriv: "Authorize",
-      ConfirmRemoveMember: "Confirm to cancel authorization?",
-      AddMember: "Add Member",
-      RemoveMember: "Remove Authorization",
-      Placeholder: {
-        RoleName: "Please input role name",
-        RoleKey: "Please input role key"
-      }
     },
     Config: {
       Title: "Member Config",
@@ -2207,7 +1816,6 @@ const en = {
     FieldType: "Type",
     FieldControlType: "Control Type",
     FieldMappingName: "Field Name",
-    FieldMandatory: "Mandatory",
     FieldDefaultValue: "Default Value",
     FieldOptions: "Field Options",
     FieldOptionsInput: "Input",
@@ -2242,7 +1850,6 @@ const en = {
       WordPlaceholder: "One world per line",
       Type: "Type",
       AddTitle: "Add Dictionary Word",
-      EditTitle: "Edit Dictionary Word",
       WordAnalyzeTitle: "Word Analyze Test",
       WordAnalyzePlaceholder: "Enter the text to be tested...",
       WordAnalyzeTest: "Test",
@@ -2257,9 +1864,6 @@ const en = {
       Source: "Source",
       ClientType: "Client Type",
       LogTime: "Time",
-      Placeholder: {
-        Word: "Input search word"
-      }
     },
     WordStat: {
       TabName: "Query Statistics",
@@ -2268,7 +1872,6 @@ const en = {
       Topping: "Topping",
       CancelTop: "Cancel Top",
       TopEndTime: "Topping End Time",
-      Source: "Source",
       Trend: "Trend",
       AddExtWord: "Add Extend Dict",
       AddStopWord: "Add Stop Dict",
@@ -2281,19 +1884,6 @@ const en = {
       }
     }
   },
-  MessagePusher: {
-    Config: {
-      Name: "Name",
-      Type: "Type",
-      Status: "Status",
-      ConfigJson: "Config",
-      AddTitle: "Add Message Pusher Config",
-      EditTitle: "Edit Message Pusher Config",
-      Placehoder: {
-        Query: "Input name..."
-      }
-    }
-  },
   Message: {
     Config: {
       RateLimits: "Rate limits",
@@ -2303,45 +1893,18 @@ const en = {
       RateLimitInvalid: "Seconds and counts must be positive integers up to 2147483647; windows must be unique.",
       Name: "Name",
       Type: "Type",
-      Status: "Status",
-      ConfigJson: "Config Details",
       AddTitle: "Add Message Config",
       EditTitle: "Edit Message Config",
       SelectorTitle: "Select Message Config",
       TestSend: "Test Send",
-      Placehoder: {
-        Query: "Input name"
-      },
       TestTitle: "Test Title",
       TestContent: "Test Content",
       SMS: {
         TestPhone: "Test Phone Number",
-        TestTemplateId: "Test Template ID",
         TestTemplateParams: "Test Template Parameters",
-        Tencent: {
-          SecretId: "SecretId",
-          SecretKey: "SecretKey",
-          SdkAppId: "SdkAppId",
-          SignName: "SignName",
-          Region: "Region"
-        }
       },
       Email: {
-        Host: "Host",
-        Port: "Port",
-        Secure: "Secure",
-        User: "User",
-        Password: "Password",
-        From: "From",
         TestTo: "Test Recipient",
-      },
-      DingTalk: {
-        Webhook: "Webhook",
-        Secret: "Secret",
-      },
-      Feishu: {
-        Webhook: "Webhook",
-        Secret: "Secret",
       },
     },
     Template: {
@@ -2349,7 +1912,6 @@ const en = {
       Name: "Template Name",
       Title: "Message Title",
       Content: "Message Content",
-      SmsCodeTip: "SMS sign-in uses the Code variable; use the same name in the SMS provider template",
       Variables: "Available Variables",
       VariableUsage: "Use {syntax} to reference variables. Variable names are case-sensitive and are replaced with their values when sending.",
       VariableScope: "Available variables depend on the parameters supplied by the sending workflow or message event. Use only variables provided for the current scenario.",
@@ -2373,7 +1935,6 @@ const en = {
       Status: "Status",
       NotifyConfig: "Notification Config",
       Template: "Template",
-      SMSTemplateId: "SMS Template ID",
       AddTitle: "Add Event",
       EditTitle: "Edit Event",
       TestEventParams: "Test Event Parameters",
@@ -2388,427 +1949,134 @@ const en = {
       }
     }
   },
-  Flowable: {
-    Category: {
-      TreeRoot: "Workflow Category",
-      AddCategory: "Add Category",
-      CategoryNamePlaceholder: "Input category name...",
-      SortUp: "Move Up",
-      SortDown: "Move Down",
-      ParentCategory: "Parent",
-      Name: "Name",
-      OrderNum: "Order",
-      AddTitle: "Add Workflow Category",
-      EditTitle: "Edit Workflow Category",
-      DeleteConfirm: "Delete workflow category “{0}”?",
-      DeleteHasChildren: "This category has child categories. Delete them first.",
-      TreeRootName: "Model Category",
-    },
-    Model: {
-      Key: "Key",
-      Name: "Name",
-      Version: "Version",
-      Status: "Status",
-      Design: "Design",
-      Suspend: "Suspend",
-      Resume: "Resume",
-      Category: "Category",
-      AddModelTitle: "Add Model",
-      DesignTitle: "Design Process",
-      Placeholder: {
-        ModelKey: "Input model key",
-        ModelName: "Input model name"
-      }
-    },
-    Template: {
-      Name: "Workflow Templates",
-      Fixed: "Fixed Templates",
-      Custom: "Custom Templates",
-      AddByTemplate: "Create from Template",
-      Convert: "Save as Template",
-      CreateProcess: "Create Process"
-    },
-    History: {
-      Title: "Workflow History",
-      Empty: "No workflow task",
-      StartNode: "Workflow Started",
-      EndNode: "Workflow Ended",
-      Starter: "Starter",
-      Assignee: "Assignee",
-      PendingAssignee: "Pending Assignee",
-      CcUsers: "Recipients",
-      CopiedAt: "Copied At",
-      CcCompleted: "Copied",
-      UserNotFound: "Error: User does not exist",
-      Role: "Role",
-      Dept: "Department",
-      CompletedAt: "Completed At",
-      Comment: "Comment"
-    },
-    Comment: {
-      Title: "Process Comments",
-      Empty: "No comments",
-      Placeholder: "Enter a comment",
-      Submit: "Submit Comment",
-      Required: "Comment content is required",
-      Success: "Comment submitted"
-    },
-    Action: {
-      Revoke: "Revoke",
-      RevokeConfirm: "Revoke this workflow?",
-      RevokeSuccess: "Workflow revoked",
-      Urge: "Urge",
-      UrgeConfirm: "Urge this workflow?",
-      UrgeSuccess: "Workflow urged",
-      AdminCancel: "Force Revoke",
-      AdminCancelConfirm: "Force revoke this workflow? This action ignores the workflow revocation setting.",
-      AdminCancelSuccess: "Workflow force revoked"
-    },
-    Dashboard: {
-      TodoTitle: "Pending Tasks",
-      ViewAll: "View All",
-      Empty: "No pending task",
-      TaskName: "Task",
-      ProcessName: "Process",
-      Starter: "Starter",
-      ArrivedAt: "Arrived At"
-    }
-  },
   GroovyScript: {
     Exec: "Execute",
     SaveScript: "Save Script",
     Name: "Name"
   },
-  Deploy: {
-    Domain: {
-      Management: "Domain Management",
-      CertList: "Certificate List",
-      ApplyCert: "Apply Certificate",
-      ApplyCertTitle: "Apply SSL Certificate",
-      CertName: "Certificate Name",
-      ApplyLog: "Apply Log",
-      NoApplyLog: "No apply log",
-      CertHolder: "Certificate Holder",
-      ScanLog: "Scan Log",
-      Scan: "Scan",
-      HostRecord: "Host Record",
-      HostRecordPlaceholder: "e.g. * for wildcard, www for www subdomain",
-      RecordValue: "Record Value",
-      RecordType: "Record Type",
-      Result: "Result",
-      FailReason: "Fail Reason",
-      ExpireTime: "Expire Time",
-      AddDomain: "Add Domain",
-      EditDomain: "Edit Domain",
-      Domain: "Domain",
-      DomainPlaceholder: "Enter the primary domain, e.g. example.com",
-      CloudConfig: "Cloud Account",
-      CloudConfigPlaceholder: "Select a cloud account",
-      CloudConfigHint: "Used to automatically write ACME DNS-01 TXT verification records",
-      AssociatedDomain: "Associated Domain",
-      AddCert: "Add Certificate",
-      EditCert: "Edit Certificate",
-      CertStandard: "Certificate Standard",
-      InternationalStandard: "International Standard",
-      SM2Standard: "SM2 Standard",
-      CertContent: "Certificate Content",
-      PrivateKeyContent: "Private Key Content",
-      EncryptedCertificate: "Encrypted Certificate",
-      EncryptedPrivateKey: "Encrypted Private Key",
-      CertContentAndPrivateKeyUploaded: "Uploaded certificate and private key will not be displayed again and cannot be edited.",
-      Issuer: "Certificate Authority",
-      Country: "Country",
-      State: "State/Province",
-      City: "City",
-      Organization: "Organization",
-      AddHolder: "Add Holder",
-      EditHolder: "Edit Holder",
-      HolderType: "Holder Type",
-      MarkManualSuccess: "Mark Manual Success",
-      LastSyncResult: "Last Sync Result",
-      ServerHost: "Server Host",
-      ServerPort: "Server Port",
-      ServerUser: "Server User",
-      LoginPrivateKey: "Login Private Key",
-      LoginPrivateKeyPlaceholder: "Paste private key content only; masked as ****** when editing",
-      PrivateKeyPassword: "Private Key Password",
-      PrivateKeyPasswordPlaceholder: "Enter private key password",
-      LoginPassword: "Login Password",
-      LoginPasswordPlaceholder: "Enter login password",
-      CertificateFilePath: "Certificate File Path",
-      CertificateFilePathPlaceholder: "Enter certificate file path",
-      PrivateKeyFilePath: "Private Key File Path",
-      PrivateKeyFilePathPlaceholder: "Enter private key file path",
-      DifyDockerDir: "Dify Docker Directory",
-      DifyDockerDirPlaceholder: "Enter Dify Docker directory",
-      SecretId: "SecretId",
-      SecretKey: "SecretKey",
-      OldCertificateId: "Old Certificate ID",
-      ResourceType: "Resource Type",
-      ResourceTypeRegion: "Resource Type Region",
-      AccessKeyId: "AccessKeyId",
-      AccessKeySecret: "AccessKeySecret",
-      TencentCloudSsl: {
-        AddResourceType: "Add Resource Type",
-        ConfigJsonTip: "Configure Tencent Cloud SSL resource types and regions as JSON",
-        EmptyResourceConfig: "No resource type configuration",
-        Regions: "Regions",
-        AddRegion: "Add Region",
-        ResourceTypePlaceholder: "e.g. clb, cos",
-        RegionPlaceholder: "e.g. ap-guangzhou",
-        ResourceTypes: {
-          Clb: "CLB (Load Balancer)",
-          Cos: "COS (Object Storage)",
-          Waf: "WAF (Web Application Firewall)",
-          Apigateway: "APIGW (API Gateway)",
-        },
-      },
-    },
-    ServerMachine: {
-      Name: "Server Name",
-      RemoteAddress: "Remote Addr.",
-      Host: "Host",
-      Port: "Port",
-      UserName: "Username",
-      KeyFile: "Login Key",
-      Passphrase: "Passphrase",
-      AddTitle: "Add Server",
-      EditTitle: "Eidt Server",
-      TestConnection: "Test Connection",
-      ConnectionSuccess: "Connect Success",
-      TestConnectionLoading: "Connecting...",
-    },
-    NginxConfig: {
-      Name: "Name",
-      Code: "Code",
-      Type: "Type",
-      ConfigText: "Configure",
-      Status: "Status",
-      Sync: "Synchronize to server",
-      ConfirmSync: "Are you sure to sync the config `{0}` to deploy servers?",
-      NginxNode: "Deploy Servers",
-      AddTitle: "Add nginx config",
-      EditTitle: "Edit nginx config",
-    }
+  MemberSubscribeService: {
+    Title: 'Subscription Services',
+    Add: 'Create Subscription Service',
+    Edit: 'Edit Subscription Service',
+    Type: 'Service type',
+    BuiltIn: 'System built-in',
+    Custom: 'Custom',
+    BuiltInItem: 'Built-in service',
+    SelectBuiltIn: 'Select a built-in service',
+    Id: 'Service ID',
+    Name: 'Service name',
+    Keyword: 'Search by service ID or name',
+    IdRule: 'Enter 1–100 uppercase or lowercase letters, digits, or underscores.',
+    SelectServices: 'Select services; search by ID or name',
+    SelectionLimit: 'Select up to 100 services.',
+    ConfirmDelete: 'Delete subscription service “{0}”? Services referenced by subscription definitions cannot be deleted.'
   },
-  Workflow: {
-    Definition: {
-      Code: 'Process Code',
-      Name: 'Process Name',
-      Description: 'Description',
-      Status: 'Status',
-      Version: 'Version',
-      Versions: 'Versions',
-      VersionId: 'Version ID',
-      VersionList: 'Version List',
-      Publish: 'Publish',
-      Disable: 'Disable',
-      Enable: 'Enable',
-      PublishTime: 'Publish Time',
-      Remark: 'Remark',
-      Designer: 'Process Designer',
-      Placeholder: {
-        Code: 'Please enter process code',
-        Name: 'Please enter process name',
-        Description: 'Please enter description'
-      }
-    },
-    Instance: {
-      InstanceId: 'Instance ID',
-      Title: 'Title',
-      BusinessKey: 'Business Key',
-      Status: 'Status',
-      StartUser: 'Starter',
-      StartTime: 'Start Time',
-      EndTime: 'End Time',
-      Remark: 'Remark',
-      Detail: 'Instance Detail',
-      Variables: 'Variables',
-      VariableName: 'Variable Name',
-      VariableValue: 'Variable Value',
-      TaskHistory: 'Task History',
-      Suspend: 'Suspend',
-      Resume: 'Resume',
-      Terminate: 'Terminate',
-      TerminateReason: 'Terminate Reason',
-      Reason: 'Reason',
-      Placeholder: {
-        Reason: 'Please enter reason'
-      }
-    },
-    Task: {
-      TaskId: 'Task ID',
-      TaskName: 'Task Name',
-      Description: 'Description',
-      Assignee: 'Assignee',
-      Status: 'Status',
-      Priority: 'Priority',
-      DueDate: 'Due Date',
-      ClaimTime: 'Claim Time',
-      CompleteTime: 'Complete Time',
-      Comment: 'Comment',
-      Candidates: 'Candidates',
-      CandidateUsers: 'Candidate Users',
-      CandidateGroups: 'Candidate Groups',
-      Detail: 'Task Detail',
-      Claim: 'Claim',
-      Complete: 'Complete',
-      Transfer: 'Transfer',
-      Delegate: 'Delegate',
-      Reject: 'Reject',
-      TargetUser: 'Target User',
-      TargetNode: 'Target Node',
-      RejectReason: 'Reject Reason',
-      Placeholder: {
-        Comment: 'Please enter comment',
-        TargetUser: 'Please enter target user ID',
-        TargetNode: 'Please enter target node ID',
-        RejectReason: 'Please enter reject reason'
-      }
-    },
-    MyProcess: {
-      StartNew: 'Start New Process',
-      ProcessDef: 'Process Definition',
-      Cancel: 'Cancel Process',
-      CancelReason: 'Cancel Reason',
-      Start: 'Start',
-      Placeholder: {
-        ProcessDef: 'Please select process definition',
-        BusinessKey: 'Please enter business key',
-        Title: 'Please enter title'
-      }
-    },
-    Status: {
-      Pending: 'Pending',
-      Approved: 'Approved',
-      Rejected: 'Rejected',
-      Canceled: 'Canceled',
-      Completed: 'Completed',
-      Failed: 'Failed'
-    },
-    Config: {
-      ConfigId: 'Config ID',
-      ConfigName: 'Config Name',
-      HandlerId: 'Handler',
-      WorkflowType: 'Engine Type',
-      ProcessDefId: 'Process Definition',
-      RequestUri: 'Request URI',
-      RequestMethod: 'Request Method',
-      Status: 'Status',
-      Dialog: {
-        Add: 'Add Workflow Config',
-        Edit: 'Edit Workflow Config'
-      },
-      Placeholder: {
-        ConfigName: 'Please enter config name',
-        HandlerId: 'Please select handler',
-        WorkflowType: 'Please select engine type',
-        ProcessDefId: 'Please select process definition',
-        RequestUri: 'Please enter request URI',
-        RequestMethod: 'Please select request method',
-        Status: 'Please select status'
-      },
-      ConfirmDelete: 'Are you sure to delete the workflow config "{0}"?'
-    },
-    Record: {
-      RecordId: 'Record ID',
-      ConfigId: 'Config ID',
-      HandlerId: 'Handler',
-      WorkflowType: 'Engine Type',
-      ProcessDefId: 'Process Definition ID',
-      EngineInstanceId: 'Engine Instance ID',
-      Title: 'Title',
-      RequestUri: 'Request URI',
-      RequestMethod: 'Request Method',
-      RequestData: 'Request Data',
-      OperatorId: 'Operator ID',
-      OperatorName: 'Submitter',
-      OperatorDeptId: 'Operator Dept',
-      OperatorJson: 'Operator Info',
-      Status: 'Status',
-      SubmitTime: 'Submit Time',
-      FinishTime: 'Finish Time',
-      FailReason: 'Fail Reason',
-      CompleteResult: 'Result',
-      Detail: 'Record Detail',
-      Cancel: 'Cancel',
-      CancelSuccess: 'Canceled successfully',
-      OnlyMine: 'Mine only',
-      ConfirmCancel: 'Are you sure to cancel the workflow "{0}"?',
-      Placeholder: {
-        Status: 'Please select status',
-        HandlerId: 'Please select handler'
-      }
-    }
-  },
-  CmsContentPriv: {
-    Saving: 'Saving...',
-    Title: 'Content Privilege',
+  MemberSubscription: {
+    DefinitionId: 'Definition ID',
+    DefinitionTitle: 'Subscription Definitions',
+    Name: 'Subscription name',
+    Description: 'Description',
+    Items: 'Service items',
+    AddDefinition: 'Create definition',
+    EditDefinition: 'Edit definition',
+    ScopeNotice: 'Service item changes immediately apply to all associated members.',
+    NoItems: 'No matching services. Create services in Subscription Services first.',
+    ConfirmDelete: 'Delete definition “{0}”? Definitions associated with members cannot be deleted.',
+    MemberId: 'Member ID',
     SelectMember: 'Select member',
-    ChangeMember: 'Change member',
-    CurrentMember: 'Current member',
-    NoMember: 'Please select a member first',
-    Tab: {
-      Site: 'Site Grants',
-      Catalog: 'Catalog Grants',
-      Content: 'Content Grants'
+    OneMember: 'Select exactly one member.',
+    MemberRule: 'Enter a valid member ID.',
+    ExpireTime: 'Expiry time',
+    Validity: 'Validity',
+    Valid: 'Valid',
+    Expired: 'Expired',
+    AddRecord: 'Associate subscription and adjust duration',
+    Adjust: 'Adjust duration',
+    DeltaSeconds: 'Adjustment seconds',
+    DurationShortcuts: {
+      OneHour: '1 hour',
+      TwelveHours: '12 hours',
+      OneDay: '1 day',
+      SevenDays: '7 days',
+      ThirtyDays: '30 days',
+      Days366: '366 days'
     },
-    PrivType: 'Privilege Type',
-    PrivTypeSite: 'Site',
-    PrivTypeCatalog: 'Catalog',
-    PrivTypeContent: 'Content',
-    Target: 'Target (format: siteId:catalogId:contentId)',
-    GrantTime: 'Granted At',
-    GrantSite: 'Grant Site',
-    GrantCatalog: 'Grant Catalog',
-    GrantContent: 'Grant Content',
-    SelectSite: 'Select site',
-    SelectPrivType: 'Please select privilege type first',
-    ConfirmGrantCurrentSite: 'Grant the current site (privilege key: {0})?',
-    SelectCatalog: 'Select catalog',
-    SelectContent: 'Select content',
-    ConfirmRevoke: 'Are you sure to revoke this grant?',
-    RevokeSuccess: 'Revoked',
-    GrantSuccess: 'Granted'
+    SecondsRule: 'Enter signed integer seconds within the Long range; increases are limited to 316224000 seconds (about 10 years).',
+    AdjustNotice: 'Active subscriptions use their current expiry as the base; expired subscriptions use the current time. Expiry at or before the current time is expired.',
+    FirstNotice: 'The first association starts from the operation time. For example, 30 days is 2592000 seconds.',
+    RetryNotice: 'After a timeout, refresh records or audit logs to check the result. Unchanged retries do not repeat the adjustment; changed values create a new request.',
+    Reason: 'Reason',
+    Audit: 'Adjustment audit',
+    OperationTime: 'Operation time',
+    Before: 'Previous expiry',
+    After: 'New expiry',
+    Initial: 'First association',
+    Operator: 'Operator',
+    Source: 'Source',
+    Manual: 'Manual administration',
+    LoadFailed: 'Loading failed. Please retry.',
+    SelectDefinition: 'Select a subscription definition; search by name',
+    Status: 'Status',
+    Enable: 'Enable',
+    Disable: 'Disable',
+    ConfirmStatus: '{1} subscription definition “{0}”?',
+    NoDefinitions: 'No matching subscription definitions',
+    NamesLoadFailed: 'Definition names could not be loaded. IDs are shown temporarily; refresh to retry.',
+    OperatorType: 'Operator type',
+    OperatorId: 'Operator ID'
   },
-  Migration: {
-    WP: {
-      Add: 'Add WordPress Migration',
-      Edit: 'Edit WordPress Migration',
-      Execute: 'Execute',
-      Name: 'Task Name',
-      NamePlaceholder: 'Please enter task name',
-      DataSource: 'Datasource',
-      SelectDataSource: 'Select datasource',
-      TablePrefix: 'Table Prefix',
-      Site: 'Target Site',
-      SelectSite: 'Select target site',
-      MigrateMode: 'Migration Mode',
-      FullMode: 'Full Migration',
-      SpecifiedMode: 'Specified Catalog Migration',
-      DefaultPassword: 'Default Password',
-      CatalogMappings: 'Catalog Mappings',
-      AddMapping: 'Add Mapping',
-      WpCatalogId: 'WordPress Catalog ID',
-      TargetCatalog: 'Target Catalog',
-      LastStatus: 'Last Status',
-      LastExecuteTime: 'Last Execution Time',
-      Status0: 'Not Executed',
-      Status1: 'Success',
-      Status2: 'Failed',
-      Status3: 'Running',
-      NameRequired: 'Task name is required',
-      DataSourceRequired: 'Please select datasource',
-      SiteRequired: 'Please select target site',
-      MigrateModeRequired: 'Please select migration mode',
-      DefaultPasswordRequired: 'Default password is required',
-      MappingRequired: 'At least one catalog mapping is required',
-      ConfirmDelete: 'Delete WordPress migration task "{0}"?',
-      ConfirmExecute: 'Execute WordPress migration task "{0}"?',
-      ProgressTitle: 'WordPress Migration Progress',
-      ExecuteStarted: 'Task submitted. Task ID: {0}'
-    }
-  }
 }
+
+
+en.CMS.PageWidget.SelectTitle = "Select Page Widget"
+en.Message.Event.ConfigAlreadyExists = "This message configuration has already been added"
+en.System.Menu.Placeholder.ID = "Enter menu ID"
+
+en.Component.HeaderSearch = {}
+en.Component.HeaderSearch.Placeholder = "Search menu title or URL"
+en.Component.IconSelect = {}
+en.Component.IconSelect.Placeholder = "Input icon name"
+en.Component.RightToolbar = {}
+en.Component.RightToolbar.ShowTableColumn = "Show/Hide Table Columns"
+en.Component.RightToolbar.ShowOrHide = "Show / Hide"
+en.Component.SizeSelect = {}
+en.Component.SizeSelect.Large = "Large"
+en.Component.SizeSelect.Default = "Default"
+en.Component.SizeSelect.Small = "Small"
+en.Component.SizeSelect.Applying = "Applying layout size, please wait..."
+en.Component.TopNav = {}
+en.Component.TopNav.MoreMenu = "More+"
+en.Component.Layout.Navbar.FullScreen = "Full Screen"
+en.Component.Layout.Settings = {}
+en.Component.Layout.Settings.ThemeStyle = "Theme Style"
+en.Component.Layout.Settings.Dark = "Dark sidebar"
+en.Common.Selected = "Selected"
+en.Component.Layout.Settings.Light = "Light sidebar"
+en.Component.Layout.Settings.ThemeColor = "Theme Color"
+en.Component.Layout.Settings.SystemLayoutConfig = "Layout Configuration"
+en.Component.Layout.Settings.EnableTopNav = "Enable TopNav"
+en.Component.Layout.Settings.EnableTagsViews = "Enable Tags-Views"
+en.Component.Layout.Settings.ShowTagsIcon = "Show tab icons"
+en.Component.Layout.Settings.EnableFixedHeader = "Fixed Header"
+en.Component.Layout.Settings.ShowLogo = "Show Logo"
+en.Component.Layout.Settings.EnableDynamicTitle = "Enable Dynamic Title"
+en.Component.Layout.Settings.ShowFooter = "Footer copyright"
+en.Component.Layout.Settings.Save = "Save settings"
+en.Component.Layout.Settings.Reset = "Reset settings"
+en.Component.Layout.Settings.Saving = "Saving locally, please wait..."
+en.Component.Layout.Settings.Resetting = "Clearing settings and reloading, please wait..."
+en.Component.Layout.TagViews = {}
+en.Component.Layout.TagViews.RefreshPage = "Refresh"
+en.Component.Layout.TagViews.CloseCurrent = "Close Current"
+en.Component.Layout.TagViews.CloseOther = "Close Others"
+en.Component.Layout.TagViews.CloseLeft = "Close Lefts"
+en.Component.Layout.TagViews.CloseRight = "Close Rights"
+en.Component.Layout.TagViews.CloseAll = "Close All"
+en.Error.NoPermissionTip = "Sorry, you do not have access permission. Please apply for relevant resource access permission from the administrator."
+en.Error.GoHome = "Go to the home page"
+en.Error.PageNotFound = "Page not found!"
+en.Error.Err404Tip = "Sorry, the page you are looking for does not exist. Try checking for errors in the URL, then press the refresh button on the browser or try to find other content in our application."
+en.Component.RightToolbar.HideSearch = "Hide Search"
+en.Component.RightToolbar.ShowSearch = "Show Search"
 
 export default en;

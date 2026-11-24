@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.cdn.controller;
 
+import com.chestnut.cms.cdn.CmsCdnTips;
+
 import com.chestnut.cloud.domain.CcCloudConfig;
 import com.chestnut.cloud.service.ICloudConfigService;
 import com.chestnut.cms.cdn.exception.CdnErrorCode;
@@ -103,7 +105,7 @@ public class CmsCdnController extends BaseRestController {
 
         List<CmsPublishPipe> publishPipes = publishPipeService.getPublishPipes(site.getSiteId());
         if (publishPipes.isEmpty()) {
-            return R.fail("未配置发布通道");
+            return R.failWithTip(CmsCdnTips.PUBLISH_PIPE_MISSING);
         }
         List<String> urls = new ArrayList<>();
         for (CmsPublishPipe publishPipe : publishPipes) {
@@ -135,7 +137,7 @@ public class CmsCdnController extends BaseRestController {
 
         List<CmsPublishPipe> publishPipes = publishPipeService.getPublishPipes(site.getSiteId());
         if (publishPipes.isEmpty()) {
-            return R.fail("未配置发布通道");
+            return R.failWithTip(CmsCdnTips.PUBLISH_PIPE_MISSING);
         }
         List<String> urls = new ArrayList<>();
         for (CmsPublishPipe publishPipe : publishPipes) {

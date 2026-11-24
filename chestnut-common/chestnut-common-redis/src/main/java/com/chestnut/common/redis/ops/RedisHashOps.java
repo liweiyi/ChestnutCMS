@@ -16,6 +16,7 @@
 package com.chestnut.common.redis.ops;
 
 import com.chestnut.common.redis.config.RedisCacheProperties;
+import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.StringUtils;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -72,14 +73,14 @@ public class RedisHashOps extends AbstractRedisOps {
     }
 
     public <T> Map<String, T> getCacheMap(String key, Class<T> clazz, Supplier<Map<String, T>> supplier) {
-        if (!redisTemplate.hasKey(key)) {
-            Map<String, T> dataMap = Objects.requireNonNullElse(
-                    supplier != null ? supplier.get() : null, Map.of());
-            setCacheMap(key, dataMap);
-            return dataMap;
-        }
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
-        return toTypedMap(entries, clazz);
+        if (StringUtils.isNotEmpty(entries)) {
+            return toTypedMap(entries, clazz);
+        }
+        Map<String, T> dataMap = Objects.requireNonNullElse(
+                supplier != null ? supplier.get() : null, Map.of());
+        setCacheMap(key, dataMap);
+        return dataMap;
     }
 
     /**
@@ -87,14 +88,15 @@ public class RedisHashOps extends AbstractRedisOps {
      */
     public <T> Map<String, T> getCacheMap(String key, Class<T> clazz, long ttl, TimeUnit timeUnit,
                                           Supplier<Map<String, T>> supplier) {
-        if (!redisTemplate.hasKey(key)) {
-            Map<String, T> dataMap = Objects.requireNonNullElse(
-                    supplier != null ? supplier.get() : null, Map.of());
-            setCacheMap(key, dataMap, ttl, timeUnit);
-            return dataMap;
-        }
+        // 直接读取Hash，空结果按未命中处理，避免存在性检查后自然过期导致漏回源。
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
-        return toTypedMap(entries, clazz);
+        if (StringUtils.isNotEmpty(entries)) {
+            return toTypedMap(entries, clazz);
+        }
+        Map<String, T> dataMap = Objects.requireNonNullElse(
+                supplier != null ? supplier.get() : null, Map.of());
+        setCacheMap(key, dataMap, ttl, timeUnit);
+        return dataMap;
     }
 
     public <T> void setCacheMapValue(String key, String hKey, T value) {
@@ -131,7 +133,10 @@ public class RedisHashOps extends AbstractRedisOps {
     private <T> Map<String, T> toTypedMap(Map<Object, Object> entries, Class<T> clazz) {
         Map<String, T> map = new HashMap<>(entries.size());
         for (Map.Entry<Object, Object> entry : entries.entrySet()) {
-            map.put(entry.getKey().toString(), clazz.cast(entry.getValue()));
+            Object value = entry.getValue();
+            // 保留已有目标类型，兼容序列化后读回的数字字符串及对象Map。
+            T converted = clazz.isInstance(value) ? clazz.cast(value) : JacksonUtils.convertValue(value, clazz);
+            map.put(entry.getKey().toString(), converted);
         }
         return map;
     }

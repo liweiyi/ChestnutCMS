@@ -231,7 +231,7 @@ public class PublishPipeController extends CmsRestController {
     public R<Void> disable(@PathVariable("publishPipeId") @XComment("{API.DOC.CMS.PUBLISH_PIPE.PUBLISH_PIPE_ID}") Long publishPipeId) throws IOException {
         CmsPublishPipe publishPipe = this.publishPipeService.getById(publishPipeId);
         if (publishPipe == null) {
-            return R.fail("数据ID错误：" + publishPipeId);
+            throw CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("publishPipeId", publishPipeId);
         }
         publishPipe.setState(EnableOrDisable.DISABLE);
         publishPipe.updateBy(StpAdminUtil.getLoginUser().getUsername());

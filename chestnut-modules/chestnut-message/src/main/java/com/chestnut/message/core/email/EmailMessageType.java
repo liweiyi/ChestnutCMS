@@ -15,6 +15,8 @@
  */
 package com.chestnut.message.core.email;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.common.utils.ValidationUtils;
@@ -102,7 +104,7 @@ public class EmailMessageType implements IMessageType<EmailProps> {
             helper.setText(message.content(), true);
             mailSender.send(mailMessage);
         } catch (Exception e) {
-            throw MessageErrorCode.SEND_MESSAGE_FAIL.exception(e, e.getMessage());
+            throw MessageErrorCode.SEND_MESSAGE_FAIL.exception(e, CommonTips.failureReason(e));
         }
     }
 

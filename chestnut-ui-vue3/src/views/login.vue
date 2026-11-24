@@ -164,7 +164,10 @@ const loginConfig = ref({
 });
 const smsLoginEnabled = computed(() => isSmsLoginEnabled(loginConfig.value))
 const thirdLoginOptions = computed(() => (loginConfig.value.thirds || [])
-  .filter(third => ['wechat', 'feishu'].includes(third.type) && third.id))
+  .filter(third => [
+    'wechat',
+    'feishu',
+  ].includes(third.type) && third.id))
 
 watch(smsLoginEnabled, enabled => {
   loginMode.value = resolveLoginMode(loginMode.value, loginConfig.value)

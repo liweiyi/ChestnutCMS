@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.image;
 
+import com.chestnut.cms.image.utils.CmsImageContentTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.image.domain.CmsImage;
@@ -64,7 +66,7 @@ public class ImageContentResourceStat implements IResourceStat {
             Page<CmsImage> page = imageService.dao().page(new Page<>(0, pageSize, false), q);
             for (CmsImage image : page.getRecords()) {
                 AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
-                        "正在统计图集内容资源引用：" + count + " / " + total + "]");
+                        CmsImageContentTips.STAT_RESOURCE_REFERENCES, count, total);
                 lastId = image.getImageId();
                 InternalURL internalURL = InternalUrlUtils.parseInternalUrl(image.getPath());
                 if (Objects.nonNull(internalURL)) {

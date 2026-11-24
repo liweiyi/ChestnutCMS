@@ -15,6 +15,8 @@
  */
 package com.chestnut.cloud.logs.impl;
 
+import com.chestnut.cloud.exception.CloudTips;
+
 import com.aliyun.cdn20180510.Client;
 import com.aliyun.cdn20180510.models.DescribeRefreshTasksRequest;
 import com.aliyun.cdn20180510.models.DescribeRefreshTasksResponseBody;
@@ -35,6 +37,12 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+/**
+ * 查询阿里云CDN刷新与预热记录
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Component
 public class AliyunCdnRefreshLogProvider implements ICdnRefreshLogProvider {
 
@@ -72,14 +80,14 @@ public class AliyunCdnRefreshLogProvider implements ICdnRefreshLogProvider {
                     )).toList();
             return TableData.of(rows, body.getTotalCount() == null ? 0 : body.getTotalCount());
         } catch (Exception e) {
-            throw new AliyunException("Query CDN refresh/preheat tasks failed.", e);
+            throw CloudTips.CDN_QUERY_FAILED.exception(e);
         }
     }
 
     protected Client createClient(ObjectNode props) throws Exception {
         AliyunConfig config = JacksonUtils.convertValue(props, AliyunConfig.class);
         if (config == null || StringUtils.isBlank(config.getAccessKey()) || StringUtils.isBlank(config.getSecretKey())) {
-            throw new AliyunException("Missing cloud access key or secret key.");
+            throw CloudTips.CREDENTIALS_REQUIRED.exception();
         }
         com.aliyun.teaopenapi.models.Config clientConfig = new com.aliyun.teaopenapi.models.Config()
                 .setAccessKeyId(config.getAccessKey().trim())

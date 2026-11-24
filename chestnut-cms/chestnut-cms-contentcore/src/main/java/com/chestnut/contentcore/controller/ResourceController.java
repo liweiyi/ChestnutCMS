@@ -100,8 +100,10 @@ public class ResourceController extends CmsRestController {
                               @RequestParam(value = "siteId", required = false, defaultValue = "0") Long siteId,
                               @RequestParam(value = "beginTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date beginTime,
                               @RequestParam(value = "endTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endTime,
+                              @RequestParam(value = "minFileSize", required = false) Long minFileSize,
+                              @RequestParam(value = "maxFileSize", required = false) Long maxFileSize,
                               HttpServletRequest request) {
-        return listData(name, resourceType, owner, siteId, beginTime, endTime, request);
+        return listData(name, resourceType, owner, siteId, beginTime, endTime, minFileSize, maxFileSize, request);
     }
 
     @XComment("{API.DOC.CMS.RESOURCE_MGMT.GET_LIST}")
@@ -113,17 +115,22 @@ public class ResourceController extends CmsRestController {
 		    @RequestParam(value = "siteId", required = false, defaultValue = "0") Long siteId,
 			@RequestParam(value = "beginTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date beginTime,
 			@RequestParam(value = "endTime", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date endTime,
+			@RequestParam(value = "minFileSize", required = false) Long minFileSize,
+			@RequestParam(value = "maxFileSize", required = false) Long maxFileSize,
 			HttpServletRequest request) {
 		PageRequest pr = this.getPageRequest();
         LoginUser loginUser = StpAdminUtil.getLoginUser();
         CmsSite site = siteService.getSiteOrCurrent(siteId, request, loginUser);
+		Long resourceId = ConvertUtils.toLong(name);
 		LambdaQueryWrapper<CmsResource> q = new LambdaQueryWrapper<CmsResource>()
 				.eq(CmsResource::getSiteId, site.getSiteId())
                 .and(StringUtils.isNotEmpty(name), and ->
-                        and.like(CmsResource::getName, name).or().like(CmsResource::getFileName, name))
-				.like(StringUtils.isNotEmpty(name), CmsResource::getName, name)
+                        and.like(CmsResource::getName, name).or().like(CmsResource::getFileName, name)
+                                .or(resourceId != null, id -> id.eq(CmsResource::getResourceId, resourceId)))
 				.eq(StringUtils.isNotEmpty(resourceType), CmsResource::getResourceType, resourceType)
 				.eq(owner, CmsResource::getCreateBy, StpAdminUtil.getLoginUser().getUsername())
+				.ge(minFileSize != null, CmsResource::getFileSize, minFileSize)
+				.le(maxFileSize != null, CmsResource::getFileSize, maxFileSize)
 				.ge(beginTime != null, CmsResource::getCreateTime, beginTime)
 				.le(endTime != null, CmsResource::getCreateTime, endTime).orderByDesc(CmsResource::getResourceId);
 		Page<CmsResource> page = resourceService.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true), q);

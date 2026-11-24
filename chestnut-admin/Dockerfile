@@ -1,4 +1,4 @@
-FROM eclipse-temurin:17-jdk-noble AS builder
+FROM eclipse-temurin:17.0.21_9-jdk-noble AS builder
 
 ARG APP_NAME
 ARG APP_VERSION
@@ -10,7 +10,7 @@ COPY target/$APP_NAME.jar app.jar
 
 RUN java -Djarmode=layertools -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} -jar app.jar extract
 
-FROM eclipse-temurin:17-jdk-noble
+FROM eclipse-temurin:17.0.21_9-jdk-noble
 
 WORKDIR /home/app
 

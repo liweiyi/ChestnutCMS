@@ -255,7 +255,8 @@ public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDi
                         boolean contains = dict.getDataList().stream()
                                 .anyMatch(d -> Strings.CS.equals(d.getValue(), data.getDictValue()));
                         if (!contains) {
-                            this.removeById(data.getDictCode());
+                            // 字典项编码只能用于删除数据项，不能用于删除字典类型。
+                            this.dictDataMapper.deleteById(data.getDictCode());
                         }
                     });
                 }

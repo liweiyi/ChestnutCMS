@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.member.impl;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
 import com.chestnut.cms.member.CmsMemberConstants;
 import com.chestnut.cms.member.publishpipe.PublishPipeProp_MemberBindEmailTemplate;
 import com.chestnut.common.staticize.core.TemplateContext;
@@ -89,7 +91,7 @@ public class AccountBindEmailDynamicPageType implements IDynamicPageType {
 
         MemberCache member = this.memberStatDataService.getMemberCache(memberId);
         if (Objects.isNull(member)) {
-            throw new RuntimeException("Member not found: " + memberId);
+            throw CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", memberId);
         }
     }
 

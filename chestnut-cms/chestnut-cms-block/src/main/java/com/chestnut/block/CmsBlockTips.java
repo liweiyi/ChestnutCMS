@@ -18,12 +18,15 @@ package com.chestnut.block;
 import com.chestnut.common.exception.TipMessage;
 
 /**
- * CmsBlockTips
+ * 模块接口与任务进度提示。
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
 public enum CmsBlockTips implements TipMessage {
+
+    /** 正在统计自定义区块资源引用：{0}/{1} */
+    STAT_RESOURCE_REFERENCES,
 
     /**
      * 正在处理页面部件区块类型数据

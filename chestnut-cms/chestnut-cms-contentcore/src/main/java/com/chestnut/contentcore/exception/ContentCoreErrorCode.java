@@ -30,6 +30,36 @@ public enum ContentCoreErrorCode implements ErrorCode {
 	 */
 	NO_SITE,
 
+	/**
+	 * 请取消置顶后再拖动站点排序
+	 */
+	SITE_TOP_SORT_FORBIDDEN,
+
+	/**
+	 * 只能对同级站点排序
+	 */
+	SITE_SORT_DIFFERENT_PARENTS,
+
+	/**
+	 * 站点不能转移到自身或其子站点下
+	 */
+	SITE_MOVE_TO_SELF_OR_CHILD,
+
+	/**
+	 * 写入前站点的父级已变化
+	 */
+	SITE_PARENT_CHANGED,
+
+	/**
+	 * 删除站点前需先删除子站点
+	 */
+	SITE_HAS_CHILDREN,
+
+	/**
+	 * 站点层级过深
+	 */
+	SITE_TREE_TOO_DEEP,
+
     /**
 	 * 缺少当前站点ID
 	 */

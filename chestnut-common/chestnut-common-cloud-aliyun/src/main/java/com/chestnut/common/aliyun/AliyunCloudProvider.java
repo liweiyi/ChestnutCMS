@@ -39,6 +39,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 将 CDN 刷新和 DNS 记录操作适配到阿里云 SDK，并处理配置中的密钥。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 @Component(ICloudProvider.BEAN_PREFIX + AliyunCloudProvider.ID)
 public class AliyunCloudProvider implements ICloudProvider {
@@ -214,7 +220,7 @@ public class AliyunCloudProvider implements ICloudProvider {
         return "File";
     }
 
-    private com.aliyun.cdn20180510.Client createClient(String accessKeyId, String accessKeySecret) throws Exception {
+    com.aliyun.cdn20180510.Client createClient(String accessKeyId, String accessKeySecret) throws Exception {
         com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config();
         config.setAccessKeyId(accessKeyId);
         config.setAccessKeySecret(accessKeySecret);
@@ -222,7 +228,7 @@ public class AliyunCloudProvider implements ICloudProvider {
         return new com.aliyun.cdn20180510.Client(config);
     }
 
-    private com.aliyun.alidns20150109.Client createDnsClient(String accessKeyId, String accessKeySecret) throws Exception {
+    com.aliyun.alidns20150109.Client createDnsClient(String accessKeyId, String accessKeySecret) throws Exception {
         com.aliyun.teaopenapi.models.Config config = new com.aliyun.teaopenapi.models.Config();
         config.setAccessKeyId(accessKeyId);
         config.setAccessKeySecret(accessKeySecret);

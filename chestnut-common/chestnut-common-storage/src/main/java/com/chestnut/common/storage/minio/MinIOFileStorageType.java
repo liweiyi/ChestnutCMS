@@ -31,6 +31,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 管理 MinIO 客户端并适配对象存储操作。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Component(IFileStorageType.BEAN_NAME_PREIFX + MinIOFileStorageType.TYPE)
 public class MinIOFileStorageType implements IFileStorageType {
 
@@ -52,11 +58,15 @@ public class MinIOFileStorageType implements IFileStorageType {
 		OSSClient<MinioClient> client = this.clients.get(endpoint);
 		if (client == null) {
 			client = new OSSClient<>();
-			client.setClient(MinioClient.builder().endpoint(endpoint).region(region).credentials(accessKey, accessSecret).build());
+			client.setClient(createClient(endpoint, region, accessKey, accessSecret));
 			this.clients.put(endpoint, client);
 		}
 		client.setLastActiveTime(System.currentTimeMillis());
 		return client;
+	}
+
+	MinioClient createClient(String endpoint, String region, String accessKey, String accessSecret) {
+		return MinioClient.builder().endpoint(endpoint).region(region).credentials(accessKey, accessSecret).build();
 	}
 
 	@Override

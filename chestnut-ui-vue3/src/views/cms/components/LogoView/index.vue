@@ -43,13 +43,16 @@
   </div>
 </template>
 <script setup name="CmsLogoView">
+import { defineAsyncComponent } from "vue";
 import useAppStore from "@/store/modules/app"
 const appStore = useAppStore()
 import * as utils from "@/utils/chestnut";
 import { getResourceDetail } from "@/api/contentcore/resource";
 import CmsResourceDialog from "@/views/cms/contentcore/resourceDialog";
+import { getOriginalImageSource, withImageVersion } from "@/utils/imageOptimizer/resource.js";
 
 const model = defineModel();
+const emit = defineEmits(['update']);
 
 const props = defineProps({
   width: {
@@ -74,8 +77,9 @@ const originalSrc = ref(undefined);
 const openResourceDialog = ref(false);
 const imageViewerList = ref([]);
 const showImageViewer = ref(false);
-const currentSiteId = ref('0');
-const internalUpdate = ref(false);
+const currentSiteId = ref(props.siteId);
+const internalUpdate = ref(null);
+let detailVersion = 0;
 
 const imgWidth = computed(() => {
   return props.width + 'px';
@@ -109,26 +113,17 @@ const isInternalImage = computed(() => {
   return model.value && model.value.startsWith("iurl://");
 });
 
-const resourceId = computed(() => {
-  if (model.value && model.value.startsWith("iurl://")) {
-    let queryString = model.value.substring(model.value.indexOf('?') + 1)
-    let idParam = queryString.split("&").find(item => item.startsWith("id="));
-    return idParam.substring(idParam.indexOf('=') + 1);
-  }
-  return '';
-});
-
-watch(model, (newVal) => {
-  if (internalUpdate.value) {
-    internalUpdate.value = false;
-    return;
-  }
-  loadResourceDetail(newVal);
+watch(() => props.siteId, (newVal, oldVal) => {
+  currentSiteId.value = newVal;
+  if (oldVal !== undefined && newVal !== oldVal) loadResourceDetail(model.value);
 }, { immediate: true });
 
-watch(() => props.siteId, (newVal) => {
-  currentSiteId.value = newVal;
-});
+watch(model, (newVal) => {
+  const updatedLocally = internalUpdate.value === newVal;
+  internalUpdate.value = null;
+  if (updatedLocally) return;
+  loadResourceDetail(newVal);
+}, { immediate: true });
 
 watch(imageSrc, (newVal) => {
   updateOriginalSrc();
@@ -136,17 +131,23 @@ watch(imageSrc, (newVal) => {
 });
 
 function loadResourceDetail(path) {
+  const version = ++detailVersion;
   if (!path || path.length == 0) {
+    imageSrc.value = undefined;
+    originalSrc.value = undefined;
     updateOriginalSrc();
     updateImageViewerList();
     return;
   }
-  if (isInternalImage.value) {
-    let queryString = path.substring(path.indexOf('?') + 1);
-    let idParam = queryString.split("&").find(item => item.startsWith("id="));
-    let resourceId = idParam ? idParam.substring(idParam.indexOf('=') + 1) : "";
-    if (resourceId && resourceId.length > 0) {
-      getResourceDetail(resourceId).then(res => imageSrc.value = res.data.src);
+  if (utils.isInternalUrl(path)) {
+    const resourceId = utils.getInternalUrlId(path);
+    const queryAt = path.indexOf('?');
+    const referenceSiteId = new URLSearchParams(queryAt < 0 ? '' : path.slice(queryAt + 1).split('#')[0]).get('sid');
+    const siteId = /^[1-9]\d*$/.test(referenceSiteId || '') ? referenceSiteId : currentSiteId.value;
+    if (resourceId) {
+      getResourceDetail(resourceId, { siteId }).then(res => {
+        if (version === detailVersion && model.value === path) imageSrc.value = res.data.src;
+      });
     }
   } else {
     imageSrc.value = path;
@@ -163,25 +164,31 @@ function updateImageViewerList() {
 
 function updateOriginalSrc() {
   if (!imageSrc.value || imageSrc.value.length == 0) {
+    originalSrc.value = undefined;
     return;
   }
-  let fileName = utils.substringAfterLast(imageSrc.value, "/");
-  if (isInternalImage.value && fileName.indexOf('_') > -1) {
-    let name = utils.substringBeforeLast(fileName, "_") + "." + utils.substringAfterLast(fileName, ".");
-    let prefix = utils.substringBeforeLast(imageSrc.value, "/");
-    originalSrc.value = utils.setUrlParameter(prefix + "/" + name, "t", new Date().getTime());
-  } else {
-    originalSrc.value = utils.setUrlParameter(imageSrc.value, "t", new Date().getTime());
-  }
+  originalSrc.value = isInternalImage.value
+    ? withImageVersion(getOriginalImageSource(imageSrc.value))
+    : imageSrc.value;
 }
 
 function handleResourceDialogOk(results) {
   if (results && results.length > 0) {
-    const r = results[0];
-    model.value = r.path;
-    imageSrc.value = r.src;
-    internalUpdate.value = true;
+    applyResource(results[0]);
   }
+}
+
+function applyResource(resource) {
+  const samePath = model.value === resource.path;
+  detailVersion++;
+  internalUpdate.value = resource.path;
+  model.value = resource.path;
+  if (samePath) emit('update:modelValue', resource.path);
+  imageSrc.value = resource.src;
+  updateOriginalSrc();
+  updateImageViewerList();
+  // Video cover editors also keep a resolved posterSrc beside the bound iurl.
+  emit('update', { ...resource, path: resource.path, src: resource.src });
 }
 
 function handleView() {
@@ -193,7 +200,13 @@ function handleEdit() {
 }
 
 function handleRemove() {
+  detailVersion++;
+  internalUpdate.value = null;
   model.value = "";
+  imageSrc.value = undefined;
+  updateOriginalSrc();
+  updateImageViewerList();
+  emit('update', { path: '', src: '' });
 }
 
 </script>

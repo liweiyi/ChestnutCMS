@@ -22,7 +22,6 @@ import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.CompletionSuggestOption;
 import co.elastic.clients.elasticsearch.core.search.HighlightField;
-import co.elastic.clients.elasticsearch.core.search.Suggestion;
 import co.elastic.clients.util.NamedValue;
 import com.chestnut.cms.search.CmsSearchConstants;
 import com.chestnut.cms.search.properties.EnableSearchLogProperty;
@@ -67,9 +66,14 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * 站点前台内容检索接口。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @XComment("{API.DOC.CMS.SEARCH.API_MODULE}")
 @Slf4j
 @RequiredArgsConstructor
@@ -111,7 +115,7 @@ public class SearchApiController extends BaseRestController {
 					.query(q ->
 							q.bool(b -> {
 								if (StringUtils.isNotEmpty(contentType)) {
-									b.must(must -> must.term(tq -> tq.field("contentType.keyword").value(contentType)));
+									b.must(must -> must.term(tq -> tq.field("contentType").value(contentType)));
 								}
 								if (StringUtils.isNotEmpty(query)) {
 									if (onlyTitle) {
@@ -239,17 +243,12 @@ public class SearchApiController extends BaseRestController {
 							if (StringUtils.isNotEmpty(contentType)) {
 								b.must(must -> must.term(tq -> tq.field("contentType").value(contentType)));
 							}
-							if (StringUtils.isNotEmpty(query)) {
-								String[] tags = query.split("\\s+");
-								b.must(should -> {
-									for (String tag : tags) {
-										should.constantScore(cs ->
-												cs.boost(1F).filter(f ->
-														f.match(m ->
-																m.field("tags").query(tag))));
-									}
-									return should;
-								});
+							if (query != null && !query.isBlank()) {
+								// 每个标签独立加入 must，避免重复设置同一个查询构造器而只保留最后一项。
+								for (String tag : query.strip().split("(?U)\\s+")) {
+									b.must(must -> must.constantScore(cs -> cs.boost(1F)
+											.filter(f -> f.term(term -> term.field("tags").value(tag)))));
+								}
 							}
 							return b;
 						})
@@ -297,7 +296,7 @@ public class SearchApiController extends BaseRestController {
 								@RequestParam(value = "cid", required = false, defaultValue = "0") @XComment("{API.DOC.CMS.SEARCH.API.CATALOG_ID}") Long catalogId,
 								@RequestParam(value = "q") @NotBlank @Length(max = 200) String query,
 								@RequestParam(value = "ct", required = false) @Length(max = 20) String contentType,
-								@RequestParam(value = "size", required = false) @Min(1) @Max(100) Integer size) throws IOException {
+								@RequestParam(value = "size", required = false, defaultValue = "10") @Min(1) @Max(100) Integer size) throws IOException {
 		String suggester = "title-suggest";
 		String indexName = CmsSearchConstants.indexName(siteId.toString());
 		SearchResponse<ObjectNode> sr = esClient.search(s ->
@@ -320,17 +319,15 @@ public class SearchApiController extends BaseRestController {
 							.field("title.suggest")
 							.fuzzy(fuzzy -> fuzzy.fuzziness("2"))
 							.skipDuplicates(true)
-							.size(size)
+							.size(Objects.requireNonNullElse(size, 10))
 						)
 					)
 				)
 				.source(fn -> fn.fetch(false))
 				.size(0), ObjectNode.class);
-		Optional<Suggestion<ObjectNode>> first = sr.suggest().get(suggester).stream().findFirst();
-		if (first.isEmpty()) {
-			return R.ok(List.of());
-		}
-		List<String> list = first.get().completion().options().stream().map(CompletionSuggestOption::text).toList();
+		List<String> list = sr.suggest().getOrDefault(suggester, List.of()).stream()
+				.flatMap(suggestion -> suggestion.completion().options().stream())
+				.map(CompletionSuggestOption::text).toList();
 		return R.ok(list);
 	}
 
@@ -349,7 +346,7 @@ public class SearchApiController extends BaseRestController {
 						.query(q ->
 								q.bool(b -> {
 									if (StringUtils.isNotEmpty(contentType)) {
-										b.must(must -> must.term(tq -> tq.field("contentType.keyword").value(contentType)));
+										b.must(must -> must.term(tq -> tq.field("contentType").value(contentType)));
 									}
 									if (StringUtils.isNotEmpty(query)) {
 										if (onlyTitle) {

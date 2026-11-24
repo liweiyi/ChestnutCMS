@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore.service.impl;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.common.domain.R;
 import com.chestnut.common.domain.TreeNode;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -124,7 +126,7 @@ public class FileServiceImpl implements IFileService {
             } else {
                 Path directory = paths.resolve(dirPath);
                 if (!Files.isDirectory(directory, NOFOLLOW_LINKS)) {
-                    return R.fail("目录参数错误：" + dirPath);
+                    return R.failWithTip(CommonTips.INVALID_PARAMETER, "directory");
                 }
                 try (DirectoryStream<Path> entries = Files.newDirectoryStream(directory)) {
                     for (Path entry : entries) {

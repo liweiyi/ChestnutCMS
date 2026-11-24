@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.io.Serial;
+import java.util.Locale;
 
 /**
  * 自定义全局异常
@@ -38,6 +39,7 @@ public class GlobalException extends RuntimeException {
 	private ErrorCode errorCode = CommonErrorCode.UNKNOWN_ERROR;
 
 	private Object[] errArgs;
+	private TipMessage tipMessage;
 	
 	public GlobalException(ErrorCode errCode, Object... errArgs) {
 		super(I18nUtils.get(errCode.value(), LocaleContextHolder.getLocale(), errArgs));
@@ -53,5 +55,20 @@ public class GlobalException extends RuntimeException {
 
 	public GlobalException(String message) {
 		super(message);
+	}
+
+	GlobalException(Throwable cause, TipMessage tipMessage, Object... args) {
+		super(tipMessage.locale(args), cause);
+		this.tipMessage = tipMessage;
+		this.errArgs = args;
+	}
+
+	/** 按响应或任务的语言重新解析已定义的提示。 */
+	public String userMessage(Locale locale) {
+		if (this.tipMessage != null) {
+			return this.tipMessage.locale(locale, this.errArgs);
+		}
+		Locale targetLocale = locale == null ? LocaleContextHolder.getLocale() : locale;
+		return I18nUtils.get(this.errorCode.value(), targetLocale, this.errArgs);
 	}
 }

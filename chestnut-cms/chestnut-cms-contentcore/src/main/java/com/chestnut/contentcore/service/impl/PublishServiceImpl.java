@@ -461,7 +461,7 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		// 发布内容
 		Set<Long> catalogIds = new HashSet<>();
 		for (CmsContent cmsContent : contents) {
-			AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.PUBLISHING_CONTENT.locale(locale, cmsContent.getTitle()));
+			AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.PUBLISHING_CONTENT, cmsContent.getTitle());
 			IContentType contentType = ContentCoreUtils.getContentType(cmsContent.getContentType());
 			IContent<?> content = contentType.loadContent(cmsContent);
 			content.setOperator(operator);
@@ -478,14 +478,14 @@ public class PublishServiceImpl implements IPublishService, ApplicationContextAw
 		// 发布关联栏目：内容所属栏目及其所有父级栏目
 		catalogIds.stream().map(catalogService::getCatalog).filter(Objects::nonNull)
 			.forEach(catalog -> {
-				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.PUBLISHING_CATALOG.locale(locale, catalog.getName()));
+				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.PUBLISHING_CATALOG, catalog.getName());
 				asyncPublishCatalog(catalog);
 			});
 		CmsSite site = siteService.getSite(contents.get(0).getSiteId());
 		// 发布站点首页
-		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.PUBLISHING_SITE.locale(locale, site.getName()));
+		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.PUBLISHING_SITE, site.getName());
 		asyncPublishSite(site);
-		AsyncTaskManager.setTaskProgressInfo(100, ContentCoreTips.PUBLISH_SUCCESS.locale(locale));
+		AsyncTaskManager.setTaskProgressInfo(100, ContentCoreTips.PUBLISH_SUCCESS);
 	}
 
 	/**

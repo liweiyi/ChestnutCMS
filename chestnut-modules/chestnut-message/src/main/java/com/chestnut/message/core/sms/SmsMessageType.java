@@ -15,6 +15,8 @@
  */
 package com.chestnut.message.core.sms;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.JacksonUtils;
@@ -117,7 +119,7 @@ public class SmsMessageType implements IMessageType<SmsProps> {
             if (e instanceof GlobalException globalException) {
                 throw globalException;
             }
-            throw MessageErrorCode.SEND_MESSAGE_FAIL.exception(e, e.getMessage());
+            throw MessageErrorCode.SEND_MESSAGE_FAIL.exception(e, CommonTips.failureReason(e));
         }
     }
 }

@@ -15,6 +15,10 @@
  */
 package com.chestnut.message.controller;
 
+import com.chestnut.common.exception.CommonTips;
+
+import com.chestnut.message.exception.MessageDeliveryTips;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
@@ -43,6 +47,7 @@ import freemarker.template.TemplateException;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -60,6 +65,7 @@ import java.util.Objects;
 @XComment("{API.DOC.MSG.EVENT_MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RequiredArgsConstructor
+@Slf4j
 @RestController
 @RequestMapping("/message/event")
 public class MessageEventController extends BaseRestController {
@@ -129,7 +135,8 @@ public class MessageEventController extends BaseRestController {
                 try {
                     messageEventService.triggerEvent(req.getEventId(), req.getParams());
                 } catch (Exception e) {
-                    this.addErrorMessage(e.getMessage());
+                    log.error("Message event test failed", e);
+                    this.addErrorMessage(MessageDeliveryTips.TEST_FAILED, CommonTips.failureReason(e, this.getLocale()));
                 }
             }
         };

@@ -75,7 +75,7 @@ const props = defineProps({
 const emit = defineEmits(['update:open', 'ok', 'close']);
 
 const visible = ref(false);
-const alignOptions = ref([
+const alignOptions = computed(() => [
   {
     label: proxy.$t('CMS.UEditor.ThirdVideo.AlignCenter'),
     value: "center"
@@ -89,9 +89,9 @@ const alignOptions = ref([
     value: "right"
   }
 ])
-const rules = ref({
+const rules = computed(() => ({
   code: [{ required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }]
-})
+}))
 const objects = reactive({
   formData: {
     code: props.iframe,

@@ -84,7 +84,7 @@ public class SiteStaticizeType implements IStaticizeType {
 
     private void doSiteStaticize(CmsSite site, String publishPipeCode) {
         try {
-            AsyncTaskManager.setTaskMessage(ContentCoreTips.PUBLISHING_SITE, publishPipeCode, site.getName());
+            AsyncTaskManager.setTaskMessage(ContentCoreTips.PUBLISHING_SITE, site.getName());
 
             String indexTemplate = site.getIndexTemplate(publishPipeCode);
             File templateFile = this.templateService.findTemplateFile(site, indexTemplate, publishPipeCode);

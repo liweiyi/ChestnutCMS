@@ -27,6 +27,9 @@ import com.chestnut.system.service.ISysDictTypeService;
 
 /**
  * 国际化语言标签
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Component(FixedDictType.BEAN_PREFIX + I18nDictType.TYPE)
 public class I18nDictType extends FixedDictType {
@@ -38,6 +41,7 @@ public class I18nDictType extends FixedDictType {
 	public static final String EN = "en";
 
 	public static final String ZH_TW = "zh-TW";
+
 	
 	private static final ISysDictTypeService dictTypeService = SpringUtils.getBean(ISysDictTypeService.class);
 	

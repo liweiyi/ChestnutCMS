@@ -15,6 +15,8 @@
  */
 package com.chestnut.message.service.impl;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
@@ -47,6 +49,9 @@ import java.util.Objects;
 
 /**
  * 所有消息发送入口共用的投递服务，在调用渠道适配器之前执行频控。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Service
 @RequiredArgsConstructor
@@ -137,7 +142,7 @@ public class MessageDeliveryService {
             if (e instanceof GlobalException globalException) {
                 throw globalException;
             }
-            throw MessageErrorCode.SEND_MESSAGE_FAIL.exception(e, e.getMessage());
+            throw MessageErrorCode.SEND_MESSAGE_FAIL.exception(e, CommonTips.failureReason(e));
         }
     }
 

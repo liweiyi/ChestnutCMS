@@ -18,12 +18,27 @@ package com.chestnut.article;
 import com.chestnut.common.exception.TipMessage;
 
 /**
- * CmsArticleTips
+ * 模块接口与任务进度提示。
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
 public enum CmsArticleTips implements TipMessage {
+
+    /** 正在删除文章数据：{0}/{1} */
+    DELETING_ARTICLE_DATA,
+    /** 正在删除文章备份数据：{0}/{1} */
+    DELETING_ARTICLE_BACKUP_DATA,
+    /** 删除文章数据失败，请查看系统日志 */
+    DELETE_ARTICLE_FAILED,
+    /** 删除文章备份数据失败，请查看系统日志 */
+    DELETE_ARTICLE_BACKUP_FAILED,
+    /** 正在统计富文本文章正文资源引用：{0}/{1} */
+    STAT_RESOURCE_REFERENCES,
+    /** 替换内容占位符失败：{0} */
+    CONTENT_PLACEHOLDER_FAILED,
+    /** 替换页面部件占位符失败：{0} */
+    WIDGET_PLACEHOLDER_FAILED,
 
     /**
      * 正在导出文章详情数据
@@ -40,7 +55,6 @@ public enum CmsArticleTips implements TipMessage {
      */
     IMPORT_ARTICLE_FAIL,
     ;
-
 
     @Override
     public String value() {

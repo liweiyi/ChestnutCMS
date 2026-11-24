@@ -38,7 +38,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 防重复提交，仅对已登录用户生效
+ * 为具有请求标识或登录身份的请求原子写入带过期时间的防重标记。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Slf4j
 @Aspect
@@ -75,9 +78,8 @@ public class RepeatSubmitAspect {
 		}
 		sb.append(uuid);
 		String cacheKey = sb.toString();
-		if (this.redisCache.hasKey(cacheKey)) {
+		if (!this.redisCache.setCacheObjectIfAbsent(cacheKey, 1, repeatSubmit.interval(), TimeUnit.MILLISECONDS)) {
 			throw RepeatSubmitErrorCode.REPEAT_ERR.exception();
 		}
-		this.redisCache.setCacheObject(cacheKey, 1, repeatSubmit.interval(), TimeUnit.MILLISECONDS);
 	}
 }

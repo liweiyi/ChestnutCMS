@@ -396,7 +396,7 @@ public class CatalogController extends CmsRestController {
 	@PostMapping("/sort")
 	public R<Void> sortCatalog(@RequestBody @Validated SortCatalogDTO dto) {
 		if (dto.getSort() == 0) {
-			return R.fail("排序数值不能为0");
+			return R.failWithTip(ContentCoreTips.SORT_ZERO);
 		}
 		this.catalogService.sortCatalog(dto.getCatalogId(), dto.getSort());
 		return R.ok();

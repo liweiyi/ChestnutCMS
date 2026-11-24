@@ -98,8 +98,14 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 
 	@Override
 	public Map<String, Object> getSecurityConfigs(List<String> configTypes) {
-		Map<String, Object> configs = new HashMap<>();
 		SysSecurityConfig securityConfig = this.getSecurityConfig();
+		if (securityConfig == null) {
+			if (configTypes.contains(PasswordSecurityConfigType.TYPE)) {
+				return Map.of(PasswordSecurityConfigType.TYPE, passwordSecurityConfigType.getConfig(null));
+			}
+			return Map.of();
+		}
+		Map<String, Object> configs = new HashMap<>();
 		this.securityConfigTypes.forEach(ict -> {
 			if (configTypes.contains(ict.getType())) {
 				Object config = ict.getConfig(securityConfig.getConfigs());
@@ -158,10 +164,8 @@ public class SecurityConfigServiceImpl extends ServiceImpl<SysSecurityConfigMapp
 	@Override
 	public void validPassword(ISecurityUser user, String password) {
 		SysSecurityConfig securityConfig = this.getSecurityConfig();
-		if (Objects.isNull(securityConfig)) {
-			return;
-		}
-		PasswordSecurity passwordSecurity = passwordSecurityConfigType.getConfig(securityConfig.getConfigs());
+		ObjectNode configs = securityConfig == null ? null : securityConfig.getConfigs();
+		PasswordSecurity passwordSecurity = passwordSecurityConfigType.getConfig(configs);
 		passwordSecurity.validPassword(user, password);
 	}
 

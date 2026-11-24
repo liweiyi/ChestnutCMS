@@ -1,6 +1,6 @@
 <template>
   <div class="login">
-    {{ $t('User.LoginRedirectTip') }}
+    {{ $t('System.User.LoginRedirectTip') }}
   </div>
 </template>
 <script setup name="LoginRedirect">

@@ -15,6 +15,8 @@
  */
 package com.chestnut.link;
 
+import com.chestnut.link.CmsLinkTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -64,7 +66,7 @@ public class FriendLinkResourceStat implements IResourceStat {
             Page<CmsLink> page = linkService.page(new Page<>(0, pageSize, false), q);
             for (CmsLink friendLink : page.getRecords()) {
                 AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
-                        "正在统计友情链接资源引用：" + count + " / " + total + "]");
+                        CmsLinkTips.STAT_RESOURCE_REFERENCES, count, total);
                 lastId = friendLink.getLinkId();
                 InternalURL internalURL = InternalUrlUtils.parseInternalUrl(friendLink.getLogo());
                 if (Objects.nonNull(internalURL)) {

@@ -21,6 +21,7 @@ import java.util.Map;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import org.springframework.beans.BeanUtils;
 
@@ -30,6 +31,12 @@ import com.chestnut.contentcore.domain.CmsSite;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * 站点基本信息及编辑参数
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @XComment("{API.DOC.CMS.SITE.SITE_DTO}")
 @Getter
 @Setter
@@ -37,6 +44,13 @@ public class SiteDTO extends BaseDTO {
 
 	@XComment("{CMS.SITE.ID}")
 	private Long siteId;
+
+	@PositiveOrZero
+	@XComment("{CMS.SITE.PARENT_ID}")
+	private Long parentId;
+
+	@XComment("{CMS.SITE.PARENT_NAME}")
+	private String parentName;
 
 	@XComment("{CMS.SITE.NAME}")
 	private String name;

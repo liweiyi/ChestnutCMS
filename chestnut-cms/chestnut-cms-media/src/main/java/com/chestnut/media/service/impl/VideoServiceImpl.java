@@ -15,6 +15,8 @@
  */
 package com.chestnut.media.service.impl;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.storage.local.LocalFileStorageType;
 import com.chestnut.common.utils.IdUtils;
@@ -87,7 +89,7 @@ public class VideoServiceImpl implements IVideoService {
 			throws EncoderException, IOException {
 		InternalURL internalURL = InternalUrlUtils.parseInternalUrl(videoPath);
 		if (Objects.isNull(internalURL)) {
-			throw new RuntimeException("InternalUrl parse failed.");
+			throw CommonErrorCode.INVALID_REQUEST_ARG.exception("internalUrl");
 		}
 		String siteResourceRoot = SiteUtils.getSiteResourceRoot(site);
         String storageType = FileStorageTypeProperty.getValue(site.getConfigProps());

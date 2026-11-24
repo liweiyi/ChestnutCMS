@@ -15,6 +15,8 @@
  */
 package com.chestnut.message.service.impl;
 
+import com.chestnut.message.exception.MessageDeliveryTips;
+
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
@@ -43,6 +45,12 @@ import tools.jackson.databind.node.ObjectNode;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 维护消息事件并执行通知发送
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -148,8 +156,8 @@ public class MessageEventServiceImpl extends ServiceImpl<CcMessageEventMapper, C
     }
 
     private void reportSendFailure(String eventId, CcMessageEvent.EventNotify notify, Exception exception) {
-        AsyncTaskManager.addErrMessage("发送消息失败：configId=%s,type=%s,name=%s"
-                .formatted(notify.getConfigId(), notify.getType(), notify.getName()));
+        AsyncTaskManager.addErrMessage(MessageDeliveryTips.NOTIFY_FAILED,
+                notify.getConfigId(), notify.getType(), notify.getName());
         log.error("Send event message fail: eventId={}, configId={}", eventId, notify.getConfigId(), exception);
     }
 }

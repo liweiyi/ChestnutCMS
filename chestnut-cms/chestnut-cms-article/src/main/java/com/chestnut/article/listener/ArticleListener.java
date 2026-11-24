@@ -15,6 +15,8 @@
  */
 package com.chestnut.article.listener;
 
+import com.chestnut.article.CmsArticleTips;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.article.IArticleBodyFormat;
 import com.chestnut.article.domain.BCmsArticleDetail;
@@ -48,7 +50,7 @@ public class ArticleListener {
 		try {
 			long total = this.articleService.dao().countBySiteId(site.getSiteId());
 			for (long i = 0; i * pageSize < total; i++) {
-				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除文章数据：" + (i * pageSize) + "/" + total);
+				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), CmsArticleTips.DELETING_ARTICLE_DATA, i * pageSize, total);
 
 				List<Long> contentIds = this.articleService.dao().pageBySiteId(
 						new Page<>(0, pageSize, false),
@@ -58,14 +60,14 @@ public class ArticleListener {
 				this.articleService.dao().removeBatchByIds(contentIds);
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除文章数据错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsArticleTips.DELETE_ARTICLE_FAILED);
 			log.error("Delete article failed on site[{}] delete.", site.getSiteId(), e);
 		}
 		// 删除文章备份数据
 		try {
 			long total = this.articleService.dao().countBackupBySiteId(site.getSiteId());
 			for (long i = 0; i * pageSize < total; i++) {
-				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除文章备份数据：" + (i * pageSize) + "/" + total);
+				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), CmsArticleTips.DELETING_ARTICLE_BACKUP_DATA, i * pageSize, total);
 				List<Long> backupIds = this.articleService.dao().pageBackupBySiteId(
 								new Page<>(0, pageSize, false),
 								site.getSiteId(),
@@ -74,7 +76,7 @@ public class ArticleListener {
 				this.articleService.dao().removeBackupBatchByIds(backupIds);
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除文章备份数据错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsArticleTips.DELETE_ARTICLE_BACKUP_FAILED);
 			log.error("Delete backup article failed on site[{}] delete.", site.getSiteId(), e);
 		}
 	}

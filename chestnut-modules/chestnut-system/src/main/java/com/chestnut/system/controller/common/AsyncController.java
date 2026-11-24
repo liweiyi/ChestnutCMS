@@ -15,6 +15,8 @@
  */
 package com.chestnut.system.controller.common;
 
+import com.chestnut.system.exception.SystemTips;
+
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -36,6 +38,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * 提供异步任务状态与中断接口
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @XComment("{API.DOC.ASYNC.MODULE}")
 @RestController
 @RequiredArgsConstructor
@@ -85,7 +93,7 @@ public class AsyncController extends BaseRestController {
 		for (String taskId : taskIds) {
 			AsyncTask task = this.asyncTaskManager.getTask(taskId);
 			if (!task.isInterruptible()) {
-				return R.fail("The task cannot be interrupted: " + taskId);
+				return R.failWithTip(SystemTips.TASK_NOT_INTERRUPTIBLE, taskId);
 			}
 			this.asyncTaskManager.cancel(taskId);
 		}

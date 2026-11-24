@@ -15,6 +15,8 @@
  */
 package com.chestnut.xmodel.service.impl;
 
+import com.chestnut.xmodel.exception.MetaTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -48,6 +50,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * 处理元数据模型的业务数据读写
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Service
 @RequiredArgsConstructor
 public class ModelDataServiceImpl implements IModelDataService {
@@ -282,7 +290,7 @@ public class ModelDataServiceImpl implements IModelDataService {
 		List<MetaModelField> primaryKeys = mmt.getFixedFields().stream()
 				.filter(MetaModelField::isPrimaryKey).toList();
 		if (primaryKeys.isEmpty()) {
-			throw new RuntimeException("Meta model primary key not defined.");
+			throw MetaTips.PRIMARY_KEY_MISSING.exception();
 		}
 		return primaryKeys;
 	}
@@ -290,7 +298,7 @@ public class ModelDataServiceImpl implements IModelDataService {
 	private Object getPrimaryKeyValue(Map<String, Object> values, MetaModelField primaryKey) {
 		Object value = values.get(primaryKey.getCode());
 		if (Objects.isNull(value)) {
-			throw new RuntimeException("Meta model primary key `" + primaryKey.getCode() + "` value cannot be null.");
+			throw MetaTips.PRIMARY_KEY_REQUIRED.exception(primaryKey.getCode());
 		}
 		return value;
 	}

@@ -15,6 +15,8 @@
  */
 package com.chestnut.message.config;
 
+import com.chestnut.message.exception.MessageDeliveryTips;
+
 import com.chestnut.message.domain.CcMessageTemplate;
 import com.chestnut.message.mapper.CcMessageTemplateMapper;
 import freemarker.cache.TemplateLoader;
@@ -114,7 +116,7 @@ public class MessageFreeMarkerTemplateLoader implements TemplateLoader {
         if (o instanceof MessageTemplateSource template) {
             return new StringReader(template.getTemplateContent());
         }
-        throw new RuntimeException("Failed to load message freemark template.");
+        throw MessageDeliveryTips.TEMPLATE_LOAD_FAILED.exception();
     }
 
     @Override

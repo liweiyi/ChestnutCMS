@@ -18,12 +18,13 @@ package com.chestnut.common.async;
 import com.chestnut.common.async.enums.TaskStatus;
 import com.chestnut.common.config.AsyncConfig;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.exception.CommonTips;
 import com.chestnut.common.exception.TipMessage;
-import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.StringUtils;
-import jakarta.annotation.Resource;
+import jakarta.annotation.PreDestroy;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
@@ -36,28 +37,41 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 异步任务管理器
+ * 提交异步任务并维护当前任务上下文。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Component
 public class AsyncTaskManager {
 
-	private final long ExpireSeconds = 60;
+	private static final long EXPIRE_SECONDS = 60;
 
 	/** 当前线程的异步任务上下文栈。 */
 	private static final ThreadLocal<Deque<AsyncTask>> CURRENT = new ThreadLocal<>();
 
 	private static final ConcurrentHashMap<String, AsyncTask> asyncTaskMap = new ConcurrentHashMap<>();
 
-	@Resource(name = AsyncConfig.COMMON_EXECUTOR_BEAN)
-    private ThreadPoolTaskExecutor taskExecutor;
+	private final ThreadPoolTaskExecutor taskExecutor;
 
-	AsyncTaskManager() {
-		Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> {
-			asyncTaskMap.entrySet().removeIf(next -> next.getValue().isExpired(ExpireSeconds));
-		}, ExpireSeconds, ExpireSeconds, TimeUnit.SECONDS);
+	private final ScheduledExecutorService expirationExecutor = Executors.newSingleThreadScheduledExecutor();
+
+	AsyncTaskManager(@Qualifier(AsyncConfig.COMMON_EXECUTOR_BEAN) ThreadPoolTaskExecutor taskExecutor) {
+		this.taskExecutor = taskExecutor;
+		expirationExecutor.scheduleAtFixedRate(this::removeExpiredTasks, EXPIRE_SECONDS, EXPIRE_SECONDS, TimeUnit.SECONDS);
+	}
+
+	void removeExpiredTasks() {
+		asyncTaskMap.entrySet().removeIf(entry -> entry.getValue().isExpired(EXPIRE_SECONDS));
+	}
+
+	@PreDestroy
+	void stopExpirationExecutor() {
+		expirationExecutor.shutdownNow();
 	}
 
     /**
@@ -220,17 +234,22 @@ public class AsyncTaskManager {
     }
 
 	public static void completed(String msg) {
+		if (StringUtils.isEmpty(msg)) {
+			completed();
+			return;
+		}
 		AsyncTask task = currentTask();
 		if (Objects.nonNull(task)) {
-			if (StringUtils.isEmpty(msg)) {
-				msg = I18nUtils.get("{AsyncTask.SuccessMsg}");
-			}
 			task.setProgressInfo(100, msg);
 		}
 	}
 
 	public static void completed() {
-		completed(null);
+		completeWithTip(CommonTips.TASK_SUCCEEDED);
+	}
+
+	public static void completeWithTip(TipMessage message, Object... args) {
+		setTaskProgressInfo(100, message, args);
 	}
 
 	/**

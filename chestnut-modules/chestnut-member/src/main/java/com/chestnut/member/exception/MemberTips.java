@@ -15,22 +15,24 @@
  */
 package com.chestnut.member.exception;
 
-import com.chestnut.common.i18n.I18nUtils;
+import com.chestnut.common.exception.TipMessage;
 
-import java.util.Locale;
 
-public enum MemberTips {
+/**
+ * 用户操作的国际化提示
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
+public enum MemberTips implements TipMessage {
 
     /**
      * 密码错误
      */
     WRONG_PASSWORD;
 
-    public String locale(Object... args) {
-        return I18nUtils.parse("TIPS.MEMBER." + this.name(), args);
-    }
-
-    public String locale(Locale locale, Object... args) {
-        return I18nUtils.parse("TIPS.MEMBER." + this.name(), locale, args);
+    @Override
+    public String value() {
+        return "TIPS.MEMBER." + name();
     }
 }

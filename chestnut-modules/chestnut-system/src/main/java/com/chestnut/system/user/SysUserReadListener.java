@@ -1,5 +1,9 @@
 package com.chestnut.system.user;
 
+import org.springframework.web.util.HtmlUtils;
+
+import com.chestnut.common.exception.CommonTips;
+
 import cn.idev.excel.context.AnalysisContext;
 import cn.idev.excel.read.listener.ReadListener;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -29,6 +33,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
+/**
+ * 导入用户数据并汇总处理结果
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @RequiredArgsConstructor
 public class SysUserReadListener implements ReadListener<UserImportData> {
 
@@ -71,7 +81,7 @@ public class SysUserReadListener implements ReadListener<UserImportData> {
 						q -> q.eq(SysDept::getDeptName, data.getDeptName()));
 				if (deptList.size() != 1) {
 					failCount++;
-					logWriter.append(SystemUserTips.DEPT_NOT_EXISTS_OR_DUPLICATE.locale(locale, data.getDeptName())).append("<br/>");
+					logWriter.append(HtmlUtils.htmlEscape(SystemUserTips.DEPT_NOT_EXISTS_OR_DUPLICATE.locale(locale, data.getDeptName()))).append("<br/>");
 					return;
 				}
 				SysDept dept = deptList.get(0);
@@ -121,16 +131,17 @@ public class SysUserReadListener implements ReadListener<UserImportData> {
 				successCount++;
 			} else {
 				failCount++;
-				logWriter.append(SystemUserTips.USER_EXISTS.locale(locale, data.getUserName())).append("<br/>");
+				logWriter.append(HtmlUtils.htmlEscape(SystemUserTips.USER_EXISTS.locale(locale, data.getUserName()))).append("<br/>");
 			}
 		} catch (Exception e) {
 			failCount++;
-			logWriter.append(SystemUserTips.IMPORT_FAIL.locale(locale, data.getUserName(), e.getMessage())).append("<br/>");
+            log.warn("Import user failed: {}", data.getUserName(), e);
+			logWriter.append(HtmlUtils.htmlEscape(SystemUserTips.IMPORT_FAIL.locale(locale, data.getUserName(), CommonTips.failureReason(e, locale)))).append("<br/>");
 		}
 	}
 
 	@Override
 	public void doAfterAllAnalysed(AnalysisContext context) {
-		logWriter.append(SystemUserTips.IMPORT_FAIL.locale(locale, successCount, failCount));
+		logWriter.append(HtmlUtils.htmlEscape(SystemUserTips.IMPORT_SUCCESS.locale(locale, successCount, failCount)));
 	}
 }

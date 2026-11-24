@@ -62,7 +62,13 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.constraints.Length;
 import org.jsoup.safety.Safelist;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -72,6 +78,12 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * 内容索引查询与重建管理。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @XComment("{API.DOC.CMS.SEARCH.CONTENT_INDEX_MODULE}")
 @Priv(type = AdminUserType.TYPE, value = CmsSearchPriv.ContentIndexView)
 @RequiredArgsConstructor
@@ -157,7 +169,8 @@ public class ContentIndexController extends CmsRestController {
 				source.properties().forEach(entry -> {
 					String fieldName = entry.getKey();
 					if (fieldName.startsWith(IMetaModelType.DATA_FIELD_PREFIX)) {
-						vo.getExtendData().put(fieldName, source.get(fieldName).asString());
+						vo.getExtendData().put(fieldName,
+								JacksonUtils.getObjectMapper().convertValue(entry.getValue(), Object.class));
 					}
 				});
 				vo.setHitScore(hit.score());

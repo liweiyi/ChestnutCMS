@@ -17,7 +17,22 @@ package com.chestnut.advertisement;
 
 import com.chestnut.common.exception.TipMessage;
 
+/**
+ * 模块接口与任务进度提示。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 public enum CmsAdTips implements TipMessage {
+
+    /** 正在删除广告数据：{0}/{1} */
+    DELETING_ADVERTISEMENT_DATA,
+    /** 删除广告数据失败，请查看系统日志 */
+    DELETE_ADVERTISEMENT_FAILED,
+    /** 正在统计广告资源引用：{0}/{1} */
+    STAT_RESOURCE_REFERENCES,
+    /** 广告无效或不可访问 */
+    INVALID_ADVERTISEMENT,
 
     /**
      * 正在导出广告数据
@@ -33,7 +48,6 @@ public enum CmsAdTips implements TipMessage {
      * 导入广告数据`{0}`失败：{1}
      */
     IMPORT_AD_FAIL;
-
 
     @Override
     public String value() {

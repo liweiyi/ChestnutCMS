@@ -47,6 +47,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 将 CDN 刷新和 DNS 记录操作适配到腾讯云 SDK，并处理配置中的密钥。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 @Component(ICloudProvider.BEAN_PREFIX + TencentCloudProvider.ID)
 public class TencentCloudProvider implements ICloudProvider {
@@ -92,7 +98,7 @@ public class TencentCloudProvider implements ICloudProvider {
         clientProfile.setHttpProfile(httpProfile);
 
         Credential cred = new Credential(config.getSecretId().trim(), config.getSecretKey().trim());
-        CdnClient client = new CdnClient(cred, "", clientProfile);
+        CdnClient client = createCdnClient(cred, clientProfile);
         try {
             if (CdnRefreshType.DIR == type) {
                 this.refreshDirectory(client, urls);
@@ -218,7 +224,15 @@ public class TencentCloudProvider implements ICloudProvider {
         ClientProfile clientProfile = new ClientProfile();
         clientProfile.setHttpProfile(httpProfile);
         Credential cred = new Credential(config.getSecretId().trim(), config.getSecretKey().trim());
-        return new DnspodClient(cred, "", clientProfile);
+        return createDnspodClient(cred, clientProfile);
+    }
+
+    CdnClient createCdnClient(Credential credential, ClientProfile profile) {
+        return new CdnClient(credential, "", profile);
+    }
+
+    DnspodClient createDnspodClient(Credential credential, ClientProfile profile) {
+        return new DnspodClient(credential, "", profile);
     }
 
     private void refreshDirectory(CdnClient client , List<String> urls) throws TencentCloudSDKException {

@@ -15,6 +15,8 @@
  */
 package com.chestnut.system.controller;
 
+import com.chestnut.system.exception.SystemTips;
+
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
@@ -56,6 +58,9 @@ import java.util.stream.Collectors;
 
 /**
  * 个人信息 业务处理
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @XComment("{API.DOC.SYS.PROFILE.MODULE}")
 @Priv(type = AdminUserType.TYPE)
@@ -112,11 +117,11 @@ public class SysProfileController extends BaseRestController {
 		SysUser user = userService.getById(loginUser.getUserId());
         // 三方登录可能没有旧密码
         if (StringUtils.isNotEmpty(user.getPassword())) {
-            if (!SecurityUtils.matches(oldPassword, user.getPassword())) {
-                return R.fail("修改密码失败，旧密码错误");
+            if (oldPassword == null || !SecurityUtils.matches(oldPassword, user.getPassword())) {
+                return R.failWithTip(SystemTips.OLD_PASSWORD_INVALID);
             }
-            if (SecurityUtils.matches(newPassword, user.getPassword())) {
-                return R.fail("新密码不能与旧密码相同");
+            if (newPassword != null && SecurityUtils.matches(newPassword, user.getPassword())) {
+                return R.failWithTip(SystemTips.PASSWORD_UNCHANGED);
             }
         }
 		// 密码安全规则校验
@@ -137,7 +142,7 @@ public class SysProfileController extends BaseRestController {
 	@PostMapping("/avatar")
 	public R<String> avatar(@RequestParam("avatarfile") @XComment("{API.DOC.SYS.PROFILE.AVATAR_FILE}") MultipartFile file) throws Exception {
 		if (Objects.isNull(file) || file.isEmpty()) {
-			return R.fail("上传图片异常，请联系管理员");
+			return R.failWithTip(SystemTips.IMAGE_UPLOAD_FAILED);
 		}
 		LoginUser loginUser = StpAdminUtil.getLoginUser();
 		String avatarPath = this.userService.uploadAvatar(loginUser.getUserId(), file.getBytes());

@@ -9,6 +9,15 @@ export function listSite(query) {
   })
 }
 
+// 懒加载一级站点或指定站点的直接子站点
+export function listChildSites(parentId = 0) {
+  return request({
+    url: '/cms/site/tree',
+    method: 'get',
+    params: { parentId }
+  })
+}
+
 export function getSelectSites(query) {
   return request({
     url: '/cms/site/selectList',
@@ -63,6 +72,41 @@ export function updateSite(data) {
     url: '/cms/site/update',
     method: 'post',
     data: data
+  })
+}
+
+// 拖动排序
+export function sortSite(data) {
+  return request({
+    url: '/cms/site/sort',
+    method: 'post',
+    data
+  })
+}
+
+// 转移站点
+export function moveSite(data) {
+  return request({
+    url: '/cms/site/move',
+    method: 'post',
+    data
+  })
+}
+
+// 设置站点置顶
+export function setTopSite(siteId, data) {
+  return request({
+    url: '/cms/site/set_top/' + siteId,
+    method: 'post',
+    data
+  })
+}
+
+// 取消站点置顶
+export function cancelTopSite(siteId) {
+  return request({
+    url: '/cms/site/cancel_top/' + siteId,
+    method: 'post'
   })
 }
 

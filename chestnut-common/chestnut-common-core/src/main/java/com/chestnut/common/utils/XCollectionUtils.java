@@ -19,11 +19,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * XCollectionUtils
+ * 提供集合拼接、映射和查找操作。
  *
  * @author 兮玥
  * @email 190785909@qq.com
@@ -31,26 +32,23 @@ import java.util.function.Predicate;
 public class XCollectionUtils {
 
     /**
-     * Creates a string from all the elements separated using [separator].
+     * 使用指定的分隔符拼接所有转换后的元素。
      */
     public static <T> String join(Collection<T> collection, String separator, Function<T, String> func) {
-        return join(collection, separator, func);
+        return join(collection, separator, func, ignored -> true);
     }
 
     /**
-     * Creates a string from all the elements separated using [separator].
+     * 使用指定的分隔符拼接满足条件且经过转换的元素。
      */
     public static <T> String join(Collection<T> collection, String separator, Function<T, String> func, Predicate<T> predicate) {
-        StringBuilder sb = new StringBuilder();
+        StringJoiner result = new StringJoiner(String.valueOf(separator));
         for (T item : collection) {
             if (predicate.test(item)) {
-                if (!sb.isEmpty()) {
-                    sb.append(separator);
-                }
-                sb.append(func.apply(item));
+                result.add(func.apply(item));
             }
         }
-        return sb.toString();
+        return result.toString();
     }
 
     /**

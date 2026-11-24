@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.dynamic.listener;
 
+import com.chestnut.cms.dynamic.CmsDynamicTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
@@ -46,7 +48,7 @@ public class DynamicListener {
 			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除自定义动态模板页面数据：" + (i * pageSize) + "/" + total);
+						CmsDynamicTips.DELETING_DYNAMIC_PAGE_DATA, i * pageSize, total);
 				Page<CmsDynamicPage> pages = this.dynamicPageService.lambdaQuery()
 						.select(CmsDynamicPage::getPageId)
 						.eq(CmsDynamicPage::getSiteId, site.getSiteId())
@@ -60,7 +62,7 @@ public class DynamicListener {
 				}
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除自定义动态模板页面数据错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsDynamicTips.DELETE_DYNAMIC_PAGE_FAILED);
 			log.error("Delete dynamic page failed on site[{}] delete.", site.getSiteId());
 		}
 	}

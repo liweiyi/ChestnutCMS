@@ -15,6 +15,8 @@
  */
 package com.chestnut.link.controller;
 
+import com.chestnut.link.CmsLinkTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
@@ -83,7 +85,7 @@ public class LinkGroupController extends CmsRestController {
 		CmsSite site = this.getCurrentSite();
 		if (this.linkGroupService.lambdaQuery().eq(CmsLinkGroup::getSiteId, site.getSiteId())
 				.eq(CmsLinkGroup::getCode, dto.getCode()).count() > 0) {
-			return R.fail("友链分组编码重复");
+			return R.failWithTip(CmsLinkTips.GROUP_CODE_CONFLICT);
 		}
 		CmsLinkGroup linkGroup = new CmsLinkGroup();
 		BeanUtils.copyProperties(dto, linkGroup, "linkGroupId", "siteId", "sortFlag");
@@ -104,7 +106,7 @@ public class LinkGroupController extends CmsRestController {
 		if (this.linkGroupService.lambdaQuery().eq(CmsLinkGroup::getSiteId, site.getSiteId())
 				.eq(CmsLinkGroup::getCode, dto.getCode()).ne(CmsLinkGroup::getLinkGroupId, dto.getLinkGroupId())
 				.count() > 0) {
-			return R.fail("友链分组编码重复");
+			return R.failWithTip(CmsLinkTips.GROUP_CODE_CONFLICT);
 		}
 		CmsLinkGroup linkGroup = new CmsLinkGroup();
 		BeanUtils.copyProperties(dto, linkGroup, "siteId");

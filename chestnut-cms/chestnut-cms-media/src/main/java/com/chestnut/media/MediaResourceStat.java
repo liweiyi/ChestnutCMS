@@ -15,6 +15,8 @@
  */
 package com.chestnut.media;
 
+import com.chestnut.media.CmsMediaTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -73,7 +75,7 @@ public class MediaResourceStat implements IResourceStat {
             Page<CmsAudio> page = audioDAO.page(new Page<>(0, pageSize, false), q);
             for (CmsAudio audio : page.getRecords()) {
                 AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
-                        "正在统计音频资源引用：" + count + " / " + total + "]");
+                        CmsMediaTips.STAT_AUDIO_REFERENCES, count, total);
                 lastId = audio.getAudioId();
                 // 音频
                 InternalURL internalURL = InternalUrlUtils.parseInternalUrl(audio.getPath());
@@ -103,7 +105,7 @@ public class MediaResourceStat implements IResourceStat {
             Page<CmsVideo> page = videoDao.page(new Page<>(0, pageSize, false), q);
             for (CmsVideo video : page.getRecords()) {
                 AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
-                        "正在统计视频资源引用：" + count + " / " + total + "]");
+                        CmsMediaTips.STAT_VIDEO_REFERENCES, count, total);
                 lastId = video.getVideoId();
                 // 视频封面
                 InternalURL internalURL = InternalUrlUtils.parseInternalUrl(video.getCover());

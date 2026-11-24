@@ -100,6 +100,16 @@ public class RedisCache {
     }
 
     /**
+     * 仅在键不存在时原子写入并设置过期时间，保留毫秒精度。
+     *
+     * @return 仅在 Redis 确认写入成功时返回 {@code true}
+     */
+    public boolean setCacheObjectIfAbsent(final String key, final Object value,
+                                          final long timeout, final TimeUnit timeUnit) {
+        return valueOps.setCacheObjectIfAbsent(key, value, timeout, timeUnit);
+    }
+
+    /**
      * 缓存基本对象并对 TTL 施加随机抖动（防雪崩）。
      * 仅适合缓存场景；验证码、令牌等业务精确 TTL 请使用 {@link #setCacheObject(String, Object, long, TimeUnit)}。
      */

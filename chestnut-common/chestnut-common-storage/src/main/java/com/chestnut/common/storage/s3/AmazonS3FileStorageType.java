@@ -43,6 +43,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * 管理 Amazon S3 客户端并适配对象存储操作。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 @Component(IFileStorageType.BEAN_NAME_PREIFX + AmazonS3FileStorageType.TYPE)
 public class AmazonS3FileStorageType implements IFileStorageType {
@@ -240,20 +246,23 @@ public class AmazonS3FileStorageType implements IFileStorageType {
 		OSSClient<S3Client> client = this.clients.get(endpoint);
 		if (client == null) {
 			client = new OSSClient<>();
-			S3Client s3Client = S3Client.builder()
-					.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, accessSecret)))
-					.region(Region.AWS_GLOBAL)
-					.endpointOverride(URI.create(endpoint))
-					.serviceConfiguration(S3Configuration.builder()
-							.pathStyleAccessEnabled(false)
-							.chunkedEncodingEnabled(false)
-							.build())
-					.build();
-			client.setClient(s3Client);
+			client.setClient(createClient(endpoint, accessKey, accessSecret));
 			this.clients.put(endpoint, client);
 		}
 		client.setLastActiveTime(System.currentTimeMillis());
 		return client;
+	}
+
+	S3Client createClient(String endpoint, String accessKey, String accessSecret) {
+		return S3Client.builder()
+				.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, accessSecret)))
+				.region(Region.AWS_GLOBAL)
+				.endpointOverride(URI.create(endpoint))
+				.serviceConfiguration(S3Configuration.builder()
+						.pathStyleAccessEnabled(false)
+						.chunkedEncodingEnabled(false)
+						.build())
+				.build();
 	}
 
 	@PreDestroy

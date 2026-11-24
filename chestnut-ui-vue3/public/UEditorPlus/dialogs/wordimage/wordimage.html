@@ -4,7 +4,7 @@
 <head>
     <title></title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-    <script type="text/javascript" src="../internal.js?0c13553b"></script>
+    <script type="text/javascript" src="../internal.js?v=20261112-i18n-dialogs"></script>
     <style type="text/css">
         .wrapper {
             width: 600px;
@@ -100,11 +100,11 @@
             <input type="text" id="fileUrl"/>
         </div>
         <div class="copy">
-            <div id="copyButton">复制路径</div>
+            <div id="copyButton"><var id="lang_copyPath"></var></div>
         </div>
         <div class="action">
             <div class="save-from-local">
-                <div>本地选择保存</div>
+                <div><var id="lang_selectLocal"></var></div>
                 <input type="file" id="saveFile" multiple=true/>
             </div>
         </div>
@@ -112,27 +112,27 @@
     <div class="image-tip"></div>
     <div class="image-manual">
         <div class="title">
-            Windows使用教程
+            <var id="lang_windowsGuide"></var>
         </div>
         <div class="body">
-            <p>1、点击复制地址按钮</p>
-            <p>2、点击本地选择文件，粘贴剪切板的路径到文件选择路径</p>
-            <p>3、点击确定</p>
+            <p><var id="lang_windowsStep1"></var></p>
+            <p><var id="lang_windowsStep2"></var></p>
+            <p><var id="lang_windowsStep3"></var></p>
         </div>
         <div class="title">
-            Mac使用教程
+            <var id="lang_macGuide"></var>
         </div>
         <div class="body">
-            <p>1、点击复制地址按钮</p>
-            <p>2、点击本地选择文件，按快捷 Command+Shift+G ，粘贴剪切板的路径到文件选择路径</p>
-            <p>3、点击确定</p>
+            <p><var id="lang_macStep1"></var></p>
+            <p><var id="lang_macStep2"></var></p>
+            <p><var id="lang_macStep3"></var></p>
         </div>
     </div>
 </div>
 <script src="../../third-party/jquery-1.10.2.js?feef8a20"></script>
 <script src="../../third-party/webuploader/webuploader.js?e8936304"></script>
 <script type="text/javascript" src="../../third-party/clipboard/clipboard.js?507f0f63"></script>
-<script type="text/javascript" src="wordimage.js?300a849d"></script>
+<script type="text/javascript" src="wordimage.js?v=20261112-i18n-dialogs"></script>
 <script type="text/javascript">
     editor.setOpt({
         wordImageFieldName: "upfile",
@@ -159,7 +159,7 @@
         imageCompressBorder = editor.getOpt('imageCompressBorder');
     uploader = WebUploader.create({
         accept: {
-            title: 'Images',
+            title: lang.fileType,
             extensions: acceptExtensions,
             mimeTypes: 'image/*'
         },
@@ -192,9 +192,9 @@
                         url: res.url,
                         title: '',
                     });
-                    $('.image-tip').html('<span style="color:#139213;">图片' + imageUrls.length + '(' + file.name + ')' + '转存成功</span>');
+                    showWordImageTip(formatWordImageMessage(lang.transferredImage, { count: imageUrls.length, name: file.name }), '#139213');
                 } else {
-                    $('.image-tip').html('上传失败:' + JSON.stringify(res))
+                    showWordImageTip(lang.uploadFailure + JSON.stringify(res))
                 }
                 // 触发上传附件事件
                 editor.fireEvent("uploadsuccess", {
@@ -202,14 +202,14 @@
                     type: 'image'
                 });
             } else {
-                $('.image-tip').html('上传失败:' + JSON.stringify(res))
+                showWordImageTip(lang.uploadFailure + JSON.stringify(res))
             }
         } else {
-            $('.image-tip').html('上传失败:' + JSON.stringify(res))
+            showWordImageTip(lang.uploadFailure + JSON.stringify(res))
         }
     });
     uploader.on('uploadFinished', function () {
-        $('.image-tip').html('<span style="color:#139213;">转存成功，请提交确认</span>');
+        showWordImageTip(lang.transferComplete, '#139213');
     });
     utils.domReady(function () {
         var options = {};

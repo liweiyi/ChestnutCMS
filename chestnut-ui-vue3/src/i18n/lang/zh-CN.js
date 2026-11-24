@@ -7,20 +7,15 @@ const zhCN = {
     CountryCallingCode: '国家/地区区号',
     Search: '搜索',
     Reset: '重置',
-    More: '更多',
     None: '无',
-    OK: 'OK',
     Confirm: '确定',
     Cancel: '取消',
-    Open: '开启',
     Close: '关闭',
     Submit: '提交',
     GoBack: '返回',
     Success: '成功',
     Fail: '失败',
-    Normal: '正常',
     OpSuccess: '操作成功',
-    OpFail: '操作失败',
     AddSuccess: '添加成功',
     SaveSuccess: "保存成功",
     EditSuccess: '修改成功',
@@ -59,7 +54,6 @@ const zhCN = {
     CreateTime: '创建时间',
     CreateBy: '创建人',
     UpdateTime: '更新时间',
-    UpdateBy: '更新人',
     Operation: '操作',
     Select: '选择',
     Upload: '上传',
@@ -70,10 +64,6 @@ const zhCN = {
     Collapse: '折叠',
     CheckAll: '全选',
     CheckInverse: '全不选',
-    TreeLinkage: '父子联动',
-    MoveUp: "上移",
-    MoveDown: "下移",
-    Back: '返回',
     ConfirmDelete: '是否确认删除？',
     ConfirmClean: "是否确认清空？清空后将无法恢复，请谨慎操作。",
     Today: '今天',
@@ -89,19 +79,15 @@ const zhCN = {
     RepeatSubmit: '请求正在处理，请勿重复提交',
     ServerConnectFailed: '后端接口连接异常',
     ServerConnectTimeout: '系统接口请求超时',
-    SecondaryVerification: '二次验证',
     ServerApiError: '系统接口{0}异常',
     Loading: '正在加载，请稍后',
     DownloadFailed: '下载文件出现错误，请联系管理员！',
     InvalidFileSuffix: '文件格式错误，仅支持：{0}',
     SelectFirst: '请先选择至少一条记录',
-    Width: "宽度",
-    Height: "高度",
     Downloading: "正在下载...",
     Downloaded: "下载完成",
     DownloadTimeout: "下载超时",
     Others: "其他",
-    Unknown: "未知",
     Recover: "恢复",
     InputPassword: "请输入密码",
     SelectedCount: "已选择 {0} 条",
@@ -112,8 +98,6 @@ const zhCN = {
     },
     Unit: {
       Year: "年",
-      Month: "月",
-      Week: "周",
       Day: "天",
       Hour: "时",
       Minute: "分",
@@ -133,16 +117,9 @@ const zhCN = {
   },
   Error: {
     Err401: "【401】未通过认证！",
-    Forbidden: "未通过认证",
-    ForbiddenTip: "对不起，您尚未通过系统认证，请尝试重新登录。",
-    GoLogin: "去登录",
     Err403: "【403】权限校验失败！",
     NoPermission: "无访问权限！",
-    NoPermissionTip: "对不起，您没有访问权限，请向系统管理者申请相关资源访问权限！",
-    GoHome: "回首页",
     Err404: "【404】访问资源不存在！",
-    Err404Tip: "对不起，您正在寻找的页面不存在。尝试检查URL的错误，然后按浏览器上的刷新按钮或尝试在我们的应用程序中找到其他内容。",
-    PageNotFound: "找不到网页！",
     Unknown: '系统未知错误，请反馈给管理员'
   },
   Router: {
@@ -191,19 +168,9 @@ const zhCN = {
     CaptchaLoadFailed: '验证码加载失败，请重试',
     CaptchaAccountChanged: '用户名已变化，请重新验证',
     CaptchaRequired: '请先完成当前账号的验证码验证',
-    CaptchaTip: '点击按钮开始验证',
-    CaptchaSuccess: '验证成功',
     CaptchaFail: '验证失败，请重试',
-    CaptchaClickWord: '点击文字验证码',
-    CaptchaClickWordTip: '请按顺序点击文字：{0}',
-    CaptchaClickWordSuccessTip: '验证成功，耗时{0}秒。',
-    CaptchaSlider: '滑块拼图验证码',
-    CaptchaSliderTip: '请拖动滑块完成拼图',
-    CaptchaSliderSuccessTip: '验证成功，耗时{0}秒。',
     AccountRuleTip: "请输入您的账号",
     PasswordRuleTip: "请输入您的密码",
-    CaptchaRuleTip: "请输入验证码",
-    Language: '语言',
     OtherMethods: '其他方式登录',
     Feishu: {
       GetLoginUrlFail: '获取飞书登录地址失败',
@@ -224,7 +191,6 @@ const zhCN = {
     Basic: '基础资料',
     ResetPassword: '修改密码',
     NickName: '昵称',
-    RealName: '真实姓名',
     Gender: '性别',
     GenderMale: '男',
     GenderFemale: '女',
@@ -236,7 +202,6 @@ const zhCN = {
     ConfirmPwdPlaceHolder: '请确认新密码',
     NewPwdLenTip: '长度必须在 {0} 到 {1} 个字符',
     NewPwdSensitiveTip: '不能包含用户信息敏感字符',
-    NewPwdTip: '新密码不合符安全规则',
     NewPwdRuleLETTER_NUMBERTip: '必须包含字母、数字',
     NewPwdRuleUPPER_LOW_LETTER_NUMBERTip: '必须包含大小写字母、数字',
     NewPwdRuleLETTER_NUMBER_SPECIALTip: '必须包含字母、数字、特殊字符',
@@ -246,73 +211,23 @@ const zhCN = {
   Component: {
     Progress: {
       TaskIsRunning: "任务进行中...",
-      Completed: "已完成",
     },
     CommonImageViewer: {
       UploadSizeErr: "上传文件大小不能超过 {0}!",
       Uploading: "正在上传文件，请稍候...",
       Tips: "只能上传jpg/png文件，且不超过2Mb"
     },
-    Crontab: {
-      Second: "秒",
-      Minute: "分钟",
-      Hour: "小时",
-      Day: "日",
-      Month: "月",
-      Week: "周",
-      Year: "年",
-      TimeExpression: "时间表达式",
-      CronExpression: "Cron表达式",
-      Next5RunTime: "最近5次运行时间",
-      Waiting: "计算结果中..."
-    },
-    IconSelect: {
-      Placeholder: "请输入图标名称"
-    },
-    RightToolbar: {
-      Show: "显示",
-      Hide: "隐藏",
-      ShowOrHide: "显示/隐藏",
-      HideSearch: "隐藏搜索",
-      ShowSearch: "显示搜索",
-      ShowTableColumn: "显隐列",
-    },
-    Screenfull: {
-      UnSupported: "您的浏览器不支持全屏"
-    },
-    TopNav: {
-      MoreMenu: "更多菜单"
-    },
     Layout: {
-      Settings: {
-        ThemeStyle: '主题风格设置',
-        ThemeColor: '主题颜色',
-        SystemLayoutConfig: '系统布局配置',
-        EnableTopNav: '开启 TopNav',
-        EnableTagsViews: '开启 Tags-Views',
-        EnableFixedHeader: '固定 Header',
-        ShowLogo: '显示 Logo',
-        EnableDynamicTitle: '动态标题',
-      },
       Navbar: {
         Git: '源码地址',
         Doc: '文档地址',
         ThemeMode: '主题模式',
-        FullScreen: '全屏显示',
         LayoutSize: '布局大小',
         Language: '语言切换',
         ConfirmLogoutTip: '确定注销并退出系统吗？',
         PublishTask: "发布任务",
         ClearPublishTask: "清空发布任务"
       },
-      TagViews: {
-        RefreshPage: "刷新页面",
-        CloseCurrent: "关闭当前",
-        CloseOther: "关闭其他",
-        CloseLeft: "关闭左侧",
-        CloseRight: "关闭右侧",
-        CloseAll: "全部关闭"
-      }
     }
   },
   Home: {
@@ -322,10 +237,8 @@ const zhCN = {
   },
   System: {
     DeptScope: {
-      All: "全部机构",
       OnlyCurrent: "仅当前机构",
       Unassigned: "未分配机构",
-      ConfirmChange: "变更机构将自动解除 {0} 条不匹配的角色授权，是否继续？",
     },
     User: {
       UserId: "用户ID",
@@ -342,8 +255,6 @@ const zhCN = {
       Role: "角色",
       ResetPwd: "重置密码",
       RoleSetting: "分配角色",
-      Enable: "启用",
-      Disable: "禁用",
       InputNewPwd: '请输入"{0}"的新密码',
       ChangePwdSucc: '修改成功，新密码是：{0}',
       ImportResult: "导入结果",
@@ -354,7 +265,6 @@ const zhCN = {
       EditAvatar: '修改头像',
       UploadAvatar: '点击上传头像',
       SelectUser: "选择用户",
-      IsAllocatedRole: "已分配",
       LoginRedirectTip: "登录成功，正在跳转...",
       ChangeDept: "调动部门",
       ChangeDeptConfirmMsg: "变更所属部门后，将解除该用户的全部角色关联，保留直接授予用户的权限。确认调动吗？",
@@ -375,7 +285,6 @@ const zhCN = {
         Gender: "请选择用户性别",
         Status: "用户状态",
         Post: "请选择用户岗位",
-        Role: "请选择用户角色"
       }
     },
     UserPreference: {
@@ -385,12 +294,9 @@ const zhCN = {
       OpenContentEditorW: "内容编辑是否使用新窗口",
       ShowContentSubTitle: "默认显示内容副标题",
       CatalogTreeExpandMode: "栏目树展开模式",
-      CatalogTreeExpandMode_Normal: "普通模式",
       CatalogTreeExpandMode_Accordion: "手风琴模式",
     },
     UserRole: {
-      UserInfo: "用户信息",
-      Roles: "角色信息",
       AddUser: "添加用户",
       RemoveUser: "取消授权"
     },
@@ -401,17 +307,14 @@ const zhCN = {
       Sort: "显示顺序",
       Status: "状态",
       UserSetting: "分配用户",
-      MenuPerms: "菜单权限",
       PermissionSetting: "权限设置",
       Enable: "启用",
       Disable: "禁用",
       ConfirmChangeStatus: '确认要{0}"{1}"的角色吗？',
-      DataScope: "数据权限",
       ConfirmRemoveUser: "是否确认从角色用户列表移除选中用户？",
       Dialog: {
         Add: "添加角色信息",
         Edit: "修改角色信息",
-        DataScope: "分配数据权限"
       },
       Placeholder: {
         RoleName: "请输入角色名称",
@@ -423,7 +326,6 @@ const zhCN = {
       MenuPriv: "菜单权限",
       SitePriv: "站点权限",
       CatalogPriv: "栏目权限",
-      ContentPriv: "内容权限",
       PageWidgetPriv: "页面部件权限"
     },
     Menu: {
@@ -450,8 +352,6 @@ const zhCN = {
       RouterParamsTips: '访问路由的默认传递参数，如：`{\'{\'}"id": 1, "name": "chestnut"{\'}\'}`',
       IsCache: "是否缓存",
       IsCacheTips: "选择是则会被`keep-alive`缓存，需要匹配组件的`name`和地址保持一致",
-      EnableCache: "缓存",
-      DisableCache: "不缓存",
       Visible: "显示状态",
       VisibleTips: "择隐藏则路由将不会出现在侧边栏，但仍然可以访问",
       ConfirmDelete: '是否确认删除名称为"{0}"的数据项？',
@@ -461,7 +361,6 @@ const zhCN = {
       },
       Placeholder: {
         MenuName: "请输入菜单名称",
-        Status: "菜单状态",
         ParentMenu: "选择上级菜单",
         Icon: "点击选择图标",
         RouterLink: "请输入路由地址",
@@ -469,7 +368,6 @@ const zhCN = {
         Perms: "请输入权限字符",
         RouterParams: "请输入路由参数",
       },
-      Shortcut: "快捷方式"
     },
     Dept: {
       DeptName: "部门名称",
@@ -510,10 +408,8 @@ const zhCN = {
       }
     },
     Dict: {
-      DictId: "字典ID",
       DictName: "字典名称",
       DictType: "字典类型",
-      DictCode: "字典项编码",
       DictLabel: "字典项标签",
       DictValue: "字典项值",
       DictSort: "字典排序",
@@ -528,7 +424,6 @@ const zhCN = {
         Warning: "警告",
         Danger: "危险"
       },
-      Status: "状态",
       DataList: "字典数据",
       ConfirmDelete: '是否确认删除字典ID为"{0}"的数据项？',
       ConfirmDeleteDatas: '是否确认删除字典编码为"{0}"的数据项？',
@@ -541,21 +436,17 @@ const zhCN = {
       Placeholder: {
         DictName: "请输入字典名称",
         DictType: "请输入字典类型",
-        DictCode: "请输入字典项编码",
         DictLabel: "请输入字典项标签",
         DictValue: "请输入字典项值",
         CssClass: "请输入样式属性",
         ListClass: "请选择回显样式",
-        Status: "字典状态"
       }
     },
     Config: {
-      ConfigId: "参数ID",
       ConfigName: "参数名称",
       ConfigKey: "参数键名",
       ConfigValue: "参数键值",
       ConfigType: "固定配置",
-      ConfirmDelete: '是否确认删除参数ID为"{0}"的数据项？',
       Dialog: {
         Add: "添加参数配置",
         Edit: "修改参数配置"
@@ -564,7 +455,6 @@ const zhCN = {
         ConfigName: "请输入参数名称",
         ConfigKey: "请输入参数键名",
         ConfigValue: "请输入参数键值",
-        ConfigType: "固定配置",
       }
     },
     Notice: {
@@ -572,23 +462,13 @@ const zhCN = {
       NoticeType: "类型",
       NoticeContent: "内容",
       Status: "状态",
-      ConfirmDelete: '是否确认删除公告编号为"{0}"的数据项？',
       Dialog: {
         Add: "添加公告",
         Edit: "修改公告"
       }
     },
     I18n: {
-      LangTag: "语言标签",
-      LangKey: "国际化键名",
-      LangValue: "国际化键值",
       EditorTitle: "国际化【{0}】",
-      Refreshing: "正在刷新缓存...",
-      RefreshSuccess: "刷新缓存成功",
-      Dialog: {
-        Add: "添加国际化配置",
-        Edit: "修改国际化配置"
-      }
     },
     OpLog: {
       Title: "标题",
@@ -597,7 +477,6 @@ const zhCN = {
       ResponseCode: "响应状态",
       OpTime: "操作时间",
       Cost: "操作耗时",
-      LogId: "日志ID",
       RequestMethod: "请求方式",
       IP: "操作IP",
       Location: "操作地址",
@@ -612,25 +491,20 @@ const zhCN = {
       ConfirmClean: '是否确认清空所有操作日志数据项？'
     },
     LoginInfo: {
-      LogId: "日志ID",
       IP: "IP地址",
       UserType: '用户类型',
       UserId: "用户ID",
       UserName: "用户名",
       Status: "登录状态",
       LoginTime: "登录时间",
-      Unlock: "解锁",
       Location: "登录地点",
       Browser: "浏览器",
       OS: "操作系统",
       OpMsg: "操作信息",
-      ConfirmUnlock: '是否确认解锁用户：{0}？',
-      UnlockSuccess: '用户"{0}"解锁成功'
     },
     Security: {
       Basic: "基本信息",
       Name: "分类名称",
-      PasswordLength: "密码长度",
       PasswordRule: "密码组成规则",
       PasswordExpireSeconds: "密码过期时长（单位：秒）",
       PasswordRetryLimit: "每日密码错误次数阈值",
@@ -663,14 +537,6 @@ const zhCN = {
       CaptchaType: "密码登录验证码类型",
       CaptchaExpireSeconds: "验证码过期时长（单位：秒）",
       CaptchaRetryDuration: "验证码重试时长（单位：秒）",
-      BizConfigCard: "业务安全配置",
-      SecondaryVerifications: "需要二次验证的接口",
-      SecondaryVerificationsSearch: "按路径模糊搜索",
-      SecondaryVerificationsPlaceholder: "输入接口路径，如 /system/user/delete/**",
-      SecondaryVerificationPath: "接口路径",
-      SecondaryVerificationsTip: "支持 Ant 风格路径匹配，如 /system/** 或 /api/user/delete/{id}，每条为独立规则",
-      BizVerifyExpireSeconds: "二次验证有效期（单位：秒）",
-      CSP: "内容安全策略（CSP）",
       Tab: {
         SecurityConfig: "安全配置",
         LoginConfig: "第三方登录配置",
@@ -680,26 +546,9 @@ const zhCN = {
         Name: "名称",
         Type: "类型",
         Desc: "描述",
-        Image: "图片",
         Status: "状态",
         AddTitle: "添加第三方登录配置",
         EditTitle: "编辑第三方登录配置",
-        Wechat: {
-          AppId: "应用ID",
-          AppSecret: "应用密钥",
-          RedirectUri: "重定向URI",
-          Style: "字体颜色",
-          Href: "自定义样式链接",
-          Stylelite: "二维码样式",
-          FastLogin: "快速登录",
-          ColorScheme: "颜色主题",
-        },
-        Feishu: {
-          AppId: "应用ID",
-          AppSecret: "应用密钥",
-          Scope: "权限范围",
-          RedirectUri: "重定向URI",
-        }
       }
     },
     CloudConfig: {
@@ -725,54 +574,10 @@ const zhCN = {
     }
   },
   Monitor: {
-    Job: {
-      JobId: "任务ID",
-      JobName: "任务名称",
-      JobGroup: "任务分组",
-      Status: "状态",
-      InvokeTarget: "调用目标字符串",
-      CronExpression: "cron执行表达式",
-      CronGenerator: "Cron表达式生成器",
-      GenCron: "生成表达式",
-      Concurrent: "是否并发",
-      Allow: "允许",
-      Forbid: "禁止",
-      Enable: "启用",
-      Disable: "禁用",
-      MisfirePolicy: "执行策略",
-      DefaultPolicy: "默认策略",
-      RunNow: "立即执行",
-      RunOnce: "执行一次",
-      Manual: "手动执行",
-      Details: "任务详情",
-      BeanExample: "Bean调用示例：ryTask.ryParams('ry')",
-      ClassExample: "Class类调用示例：com.test.quartz.task.RyTask.ryParams('ry')",
-      ParamsTips: "参数说明：支持字符串，布尔类型，长整型，浮点型，整型",
-      NextRunTime: "下次执行时间",
-      ConfirmDelete: '确认要删除ID为"{0}"的任务吗？',
-      ConfirmChangeStatus: '确认要"{0}""{1}"任务吗？',
-      ConfirmRunOnce: '确认要立即执行一次"{0}"任务吗？',
-      Logs: "调度日志",
-      ExecTime: "执行时间",
-      JobLogId: "日志ID",
-      JobLogMessage: "日志信息",
-      LogDetails: "详情",
-      ExceptionInfo: "异常信息",
-      ConfirmClean: '是否确认清空所有调度日志数据项？',
-      Dialog: {
-        Add: "添加任务信息",
-        Edit: "修改任务信息",
-        Log: "调度日志详细",
-      },
-      Placeholder: {
-        InvokeTarget: "请输入调用目标字符串"
-      }
-    },
     ScheduledTask: {
       Type: "类型",
       Name: "名称",
       Status: "状态",
-      ReadyTime: "准备就绪时间",
       ExecOnce: "执行一次",
       Logs: "日志",
       TriggerType: "触发方式",
@@ -928,65 +733,6 @@ const zhCN = {
       ReadyTime: "任务就绪时间"
     }
   },
-  AI: {
-    Chat: {
-      Title: "AI 聊天",
-      Open: "打开 AI 聊天",
-      ExpandToolbar: "展开 AI 工具栏",
-      CollapseToolbar: "收起 AI 工具栏",
-      StatelessTip: "聊天记录仅保存在当前窗口，刷新后将被清空",
-      SelectModel: "请选择 AI 模型",
-      NewConversation: "新对话",
-      EmptyTitle: "开始与 AI 对话",
-      EmptyDescription: "选择一个已启用的模型，然后输入你的问题。当前版本不会在服务端保存聊天记录。",
-      NoModels: "暂无可用模型",
-      NoModelsTip: "请先在模型配置中新增并启用至少一个 AI 模型。",
-      InputPlaceholder: "请输入消息，Enter 发送，Shift + Enter 换行",
-      SendTip: "每次请求最多携带最近 20 条窗口会话消息",
-      Send: "发送",
-      Stop: "停止生成",
-      User: "你",
-      Assistant: "AI 助手",
-      Copy: "复制",
-      Copied: "回复已复制",
-      CopyFailed: "复制失败，请手动选择内容",
-      RequestFailed: "AI 聊天请求失败，请稍后重试",
-      InvalidStream: "AI 返回的数据流格式无效"
-    },
-    Model: {
-      Name: "配置名称",
-      ProviderType: "供应商类型",
-      BaseUrl: "服务地址",
-      ApiKey: "API Key",
-      ApiKeyStatus: "密钥状态",
-      ModelName: "模型名称",
-      Status: "状态",
-      IsDefault: "默认模型",
-      SupportsTools: "工具调用",
-      TimeoutSeconds: "超时时间",
-      SortFlag: "排序",
-      Test: "测试",
-      TestSuccess: "模型 API 连接测试成功",
-      TestFailed: "模型 API 连接测试失败，请检查服务地址、模型名称和 API Key",
-      Configured: "已配置",
-      NotConfigured: "未配置",
-      ApiKeyEditTip: "出于安全考虑不会回显已保存的 API Key，留空将保留原密钥。",
-      ConfirmDelete: "是否确认删除选中的 {0} 条模型配置？",
-      Dialog: {
-        Add: "新增 AI 模型配置",
-        Edit: "编辑 AI 模型配置"
-      },
-      Placeholder: {
-        Name: "请输入配置名称",
-        ProviderType: "请选择供应商类型",
-        BaseUrl: "请输入模型服务基础地址",
-        ApiKey: "请输入 API Key（可选）",
-        ApiKeyEdit: "留空则保留原 API Key",
-        ModelName: "请输入远端模型名称",
-        Status: "请选择状态"
-      }
-    }
-  },
   CMS: {
     Dashboard: {
       PublishStrategy: "发布策略",
@@ -994,16 +740,12 @@ const zhCN = {
     },
     ContentCore: {
       ContentType: "内容类型",
-      CatalogType: "栏目类型",
-      InternalDataType: "内部数据类型",
-      ResourceType: "资源类型",
       InternalUrl: "内部链接",
       SelectCatalog: "选择栏目",
       SelectContent: "选择内容",
       ToPublish: "待发布",
       Publish: "发布",
       Preview: "预览",
-      Browse: "浏览",
       ToPublishSuccess: "待发布成功",
       PublishSuccess: "发布成功",
       PublishProgressTitle: "发布任务",
@@ -1055,7 +797,6 @@ const zhCN = {
       VideoModifier: {
         DialogTitle: "视频信息",
         Cover: "封面",
-        UploadCover: "上传",
         FrameCover: "帧截图",
         FrameCoverSeconds: "视频截图时间点（单位：秒）",
         Screenshot: "截图",
@@ -1074,8 +815,6 @@ const zhCN = {
       BaiduMap: {
         DialogTitle: "百度地图",
         City: "城市",
-        Address: "地址",
-        DynamicMap: "插入动态地图",
         MarkerPosition: "标记位置",
         NoAccessKey: "缺少系统配置参数`BaiduMapAccessKey`。",
         GoSysConfig: "去配置"
@@ -1091,9 +830,17 @@ const zhCN = {
       SensitiveWordCheck: "敏感词校验",
       FallibleWordCheck: "易错词校验",
       NoSensitiveWord: "未发现敏感词",
-      NoFallibleWord: "未发现易错词"
+      NoFallibleWord: "未发现易错词",
+      WordCheck: '文字检查',
+      Xiumi: '秀米',
+      XiumiDialog: '秀米图文消息助手'
     },
     Site: {
+      ParentSite: "上级站点",
+      Move: "转移",
+      SortFlag: "排序值",
+      TopLevel: "顶级站点",
+      MoveParentPlaceholder: "留空表示设为顶级站点",
       SiteId: "站点ID",
       Name: "站点名称",
       Path: "站点目录",
@@ -1117,6 +864,8 @@ const zhCN = {
       GoAddPublishPipe: "去添加",
       ExModelCardTitle: "扩展模型属性",
       CurrentSelectorTitle: "切换当前站点",
+      NoAccessibleSite: "暂无可访问的站点",
+      InitializationFailed: "当前站点初始化失败，请重试",
       AlreayCurrentSite: "请选择非当前站点",
       ImportTheme: "导入主题",
       ExportTheme: "导出主题",
@@ -1148,7 +897,6 @@ const zhCN = {
         BasicCardTitle: "基础配置",
         EnableIndex: "是否开启索引",
         EnableSearchLog: "是否开启搜索日志",
-        WordAnalyzeType: "索引分词方式",
         TitleRepeatCheck: "标题查重",
         TitlteRepeatCheckNone: "不校验",
         TitlteRepeatCheckSite: "全站校验",
@@ -1163,7 +911,6 @@ const zhCN = {
         CatalogPageSizeTip: "小于等于0时取系统默认值：10",
         ContentConfCardTitle: "内容配置",
         AutoArticleLogo: "正文首图作为封面",
-        AutoArticleVersion: "自动保存文章版本",
         RecycleKeepDays: "回收站内容保留天数",
         RecycleKeepDaysTip: "永久保留填0",
         ResourceConfCardTitle: "素材库",
@@ -1198,8 +945,6 @@ const zhCN = {
         BaiduDomain: "百度统计域名",
         BaiduDomainTip: "多个域名使用英文逗号分隔",
         SiteApiUrl: "站点API地址前缀",
-        CustomFormCardTitle: "自定义表单配置",
-        EnableCustomFormCaptcha: "是否开启验证码",
         CommentCardTitle: " 评论配置",
         EnableComment: "是否开启评论",
         EnableCommentTip: "站点关闭评论后全站无法评论，开启后栏目、内容亦可独立配置是否开启评论。",
@@ -1214,17 +959,8 @@ const zhCN = {
         MemberResourceUrl: "会员资源访问域名",
         ShortTitleLabel: "短标题自定义表单名",
         SubTitleLabel: "副标题自定义表单名",
-        EnableStat: "开启站点访问统计",
-        EnableDynamicStatScript: "启用动态统计脚本",
-        EnableHyperLogLog: "启用HyperLogLog",
         CloudCardTitle: "云配置",
         CdnCloudConfig: "CDN云配置",
-        AutoRefreshCDN: "自动刷新CDN",
-        ContentPrivStrategy: "内容权限策略",
-        ContentPrivStrategyExtendCatalog: "继承栏目",
-        ContentPrivStrategyExtendSite: "继承站点",
-        ContentPrivStrategyValid: "需要校验",
-        ContentPrivStrategyIgnore: "不需要校验",
       },
       Property: {
         QueryPlaceholder: "输入名称/编码查询",
@@ -1242,15 +978,6 @@ const zhCN = {
         ContentDetail: "详情页模板",
         SelectCatalogFirst: "请先选择栏目",
         CustomForm: "自定义表单模板",
-        SearchResult: "搜索结果页模板",
-        AccountCentre: "个人中心页模板",
-        MemberLogin: "会员登录页模板",
-        MemberRegister: "会员注册页模板",
-        MemberForgetPwd: "忘记密码页模板",
-        MemberSetting: "会员信息设置页模板",
-        MemberBindEmail: "会员绑定邮箱页模板",
-        MemberResetPwd: "会员修改密码页模板",
-        MemberContribute: "会员文章投稿页模板",
       },
       Dashboard: {
         MissingSiteUrl: "站点域名未配置！",
@@ -1326,7 +1053,6 @@ const zhCN = {
         CatalogPageSize: "分页列表大小",
         CatalogPageSizeTip: "值为-1时取站点扩展配置值",
         EnableIndex: "是否启用索引",
-        EnableSearchLog: "是否开启搜索日志",
         CatalogExModel: "栏目扩展模型",
         ContentExModel: "内容扩展模型",
         ContentConfig: "内容配置",
@@ -1335,7 +1061,6 @@ const zhCN = {
         HotWordMaxReplaceCount: "替换数量限制",
         HotWordMaxReplaceCountTip: "每篇文章替换热词数量限制，0表示不限制数量。",
         EnableContribute: "是否允许投稿",
-        ContentWorkflow: "内容工作流"
       }
     },
     Content: {
@@ -1364,11 +1089,7 @@ const zhCN = {
       Hot: "热点",
       CancelHot: "取消热点",
       SEOConfig: "SEO配置",
-      ImportWord: "导入WORD",
-      UploadWord: "上传WORD文档",
-      SaveUploadWordFile: "保留上传的WORD文档",
       CopyType: "复制方式",
-      CopyId: "源ID",
       CopySite: "源站点",
       CopyCatalog: "源栏目",
       CopyContent: "源内容",
@@ -1396,7 +1117,6 @@ const zhCN = {
       StatusBefore: " 删除前状态",
       DeleteTime: "删除时间",
       DeleteUser: "删除人",
-      BackToList: "返回列表",
       Lock: "锁定",
       Unlock: "解锁",
       LinkFlag: "链接内容",
@@ -1417,7 +1137,6 @@ const zhCN = {
       SourceUrl: "来源地址",
       PublishDate: "发布时间",
       OfflineDate: "下线时间",
-      PublishPipe: "发布通道",
       StaticPath: "独立路径",
       Template: "独立模板",
       DeleteProgressTitle: "删除内容",
@@ -1432,61 +1151,14 @@ const zhCN = {
       ExtendConfig: "扩展配置",
       ExtendTemplate: "扩展模板",
       ExtendComment: "评论配置",
-      ContentPriv: "浏览权限",
       ViewCount: "浏览量",
       FavoriteCount: "收藏数",
       LikeCount: "点赞数",
       CommentCount: "评论数",
       RelaContent: "相关内容",
       PushToBaidu: "推送到百度",
-      PushToBaiduResult: "【{0}】成功 {1} 条，剩余 {2} 条。<br/>",
       ImportCSSTip: "应用站点/栏目发布通道设置的文章编辑器CSS",
       OpLog: "操作记录",
-      Version: "版本记录",
-      VersionNo: "版本编号",
-      Compare: "对比",
-      CompareToLatest: "与最新版本对比",
-      SaveNewVersion: "保存新版本",
-      LatestVersion: "最新版本",
-      VersionDiff: "版本对比",
-      Workflow: {
-        Title: "流程信息",
-        NoRecord: "暂无审批流程记录",
-        NoProgress: "暂无流转节点",
-        ProcessName: "流程名称",
-        Starter: "发起人",
-        StartTime: "发起时间",
-        EndTime: "结束时间",
-        Progress: "审批进度",
-        Assignee: "处理人",
-        CompletedAt: "完成时间",
-        Comment: "审批意见",
-        Running: "流转中",
-        Processing: "待处理",
-        Approved: "审批通过",
-        Rejected: "审批拒绝",
-        Revoked: "已撤销",
-        Revoke: "撤销审批",
-        RevokeConfirm: "撤销后内容将恢复为重新编辑状态，确认撤销当前审批流程吗？",
-        RevokeSuccess: "审批流程已撤销",
-        Urge: "催办",
-        Urged: "已催办",
-        UrgeConfirm: "确认催办当前审批流程吗？",
-        UrgeSuccess: "催办成功",
-        Submit: "提交审核",
-        SubmitDialogTitle: "提交内容审核",
-        SubmitTip: "提交后内容在审批完成或撤销前不可编辑，请确认审批通过后的动作。",
-        ActionAfterApproval: "审批通过后",
-        NoAction: "仅标记审批通过",
-        ToPublishAfterApproval: "自动设为待发布",
-        PublishAfterApproval: "自动发布",
-        SubmitSuccess: "内容已提交审核"
-      },
-      VersionDiffTip: {
-        Replace: "替换",
-        Add: "新增",
-        Remove: "删除"
-      }
     },
     ContentOpLog: {
       Type: "操作类型",
@@ -1497,18 +1169,6 @@ const zhCN = {
     },
     Article: {
       Format: "文档格式",
-      Markdown: {
-        Placeholder: "输入内容...",
-        InsertLink: "插入链接",
-        InsertCatalog: "插入栏目链接",
-        InsertContent: "插入内容链接",
-        UploadImage: "上传图片",
-        UploadVideo: "上传视频",
-        UploadAudio: "上传音频",
-        UploadFile: "上传文件",
-        ImageText: "图片描述",
-        ImageLink: "图片链接",
-      }
     },
     Image: {
       Title: "标题",
@@ -1565,42 +1225,6 @@ const zhCN = {
       SetLogo: "设为视频集封面",
       TimePoint: "时间点（单位：秒）"
     },
-    FileContent: {
-      Preview: "预览",
-      Intro: "文件介绍"
-    },
-    Book: {
-      Basic: "图书信息",
-      PublicationDate: "出版时间",
-      Publisher: "出版社",
-      NumberOfPages: "页数",
-      NumberOfWords: "字数",
-      Producer: "出品方",
-      OriginalTitle: "原著名",
-      Translators: "译者",
-      Price: "价格",
-      CurrencyFen: "分",
-      Completed: "是否完结",
-      Intro: "介绍",
-      ChapterList: "章节列表",
-      InputChapterTitle: "输入章节标题",
-      SortAsc: "顺序",
-      SortDesc: "倒序",
-      PublishDate: "发布时间",
-      PublishImmediately: "立即发布",
-      ChapterTitle: "章节标题",
-      Publish: "发布",
-      ToPublish: "定时发布",
-      Offline: "下线",
-      ToPublishDialogTitle: "定时发布",
-      PublishSuccess: "发布成功",
-      OfflineSuccess: "下线成功",
-      ToPublishSuccess: "定时发布成功",
-      CloseChapterEditorTip: "章节数据未保存，确认关闭吗？",
-      Route: {
-        EditChapter: "编辑章节"
-      }
-    },
     PageWidget: {
       Type: "类型",
       Name: "名称",
@@ -1648,18 +1272,20 @@ const zhCN = {
     },
     Resource: {
       Name: "资源名称",
+      NameOrId: "资源名称或ID",
       Type: "类型",
-      StorageType: "存储类型",
       FileSize: "大小",
+      MinFileSize: "最小值",
+      MaxFileSize: "最大值",
+      FileSizeUnit: "文件大小单位",
+      InvalidFileSizeRange: "最小文件大小不能大于最大文件大小",
       UploadResource: "上传资源",
       UploadTip1: "将文件拖到此处，或点击上传",
-      UploadTip2: "可上传文件类型：{0}",
+      UploadTip2: "只能上传 {0} 文件，且不超过 {1}",
       Accept: "支持文件类型：{0}",
       AcceptSize: "支持文件大小：{0}",
       AddDialogTitle: "添加资源",
       EditDialogTitle: "编辑资源",
-      PreviewTitle: "资源预览",
-      FileTypeErrMsg: "文件格式错误，请上传图片类型,如：.jpg，.png后缀的文件。",
       SelectorTitle: "素材库",
       LocalUpload: "本地上传",
       RemoteLink: "网络链接",
@@ -1673,12 +1299,6 @@ const zhCN = {
       UploadLimit: "上传文件数量不能超过：{0}",
       UploadFileSizeLimit: "上传文件大小不能超过：{0}",
       RemoteLinkErr: "资源外链不能为空且必须是http://或https://开头的网络地址",
-      UploadSuccess: "上传成功",
-      UploadFail: "上传失败",
-      Uploading: "上传中...",
-      Md5ing: "计算MD5中...",
-      Paused: "暂停中...",
-      Waiting: "等待中..."
     },
     PublishPipe: {
       Name: "名称",
@@ -1753,8 +1373,6 @@ const zhCN = {
       RequestArgs: "请求参数",
       DefaultValue: "默认值",
       CustomDynamicTemplate: "自定义动态模板",
-      DocGen: "生成文档",
-      DocGenLang: "语言",
       CustomDynamicPage: {
         Name: "名称",
         Code: "编码",
@@ -1772,23 +1390,9 @@ const zhCN = {
       AddTitle: "新建模型",
       EditTitle: "编辑模型",
       Fields: "编辑字段",
-      GoBack: "返回模型列表",
-      FieldName: "名称",
-      FieldCode: "编码",
-      FieldType: "字段类型",
-      FieldControlType: "控件类型",
-      FieldMappingName: "数据表字段",
-      FieldMandatory: "是否必填",
-      FieldDefaultValue: "默认值",
-      FieldOptions: "可选配置",
-      FieldOptionsInput: "手动输入",
-      FieldOptionsDict: "字典数据",
-      AddFieldTitle: "添加模型字段",
-      EditFieldTitle: "编辑模型字段",
       RouteExModelField: "扩展模型字段",
       Placeholder: {
         Query: "输入模型名称/编码查询",
-        FieldQuery: "字段名称/编码查询"
       }
     },
     FriendLink: {
@@ -1796,13 +1400,11 @@ const zhCN = {
       GroupCode: "分组编码",
       AddTitle: "添加友情链接分组",
       EditTitle: "编辑友情链接分组",
-      GoBack: "返回",
       LinkName: "名称",
       LinkUrl: "链接",
       SortFlag: "排序",
       AddLinkTitle: "添加友情链接",
       EditLinkTitle: "编辑友情链接",
-      RouteLinkList: "友链列表",
       Placeholder: {
         GroupQuery: "输入分组名称/编码",
         LinkQuery: "输入友链名称/链接查询"
@@ -1832,91 +1434,124 @@ const zhCN = {
       RouteFieldList: "自定义表单字段",
       Fields: "表单字段",
       RouteData: "自定义表单数据",
-      AddDataTitle: "添加表单数据",
       EditDataTitle: "编辑表单数据",
       DataList: "表单数据"
     },
-    StatPro: {
-      PV: "浏览量（PV）",
-      UV: "访客量（UV）",
-      IP: "IP数",
-      AvgVisitTime: "平均访问时长",
-      Rate: "占比",
-      PVRate: "PV占比",
-      UVRate: "UV占比",
-      IPRate: "IP占比",
-      Hour: "小时",
-      Day: "按天",
-      Week: "按周",
-      Month: "按月",
-      OS: "操作系统",
-      Browser: "浏览器",
-      DisplaySize: "屏幕分辨率",
-      ColorDepth: "屏幕色深",
-      NetworkOp: "网络运营商",
-      Lang: "语言",
-      SupportedCookie: "是否支持Cookie",
-      SupportedJava: "是否支持Java",
-      VisitorType: "访客类型",
-      NewVisitor: "新访客",
-      OldVisitor: "老访客",
-      Date: "日期",
-      Time: "时间",
-      EventType: "事件类型",
-      UUID: "访客标识",
-      VisitTrend: "访问趋势",
-      NewVisitorNum: "新访客数",
-      NewVisitorPV: "新访客PV",
-      NewVisitorVT: "新访客平均访问时长",
-      OldVisitorNum: "老访客数",
-      OldVisitorPV: "老访客PV",
-      OldVisitorVT: "老访客平均访问时长",
-      Placeholder: {
-        IP: "输入IP查询",
-        UUID: "输入用户标识查询",
-      },
-      Region: {
-        Name: "地域",
-        Country: "国家",
-        Province: "省份",
-        ByProvince: "按省",
-        ByCountry: "按国家",
-        MapChart: "地域分布图",
-        District: "地区"
-      },
-      Source: {
-        Type: "来源类型",
-        Flag: "来源标识",
-      }
-    },
-    SiteEvent: {
-      Type: "类型",
-      Name: "名称",
-      Desc: "描述",
-      StartTime: "开始时间",
-      EndTime: "结束时间",
-      Status: "状态",
-      Enable: "启用",
-      Disable: "停用",
-      Publish: "发布",
-      AddTitle: "新建站点事件",
-      EditTitle: "编辑站点事件"
-    },
-    ImageCropper: {
-      Crop: "图片裁剪",
-      Rotate: "旋转缩放",
-      RotateLeft: "左转90°",
-      RotateRight: "右转90°",
-      FlipX: "水平翻转",
-      FlipY: "垂直翻转",
-      ZoomIn: "放大10%",
-      ZoomOut: "缩小10%",
-      Apply: "应用",
-      OriginalRatio: "原比例",
-      Width: "宽",
-      Height: "高",
-      FixedAspectRatio: "固定宽高",
+    ImageOptimizer: {
+      Title: "图片优化",
+      Crop: "裁剪",
+      Rotate90: "旋转90度",
+      FlipHorizontal: "水平翻转",
+      FlipVertical: "垂直翻转",
+      OutputSize: "输出尺寸",
+      OutputFormat: "输出格式",
+      Compression: "压缩",
+      AnimatedFormatHint: "动图保留 GIF 格式，以保留所有帧。",
+      JpegTransparencyHint: "JPEG 会将透明区域填充为白色。",
+      EnableCrop: "启用裁剪",
+      Width: "宽度",
+      Height: "高度",
+      Ratio: "比例",
+      FreeRatio: "自由比例",
+      OriginalRatio: "原图比例",
       PresetSize: "预设尺寸",
+      NoPreset: "自定义",
+      Pixels: "像素",
+      Percentage: "百分比",
+      Strategy: "压缩策略",
+      Quality: "画质",
+      QualityVeryLow: "极低",
+      QualityLow: "低",
+      QualityMedium: "中",
+      QualityHigh: "高",
+      QualityVeryHigh: "极高",
+      QualityLossless: "无损",
+      EffortFaster: "快速",
+      EffortFast: "较快",
+      EffortBalanced: "均衡",
+      EffortStrong: "更强",
+      EffortExtreme: "极致",
+      QualityHint: "画质越高，通常越清晰、体积越大。",
+      PaletteQualityHint: "五档画质分别使用 32 / 64 / 128 / 192 / 256 色上限；当前最多 {colors} 色，透明色占用一个名额。",
+      LosslessQualityHint: "保持像素无损，文件不一定会更小。",
+      EffortHint: "更强策略会投入更多编码时间，尝试减小文件体积。",
+      EffortUnavailable: "此格式使用固定编码策略，可通过画质和输出尺寸调整。",
+      LosslessUnavailable: "此格式不支持无损画质。",
+      Colors: "颜色数量",
+      Dither: "抖动",
+      Recommended: "恢复推荐设置",
+      Reset: "重置",
+      Process: "开始处理",
+      Cancel: "取消处理",
+      Download: "下载",
+      DownloadOriginal: "下载原图",
+      OriginalRetained: "未获得更小文件，已保留原图。",
+      OriginalRetainedHint: "原图未发生变化，无需另存或覆盖资源。",
+      SaveCopy: "另存为资源",
+      Replace: "覆盖原资源",
+      Original: "原图",
+      Result: "处理结果",
+      Compare: "滑动对比",
+      Fit: "适应窗口",
+      ActualSize: "原始比例",
+      ZoomIn: "放大",
+      ZoomOut: "缩小",
+      Play: "播放",
+      Pause: "暂停",
+      Loading: "正在读取原图…",
+      Pending: "参数已变更，请重新处理",
+      Ready: "处理完成",
+      Empty: "配置参数后，点击开始处理查看效果",
+      Error: "处理失败",
+      Retry: "重试",
+      Format: "格式",
+      Size: "文件大小",
+      Dimensions: "尺寸",
+      Saving: "正在保存…",
+      SaveSuccess: "资源保存成功",
+      ReplaceConfirm: "覆盖原资源会影响所有引用此资源的内容，确定继续吗？",
+      CopySuffix: "（优化）",
+      FileSuffix: "-优化",
+      CopyName: "资源名称",
+      SaveUnavailable: "当前资源库暂不支持保存 AVIF / JPEG XL，请下载处理结果。",
+      SaveFormatUnavailable: "当前资源配置不允许保存此格式，请下载处理结果。",
+      ReplaceFormatUnavailable: "覆盖会改变文件后缀并导致原有链接失效，请另存为资源。",
+      ServerNotice: "保存到资源库后，服务器仍会按现有配置处理水印和缩略图，保存后的效果可能与本地预览不同。",
+      ReadFailed: "无法读取原文件，请检查文件是否存在、访问权限及外部图片的跨域设置。",
+      UnsupportedAnimation: "暂不支持此格式的动画处理，请使用 GIF，以免丢失动画。",
+      UnsupportedFormat: "暂不支持此图片格式。",
+      InvalidImage: "图片无效或解码失败。",
+      InvalidDimensions: "请输入有效尺寸，且不得超过裁剪区域或原图尺寸。",
+      ProcessFailed: "图片处理失败，请调整参数后重试。",
+      StaleResult: "当前结果尚未应用最新参数，请重新处理后保存。",
+      SizeLimit: "处理结果超出资源上传大小限制：{size}",
+      NoReduction: "处理后体积未减小，可调整尺寸、画质或压缩策略后重试。",
+      SizeIncreased: "体积增加",
+      StageDecode: "解码与方向校正",
+      StageCrop: "裁剪图片",
+      StageResize: "调整尺寸",
+      StageQuantize: "优化调色板",
+      StageEncode: "编码压缩",
+      StagePreview: "生成预览",
+      StageDownload: "读取原文件",
+      Standard: "标准",
+      Progressive: "渐进式",
+      Lossless: "无损优化",
+      Palette: "调色板压缩",
+      Lossy: "有损压缩",
+      NearLossless: "近无损",
+      Faithful: "保真优先",
+      Reduction: "体积变化",
+      Elapsed: "耗时 {seconds} 秒",
+      PercentHint: "百分比以当前裁剪区域为基准，最大 100%。",
+      CropHint: "拖动选框或输入宽高设置裁剪区域。",
+      LocalProcessing: "图片在浏览器中处理，保存前不会上传。",
+      AnimationNotice: "GIF 保留完整动画、帧时长和循环设置。",
+      Frames: "帧数",
+      Percent: "%",
+      Off: "关闭",
+      On: "开启",
+      Close: "关闭"
     }
   },
   WordMgr: {
@@ -1946,7 +1581,6 @@ const zhCN = {
     },
     HotWord: {
       AddGroup: "新增分组",
-      ParentGroup: "上级分组",
       GroupName: "分组名称",
       GroupCode: "分组编码",
       AddGroupTitle: "新增热词分组",
@@ -2013,7 +1647,6 @@ const zhCN = {
       NewVisitor: "新访客",
       OldVisitor: "老访客",
       VisitSource: "访问来源",
-      EngineSource: "搜索引擎来源",
       SearchWordSource: "搜索词来源",
       SearchWord: "搜索词",
       SelectSite: "选择百度统计站点",
@@ -2055,7 +1688,6 @@ const zhCN = {
   Vote: {
     Title: "标题",
     Code: "编码",
-    CodeTip: "只能使用大小写字母、数字和下划线组合",
     Status: "状态",
     TimeRange: "时间",
     Total: "参与数",
@@ -2084,7 +1716,6 @@ const zhCN = {
       DataName: "数据名称",
       LikeLogs: "点赞日志",
       SignInLogs: "签到日志",
-      LogId: "日志ID",
       DataId: "数据ID",
       LikeTime: "点赞时间",
       SignInDate: "签到日期",
@@ -2145,10 +1776,6 @@ const zhCN = {
     RestPwdSuccess: "修改成功，新密码是：{0}",
     AddTitle: "添加会员",
     EditTitle: "编辑会员",
-    AuthContentPriv: "权限配置",
-    Permission: {
-      ContentPriv: "内容浏览权限"
-    },
     LevelType: "积分类型",
     Level: {
       Type: "类型",
@@ -2166,30 +1793,12 @@ const zhCN = {
     AddExpOpTitle: "添加经验配置",
     EditExpOpTitle: "编辑经验配置",
     RuleTips: {
-      UserName: "必须以字母开头，且只能为（大小写字母，数字，下滑线）",
       Member: "用户名/手机号/Email不能全为空"
     },
     Selector: {
       Title: "选择会员",
       MemberList: "会员列表",
       SelectedMemberList: "已选会员"
-    },
-    Role: {
-      RoleId: "角色ID",
-      RoleName: "角色名称",
-      RoleKey: "角色标识码",
-      Sort: "排序",
-      AddTitle: "添加会员角色",
-      EditTitle: "编辑会员角色",
-      UserSetting: "会员设置",
-      AuthContentPriv: "授权",
-      ConfirmRemoveMember: "确认取消授权？",
-      AddMember: "添加会员",
-      RemoveMember: "取消授权",
-      Placeholder: {
-        RoleName: "请输入角色名称",
-        RoleKey: "请输入角色标识码"
-      }
     },
     Config: {
       Title: "会员配置",
@@ -2207,7 +1816,6 @@ const zhCN = {
     FieldType: "字段类型",
     FieldControlType: "控件类型",
     FieldMappingName: "数据表字段",
-    FieldMandatory: "是否必填",
     FieldDefaultValue: "默认值",
     FieldOptions: "可选配置",
     FieldOptionsInput: "手动输入",
@@ -2242,7 +1850,6 @@ const zhCN = {
       WordPlaceholder: "每行一个",
       Type: "类型",
       AddTitle: "添加字典新词",
-      EditTitle: "编辑字典词",
       WordAnalyzeTitle: "分词测试",
       WordAnalyzePlaceholder: "输入需要测试的文字",
       WordAnalyzeTest: "测试",
@@ -2257,9 +1864,6 @@ const zhCN = {
       Source: "来源",
       ClientType: "客户端",
       LogTime: "搜索时间",
-      Placeholder: {
-        Word: "输入搜索词查询"
-      }
     },
     WordStat: {
       TabName: "搜索词",
@@ -2268,7 +1872,6 @@ const zhCN = {
       Topping: "置顶",
       CancelTop: "取消置顶",
       TopEndTime: "置顶结束时间",
-      Source: "来源",
       Trend: "趋势",
       AddExtWord: "添加到扩展词",
       AddStopWord: "添加到停用词",
@@ -2290,45 +1893,18 @@ const zhCN = {
       RateLimitInvalid: "秒数和次数须为不超过 2147483647 的正整数，窗口不可重复。",
       Name: "名称",
       Type: "类型",
-      Status: "状态",
-      ConfigJson: "配置详情",
       AddTitle: "添加消息配置",
       EditTitle: "编辑消息配置",
       SelectorTitle: "选择消息配置",
       TestSend: "测试发送",
-      Placehoder: {
-        Query: "输入名称"
-      },
       TestTitle: "测试标题",
       TestContent: "测试内容",
       SMS: {
         TestPhone: "测试手机号",
-        TestTemplateId: "测试模板ID",
         TestTemplateParams: "测试模板参数",
-        Tencent: {
-          SecretId: "SecretId",
-          SecretKey: "SecretKey",
-          SdkAppId: "SdkAppId",
-          SignName: "SignName",
-          Region: "Region"
-        }
       },
       Email: {
-        Host: "主机",
-        Port: "端口",
-        Secure: "安全",
-        User: "用户",
-        Password: "密码",
-        From: "发件人",
         TestTo: "测试收件人",
-      },
-      DingTalk: {
-        Webhook: "Webhook",
-        Secret: "Secret",
-      },
-      Feishu: {
-        Webhook: "Webhook",
-        Secret: "Secret",
       },
     },
     Template: {
@@ -2336,7 +1912,6 @@ const zhCN = {
       Name: "模板名称",
       Title: "消息标题",
       Content: "消息内容",
-      SmsCodeTip: "短信登录验证码变量名为 Code，请与短信平台模板中的变量名保持一致",
       Variables: "可用变量",
       VariableUsage: "使用 {syntax} 引用变量，变量名区分大小写；发送时会替换为对应值。",
       VariableScope: "可用变量由发送业务或消息事件的参数决定，请只使用当前场景提供的变量。",
@@ -2360,7 +1935,6 @@ const zhCN = {
       Status: "状态",
       NotifyConfig: "通知配置",
       Template: "模板",
-      SMSTemplateId: "短信模板ID",
       AddTitle: "添加事件",
       EditTitle: "编辑事件",
       TestEventParams: "测试事件参数",
@@ -2375,413 +1949,134 @@ const zhCN = {
       }
     }
   },
-  Flowable: {
-    Category: {
-      TreeRoot: "流程分类",
-      AddCategory: "添加分类",
-      CategoryNamePlaceholder: "输入分类名称",
-      SortUp: "上移",
-      SortDown: "下移",
-      ParentCategory: "父级分类",
-      Name: "名称",
-      OrderNum: "排序标识",
-      AddTitle: "添加流程分类",
-      EditTitle: "编辑流程分类",
-      DeleteConfirm: "是否确认删除流程分类“{0}”？",
-      DeleteHasChildren: "该分类下存在子分类，请先删除子分类",
-      TreeRootName: "模型分类",
-    },
-    Model: {
-      Key: "唯一标识",
-      Name: "名称",
-      Version: "版本",
-      Status: "状态",
-      Design: "设计",
-      Suspend: "挂起",
-      Resume: "恢复",
-      Category: "所属分类",
-      AddModelTitle: "新建模型",
-      DesignTitle: "流程设计",
-      Placeholder: {
-        ModelKey: "输入模型标识",
-        ModelName: "输入模型名称"
-      }
-    },
-    Template: {
-      Name: "流程模板",
-      Fixed: "系统固定模板",
-      Custom: "自定义模板",
-      AddByTemplate: "按模板新增",
-      Convert: "转存为模板",
-      CreateProcess: "创建流程"
-    },
-    History: {
-      Title: "流转历史",
-      Empty: "暂无流转节点",
-      StartNode: "流程开始",
-      EndNode: "流程已结束",
-      Starter: "发起人",
-      Assignee: "处理人",
-      PendingAssignee: "待处理人",
-      CcUsers: "抄送人",
-      CopiedAt: "抄送时间",
-      CcCompleted: "已抄送",
-      UserNotFound: "错误：人员不存在",
-      Role: "角色",
-      Dept: "部门",
-      CompletedAt: "完成时间",
-      Comment: "审批意见"
-    },
-    Comment: {
-      Title: "流程评论",
-      Empty: "暂无评论",
-      Placeholder: "请输入评论内容",
-      Submit: "提交评论",
-      Required: "评论内容不能为空",
-      Success: "评论发表成功"
-    },
-    Action: {
-      Revoke: "撤销",
-      RevokeConfirm: "确认撤销当前流程吗？",
-      RevokeSuccess: "流程已撤销",
-      Urge: "催办",
-      UrgeConfirm: "确认催办当前流程吗？",
-      UrgeSuccess: "催办成功",
-      AdminCancel: "强制撤销",
-      AdminCancelConfirm: "确认强制撤销该流程吗？此操作不受流程撤销配置限制。",
-      AdminCancelSuccess: "流程已强制撤销"
-    },
-    Dashboard: {
-      TodoTitle: "待处理任务",
-      ViewAll: "去处理",
-      Empty: "暂无待处理任务",
-      TaskName: "任务名称",
-      ProcessName: "流程名称",
-      Starter: "发起人",
-      ArrivedAt: "到达时间"
-    }
-  },
   GroovyScript: {
     Exec: "执行",
     SaveScript: "保存脚本",
     Name: "名称"
   },
-  Deploy: {
-    Domain: {
-      Management: "域名管理",
-      CertList: "证书列表",
-      ApplyCert: "申请证书",
-      ApplyCertTitle: "申请SSL证书",
-      CertName: "证书名称",
-      ApplyLog: "申请日志",
-      NoApplyLog: "暂无日志",
-      CertHolder: "证书持有者",
-      ScanLog: "扫描日志",
-      Scan: "扫描",
-      HostRecord: "主机记录",
-      HostRecordPlaceholder: "如 * 表示泛域名，www 表示 www 子域名",
-      RecordValue: "记录值",
-      RecordType: "记录类型",
-      Result: "结果",
-      FailReason: "失败原因",
-      ExpireTime: "过期时间",
-      AddDomain: "添加域名",
-      EditDomain: "编辑域名",
-      Domain: "域名",
-      DomainPlaceholder: "请输入主域名，如 example.com",
-      CloudConfig: "云账号配置",
-      CloudConfigPlaceholder: "请选择云账号配置",
-      CloudConfigHint: "用于自动写入 ACME DNS-01 TXT 验证记录",
-      AssociatedDomain: "关联域名",
-      AddCert: "添加证书",
-      EditCert: "编辑证书",
-      CertStandard: "证书标准",
-      InternationalStandard: "国际标准",
-      SM2Standard: "国密 SM2",
-      CertContent: "证书内容",
-      PrivateKeyContent: "私钥内容",
-      EncryptedCertificate: "加密证书",
-      EncryptedPrivateKey: "加密私钥",
-      CertContentAndPrivateKeyUploaded: "证书内容和私钥上传后不再回显，也不可编辑。",
-      Issuer: "证书颁发机构",
-      Country: "国家",
-      State: "省/州",
-      City: "城市",
-      Organization: "组织",
-      AddHolder: "添加持有者",
-      EditHolder: "编辑持有者",
-      HolderType: "持有者类型",
-      MarkManualSuccess: "已人工处理",
-      LastSyncResult: "上次更新结果",
-      ServerHost: "服务器主机",
-      ServerPort: "服务器端口",
-      ServerUser: "服务器用户",
-      LoginPrivateKey: "登录私钥",
-      LoginPrivateKeyPlaceholder: "仅支持输入私钥内容，保存后编辑时回显 ******",
-      PrivateKeyPassword: "私钥密码",
-      PrivateKeyPasswordPlaceholder: "请输入私钥密码",
-      LoginPassword: "登录密码",
-      LoginPasswordPlaceholder: "请输入登录密码",
-      CertificateFilePath: "证书文件路径",
-      CertificateFilePathPlaceholder: "请输入证书文件路径",
-      PrivateKeyFilePath: "私钥文件路径",
-      PrivateKeyFilePathPlaceholder: "请输入私钥文件路径",
-      DifyDockerDir: "Dify Docker目录",
-      DifyDockerDirPlaceholder: "请输入Dify Docker目录",
-      SecretId: "SecretId",
-      SecretKey: "SecretKey",
-      OldCertificateId: "旧证书ID",
-      ResourceType: "资源类型",
-      ResourceTypeRegion: "资源类型区域",
-      AccessKeyId: "AccessKeyId",
-      AccessKeySecret: "AccessKeySecret",
-      TencentCloudSsl: {
-        AddResourceType: "添加资源类型",
-        ConfigJsonTip: "用于生成腾讯云 SSL 资源类型与地域配置 JSON",
-        EmptyResourceConfig: "暂无资源类型配置",
-        Regions: "地域",
-        AddRegion: "添加地域",
-        ResourceTypePlaceholder: "如 clb、cos",
-        RegionPlaceholder: "如 ap-guangzhou",
-        ResourceTypes: {
-          Clb: "负载均衡 CLB",
-          Cos: "对象存储 COS",
-          Waf: "Web 应用防火墙 WAF",
-          Apigateway: "API 网关 APIGW",
-        },
-      },
-    },
-    NginxConfig: {
-      Name: "名称",
-      Code: "编码",
-      Type: "类型",
-      ConfigText: "自定义配置",
-      Status: "状态",
-      Sync: "同步配置",
-      ConfirmSync: "确认将配置`{0}`同步到关联服务器节点吗？",
-      NginxNode: "部署节点",
-      AddTitle: "添加配置",
-      EditTitle: "编辑配置信息",
-    }
+  MemberSubscribeService: {
+    Title: '订阅服务项',
+    Add: '新增订阅服务项',
+    Edit: '编辑订阅服务项',
+    Type: '服务项类型',
+    BuiltIn: '系统内置',
+    Custom: '自定义',
+    BuiltInItem: '系统内置服务项',
+    SelectBuiltIn: '请选择系统内置服务项',
+    Id: '服务项ID',
+    Name: '服务项名称',
+    Keyword: '请输入服务项ID或名称',
+    IdRule: '服务项ID必填，限1～100位大小写字母、数字或下划线。',
+    SelectServices: '请选择服务项，可输入ID或名称查询',
+    SelectionLimit: '最多选择100个服务项。',
+    ConfirmDelete: '确定删除订阅服务项“{0}”吗？已被订阅定义引用的服务项不能删除。'
   },
-  Workflow: {
-    Definition: {
-      Code: '流程编码',
-      Name: '流程名称',
-      Description: '流程描述',
-      Status: '状态',
-      Version: '版本',
-      Versions: '版本列表',
-      VersionId: '版本ID',
-      VersionList: '版本列表',
-      Publish: '发布',
-      Disable: '停用',
-      Enable: '启用',
-      PublishTime: '发布时间',
-      Remark: '备注',
-      Designer: '流程设计器',
-      Placeholder: {
-        Code: '请输入流程编码',
-        Name: '请输入流程名称',
-        Description: '请输入流程描述'
-      }
-    },
-    Instance: {
-      InstanceId: '实例ID',
-      Title: '流程标题',
-      BusinessKey: '业务关联键',
-      Status: '状态',
-      StartUser: '发起人',
-      StartTime: '发起时间',
-      EndTime: '结束时间',
-      Remark: '备注',
-      Detail: '流程详情',
-      Variables: '流程变量',
-      VariableName: '变量名',
-      VariableValue: '变量值',
-      TaskHistory: '任务历史',
-      Suspend: '挂起',
-      Resume: '恢复',
-      Terminate: '终止',
-      TerminateReason: '终止原因',
-      Reason: '原因',
-      Placeholder: {
-        Reason: '请输入原因'
-      }
-    },
-    Task: {
-      TaskId: '任务ID',
-      TaskName: '任务名称',
-      Description: '任务描述',
-      Assignee: '处理人',
-      Status: '状态',
-      Priority: '优先级',
-      DueDate: '到期时间',
-      ClaimTime: '认领时间',
-      CompleteTime: '完成时间',
-      Comment: '审批意见',
-      Candidates: '候选信息',
-      CandidateUsers: '候选用户',
-      CandidateGroups: '候选用户组',
-      Detail: '任务详情',
-      Claim: '认领',
-      Complete: '完成',
-      Transfer: '转办',
-      Delegate: '委派',
-      Reject: '退回',
-      TargetUser: '目标用户',
-      TargetNode: '目标节点',
-      RejectReason: '退回原因',
-      Placeholder: {
-        Comment: '请输入审批意见',
-        TargetUser: '请输入目标用户ID',
-        TargetNode: '请输入目标节点ID',
-        RejectReason: '请输入退回原因'
-      }
-    },
-    MyProcess: {
-      StartNew: '发起新流程',
-      ProcessDef: '流程定义',
-      Cancel: '取消流程',
-      CancelReason: '取消原因',
-      Start: '发起',
-      Placeholder: {
-        ProcessDef: '请选择流程定义',
-        BusinessKey: '请输入业务关联键',
-        Title: '请输入流程标题'
-      }
-    },
-    Status: {
-      Pending: '待审批',
-      Approved: '已通过',
-      Rejected: '已拒绝',
-      Canceled: '已撤销',
-      Completed: '已完成',
-      Failed: '失败'
-    },
-    Config: {
-      ConfigId: '配置ID',
-      ConfigName: '配置名称',
-      HandlerId: '处理器',
-      WorkflowType: '引擎类型',
-      ProcessDefId: '流程定义',
-      RequestUri: '请求URI',
-      RequestMethod: '请求方法',
-      Status: '状态',
-      Dialog: {
-        Add: '新增流程配置',
-        Edit: '修改流程配置'
-      },
-      Placeholder: {
-        ConfigName: '请输入配置名称',
-        HandlerId: '请选择处理器',
-        WorkflowType: '请选择引擎类型',
-        ProcessDefId: '请选择流程定义',
-        RequestUri: '请输入请求URI',
-        RequestMethod: '请选择请求方法',
-        Status: '请选择状态'
-      },
-      ConfirmDelete: '是否确认删除配置名称为"{0}"的流程配置？'
-    },
-    Record: {
-      RecordId: '记录ID',
-      ConfigId: '配置ID',
-      HandlerId: '处理器',
-      WorkflowType: '引擎类型',
-      ProcessDefId: '流程定义ID',
-      EngineInstanceId: '引擎实例ID',
-      Title: '流程标题',
-      RequestUri: '请求URI',
-      RequestMethod: '请求方法',
-      RequestData: '请求数据',
-      OperatorId: '操作人ID',
-      OperatorName: '提交人',
-      OperatorDeptId: '操作人部门',
-      OperatorJson: '操作人信息',
-      Status: '状态',
-      SubmitTime: '提交时间',
-      FinishTime: '完成时间',
-      FailReason: '失败原因',
-      CompleteResult: '执行结果',
-      Detail: '流程记录详情',
-      Cancel: '撤销',
-      CancelSuccess: '撤销成功',
-      OnlyMine: '仅我的',
-      ConfirmCancel: '是否确认撤销流程"{0}"？',
-      Placeholder: {
-        Status: '请选择状态',
-        HandlerId: '请选择处理器'
-      }
-    }
-  },
-  CmsContentPriv: {
-    Saving: '保存中...',
-    Title: '内容浏览权限',
+  MemberSubscription: {
+    DefinitionId: '订阅定义ID',
+    DefinitionTitle: '订阅定义',
+    Name: '订阅名称',
+    Description: '订阅说明',
+    Items: '服务范围',
+    AddDefinition: '新增订阅定义',
+    EditDefinition: '编辑订阅定义',
+    ScopeNotice: '修改服务范围后，所有关联会员立即使用新的范围。',
+    NoItems: '暂无匹配的服务项，请先在订阅服务项管理中创建。',
+    ConfirmDelete: '确定删除订阅定义“{0}”吗？已关联会员的定义不能删除。',
+    MemberId: '会员ID',
     SelectMember: '选择会员',
-    ChangeMember: '切换会员',
-    CurrentMember: '当前会员',
-    NoMember: '请先选择会员',
-    Tab: {
-      Site: '站点权限',
-      Catalog: '栏目权限',
-      Content: '内容权限'
+    OneMember: '请只选择一位会员。',
+    MemberRule: '请输入有效的会员ID。',
+    ExpireTime: '结束时间',
+    Validity: '有效性',
+    Valid: '有效',
+    Expired: '已过期',
+    AddRecord: '关联订阅并调整时长',
+    Adjust: '调整时长',
+    DeltaSeconds: '调整秒数',
+    DurationShortcuts: {
+      OneHour: '1小时',
+      TwelveHours: '12小时',
+      OneDay: '1天',
+      SevenDays: '7天',
+      ThirtyDays: '30天',
+      Days366: '366天'
     },
-    PrivType: '授权类型',
-    PrivTypeSite: '站点级',
-    PrivTypeCatalog: '栏目级',
-    PrivTypeContent: '内容级',
-    Target: '授权目标（格式：站点ID:栏目ID:内容ID）',
-    GrantTime: '授权时间',
-    GrantSite: '授权站点',
-    GrantCatalog: '授权栏目',
-    GrantContent: '授权内容',
-    SelectSite: '选择站点',
-    SelectPrivType: '请先选择授权类型',
-    ConfirmGrantCurrentSite: '确定授权当前站点（权限key：{0}）？',
-    SelectCatalog: '选择栏目',
-    SelectContent: '选择内容',
-    ConfirmRevoke: '确定撤销该授权？',
-    RevokeSuccess: '撤销成功',
-    GrantSuccess: '授权成功'
+    SecondsRule: '请输入Long范围内的整数秒数，增加时长最多316224000秒（约10年）。',
+    AdjustNotice: '未过期订阅在原结束时间上加减秒数，已过期则以当前时间为基准；结束时间不晚于当前时间即为过期。',
+    FirstNotice: '首次关联以操作时间为基准。例如30天为2592000秒。',
+    RetryNotice: '超时后请先刷新记录或审计确认结果；相同请求重试不会重复调整，修改内容会生成新的请求。',
+    Reason: '调整原因',
+    Audit: '调整审计',
+    OperationTime: '操作时间',
+    Before: '原结束时间',
+    After: '新结束时间',
+    Initial: '首次关联',
+    Operator: '操作人',
+    Source: '来源',
+    Manual: '后台人工调整',
+    LoadFailed: '加载失败，请重试。',
+    SelectDefinition: '请选择订阅定义，可按名称搜索',
+    Status: '状态',
+    Enable: '启用',
+    Disable: '禁用',
+    ConfirmStatus: '确定{1}订阅定义“{0}”吗？',
+    NoDefinitions: '暂无匹配的订阅定义',
+    NamesLoadFailed: '订阅定义名称加载失败，暂时显示定义ID，请刷新重试。',
+    OperatorType: '操作人类型',
+    OperatorId: '操作人ID'
   },
-  Migration: {
-    WP: {
-      Add: '新增WordPress迁移',
-      Edit: '编辑WordPress迁移',
-      Execute: '执行',
-      Name: '任务名称',
-      NamePlaceholder: '请输入任务名称',
-      DataSource: '数据源',
-      SelectDataSource: '请选择数据源',
-      TablePrefix: '表前缀',
-      Site: '目标站点',
-      SelectSite: '请选择目标站点',
-      MigrateMode: '迁移方式',
-      FullMode: '全量迁移',
-      SpecifiedMode: '指定栏目迁移',
-      DefaultPassword: '默认密码',
-      CatalogMappings: '栏目映射',
-      AddMapping: '添加映射',
-      WpCatalogId: 'WordPress栏目ID',
-      TargetCatalog: '目标栏目',
-      LastStatus: '最近状态',
-      LastExecuteTime: '最近执行时间',
-      Status0: '未执行',
-      Status1: '成功',
-      Status2: '失败',
-      Status3: '执行中',
-      NameRequired: '任务名称不能为空',
-      DataSourceRequired: '请选择数据源',
-      SiteRequired: '请选择目标站点',
-      MigrateModeRequired: '请选择迁移方式',
-      DefaultPasswordRequired: '默认密码不能为空',
-      MappingRequired: '指定栏目迁移必须至少添加一组栏目映射',
-      ConfirmDelete: '确认删除WordPress迁移任务“{0}”？',
-      ConfirmExecute: '确认执行WordPress迁移任务“{0}”？',
-      ProgressTitle: 'WordPress迁移进度',
-      ExecuteStarted: '任务已提交，任务ID：{0}'
-    }
-  }
 }
+
+
+zhCN.CMS.PageWidget.SelectTitle = "选择页面部件"
+zhCN.Message.Event.ConfigAlreadyExists = "该消息配置已添加"
+zhCN.System.Menu.Placeholder.ID = "请输入菜单 ID"
+
+zhCN.Component.HeaderSearch = {}
+zhCN.Component.HeaderSearch.Placeholder = "搜索菜单标题或 URL"
+zhCN.Component.IconSelect = {}
+zhCN.Component.IconSelect.Placeholder = "请输入图标名称"
+zhCN.Component.RightToolbar = {}
+zhCN.Component.RightToolbar.ShowTableColumn = "显隐列"
+zhCN.Component.RightToolbar.ShowOrHide = "显示/隐藏"
+zhCN.Component.SizeSelect = {}
+zhCN.Component.SizeSelect.Large = "较大"
+zhCN.Component.SizeSelect.Default = "默认"
+zhCN.Component.SizeSelect.Small = "稍小"
+zhCN.Component.SizeSelect.Applying = "正在设置布局大小，请稍候..."
+zhCN.Component.TopNav = {}
+zhCN.Component.TopNav.MoreMenu = "更多菜单"
+zhCN.Component.Layout.Navbar.FullScreen = "全屏显示"
+zhCN.Component.Layout.Settings = {}
+zhCN.Component.Layout.Settings.ThemeStyle = "主题风格设置"
+zhCN.Component.Layout.Settings.Dark = "深色侧栏"
+zhCN.Common.Selected = "已选中"
+zhCN.Component.Layout.Settings.Light = "浅色侧栏"
+zhCN.Component.Layout.Settings.ThemeColor = "主题颜色"
+zhCN.Component.Layout.Settings.SystemLayoutConfig = "系统布局配置"
+zhCN.Component.Layout.Settings.EnableTopNav = "开启 TopNav"
+zhCN.Component.Layout.Settings.EnableTagsViews = "开启 Tags-Views"
+zhCN.Component.Layout.Settings.ShowTagsIcon = "显示页签图标"
+zhCN.Component.Layout.Settings.EnableFixedHeader = "固定 Header"
+zhCN.Component.Layout.Settings.ShowLogo = "显示 Logo"
+zhCN.Component.Layout.Settings.EnableDynamicTitle = "动态标题"
+zhCN.Component.Layout.Settings.ShowFooter = "底部版权"
+zhCN.Component.Layout.Settings.Save = "保存配置"
+zhCN.Component.Layout.Settings.Reset = "重置配置"
+zhCN.Component.Layout.Settings.Saving = "正在保存到本地，请稍候..."
+zhCN.Component.Layout.Settings.Resetting = "正在清除设置缓存并刷新，请稍候..."
+zhCN.Component.Layout.TagViews = {}
+zhCN.Component.Layout.TagViews.RefreshPage = "刷新页面"
+zhCN.Component.Layout.TagViews.CloseCurrent = "关闭当前"
+zhCN.Component.Layout.TagViews.CloseOther = "关闭其他"
+zhCN.Component.Layout.TagViews.CloseLeft = "关闭左侧"
+zhCN.Component.Layout.TagViews.CloseRight = "关闭右侧"
+zhCN.Component.Layout.TagViews.CloseAll = "全部关闭"
+zhCN.Error.NoPermissionTip = "对不起，您没有访问权限，请向系统管理者申请相关资源访问权限！"
+zhCN.Error.GoHome = "回首页"
+zhCN.Error.PageNotFound = "找不到网页！"
+zhCN.Error.Err404Tip = "对不起，您正在寻找的页面不存在。尝试检查URL的错误，然后按浏览器上的刷新按钮或尝试在我们的应用程序中找到其他内容。"
+zhCN.Component.RightToolbar.HideSearch = "隐藏搜索"
+zhCN.Component.RightToolbar.ShowSearch = "显示搜索"
 
 export default zhCN

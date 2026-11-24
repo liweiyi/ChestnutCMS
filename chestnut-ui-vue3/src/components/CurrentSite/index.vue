@@ -28,7 +28,7 @@
       </el-table>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleChangeCurrentSite" :size="size">{{ $t("Common.Confirm") }}</el-button>
+          <el-button type="primary" @click="handleChangeCurrentSite" :size="size" :loading="changing">{{ $t("Common.Confirm") }}</el-button>
           <el-button @click="cancel" :size="size">{{ $t("Common.Cancel") }}</el-button>
         </div>
       </template>
@@ -37,11 +37,12 @@
 </template>
 <script setup>
 import useAppStore from "@/store/modules/app"
-const appStore = useAppStore()
-const size = computed(() => appStore.size)
+import useSiteStore from "@/store/modules/site"
+import { getSelectSites } from "@/api/contentcore/site"
 
-import { getSelectSites, getCurrentSite, setCurrentSite } from "@/api/contentcore/site"
-import { getConfigKey } from "@/api/system/config"
+const appStore = useAppStore()
+const siteStore = useSiteStore()
+const size = computed(() => appStore.size)
 
 defineOptions({
   name: 'CurrentSite'
@@ -50,13 +51,14 @@ defineOptions({
 const { proxy } = getCurrentInstance()
 
 const loading = ref(true)
+const changing = ref(false)
 const selectedRow = ref(undefined)
 const total = ref(0)
 const siteList = ref([])
 const open = ref(false)
-const currentSite = ref(proxy.$cms.getCurrentSite())
-const currentSiteName = ref(undefined)
-const showCurrentSite = ref(false)
+const currentSite = computed(() => siteStore.siteId)
+const currentSiteName = computed(() => siteStore.siteName || proxy.$t('CMS.Site.CurrentSelectorTitle'))
+const showCurrentSite = computed(() => siteStore.enabled === true)
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -65,43 +67,10 @@ const queryParams = reactive({
 
 const queryForm = ref(null)
 
-onMounted(() => {
-  getConfigKey("CMSModuleEnable").then(res => {
-    showCurrentSite.value = res.data == "true"
-    if (showCurrentSite.value) {
-      loadCurrentSite()
-    }
-  })
-})
-
-// 当前站点，如果未设置，后台会默认取数据库第一个站点数据作为当前站点
-const loadCurrentSite = () => {
-  getCurrentSite().then(response => {
-    currentSite.value = response.data.siteId
-    currentSiteName.value = response.data.siteName
-    proxy.$cms.setCurrentSite(currentSite.value, currentSiteName.value)
-    showCurrentSite.value = true
-  })
-}
-
-const resetCurrentSite = (changed) => {
-  setCurrentSite(currentSite.value).then(response => {
-    if (response.code == 200 && response.data) {
-      currentSite.value = response.data.siteId
-      currentSiteName.value = response.data.siteName
-      proxy.$cms.setCurrentSite(currentSite.value, currentSiteName.value)
-      showCurrentSite.value = true
-      if (changed) {
-        open.value = false
-        refreshView()
-      }
-    } else {
-      showCurrentSite.value = false
-    }
-  })
-}
-
-const handleChangeCurrentSite = () => {
+const handleChangeCurrentSite = async () => {
+  if (changing.value) {
+    return
+  }
   if (selectedRow.value == undefined) {
     proxy.$modal.msgError(proxy.$t('Common.SelectFirst'))
     return
@@ -110,8 +79,16 @@ const handleChangeCurrentSite = () => {
     proxy.$modal.msgError(proxy.$t('CMS.Site.AlreayCurrentSite'))
     return
   }
-  currentSite.value = selectedRow.value.siteId
-  resetCurrentSite(true)
+  changing.value = true
+  try {
+    if (!await siteStore.changeSite(selectedRow.value.siteId)) return
+    open.value = false
+    refreshView()
+  } catch {
+    // 请求失败时保留当前站点和选择弹窗，错误提示由请求层统一处理。
+  } finally {
+    changing.value = false
+  }
 }
 
 const loadSiteList = () => {
@@ -119,6 +96,9 @@ const loadSiteList = () => {
   getSelectSites(queryParams).then(response => {
     siteList.value = response.data.rows
     total.value = parseInt(response.data.total)
+  }).catch(() => {
+    // 错误提示由请求层统一处理。
+  }).finally(() => {
     loading.value = false
   })
 }
@@ -143,6 +123,7 @@ const handleRowDblclick = (row) => {
 }
 
 const handleOpenSiteList = () => {
+  selectedRow.value = undefined
   open.value = true
   loadSiteList()
 }

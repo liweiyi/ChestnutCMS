@@ -252,30 +252,6 @@ const textSelections = { title: null, content: null };
 const variableSyntax = '${variable}';
 const variableDefaultSyntax = "${variable!''}";
 
-const validateKeywords = (rule, value, callback) => {
-  if (proxy.$tools.isEmpty(value)) {
-    callback();
-    return;
-  }
-  if (value.split('\n').length > 10) {
-    callback(new Error(proxy.$t('Message.Template.RuleTips.MaxKeywords', [10])));
-    return;
-  }
-  callback();
-}
-
-const validateIpWhiteList = (rule, value, callback) => {
-  if (proxy.$tools.isEmpty(value)) {
-    callback();
-    return;
-  }
-  if (value.split('\n').length > 10) {
-    callback(new Error(proxy.$t('Message.Template.RuleTips.MaxIpWhiteList', [10])));
-    return;
-  }
-  callback();
-}
-
 const dataList = ref([]);
 const open = ref(false);
 const loading = ref(true);

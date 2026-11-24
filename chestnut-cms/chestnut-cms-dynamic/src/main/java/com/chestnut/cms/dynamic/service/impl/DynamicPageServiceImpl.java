@@ -15,6 +15,10 @@
  */
 package com.chestnut.cms.dynamic.service.impl;
 
+import com.chestnut.common.exception.CommonTips;
+
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.cms.dynamic.controller.front.DynamicPageFrontController;
 import com.chestnut.cms.dynamic.core.DynamicPageRequestMappingHandlerMapping;
@@ -199,7 +203,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
 
         CmsSite site = this.siteService.getSite(siteId);
         if (Objects.isNull(site)) {
-            this.catchException("/", response, new RuntimeException("Site not found: " + siteId));
+            this.catchException("/", response, CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
             return;
         }
         String errPageLink = PublishPipeProp_ErrPageLink.getValue(publishPipeCode, site.getPublishPipeProps());
@@ -207,7 +211,7 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
         String template = dynamicPage.getTemplates().get(publishPipeCode);
         File templateFile = this.templateService.findTemplateFile(site, template, publishPipeCode);
         if (Objects.isNull(templateFile)) {
-            this.catchException(errPageLink, response, new RuntimeException("Template not found: " + template));
+            this.catchException(errPageLink, response, ContentCoreTips.TEMPLATE_MISSING.exception(template));
             return;
         }
         long s = System.currentTimeMillis();
@@ -238,7 +242,8 @@ public class DynamicPageServiceImpl extends ServiceImpl<CmsDynamicPageMapper, Cm
 
     private void catchException(String redirectLink, HttpServletResponse response, Exception e) throws IOException {
         if (log.isDebugEnabled()) {
-            e.printStackTrace(response.getWriter());
+            log.error("Render page failed", e);
+            response.getWriter().write(org.springframework.web.util.HtmlUtils.htmlEscape(CommonTips.failureReason(e)));
         } else {
             response.sendRedirect(redirectLink);
         }

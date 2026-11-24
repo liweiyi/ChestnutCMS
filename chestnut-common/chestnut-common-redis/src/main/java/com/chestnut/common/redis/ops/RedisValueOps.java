@@ -95,6 +95,16 @@ public class RedisValueOps extends AbstractRedisOps {
     }
 
     /**
+     * 以一条 Redis SET 命令完成条件写入和过期设置，不抖动业务过期时间。
+     */
+    public boolean setCacheObjectIfAbsent(String key, Object value, long timeout, TimeUnit timeUnit) {
+        if (timeUnit.toMillis(timeout) <= 0L) {
+            throw new IllegalArgumentException("缓存过期时间必须至少为 1 毫秒");
+        }
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, value, timeout, timeUnit));
+    }
+
+    /**
      * 写入缓存并对 TTL 施加随机抖动（防雪崩），适合缓存场景。
      * 仅当 {@code chestnut.redis.ttlJitter=true} 时实际施加抖动，否则行为等同于
      * {@link #setCacheObject(String, Object, long, TimeUnit)}。
@@ -239,7 +249,7 @@ public class RedisValueOps extends AbstractRedisOps {
     // -------------------------------------------------------------------------
 
     /**
-     * 将 Redis 原始值解包，{@link RedisNullValue} 占位视同 null 返回。
+     * 将 Redis 原始值解包，空值占位视同 null，并还原序列化为字符串的 Long。
      */
     @SuppressWarnings("unchecked")
     static <T> T unwrap(Object raw, Class<T> clazz) {
@@ -248,6 +258,9 @@ public class RedisValueOps extends AbstractRedisOps {
         }
         if (clazz == null) {
             return (T) raw;
+        }
+        if (Long.class.equals(clazz) && raw instanceof String text) {
+            return clazz.cast(Long.valueOf(text));
         }
         return clazz.cast(raw);
     }

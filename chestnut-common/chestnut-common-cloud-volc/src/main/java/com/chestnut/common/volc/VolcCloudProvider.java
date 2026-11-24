@@ -34,6 +34,12 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 将公共 CDN 刷新请求转换为火山引擎 SDK 调用，并处理配置中的敏感字段。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 @Component(ICloudProvider.BEAN_PREFIX + VolcCloudProvider.ID)
 public class VolcCloudProvider implements ICloudProvider {
@@ -78,7 +84,7 @@ public class VolcCloudProvider implements ICloudProvider {
         if (StringUtils.isEmpty(config.getSecretKey())) {
             throw CommonErrorCode.CLOUD_MISSING_SECRET_KEY.exception();
         }
-        ApiClient apiClient = new ApiClient()
+        ApiClient apiClient = createApiClient()
                 .setCredentials(Credentials.getCredentials(config.getAccessKey(),  config.getSecretKey()))
                 .setRegion(StringUtils.defaultIfEmpty(config.getRegion(), "cn-beijing"));
 
@@ -100,8 +106,16 @@ public class VolcCloudProvider implements ICloudProvider {
                 throw CommonErrorCode.SYSTEM_ERROR.exception(error.getCode(), error.getMessage());
             }
             log.debug("Refresh cdn complete: {}", String.join(",", urls));
-        } catch (ApiException e) {
-            throw new VolcEngineException("Refresh cdn failed: " + e.getResponseMetadata().getError().getMessage(), e);
+        } catch (ApiException exception) {
+            var metadata = exception.getResponseMetadata();
+            Error error = metadata == null ? null : metadata.getError();
+            String detail = StringUtils.defaultIfBlank(error == null ? null : error.getMessage(), exception.getMessage());
+            String message = StringUtils.isBlank(detail) ? "Refresh cdn failed" : "Refresh cdn failed: " + detail;
+            throw new VolcEngineException(message, exception);
         }
+    }
+
+    ApiClient createApiClient() {
+        return new ApiClient();
     }
 }

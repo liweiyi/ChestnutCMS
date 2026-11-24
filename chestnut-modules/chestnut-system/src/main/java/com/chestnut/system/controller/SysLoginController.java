@@ -15,6 +15,8 @@
  */
 package com.chestnut.system.controller;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
@@ -133,7 +135,7 @@ public class SysLoginController extends BaseRestController {
             } catch (Exception e) {
                 this.logininfoService.recordLogininfor(loginUser.getUserType(),
                         loginUser.getUserId(), loginUser.getUsername(), LoginLogType.LOGOUT, SuccessOrFail.FAIL,
-                        e.getMessage());
+                        CommonTips.failureReason(e));
                 log.error("Logout fail.", e);
             }
         }

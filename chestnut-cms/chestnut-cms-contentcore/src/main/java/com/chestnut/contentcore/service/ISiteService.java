@@ -20,13 +20,52 @@ import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
 import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
+import com.chestnut.contentcore.domain.dto.SortSiteRequest;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
+/**
+ * 站点管理服务
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 public interface ISiteService extends IService<CmsSite> {
+
+    /**
+     * 查询当前用户可见的站点，按有效置顶状态和手动顺序排列
+     */
+    List<CmsSite> listSites(String siteName, LoginUser loginUser);
+
+    /**
+     * 查询可见的直接子站点，父站点 ID 为 0 时查询一级站点
+     */
+    List<CmsSite> listChildSites(long parentId, LoginUser loginUser);
+
+    /**
+     * 将站点移动至目标站点的前方或后方
+     */
+    void sortSite(SortSiteRequest request, String operator);
+
+    /**
+     * 转移站点及其子站点，父站点为空或 0 时转为顶级站点
+     */
+    void moveSite(Long siteId, Long parentId, LoginUser operator);
+
+    /**
+     * 设置站点置顶，可指定结束时间
+     */
+    void setTop(Long siteId, LocalDateTime topEndTime, String operator);
+
+    /**
+     * 取消站点置顶
+     */
+    void cancelTop(Long siteId, String operator);
 
 	/**
 	 * 校验站点名称及目录是否唯一

@@ -25,6 +25,9 @@ import com.chestnut.common.exception.TipMessage;
  */
 public enum CmsExModelTips implements TipMessage {
 
+    /** 更新站点及栏目扩展模型配置失败 */
+    UPDATE_CONFIG_FAILED,
+
     /**
      * 正在导出扩展模型数据
      */

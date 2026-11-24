@@ -939,7 +939,7 @@ function handleDelete (row) {
 function handlePublish (row) {
   const contentIds = row.contentId ? [ row.contentId ] : selectedRows.value.map(row => row.contentId);
   if (contentIds.length == 0) {
-    proxy.$modal.msgWarning(proxy.$t('CMS.Content.SelectRowFirst'));
+    proxy.$modal.msgWarning(proxy.$t('Common.SelectFirst'));
     return;
   }
   contentApi.publishContent(contentIds).then(response => {
@@ -958,7 +958,7 @@ function handlePreview (row) {
   } else if (selectedRows.value.length > 0) {
     contentId = selectedRows.value[0].contentId;
   } else {
-    proxy.$modal.msgWarning(proxy.$t('CMS.Content.SelectRowFirst'));
+    proxy.$modal.msgWarning(proxy.$t('Common.SelectFirst'));
     return;
   }
   let routeData = proxy.$router.resolve({
@@ -1070,7 +1070,7 @@ function handleSetTop(row) {
 function handleTopDialogOk() {
   const contentIds = selectedRows.value.map(item => item.contentId);
   if (contentIds.length == 0) {
-    proxy.$modal.msgWarning(proxy.$t('CMS.Content.SelectRowFirst'));
+    proxy.$modal.msgWarning(proxy.$t('Common.SelectFirst'));
     return;
   }
   proxy.$refs.topFormRef.validate(valid => {

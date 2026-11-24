@@ -15,6 +15,8 @@
  */
 package com.chestnut.seo.service;
 
+import com.chestnut.seo.CmsSeoTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTask;
@@ -40,10 +42,12 @@ import com.chestnut.system.fixed.dict.YesOrNo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -67,7 +71,9 @@ public class BaiduSitemapService {
      */
     static final String SitemapFileNamePrefix = "sitemap_";
 
-    static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final String SITEMAP_NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9";
+
+    private static final DateTimeFormatter LASTMOD_FORMAT = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private final ISiteService siteService;
 
@@ -125,20 +131,20 @@ public class BaiduSitemapService {
                     String siteRoot = SiteUtils.getSiteRoot(site, pp.getCode());
                     int urlLimit = PublishPipeProp_SitemapUrlLimit.getValue(pp.getCode(), site.getPublishPipeProps());
                     String pageType = PublishPipeProp_SitemapPageType.getValue(pp.getCode(), site.getPublishPipeProps());
-                    return new SiteMapXmlCreator(urlLimit, pageType, siteRoot);
+                    return new SiteMapXmlCreator(urlLimit, pageType, siteRoot, URI.create(site.getUrl(pp.getCode())));
                 }));
         // 站点链接
-        AsyncTaskManager.setTaskProgressInfo(5, site.getName());
+        AsyncTaskManager.setTaskProgressInfo(5, CmsSeoTips.BUILDING_SITEMAP, site.getName());
         creatorMap.forEach((code, creator) -> {
             String url = site.getUrl(code);
-            creator.append(url, "1", LocalDateTime.now().format(FORMAT));
+            creator.append(url, "1", null);
         });
         // 栏目链接
         catalogs.forEach(catalog -> {
             creatorMap.forEach((code, creator) -> {
                 String url = catalogService.getCatalogLink(catalog, 1, code, false);
-                creator.append(url, "0.8", LocalDateTime.now().format(FORMAT));
-                AsyncTaskManager.setTaskProgressInfo(10, catalog.getName());
+                creator.append(url, "0.8", null);
+                AsyncTaskManager.setTaskProgressInfo(10, CmsSeoTips.BUILDING_SITEMAP, catalog.getName());
             });
         });
         // 内容链接
@@ -163,13 +169,14 @@ public class BaiduSitemapService {
                 Page<CmsContent> page = contentService.dao().page(new Page<>(0, pageSize, false), q);
                 for (CmsContent content : page.getRecords()) {
                     lastContentId = content.getContentId();
-                    String lastmod = content.getPublishDate().format(FORMAT);
+                    LocalDateTime publishDate = content.getPublishDate();
+                    String lastmod = publishDate == null ? null : LASTMOD_FORMAT.format(publishDate);
                     creatorMap.forEach((code, creator) -> {
                         String url = contentService.getContentLink(content, 1, code, false);
                         creator.append(url, "0.8", lastmod);
                     });
                     count++;
-                    AsyncTaskManager.setTaskProgressInfo(count * 90 / total.intValue(), content.getTitle());
+                    AsyncTaskManager.setTaskProgressInfo(count * 90 / total.intValue(), CmsSeoTips.BUILDING_SITEMAP, content.getTitle());
                 }
                 if (page.getRecords().size() < pageSize) {
                     break;
@@ -186,7 +193,7 @@ public class BaiduSitemapService {
                 log.error("生成站点地图索引文件失败", e);
             }
         });
-        AsyncTaskManager.setTaskProgressInfo(100, "Sitemap生成完成");
+        AsyncTaskManager.setTaskProgressInfo(100, CmsSeoTips.SITEMAP_COMPLETED);
         log.info("站点地图生成完成，耗时：{}", System.currentTimeMillis() - s);
     }
 
@@ -194,17 +201,19 @@ public class BaiduSitemapService {
      * 生成Sitemap索引文件
      */
     public void generateSitemapIndexXml(CmsSite site, String publishPipeCode) throws IOException {
-        String siteUrl = site.getUrl(publishPipeCode);
+        URI siteUrl = URI.create(site.getUrl(publishPipeCode));
         String siteRoot = SiteUtils.getSiteRoot(site, publishPipeCode);
-        File[] files = new File(siteRoot).listFiles(f -> f.getName().startsWith(SitemapFileNamePrefix));
-        if (files != null)  {
+        File[] files = new File(siteRoot).listFiles(f -> f.isFile() && f.getName().startsWith(SitemapFileNamePrefix)
+                && f.getName().endsWith(".xml"));
+        if (files != null && files.length > 0) {
             StringBuilder sb = new StringBuilder();
             sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
-            sb.append("<sitemapindex>");
+            sb.append("<sitemapindex xmlns=\"").append(SITEMAP_NAMESPACE).append("\">");
             for (File file : files) {
                 sb.append("<sitemap>");
-                sb.append("<loc>").append(siteUrl).append(file.getName()).append("</loc>");
-                String lastmod = DateUtils.epochMilliToLocalDateTime(file.lastModified()).format(FORMAT);
+                String url = siteUrl.resolve(file.getName()).toASCIIString();
+                sb.append("<loc>").append(StringEscapeUtils.escapeXml10(url)).append("</loc>");
+                String lastmod = LASTMOD_FORMAT.format(DateUtils.epochMilliToLocalDateTime(file.lastModified()));
                 sb.append("<lastmod>").append(lastmod).append("</lastmod>");
                 sb.append("</sitemap>");
             }
@@ -223,26 +232,32 @@ public class BaiduSitemapService {
 
         private final String dir;
 
+        private final URI siteUrl;
+
         private int index = 1;
 
         private int count;
 
         private final StringBuilder sb = new StringBuilder();
 
-        SiteMapXmlCreator(int urlLimit, String pageType, String dir) {
+        SiteMapXmlCreator(int urlLimit, String pageType, String dir, URI siteUrl) {
             this.urlLimit = urlLimit;
             this.pageType = pageType;
             this.dir = dir;
+            this.siteUrl = siteUrl;
         }
 
         void append(String loc, String priority, String lastmod) {
             sb.append("<url>");
-            sb.append("<loc>").append(loc).append("</loc>");
+            String url = this.siteUrl.resolve(loc).toASCIIString();
+            sb.append("<loc>").append(StringEscapeUtils.escapeXml10(url)).append("</loc>");
+            if (lastmod != null) {
+                sb.append("<lastmod>").append(lastmod).append("</lastmod>");
+            }
+            sb.append("<priority>").append(priority).append("</priority>");
             if (StringUtils.isNotEmpty(pageType) && !SitemapPageType.PC.equals(pageType)) {
                 sb.append("<mobile:mobile type=\"").append(pageType).append("\" />");
             }
-            sb.append("<priority>").append(priority).append("</priority>");
-            sb.append("<lastmod>").append(lastmod).append("</lastmod>");
             sb.append("</url>");
             count++;
             if (count >= urlLimit) {
@@ -254,7 +269,11 @@ public class BaiduSitemapService {
         }
 
         void writeFile() {
-            sb.insert(0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:mobile=\"http://www.baidu.com/schemas/sitemap-mobile/1/\">");
+            if (count == 0) {
+                return;
+            }
+            sb.insert(0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><urlset xmlns=\"" + SITEMAP_NAMESPACE
+                    + "\" xmlns:mobile=\"http://www.baidu.com/schemas/sitemap-mobile/1/\">");
             sb.append("</urlset>");
             String path = dir + SitemapFileNamePrefix + index + ".xml";
             try {

@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.image;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.image.domain.CmsImage;
@@ -90,7 +92,7 @@ public class ImageCoreDataHandler implements ICoreDataHandler {
                     data.setRedirectUrl(context.dealInternalUrl(data.getRedirectUrl()));
                     imageService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsImageContentTips.IMPORT_IMAGE_CONTENT_FAIL, oldImageId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsImageContentTips.IMPORT_IMAGE_CONTENT_FAIL, oldImageId, CommonTips.failureReason(e));
                     log.error("Import cms_image failed: {}", data.getImageId(), e);
                 }
             }

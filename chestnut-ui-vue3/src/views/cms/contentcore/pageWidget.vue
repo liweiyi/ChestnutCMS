@@ -277,7 +277,7 @@ function handleAddDialogOk() {
 
 function handleDelete(row) {
   const pageWidgetIds = [ row.pageWidgetId ];
-  proxy.$modal.confirm(proxy.$t('Common.ConfigmDelete')).then(function() {
+  proxy.$modal.confirm(proxy.$t('Common.ConfirmDelete')).then(function() {
     return pageWidgetApi.deletePageWidget(pageWidgetIds);
   }).then(response => {
     proxy.$modal.msgSuccess(response.msg);

@@ -39,7 +39,7 @@ public class PasswordSecurityConfigType implements ISecurityConfigType<PasswordS
 
     @Override
     public PasswordSecurity getConfig(ObjectNode configs) {
-        JsonNode node = configs.get(TYPE);
+        JsonNode node = configs == null ? null : configs.get(TYPE);
         if (Objects.isNull(node)) {
             return new PasswordSecurity();
         }

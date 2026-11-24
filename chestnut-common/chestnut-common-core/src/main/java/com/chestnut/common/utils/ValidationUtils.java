@@ -134,14 +134,17 @@ public class ValidationUtils {
     }
 
     public static <X extends Throwable> void validatePhoneCallingCode(String phoneCallingCode, Supplier<X> errorSupplier) throws X {
-        boolean matches = phoneCallingCode != null && CALLING_CODES.contains(phoneCallingCode);
-        if (!matches) {
+        if (!isValidPhoneCallingCode(phoneCallingCode)) {
             throw errorSupplier.get();
         }
     }
 
     public static void validatePhoneCallingCode(String phoneCallingCode) {
         validatePhoneCallingCode(phoneCallingCode, CommonErrorCode.INVALID_PHONE_NUMBER::exception);
+    }
+
+    public static boolean isValidPhoneCallingCode(String phoneCallingCode) {
+        return phoneCallingCode != null && CALLING_CODES.contains(phoneCallingCode);
     }
 
     /**

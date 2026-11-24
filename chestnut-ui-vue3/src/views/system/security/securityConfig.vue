@@ -317,16 +317,6 @@ const smsConfigOptions = computed(() => {
   }
   return smsConfigRows.value;
 });
-const newPattern = ref('');
-const patternSearch = ref('');
-const patternSelection = ref([]);
-
-const filteredPatterns = computed(() => {
-  const keyword = patternSearch.value.trim().toLowerCase();
-  const list = form.value?.configs?.Biz?.secondaryVerifications || [];
-  const filtered = keyword ? list.filter(p => p.toLowerCase().includes(keyword)) : list;
-  return filtered.map(pattern => ({ pattern }));
-});
 
 onMounted(() => {
   loadCaptchaTypeOptions();
@@ -427,9 +417,6 @@ const reset = () => {
         smsLoginEnable: 'N',
         smsMessageConfigId: undefined,
       },
-      Biz: {
-        secondaryVerifications: [],
-      },
     }
   };
 }
@@ -460,9 +447,6 @@ const handleUpdate = (row) => {
     response.data.configs.Login.smsMessageConfigId = /^[1-9]\d*$/.test(String(smsConfigId ?? ''))
       ? String(smsConfigId) : undefined;
     response.data.configs.Password.weakPasswords = response.data.configs.Password.weakPasswords.join('\n');
-    if (!response.data.configs.Biz) {
-      response.data.configs.Biz = { secondaryVerifications: [] };
-    }
     form.value = response.data;
   }).finally(() => {
     loading.value = false;
@@ -524,32 +508,6 @@ const handleStatusChange = (row) => {
   });
 }
 
-const addPattern = () => {
-  const val = newPattern.value.trim();
-  if (!val) return;
-  const list = form.value.configs.Biz.secondaryVerifications;
-  if (!list.includes(val)) {
-    list.push(val);
-  }
-  newPattern.value = '';
-}
-
-const removePatternByValue = (pattern) => {
-  const list = form.value.configs.Biz.secondaryVerifications;
-  const idx = list.indexOf(pattern);
-  if (idx !== -1) list.splice(idx, 1);
-}
-
-const handlePatternSelectionChange = (selection) => {
-  patternSelection.value = selection.map(row => row.pattern);
-}
-
-const removeSelectedPatterns = () => {
-  const toDelete = new Set(patternSelection.value);
-  form.value.configs.Biz.secondaryVerifications =
-    form.value.configs.Biz.secondaryVerifications.filter(p => !toDelete.has(p));
-  patternSelection.value = [];
-}
 </script>
 <style scoped>
 .tips {
@@ -564,33 +522,5 @@ const removeSelectedPatterns = () => {
 }
 .el-input, .el-input-number  {
   width: 217px;
-}
-.sv-editor {
-  width: 100%;
-  max-width: 680px;
-}
-.sv-toolbar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-  align-items: center;
-}
-.sv-search {
-  width: 180px;
-  flex-shrink: 0;
-}
-.sv-table {
-  border: 1px solid var(--el-border-color);
-  border-radius: 4px;
-}
-.sv-path {
-  font-family: monospace;
-  font-size: 13px;
-}
-.sv-tip {
-  margin-top: 6px;
-  color: #909399;
-  font-size: 12px;
-  line-height: 1.5;
 }
 </style>

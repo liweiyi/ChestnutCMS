@@ -15,6 +15,8 @@
  */
 package com.chestnut.advertisement;
 
+import com.chestnut.advertisement.CmsAdTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.advertisement.domain.CmsAdvertisement;
@@ -65,7 +67,7 @@ public class AdvResourceStat implements IResourceStat {
             Page<CmsAdvertisement> page = advertisementService.page(new Page<>(0, pageSize, false), q);
             for (CmsAdvertisement advertisement : page.getRecords()) {
                 AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
-                        "正在统计广告资源引用：" + count + " / " + total + "]");
+                        CmsAdTips.STAT_RESOURCE_REFERENCES, count, total);
                 lastId = advertisement.getAdvertisementId();
                 InternalURL internalURL = InternalUrlUtils.parseInternalUrl(advertisement.getResourcePath());
                 if (Objects.nonNull(internalURL)) {

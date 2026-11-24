@@ -1,0 +1,34 @@
+# ChestnutCMS
+
+> ChestnutCMS (栗子内容管理系统) is a self-hosted Java website content management system with a Spring Boot backend and a Vue 3 admin console. It manages multiple sites, sections, and structured content, publishes static HTML, JSON, and XML through FreeMarker templates, and provides REST APIs for site frontends.
+
+Start with either README for features and local setup. The open-source edition uses Apache License 2.0. MySQL and Redis are the core runtime dependencies. Full-text search uses Elasticsearch and the IK Chinese analysis plugin. Repository links are relative to the checkout containing this file. Use the root Maven POM and frontend package.json for version details.
+
+## Project documentation
+
+- [中文 README](README.md): 项目简介、功能、开发环境、部署方式和源码入口。
+- [English README](README_en.md): Project overview, features, local setup, deployment, and repository layout.
+- [Open-source license](LICENSE): Apache License 2.0 text.
+
+## Official documentation
+
+- [ChestnutCMS website](https://www.1000mz.com/): Product overview and documentation navigation.
+- [Quick start (Chinese)](https://www.1000mz.com/docs/quickstart/668421333332037.shtml): Local prerequisites and startup instructions. See the README in your checkout for its development ports and commands.
+- [Common settings (Chinese)](https://www.1000mz.com/docs/quickstart/668421333397573.shtml): Backend, site, and API access settings.
+- [Site setup (Chinese)](https://www.1000mz.com/docs/manual/668421334257733.shtml): Create sites, configure publishing channels and templates, and publish content.
+- [FreeMarker template reference (Chinese)](https://www.1000mz.com/docs/template/variables/668421333688389.shtml): Template variables, directives, and functions.
+- [JAR deployment (Chinese)](https://www.1000mz.com/docs/deploy/668421334356037.shtml): Package and deploy the backend and admin frontend.
+- [Docker deployment (Chinese)](https://www.1000mz.com/docs/deploy/668421333434437.shtml): Container-based deployment instructions.
+- [Nginx site access (Chinese)](https://www.1000mz.com/docs/deploy/668421333463109.shtml): Serve published sites, assets, and backend routes.
+
+## Source code
+
+- [Root Maven POM](pom.xml): Project version, backend dependency versions, and Maven modules.
+- [Spring Boot application entry point](chestnut-admin/src/main/java/com/chestnut/ChestnutApplication.java): Backend bootstrap in chestnut-admin.
+- [CMS modules](chestnut-cms/): Content types, extension models, search, and other CMS features.
+- [CMS core](chestnut-cms/chestnut-cms-contentcore/): Sites, sections, content, and publishing channels.
+- [Content REST API controller](chestnut-cms/chestnut-cms-contentcore/src/main/java/com/chestnut/contentcore/controller/front/ContentApiController.java): Site-facing content endpoints under /api/cms/content.
+- [Vue admin entry point](chestnut-ui-vue3/src/main.js): Admin frontend bootstrap.
+- [Frontend package.json](chestnut-ui-vue3/package.json): Frontend dependencies and npm scripts.
+- [Shared application modules](chestnut-modules/): System administration, membership, metadata, messaging, and search.
+- [Shared infrastructure](chestnut-common/): Data access, caching, storage, security, and static rendering.

@@ -1,5 +1,4 @@
 # Spring配置
-spring: 
-  profiles: 
+spring:
+  profiles:
     active: dev
-    

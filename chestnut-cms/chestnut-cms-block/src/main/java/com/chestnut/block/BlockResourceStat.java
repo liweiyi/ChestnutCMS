@@ -15,6 +15,8 @@
  */
 package com.chestnut.block;
 
+import com.chestnut.block.CmsBlockTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -70,7 +72,7 @@ public class BlockResourceStat implements IResourceStat {
             Page<CmsPageWidget> page = pageWidgetService.page(new Page<>(0, pageSize, false), q);
             for (CmsPageWidget pageWidget : page.getRecords()) {
                 AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
-                        "正在统计自定义区块资源引用：" + count + " / " + total + "]");
+                        CmsBlockTips.STAT_RESOURCE_REFERENCES, count, total);
                 lastId = pageWidget.getPageWidgetId();
                 if (StringUtils.isNotEmpty(pageWidget.getContent())) {
                     List<ManualPageWidgetType.RowData> rowData = JacksonUtils.fromList(pageWidget.getContent(), ManualPageWidgetType.RowData.class);

@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore.controller.front;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
@@ -104,7 +106,7 @@ public class ContentApiController extends BaseRestController {
 			@RequestParam(value = "preview", required = false, defaultValue = "false") Boolean preview
 	) {
 		if (!CmsContentTag.LevelTagAttr.isRoot(level) && !IdUtils.validate(catalogId)) {
-			return R.fail("The parameter cid is required where lv is `Root`.");
+			throw CommonErrorCode.NOT_NULL.exception("cid");
 		}
 		LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<>();
 		q.eq(CmsContent::getSiteId, siteId).eq(CmsContent::getStatus, ContentStatus.PUBLISHED);
@@ -112,7 +114,7 @@ public class ContentApiController extends BaseRestController {
 		if (!CmsContentTag.LevelTagAttr.isRoot(level)) {
 			CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
 			if (Objects.isNull(catalog)) {
-				return R.fail("Catalog not found: " + catalogId);
+				throw CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalogId);
 			}
 			if (CmsContentTag.LevelTagAttr.isCurrent(level)) {
 				q.eq(CmsContent::getCatalogId, catalog.getCatalogId());
@@ -169,7 +171,7 @@ public class ContentApiController extends BaseRestController {
 	public R<?> getContentDetail(@PathVariable @LongId Long contentId) {
 		CmsContent content = this.contentService.dao().getById(contentId);
 		if (Objects.isNull(content) || !ContentStatus.isPublished(content.getStatus())) {
-			return R.fail("Content not found.");
+			throw CommonErrorCode.DATA_NOT_FOUND.exception();
 		}
 		for (ICoreDataHandler coreDataHandler : coreDataHandlers) {
 			coreDataHandler.beforeGetContentDetailApi(content);

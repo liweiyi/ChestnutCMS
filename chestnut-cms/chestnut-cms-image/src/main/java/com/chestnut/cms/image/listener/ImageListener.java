@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.image.listener;
 
+import com.chestnut.cms.image.utils.CmsImageContentTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.cms.image.domain.BCmsImage;
@@ -48,7 +50,7 @@ public class ImageListener {
 					.eq(CmsImage::getSiteId, site.getSiteId()).count();
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除图片内容数据：" + (i * pageSize) + "/" + total);
+						CmsImageContentTips.DELETING_IMAGE_DATA, i * pageSize, total);
 				List<Long> imageIds = this.imageService.dao().lambdaQuery()
 						.select(List.of(CmsImage::getImageId))
 						.eq(CmsImage::getSiteId, site.getSiteId())
@@ -57,7 +59,7 @@ public class ImageListener {
 				this.imageService.dao().removeBatchByIds(imageIds);
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除图片内容错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsImageContentTips.DELETE_IMAGE_FAILED);
 			log.error("Delete cms_image failed on site[{}] delete", site.getSiteId());
 		}
 		// 删除图集内容备份数据
@@ -67,7 +69,7 @@ public class ImageListener {
 					.eq(BCmsImage::getSiteId, site.getSiteId()));
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除图片内容备份数据：" + (i * pageSize) + "/" + total);
+						CmsImageContentTips.DELETING_IMAGE_BACKUP_DATA, i * pageSize, total);
 				List<Long> backupIds = backupMapper.selectPage(
 								new Page<>(0, pageSize, false),
 							new LambdaQueryWrapper<BCmsImage>().select(List.of(BCmsImage::getImageId))
@@ -76,7 +78,7 @@ public class ImageListener {
 				backupMapper.deleteByIds(backupIds);
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除图片内容备份错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsImageContentTips.DELETE_IMAGE_BACKUP_FAILED);
 			log.error("Delete cms_image failed on site[{}] delete", site.getSiteId());
 		}
 	}

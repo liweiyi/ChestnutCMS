@@ -1,9 +1,11 @@
 <template>
   <div class="ueditor">
     <ueditor-plus-wrap
+      ref="ueditorRef"
+      :key="localizedEditorConfig.lang"
       v-model="contentHtml"
       :editor-id="editorId"
-      :config="editorConfig"
+      :config="localizedEditorConfig"
       :editorDependencies="editorDependencies"
       @before-init="handleBeforeInit"
       @ready="handleReady"
@@ -38,6 +40,7 @@
 
 <script setup name="UEditorPlus">
 import { i18n } from '@/i18n'
+import { getUEditorLanguage } from '@/i18n/locales'
 import useAppStore from "@/store/modules/app"
 const appStore = useAppStore()
 import UeditorPlusWrap from '@/components/UEditorPlusWrap';
@@ -55,6 +58,7 @@ const UE_HOME = import.meta.env.VITE_APP_PATH + 'UEditorPlus/';
 const { proxy } = getCurrentInstance()
 
 const contentHtml = defineModel()
+const ueditorRef = ref(null)
 
 const props = defineProps({
   height: {
@@ -72,8 +76,8 @@ const props = defineProps({
 });
 
 const editorDependencies = ref([
-  'ueditor.config.js',
-  'ueditor.all.js',
+  'ueditor.config.js?v=20261112-i18n-dialogs',
+  'ueditor.all.js?v=20261112-i18n-dialogs',
   'xiumi/xiumi-ue-dialog-v5.js',
   'xiumi/xiumi-ue-v5.css',
 ])
@@ -114,28 +118,27 @@ const editorConfig = reactive({
   iframeCssUrlsAddition: [
     UE_HOME + 'themes/chestnut.css'
   ],
-  lang: i18n.global.locale.value ? i18n.global.locale.value.toLowerCase() : 'zh-cn',
   langPath: UE_HOME + "lang/",
   dialogIframeUrlMap: {
-    ai: UE_HOME + "dialogs/ai/ai.html?20251128",
-    anchor: UE_HOME + "dialogs/anchor/anchor.html?20251128",
-    background: UE_HOME + "dialogs/background/background.html?20251128",
-    contentimport: UE_HOME + "dialogs/contentimport/contentimport.html?20251128",
-    emotion: UE_HOME + "dialogs/emotion/emotion.html?20251128",
-    formula: UE_HOME + "dialogs/formula/formula.html?20251128",
-    help: UE_HOME + "dialogs/help/help.html?20251128",
-    insertframe: UE_HOME + "dialogs/insertframe/insertframe.html?20251128",
-    link: UE_HOME + "dialogs/link/link.html?20251128",
-    preview: UE_HOME + "dialogs/preview/preview.html?20251128",
-    scrawl: UE_HOME + "dialogs/scrawl/scrawl.html?20251128",
-    searchreplace: UE_HOME + "dialogs/searchreplace/searchreplace.html?20251128",
-    spechars: UE_HOME + "dialogs/spechars/spechars.html?20251128",
-    // insertvideo: UE_HOME + "dialogs/video/video.html?20251128",
-    edittip: UE_HOME + "dialogs/table/edittip.html?20251128",
-    edittable: UE_HOME + "dialogs/table/edittable.html?20251128",
-    edittd: UE_HOME + "dialogs/table/edittd.html?20251128",
-    template: UE_HOME + "dialogs/template/template.html?20251128",
-    wordimage: UE_HOME + "dialogs/wordimage/wordimage.html?20251128",
+    ai: UE_HOME + "dialogs/ai/ai.html?v=20261112-i18n-dialogs",
+    anchor: UE_HOME + "dialogs/anchor/anchor.html?v=20261112-i18n-dialogs",
+    background: UE_HOME + "dialogs/background/background.html?v=20261112-i18n-dialogs",
+    contentimport: UE_HOME + "dialogs/contentimport/contentimport.html?v=20261112-i18n-dialogs",
+    emotion: UE_HOME + "dialogs/emotion/emotion.html?v=20261112-i18n-dialogs",
+    formula: UE_HOME + "dialogs/formula/formula.html?v=20261112-i18n-dialogs",
+    help: UE_HOME + "dialogs/help/help.html?v=20261112-i18n-dialogs",
+    insertframe: UE_HOME + "dialogs/insertframe/insertframe.html?v=20261112-i18n-dialogs",
+    link: UE_HOME + "dialogs/link/link.html?v=20261112-i18n-dialogs",
+    preview: UE_HOME + "dialogs/preview/preview.html?v=20261112-i18n-dialogs",
+    scrawl: UE_HOME + "dialogs/scrawl/scrawl.html?v=20261112-i18n-dialogs",
+    searchreplace: UE_HOME + "dialogs/searchreplace/searchreplace.html?v=20261112-i18n-dialogs",
+    spechars: UE_HOME + "dialogs/spechars/spechars.html?v=20261112-i18n-dialogs",
+    // insertvideo: UE_HOME + "dialogs/video/video.html?v=20261112-i18n-dialogs",
+    edittip: UE_HOME + "dialogs/table/edittip.html?v=20261112-i18n-dialogs",
+    edittable: UE_HOME + "dialogs/table/edittable.html?v=20261112-i18n-dialogs",
+    edittd: UE_HOME + "dialogs/table/edittd.html?v=20261112-i18n-dialogs",
+    template: UE_HOME + "dialogs/template/template.html?v=20261112-i18n-dialogs",
+    wordimage: UE_HOME + "dialogs/wordimage/wordimage.html?v=20261112-i18n-dialogs",
   },
   shortcutMenuShows: {
     ai: false,
@@ -242,6 +245,21 @@ const editorConfig = reactive({
     }
   }
 });
+// 语言变化时重建工具栏，自定义配置不覆盖系统语言及已提供的语言包路径。
+const localizedEditorConfig = computed(() => ({
+  ...editorConfig,
+  ...props.configs,
+  lang: getUEditorLanguage(i18n.global.locale.value),
+  langPath: UE_HOME + 'lang/',
+  langImagePath: UE_HOME + (getUEditorLanguage(i18n.global.locale.value) === 'zh-cn' ? 'lang/zh-cn/images/' : 'lang/en/images/'),
+  xiumiTitle: proxy.$t('CMS.UEditor.Xiumi'),
+  xiumiDialogTitle: proxy.$t('CMS.UEditor.XiumiDialog')
+}))
+watch(() => localizedEditorConfig.value.lang, () => {
+  // 先保存尚未触发 contentChange 的正文或源码，再由 key 变化重建实例。
+  const editor = ueditorRef.value?.getEditor()
+  if (editor?.isReady) contentHtml.value = editor.getContent()
+}, { flush: 'sync' })
 const openResourceDialog = ref(false)
 const resourceType = ref('image')
 const resourceDialogTargetEl = ref(undefined)
@@ -1037,7 +1055,7 @@ function addXyWordCheckButton(editorId) {
     const ui = new UE.ui.MenuButton({
       editor: editor,
       className: "edui-for-" + uiName,
-      title: "Check Word",
+      title: proxy.$t('CMS.UEditor.WordCheck'),
       items: items,
       onbuttonclick: function() {
         editor.execCommand(uiName);

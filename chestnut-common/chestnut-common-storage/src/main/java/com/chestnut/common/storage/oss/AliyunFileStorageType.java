@@ -28,6 +28,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 管理阿里云 OSS 客户端并适配对象存储操作。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Component(IFileStorageType.BEAN_NAME_PREIFX + AliyunFileStorageType.TYPE)
 public class AliyunFileStorageType implements IFileStorageType {
 
@@ -143,10 +149,14 @@ public class AliyunFileStorageType implements IFileStorageType {
 		OSSClient<OSS> client = this.clients.get(endpoint);
 		if (client == null) {
 			client = new OSSClient<>();
-			client.setClient(new OSSClientBuilder().build(endpoint, accessKey, accessSecret));
+			client.setClient(createClient(endpoint, accessKey, accessSecret));
 			this.clients.put(endpoint, client);
 		}
 		client.setLastActiveTime(System.currentTimeMillis());
 		return client;
+	}
+
+	OSS createClient(String endpoint, String accessKey, String accessSecret) {
+		return new OSSClientBuilder().build(endpoint, accessKey, accessSecret);
 	}
 }

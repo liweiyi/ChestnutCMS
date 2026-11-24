@@ -15,6 +15,8 @@
  */
 package com.chestnut.advertisement.controller.front;
 
+import com.chestnut.advertisement.CmsAdTips;
+
 import com.chestnut.advertisement.cache.AdNameMonitoredCache;
 import com.chestnut.advertisement.service.IAdvertisementService;
 import com.chestnut.advertisement.stat.AdClickStatEventHandler;
@@ -76,7 +78,8 @@ public class AdApiController extends BaseRestController {
 		String redirectUrl = advertisementService.getRedirectUrlByAdId(siteId, advertisementId);
 		if (StringUtils.isEmpty(redirectUrl)) {
 			// TODO 跳转公共错误页面
-			response.getWriter().write("Invalid advertisement.");
+			response.setCharacterEncoding(java.nio.charset.StandardCharsets.UTF_8.name());
+            response.getWriter().write(CmsAdTips.INVALID_ADVERTISEMENT.locale());
 			return;
 		}
 		dealAdClick(siteId, advertisementId);

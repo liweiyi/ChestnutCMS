@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.stat.controller;
 
+import com.chestnut.cms.stat.CmsStatTips;
+
 import com.chestnut.cms.stat.baidu.BaiduTjMetrics;
 import com.chestnut.cms.stat.baidu.BaiduTongjiConfig;
 import com.chestnut.cms.stat.baidu.api.*;
@@ -39,6 +41,7 @@ import com.chestnut.system.security.AdminUserType;
 
 import com.chestnut.system.validator.LongId;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +58,7 @@ import java.util.List;
 @XComment("{API.DOC.CMS.STAT.BAIDU_TONGJI_MODULE}")
 @Priv(type = AdminUserType.TYPE)
 @RestController
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/cms/stat/baidu")
 public class BaiduTongjiController extends CmsRestController {
@@ -116,7 +120,8 @@ public class BaiduTongjiController extends CmsRestController {
 				.build();
 		OverviewGetTimeTrendRptResponse response = request.request();
 		if (!response.isSuccess()) {
-			return R.fail(response.getError_msg());
+			log.warn("Baidu Analytics report failed: {}", response.getError_msg());
+            return R.failWithTip(CmsStatTips.BAIDU_REPORT_FAILED);
 		}
 		return R.ok(response);
 	}
@@ -142,7 +147,8 @@ public class BaiduTongjiController extends CmsRestController {
 				.build();
 		OverviewGetDistrictRptResponse response = api.request();
 		if (!response.isSuccess()) {
-			return R.fail(response.getError_msg());
+			log.warn("Baidu Analytics report failed: {}", response.getError_msg());
+            return R.failWithTip(CmsStatTips.BAIDU_REPORT_FAILED);
 		}
 		return R.ok(response);
 	}
@@ -168,7 +174,8 @@ public class BaiduTongjiController extends CmsRestController {
 				.build();
 		OverviewGetCommonTrackRptResponse request = api.request();
 		if (!request.isSuccess()) {
-			return R.fail(request.getError_msg());
+			log.warn("Baidu Analytics report failed: {}", request.getError_msg());
+            return R.failWithTip(CmsStatTips.BAIDU_REPORT_FAILED);
 		}
 		return R.ok(request);
 	}
@@ -204,7 +211,8 @@ public class BaiduTongjiController extends CmsRestController {
 				.build();
 		TrendTimeAResponse response = request.request();
 		if (!response.isSuccess()) {
-			return R.fail(response.getError_msg());
+			log.warn("Baidu Analytics report failed: {}", response.getError_msg());
+            return R.failWithTip(CmsStatTips.BAIDU_REPORT_FAILED);
 		}
 		return R.ok(response);
 	}
@@ -243,7 +251,8 @@ public class BaiduTongjiController extends CmsRestController {
 				.build();
 		SourceAllAResponse response = request.request();
 		if (!response.isSuccess()) {
-			return R.fail(response.getError_msg());
+			log.warn("Baidu Analytics report failed: {}", response.getError_msg());
+            return R.failWithTip(CmsStatTips.BAIDU_REPORT_FAILED);
 		}
 		return R.ok(response);
 	}
@@ -282,7 +291,8 @@ public class BaiduTongjiController extends CmsRestController {
 				.build();
 		SourceEngineAResponse response = request.request();
 		if (!response.isSuccess()) {
-			return R.fail(response.getError_msg());
+			log.warn("Baidu Analytics report failed: {}", response.getError_msg());
+            return R.failWithTip(CmsStatTips.BAIDU_REPORT_FAILED);
 		}
 		return R.ok(response);
 	}
@@ -309,7 +319,8 @@ public class BaiduTongjiController extends CmsRestController {
 				.build();
 		SourceSearchWordAResponse response = request.request();
 		if (!response.isSuccess()) {
-			return R.fail(response.getError_msg());
+			log.warn("Baidu Analytics report failed: {}", response.getError_msg());
+            return R.failWithTip(CmsStatTips.BAIDU_REPORT_FAILED);
 		}
 		return R.ok(response);
 	}

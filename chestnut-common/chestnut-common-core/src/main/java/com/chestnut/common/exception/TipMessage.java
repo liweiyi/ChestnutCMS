@@ -15,7 +15,6 @@
  */
 package com.chestnut.common.exception;
 
-import com.chestnut.common.domain.R;
 import com.chestnut.common.i18n.I18nUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 
@@ -31,7 +30,7 @@ import java.util.Objects;
 public interface TipMessage {
 
 	/**
-	 * 错误信息编码，对应国际化文件key
+	 * 提示消息的国际化键名，不带花括号。
 	 */
 	String value();
 
@@ -44,5 +43,13 @@ public interface TipMessage {
             locale = LocaleContextHolder.getLocale();
         }
         return I18nUtils.parse(this.value(), locale, args);
+    }
+
+    default GlobalException exception(Object... args) {
+        return exception(null, args);
+    }
+
+    default GlobalException exception(Throwable cause, Object... args) {
+        return new GlobalException(cause, this, args);
     }
 }

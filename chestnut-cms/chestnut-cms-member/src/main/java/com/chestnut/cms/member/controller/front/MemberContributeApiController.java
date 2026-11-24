@@ -15,6 +15,10 @@
  */
 package com.chestnut.cms.member.controller.front;
 
+import com.chestnut.cms.member.CmsMemberTips;
+
+import com.chestnut.common.exception.CommonTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.article.ArticleContentType;
@@ -111,14 +115,14 @@ public class MemberContributeApiController extends BaseRestController implements
 	public R<Void> deleteContribute(@RequestParam("cid") @LongId @XComment("{API.DOC.CMS.CMS_MEMBER.CONTENT_ID}") Long contentId) {
 		CmsContent xContent = this.contentService.dao().getById(contentId);
 		if (xContent == null) {
-			return R.fail("内容不存在");
+			throw CommonErrorCode.DATA_NOT_FOUND.exception();
 		}
 		if (!ContentStatus.isDraft(xContent.getStatus())) {
-			return R.fail("只能删除待审核的初稿");
+			return R.failWithTip(CmsMemberTips.DRAFT_DELETE_ONLY);
 		}
 		Operator operator = Operator.of(StpMemberUtil.getLoginUser());
 		if (!Objects.equals(xContent.getContributorId(), operator.getUserId())) {
-			return R.fail("内容ID错误");
+			return R.failWithTip(CommonTips.INVALID_PARAMETER, "contentId");
 		}
 
 		IContentType contentType = ContentCoreUtils.getContentType(xContent.getContentType());
@@ -148,7 +152,7 @@ public class MemberContributeApiController extends BaseRestController implements
 		CmsCatalog catalog = this.catalogService.getCatalog(dto.getCatalogId());
 		Assert.notNull(catalog, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", dto.getCatalogId()));
 		if (!EnableContributeProperty.getValue(catalog.getConfigProps())) {
-			return R.fail("参数`catalogId`异常：" + dto.getCatalogId());
+			return R.failWithTip(CommonTips.INVALID_PARAMETER, "catalogId");
 		}
 		String contentHtml = HtmlUtils.cleanRichText(dto.getContentHtml());
 		Assert.isTrue(StringUtils.isNotBlank(contentHtml), () -> CommonErrorCode.NOT_EMPTY.exception("contentHtml"));
@@ -174,7 +178,7 @@ public class MemberContributeApiController extends BaseRestController implements
 
 		CmsSite site = this.siteService.getSite(siteId);
 		if (site == null) {
-			return R.fail("Invalid parameter sid: "+ siteId);
+			return R.failWithTip(CommonTips.INVALID_PARAMETER, "sid");
 		}
 		ResourceUploadDTO dto = ResourceUploadDTO.builder().site(site).file(multipartFile).build();
 		dto.setOperator(StpMemberUtil.getLoginUser());

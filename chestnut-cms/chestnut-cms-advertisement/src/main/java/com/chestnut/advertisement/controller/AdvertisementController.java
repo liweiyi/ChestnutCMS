@@ -135,7 +135,7 @@ public class AdvertisementController extends BaseRestController {
 	public R<Void> deleteAdvertisements(
 			@RequestBody @XComment("{API.DOC.CMS.ADVERTISEMENT.IDS}") List<Long> advertisementIds) {
 		if (StringUtils.isEmpty(advertisementIds)) {
-			return R.fail(StringUtils.messageFormat("参数[{0}]不能为空", "advertisementIds"));
+			throw CommonErrorCode.NOT_EMPTY.exception("advertisementIds");
 		}
 		this.advertisementService.deleteAdvertisement(advertisementIds);
 		return R.ok();
@@ -147,7 +147,7 @@ public class AdvertisementController extends BaseRestController {
 	public R<Void> enableAdvertisements(
 			@RequestBody @XComment("{API.DOC.CMS.ADVERTISEMENT.IDS}") List<Long> advertisementIds) {
 		if (StringUtils.isEmpty(advertisementIds)) {
-			return R.fail(StringUtils.messageFormat("参数[{0}]不能为空", "advertisementIds"));
+			throw CommonErrorCode.NOT_EMPTY.exception("advertisementIds");
 		}
 		this.advertisementService.enableAdvertisement(advertisementIds,
 				StpAdminUtil.getLoginUser().getUsername());
@@ -160,7 +160,7 @@ public class AdvertisementController extends BaseRestController {
 	public R<Void> disableAdvertisements(
 			@RequestBody @XComment("{API.DOC.CMS.ADVERTISEMENT.IDS}") List<Long> advertisementIds) {
 		if (StringUtils.isEmpty(advertisementIds)) {
-			return R.fail(StringUtils.messageFormat("参数[{0}]不能为空", "advertisementIds"));
+			throw CommonErrorCode.NOT_EMPTY.exception("advertisementIds");
 		}
 		this.advertisementService.disableAdvertisement(advertisementIds,
 				StpAdminUtil.getLoginUser().getUsername());

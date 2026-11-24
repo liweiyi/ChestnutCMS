@@ -15,6 +15,8 @@
  */
 package com.chestnut.system.controller;
 
+import com.chestnut.system.exception.SystemTips;
+
 import cn.idev.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -137,7 +139,7 @@ public class SysUserController extends BaseRestController {
             @XComment("{API.DOC.SYS.USER.IMPORT.UPDATE_SUPPORT}") boolean updateSupport
     ) throws Exception {
 		if (Objects.isNull(file) || file.isEmpty()) {
-			return R.fail("Import file not exists!");
+			return R.failWithTip(SystemTips.IMPORT_FILE_REQUIRED);
 		}
 		StringWriter logWriter = new StringWriter();
 		SysUserReadListener readListener = new SysUserReadListener(

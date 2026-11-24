@@ -41,15 +41,15 @@
   </div>
 </template>
 <script setup name="CmsImageGroup">
+import { defineAsyncComponent } from "vue";
 import useAppStore from "@/store/modules/app"
 const appStore = useAppStore()
 import CmsResourceDialog from "@/views/cms/contentcore/resourceDialog";
 import { ElImageViewer } from "element-plus"
-import * as utils from "@/utils/chestnut";
-
-const { proxy } = getCurrentInstance()
+import { getOriginalImageSource } from "@/utils/imageOptimizer/resource.js";
 
 const model = defineModel();
+const emit = defineEmits(['update:src']);
 
 const props = defineProps({
   src: {
@@ -99,6 +99,7 @@ const originalSrcList = ref([]);
 const openResourceDialog = ref(false);
 const  showImageViewer = ref(false);
 const curIndex = ref(-1);
+const pendingSources = new Map();
 
 const showAdd = computed(() => {
   let count = 0;
@@ -108,40 +109,59 @@ const showAdd = computed(() => {
   return count < props.limit;
 })
 
-watch(() => props.src, (newVal) => {
-  imageSrcList.value = newVal || [];
+watch([() => model.value, () => props.src], ([paths, sources]) => {
+  const currentPaths = paths || [];
+  for (const [index, pending] of pendingSources) {
+    if (currentPaths[index] !== pending.path) pendingSources.delete(index);
+  }
+  imageSrcList.value = currentPaths.map((path, index) => {
+    const incoming = sources?.[index];
+    const pending = pendingSources.get(index);
+    if (pending && incoming === pending.previousSrc) return pending.src;
+    pendingSources.delete(index);
+    return incoming || (typeof path === 'string' && !path.startsWith('iurl://') ? path : '');
+  });
   originalSrcList.value = imageSrcList.value.map(getOriginalSrc);
-}, { immediate: true })
+}, { immediate: true, deep: true })
+
+function updateImages(paths, sources) {
+  pendingSources.clear();
+  paths.forEach((path, index) => {
+    if (sources[index] !== props.src?.[index]) pendingSources.set(index, {
+      path, src: sources[index], previousSrc: props.src?.[index]
+    });
+  });
+  imageSrcList.value = [...sources];
+  originalSrcList.value = sources.map(getOriginalSrc);
+  model.value = [...paths];
+  emit('update:src', [...sources]);
+}
 
 function getOriginalSrc(src) {
   if (!src || src.indexOf("/preview/") === -1) {
     return src;
   }
-  let fileName = utils.substringAfterLast(src, "/");
-  if (fileName && fileName.indexOf('_') > -1) {
-    let name = utils.substringBeforeLast(fileName, "_") + "." + utils.substringAfterLast(fileName, ".");
-    let prefix = utils.substringBeforeLast(src, "/");
-    return prefix + "/" + name;
-  }
-  return src;
+  return getOriginalImageSource(src);
 }
 
 function handleResourceDialogOk (results) {
   if (results && results.length > 0) {
+    const paths = [...(model.value || [])];
+    const sources = [...imageSrcList.value];
     if (curIndex.value < 0) {
       for (let i = 0; i < results.length; i++) {
-        if (model.value.length < props.limit) {
-          model.value.push(results[i].path);
-          imageSrcList.value.push(results[i].src);
-          originalSrcList.value.push(getOriginalSrc(results[i].src));
+        if (paths.length < props.limit) {
+          paths.push(results[i].path);
+          sources.push(results[i].src);
         }
       }
     } else {
+      if (curIndex.value >= paths.length) return;
       const r = results[0];
-      model.value[curIndex.value] = r.path;
-      imageSrcList.value[curIndex.value] = r.src;
-      originalSrcList.value[curIndex.value] = getOriginalSrc(r.src);
+      paths[curIndex.value] = r.path;
+      sources[curIndex.value] = r.src;
     }
+    updateImages(paths, sources);
   }
 }
 
@@ -160,9 +180,11 @@ function handleEdit (index) {
 }
 
 function handleRemove (index) {
-  model.value.splice(index, 1);
-  imageSrcList.value.splice(index, 1);
-  originalSrcList.value.splice(index, 1);
+  const paths = [...(model.value || [])];
+  const sources = [...imageSrcList.value];
+  paths.splice(index, 1);
+  sources.splice(index, 1);
+  updateImages(paths, sources);
 }
 
 function handleUpload () {

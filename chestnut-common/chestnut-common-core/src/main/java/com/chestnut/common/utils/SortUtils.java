@@ -20,7 +20,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * 排序工具类
+ * 生成默认排序值并计算节点移动后的排序值。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 public class SortUtils {
 
@@ -57,7 +60,7 @@ public class SortUtils {
 					// 倒序移动到末尾
 					sortValueSetter.accept(source, targetSortV - 10000);
 				} else {
-					sortValueSetter.accept(source, targetSortV + ((targetSortV - lessThanTargetSortV) / 2));
+					sortValueSetter.accept(source, targetSortV - ((targetSortV - lessThanTargetSortV) / 2));
 				}
 			}
 		} else {

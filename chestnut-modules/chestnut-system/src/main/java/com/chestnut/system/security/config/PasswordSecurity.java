@@ -26,10 +26,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Getter
 @Setter
 public class PasswordSecurity {
+
+    private static final Pattern BLANK_PASSWORD_PATTERN = Pattern.compile("\\p{IsWhite_Space}*");
 
     /**
      * 密码最小长度
@@ -78,6 +81,8 @@ public class PasswordSecurity {
     private Long expireSeconds = 0L;
 
     public void validPassword(ISecurityUser user, String password) {
+        Assert.isTrue(password != null && !BLANK_PASSWORD_PATTERN.matcher(password).matches(),
+                SysErrorCode.INSECURE_PASSWORD::exception);
         // 最大长度
         boolean valid = this.getMaxLength() > 0
                 && password.length() <= this.getMaxLength();

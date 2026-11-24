@@ -178,23 +178,28 @@ public class RestfulLogType implements ILogType {
 	}
 
 	/**
-	 * 判断是否需要过滤的对象。
-	 * 
-	 * @param o
-	 *            对象信息。
-	 * @return 如果是需要过滤的对象，则返回true；否则返回false。
+	 * 判断参数是否需要从审计日志中过滤。容器中的空元素不触发过滤，
+	 * 上传数组同时过滤实现类的数组和原有的通用上传数组。
+	 *
+	 * @param argument 请求参数或容器元素
+	 * @return 需要过滤时返回 {@code true}
 	 */
-	private boolean isIgnoreArgs(final Object o) {
-		Class<?> clazz = o.getClass();
+	private boolean isIgnoreArgs(final Object argument) {
+		if (argument == null) {
+			return false;
+		}
+		Class<?> clazz = argument.getClass();
 		if (clazz.isArray()) {
-			return clazz.getComponentType().isAssignableFrom(MultipartFile.class);
+			Class<?> componentType = clazz.getComponentType();
+			return MultipartFile.class.isAssignableFrom(componentType)
+					|| componentType.isAssignableFrom(MultipartFile.class);
 		} else if (Collection.class.isAssignableFrom(clazz)) {
-			Collection<?> collection = (Collection<?>) o;
+			Collection<?> collection = (Collection<?>) argument;
 			return collection.stream().anyMatch(this::isIgnoreArgs);
 		} else if (Map.class.isAssignableFrom(clazz)) {
-			return ((Map<?, ?>) o).values().stream().anyMatch(this::isIgnoreArgs);
+			return ((Map<?, ?>) argument).values().stream().anyMatch(this::isIgnoreArgs);
 		}
-		return o instanceof MultipartFile || o instanceof HttpServletRequest || o instanceof HttpServletResponse
-				|| o instanceof BindingResult;
+		return argument instanceof MultipartFile || argument instanceof HttpServletRequest
+				|| argument instanceof HttpServletResponse || argument instanceof BindingResult;
 	}
 }

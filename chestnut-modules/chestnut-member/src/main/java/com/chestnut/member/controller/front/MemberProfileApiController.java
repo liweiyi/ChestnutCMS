@@ -15,6 +15,8 @@
  */
 package com.chestnut.member.controller.front;
 
+import com.chestnut.member.exception.MemberProfileTips;
+
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.GlobalException;
@@ -50,6 +52,12 @@ import java.io.IOException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 提供会员个人资料与账号修改接口
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @XComment("{API.DOC.MEMBER.PROFILE_API_MODULE}")
 @RequiredArgsConstructor
 @RestController
@@ -115,7 +123,7 @@ public class MemberProfileApiController extends BaseRestController {
 	public R<?> resetMemberPassword(@RequestBody @Validated ModifyMemberPasswordRequest req) {
 		Member member = this.memberService.getById(StpMemberUtil.getLoginIdAsLong());
 		if (!SecurityUtils.matches(req.getPassword(), member.getPassword())) {
-			return R.fail(MemberTips.WRONG_PASSWORD.locale(LocaleContextHolder.getLocale()));
+			return R.failWithTip(MemberTips.WRONG_PASSWORD);
 		}
 		// 密码规则校验
 		this.securityConfigService.validPassword(member, req.getNewPassword());
@@ -148,7 +156,7 @@ public class MemberProfileApiController extends BaseRestController {
 		} catch (GlobalException e) {
 			throw e;
 		} catch (Exception e) {
-			return R.fail("发送失败，请联系管理员！");
+			return R.failWithTip(MemberProfileTips.SEND_FAILED);
 		}
 	}
 
@@ -158,7 +166,7 @@ public class MemberProfileApiController extends BaseRestController {
 	public R<?> changeMemberEmail(@RequestBody @Validated ChangeMemberEmailRequest dto) {
 		String authCode = this.redisCache.getCacheObject(SMS_CODE_CACHE_PREFIX + StpMemberUtil.getLoginIdAsLong(), String.class);
 		if (StringUtils.isEmpty(authCode) || !dto.getAuthCode().equals(authCode)) {
-			return R.fail("验证码错误");
+			return R.failWithTip(MemberProfileTips.INVALID_CODE);
 		}
 
 		Member member = this.memberService.getById(StpMemberUtil.getLoginIdAsLong());

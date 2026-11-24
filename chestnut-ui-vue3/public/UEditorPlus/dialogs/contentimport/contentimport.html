@@ -2,7 +2,7 @@
 <head>
     <title></title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-    <script type="text/javascript" src="../internal.js?0c13553b"></script>
+    <script type="text/javascript" src="../internal.js?v=20261112-i18n-dialogs"></script>
     <style type="text/css">
         .wrapper {
             width: 620px;
@@ -130,22 +130,22 @@
 <div class="wrapper">
     <div class="file-upload">
         <div class="upload-button">
-            <div class="text">选择本地文件</div>
+            <div class="text"><var id="lang_selectLocal"></var></div>
             <input type="file" id="contentImport"/>
         </div>
         <div class="upload-button">
-            <div class="text" onclick="$('.file-input').show();">粘贴Markdown</div>
+            <div class="text" onclick="$('.file-input').show();"><var id="lang_pasteMarkdown"></var></div>
         </div>
         <div class="file-tip"></div>
     </div>
     <div class="file-manual">
         <div class="title">
-            支持文档格式
+            <var id="lang_supportedFormats"></var>
         </div>
         <div class="body">
             <ul>
-                <li><b>Word</b>：docx</li>
-                <li><b>Markdown</b>：md</li>
+                <li><b>Word</b>: docx</li>
+                <li><b>Markdown</b>: md</li>
             </ul>
         </div>
     </div>
@@ -154,10 +154,10 @@
         <textarea id="fileInputContent"></textarea>
         <div class="tool">
             <a href="javascript:;" id="fileInputConfirm">
-                确定
+                <var id="lang_confirm"></var>
             </a>
             <a href="javascript:;" onclick="$(this).closest('.file-input').hide();">
-                关闭
+                <var id="lang_close"></var>
             </a>
         </div>
     </div>
@@ -165,7 +165,7 @@
 <script src="../../third-party/jquery-1.10.2.js?feef8a20"></script>
 <script src="mammoth.browser.min.js?f4953675"></script>
 <script src="showdown.min.js?68064a78"></script>
-<script type="text/javascript" src="contentimport.js?c63ca665"></script>
+<script type="text/javascript" src="contentimport.js?v=20261112-i18n-dialogs"></script>
 <script type="text/javascript">
     utils.domReady(function () {
         var options = {};

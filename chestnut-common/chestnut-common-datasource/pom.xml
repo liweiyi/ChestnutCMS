@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>chestnut-common</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.6.3</version>
+		<version>1.6.4</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -36,6 +36,11 @@
 		<dependency>
 			<groupId>com.chestnut</groupId>
 			<artifactId>chestnut-common-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>

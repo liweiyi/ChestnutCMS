@@ -364,15 +364,15 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 	 *
 	 * @param collection
 	 *            给定的集合
-	 * @param array
+	 * @param findArr
 	 *            给定的数组
 	 * @return boolean 结果
 	 */
-	public static boolean containsAny(Collection<String> collection, String... array) {
-		if (isEmpty(collection) || isEmpty(array)) {
+	public static boolean containsAny(Collection<String> collection, String... findArr) {
+		if (isEmpty(collection) || isEmpty(findArr)) {
 			return false;
 		} else {
-			for (String str : array) {
+			for (String str : findArr) {
 				if (collection.contains(str)) {
 					return true;
 				}

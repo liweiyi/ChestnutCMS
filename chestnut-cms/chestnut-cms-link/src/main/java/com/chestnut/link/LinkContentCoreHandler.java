@@ -15,6 +15,8 @@
  */
 package com.chestnut.link;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
@@ -81,7 +83,7 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
                     linkGroupService.save(data);
                     linkGroupIdMap.put(oldLinkGroupId, data.getLinkGroupId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsLinkTips.IMPORT_FLINK_GROUP_FAIL, oldLinkGroupId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsLinkTips.IMPORT_FLINK_GROUP_FAIL, oldLinkGroupId, CommonTips.failureReason(e));
                     log.error("Import friend link group failed: {}", data.getCode(), e);
                 }
             }
@@ -101,7 +103,7 @@ public class LinkContentCoreHandler implements ICoreDataHandler {
                     data.setLogo(context.dealInternalUrl(data.getLogo()));
                     linkService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsLinkTips.IMPORT_FLINK_FAIL, oldLinkId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsLinkTips.IMPORT_FLINK_FAIL, oldLinkId, CommonTips.failureReason(e));
                     log.error("Import friend link failed: {}", data.getUrl(), e);
                 }
             }

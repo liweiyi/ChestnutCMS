@@ -488,13 +488,13 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		AsyncTaskManager.setTaskPercent(10);
 		// 1、原父级栏目子节点数-1
 		if (fromCatalog.getParentId() > 0) {
-			AsyncTaskManager.setTaskMessage("更新转移栏目原父级栏目数据");
+			AsyncTaskManager.setTaskMessage(ContentCoreTips.UPDATING_SOURCE_PARENT);
 			CmsCatalog parent = this.getById(fromCatalog.getParentId());
 			parent.setChildCount(parent.getChildCount() - 1);
 			invokedCatalogs.put(parent.getCatalogId(), parent);
 		}
 		// 2、来源栏目修改相关属性
-		AsyncTaskManager.setTaskMessage("更新转移栏目数据");
+		AsyncTaskManager.setTaskMessage(ContentCoreTips.UPDATING_MOVED_CATALOG);
 		fromCatalog.setParentId(Objects.isNull(toCatalog) ? 0 : toCatalog.getCatalogId());
 		String fromCatalogAncestors = CatalogUtils.getCatalogAncestors(toCatalog, fromCatalog.getCatalogId());
 		fromCatalog.setAncestors(fromCatalogAncestors);
@@ -503,7 +503,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		invokedCatalogs.put(fromCatalog.getCatalogId(), fromCatalog);
 		// 3、依次处理所有栏目
         for (CmsCatalog child : children) {
-            AsyncTaskManager.setTaskMessage("更新转移栏目子栏目数据");
+            AsyncTaskManager.setTaskMessage(ContentCoreTips.UPDATING_CHILD_CATALOGS);
             CmsCatalog parent = invokedCatalogs.get(child.getParentId());
             child.setAncestors(CatalogUtils.getCatalogAncestors(parent.getAncestors(), child.getCatalogId()));
             child.setTreeLevel(parent.getTreeLevel() + 1);
@@ -511,7 +511,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
         }
 		// 4、目标栏目子栏目数+1
 		if (Objects.nonNull(toCatalog)) {
-			AsyncTaskManager.setTaskMessage("更新转移目标栏目数据");
+			AsyncTaskManager.setTaskMessage(ContentCoreTips.UPDATING_TARGET_CATALOG);
 			toCatalog.setChildCount(toCatalog.getChildCount() + 1);
 			invokedCatalogs.put(toCatalog.getCatalogId(), toCatalog);
 		}
@@ -528,7 +528,7 @@ public class CatalogServiceImpl extends ServiceImpl<CmsCatalogMapper, CmsCatalog
 		// 6、更新缓存
 		invokedCatalogs.values().forEach(this::clearCache);
 		// 7、更新除目标栏目外的所有栏目内容数据
-		AsyncTaskManager.setTaskProgressInfo(40, "更新转移栏目及其子栏目内容");
+		AsyncTaskManager.setTaskProgressInfo(40, ContentCoreTips.UPDATING_MOVED_CONTENTS);
 		invokedCatalogs.values().forEach(catalog -> {
 			if (toCatalog == null || !Objects.equals(catalog.getCatalogId(), toCatalog.getCatalogId())) {
 				new LambdaUpdateChainWrapper<>(contentMapper)

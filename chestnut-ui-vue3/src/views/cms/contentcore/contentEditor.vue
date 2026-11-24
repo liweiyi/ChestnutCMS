@@ -196,7 +196,7 @@
                     </el-button-group>
                   </el-form-item>
                   <el-form-item :label="$t('CMS.Content.Logo')" prop="logo">
-                    <cms-image-group v-model="form.images" :src="form.imagesSrc" :limit="6"></cms-image-group>
+                    <cms-image-group v-model="form.images" v-model:src="form.imagesSrc" :limit="6"></cms-image-group>
                   </el-form-item>
                   <el-form-item :label="$t('CMS.Content.Author')" prop="author">
                     <el-input v-model="form.author" />

@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore.template.tag;
 
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.StaticizeConstants;
@@ -23,7 +25,6 @@ import com.chestnut.common.staticize.enums.TagAttrDataType;
 import com.chestnut.common.staticize.tag.AbstractTag;
 import com.chestnut.common.staticize.tag.TagAttr;
 import com.chestnut.common.utils.Assert;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IPageWidgetType;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.vo.TagPageWidgetVO;
@@ -84,7 +85,7 @@ public class CmsPageWidgetDataTag extends AbstractTag {
 				.eq(CmsPageWidget::getSiteId, siteId)
 				.eq(CmsPageWidget::getCode, code);
 		CmsPageWidget pageWidget = this.pageWidgetService.getOne(q);
-		Assert.notNull(pageWidget, () -> new TemplateException(StringUtils.messageFormat("Page widget [code={0}] not found.", code), env));
+		Assert.notNull(pageWidget, () -> new TemplateException(ContentCoreTips.PAGE_WIDGET_NOT_FOUND.locale(env.getLocale(), code), env));
 		TagPageWidgetVO tagPageWidgetVO = TagPageWidgetVO.newInstance(pageWidget);
 
 		IPageWidgetType pwt = this.pageWidgetService.getPageWidgetType(pageWidget.getType());

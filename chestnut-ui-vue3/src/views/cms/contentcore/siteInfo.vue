@@ -109,6 +109,11 @@
         <el-form-item :label="$t('CMS.Site.SiteId')" prop="siteId">
           <span class="span_siteId" v-if="formInfo.siteId!=undefined">{{ formInfo.siteId }}</span>
         </el-form-item>
+        <el-form-item :label="$t('CMS.Site.ParentSite')" prop="parentId">
+          <span v-if="formInfo.siteId">
+            {{ formInfo.parentId > 0 ? formInfo.parentName || formInfo.parentId : $t('CMS.Site.TopLevel') }}
+          </span>
+        </el-form-item>
         <el-form-item :label="$t('CMS.Site.Name')" prop="name">
           <el-input v-model="formInfo.name" />
         </el-form-item>

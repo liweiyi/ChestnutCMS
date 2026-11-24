@@ -37,7 +37,7 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Setter
-@XComment("{API.DOC.SYS.UPDATE_USER_REQ}")
+@XComment("{API.DOC.SYS.USER.UPDATE_USER_REQ}")
 public class UpdateUserRequest extends BaseDTO {
 
     @LongId

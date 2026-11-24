@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.dynamic;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.cms.dynamic.domain.CmsDynamicPage;
 import com.chestnut.cms.dynamic.service.IDynamicPageService;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -72,7 +74,7 @@ public class DynamicCoreHandler implements ICoreDataHandler {
                     dynamicPageService.save(data);
                     dynamicPageService.registerDynamicPageMapping(data.getCode(), data.getPath());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsDynamicTips.IMPORT_DYNAMIC_TEMPLATE_PAGE_FAIL, data.getCode(), e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsDynamicTips.IMPORT_DYNAMIC_TEMPLATE_PAGE_FAIL, data.getCode(), CommonTips.failureReason(e));
                     log.error("Import dynamic page failed: {}", data.getCode(), e);
                 }
             }

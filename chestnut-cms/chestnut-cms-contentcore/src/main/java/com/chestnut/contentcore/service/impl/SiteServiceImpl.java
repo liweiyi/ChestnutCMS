@@ -31,6 +31,7 @@ import com.chestnut.contentcore.core.IPublishPipeProp;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
 import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
+import com.chestnut.contentcore.domain.dto.SortSiteRequest;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.enums.ContentCoreTips;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
@@ -48,8 +49,10 @@ import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ConfigPropertyUtils;
 import com.chestnut.contentcore.util.FileStorageHelper;
 import com.chestnut.contentcore.util.SiteUtils;
+import com.chestnut.system.permission.PermissionUtils;
 import com.chestnut.system.service.ISysUserService;
 import com.chestnut.system.service.impl.UserPermissionService;
+import com.chestnut.system.utils.TransactionUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,15 +65,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 站点数据与配置管理
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> implements ISiteService {
+
+	private static final Comparator<CmsSite> SITE_ORDER = Comparator.comparing(CmsSite::getSortFlag)
+			.thenComparing(CmsSite::getSiteId);
 
 	private final ApplicationContext applicationContext;
 
@@ -85,6 +98,187 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 	private final FileStorageService fileStorageService;
 
 	private final AsyncTaskManager asyncTaskManager;
+
+	@Override
+	public List<CmsSite> listSites(String siteName, LoginUser loginUser) {
+		return this.listSites(siteName, null, loginUser);
+	}
+
+	@Override
+	public List<CmsSite> listChildSites(long parentId, LoginUser loginUser) {
+		if (parentId > 0) {
+			PermissionUtils.checkPermission(SitePrivItem.View.getPermissionKey(parentId), loginUser);
+		}
+		return this.listSites(null, parentId, loginUser);
+	}
+
+	private List<CmsSite> listSites(String siteName, Long parentId, LoginUser loginUser) {
+		LocalDateTime now = LocalDateTime.now();
+		List<CmsSite> sites = this.lambdaQuery().like(StringUtils.isNotEmpty(siteName), CmsSite::getName, siteName)
+				.eq(parentId != null, CmsSite::getParentId, parentId)
+				.list().stream()
+				.filter(site -> loginUser.hasPermission(SitePrivItem.View.getPermissionKey(site.getSiteId())))
+				.toList();
+		sites.forEach(site -> {
+			if (!site.isTopAt(now)) {
+				site.setTopFlag(0L);
+				site.setTopDate(null);
+			}
+		});
+		return sites.stream()
+				.sorted(Comparator.comparing(CmsSite::getTopFlag).reversed().thenComparing(SITE_ORDER))
+				.toList();
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void sortSite(SortSiteRequest request, String operator) {
+		if (request.getSiteId().equals(request.getTargetSiteId())) {
+			return;
+		}
+		List<CmsSite> requestedSites = this.listByIds(List.of(request.getSiteId(), request.getTargetSiteId()));
+		Long parentId = requireSite(requestedSites, request.getSiteId()).getParentId();
+		Assert.isTrue(parentId.equals(requireSite(requestedSites, request.getTargetSiteId()).getParentId()),
+				ContentCoreErrorCode.SITE_SORT_DIFFERENT_PARENTS::exception);
+
+		// 按站点 ID 固定加锁顺序，使相邻排序值在本次事务内保持稳定。
+		List<CmsSite> sites = new ArrayList<>(this.lambdaQuery()
+				.select(CmsSite::getSiteId, CmsSite::getSortFlag, CmsSite::getTopFlag, CmsSite::getTopDate)
+				.eq(CmsSite::getParentId, parentId)
+				.orderByAsc(CmsSite::getSiteId)
+				.last("FOR UPDATE")
+				.list());
+		sites.sort(SITE_ORDER);
+		CmsSite site = requireSite(sites, request.getSiteId());
+		CmsSite target = requireSite(sites, request.getTargetSiteId());
+		LocalDateTime now = LocalDateTime.now();
+		Assert.isFalse(site.isTopAt(now) || target.isTopAt(now), ContentCoreErrorCode.SITE_TOP_SORT_FORBIDDEN::exception);
+
+		int oldIndex = sites.indexOf(site);
+		sites.remove(oldIndex);
+		int newIndex = sites.indexOf(target) + (request.getBeforeTarget() ? 0 : 1);
+		if (oldIndex == newIndex) {
+			return;
+		}
+
+		long previous = newIndex > 0 ? sites.get(newIndex - 1).getSortFlag() : sites.get(0).getSortFlag() - 2;
+		long next = newIndex < sites.size() ? sites.get(newIndex).getSortFlag() : previous + 2;
+		if (next - previous > 1) {
+			this.updateSiteSortFlag(site, previous + (next - previous) / 2, operator);
+			return;
+		}
+
+		// 相邻排序值相同或没有间隔时，按目标顺序重新分配排序值。
+		sites.add(newIndex, site);
+		for (int i = 0; i < sites.size(); i++) {
+			CmsSite orderedSite = sites.get(i);
+			long sortFlag = (i + 1L) * 100;
+			if (orderedSite == site || orderedSite.getSortFlag() != sortFlag) {
+				this.updateSiteSortFlag(orderedSite, sortFlag, orderedSite == site ? operator : null);
+			}
+		}
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void moveSite(Long siteId, Long parentId, LoginUser operator) {
+		long targetId = Objects.requireNonNullElse(parentId, 0L);
+		Assert.isFalse(siteId.equals(targetId), ContentCoreErrorCode.SITE_MOVE_TO_SELF_OR_CHILD::exception);
+		if (targetId > 0) {
+			PermissionUtils.checkPermission(SitePrivItem.View.getPermissionKey(targetId), operator);
+			PermissionUtils.checkPermission(SitePrivItem.Edit.getPermissionKey(targetId), operator);
+		}
+
+		long previousParentId = this.getSiteForHierarchyChange(siteId).getParentId();
+		List<CmsSite> lockedSites = this.lockSites(List.of(siteId, previousParentId, targetId));
+		CmsSite site = requireSite(lockedSites, siteId);
+		Assert.isTrue(site.getParentId() == previousParentId, ContentCoreErrorCode.SITE_PARENT_CHANGED::exception);
+		if (previousParentId == targetId) {
+			return;
+		}
+
+		CmsSite target = targetId == 0 ? null : requireSite(lockedSites, targetId);
+		String previousPath = site.getAncestors();
+		Assert.isFalse(target != null && target.getAncestors().startsWith(previousPath + ","),
+				ContentCoreErrorCode.SITE_MOVE_TO_SELF_OR_CHILD::exception);
+		String newPath = target == null ? siteId.toString() : target.getAncestors() + "," + siteId;
+		int newLevel = target == null ? 1 : target.getTreeLevel() + 1;
+		int levelChange = newLevel - site.getTreeLevel();
+		List<CmsSite> subtree = this.lockSubtree(site);
+		LocalDateTime now = LocalDateTime.now();
+		for (CmsSite node : subtree) {
+			String ancestors = newPath + node.getAncestors().substring(previousPath.length());
+			Assert.isTrue(ancestors.length() <= CmsSite.MAX_ANCESTORS_LENGTH, ContentCoreErrorCode.SITE_TREE_TOO_DEEP::exception);
+			this.lambdaUpdate().eq(CmsSite::getSiteId, node.getSiteId())
+					.set(node == site, CmsSite::getParentId, targetId)
+					.set(CmsSite::getAncestors, ancestors)
+					.set(CmsSite::getTreeLevel, node.getTreeLevel() + levelChange)
+					.set(CmsSite::getUpdateBy, operator.getUsername())
+					.set(CmsSite::getUpdateTime, now)
+					.update();
+		}
+		if (previousParentId > 0) {
+			this.changeChildCount(requireSite(lockedSites, previousParentId), -1);
+		}
+		if (target != null) {
+			this.changeChildCount(target, 1);
+		}
+		TransactionUtils.afterCommit(() -> subtree.forEach(node -> this.clearCache(node.getSiteId())));
+	}
+
+	private List<CmsSite> lockSubtree(CmsSite site) {
+		List<CmsSite> subtree = new ArrayList<>(List.of(site));
+		List<CmsSite> level = List.of(site);
+		// 锁定一层后再读取下一层，使新增、删除与转移看到一致的父子关系。
+		while (!level.isEmpty()) {
+			List<Long> parentIds = level.stream().filter(node -> node.getChildCount() > 0)
+					.map(CmsSite::getSiteId).toList();
+			if (parentIds.isEmpty()) {
+				break;
+			}
+			level = this.lambdaQuery().in(CmsSite::getParentId, parentIds).orderByAsc(CmsSite::getSiteId)
+					.last("FOR UPDATE").list();
+			subtree.addAll(level);
+		}
+		return subtree;
+	}
+
+	private CmsSite requireSite(List<CmsSite> sites, Long siteId) {
+		return sites.stream().filter(site -> siteId.equals(site.getSiteId())).findFirst()
+				.orElseThrow(() -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
+	}
+
+	private void updateSiteSortFlag(CmsSite site, long sortFlag, String operator) {
+		this.lambdaUpdate().eq(CmsSite::getSiteId, site.getSiteId())
+				.set(CmsSite::getSortFlag, sortFlag)
+				.set(operator != null, CmsSite::getUpdateBy, operator)
+				.set(operator != null, CmsSite::getUpdateTime, LocalDateTime.now())
+				.update();
+		TransactionUtils.afterCommit(() -> this.clearCache(site.getSiteId()));
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void setTop(Long siteId, LocalDateTime topEndTime, String operator) {
+		this.updateSiteTop(siteId, Instant.now().toEpochMilli(), topEndTime, operator);
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void cancelTop(Long siteId, String operator) {
+		this.updateSiteTop(siteId, 0L, null, operator);
+	}
+
+	private void updateSiteTop(Long siteId, long topFlag, LocalDateTime topDate, String operator) {
+		boolean updated = this.lambdaUpdate().eq(CmsSite::getSiteId, siteId)
+				.set(CmsSite::getTopFlag, topFlag)
+				.set(CmsSite::getTopDate, topDate)
+				.set(CmsSite::getUpdateBy, operator)
+				.set(CmsSite::getUpdateTime, LocalDateTime.now())
+				.update();
+		Assert.isTrue(updated, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
+		TransactionUtils.afterCommit(() -> this.clearCache(siteId));
+	}
 
 	@Override
 	public CmsSite getSite(Long siteId) {
@@ -177,20 +371,38 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		boolean checkSiteUnique = this.checkSiteUnique(dto.getName(), dto.getPath(), 0L);
 		Assert.isTrue(checkSiteUnique, () -> CommonErrorCode.DATA_CONFLICT.exception("name", "path"));
 
-		String siteRoot = SiteUtils.getSiteResourceRoot(dto.getPath());
-		Assert.isFalse(new File(siteRoot).exists(), ContentCoreErrorCode.EXISTS_SITE_PATH::exception);
-		// 创建站点目录
-		FileExUtils.mkdirs(siteRoot);
+		long parentId = Objects.requireNonNullElse(dto.getParentId(), 0L);
+		CmsSite parent = null;
+		if (parentId > 0) {
+			PermissionUtils.checkPermission(SitePrivItem.View.getPermissionKey(parentId), dto.getOperator());
+			PermissionUtils.checkPermission(SitePrivItem.Edit.getPermissionKey(parentId), dto.getOperator());
+			parent = this.lockSite(parentId);
+		}
 
 		CmsSite site = new CmsSite();
 		site.setSiteId(IdUtils.getSnowflakeId());
 		BeanUtils.copyProperties(dto, site, "siteId");
+		site.setParentId(parentId);
+		site.setAncestors(parent == null ? site.getSiteId().toString() : parent.getAncestors() + "," + site.getSiteId());
+		Assert.isTrue(site.getAncestors().length() <= CmsSite.MAX_ANCESTORS_LENGTH,
+				ContentCoreErrorCode.SITE_TREE_TOO_DEEP::exception);
+		site.setTreeLevel(parent == null ? 1 : parent.getTreeLevel() + 1);
+		site.setChildCount(0);
+
+		String siteRoot = SiteUtils.getSiteResourceRoot(dto.getPath());
+		Assert.isFalse(new File(siteRoot).exists(), ContentCoreErrorCode.EXISTS_SITE_PATH::exception);
+		FileExUtils.mkdirs(siteRoot);
+
 		if (StringUtils.isNotBlank(site.getResourceUrl())) {
         	site.setResourceUrl(Strings.CS.appendIfMissing(site.getResourceUrl(), "/"));
 		}
 		site.setSortFlag(SortUtils.getDefaultSortValue());
+		site.setTopFlag(0L);
 		site.createBy(dto.getOperator().getUsername());
 		this.save(site);
+		if (parent != null) {
+			this.changeChildCount(parent, 1);
+		}
 		this.clearCache(site.getSiteId());
 		// 授权给添加人
 		this.userPermissionService.grantUserPermissions(
@@ -212,7 +424,7 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 
 		CmsSite site = this.getById(dto.getSiteId());
 
-		BeanUtils.copyProperties(dto, site, "path");
+		BeanUtils.copyProperties(dto, site, "path", "parentId");
 		if (StringUtils.isNotBlank(site.getResourceUrl())) {
 			site.setResourceUrl(Strings.CS.appendIfMissing(site.getResourceUrl(), "/"));
 		}
@@ -237,13 +449,19 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void deleteSite(Long siteId) {
-		CmsSite site = this.getById(siteId);
-		Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
+		long parentId = this.getSiteForHierarchyChange(siteId).getParentId();
+		List<CmsSite> lockedSites = this.lockSites(List.of(siteId, parentId));
+		CmsSite site = requireSite(lockedSites, siteId);
+		Assert.isTrue(site.getParentId() == parentId, ContentCoreErrorCode.SITE_PARENT_CHANGED::exception);
+		Assert.isTrue(site.getChildCount() == 0, ContentCoreErrorCode.SITE_HAS_CHILDREN::exception);
 
 		applicationContext.publishEvent(new BeforeSiteDeleteEvent(this, site));
 
-		AsyncTaskManager.setTaskMessage(ContentCoreTips.DELETING_SITE.locale(AsyncTaskManager.getLocale(), site.getName()));
+		AsyncTaskManager.setTaskMessage(ContentCoreTips.DELETING_SITE, site.getName());
 		this.removeById(site.getSiteId());
+		if (parentId > 0) {
+			this.changeChildCount(requireSite(lockedSites, parentId), -1);
+		}
 		this.clearCache(site.getSiteId());
 
 		if (EnableSiteDeleteBackupProperty.getValue(site.getConfigProps())) {
@@ -262,6 +480,29 @@ public class SiteServiceImpl extends ServiceImpl<CmsSiteMapper, CmsSite> impleme
 		}
 
 		applicationContext.publishEvent(new AfterSiteDeleteEvent(this, site));
+	}
+
+	private CmsSite getSiteForHierarchyChange(long siteId) {
+		CmsSite site = this.getById(siteId);
+		Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
+		return site;
+	}
+
+	private CmsSite lockSite(long siteId) {
+		return requireSite(this.lockSites(List.of(siteId)), siteId);
+	}
+
+	private List<CmsSite> lockSites(List<Long> siteIds) {
+		List<Long> ids = siteIds.stream().filter(id -> id > 0).distinct().toList();
+		return this.lambdaQuery().in(CmsSite::getSiteId, ids).orderByAsc(CmsSite::getSiteId)
+				.last("FOR UPDATE").list();
+	}
+
+	private void changeChildCount(CmsSite parent, int delta) {
+		this.lambdaUpdate().eq(CmsSite::getSiteId, parent.getSiteId())
+				.set(CmsSite::getChildCount, parent.getChildCount() + delta)
+				.update();
+		TransactionUtils.afterCommit(() -> this.clearCache(parent.getSiteId()));
 	}
 
 	/**

@@ -15,6 +15,8 @@
  */
 package com.chestnut.customform.template.tag;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
@@ -95,7 +97,7 @@ public class CmsCustomFormTag extends AbstractTag {
 		CmsCustomForm form = new LambdaQueryChainWrapper<>(this.customFormMapper)
 				.eq(CmsCustomForm::getSiteId, siteId)
 				.eq(CmsCustomForm::getCode, code).one();
-		Assert.notNull(form, () -> new TemplateException(StringUtils.messageFormat("Custom form no exists, code = {0}.", code), env));
+		Assert.notNull(form, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("formCode", code));
 		if (CustomFormStatus.PUBLISHED != form.getStatus()) {
 			return null;
 		}

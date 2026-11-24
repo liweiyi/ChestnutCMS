@@ -15,6 +15,8 @@
  */
 package com.chestnut.customform;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -124,7 +126,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     customFormService.save(data);
                     customFormIdMapping.put(oldFormId, data.getFormId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_FAIL, oldFormId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_FAIL, oldFormId, CommonTips.failureReason(e));
                     log.error("Import custom form failed: {}", data.getCode(), e);
                 }
             }
@@ -146,7 +148,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     modelService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_MODEL_FAIL, oldModelId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_MODEL_FAIL, oldModelId, CommonTips.failureReason(e));
                     log.error("Import custom form xmodel failed: {}", data.getCode(), e);
                 }
             }
@@ -164,7 +166,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     modelFieldService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_MODEL_FIELD_FAIL, oldFieldId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_MODEL_FIELD_FAIL, oldFieldId, CommonTips.failureReason(e));
                     log.error("Import custom form xmodel field failed: {}", data.getCode(), e);
                 }
             }
@@ -207,7 +209,7 @@ public class CustomFormCoreDataHandler implements ICoreDataHandler {
                     });
                     customFormDataMapper.insert(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_DATA_FAIL, oldKey, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsCustomFormTips.IMPORT_CUSTOM_FORM_DATA_FAIL, oldKey, CommonTips.failureReason(e));
                     log.error("Import custom form data failed: {} - {}", data.getModelId(), data.getDataId(), e);
                 }
             }

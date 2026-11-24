@@ -15,11 +15,16 @@
  */
 package com.chestnut.system.exception;
 
-import com.chestnut.common.i18n.I18nUtils;
+import com.chestnut.common.exception.TipMessage;
 
-import java.util.Locale;
 
-public enum SystemUserTips {
+/**
+ * 用户操作的国际化提示
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
+public enum SystemUserTips implements TipMessage {
 
     /**
      * 账号“{0}”部门不存在。
@@ -51,11 +56,8 @@ public enum SystemUserTips {
      */
     DEPT_ACCESS_DENY;
 
-    public String locale(Object... args) {
-        return I18nUtils.parse("TIPS.SYS.USER." + this.name(), args);
-    }
-
-    public String locale(Locale locale, Object... args) {
-        return I18nUtils.parse("TIPS.SYS.USER." + this.name(), locale, args);
+    @Override
+    public String value() {
+        return "TIPS.SYS.USER." + name();
     }
 }

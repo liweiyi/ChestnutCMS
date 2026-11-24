@@ -21,7 +21,6 @@ import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.exception.GlobalException;
-import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.domain.Operator;
 import com.chestnut.common.utils.Assert;
@@ -125,7 +124,7 @@ public class ContentServiceImpl implements IContentService {
 						this.setProgressInfo((i * 100) / contents.size(), ContentCoreTips.DELETING_CONTENT, xContent.getTitle());
 						deleteContent0(xContent, operator, Map.of());
 					} catch (GlobalException e) {
-						addErrorMessage(I18nUtils.get(e.getErrorCode().value(), this.getLocale(), e.getErrArgs()));
+						addErrorMessage(e.userMessage(this.getLocale()));
 					}
 				}
 				setProgressInfo(100, ContentCoreTips.DELETE_CONTENTS_SUCCESS);
@@ -184,8 +183,7 @@ public class ContentServiceImpl implements IContentService {
 				});
 				SpringUtils.publishEvent(new AfterContentDeleteEvent(this, mappingIContent));
 			} catch (Exception e) {
-				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.DELETING_MAPPING_CONTENT.locale(
-						mappingContent.getTitle(), mappingContent.getContentId()));
+				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.DELETING_MAPPING_CONTENT, mappingContent.getTitle(), mappingContent.getContentId());
 			}
 		}
 	}
@@ -371,7 +369,7 @@ public class ContentServiceImpl implements IContentService {
 			@Override
 			public void run0() {
 				aopProxy.addContent0(content);
-                AsyncTaskManager.setTaskProgressInfo(100, ContentCoreTips.SAVE_SUCCESS, this.getLocale());
+                AsyncTaskManager.setTaskProgressInfo(100, ContentCoreTips.SAVE_SUCCESS);
 			}
 		};
 		task.setType("SaveContent-" + content.getContentEntity().getContentId());
@@ -392,7 +390,7 @@ public class ContentServiceImpl implements IContentService {
 			@Override
 			public void run0() {
 				aopProxy.saveContent0(dto, operator);
-                AsyncTaskManager.setTaskProgressInfo(100, ContentCoreTips.SAVE_SUCCESS, this.getLocale());
+                AsyncTaskManager.setTaskProgressInfo(100, ContentCoreTips.SAVE_SUCCESS);
 			}
 		};
 		task.setType("SaveContent");
@@ -459,10 +457,10 @@ public class ContentServiceImpl implements IContentService {
 							}
 						}
 					} catch (GlobalException e) {
-						addErrorMessage(I18nUtils.get(e.getErrorCode().value(), this.getLocale(), e.getErrArgs()));
+						addErrorMessage(e.userMessage(this.getLocale()));
 					}
 				}
-				this.setProgressInfo(100, ContentCoreTips.COPY_CONTENT_SUCCESS.locale(this.getLocale()));
+				this.setProgressInfo(100, ContentCoreTips.COPY_CONTENT_SUCCESS);
 			}
 		};
 		task.setType("CopyContent");
@@ -472,8 +470,7 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	private CmsContent copy0(CmsContent cmsContent, CmsCatalog toCatalog, Integer copyType, LoginUser loginUser) {
-		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.COPYING_CONTENT.locale(AsyncTaskManager.getLocale(),
-				cmsContent.getTitle(), toCatalog.getName()));
+		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.COPYING_CONTENT, cmsContent.getTitle(), toCatalog.getName());
 		RLock lock = redissonClient.getLock(ContentCoreConsts.lockContent(cmsContent.getContentId()));
 		if (!lock.tryLock()) {
 			throw ContentCoreErrorCode.CONTENT_EDITING.exception();
@@ -504,7 +501,7 @@ public class ContentServiceImpl implements IContentService {
 				for (Long contentId : contentIds) {
 					moveContent(contentId, catalog, dto.getOperator());
 				}
-				this.setProgressInfo(100, ContentCoreTips.MOVE_CONTENT_SUCCESS.locale(this.getLocale()));
+				this.setProgressInfo(100, ContentCoreTips.MOVE_CONTENT_SUCCESS);
 			}
 		};
 		task.setType("MoveContent");
@@ -531,8 +528,7 @@ public class ContentServiceImpl implements IContentService {
 			}
 			// 校验权限
 			this.checkSaveContentPermission(cmsContent.getCatalogId(), toCatalog.getCatalogId(), loginUser);
-			AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.MOVING_CONTENT.locale(AsyncTaskManager.getLocale(),
-					cmsContent.getTitle(), toCatalog.getName()));
+			AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.MOVING_CONTENT, cmsContent.getTitle(), toCatalog.getName());
 			IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 			IContent<?> content = ct.loadContent(cmsContent);
 			content.setOperator(Operator.of(loginUser));
@@ -588,7 +584,7 @@ public class ContentServiceImpl implements IContentService {
 
 					offline0(c, operator, locale);
 				}
-				this.setProgressInfo(100, ContentCoreTips.OFFLINE_SUCCESS.locale(locale));
+				this.setProgressInfo(100, ContentCoreTips.OFFLINE_SUCCESS);
 			}
 		};
 		task.setType("ContentOffline");
@@ -604,7 +600,7 @@ public class ContentServiceImpl implements IContentService {
 	}
 
 	private void offline0(CmsContent cmsContent, LoginUser loginUser, Locale locale) {
-		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.OFFLINE_CONTENT.locale(locale, cmsContent.getTitle()));
+		AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.OFFLINE_CONTENT, cmsContent.getTitle());
 		IContentType ct = ContentCoreUtils.getContentType(cmsContent.getContentType());
 		IContent<?> content = ct.loadContent(cmsContent);
 		content.setOperator(Operator.of(loginUser));
@@ -617,7 +613,7 @@ public class ContentServiceImpl implements IContentService {
 					.list();
 			for (CmsContent c : mappingList) {
 				log.debug("CC.Content[{}].offline: mapping content offline", cmsContent.getContentId());
-				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.OFFLINE_MAPPING_CONTENT.locale(locale, c.getTitle()));
+				AsyncTaskManager.setTaskTenPercentProgressInfo(ContentCoreTips.OFFLINE_MAPPING_CONTENT, c.getTitle(), c.getContentId());
 				offline0(c, loginUser, locale);
 			}
 		}

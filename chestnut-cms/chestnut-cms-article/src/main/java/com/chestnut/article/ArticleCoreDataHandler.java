@@ -15,6 +15,8 @@
  */
 package com.chestnut.article;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.article.domain.CmsArticleDetail;
@@ -97,7 +99,7 @@ public class ArticleCoreDataHandler implements ICoreDataHandler {
                     }
                     articleService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsArticleTips.IMPORT_ARTICLE_FAIL, oldContentId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsArticleTips.IMPORT_ARTICLE_FAIL, oldContentId, CommonTips.failureReason(e));
                     log.error("Import article detail failed: {}", oldContentId, e);
                 }
             }

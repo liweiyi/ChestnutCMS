@@ -15,6 +15,10 @@
  */
 package com.chestnut.contentcore.service.impl;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
+import com.chestnut.common.exception.CommonTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTask;
@@ -113,7 +117,7 @@ public class SiteThemeService {
                                 data.createBy(context.getOperator());
                                 sitePropertyService.save(data);
                             } catch (Exception e) {
-                                this.addErrorMessage(ContentCoreTips.IMPORT_SITE_PROPS_FAIL, propertyId, e.getMessage());
+                                this.addErrorMessage(ContentCoreTips.IMPORT_SITE_PROPS_FAIL, propertyId, CommonTips.failureReason(e));
                                 log.error("Import site property failed: {}", propertyId, e);
                             }
                         });
@@ -132,7 +136,7 @@ public class SiteThemeService {
                                 resourceService.save(data);
                                 context.getResourceIdMap().put(oldResource, data.getResourceId());
                             } catch (Exception e) {
-                                this.addErrorMessage(ContentCoreTips.IMPORT_SITE_RESOURCE_FAIL, oldResource, e.getMessage());
+                                this.addErrorMessage(ContentCoreTips.IMPORT_SITE_RESOURCE_FAIL, oldResource, CommonTips.failureReason(e));
                                 log.error("Import site resource failed: {}", oldResource, e);
                             }
                         });
@@ -201,7 +205,7 @@ public class SiteThemeService {
                                 data.setCreateBy(operator.getUsername());
                                 publishPipeService.addPublishPipe(data);
                             } catch (Exception e) {
-                                this.addErrorMessage(ContentCoreTips.IMPORT_PUBLISH_PIPE_FAIL, data.getCode(), e.getMessage());
+                                this.addErrorMessage(ContentCoreTips.IMPORT_PUBLISH_PIPE_FAIL, data.getCode(), CommonTips.failureReason(e));
                                 log.error("Import publish pipe failed: {}", oldPublishPipeId, e);
                             }
                         }
@@ -229,7 +233,7 @@ public class SiteThemeService {
                                 pageWidgetService.save(data);
                                 context.getPageWidgetIdMap().put(oldPageWidgetId, data.getPageWidgetId());
                             } catch (Exception e) {
-                                this.addErrorMessage(ContentCoreTips.IMPORT_PAGEWIDGET_FAIL, oldPageWidgetId, e.getMessage());
+                                this.addErrorMessage(ContentCoreTips.IMPORT_PAGEWIDGET_FAIL, oldPageWidgetId, CommonTips.failureReason(e));
                                 log.error("Import page widget failed: {}", oldPageWidgetId, e);
                             }
                         });
@@ -250,7 +254,7 @@ public class SiteThemeService {
                                 }
                                 CmsCatalog catalog = catalogService.getCatalog(context.getCatalogIdMap().get(content.getCatalogId()));
                                 if (Objects.isNull(catalog)) {
-                                    throw new RuntimeException("Catalog is missing.");
+                                    throw CommonErrorCode.DATA_NOT_FOUND.exception();
                                 }
 
                                 content.setContentId(IdUtils.getSnowflakeId());
@@ -275,7 +279,7 @@ public class SiteThemeService {
                                     linkContents.add(content);
                                 }
                             } catch (Exception e) {
-                                this.addErrorMessage(ContentCoreTips.IMPORT_CONTENT_FAIL, sourceContentId, e.getMessage());
+                                this.addErrorMessage(ContentCoreTips.IMPORT_CONTENT_FAIL, sourceContentId, CommonTips.failureReason(e));
                                 log.error("Import content `{}` failed: {}", sourceContentId, e.getMessage(), e);
                             }
                         }
@@ -296,7 +300,7 @@ public class SiteThemeService {
                                 content.createBy(operator.getUsername());
                                 contentRelaService.save(content);
                             } catch (Exception e) {
-                                this.addErrorMessage(ContentCoreTips.IMPORT_RELATED_CONTENT_FAIL, sourceContentId, e.getMessage());
+                                this.addErrorMessage(ContentCoreTips.IMPORT_RELATED_CONTENT_FAIL, sourceContentId, CommonTips.failureReason(e));
                                 log.error("Import content rela data failed: {}", sourceContentId, e);
                             }
                         });
@@ -317,7 +321,7 @@ public class SiteThemeService {
                     // 复制文件
                     context.copySiteFiles();
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(e.getMessage());
+                    AsyncTaskManager.addErrMessage(ContentCoreTips.TASK_FAILED, CommonTips.failureReason(e));
                     log.error("Import site theme failed: {}", site.getSiteId(), e);
                 } finally {
                     FileUtils.deleteDirectory(new File(destDir));

@@ -42,8 +42,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * 安全配置控制器
@@ -84,15 +82,11 @@ public class SysSecurityController extends BaseRestController {
 	@Priv(type = AdminUserType.TYPE)
 	@PostMapping("/get")
 	public R<?> getConfigs(@RequestBody List<String> types) {
+		if (StringUtils.isNotEmpty(types)) {
+			return R.ok(securityConfigService.getSecurityConfigs(types));
+		}
 		SysSecurityConfig securityConfig = securityConfigService.getSecurityConfig();
-		if (Objects.isNull(securityConfig)) {
-			return R.ok(JacksonUtils.objectNode());
-		}
-		if (StringUtils.isEmpty(types)) {
-			return R.ok(securityConfig.getConfigs());
-		}
-		Map<String, Object> configs = securityConfigService.getSecurityConfigs(types);
-		return R.ok(configs);
+		return R.ok(securityConfig == null ? JacksonUtils.objectNode() : securityConfig.getConfigs());
 	}
 
 	@XComment("{API.DOC.SYS.SECURITY.CREATE}")

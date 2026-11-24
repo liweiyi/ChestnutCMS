@@ -18,12 +18,33 @@ package com.chestnut.media;
 import com.chestnut.common.exception.TipMessage;
 
 /**
- * CmsMediaTips
+ * 模块接口与任务进度提示。
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
 public enum CmsMediaTips implements TipMessage {
+
+    /** 正在删除音频内容数据：{0}/{1} */
+    DELETING_AUDIO_DATA,
+    /** 正在删除音频内容备份数据：{0}/{1} */
+    DELETING_AUDIO_BACKUP_DATA,
+    /** 正在删除视频内容数据：{0}/{1} */
+    DELETING_VIDEO_DATA,
+    /** 正在删除视频内容备份数据：{0}/{1} */
+    DELETING_VIDEO_BACKUP_DATA,
+    /** 删除音频内容数据失败，请查看系统日志 */
+    DELETE_AUDIO_FAILED,
+    /** 删除音频内容备份数据失败，请查看系统日志 */
+    DELETE_AUDIO_BACKUP_FAILED,
+    /** 删除视频内容数据失败，请查看系统日志 */
+    DELETE_VIDEO_FAILED,
+    /** 删除视频内容备份数据失败，请查看系统日志 */
+    DELETE_VIDEO_BACKUP_FAILED,
+    /** 正在统计音频资源引用：{0}/{1} */
+    STAT_AUDIO_REFERENCES,
+    /** 正在统计视频资源引用：{0}/{1} */
+    STAT_VIDEO_REFERENCES,
 
     /**
      * 正在导出音频内容数据

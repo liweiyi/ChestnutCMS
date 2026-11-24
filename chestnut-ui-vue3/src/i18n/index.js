@@ -1,36 +1,31 @@
-import { createI18n } from "vue-i18n";
-import messages from "./lang";
+import { createI18n } from 'vue-i18n'
+import messages from './lang'
 import elementPlusZhCn from 'element-plus/dist/locale/zh-cn.min.mjs'
 import elementPlusZhTw from 'element-plus/dist/locale/zh-tw.min.mjs'
 import elementPlusEn from 'element-plus/dist/locale/en.min.mjs'
+import { DEFAULT_LANGUAGE, normalizeLanguage } from './locales'
 
-const DEFAULT_LANG = "zh-CN";
-
-let localLanguage = DEFAULT_LANG;
+let localLanguage = normalizeLanguage(navigator.language)
 try {
-  const currentLang = localStorage.getItem('cc.language')
-  if (currentLang)  {
-    localLanguage = currentLang;
-  } else {
-    // 获取浏览器的语言设置
-    const navLang = navigator.language;
-    localLanguage = navLang;
-  }
-} catch (e) {
-  console.error("Load current language fail: ", e);
+  const storedLanguage = localStorage.getItem('cc.language')
+  if (storedLanguage) localLanguage = normalizeLanguage(storedLanguage)
+} catch (error) {
+  console.error('Load current language fail:', error)
 }
-console.log("currentLang", localLanguage)
+
 const i18n = createI18n({
-  legacy: false, // 启用VUE3组合式API模式（必须设置）
+  legacy: false,
   locale: localLanguage,
-  fallbackLocale: DEFAULT_LANG,
-  globalInjection: true, // 全局注册 $t 方法以便在模板中使用
-  allowComposition: true, // 允许组合式 API 的使用
+  fallbackLocale: DEFAULT_LANGUAGE,
+  globalInjection: true,
+  allowComposition: true,
   messages
-});
+})
+
 const elementPlusLocales = {
   'zh-CN': elementPlusZhCn,
   'zh-TW': elementPlusZhTw,
-  'en': elementPlusEn
-};
-export { i18n, elementPlusLocales };
+  en: elementPlusEn,
+}
+
+export { i18n, elementPlusLocales }

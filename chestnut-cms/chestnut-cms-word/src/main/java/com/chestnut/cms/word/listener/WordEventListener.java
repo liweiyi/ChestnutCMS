@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.word.listener;
 
+import com.chestnut.cms.word.CmsWordTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.article.ArticleContentType;
@@ -98,7 +100,7 @@ public class WordEventListener {
 			long lastId = 0;
 			for (int i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删热词分组数据：" + (i * pageSize) + "/" + total);
+						CmsWordTips.DELETING_HOT_WORD_GROUP_DATA, i * pageSize, total);
 				Page<HotWordGroup> groups = this.hotWordGroupService.lambdaQuery()
 						.select(HotWordGroup::getGroupId)
 						.eq(HotWordGroup::getOwner, site.getSiteId())
@@ -112,7 +114,7 @@ public class WordEventListener {
 				}
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除热词分组数据错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsWordTips.DELETE_HOT_WORD_GROUP_FAILED);
 			log.error("Delete hot word group failed on site[{}] delete", site.getSiteId());
 		}
 		try {
@@ -122,7 +124,7 @@ public class WordEventListener {
 			long lastId = 0;
 			for (int i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删热词数据：" + (i * pageSize) + "/" + total);
+						CmsWordTips.DELETING_HOT_WORD_DATA, i * pageSize, total);
 				Page<HotWord> hotWords = this.hotWordService.lambdaQuery()
 						.select(HotWord::getWordId)
 						.eq(HotWord::getOwner, site.getSiteId())
@@ -136,7 +138,7 @@ public class WordEventListener {
 				}
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除热词数据错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsWordTips.DELETE_HOT_WORD_FAILED);
 			log.error("Delete hot word failed on site[{}] delete", site.getSiteId());
 		}
 		try {
@@ -146,7 +148,7 @@ public class WordEventListener {
 			long lastId = 0;
 			for (int i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除TAG词分组数据：" + (i * pageSize) + "/" + total);
+						CmsWordTips.DELETING_TAG_GROUP_DATA, i * pageSize, total);
 				Page<TagWordGroup> groups = this.tagWordGroupService.lambdaQuery()
 						.select(TagWordGroup::getGroupId)
 						.eq(TagWordGroup::getOwner, site.getSiteId())
@@ -160,7 +162,7 @@ public class WordEventListener {
 				}
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除TAG词分组数据错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsWordTips.DELETE_TAG_GROUP_FAILED);
 			log.error("Delete tag word group failed on site[{}] delete", site.getSiteId());
 		}
 		try {
@@ -170,7 +172,7 @@ public class WordEventListener {
 			long lastId = 0;
 			for (int i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除TAG词数据：" + (i * pageSize) + "/" + total);
+						CmsWordTips.DELETING_TAG_DATA, i * pageSize, total);
 				Page<TagWord> tagWords = this.tagWordService.lambdaQuery()
 						.select(TagWord::getWordId)
 						.eq(TagWord::getOwner, site.getSiteId())
@@ -184,7 +186,7 @@ public class WordEventListener {
 				}
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除TAG词数据错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsWordTips.DELETE_TAG_FAILED);
 			log.error("Delete tag word failed on site[{}] delete", site.getSiteId());
 		}
 	}

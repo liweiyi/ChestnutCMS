@@ -15,11 +15,13 @@
  */
 package com.chestnut.contentcore.domain;
 
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.Jackson3TypeHandler;
+import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.db.domain.BaseEntity;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.impl.PublishPipeProp_IndexTemplate;
@@ -30,6 +32,7 @@ import lombok.Setter;
 import org.apache.commons.lang3.Strings;
 
 import java.io.Serial;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -50,6 +53,8 @@ public class CmsSite extends BaseEntity {
     
     public static final String TABLE_NAME = "cms_site";
 
+    public static final int MAX_ANCESTORS_LENGTH = 500;
+
     /**
      * 站点ID
      */
@@ -59,7 +64,30 @@ public class CmsSite extends BaseEntity {
     /**
      * 父级站点ID
      */
+    @XComment("{CMS.SITE.PARENT_ID}")
+    @TableField(updateStrategy = FieldStrategy.NEVER)
     private Long parentId;
+
+    /**
+     * 从一级站点到本站的 ID 路径，以逗号分隔
+     */
+    @XComment("{CMS.SITE.ANCESTORS}")
+    @TableField(updateStrategy = FieldStrategy.NEVER)
+    private String ancestors;
+
+    /**
+     * 站点层级，一级站点为 1
+     */
+    @XComment("{CMS.SITE.TREE_LEVEL}")
+    @TableField(updateStrategy = FieldStrategy.NEVER)
+    private Integer treeLevel;
+
+    /**
+     * 直接子站点数量
+     */
+    @XComment("{CMS.SITE.CHILD_COUNT}")
+    @TableField(updateStrategy = FieldStrategy.NEVER)
+    private Integer childCount;
 
     /**
      * 名称
@@ -103,7 +131,23 @@ public class CmsSite extends BaseEntity {
     /**
      * 排序标识
      */
+    @XComment("{CC.ENTITY.SORT}")
+    @TableField(updateStrategy = FieldStrategy.NEVER)
     private Long sortFlag;
+
+    /**
+     * 置顶时间戳，未置顶时为 0
+     */
+    @XComment("{CMS.CONTENT.TOP_FLAG}")
+    @TableField(updateStrategy = FieldStrategy.NEVER)
+    private Long topFlag;
+
+    /**
+     * 置顶结束时间，空值表示持续置顶
+     */
+    @XComment("{API.DOC.CMS.CONTENT.TOP_END_TIME}")
+    @TableField(updateStrategy = FieldStrategy.NEVER)
+    private LocalDateTime topDate;
 
     /**
      * SEO关键词
@@ -131,6 +175,10 @@ public class CmsSite extends BaseEntity {
      */
     @TableField(typeHandler = Jackson3TypeHandler.class)
     private Map<String, String> configProps;
+
+    public boolean isTopAt(LocalDateTime now) {
+        return topFlag != null && topFlag > 0 && (topDate == null || topDate.isAfter(now));
+    }
 
 	public Map<String, String> getConfigProps() {
 		if (this.configProps == null) {

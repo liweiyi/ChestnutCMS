@@ -59,6 +59,17 @@ public class ArrayUtils {
         return contains(str, searchStrings, false);
     }
 
+	public static boolean containsAny(List<String> collection, List<String> findArr) {
+		if (!StringUtils.isEmpty(collection) && !StringUtils.isEmpty(findArr)) {
+			for (String str : findArr) {
+				if (collection.contains(str)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * 在数组arr中查找与searchStr值相等的第一个元素，返回元素所在位置索引
 	 * 

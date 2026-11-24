@@ -67,6 +67,9 @@ import java.util.stream.Stream;
 
 /**
  * 用户 业务层处理
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Service
 @RequiredArgsConstructor
@@ -389,7 +392,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		this.securityConfigService.forceModifyPwdAfterResetPwd(db);
 
 		String password = SecurityUtils.passwordEncode(req.getPassword());
-		this.lambdaUpdate().set(SysUser::getPassword, password).eq(SysUser::getUserId, db.getUserId()).update();
+		this.lambdaUpdate()
+				.set(SysUser::getPassword, password)
+				.set(db.isModified(), SysUser::getForceModifyPassword, db.getForceModifyPassword())
+				.eq(SysUser::getUserId, db.getUserId())
+				.update();
 		// 注销用户登录状态
 		StpAdminUtil.logout(db.getUserId());
 	}
@@ -461,7 +468,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			FileUtils.writeByteArrayToFile(new File(SystemConfig.getPublicFileUploadDir() + path), fileBytes);
 			return path;
 		} catch (IOException e) {
-			throw CommonErrorCode.SYSTEM_ERROR.exception(e.getMessage());
+			throw CommonErrorCode.SYSTEM_ERROR.exception(e);
 		}
 	}
 }

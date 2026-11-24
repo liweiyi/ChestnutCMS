@@ -15,6 +15,8 @@
  */
 package com.chestnut.media.listener;
 
+import com.chestnut.media.CmsMediaTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -53,7 +55,7 @@ public class MediaListener {
 			long total = this.audioService.dao().lambdaQuery().eq(CmsAudio::getSiteId, site.getSiteId()).count();
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除音频内容数据：" + (i * pageSize) + "/" + total);
+						CmsMediaTips.DELETING_AUDIO_DATA, i * pageSize, total);
 				List<Long> audioIds = this.audioService.dao().lambdaQuery()
 						.select(CmsAudio::getAudioId)
 						.eq(CmsAudio::getSiteId, site.getSiteId())
@@ -62,7 +64,7 @@ public class MediaListener {
 				this.audioService.dao().removeBatchByIds(audioIds);
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除音频内容错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsMediaTips.DELETE_AUDIO_FAILED);
 			log.error("Delete cms_audio failed on site[{}] delete.", site.getSiteId(), e);
 		}
 		try {
@@ -71,7 +73,7 @@ public class MediaListener {
 					.eq(BCmsAudio::getSiteId, site.getSiteId()));
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除音频内容备份数据：" + (i * pageSize) + "/" + total);
+						CmsMediaTips.DELETING_AUDIO_BACKUP_DATA, i * pageSize, total);
 				List<Long> backupIds = backupMapper.selectPage(
 						new Page<>(0, pageSize, false),
 						new LambdaQueryWrapper<BCmsAudio>()
@@ -82,7 +84,7 @@ public class MediaListener {
 				backupMapper.deleteByIds(backupIds);
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除音频内容备份错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsMediaTips.DELETE_AUDIO_BACKUP_FAILED);
 			log.error("Delete backup cms_audio failed on site[{}] delete.", site.getSiteId(), e);
 		}
 		// 删除视频内容数据
@@ -90,7 +92,7 @@ public class MediaListener {
 			long total = this.videoService.dao().lambdaQuery().eq(CmsVideo::getSiteId, site.getSiteId()).count();
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除视频内容数据：" + (i * pageSize) + "/" + total);
+						CmsMediaTips.DELETING_VIDEO_DATA, i * pageSize, total);
 				List<Long> audioIds = this.videoService.dao().lambdaQuery()
 						.select(CmsVideo::getVideoId)
 						.eq(CmsVideo::getSiteId, site.getSiteId())
@@ -99,7 +101,7 @@ public class MediaListener {
 				this.videoService.dao().removeBatchByIds(audioIds);
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除视频内容错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsMediaTips.DELETE_VIDEO_FAILED);
 			log.error("Delete cms_video failed on site[{}] delete.", site.getSiteId(), e);
 		}
 		try {
@@ -108,7 +110,7 @@ public class MediaListener {
 					.eq(BCmsVideo::getSiteId, site.getSiteId()));
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除视频内容备份数据：" + (i * pageSize) + "/" + total);
+						CmsMediaTips.DELETING_VIDEO_BACKUP_DATA, i * pageSize, total);
 				List<Long> backupIds = backupMapper.selectPage(
 						new Page<>(0, pageSize, false),
 						new LambdaQueryWrapper<BCmsVideo>()
@@ -119,7 +121,7 @@ public class MediaListener {
 				backupMapper.deleteByIds(backupIds);
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除视频内容备份错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsMediaTips.DELETE_VIDEO_BACKUP_FAILED);
 			log.error("Delete backup cms_video failed on site[{}] delete.", site.getSiteId(), e);
 		}
 	}

@@ -15,6 +15,12 @@
  */
 package com.chestnut.exmodel;
 
+import com.chestnut.exmodel.CmsExModelTips;
+
+import com.chestnut.common.exception.CommonErrorCode;
+
+import com.chestnut.common.exception.CommonTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -136,7 +142,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     modelService.save(data);
                     modelIdMapping.put(oldModelId, data.getModelId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsExModelTips.IMPORT_EXMODEL_FAIL, oldModelId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsExModelTips.IMPORT_EXMODEL_FAIL, oldModelId, CommonTips.failureReason(e));
                     log.error("Import xmodel failed: {}", data.getCode(), e);
                 }
             }
@@ -154,7 +160,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     modelFieldService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsExModelTips.IMPORT_EXMODEL_FIELD_FAIL, oldFieldId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsExModelTips.IMPORT_EXMODEL_FIELD_FAIL, oldFieldId, CommonTips.failureReason(e));
                     log.error("Import xmodel field failed: {}", data.getCode(), e);
                 }
             }
@@ -174,7 +180,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                         default -> null;
                     };
                     if (Objects.isNull(dataId)) {
-                        throw new RuntimeException("Old `data_id` linked data is missing.");
+                        throw CommonErrorCode.DATA_NOT_FOUND.exception();
                     }
                     data.setDataId(dataId.toString());
                     data.setModelId(modelIdMapping.get(data.getModelId()));
@@ -228,7 +234,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                     });
                     modelDataMapper.insert(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsExModelTips.IMPORT_EXMODEL_DATA_FAIL, oldKey, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsExModelTips.IMPORT_EXMODEL_DATA_FAIL, oldKey, CommonTips.failureReason(e));
                     log.error("Import xmodel data failed: {}", oldKey, e);
                 }
             }
@@ -263,7 +269,7 @@ public class EXModelCoreDataHandler implements ICoreDataHandler {
                 }
             });
         } catch (Exception e) {
-            AsyncTaskManager.addErrMessage("更新站点及栏目扩展模型配置失败");
+            AsyncTaskManager.addErrMessage(CmsExModelTips.UPDATE_CONFIG_FAILED);
             log.error("Import site/catalog exmodel config failed: {}", context.getSite().getSiteId(), e);
         }
     }

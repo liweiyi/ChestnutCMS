@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore.core;
 
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.exception.InternalUrlParseException;
 import lombok.Getter;
@@ -95,7 +97,7 @@ public class InternalURL {
 			this.params = new HashMap<>();
 		}
 		if (key.equals("id")) {
-			throw new RuntimeException("Conflict with fixed parameter: id.");
+			throw ContentCoreTips.INTERNAL_URL_PARAM_CONFLICT.exception();
 		}
 		this.params.put(key, value);
 		return this.params;

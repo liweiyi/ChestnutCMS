@@ -18,12 +18,17 @@ package com.chestnut.cms.dynamic;
 import com.chestnut.common.exception.TipMessage;
 
 /**
- * CmsDynamicTips
+ * 模块接口与任务进度提示。
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
 public enum CmsDynamicTips implements TipMessage {
+
+    /** 正在删除自定义动态模板页面数据：{0}/{1} */
+    DELETING_DYNAMIC_PAGE_DATA,
+    /** 删除自定义动态模板页面数据失败，请查看系统日志 */
+    DELETE_DYNAMIC_PAGE_FAILED,
 
     /**
      * 正在导出自定义动态模板页面数据

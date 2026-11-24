@@ -138,6 +138,13 @@ const objects = reactive({
 const { form, queryParams } = toRefs(objects);
 const loginConfigTypeOptions = ref([]);
 
+watch(() => form.value.type, async (type, previousType) => {
+  if (form.value.configId != undefined || !previousType || type === previousType) return
+  form.value.configProps = {};
+  await nextTick();
+  formRef.value?.clearValidate();
+}, { flush: 'sync' });
+
 onMounted(() => {
   loadLoginConfigTypeOptions();
   getList();
@@ -169,6 +176,7 @@ const reset = () => {
 
 const handleAdd = () => {
   reset();
+  form.value = { status: '0', configProps: {} };
   open.value = true;
   title.value = proxy.$t('System.Security.LoginConfig.AddTitle');
 }

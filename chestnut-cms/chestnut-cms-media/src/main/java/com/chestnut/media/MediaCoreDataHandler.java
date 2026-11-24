@@ -15,6 +15,8 @@
  */
 package com.chestnut.media;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -113,7 +115,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     data.setPath(context.dealInternalUrl(data.getPath()));
                     audioService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsMediaTips.IMPORT_AUDIO_FAIL, oldAudioId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsMediaTips.IMPORT_AUDIO_FAIL, oldAudioId, CommonTips.failureReason(e));
                     log.error("Import cms_audio failed: {}", data.getAudioId(), e);
                 }
             }
@@ -134,7 +136,7 @@ public class MediaCoreDataHandler implements ICoreDataHandler {
                     data.setPath(context.dealInternalUrl(data.getPath()));
                     videoService.dao().save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsMediaTips.IMPORT_VIDEO_FAIL, oldVideoId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsMediaTips.IMPORT_VIDEO_FAIL, oldVideoId, CommonTips.failureReason(e));
                     log.error("Import cms_video failed: {}", data.getVideoId(), e);
                 }
             }

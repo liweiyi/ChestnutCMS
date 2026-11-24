@@ -15,6 +15,8 @@
  */
 package com.chestnut.article.controller.front;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.article.domain.CmsArticleDetail;
@@ -82,14 +84,14 @@ public class ArticleApiController extends BaseRestController {
             @RequestParam(value = "text", required = false, defaultValue = "false") Boolean text
     ) {
         if (!CmsCatalogTag.CatalogTagLevel.isRoot(level) && !IdUtils.validate(catalogId)) {
-            return R.fail("The parameter cid is required where lv is `Root`.");
+            throw CommonErrorCode.NOT_NULL.exception("cid");
         }
         LambdaQueryWrapper<CmsContent> q = new LambdaQueryWrapper<>();
         q.eq(CmsContent::getSiteId, siteId).eq(CmsContent::getStatus, ContentStatus.PUBLISHED);
         if (!CmsCatalogTag.CatalogTagLevel.isRoot(level)) {
             CmsCatalog catalog = this.catalogService.getCatalog(catalogId);
             if (Objects.isNull(catalog)) {
-                return R.fail("Catalog not found: " + catalogId);
+                throw CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("catalogId", catalogId);
             }
             if (CmsCatalogTag.CatalogTagLevel.isCurrent(level)) {
                 q.eq(CmsContent::getCatalogId, catalog.getCatalogId());

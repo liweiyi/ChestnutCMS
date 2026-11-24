@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.member.impl;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
 import com.chestnut.article.domain.CmsArticleDetail;
 import com.chestnut.article.service.IArticleService;
 import com.chestnut.cms.member.CmsMemberConstants;
@@ -101,7 +103,7 @@ public class AccountContributeDynamicPageType implements IDynamicPageType {
 
         MemberCache member = this.memberStatDataService.getMemberCache(memberId);
         if (Objects.isNull(member)) {
-            throw new RuntimeException("Member not found: " + memberId);
+            throw CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("memberId", memberId);
         }
     }
 

@@ -23,14 +23,14 @@ const size = computed(() => appStore.size)
 const route = useRoute()
 const router = useRouter()
 const { proxy } = getCurrentInstance()
-const sizeOptions = ref([
-  { label: "较大", value: "large" },
-  { label: "默认", value: "default" },
-  { label: "稍小", value: "small" },
+const sizeOptions = computed(() => [
+  { label: proxy.$t('Component.SizeSelect.Large'), value: "large" },
+  { label: proxy.$t('Component.SizeSelect.Default'), value: "default" },
+  { label: proxy.$t('Component.SizeSelect.Small'), value: "small" },
 ])
 
 function handleSetSize(size) {
-  proxy.$modal.loading("正在设置布局大小，请稍候...")
+  proxy.$modal.loading(proxy.$t('Component.SizeSelect.Applying'))
   appStore.setSize(size)
   setTimeout(() => window.location.reload(), 1000)
 }

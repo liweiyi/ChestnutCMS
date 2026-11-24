@@ -17,7 +17,9 @@
           <chestnut-doc id="chestnut-doc" class="right-menu-item hover-effect" />
         </el-tooltip>
 
-        <screenfull id="screenfull" class="right-menu-item hover-effect" />
+        <el-tooltip :content="$t('Component.Layout.Navbar.FullScreen')" effect="dark" placement="bottom">
+          <screenfull id="screenfull" class="right-menu-item hover-effect" />
+        </el-tooltip>
 
         <el-tooltip :content="$t('Component.Layout.Navbar.ThemeMode')" effect="dark" placement="bottom">
           <div class="right-menu-item hover-effect theme-switch-wrapper" @click="toggleTheme">

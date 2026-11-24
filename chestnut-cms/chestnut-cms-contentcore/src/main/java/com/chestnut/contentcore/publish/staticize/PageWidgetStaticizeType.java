@@ -15,11 +15,12 @@
  */
 package com.chestnut.contentcore.publish.staticize;
 
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.domain.*;
 import com.chestnut.contentcore.publish.IStaticizeType;
@@ -120,8 +121,7 @@ public class PageWidgetStaticizeType implements IStaticizeType {
             }
             this.log(site, "[{}]The page-widget template parsed: {}, cost: {}ms", publishPipeCode, pw.getCode(), System.currentTimeMillis() - s);
         } catch (TemplateException | IOException e) {
-            logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]The page-widget template parse failed: {1}#{2}",
-                    publishPipeCode, pw.getName(), pw.getCode())), e);
+            logger.error(AsyncTaskManager.addErrMessage(ContentCoreTips.TEMPLATE_PARSE_FAILED, publishPipeCode, pw.getName() + "#" + pw.getCode()), e);
         }
     }
 }

@@ -32,6 +32,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * 管理腾讯云 COS 客户端并适配对象存储操作。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Component(IFileStorageType.BEAN_NAME_PREIFX + TencentStorageType.TYPE)
 public class TencentStorageType implements IFileStorageType {
 
@@ -152,10 +158,14 @@ public class TencentStorageType implements IFileStorageType {
 				region = StringUtils.substringAfterLast(
 						StringUtils.substringBefore(endpoint, ".myqcloud.com"), ".");
 			}
-			client.setClient(new COSClient(credentials, new ClientConfig(new Region(region))));
+			client.setClient(createClient(credentials, new ClientConfig(new Region(region))));
 			this.clients.put(endpoint, client);
 		}
 		client.setLastActiveTime(System.currentTimeMillis());
 		return client;
+	}
+
+	COSClient createClient(COSCredentials credentials, ClientConfig config) {
+		return new COSClient(credentials, config);
 	}
 }

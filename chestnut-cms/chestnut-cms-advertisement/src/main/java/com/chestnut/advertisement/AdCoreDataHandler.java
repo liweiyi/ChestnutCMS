@@ -15,6 +15,8 @@
  */
 package com.chestnut.advertisement;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.advertisement.domain.CmsAdvertisement;
 import com.chestnut.advertisement.service.IAdvertisementService;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -70,7 +72,7 @@ public class AdCoreDataHandler implements ICoreDataHandler {
                     data.setRedirectUrl(context.dealInternalUrl(data.getRedirectUrl()));
                     advertisementService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsAdTips.IMPORT_AD_FAIL, oldAdvertisementId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsAdTips.IMPORT_AD_FAIL, oldAdvertisementId, CommonTips.failureReason(e));
                     log.error("Import advertisement failed: {}", data.getAdvertisementId(), e);
                 }
             }

@@ -15,6 +15,12 @@
  */
 package com.chestnut.contentcore.service.impl;
 
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
+import com.chestnut.common.exception.CommonTips;
+
+import com.chestnut.common.exception.CommonErrorCode;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -33,7 +39,7 @@ public class SitePropertyServiceImpl extends ServiceImpl<CmsSitePropertyMapper, 
 	@Override
 	public R<String> addSiteProperty(CmsSiteProperty siteProperty) {
 		if (!checkUnique(siteProperty.getPropCode(), siteProperty.getSiteId(), null)) {
-			return R.fail("属性代码不能重复");
+			return R.failWithTip(ContentCoreTips.PROPERTY_CODE_CONFLICT);
 		}
 		siteProperty.setPropertyId(IdUtils.getSnowflakeId());
 		this.save(siteProperty);
@@ -44,10 +50,10 @@ public class SitePropertyServiceImpl extends ServiceImpl<CmsSitePropertyMapper, 
 	public R<String> saveSiteProperty(CmsSiteProperty siteProperty) {
 		CmsSiteProperty prop = this.getById(siteProperty.getPropertyId());
 		if (prop == null) {
-			return R.fail("数据ID错误");
+			return R.failWithTip(CommonTips.INVALID_PARAMETER, "id");
 		}
 		if (!checkUnique(siteProperty.getPropCode(), siteProperty.getSiteId(), siteProperty.getPropertyId())) {
-			return R.fail("属性代码不能重复");
+			return R.failWithTip(ContentCoreTips.PROPERTY_CODE_CONFLICT);
 		}
 		prop.setPropName(siteProperty.getPropName());
 		prop.setPropCode(siteProperty.getPropCode());
@@ -61,7 +67,7 @@ public class SitePropertyServiceImpl extends ServiceImpl<CmsSitePropertyMapper, 
 	@Override
 	public R<String> deleteSiteProperties(List<Long> propertyIds) {
 		if (!this.removeByIds(propertyIds)) {
-			return R.fail("数据库操作异常");
+			throw CommonErrorCode.DATABASE_FAIL.exception();
 		}
 		return R.ok();
 	}

@@ -3,7 +3,7 @@
 <head>
     <title></title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-    <script type="text/javascript" src="../internal.js?0c13553b"></script>
+    <script type="text/javascript" src="../internal.js?v=20261112-i18n-dialogs"></script>
     <style type="text/css">
         .wrapper {
             box-sizing: border-box;
@@ -75,10 +75,10 @@
             <textarea id="editor"></textarea>
         </div>
         <div class="input-tip">
-            基于 latex 语法，<a href="javascript:;" id="inputDemo">点击输入示例</a>。
+            <var id="lang_formula_syntax"></var> <a href="javascript:;" id="inputDemo"><var id="lang_formula_example"></var></a>
         </div>
         <div class="editor-preview" id="preview">
-            <div class="title">预览</div>
+            <div class="title"><var id="lang_formula_preview"></var></div>
             <div class="body">
                 <img class="image" id="previewImage"/>
             </div>
@@ -88,7 +88,7 @@
 </div>
 <script src="../../third-party/jquery-1.10.2.js?feef8a20"></script>
 <script type="text/javascript" src="../../third-party/clipboard/clipboard.js?507f0f63"></script>
-<script type="text/javascript" src="formula.js?ea4456fa"></script>
+<script type="text/javascript" src="formula.js?v=20261112-i18n-dialogs"></script>
 <script type="text/javascript">
     utils.domReady(function () {
         Formula.init();

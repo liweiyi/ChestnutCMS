@@ -80,7 +80,6 @@ import CmsLinkInput from "@/views/cms/components/LinkInput";
 import useAppStore from "@/store/modules/app";
 const appStore = useAppStore();
 
-const { proxy } = getCurrentInstance();
 const model = defineModel({
   type: Array,
   default: () => [],
@@ -95,50 +94,34 @@ const imageViewerIndex = ref(0);
 const uploadLimit = ref(100);
 const singleUpload = ref(false);
 
-const imageList = ref([]);
-
-watch(() => model.value, (newVal) => {
-  imageList.value = newVal;
-});
-
-watch(imageList, (newVal) => {
-  model.value = newVal;
-});
+// Read the current parent form directly, including synchronous form resets.
+const imageList = computed(() => model.value ?? []);
 
 function handleImageViewerClose() {
   showImageViewer.value = false;
 }
 
 function handleResourceDialogOk(results) {
+  if (results.length === 0) return;
+  const images = results.map((r) => ({
+    path: r.path,
+    src: r.src,
+    title: r.name,
+    fileName: r.name,
+    width: r.width,
+    height: r.height,
+    fileSize: r.fileSize,
+    fileSizeName: r.fileSizeName,
+    resourceType: r.resourceType,
+  }));
+  const nextImages = [...imageList.value];
   if (editIndex.value > -1) {
-    const r = results[0];
-    imageList.value[editIndex.value] = {
-      path: r.path,
-      src: r.src,
-      title: r.name,
-      fileName: r.name,
-      width: r.width,
-      height: r.height,
-      fileSize: r.fileSize,
-      fileSizeName: r.fileSizeName,
-      resourceType: r.resourceType,
-    };
+    nextImages[editIndex.value] = images[0];
     editIndex.value = -1;
   } else {
-    results.forEach((r) => {
-      imageList.value.push({
-        path: r.path,
-        src: r.src,
-        title: r.name,
-        fileName: r.name,
-        width: r.width,
-        height: r.height,
-        fileSize: r.fileSize,
-        fileSizeName: r.fileSizeName,
-        resourceType: r.resourceType,
-      });
-    });
+    nextImages.push(...images);
   }
+  model.value = nextImages;
 }
 
 function handleAddImage() {

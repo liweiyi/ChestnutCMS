@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.comment.listener;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
 import com.chestnut.cms.comment.CmsCommentErrorCode;
 import com.chestnut.cms.comment.properties.EnableComment;
 import com.chestnut.cms.comment.properties.EnableCommentAudit;
@@ -59,7 +61,7 @@ public class CommentEventListener {
 				.eq(CmsContent::getContentId, event.getComment().getSourceId())
 				.oneOpt();
 		if (opt.isEmpty()) {
-			throw new RuntimeException("Comment content not found: " + event.getComment().getSourceId());
+			throw CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("contentId", event.getComment().getSourceId());
 		}
 
 		CmsContent content = opt.get();

@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore.core.impl;
 
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -84,7 +86,7 @@ public class ContentCoreResourceStat implements IResourceStat {
             Page<CmsContent> page = contentService.dao().page(new Page<>(0, pageSize, false), q);
             for (CmsContent content : page.getRecords()) {
                 AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
-                        "正在统计内容LOGO资源引用：" + count + " / " + total + "]");
+                        ContentCoreTips.STAT_CONTENT_LOGO_REFERENCES, count, total);
                 lastContentId = content.getContentId();
                 ArrayUtils.mapNotNull(content.getImages(), InternalUrlUtils::parseInternalUrl)
                     .forEach(internalURL -> {
@@ -118,7 +120,7 @@ public class ContentCoreResourceStat implements IResourceStat {
             Page<CmsCatalog> page = catalogService.page(new Page<>(0, pageSize, false), q);
             for (CmsCatalog catalog : page.getRecords()) {
                 AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
-                        "正在统计栏目LOGO资源引用：" + count + " / " + total + "]");
+                        ContentCoreTips.STAT_CATALOG_LOGO_REFERENCES, count, total);
                 lastCatalogId = catalog.getCatalogId();
                 InternalURL internalURL = InternalUrlUtils.parseInternalUrl(catalog.getLogo());
                 if (Objects.nonNull(internalURL)) {

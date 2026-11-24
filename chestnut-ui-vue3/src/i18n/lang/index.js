@@ -1,9 +1,9 @@
-import en from "./en";
-import zhCN from "./zh-CN";
-import zhTW from "./zh-TW";
+import zhCN from './zh-CN'
+import zhTW from './zh-TW'
+import en from './en'
 
 export default {
-  en,
   'zh-CN': zhCN,
   'zh-TW': zhTW,
-};
+  en,
+}

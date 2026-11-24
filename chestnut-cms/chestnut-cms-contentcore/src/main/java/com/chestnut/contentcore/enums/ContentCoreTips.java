@@ -17,7 +17,74 @@ package com.chestnut.contentcore.enums;
 
 import com.chestnut.common.exception.TipMessage;
 
+/**
+ * 模块接口与任务进度提示。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 public enum ContentCoreTips implements TipMessage {
+
+    /** 正在删除内容数据：{0}/{1} */
+    DELETING_CONTENT_DATA,
+    /** 正在删除内容备份数据：{0}/{1} */
+    DELETING_CONTENT_BACKUP_DATA,
+    /** 正在删除资源数据：{0}/{1} */
+    DELETING_RESOURCE_DATA,
+    /** 正在删除栏目数据：{0}/{1} */
+    DELETING_CATALOG_DATA,
+    /** 正在删除站点扩展属性数据：{0}/{1} */
+    DELETING_SITE_PROPERTY_DATA,
+    /** 正在删除模板数据：{0}/{1} */
+    DELETING_TEMPLATE_DATA,
+    /** 正在删除内容关联数据：{0}/{1} */
+    DELETING_CONTENT_RELATION_DATA,
+    /** 删除内容数据失败，请查看系统日志 */
+    DELETE_CONTENT_FAILED,
+    /** 删除资源数据失败，请查看系统日志 */
+    DELETE_RESOURCE_FAILED,
+    /** 删除栏目数据失败，请查看系统日志 */
+    DELETE_CATALOG_FAILED,
+    /** 删除站点扩展属性数据失败，请查看系统日志 */
+    DELETE_SITE_PROPERTY_FAILED,
+    /** 删除模板数据失败，请查看系统日志 */
+    DELETE_TEMPLATE_FAILED,
+    /** 删除内容关联数据失败，请查看系统日志 */
+    DELETE_CONTENT_RELATION_FAILED,
+    /** 正在统计内容LOGO资源引用：{0}/{1} */
+    STAT_CONTENT_LOGO_REFERENCES,
+    /** 正在统计栏目LOGO资源引用：{0}/{1} */
+    STAT_CATALOG_LOGO_REFERENCES,
+    /** 操作失败：{0} */
+    TASK_FAILED,
+    /** 正在删除页面部件数据 */
+    DELETING_PAGE_WIDGETS,
+    /** 正在合并内容：{0} [{1}/{2}] */
+    MERGING_CONTENT,
+    /** 更新转移栏目原父级栏目数据 */
+    UPDATING_SOURCE_PARENT,
+    /** 更新转移栏目数据 */
+    UPDATING_MOVED_CATALOG,
+    /** 更新转移栏目子栏目数据 */
+    UPDATING_CHILD_CATALOGS,
+    /** 更新转移目标栏目数据 */
+    UPDATING_TARGET_CATALOG,
+    /** 更新转移栏目及其子栏目内容 */
+    UPDATING_MOVED_CONTENTS,
+    /** 下载远程图片失败：{0} */
+    REMOTE_IMAGE_FAILED,
+    /** 排序数值不能为0 */
+    SORT_ZERO,
+    /** 属性代码不能重复 */
+    PROPERTY_CODE_CONFLICT,
+    /** 模板未找到：{0} */
+    TEMPLATE_MISSING,
+    /** 页面部件未找到：{0} */
+    PAGE_WIDGET_NOT_FOUND,
+    /** 操作超时 */
+    OPERATION_TIMEOUT,
+    /** 参数与内部链接固定参数 id 冲突 */
+    INTERNAL_URL_PARAM_CONFLICT,
 
     /**
      * 正在删除关联映射内容：{0}，[ID:{1}]

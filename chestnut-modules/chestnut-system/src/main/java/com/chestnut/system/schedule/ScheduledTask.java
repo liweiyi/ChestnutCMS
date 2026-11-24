@@ -15,12 +15,13 @@
  */
 package com.chestnut.system.schedule;
 
-import com.chestnut.common.exception.GlobalException;
-import com.chestnut.common.i18n.I18nUtils;
+import com.chestnut.common.exception.CommonTips;
 import com.chestnut.common.utils.Assert;
+import com.chestnut.system.exception.SystemTips;
 import com.chestnut.system.service.ISysScheduledTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.time.Duration;
@@ -28,11 +29,15 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ScheduledFuture;
 import java.util.function.Consumer;
 
 /**
- * 异步任务构造器
+ * 执行定时任务并记录执行结果。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 public abstract class ScheduledTask implements Runnable {
 
@@ -96,6 +101,7 @@ public abstract class ScheduledTask implements Runnable {
 	private ScheduledFuture<?> future;
 
 	private final ISysScheduledTaskService taskService;
+	private final Locale locale = LocaleContextHolder.getLocale();
 
 	public ScheduledTask(ISysScheduledTaskService taskService) {
 		this.taskService = taskService;
@@ -103,6 +109,8 @@ public abstract class ScheduledTask implements Runnable {
 
 	@Override
 	public void run() {
+		LocaleContext previousLocale = LocaleContextHolder.getLocaleContext();
+		LocaleContextHolder.setLocale(this.locale);
 		try {
 			this.checkInterrupt();
 			this.start();
@@ -113,16 +121,16 @@ public abstract class ScheduledTask implements Runnable {
 				this.setStatus(ScheduledTaskStatus.INTERRUPTED);
 			} else {
 				this.setStatus(ScheduledTaskStatus.FAILED);
-				String err = e.getMessage();
-				if (e instanceof GlobalException ge && ge.getErrorCode() != null) {
-					err = I18nUtils.get(ge.getErrorCode().value(), LocaleContextHolder.getLocale(), ge.getErrArgs());
-				}
-				this.addErrorMessage(err);
+				this.addErrorMessage(CommonTips.failureReason(e, this.locale));
 			}
 			this.setPercent(100);
 			logger.error("Job failed.", e);
 		} finally {
-			this.onTaskEnded();
+			try {
+				this.onTaskEnded();
+			} finally {
+				LocaleContextHolder.setLocaleContext(previousLocale);
+			}
 		}
 		this.taskService.addTaskLog(this);
 	}
@@ -180,7 +188,8 @@ public abstract class ScheduledTask implements Runnable {
 	 * @throws InterruptedException
 	 */
 	public void checkInterrupt() throws InterruptedException {
-		Assert.isFalse(this.interrupt, () -> new InterruptedException("The scheduled task is interrupted: " + this.taskId));
+		Assert.isFalse(this.interrupt,
+				() -> new InterruptedException(SystemTips.TASK_INTERRUPTED.locale(this.locale, this.taskId)));
 	}
 
 	public Long getTaskId() {

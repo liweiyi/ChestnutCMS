@@ -15,11 +15,12 @@
  */
 package com.chestnut.customform;
 
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.staticize.StaticizeService;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.utils.IdUtils;
-import com.chestnut.common.utils.StringUtils;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
@@ -123,8 +124,7 @@ public class CustomFormStaticizeType implements IStaticizeType {
             this.staticizeService.process(templateContext);
             this.log(site, "[{}]The custom form template parsed: {}, cost: {}ms", publishPipeCode, form.getCode(), System.currentTimeMillis() - s);
         } catch (TemplateException | IOException e) {
-            logger.error(AsyncTaskManager.addErrMessage(StringUtils.messageFormat("[{0}]The custom form template parse failed: {1}#{2}",
-                    publishPipeCode, form.getName(), form.getCode())), e);
+            logger.error(AsyncTaskManager.addErrMessage(ContentCoreTips.TEMPLATE_PARSE_FAILED, publishPipeCode, form.getName() + "#" + form.getCode()), e);
         }
     }
 }

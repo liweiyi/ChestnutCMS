@@ -35,8 +35,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.data.redis.connection.DataType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -49,8 +51,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * 管理国际化字典并加载模块语言资源。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Slf4j
 @Service
+@Order(0)
 @RequiredArgsConstructor
 public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI18nDict>
         implements ISysI18nDictService, CommandLineRunner {
@@ -200,21 +209,37 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
     @Override
     public void loadMessages(I18nMessageSource messageSource) throws IOException {
         long s = System.currentTimeMillis();
+        Map<String, Map<String, String>> databaseMessages = this.list().stream().collect(Collectors.groupingBy(
+                SysI18nDict::getLangTag, Collectors.toMap(SysI18nDict::getLangKey, SysI18nDict::getLangValue)));
         // 读取配置文件数据
         this.loadMessagesFromResources(messageSource);
         // 加载数据库数据，如果与配置文件重复则直接覆盖掉
-        this.loadMessagesFromDB();
+        databaseMessages.forEach((lang, values) -> redisCache.setCacheMapValues(CACHE_PREFIX + lang, values));
+        removeStaleMenuMessageCache(databaseMessages);
         log.debug("Load i18n messages cost: {}ms", System.currentTimeMillis() - s);
     }
 
-    private void loadMessagesFromDB() {
-        Map<String, Map<String, String>> map = this.list().stream().collect(Collectors.groupingBy(
-                SysI18nDict::getLangTag, Collectors.toMap(SysI18nDict::getLangKey, SysI18nDict::getLangValue)));
-        map.forEach((k1, v1) ->
-                v1.forEach((k2, v2) ->
-                        redisCache.setCacheMapValue(CACHE_PREFIX + k1, k2, v2)
-                )
-        );
+    /** 清理旧资源文件遗留、且数据库中没有对应记录的菜单翻译。 */
+    private void removeStaleMenuMessageCache(Map<String, Map<String, String>> databaseMessages) {
+        for (String cacheKey : redisCache.scanKeys(DataType.HASH, CACHE_PREFIX + "*", 100)) {
+            String lang = cacheKey.substring(CACHE_PREFIX.length());
+            Map<String, String> currentMessages = databaseMessages.getOrDefault(lang, Map.of());
+            Map<String, String> cachedMessages = redisCache.getCacheMap(cacheKey, String.class);
+            if (cachedMessages == null) {
+                continue;
+            }
+            Object[] keys = cachedMessages.keySet().stream()
+                    .filter(SysI18nDictServiceImpl::isMenuMessage)
+                    .filter(key -> !currentMessages.containsKey(key))
+                    .toArray();
+            if (keys.length > 0) {
+                redisCache.deleteCacheMapValue(cacheKey, keys);
+            }
+        }
+    }
+
+    private static boolean isMenuMessage(String key) {
+        return key.startsWith("MENU.NAME.");
     }
 
     private void loadMessagesFromResources(I18nMessageSource messageSource) throws IOException {
@@ -237,11 +262,16 @@ public class SysI18nDictServiceImpl extends ServiceImpl<SysI18nDictMapper, SysI1
                 try (InputStream is = resource.getInputStream()) {
                     List<String> lines = IOUtils.readLines(is, messageSource.getEncoding());
                     lines.stream()
-                            .filter(s -> StringUtils.isNotEmpty(s) && s.contains(PROPERTY_SPLITERATOR))
+                            .map(String::stripLeading)
+                            .filter(s -> !s.startsWith("#") && !s.startsWith("!")
+                                    && s.contains(PROPERTY_SPLITERATOR))
                             .forEach(s -> {
                                 try {
-                                    String[] kv = s.split(PROPERTY_SPLITERATOR);
-                                    redisCache.setCacheMapValue(cacheKey, kv[0], kv[1]);
+                                    String[] kv = s.split(PROPERTY_SPLITERATOR, 2);
+                                    String key = kv[0].trim();
+                                    if (!isMenuMessage(key)) {
+                                        redisCache.setCacheMapValue(cacheKey, key, kv[1]);
+                                    }
                                 } catch (Exception e) {
                                     log.error("Load i18n messages from resource failed: {}", s, e);
                                 }

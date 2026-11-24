@@ -5,7 +5,7 @@
       </el-form-item>
       <el-form-item :label="$t('AccountCenter.NewPwd')" prop="newPassword">
         <el-tooltip 
-          v-if="ruleTips&&ruleTips.length>0" 
+          :disabled="!ruleTips"
           class="item" 
           effect="dark" 
           placement="right"
@@ -39,7 +39,7 @@ const data = reactive({
     confirmPassword: undefined
   },
   userInfo: {},
-  securityConfig: {}
+  securityConfig: null
 })
 const { user, userInfo, securityConfig } = toRefs(data)
 
@@ -49,6 +49,21 @@ const equalToPassword = (rule, value, callback) => {
   } else {
     callback()
   }
+}
+
+const validateNewPassword = (rule, value, callback) => {
+  if (typeof value !== 'string' || /^\p{White_Space}*$/u.test(value)) {
+    callback(new Error(proxy.$t('Common.RuleTips.NotEmpty')))
+    return
+  }
+
+  const config = securityConfig.value
+  // 与后端的 String.length() 一致，按 UTF-16 代码单元计数。
+  if (config && (value.length < config.minLength || value.length > config.maxLength)) {
+    callback(new Error(proxy.$t('AccountCenter.NewPwdLenTip', [config.minLength, config.maxLength])))
+    return
+  }
+  callback()
 }
 
 const validPasswordSensitive = (rule, value, callback) => {
@@ -74,7 +89,7 @@ const rules = ref({
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
   ],
   newPassword: [
-    { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" }
+    { required: true, validator: validateNewPassword, trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, message: proxy.$t('Common.RuleTips.NotEmpty'), trigger: "blur" },
@@ -90,29 +105,24 @@ function loadUserProfile() {
 
 function loadSecurityConfig() {
   getSecurityConfigByType(['Password']).then(res => {
-    if (res.data) {
-      securityConfig.value = res.data.Password;
-      ruleTips.value = "# " + proxy.$t('AccountCenter.NewPwdLenTip', [ securityConfig.value.minLength, securityConfig.value.maxLength ]);
-      rules.value.newPassword.push({ 
-        min: securityConfig.value.minLength, 
-        max: securityConfig.value.maxLength, 
-        message: proxy.$t('AccountCenter.NewPwdLenTip', [ securityConfig.value.minLength, securityConfig.value.maxLength ]), 
-        trigger: "blur" 
-      });
-      if (securityConfig.value.rule != '0') {
-        ruleTips.value += "<br/># " + proxy.$t('AccountCenter.NewPwdRule' + securityConfig.value.rule + "Tip");
+    const passwordConfig = res.data?.Password
+    if (passwordConfig) {
+      securityConfig.value = passwordConfig
+      const { minLength, maxLength, rule, rulePattern } = passwordConfig
+      ruleTips.value = '# ' + proxy.$t('AccountCenter.NewPwdLenTip', [minLength, maxLength])
+      if (rulePattern) {
+        const ruleMessage = proxy.$t('AccountCenter.NewPwdRule' + rule + 'Tip')
+        ruleTips.value += '<br/># ' + ruleMessage
         rules.value.newPassword.push({
-          pattern: securityConfig.value.rulePattern,
-          message: proxy.$t('AccountCenter.NewPwdRule' + securityConfig.value.rule + "Tip"), 
-          trigger: "blur"
-        });
+          pattern: rulePattern,
+          message: ruleMessage,
+          trigger: 'blur'
+        })
       }
       if (securityConfig.value.sensitives && securityConfig.value.sensitives.length > 0) {
         ruleTips.value += "<br/># " + proxy.$t('AccountCenter.NewPwdSensitiveTip');
         rules.value.newPassword.push({ required: true, validator: validPasswordSensitive, trigger: "blur" });
       }
-      console.log(ruleTips.value);
-      console.log(rules.value);
     }
   })
 }

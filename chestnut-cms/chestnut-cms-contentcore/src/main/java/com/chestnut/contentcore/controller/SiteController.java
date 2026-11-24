@@ -15,11 +15,17 @@
  */
 package com.chestnut.contentcore.controller;
 
+import cn.dev33.satoken.annotation.SaMode;
+import com.chestnut.common.exception.CommonTips;
+
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.domain.R;
 import com.chestnut.common.exception.CommonErrorCode;
+import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
@@ -41,10 +47,13 @@ import com.chestnut.contentcore.core.IProperty.UseType;
 import com.chestnut.contentcore.core.IPublishPipeProp.PublishPipePropUseType;
 import com.chestnut.contentcore.domain.CmsPublishPipe;
 import com.chestnut.contentcore.domain.CmsSite;
+import com.chestnut.contentcore.domain.dto.MoveSiteRequest;
 import com.chestnut.contentcore.domain.dto.PublishSiteDTO;
+import com.chestnut.contentcore.domain.dto.SetSiteTopRequest;
 import com.chestnut.contentcore.domain.dto.SiteDTO;
 import com.chestnut.contentcore.domain.dto.SiteDefaultTemplateDTO;
 import com.chestnut.contentcore.domain.dto.SiteExportDTO;
+import com.chestnut.contentcore.domain.dto.SortSiteRequest;
 import com.chestnut.contentcore.domain.pojo.PublishPipeProps;
 import com.chestnut.contentcore.domain.vo.SiteDashboardVO;
 import com.chestnut.contentcore.perms.ContentCorePriv;
@@ -61,7 +70,9 @@ import com.chestnut.system.security.StpAdminUtil;
 import com.chestnut.system.validator.LongId;
 import freemarker.template.TemplateException;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
@@ -94,6 +105,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/cms/site")
 @RequiredArgsConstructor
+@Slf4j
 public class SiteController extends CmsRestController {
 
     private final ISiteService siteService;
@@ -113,15 +125,22 @@ public class SiteController extends CmsRestController {
     /**
      * 获取当前站点数据
      *
-     * @apiNote 读取request.header['cc-current-site']中的siteId，如果无header或无站点则取数据库第一条站点数据
+     * @apiNote 读取request.header['cc-current-site']中的siteId，未设置或无权限时取首个有权限的站点，无可用站点时返回null
      */
     @XComment("{API.DOC.CMS.SITE.GET_CURRENT_SITE}")
     @Priv(type = AdminUserType.TYPE)
     @GetMapping("/getCurrentSite")
     public R<Map<String, Object>> getCurrentSiteOrDefault() {
         LoginUser loginUser = StpAdminUtil.getLoginUser();
-        CmsSite site = this.siteService.getCurrentSiteOrDefault(ServletUtils.getRequest(), loginUser);
-        return R.ok(Map.of("siteId", site.getSiteId(), "siteName", site.getName()));
+        try {
+            CmsSite site = this.siteService.getCurrentSiteOrDefault(ServletUtils.getRequest(), loginUser);
+            return R.ok(Map.of("siteId", site.getSiteId(), "siteName", site.getName()));
+        } catch (GlobalException e) {
+            if (e.getErrorCode() == ContentCoreErrorCode.NO_SITE) {
+                return R.ok();
+            }
+            throw e;
+        }
     }
 
     @XComment("{API.DOC.CMS.SITE.GET_DASHBOARD_INFO}")
@@ -165,17 +184,61 @@ public class SiteController extends CmsRestController {
     @GetMapping("/list")
     public R<TableData<CmsSite>> list(@RequestParam(value = "siteName", required = false) String siteName) {
         LoginUser loginUser = StpAdminUtil.getLoginUser();
-        List<CmsSite> list = siteService.lambdaQuery()
-                .like(StringUtils.isNotEmpty(siteName), CmsSite::getName, siteName)
-                .list().stream()
-                .filter(site -> loginUser.hasPermission(SitePrivItem.View.getPermissionKey(site.getSiteId())))
-                .toList();
+        List<CmsSite> list = siteService.listSites(siteName, loginUser);
         list.forEach(site -> {
             if (StringUtils.isNotEmpty(site.getLogo())) {
                 site.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(site.getLogo()));
             }
         });
         return this.bindDataTable(list);
+    }
+
+    @XComment("{API.DOC.CMS.SITE.GET_CHILDREN}")
+    @Priv(type = AdminUserType.TYPE, value = ContentCorePriv.SiteView)
+    @GetMapping("/tree")
+    public R<TableData<CmsSite>> tree(
+            @RequestParam(defaultValue = "0") @PositiveOrZero @XComment("{CMS.SITE.PARENT_ID}") long parentId) {
+        return this.bindDataTable(siteService.listChildSites(parentId, StpAdminUtil.getLoginUser()));
+    }
+
+    @XComment("{API.DOC.CMS.SITE.SORT}")
+    @Priv(type = AdminUserType.TYPE, mode = SaMode.AND,
+            value = {"Site:View:${#request.siteId}", "Site:Edit:${#request.siteId}",
+                    "Site:View:${#request.targetSiteId}", "Site:Edit:${#request.targetSiteId}"})
+    @Log(title = "站点排序", businessType = BusinessType.UPDATE)
+    @PostMapping("/sort")
+    public R<Void> sort(@RequestBody @Validated SortSiteRequest request) {
+        siteService.sortSite(request, StpAdminUtil.getLoginUser().getUsername());
+        return R.ok();
+    }
+
+    @XComment("{API.DOC.CMS.SITE.MOVE}")
+    @Priv(type = AdminUserType.TYPE, mode = SaMode.AND,
+            value = {"Site:View:${#request.siteId}", "Site:Edit:${#request.siteId}"})
+    @Log(title = "转移站点", businessType = BusinessType.UPDATE)
+    @PostMapping("/move")
+    public R<Void> move(@RequestBody @Validated MoveSiteRequest request) {
+        siteService.moveSite(request.getSiteId(), request.getParentId(), StpAdminUtil.getLoginUser());
+        return R.ok();
+    }
+
+    @XComment("{API.DOC.CMS.SITE.SET_TOP}")
+    @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
+    @Log(title = "置顶站点", businessType = BusinessType.UPDATE)
+    @PostMapping("/set_top/{siteId}")
+    public R<Void> setTop(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId,
+            @RequestBody @Validated SetSiteTopRequest request) {
+        siteService.setTop(siteId, request.getTopEndTime(), StpAdminUtil.getLoginUser().getUsername());
+        return R.ok();
+    }
+
+    @XComment("{API.DOC.CMS.SITE.CANCEL_TOP}")
+    @Priv(type = AdminUserType.TYPE, value = "Site:Edit:${#siteId}")
+    @Log(title = "取消站点置顶", businessType = BusinessType.UPDATE)
+    @PostMapping("/cancel_top/{siteId}")
+    public R<Void> cancelTop(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE.SITE_ID}") Long siteId) {
+        siteService.cancelTop(siteId, StpAdminUtil.getLoginUser().getUsername());
+        return R.ok();
     }
 
     /**
@@ -194,6 +257,13 @@ public class SiteController extends CmsRestController {
             site.setLogoSrc(InternalUrlUtils.getActualPreviewUrl(site.getLogo()));
         }
         SiteDTO dto = SiteDTO.newInstance(site);
+        if (site.getParentId() > 0 && StpAdminUtil.getLoginUser()
+                .hasPermission(SitePrivItem.View.getPermissionKey(site.getParentId()))) {
+            CmsSite parent = siteService.getById(site.getParentId());
+            if (parent != null) {
+                dto.setParentName(parent.getName());
+            }
+        }
         resourceService.dealDefaultThumbnail(site, dto.getLogo(), dto::setLogoSrc);
         // 发布通道数据
         List<PublishPipeProps> publishPipeProps = this.publishPipeService.getPublishPipeProps(site.getSiteId(),
@@ -256,6 +326,7 @@ public class SiteController extends CmsRestController {
         CmsSite site = siteService.getById(siteId);
         Assert.notNull(site, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("siteId", siteId));
 
+        Assert.isTrue(site.getChildCount() == 0, ContentCoreErrorCode.SITE_HAS_CHILDREN::exception);
         AsyncTask task = new AsyncTask() {
 
             @Override
@@ -403,7 +474,8 @@ public class SiteController extends CmsRestController {
             String src = SiteUtils.getResourcePreviewPrefix(site) + filename;
             return R.ok(Map.of("path", filename, "src", src));
         } catch (Exception e) {
-            return R.fail(e.getMessage());
+            log.error("Site operation failed", e);
+            return R.failWithTip(ContentCoreTips.TASK_FAILED, CommonTips.failureReason(e));
         }
     }
 
@@ -423,7 +495,8 @@ public class SiteController extends CmsRestController {
             AsyncTask asyncTask = this.siteExportService.importSiteTheme(site, file, StpAdminUtil.getLoginUser());
             return R.ok(asyncTask.getTaskId());
         } catch (Exception e) {
-            return R.fail(e.getMessage());
+            log.error("Site operation failed", e);
+            return R.failWithTip(ContentCoreTips.TASK_FAILED, CommonTips.failureReason(e));
         }
     }
 
@@ -461,7 +534,7 @@ public class SiteController extends CmsRestController {
                             outputStream.write(data, 0, bytesRead);
                             outputStream.flush();
                             if (Duration.between(startTime, Instant.now()).toMillis() > timeout) {
-                                throw new RuntimeException("Timed out");
+                                throw ContentCoreTips.OPERATION_TIMEOUT.exception();
                             }
                         }
                     }

@@ -15,6 +15,8 @@
  */
 package com.chestnut.member.controller.front;
 
+import com.chestnut.member.exception.MemberProfileTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.captcha.CaptchaCheckResult;
@@ -61,6 +63,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * 提供会员登录与注册接口
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @XComment("{API.DOC.MEMBER.LOGIN_API_MODULE}")
 @Slf4j
 @RequiredArgsConstructor
@@ -91,7 +99,7 @@ public class MemberLoginApiController extends BaseRestController {
 	public R<?> checkLogin(@RequestParam(required = false, defaultValue = "false") @XComment("{API.DOC.MEMBER.PREVIEW}") Boolean preview) {
 		boolean login = StpMemberUtil.isLogin();
 		if (!login) {
-			return R.fail("Not Login");
+			return R.failWithTip(MemberProfileTips.NOT_LOGGED_IN);
 		}
 		MemberCache memberCache = memberStatDataService.getMemberCache(StpMemberUtil.getLoginIdAsLong());
 		if (StringUtils.isNotEmpty(memberCache.getAvatar())) {

@@ -37,12 +37,12 @@
   </div>
 </template>
 <script setup name="CmsResourceUploder">
-import { isImage, getFileSvgIconClass, setUrlParameter } from "@/utils/chestnut";
+import { isImage, getFileSvgIconClass } from "@/utils/chestnut";
+import { getImageFormat } from "@/utils/imageOptimizer/model.js";
 import CmsResourceDialog from "@/views/cms/contentcore/resourceDialog";
 
 import useAppStore from "@/store/modules/app"
 const appStore = useAppStore()
-const { proxy } = getCurrentInstance()
 
 const model = defineModel({
   type: Array,
@@ -135,7 +135,9 @@ function getResourceFileIconClass(index) {
 }
 
 function isImageResource (index) {
-  return isImage(model.value[index].src);
+  const src = model.value[index]?.src;
+  const filename = typeof src === "string" ? src.split(/[?#]/)[0].toLowerCase() : "";
+  return isImage(filename) || Boolean(getImageFormat(filename));
 }
 
 </script>

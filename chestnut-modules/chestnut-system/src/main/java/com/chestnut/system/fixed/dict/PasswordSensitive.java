@@ -18,6 +18,7 @@ package com.chestnut.system.fixed.dict;
 import com.chestnut.common.utils.ChineseSpelling;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
+import com.chestnut.common.utils.ValidationUtils;
 import com.chestnut.system.fixed.FixedDictType;
 import com.chestnut.system.security.ISecurityUser;
 import com.chestnut.system.service.ISysDictTypeService;
@@ -30,7 +31,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * 密码敏感信息配置
+ * 密码敏感信息配置及校验
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Component(FixedDictType.BEAN_PREFIX + PasswordSensitive.TYPE)
 public class PasswordSensitive extends FixedDictType {
@@ -84,20 +88,16 @@ public class PasswordSensitive extends FixedDictType {
 	}
 
 	private static boolean containsPhoneNumber(String password, ISecurityUser user) {
-		if (StringUtils.isEmpty(user.getPhoneNumber())) {
+		String phoneNumber = StringUtils.trim(user.getPhoneNumber());
+		if (StringUtils.isBlank(phoneNumber)) {
 			return false;
 		}
-		if (password.contains(user.getPhoneNumber())) {
-			return true;
+
+		String callingCode = StringUtils.trim(user.getPhoneCallingCode());
+		if (ValidationUtils.isValidPhoneCallingCode(callingCode) && phoneNumber.startsWith(callingCode)) {
+			phoneNumber = phoneNumber.substring(callingCode.length());
 		}
-		String phoneNumber = user.getPhoneNumber();
-		if (StringUtils.isNotEmpty(user.getPhoneCallingCode())
-				&& phoneNumber.startsWith(user.getPhoneCallingCode())
-				&& phoneNumber.length() > user.getPhoneCallingCode().length()) {
-			phoneNumber = phoneNumber.substring(user.getPhoneCallingCode().length());
-			return password.contains(phoneNumber);
-		}
-		return false;
+		return StringUtils.isNotBlank(phoneNumber) && password.contains(phoneNumber);
 	}
 
 	public static <T> void decode(List<T> list, Function<T, String> getter, BiConsumer<T, String> setter) {

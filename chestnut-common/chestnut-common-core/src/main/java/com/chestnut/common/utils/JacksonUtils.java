@@ -47,7 +47,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * Jackson工具类
+ * 提供统一的 JSON 序列化、反序列化和字段读取。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 public class JacksonUtils {
 
@@ -442,7 +445,7 @@ public class JacksonUtils {
             if (Objects.isNull(node)) {
                 return defaultValue;
             }
-            return node.isInt() ? node.intValue() : NumberUtils.toInt(getAsString(jsonNode), defaultValue);
+            return node.isInt() ? node.intValue() : NumberUtils.toInt(getAsString(node), defaultValue);
         } catch (Exception e) {
             throw new JacksonException(StringUtils.messageFormat("jackson get int error, json: {0}, key: {1}", jsonNode, key), e);
         }
@@ -476,7 +479,7 @@ public class JacksonUtils {
             if (Objects.isNull(node)) {
                 return defaultValue;
             }
-            return node.isLong() ? node.longValue(defaultValue) :  NumberUtils.toLong(getAsString(jsonNode), defaultValue);
+            return node.isLong() ? node.longValue(defaultValue) : NumberUtils.toLong(getAsString(node), defaultValue);
         } catch (Exception e) {
             throw new JacksonException(StringUtils.messageFormat("jackson get long error, json: {0}, key: {1}", jsonNode, key), e);
         }
@@ -510,7 +513,7 @@ public class JacksonUtils {
             if (Objects.isNull(node)) {
                 return defaultValue;
             }
-            return node.isDouble() ? node.doubleValue(defaultValue) :  NumberUtils.toDouble(getAsString(jsonNode), defaultValue);
+            return node.isDouble() ? node.doubleValue(defaultValue) : NumberUtils.toDouble(getAsString(node), defaultValue);
         } catch (Exception e) {
             throw new JacksonException(StringUtils.messageFormat("jackson get double error, json: {0}, key: {1}", jsonNode, key), e);
         }

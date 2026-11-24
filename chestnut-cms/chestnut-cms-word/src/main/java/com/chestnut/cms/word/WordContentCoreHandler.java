@@ -15,6 +15,8 @@
  */
 package com.chestnut.cms.word;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.IdUtils;
 import com.chestnut.common.utils.JacksonUtils;
@@ -108,7 +110,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     tagWordGroupService.save(data);
                     tagGroupIdMap.put(oldGroupId, data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_TAG_GROUP_FAIL, oldGroupId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_TAG_GROUP_FAIL, oldGroupId, CommonTips.failureReason(e));
                     log.error("Import tag word group failed", e);
                 }
             }
@@ -134,7 +136,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     tagWordService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_TAG_FAIL, oldTagId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_TAG_FAIL, oldTagId, CommonTips.failureReason(e));
                     log.error("Import tag word failed", e);
                 }
             }
@@ -156,7 +158,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     hotWordGroupService.save(data);
                     hotGroupIdMap.put(oldGroupId, data.getGroupId());
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_HOT_WORD_GROUP_FAIL, oldGroupId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_HOT_WORD_GROUP_FAIL, oldGroupId, CommonTips.failureReason(e));
                     log.error("Import hot word group failed", e);
                 }
             }
@@ -175,7 +177,7 @@ public class WordContentCoreHandler implements ICoreDataHandler {
                     data.createBy(context.getOperator());
                     hotWordService.save(data);
                 } catch (Exception e) {
-                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_HOT_WORD_FAIL, oldWordId, e.getMessage());
+                    AsyncTaskManager.addErrMessage(CmsWordTips.IMPORT_HOT_WORD_FAIL, oldWordId, CommonTips.failureReason(e));
                     log.error("Import hot word failed", e);
                 }
             }

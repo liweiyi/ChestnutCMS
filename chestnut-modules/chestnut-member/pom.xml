@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>chestnut-modules</artifactId>
 		<groupId>com.chestnut</groupId>
-		<version>1.6.3</version>
+		<version>1.6.4</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -31,4 +31,19 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+    <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>../../chestnut-admin/src/main/resources/db/migration/mysql</directory>
+                <includes>
+                    <include>V1.6.4__update.sql</include>
+                </includes>
+                <targetPath>schema</targetPath>
+            </testResource>
+        </testResources>
+    </build>
 </project>

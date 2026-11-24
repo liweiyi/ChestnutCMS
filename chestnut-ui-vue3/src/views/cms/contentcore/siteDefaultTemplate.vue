@@ -168,7 +168,7 @@ const handleSave = () => {
   proxy.$refs["formRef"].validate(valid => {
     if (valid) {
       saveDefaultTemplates(form.value).then(response => {
-        proxy.$modal.msgSuccess(proxy.$t('SaveSuccess'));
+        proxy.$modal.msgSuccess(proxy.$t('Common.SaveSuccess'));
       });
     }
   });

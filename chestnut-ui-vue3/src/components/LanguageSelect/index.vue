@@ -19,6 +19,7 @@
 <script setup>
 import { useRouter } from "vue-router"
 import { i18n } from '@/i18n'
+import { normalizeLanguage, SUPPORTED_LANGUAGES } from '@/i18n/locales'
 import { listLangOptions } from '@/api/system/i18nDict'
 import cache from '@/plugins/cache'
 
@@ -39,14 +40,15 @@ const langName = computed(() => {
 })
 
 const handleSetLanguage = (lang) => {
-  i18n.global.locale.value = lang
-  cache.local.set("cc.language", lang)
+  const language = normalizeLanguage(lang)
+  i18n.global.locale.value = language
+  cache.local.set('cc.language', language)
   router.go(0)
 }
 
 const loadLangOptions = () => {
   listLangOptions().then(response => {
-    langOptions.value = response.data
+    langOptions.value = response.data.filter(item => SUPPORTED_LANGUAGES.includes(item.value))
   })
 }
 

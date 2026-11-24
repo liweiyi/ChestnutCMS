@@ -18,12 +18,29 @@ package com.chestnut.cms.word;
 import com.chestnut.common.exception.TipMessage;
 
 /**
- * CmsWordTips
+ * 模块接口与任务进度提示。
  *
  * @author 兮玥
  * @email 190785909@qq.com
  */
 public enum CmsWordTips implements TipMessage {
+
+    /** 正在删除热词分组数据：{0}/{1} */
+    DELETING_HOT_WORD_GROUP_DATA,
+    /** 正在删除热词数据：{0}/{1} */
+    DELETING_HOT_WORD_DATA,
+    /** 正在删除TAG词分组数据：{0}/{1} */
+    DELETING_TAG_GROUP_DATA,
+    /** 正在删除TAG词数据：{0}/{1} */
+    DELETING_TAG_DATA,
+    /** 删除热词分组数据失败，请查看系统日志 */
+    DELETE_HOT_WORD_GROUP_FAILED,
+    /** 删除热词数据失败，请查看系统日志 */
+    DELETE_HOT_WORD_FAILED,
+    /** 删除TAG词分组数据失败，请查看系统日志 */
+    DELETE_TAG_GROUP_FAILED,
+    /** 删除TAG词数据失败，请查看系统日志 */
+    DELETE_TAG_FAILED,
 
     /**
      * 正在导出TAG词分组数据

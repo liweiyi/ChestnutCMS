@@ -55,6 +55,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * 处理前台评论提交与关联校验
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @RequiredArgsConstructor
 @Service
 public class CommentApiServiceImpl implements ICommentApiService, ApplicationContextAware {
@@ -168,7 +174,7 @@ public class CommentApiServiceImpl implements ICommentApiService, ApplicationCon
 			if (!comment.getSourceType().equals(parent.getSourceType())
 					|| !comment.getSourceId().equals(parent.getSourceId())
 					|| parent.getParentId() != 0) {
-				throw new RuntimeException("Reply comment not found: " + dto.getCommentId());
+				throw CommentErrorCode.API_COMMENT_NOT_FOUND.exception();
 			}
 			comment.setReplyUid(dto.getReplyUid());
 			comment.setParentId(dto.getCommentId());

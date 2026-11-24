@@ -15,6 +15,8 @@
  */
 package com.chestnut.system.controller.common;
 
+import com.chestnut.system.exception.SystemTips;
+
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.config.properties.ChestnutProperties;
 import com.chestnut.common.i18n.I18nUtils;
@@ -44,6 +46,6 @@ public class SysIndexController {
 	@XComment("{API.DOC.SYS.INDEX.GET}")
 	@RequestMapping("/")
 	public String index() {
-		return I18nUtils.parse("TIPS.SYS.WELCOME", properties.getName(), properties.getVersion());
+		return SystemTips.WELCOME.locale(properties.getName(), properties.getVersion());
 	}
 }

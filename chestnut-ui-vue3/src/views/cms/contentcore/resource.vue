@@ -35,7 +35,7 @@
           :inline="true"
           class="el-form-search">
           <el-form-item prop="name">
-            <el-input :placeholder="$t('CMS.Resource.Name')" v-model="queryParams.name">
+            <el-input :placeholder="$t('CMS.Resource.NameOrId')" v-model="queryParams.name" @keyup.enter="handleQuery">
               <template #prepend>
                 <el-select v-model="queryParams.resourceType" :placeholder="$t('CMS.Resource.Type')" clearable style="width:100px;">
                   <el-option
@@ -47,6 +47,34 @@
                 </el-select>
               </template>
             </el-input>
+          </el-form-item>
+          <el-form-item :label="$t('CMS.Resource.FileSize')">
+            <div class="file-size-range">
+              <el-input-number
+                v-model="fileSizeRange.min"
+                :min="0"
+                :max="Math.floor(Number.MAX_SAFE_INTEGER / fileSizeRange.unit)"
+                :precision="2"
+                :controls="false"
+                :placeholder="$t('CMS.Resource.MinFileSize')"
+                :aria-label="$t('CMS.Resource.MinFileSize')"
+                @keyup.enter="handleQuery" />
+              <span>-</span>
+              <el-input-number
+                v-model="fileSizeRange.max"
+                :min="0"
+                :max="Math.floor(Number.MAX_SAFE_INTEGER / fileSizeRange.unit)"
+                :precision="2"
+                :controls="false"
+                :placeholder="$t('CMS.Resource.MaxFileSize')"
+                :aria-label="$t('CMS.Resource.MaxFileSize')"
+                @keyup.enter="handleQuery" />
+              <el-select v-model="fileSizeRange.unit" :aria-label="$t('CMS.Resource.FileSizeUnit')">
+                <el-option label="KB" :value="1024" />
+                <el-option label="MB" :value="1024 ** 2" />
+                <el-option label="GB" :value="1024 ** 3" />
+              </el-select>
+            </div>
           </el-form-item>
           <el-form-item :label="$t('Common.CreateTime')">
             <el-date-picker 
@@ -83,7 +111,9 @@
         :key="r.resourceId"
         @click="handleCardClick(index)">
         <div class="card-preview">
-          <el-image v-if="isImageResource(r.src)" class="item-img" fit="scale-down" :src="r.src" hide-on-click-modal></el-image>
+          <el-image v-if="isImageResource(r.src) || getImageFormat(r)" class="item-img" fit="scale-down" :src="r.previewSrc || r.src" hide-on-click-modal>
+            <template #error><svg-icon icon-class="image" class="item-svg" /></template>
+          </el-image>
           <svg-icon v-else :icon-class="r.iconClass" class="item-svg" />
         </div>
         <div class="card-info">
@@ -97,6 +127,9 @@
           <el-button link type="primary" icon="View" :title="$t('Common.Preview')" @click="handlePreview(r)" />
           <el-button link type="primary" icon="Edit" :title="$t('Common.Edit')" @click="handleUpdate(r)" />
           <el-button link type="danger" icon="Delete" :title="$t('Common.Delete')" @click="handleDelete(r)" />
+          <el-tooltip v-if="getImageFormat(r)" :content="$t('CMS.ImageOptimizer.Title')" placement="top">
+            <el-button link type="primary" icon="Crop" :aria-label="$t('CMS.ImageOptimizer.Title')" @click.stop="handleOptimize(r)" />
+          </el-tooltip>
         </div>
       </el-card>
     </div>
@@ -106,6 +139,14 @@
       v-model:page="queryParams.pageNum"
       v-model:limit="queryParams.pageSize"
       @pagination="getList" />
+
+    <ImageOptimizer
+      v-if="optimizerResource"
+      v-model="optimizerOpen"
+      :resource="optimizerResource"
+      :accept-size="upload.acceptSize"
+      :resource-types="resourceTypes"
+      @saved="handleOptimizerSaved" />
 
     <!-- 添加或修改资源对话框 -->
     <el-dialog 
@@ -165,9 +206,13 @@
   </div>
 </template>
 <script setup name="CmsContentcoreResource">
+import { defineAsyncComponent } from "vue";
 import { isImage, getFileSvgIconClass } from "@/utils/chestnut";
+import { getImageFormat } from "@/utils/imageOptimizer/model";
 import { getResourceTypes, getResourceList, getResourceDetail, delResource } from "@/api/contentcore/resource";
 import { getConfigKey } from "@/api/system/config";
+
+const ImageOptimizer = defineAsyncComponent(() => import("@/views/cms/components/ImageOptimizer/index.vue"));
 
 const { proxy } = getCurrentInstance()
 
@@ -176,8 +221,12 @@ const selectedIds = ref([])
 const resourceList = ref([])
 const total = ref(0)
 const open = ref(false)
+const optimizerOpen = ref(false)
+const optimizerResource = ref(null)
+const optimizedVersions = new Map()
 const title = ref("")
 const dateRange = ref([])
+const fileSizeRange = reactive({ min: undefined, max: undefined, unit: 1024 })
 const objects = reactive({
   queryParams: {
     pageNum: 1,
@@ -222,21 +271,45 @@ const loadResourceTypes = () => {
   });
 }
 const getList = () => {
+  const { min, max, unit } = fileSizeRange;
+  if (min != null && max != null && min > max) {
+    proxy.$modal.msgWarning(proxy.$t('CMS.Resource.InvalidFileSizeRange'));
+    return;
+  }
   loading.value = true;
   if (dateRange.value && dateRange.value.length == 2) {
     queryParams.value.beginTime = dateRange.value[0];
     queryParams.value.endTime = dateRange.value[1];
   }
-  getResourceList(queryParams.value).then(response => {
+  return getResourceList({
+    ...queryParams.value,
+    minFileSize: min == null ? undefined : Math.round(min * unit),
+    maxFileSize: max == null ? undefined : Math.round(max * unit)
+  }).then(response => {
     resourceList.value = response.data.rows;
     resourceList.value.forEach(r => {
       r.iconClass = getFileSvgIconClass(r.name)
       r.selected = false
+      const version = optimizedVersions.get(String(r.resourceId));
+      if (version && r.src) {
+        const [url, hash] = r.src.split('#');
+        r.previewSrc = `${url}${url.includes('?') ? '&' : '?'}_optimizer=${version}${hash ? '#' + hash : ''}`;
+      }
     })
     selectedIds.value = []
     total.value = parseInt(response.data.total);
+  }).finally(() => {
     loading.value = false;
   });
+}
+const handleOptimize = (resource) => {
+  optimizerResource.value = { ...resource };
+  optimizerOpen.value = true;
+}
+const handleOptimizerSaved = (resource) => {
+  const resourceId = resource?.resourceId || optimizerResource.value?.resourceId;
+  if (resourceId) optimizedVersions.set(String(resourceId), Date.now());
+  getList();
 }
 const cancel = () => {
   open.value = false;
@@ -255,6 +328,7 @@ const resetQuery = () => {
   queryParams.value.beginTime = undefined;
   queryParams.value.endTime = undefined;
   dateRange.value = [];
+  Object.assign(fileSizeRange, { min: undefined, max: undefined, unit: 1024 });
   handleQuery();
 }
 const isImageResource = (src) => {
@@ -325,6 +399,20 @@ const handleDelete = (row) => {
 }
 </script>
 <style lang="scss" scoped>
+.file-size-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .el-input-number {
+    width: 110px;
+  }
+
+  .el-select {
+    width: 75px;
+  }
+}
+
 .resource-grid {
   display: flex;
   flex-wrap: wrap;

@@ -15,6 +15,10 @@
  */
 package com.chestnut.cms.search.service;
 
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
+import com.chestnut.common.exception.CommonTips;
+
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch._types.mapping.TypeMapping;
@@ -31,7 +35,6 @@ import com.chestnut.cms.search.fixed.config.SearchAnalyzeType;
 import com.chestnut.cms.search.properties.EnableIndexProperty;
 import com.chestnut.common.async.AsyncTask;
 import com.chestnut.common.async.AsyncTaskManager;
-import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.ArrayUtils;
 import com.chestnut.common.utils.Assert;
 import com.chestnut.common.utils.HtmlUtils;
@@ -188,7 +191,7 @@ public class ContentIndexService implements CommandLineRunner {
 					.doc(newESContentDoc(content))
 					.docAsUpsert(true), ESContent.class);
 		} catch (ElasticsearchException | IOException e) {
-			AsyncTaskManager.addErrMessage(e.getMessage() + ", contentId=" + content.getContentEntity().getContentId());
+			AsyncTaskManager.addErrMessage(ContentCoreTips.TASK_FAILED, CommonTips.failureReason(e));
 			log.error("Update es index document failed", e);
 		}
 	}
@@ -213,7 +216,7 @@ public class ContentIndexService implements CommandLineRunner {
 					bulkOperationList.add(bulkOperation);
 				} catch (Exception e) {
 					log.error("Generate es content instance fail.", e);
-					AsyncTaskManager.addErrMessage(e.getMessage());
+					AsyncTaskManager.addErrMessage(ContentCoreTips.TASK_FAILED, CommonTips.failureReason(e));
 				}
 			}
 		}
@@ -258,7 +261,7 @@ public class ContentIndexService implements CommandLineRunner {
                     batchContentDoc(site, catalog, page.getRecords());
                 } catch (IOException e) {
                     log.error("Create es documents fail.", e);
-					AsyncTaskManager.addErrMessage(e.getMessage());
+					AsyncTaskManager.addErrMessage(ContentCoreTips.TASK_FAILED, CommonTips.failureReason(e));
                 }
 			}
 		}
@@ -290,7 +293,7 @@ public class ContentIndexService implements CommandLineRunner {
 					this.setProgressInfo(100, CmsSearchTips.REBUILD_INDEX_SUCCEED);
 				} catch (Exception e) {
 					log.error("RebuildAllContentIndex failed.", e);
-					addErrorMessage(e.getMessage());
+					addErrorMessage(ContentCoreTips.TASK_FAILED, CommonTips.failureReason(e));
 				}
             }
 		};

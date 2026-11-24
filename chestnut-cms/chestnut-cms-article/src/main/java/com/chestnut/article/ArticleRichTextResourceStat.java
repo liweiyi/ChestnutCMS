@@ -15,6 +15,8 @@
  */
 package com.chestnut.article;
 
+import com.chestnut.article.CmsArticleTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.article.domain.CmsArticleDetail;
@@ -72,7 +74,7 @@ public class ArticleRichTextResourceStat implements IResourceStat {
             Page<CmsArticleDetail> page = articleService.dao().page(new Page<>(0, pageSize, false), q);
             for (CmsArticleDetail articleDetail : page.getRecords()) {
                 AsyncTaskManager.setTaskProgressInfo((int) (count * 100 / total),
-                        "正在统计富文本文章正文资源引用：" + count + " / " + total + "]");
+                        CmsArticleTips.STAT_RESOURCE_REFERENCES, count, total);
                 lastId = articleDetail.getContentId();
                 // 解析文章正文
                 Matcher matcher = InternalUrlUtils.InternalUrlTagPattern.matcher(articleDetail.getContentHtml());

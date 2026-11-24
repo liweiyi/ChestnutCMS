@@ -111,7 +111,7 @@ const columns = computed(() => {
           uid: vnode.key || result.length,
           vnode: vnode,
           width: vnode.props?.width || '',
-          minWidth: vnode.props?.minWidth || '50px'
+          minWidth: vnode.props?.minWidth || vnode.props?.['min-width'] || '50px'
         })
       } else if (Array.isArray(vnode.children)) {
         flatten(vnode.children)
@@ -122,8 +122,8 @@ const columns = computed(() => {
   return result
 })
 
-// 根据容器宽度计算可用宽度（分隔线实际占用 = width + margin*2 = 8 + 5 + 5 = 18px）
-const DIVIDER_TOTAL_WIDTH = 18
+// 分隔线占用宽度包含两侧外边距：8px + 12px * 2。
+const DIVIDER_TOTAL_WIDTH = 32
 
 const getAvailableWidth = (containerWidth) => {
   const dividerCount = columns.value.length - 1

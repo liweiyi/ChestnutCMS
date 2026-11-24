@@ -16,13 +16,13 @@
 package com.chestnut.common.async;
 
 import com.chestnut.common.async.enums.TaskStatus;
-import com.chestnut.common.exception.GlobalException;
+import com.chestnut.common.exception.CommonTips;
 import com.chestnut.common.exception.TipMessage;
-import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.utils.Assert;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.time.Duration;
@@ -35,7 +35,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 异步任务构造器
+ * 执行异步任务并记录进度、结果和语言环境。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Slf4j
 @Getter
@@ -129,8 +132,12 @@ public abstract class AsyncTask implements Runnable {
 
 	@Override
 	public void run() {
+		LocaleContext previousLocale = LocaleContextHolder.getLocaleContext();
 		try {
 			AsyncTaskManager.setCurrent(this);
+			if (this.locale != null) {
+				LocaleContextHolder.setLocale(this.locale);
+			}
 			this.checkInterrupt();
 			this.start();
 			this.run0();
@@ -140,17 +147,14 @@ public abstract class AsyncTask implements Runnable {
 				this.setStatus(TaskStatus.INTERRUPTED);
 			} else {
 				this.setStatus(TaskStatus.FAILED);
-				String err = e.getMessage();
-				if (e instanceof GlobalException ge && ge.getErrorCode() != null) {
-					err = I18nUtils.get(ge.getErrorCode().value(), LocaleContextHolder.getLocale(), ge.getErrArgs());
-				}
-				this.addErrorMessage(err);
+				this.addErrorMessage(CommonTips.failureReason(e));
 			}
 			this.setPercent(100);
 			log.error("Async task run failed.", e);
 		} finally {
 			this.setEndTime(LocalDateTime.now());
 			AsyncTaskManager.removeCurrent();
+			LocaleContextHolder.setLocaleContext(previousLocale);
 		}
 	}
 

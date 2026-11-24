@@ -23,9 +23,16 @@ import com.chestnut.common.redis.RedisCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * 通过 Redis 缓存适配 Sa-Token 的令牌和会话存储。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Component
 @RequiredArgsConstructor
 public class SaTokenDaoRedisImpl implements SaTokenDao {
@@ -176,7 +183,7 @@ public class SaTokenDaoRedisImpl implements SaTokenDao {
 
 	@Override
 	public List<String> searchData(String prefix, String keyword, int start, int size, boolean sortType) {
-		List<String> keys = this.redisCache.scanKeys(prefix + "*" + keyword + "*", 1000).stream().toList();
+		List<String> keys = new ArrayList<>(this.redisCache.scanKeys(prefix + "*" + keyword + "*", 1000));
 		return SaFoxUtil.searchList(keys, start, size, sortType);
 	}
 

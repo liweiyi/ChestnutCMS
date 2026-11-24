@@ -391,7 +391,7 @@ function handleAddNotify() {
 function handleSelectConfigOk(selected) {
   const notify = form.value.notifies.find((item) => item.configId === selected.configId);
   if (notify) {
-    proxy.$modal.msgWarning(proxy.$t("Common.ConfigAlreadyExists"));
+    proxy.$modal.msgWarning(proxy.$t("Message.Event.ConfigAlreadyExists"));
     return;
   }
   form.value.notifies.push({

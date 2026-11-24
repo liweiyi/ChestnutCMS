@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore.controller;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.annotation.XComment;
@@ -91,7 +93,7 @@ public class SitePropertyController extends BaseRestController {
 	public R<CmsSiteProperty> getInfo(@PathVariable @LongId @XComment("{API.DOC.CMS.SITE_PROPERTY.PROPERTY_ID}") Long propertyId) {
 		CmsSiteProperty siteProperty = sitePropertyService.getById(propertyId);
 		if (siteProperty == null) {
-			return R.fail("站点数据未找到：" + propertyId);
+			throw CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("propertyId", propertyId);
 		}
 		return R.ok(siteProperty);
 	}

@@ -18,23 +18,31 @@ package com.chestnut.common.security.exception.handler;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.exception.CommonTips;
 import com.chestnut.common.exception.GlobalException;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.exception.SecurityErrorCode;
 import com.chestnut.common.utils.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 全局异常处理器
@@ -53,12 +61,8 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(GlobalException.class)
 	public R<?> handleGlobalException(GlobalException e) {
-		String msg = e.getMessage();
-		if (StringUtils.isEmpty(msg)) {
-			msg = I18nUtils.get(e.getErrorCode().value(), LocaleContextHolder.getLocale(), e.getErrArgs());
-		}
 		log.error("Global error: {}", e.getMessage(), e);
-		return R.fail(msg);
+		return R.failWithMessage(e.userMessage(LocaleContextHolder.getLocale()));
 	}
 
 	/**
@@ -88,7 +92,7 @@ public class GlobalExceptionHandler {
 			HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
 		log.error("请求地址'{}',不支持'{}'请求", requestURI, e.getMethod());
-		return R.fail(e.getMessage());
+		return R.failWithTip(CommonTips.METHOD_NOT_SUPPORTED, e.getMethod());
 	}
 
 	/**
@@ -98,7 +102,7 @@ public class GlobalExceptionHandler {
 	public R<?> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
 		log.error("请求地址'{}',发生未知异常.", requestURI, e);
-		return R.fail(e.getMessage());
+		return R.failWithTip(CommonTips.OPERATION_FAILED);
 	}
 
 	/**
@@ -108,7 +112,7 @@ public class GlobalExceptionHandler {
 	public R<?> handleException(Exception e, HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
 		log.error("请求地址'{}',发生系统异常.", requestURI, e);
-		return R.fail(e.getMessage());
+		return R.failWithTip(CommonTips.OPERATION_FAILED);
 	}
 
 	/**
@@ -117,9 +121,37 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(BindException.class)
 	public R<?> handleBindException(BindException e) {
 		log.error("参数校验错误", e);
-		String errMsg = e.getBindingResult().getAllErrors().stream()
-				.map(DefaultMessageSourceResolvable::getDefaultMessage)
+		return validationFailure(e.getBindingResult().getAllErrors().stream().map(error -> {
+			if (error instanceof FieldError fieldError && fieldError.isBindingFailure()) {
+				return CommonTips.INVALID_PARAMETER.locale(fieldError.getField());
+			}
+			return I18nUtils.get(error.getDefaultMessage());
+		}));
+	}
+
+	@ExceptionHandler(ConstraintViolationException.class)
+	public R<?> handleConstraintViolation(ConstraintViolationException e) {
+		log.error("参数约束校验错误", e);
+		return validationFailure(e.getConstraintViolations().stream()
+				.map(ConstraintViolation::getMessage)
+				.map(I18nUtils::get));
+	}
+
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	public R<?> handleArgumentTypeMismatch(MethodArgumentTypeMismatchException e) {
+		log.error("请求参数类型错误", e);
+		return R.failWithTip(CommonTips.INVALID_PARAMETER, e.getName());
+	}
+
+	@ExceptionHandler({HttpMessageNotReadableException.class, ServletRequestBindingException.class})
+	public R<?> handleInvalidRequest(Exception e) {
+		log.error("请求参数解析失败", e);
+		return R.failWithTip(CommonTips.INVALID_REQUEST);
+	}
+
+	private R<?> validationFailure(Stream<String> messages) {
+		String message = messages.filter(Objects::nonNull).filter(StringUtils::isNotEmpty)
 				.collect(Collectors.joining("\n"));
-		return R.fail(StringUtils.isEmpty(errMsg) ? e.getMessage() : errMsg);
+		return message.isEmpty() ? R.failWithTip(CommonTips.INVALID_REQUEST) : R.failWithMessage(message);
 	}
 }

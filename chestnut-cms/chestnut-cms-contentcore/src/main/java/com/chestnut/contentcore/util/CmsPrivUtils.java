@@ -18,10 +18,13 @@ package com.chestnut.contentcore.util;
 import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.utils.JacksonUtils;
 import com.chestnut.contentcore.ContentCoreConsts;
+import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.perms.BitSetPrivItem;
 import com.chestnut.contentcore.perms.CatalogPermissionType;
 import com.chestnut.contentcore.perms.PageWidgetPermissionType;
 import com.chestnut.contentcore.perms.SitePermissionType;
+import com.chestnut.system.permission.IPermissionType;
+import com.chestnut.system.permission.PermissionUtils;
 
 import java.util.*;
 
@@ -40,6 +43,39 @@ public class CmsPrivUtils {
 
     public static final String PRIV_SITE_EDIT_PLACEHOLDER = SitePermissionType.ID + ":Edit:${#_header['" + ContentCoreConsts.Header_CurrentSite + "']}";
 
+    /**
+     * 从普通用户的有效权限中提取获准查看的页面部件 ID，供后台分页查询使用。
+     */
+    public static Set<Long> getViewablePageWidgetIds(LoginUser operator) {
+        Set<Long> ids = new HashSet<>();
+        if (operator.getPermissions() == null) {
+            return ids;
+        }
+        PageWidgetPermissionType.PageWidgetPrivItem view = PageWidgetPermissionType.PageWidgetPrivItem.View;
+        String prefix = String.join(IPermissionType.Spliter, PageWidgetPermissionType.ID, view.name(), "");
+        for (String key : operator.getPermissions()) {
+            if (key == null || !key.startsWith(prefix)) {
+                continue;
+            }
+            try {
+                long id = Long.parseLong(key.substring(prefix.length()));
+                if (id > 0 && view.getPermissionKey(id).equals(key)) {
+                    ids.add(id);
+                }
+            } catch (NumberFormatException ignored) {
+                // 跳过无效的部件 ID。
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * 校验后台单个页面部件的站点和部件查看权限。
+     */
+    public static void checkPageWidgetView(CmsPageWidget widget, LoginUser operator) {
+        PermissionUtils.checkPermission(SitePermissionType.SitePrivItem.View.getPermissionKey(widget.getSiteId()), operator);
+        PermissionUtils.checkPermission(PageWidgetPermissionType.PageWidgetPrivItem.View.getPermissionKey(widget.getPageWidgetId()), operator);
+    }
 
     /**
      * BitSet权限序列化

@@ -15,6 +15,8 @@
  */
 package com.chestnut.advertisement.listener;
 
+import com.chestnut.advertisement.CmsAdTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.advertisement.domain.CmsAdvertisement;
@@ -46,7 +48,7 @@ public class AdvertisementListener {
 					.count(new LambdaQueryWrapper<CmsAdvertisement>().eq(CmsAdvertisement::getSiteId, site.getSiteId()));
 			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
-				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), "正在删除广告数据：" + (i * pageSize) + "/" + total);
+				AsyncTaskManager.setTaskProgressInfo((int)  (i * pageSize * 100 / total), CmsAdTips.DELETING_ADVERTISEMENT_DATA, i * pageSize, total);
 				Page<CmsAdvertisement> advertisements = this.advertisementService.lambdaQuery()
 						.select(CmsAdvertisement::getAdvertisementId)
 						.eq(CmsAdvertisement::getSiteId, site.getSiteId())
@@ -61,7 +63,7 @@ public class AdvertisementListener {
 				}
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除广告数据错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsAdTips.DELETE_ADVERTISEMENT_FAILED);
 			log.error("Delete advertisements failed on site[{}] delete.", site.getSiteId(), e);
 		}
 	}

@@ -15,6 +15,8 @@
  */
 package com.chestnut.system.groovy;
 
+import com.chestnut.system.exception.SystemTips;
+
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
 import groovy.lang.GroovyClassLoader;
@@ -34,6 +36,12 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * 加载并初始化Groovy脚本实例
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 public class GroovyScriptFactory {
 
 	private static final Logger logger = LoggerFactory.getLogger(GroovyScriptFactory.class);
@@ -72,7 +80,7 @@ public class GroovyScriptFactory {
 				}
 			}
 		}
-		throw new IllegalArgumentException("Groovy script text cannot be empty.");
+		throw SystemTips.SCRIPT_REQUIRED.exception();
 	}
 
 	private Class<?> getCodeSourceClass(String codeSource) {

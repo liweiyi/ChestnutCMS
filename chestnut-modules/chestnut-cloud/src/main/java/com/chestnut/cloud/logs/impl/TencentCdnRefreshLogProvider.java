@@ -15,6 +15,8 @@
  */
 package com.chestnut.cloud.logs.impl;
 
+import com.chestnut.cloud.exception.CloudTips;
+
 import com.chestnut.cloud.domain.dto.QueryCdnRefreshLogRequest;
 import com.chestnut.cloud.domain.vo.CdnRefreshLogVO;
 import com.chestnut.cloud.logs.ICdnRefreshLogProvider;
@@ -39,6 +41,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * 查询腾讯云CDN刷新与预热记录
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
 @Component
 public class TencentCdnRefreshLogProvider implements ICdnRefreshLogProvider {
 
@@ -88,14 +96,14 @@ public class TencentCdnRefreshLogProvider implements ICdnRefreshLogProvider {
                     )).toList();
             return TableData.of(rows, response.getTotalCount() == null ? 0 : response.getTotalCount());
         } catch (TencentCloudSDKException e) {
-            throw new TencentCloudException("Query CDN refresh/preheat tasks failed: " + e.getMessage(), e);
+            throw CloudTips.CDN_QUERY_FAILED.exception(e);
         }
     }
 
     protected CdnClient createClient(ObjectNode props) {
         TencentConfig config = JacksonUtils.convertValue(props, TencentConfig.class);
         if (config == null || StringUtils.isBlank(config.getSecretId()) || StringUtils.isBlank(config.getSecretKey())) {
-            throw new TencentCloudException("Missing cloud secret ID or secret key.");
+            throw CloudTips.CREDENTIALS_REQUIRED.exception();
         }
         HttpProfile httpProfile = new HttpProfile();
         httpProfile.setEndpoint("cdn.tencentcloudapi.com");

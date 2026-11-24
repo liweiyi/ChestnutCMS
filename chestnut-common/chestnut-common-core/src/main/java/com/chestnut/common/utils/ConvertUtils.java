@@ -21,7 +21,13 @@ import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class  ConvertUtils {
+/**
+ * 在常用数据类型之间转换并处理默认值。
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
+ */
+public class ConvertUtils {
 
 	/**
 	 * 对象Object转指定格式
@@ -69,8 +75,8 @@ public class  ConvertUtils {
 	 * "true" || "1" -> true
 	 * "false" || "0" -> false
 	 */
-	private static Boolean paseBoolean(String str, boolean defaultV) {
-		return switch(str) {
+	private static Boolean parseBoolean(String str, Boolean defaultV) {
+		return switch (str) {
 			case "true", "1" -> Boolean.TRUE;
 			case "false", "0" -> Boolean.FALSE;
 			default -> defaultV;
@@ -78,14 +84,14 @@ public class  ConvertUtils {
 	}
 
 	/**
-	 * 转布尔类型，默认返回false
+	 * 转换为布尔值，输入为空或无法识别时返回 {@code false}。
 	 */
 	public static Boolean toBoolean(Object obj) {
-		return toBoolean(obj, null);
+		return toBoolean(obj, Boolean.FALSE);
 	}
 
 	public static Boolean toBoolean(Object obj, Boolean defaultV) {
-		return nonNullOrElse(obj, () -> paseBoolean(obj.toString(), defaultV), () -> defaultV);
+		return nonNullOrElse(obj, () -> parseBoolean(obj.toString(), defaultV), () -> defaultV);
 	}
 
 	/**

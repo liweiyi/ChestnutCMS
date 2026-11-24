@@ -15,6 +15,8 @@
  */
 package com.chestnut.contentcore.template.tag;
 
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
 import com.chestnut.common.staticize.FreeMarkerUtils;
 import com.chestnut.common.staticize.core.TemplateContext;
 import com.chestnut.common.staticize.enums.TagAttrDataType;
@@ -107,7 +109,7 @@ public class CmsPageWidgetTag extends AbstractTag {
 				.eq(CmsPageWidget::getSiteId, siteId)
 				.eq(CmsPageWidget::getCode, code)
 				.one();
-		Assert.notNull(pw, () -> new TemplateException(StringUtils.messageFormat("Page widget [code={0}] not found", code), env));
+		Assert.notNull(pw, () -> new TemplateException(ContentCoreTips.PAGE_WIDGET_NOT_FOUND.locale(env.getLocale(), code), env));
 		if (!PageWidgetStatus.PUBLISHED.equals(pw.getState())) {
 			return null;
 		}

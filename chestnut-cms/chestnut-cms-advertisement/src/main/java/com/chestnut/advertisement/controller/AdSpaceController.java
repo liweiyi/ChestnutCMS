@@ -109,7 +109,7 @@ public class AdSpaceController extends CmsRestController {
 			@PathVariable("adSpaceId") @XComment("{API.DOC.CMS.AD_SPACE.ID}") Long adSpaceId) {
 		CmsPageWidget pageWidget = this.pageWidgetService.getById(adSpaceId);
 		if (pageWidget == null || !pageWidget.getType().equals(pageWidgetType.getId())) {
-			return R.fail("数据未找到：" + adSpaceId);
+			throw CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("adSpaceId", adSpaceId);
 		}
 		AdSpaceVO vo = (AdSpaceVO) pageWidgetType.getPageWidgetVO(pageWidget);
 		CmsCatalog catalog = this.catalogService.getCatalog(pageWidget.getCatalogId());

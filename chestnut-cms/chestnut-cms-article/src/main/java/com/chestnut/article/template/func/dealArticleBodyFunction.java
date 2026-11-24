@@ -15,6 +15,8 @@
  */
 package com.chestnut.article.template.func;
 
+import com.chestnut.common.exception.CommonErrorCode;
+
 import com.chestnut.article.IArticleBodyFormat;
 import com.chestnut.article.format.ArticleBodyFormat_RichText;
 import com.chestnut.article.service.IArticleService;
@@ -78,7 +80,7 @@ public class dealArticleBodyFunction extends AbstractFunc  {
 		SimpleScalar simpleScalar = (SimpleScalar) args[0];
 		String contentHtml = simpleScalar.getAsString();
 		IArticleBodyFormat articleBodyFormat = articleService.getArticleBodyFormat(format);
-		Assert.notNull(articleBodyFormat, () -> new TemplateModelException("Unsupported article body format: " + format));
+		Assert.notNull(articleBodyFormat, () -> CommonErrorCode.INVALID_REQUEST_ARG.exception("articleBodyFormat"));
 		if (Objects.isNull(articleBodyFormat)) {
 			articleBodyFormat = articleService.getArticleBodyFormat(ArticleBodyFormat_RichText.ID);
 		}

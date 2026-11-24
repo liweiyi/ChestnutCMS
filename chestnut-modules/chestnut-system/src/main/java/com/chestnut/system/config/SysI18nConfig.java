@@ -31,10 +31,14 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.AcceptHeaderLocaleResolver;
 
 import java.time.Duration;
+import java.util.IllformedLocaleException;
 import java.util.Locale;
 
 /**
  * 动态国际化字符串存储数据库
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @Order
 @Configuration
@@ -79,6 +83,12 @@ public class SysI18nConfig {
 		return localeResolver;
 	}
 
+	/**
+	 * 优先解析请求参数，保留请求头及自定义语言的支持。
+	 *
+	 * @author 兮玥
+	 * @email 190785909@qq.com
+	 */
 	public static class XyLocaleResolver extends AcceptHeaderLocaleResolver {
 		
 		@NotNull
@@ -86,9 +96,14 @@ public class SysI18nConfig {
 		public Locale resolveLocale(HttpServletRequest request) {
 			String languageTag = request.getParameter("lang");
 			if (StringUtils.isNotEmpty(languageTag)) {
-				Locale locale = Locale.forLanguageTag(languageTag);
-				if (this.getSupportedLocales().contains(locale)) {
-					return locale;
+				try {
+					Locale locale = new Locale.Builder().setLanguageTag(languageTag.replace('_', '-')).build();
+					if (!locale.getLanguage().isEmpty()
+							&& (this.getSupportedLocales().isEmpty() || this.getSupportedLocales().contains(locale))) {
+						return locale;
+					}
+				} catch (IllformedLocaleException ignored) {
+					// 无效参数继续按请求头或默认语言解析。
 				}
 			}
 			return super.resolveLocale(request);

@@ -15,8 +15,11 @@
  */
 package com.chestnut.contentcore.controller;
 
+import com.chestnut.common.exception.CommonTips;
+
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.domain.R;
+import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.security.anno.Priv;
 import com.chestnut.common.security.web.BaseRestController;
@@ -27,19 +30,24 @@ import com.chestnut.common.utils.EncryptUtils;
 import com.chestnut.common.utils.ServletUtils;
 import com.chestnut.common.utils.StringUtils;
 import com.chestnut.contentcore.core.IInternalDataType;
+import com.chestnut.contentcore.core.impl.InternalDataType_PageWidget;
+import com.chestnut.contentcore.domain.CmsPageWidget;
 import com.chestnut.contentcore.domain.CmsSite;
 import com.chestnut.contentcore.domain.vo.ContentPathRuleVO;
 import com.chestnut.contentcore.domain.vo.DynamicPageTypeVO;
 import com.chestnut.contentcore.exception.ContentCoreErrorCode;
+import com.chestnut.contentcore.service.IPageWidgetService;
 import com.chestnut.contentcore.service.ISiteService;
 import com.chestnut.contentcore.service.ITemplateService;
 import com.chestnut.contentcore.template.ITemplateType;
 import com.chestnut.contentcore.template.impl.SiteTemplateType;
+import com.chestnut.contentcore.util.CmsPrivUtils;
 import com.chestnut.contentcore.util.ContentCoreUtils;
 import com.chestnut.contentcore.util.InternalUrlUtils;
 import com.chestnut.contentcore.util.SiteUtils;
 import com.chestnut.contentcore.util.TemplateUtils;
 import com.chestnut.system.security.AdminUserType;
+import com.chestnut.system.security.StpAdminUtil;
 import freemarker.template.TemplateException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +80,8 @@ public class CoreController extends BaseRestController {
 
 	private final StaticizeService staticizeService;
 
+	private final IPageWidgetService pageWidgetService;
+
 	/**
 	 * 预览内容核心数据页面
 	 *
@@ -87,6 +97,11 @@ public class CoreController extends BaseRestController {
 						@RequestParam(value = "pp") String publishPipe,
 						@RequestParam(value = "pi", required = false, defaultValue = "1") Integer pageIndex)
 			throws IOException, TemplateException {
+		if (InternalDataType_PageWidget.ID.equals(dataType)) {
+			CmsPageWidget widget = this.pageWidgetService.getById(dataId);
+			Assert.notNull(widget, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", dataId));
+			CmsPrivUtils.checkPageWidgetView(widget, StpAdminUtil.getLoginUser());
+		}
 		HttpServletResponse response = ServletUtils.getResponse();
 		String charset = staticizeService.getOutputCharset().name();
 		response.setCharacterEncoding(charset);
@@ -100,7 +115,8 @@ public class CoreController extends BaseRestController {
 			internalDataType.processPageData(data, response.getWriter());
 		} catch (Exception e) {
 			// Ignore
-			e.printStackTrace(response.getWriter());
+			log.error("Render page failed", e);
+            response.getWriter().write(org.springframework.web.util.HtmlUtils.htmlEscape(CommonTips.failureReason(e)));
 		}
 	}
 
@@ -132,7 +148,8 @@ public class CoreController extends BaseRestController {
 			String pageData = internalDataType.getPageViewData(data);
 			response.getWriter().write(pageData);
 		} catch (Exception e) {
-			e.printStackTrace(response.getWriter());
+			log.error("Render page failed", e);
+            response.getWriter().write(org.springframework.web.util.HtmlUtils.htmlEscape(CommonTips.failureReason(e)));
 		}
 	}
 

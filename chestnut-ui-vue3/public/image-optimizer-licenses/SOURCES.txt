@@ -1,0 +1,113 @@
+ChestnutCMS image optimizer: third-party sources and licenses
+===========================================================
+Application code remains under the project's Apache-2.0 license. Components
+below retain their respective licenses. Vite copies this public directory into
+production builds. License texts are reproduced without changing their terms.
+
+UPNG quantization core (MIT)
+---------------------------
+Source package: upng-js 2.1.0, Copyright (c) 2017 Photopea.
+Exact source commit: 5e5af183a3dda1e320b90a1830b3f64bc92010d4
+https://github.com/photopea/UPNG.js/blob/5e5af183a3dda1e320b90a1830b3f64bc92010d4/UPNG.js
+https://registry.npmjs.org/upng-js/-/upng-js-2.1.0.tgz
+npm tarball SHA-1: 7176e73973db361ca95d0fa14f958385db6b9dd2
+License: UPNG-MIT.txt
+Only the palette quantizer and required helpers are vendored as an ESM module
+in src/utils/imageOptimizer/vendor/upng-quantize.js. Local changes fix the
+power-iteration seed and degenerate/non-finite splits, and expose an ESM entry.
+The exact extraction and modifications are recorded in UPNG-SOURCE.md beside
+the vendored module. The upstream PNG encoder/decoder and pako are not included.
+The adapter uses fixed color-count presets and makes no claim of a perceptual
+quality score or target-quality search.
+
+jSquash JavaScript/WASM packages (Apache-2.0 wrappers)
+---------------------------------------------------
+@jsquash/jpeg 1.6.0; @jsquash/png 3.1.1; @jsquash/oxipng 2.3.0;
+@jsquash/webp 1.5.0; @jsquash/jxl 1.3.0; @jsquash/avif 2.1.1;
+@jsquash/resize 2.1.1.
+Upstream: https://github.com/jamsinclair/jSquash
+The npm registry and package-lock.json identify each published package.
+Wrapper license: JSQUASH-APACHE-2.0.txt (from the installed package).
+Codec licenses apply independently; wrapper licensing does not replace them.
+
+JPEG / MozJPEG
+  npm gitHead: 1f62015f53e28bd18b2d7c8a3ca3326577efc445
+  Its packages/jpeg/codec/Makefile pins MozJPEG v3.3.1.
+  https://github.com/mozilla/mozjpeg/tree/v3.3.1
+  JPEG-CODEC-LICENSE.txt is shipped by @jsquash/jpeg; MOZJPEG-LICENSE.txt and
+  MOZJPEG-IJG-README.txt reproduce the original v3.3.1 notices.
+  This software is based in part on the work of the Independent JPEG Group.
+PNG
+  npm gitHead: b7fa9ac9ec02f224847ad23d19d115f9e296a368
+  PNG-CODEC-BSD-3-Clause.txt is the Google/Squoosh codec wrapper license.
+  packages/png/codec/Cargo.lock identifies the Rust png crate 0.17.10.
+  https://crates.io/crates/png/0.17.10
+  PNG-RUST-MIT.txt and PNG-RUST-APACHE-2.0.txt reproduce the crate's license
+  choices (MIT OR Apache-2.0).
+OxiPNG
+  npm gitHead: 68a7201e5b4d9703bf65670fb0284d16536dd145
+  Its codec Cargo.lock identifies oxipng 9.1.1; default features are off and
+  the freestanding feature is enabled by the codec Cargo.toml.
+  https://github.com/shssoichiro/oxipng/tree/v9.1.1
+  OXIPNG-MIT.txt is the codec license shipped by @jsquash/oxipng.
+WebP
+  npm gitHead: 8bcd212da8c2be7c9c223e8f222eb3d9574a713b
+  Codec build input: libwebp d2e245ea9e959a5a79e1db0ed2085206947e98f2
+  https://github.com/webmproject/libwebp/tree/d2e245ea9e959a5a79e1db0ed2085206947e98f2
+  WEBP-BSD-3-Clause.txt is shipped by @jsquash/webp.
+  LIBWEBP-PATENTS.txt is the patent grant at that pinned source revision.
+AVIF
+  npm gitHead: b7fa9ac9ec02f224847ad23d19d115f9e296a368
+  Its packages/avif/codec/Makefile pins libavif v1.0.1 and libaom v3.7.0.
+  https://github.com/AOMediaCodec/libavif/tree/v1.0.1
+  https://aomedia.googlesource.com/aom/+/v3.7.0/
+  LIBAVIF-BSD-2-Clause.txt contains the complete upstream LICENSE, including
+  its additional third-party notices. AOM-BSD-2-Clause.txt and AOM-PATENTS.txt
+  reproduce the pinned libaom license and patent grant.
+  The recipe also links libsharpyuv from libwebp revision
+  e2c85878f6a33f29948b43d3492d9cdaf801aa54; see SHARPYUV-WEBP-LICENSE.txt.
+JPEG XL
+  npm gitHead: 1b1964194611ece3ec984ab91c04726d1088f05e
+  Codec build input: libjxl 9f544641ec83f6abd9da598bdd08178ee8a003e0
+  https://github.com/libjxl/libjxl/tree/9f544641ec83f6abd9da598bdd08178ee8a003e0
+  LIBJXL-BSD-3-Clause.txt and LIBJXL-PATENTS.txt reproduce its notices.
+  The recipe explicitly links these pinned submodules:
+    Brotli 35ef5c554d888bef217d449346067de05e269b30 (BROTLI-MIT.txt)
+      https://github.com/google/brotli/tree/35ef5c554d888bef217d449346067de05e269b30
+    Highway e69083a12a05caf037cabecdf1b248b7579705a5 (HIGHWAY-APACHE-2.0.txt)
+      https://github.com/google/highway/tree/e69083a12a05caf037cabecdf1b248b7579705a5
+    skcms 64374756e03700d649f897dbd98c95e78c30c7da (SKCMS-BSD-3-Clause.txt)
+      https://skia.googlesource.com/skcms/+/64374756e03700d649f897dbd98c95e78c30c7da/
+Resize
+  npm gitHead: da47a2be3b302beb5a5ae164a2ab7aa21a041d90
+  packages/resize/lib/resize/Cargo.lock identifies resize 0.5.5.
+  https://github.com/PistonDevelopers/resize
+  RESIZE-MIT.txt is the codec license shipped by @jsquash/resize.
+  The optimizer directly loads ordinary resize, not hqx or magic-kernel.
+
+GIF and direct JavaScript dependencies
+-------------------------------------
+gifenc 1.0.3, MIT, Copyright (c) 2017 Matt DesLauriers
+  https://github.com/mattdesl/gifenc
+  GIFENC-MIT.txt and GIFENC-LZW-ATTRIBUTIONS.txt (encoder attribution).
+  Only GIFEncoder is imported. Its separate PNN quantizer is not used;
+  production bundling must keep that unused code excluded.
+gifuct-js 2.1.2, MIT, Copyright (c) 2015 Matt Way
+  https://github.com/matt-way/gifuct-js
+  GIFUCT-MIT.txt
+js-binary-schema-parser 2.0.3, MIT, Copyright (c) 2015 Matt Way
+  https://github.com/matt-way/jsBinarySchemaParser
+  JS-BINARY-SCHEMA-PARSER-MIT.txt
+wasm-feature-detect 1.9.0, Apache-2.0
+  https://github.com/GoogleChromeLabs/wasm-feature-detect
+  WASM-FEATURE-DETECT-APACHE-2.0.txt
+
+Scope
+-----
+These records cover newly integrated image packages, licenses included in
+those packages, and major codec inputs identified by published build metadata.
+The codecs are consumed as published WASM. This work has not independently
+reproduced those binaries or proved a complete transitive build closure, and
+is not a whole-project license audit. Retain applicable notices when
+redistributing. Future package/codec upgrades must recheck build inputs and
+license files.

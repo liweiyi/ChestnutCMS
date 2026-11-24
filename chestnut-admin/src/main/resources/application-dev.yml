@@ -5,7 +5,7 @@ chestnut:
   # 代号
   alias: ChestnutCMS
   # 版本
-  version: 1.6.3
+  version: 1.6.4
   # 版权年份
   copyrightYear: 2022-2026
   system:
@@ -27,8 +27,6 @@ chestnut:
       pool:
         threadNamePrefix: "CMS-PUBLISH-"
         queueCapacity: 10000
-  ai:
-    secretKey: "123456789"
 
 # 开发环境配置
 server:
@@ -61,19 +59,6 @@ logging:
 
 # Spring配置
 spring:
-  ai:
-    # Spring AI 1.0.0：模型由数据库配置 + AiChatClientFactory 手动构建，关闭 starter 全部自动配置（无需 api-key）
-    model:
-      chat: none
-      embedding: none
-      image: none
-      moderation: none
-      audio:
-        speech: none
-        transcription: none
-    chat:
-      client:
-        enabled: false
   # 资源信息
   messages:
     # 国际化资源文件路径

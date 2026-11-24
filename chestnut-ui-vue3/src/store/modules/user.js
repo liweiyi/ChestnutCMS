@@ -6,6 +6,7 @@ import auth from '@/plugins/auth'
 import { isHttp, isEmpty } from "@/utils/validate"
 import { normalizePhoneParts } from '@/utils/phoneNumber'
 import defAva from '@/assets/images/profile.jpg'
+import useSiteStore from '@/store/modules/site'
 
 const useUserStore = defineStore(
   'user',
@@ -28,8 +29,7 @@ const useUserStore = defineStore(
         userInfo.username = userInfo.username.trim()
         return new Promise((resolve, reject) => {
           login(userInfo).then(res => {
-            auth.setToken(res.data)
-            this.token = res.data
+            this.tokenLogin(res.data)
             resolve()
           }).catch(error => {
             reject(error)
@@ -46,6 +46,12 @@ const useUserStore = defineStore(
         this.tokenLogin(res.data)
       },
       tokenLogin(token) {
+        // 登录（含单点登录）后重新确认用户权限和站点，不能复用上个会话。
+        this.roles = []
+        this.permissions = []
+        this.deptId = undefined
+        this.superAdmin = false
+        useSiteStore().reset()
         auth.setToken(token)
         this.token = token
       },
@@ -114,6 +120,7 @@ const useUserStore = defineStore(
             this.deptId = undefined
             this.superAdmin = false
             this.permissions = []
+            useSiteStore().reset()
             auth.removeToken()
             resolve()
           }).catch(error => {

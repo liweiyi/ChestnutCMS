@@ -456,11 +456,6 @@ const repeatCheckOptions = [
   { label: proxy.$t("CMS.Site.Extend.TitlteRepeatCheckCatalog"), value: "2" }
 ]
 
-const contentPrivStrategyOptions = [
-  { label: '', value: "NONE" },
-  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyValid"), value: "VALID" },
-  { label: proxy.$t("CMS.Site.Extend.ContentPrivStrategyIgnore"), value: "IGNORE" }
-]
 
 const storageTypes = [
   { id: "Local", name: proxy.$t("CMS.Site.Extend.Local") },

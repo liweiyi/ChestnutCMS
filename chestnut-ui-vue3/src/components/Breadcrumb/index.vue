@@ -11,6 +11,7 @@
 
 <script setup>
 import usePermissionStore from '@/store/modules/permission'
+import { i18n } from '@/i18n'
 
 const route = useRoute()
 const router = useRouter()
@@ -34,7 +35,7 @@ function getBreadcrumb() {
   }
   // 判断是否为首页
   if (!isDashboard(matched[0])) {
-    matched = [{ path: "/index", meta: { title: "首页" } }].concat(matched)
+    matched = [{ path: "/index", meta: { title: i18n.global.t('Router.Home') } }].concat(matched)
   }
   levelList.value = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false)
 }

@@ -15,6 +15,8 @@
  */
 package com.chestnut.common.domain;
 
+import com.chestnut.common.exception.CommonTips;
+import com.chestnut.common.exception.TipMessage;
 import com.chestnut.common.i18n.I18nUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -70,46 +72,63 @@ public class R<T> implements Serializable {
 	}
 
 	public static <T> R<T> ok() {
-		return restResult(null, SUCCESS, SUCCESS_MESSAGE);
+		return ok(null);
 	}
 
 	public static <T> R<T> ok(T data) {
-		return restResult(data, SUCCESS, SUCCESS_MESSAGE);
+		return okWithTip(data, CommonTips.OPERATION_SUCCEEDED);
 	}
 
 	public static <T> R<T> ok(T data, String msg) {
-		return restResult(data, SUCCESS, msg);
+		return restResult(data, SUCCESS, I18nUtils.get(msg));
 	}
 
 	public static <T> R<T> ok(int code, T data) {
-		return restResult(data, code, SUCCESS_MESSAGE);
+		return restResult(data, code, CommonTips.OPERATION_SUCCEEDED.locale());
+	}
+
+	public static <T> R<T> okWithTip(T data, TipMessage tip, Object... args) {
+		return restResult(data, SUCCESS, tip.locale(args));
 	}
 
 	public static <T> R<T> fail() {
-		return restResult(null, FAIL, FAIL_MESSAGE);
+		return failWithTip(CommonTips.OPERATION_FAILED);
 	}
 
 	public static <T> R<T> fail(String msg) {
-		return restResult(null, FAIL, msg);
+		return failWithMessage(I18nUtils.get(msg));
 	}
 
 	public static <T> R<T> fail(T data) {
-		return restResult(data, FAIL, FAIL_MESSAGE);
+		return restResult(data, FAIL, CommonTips.OPERATION_FAILED.locale());
 	}
 
 	public static <T> R<T> fail(T data, String msg) {
-		return restResult(data, FAIL, msg);
+		return restResult(data, FAIL, I18nUtils.get(msg));
 	}
 
 	public static <T> R<T> fail(int code, String msg) {
-		return restResult(null, code, msg);
+		return restResult(null, code, I18nUtils.get(msg));
+	}
+
+	public static <T> R<T> failWithTip(TipMessage tip, Object... args) {
+		return failWithTip(FAIL, tip, args);
+	}
+
+	public static <T> R<T> failWithTip(int code, TipMessage tip, Object... args) {
+		return restResult(null, code, tip.locale(args));
+	}
+
+	/** 返回已经解析的提示文本，保留消息参数中的花括号。 */
+	public static <T> R<T> failWithMessage(String message) {
+		return restResult(null, FAIL, message);
 	}
 
 	private static <T> R<T> restResult(T data, int code, String msg) {
 		R<T> apiResult = new R<>();
 		apiResult.setCode(code);
 		apiResult.setData(data);
-		apiResult.setMsg(I18nUtils.get(msg));
+		apiResult.setMsg(msg);
 		return apiResult;
 	}
 }

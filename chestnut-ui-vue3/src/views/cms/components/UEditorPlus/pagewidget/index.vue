@@ -2,7 +2,7 @@
   <div class="app-container" style="padding: 0;">
     <el-dialog 
       class="pagewidget-dialog"
-      :title="$t('CMS.UEditor.PageWidget.DialogTitle')"
+      :title="$t('CMS.PageWidget.SelectTitle')"
       v-model="visible"
       width="980px"
       :close-on-click-modal="false"
@@ -20,7 +20,7 @@
               :inline="true"
               class="el-form-search">
             <el-form-item label="" prop="query">
-              <el-input v-model="queryParams.query" :placeholder="$t('CMS.UEditor.PageWidget.Name')">
+              <el-input v-model="queryParams.query" :placeholder="$t('CMS.PageWidget.Name')">
               </el-input>
             </el-form-item>
             <el-form-item>
@@ -38,12 +38,12 @@
             @row-click="handleRowClick"
             @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="50" align="center" />
-            <el-table-column :label="$t('CMS.UEditor.PageWidget.Name')" align="left" prop="title">
+            <el-table-column :label="$t('CMS.PageWidget.Name')" align="left" prop="title">
               <template #default="scope">
                 <span><i v-if="scope.row.topFlag>0" class="el-icon-top top-icon" :title="$t('CMS.Content.SetTop')"></i> {{ scope.row.title }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('CMS.UEditor.PageWidget.Code')" align="center" prop="publishDate" width="160">
+            <el-table-column :label="$t('CMS.PageWidget.Code')" align="center" prop="publishDate" width="160">
               <template #default="scope">
                 <span>{{ parseTime(scope.row.publishDate) }}</span>
               </template>

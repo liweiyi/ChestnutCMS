@@ -25,6 +25,7 @@ import com.chestnut.common.i18n.I18nUtils;
 import com.chestnut.common.log.annotation.Log;
 import com.chestnut.common.log.enums.BusinessType;
 import com.chestnut.common.security.anno.Priv;
+import com.chestnut.common.security.domain.LoginUser;
 import com.chestnut.common.security.web.PageRequest;
 import com.chestnut.common.security.web.TableData;
 
@@ -58,12 +59,19 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 页面部件控制器
@@ -113,6 +121,14 @@ public class PageWidgetController extends CmsRestController {
 				.eq(StringUtils.isNotEmpty(type), CmsPageWidget::getType, type)
 				.eq(state != null && state > -1, CmsPageWidget::getState, state)
 				.orderByDesc(CmsPageWidget::getCreateTime);
+		LoginUser operator = StpAdminUtil.getLoginUser();
+		if (!operator.isSuperAdministrator()) {
+			Set<Long> viewableIds = CmsPrivUtils.getViewablePageWidgetIds(operator);
+			if (viewableIds.isEmpty()) {
+				return this.bindEmptyDataTable();
+			}
+			q.in(CmsPageWidget::getPageWidgetId, viewableIds);
+		}
 		Page<CmsPageWidget> page = pageWidgetService.page(new Page<>(pr.getPageNumber(), pr.getPageSize(), true), q);
 		List<PageWidgetVO> list = new ArrayList<>();
 		page.getRecords().forEach(pw -> {
@@ -138,6 +154,7 @@ public class PageWidgetController extends CmsRestController {
 	public R<PageWidgetVO> getInfo(@PathVariable("pageWidgetId") @XComment("{API.DOC.CMS.PAGE_WIDGET.PAGE_WIDGET_ID}") Long pageWidgetId) {
 		CmsPageWidget pageWidget = this.pageWidgetService.getById(pageWidgetId);
 		Assert.notNull(pageWidget, () -> CommonErrorCode.DATA_NOT_FOUND_BY_ID.exception("pageWidgetId", pageWidgetId));
+		CmsPrivUtils.checkPageWidgetView(pageWidget, StpAdminUtil.getLoginUser());
 
 		IPageWidgetType pwt = this.pageWidgetService.getPageWidgetType(pageWidget.getType());
 		PageWidgetVO vo = pwt.getPageWidgetVO(pageWidget);

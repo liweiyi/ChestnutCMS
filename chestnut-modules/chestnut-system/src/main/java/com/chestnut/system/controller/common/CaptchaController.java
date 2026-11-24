@@ -15,6 +15,8 @@
  */
 package com.chestnut.system.controller.common;
 
+import com.chestnut.system.exception.SystemTips;
+
 import com.chestnut.common.annotation.XComment;
 import com.chestnut.common.captcha.CaptchaCheckResult;
 import com.chestnut.common.captcha.CaptchaData;
@@ -40,6 +42,9 @@ import java.util.Objects;
 
 /**
  * 验证码操作处理
+ *
+ * @author 兮玥
+ * @email 190785909@qq.com
  */
 @XComment("{API.DOC.CAPTCHA.MODULE}")
 @RestController
@@ -66,7 +71,7 @@ public class CaptchaController extends BaseRestController {
 	public R<?> getCaptcha(@RequestParam @NotBlank String token) {
         SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
         if (Objects.isNull(securityConfig)) {
-            return R.fail("The captcha not enabled.");
+            return R.failWithTip(SystemTips.CAPTCHA_DISABLED);
         }
         LoginSecurity config = loginSecurityConfigType.getConfig(securityConfig.getConfigs());
         ICaptchaType captchaType = captchaService.getCaptchaType(config.getCaptchaType());
@@ -88,7 +93,7 @@ public class CaptchaController extends BaseRestController {
 	public R<?> checkCaptcha(@RequestBody CheckCaptchaRequest req) {
         SysSecurityConfig securityConfig = this.securityConfigService.getSecurityConfig();
         if (Objects.isNull(securityConfig)) {
-            return R.fail("The captcha not enabled.");
+            return R.failWithTip(SystemTips.CAPTCHA_DISABLED);
         }
         LoginSecurity config = loginSecurityConfigType.getConfig(securityConfig.getConfigs());
 		ICaptchaType captchaType = captchaService.getCaptchaType(config.getCaptchaType());

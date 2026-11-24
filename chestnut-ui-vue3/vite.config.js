@@ -15,8 +15,11 @@ export default defineConfig(({ mode, command }) => {
     base: VITE_APP_PATH || '/',
     plugins: createVitePlugins(env, command === 'build'),
     optimizeDeps: {
-      exclude: ['hash-worker']
+      exclude: ['hash-worker', '@jsquash/jpeg', '@jsquash/png', '@jsquash/oxipng', '@jsquash/webp', '@jsquash/jxl', '@jsquash/avif', '@jsquash/resize']
     },
+    // Codec chunks use dynamic imports and explicitly bundled, base-aware WASM URLs.
+    worker: { format: 'es' },
+    assetsInclude: ['**/*.wasm'],
     resolve: {
       // https://cn.vitejs.dev/config/#resolve-alias
       alias: {

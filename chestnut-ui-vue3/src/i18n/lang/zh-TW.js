@@ -7,20 +7,15 @@ const zhTW = {
     CountryCallingCode: '國家/地區區號',
     Search: '搜索',
     Reset: '重置',
-    More: '更多',
     None: '無',
-    OK: 'OK',
     Confirm: '確定',
     Cancel: '取消',
-    Open: '開啟',
     Close: '關閉',
     Submit: '提交',
     GoBack: '返回',
     Success: '成功',
     Fail: '失敗',
-    Normal: '正常',
     OpSuccess: '操作成功',
-    OpFail: '操作失敗',
     AddSuccess: '添加成功',
     SaveSuccess: "保存成功",
     EditSuccess: '修改成功',
@@ -59,7 +54,6 @@ const zhTW = {
     CreateTime: '建立時間',
     CreateBy: '建立人',
     UpdateTime: '更新時間',
-    UpdateBy: '更新人',
     Operation: '操作',
     Select: '選擇',
     Upload: '上傳',
@@ -70,10 +64,6 @@ const zhTW = {
     Collapse: '摺疊',
     CheckAll: '全選',
     CheckInverse: '全不選',
-    TreeLinkage: '父子聯動',
-    MoveUp: "上移",
-    MoveDown: "下移",
-    Back: '返回',
     ConfirmDelete: '是否確認刪除？',
     ConfirmClean: "是否確認清空？清空後將無法恢復，請謹慎操作。",
     Today: '今天',
@@ -89,19 +79,15 @@ const zhTW = {
     RepeatSubmit: '請求正在處理，請勿重複提交',
     ServerConnectFailed: '後端介面連接異常',
     ServerConnectTimeout: '系統介面請求超時',
-    SecondaryVerification: '二次驗證',
     ServerApiError: '系統介面{0}異常',
     Loading: '正在載入，請稍後',
     DownloadFailed: '下載檔案出現錯誤，請聯繫管理員！',
     InvalidFileSuffix: '檔案格式錯誤，僅支援：{0}',
     SelectFirst: '請先選擇至少一條記錄',
-    Width: "寬度",
-    Height: "高度",
     Downloading: "正在下載...",
     Downloaded: "下載完成",
     DownloadTimeout: "下載超時",
     Others: "其他",
-    Unknown: "未知",
     Recover: "恢復",
     InputPassword: "請輸入密碼",
     SelectedCount: "已選擇 {0} 條",
@@ -112,8 +98,6 @@ const zhTW = {
     },
     Unit: {
       Year: "年",
-      Month: "月",
-      Week: "周",
       Day: "天",
       Hour: "時",
       Minute: "分",
@@ -133,16 +117,9 @@ const zhTW = {
   },
   Error: {
     Err401: "【401】未通過認證！",
-    Forbidden: "未通過認證",
-    ForbiddenTip: "對不起，您尚未通過系統認證，請嘗試重新登錄。",
-    GoLogin: "去登錄",
     Err403: "【403】許可權校驗失敗！",
     NoPermission: "無訪問許可權！",
-    NoPermissionTip: "對不起，您沒有訪問許可權，請向系統管理者申請相關資源訪問許可權！",
-    GoHome: "回首頁",
     Err404: "【404】訪問資源不存在！",
-    Err404Tip: "對不起，您正在尋找的頁面不存在。嘗試檢查URL的錯誤，然後按瀏覽器上的刷新按鈕或嘗試在我們的應用程序中找到其他內容。",
-    PageNotFound: "找不到網頁！",
     Unknown: '系統未知錯誤，請反饋給管理員'
   },
   Router: {
@@ -191,19 +168,9 @@ const zhTW = {
     CaptchaLoadFailed: '驗證碼載入失敗，請重試',
     CaptchaAccountChanged: '用戶名已變更，請重新驗證',
     CaptchaRequired: '請先完成當前賬號的驗證碼驗證',
-    CaptchaTip: '點擊按鈕開始驗證',
-    CaptchaSuccess: '驗證成功',
     CaptchaFail: '驗證失敗，請重試',
-    CaptchaClickWord: '點擊文字驗證碼',
-    CaptchaClickWordTip: '請按順序點擊文字：{0}',
-    CaptchaClickWordSuccessTip: '驗證成功，耗時{0}秒。',
-    CaptchaSlider: '滑塊拼圖驗證碼',
-    CaptchaSliderTip: '請拖動滑塊完成拼圖',
-    CaptchaSliderSuccessTip: '驗證成功，耗時{0}秒。',
     AccountRuleTip: "請輸入您的賬號",
     PasswordRuleTip: "請輸入您的密碼",
-    CaptchaRuleTip: "請輸入驗證碼",
-    Language: '語言',
     OtherMethods: '其他方式登錄',
     Feishu: {
       GetLoginUrlFail: '獲取飛書登錄地址失敗',
@@ -224,7 +191,6 @@ const zhTW = {
     Basic: '基礎資料',
     ResetPassword: '修改密碼',
     NickName: '昵稱',
-    RealName: '真實姓名',
     Gender: '性別',
     GenderMale: '男',
     GenderFemale: '女',
@@ -236,7 +202,6 @@ const zhTW = {
     ConfirmPwdPlaceHolder: '請確認新密碼',
     NewPwdLenTip: '長度必須在 {0} 到 {1} 個字元',
     NewPwdSensitiveTip: '不能包含用戶資訊敏感字元',
-    NewPwdTip: '新密碼不合符安全規則',
     NewPwdRuleLETTER_NUMBERTip: '必須包含字母、數字',
     NewPwdRuleUPPER_LOW_LETTER_NUMBERTip: '必須包含大小寫字母、數字',
     NewPwdRuleLETTER_NUMBER_SPECIALTip: '必須包含字母、數字、特殊字元',
@@ -246,73 +211,23 @@ const zhTW = {
   Component: {
     Progress: {
       TaskIsRunning: "任務進行中...",
-      Completed: "已完成",
     },
     CommonImageViewer: {
       UploadSizeErr: "上傳檔案大小不能超過 {0}!",
       Uploading: "正在上傳檔案，請稍候...",
       Tips: "只能上傳jpg/png檔案，且不超過2Mb"
     },
-    Crontab: {
-      Second: "秒",
-      Minute: "分鐘",
-      Hour: "小時",
-      Day: "日",
-      Month: "月",
-      Week: "周",
-      Year: "年",
-      TimeExpression: "時間表達式",
-      CronExpression: "Cron表達式",
-      Next5RunTime: "最近5次運行時間",
-      Waiting: "計算結果中..."
-    },
-    IconSelect: {
-      Placeholder: "請輸入表徵圖名稱"
-    },
-    RightToolbar: {
-      Show: "顯示",
-      Hide: "隱藏",
-      ShowOrHide: "顯示/隱藏",
-      HideSearch: "隱藏搜索",
-      ShowSearch: "顯示搜索",
-      ShowTableColumn: "顯隱列",
-    },
-    Screenfull: {
-      UnSupported: "您的瀏覽器不支援全屏"
-    },
-    TopNav: {
-      MoreMenu: "更多菜單"
-    },
     Layout: {
-      Settings: {
-        ThemeStyle: '主題風格設置',
-        ThemeColor: '主題顏色',
-        SystemLayoutConfig: '系統布局配置',
-        EnableTopNav: '開啟 TopNav',
-        EnableTagsViews: '開啟 Tags-Views',
-        EnableFixedHeader: '固定 Header',
-        ShowLogo: '顯示 Logo',
-        EnableDynamicTitle: '動態標題',
-      },
       Navbar: {
         Git: '源碼地址',
         Doc: '文檔地址',
         ThemeMode: '主題模式',
-        FullScreen: '全屏顯示',
         LayoutSize: '布局大小',
         Language: '語言切換',
         ConfirmLogoutTip: '確定註銷並退出系統嗎？',
         PublishTask: "發布任務",
         ClearPublishTask: "清空發布任務"
       },
-      TagViews: {
-        RefreshPage: "刷新頁面",
-        CloseCurrent: "關閉當前",
-        CloseOther: "關閉其他",
-        CloseLeft: "關閉左側",
-        CloseRight: "關閉右側",
-        CloseAll: "全部關閉"
-      }
     }
   },
   Home: {
@@ -322,10 +237,8 @@ const zhTW = {
   },
   System: {
     DeptScope: {
-      All: "全部機構",
       OnlyCurrent: "僅目前機構",
       Unassigned: "未分配機構",
-      ConfirmChange: "變更機構將自動解除 {0} 條不匹配的角色授權，是否繼續？",
     },
     User: {
       UserId: "用戶ID",
@@ -342,8 +255,6 @@ const zhTW = {
       Role: "角色",
       ResetPwd: "重置密碼",
       RoleSetting: "分配角色",
-      Enable: "啟用",
-      Disable: "禁用",
       InputNewPwd: '請輸入"{0}"的新密碼',
       ChangePwdSucc: '修改成功，新密碼是：{0}',
       ImportResult: "導入結果",
@@ -354,7 +265,6 @@ const zhTW = {
       EditAvatar: '修改頭像',
       UploadAvatar: '點擊上傳頭像',
       SelectUser: "選擇用戶",
-      IsAllocatedRole: "已分配",
       LoginRedirectTip: "登錄成功，正在跳轉...",
       ChangeDept: "調動部門",
       ChangeDeptConfirmMsg: "變更所屬部門後，將解除該用戶的全部角色關聯，保留直接授予用戶的權限。確認調動嗎？",
@@ -375,7 +285,6 @@ const zhTW = {
         Gender: "請選擇用戶性別",
         Status: "用戶狀態",
         Post: "請選擇用戶崗位",
-        Role: "請選擇用戶角色"
       }
     },
     UserPreference: {
@@ -385,12 +294,9 @@ const zhTW = {
       OpenContentEditorW: "內容編輯是否使用新窗口",
       ShowContentSubTitle: "預設顯示內容副標題",
       CatalogTreeExpandMode: "欄目樹展開模式",
-      CatalogTreeExpandMode_Normal: "普通模式",
       CatalogTreeExpandMode_Accordion: "手風琴模式",
     },
     UserRole: {
-      UserInfo: "用戶資訊",
-      Roles: "角色資訊",
       AddUser: "添加用戶",
       RemoveUser: "取消授權"
     },
@@ -401,17 +307,14 @@ const zhTW = {
       Sort: "顯示順序",
       Status: "狀態",
       UserSetting: "分配用戶",
-      MenuPerms: "菜單許可權",
       PermissionSetting: "許可權設置",
       Enable: "啟用",
       Disable: "禁用",
       ConfirmChangeStatus: '確認要{0}"{1}"的角色嗎？',
-      DataScope: "數據許可權",
       ConfirmRemoveUser: "是否確認從角色用戶列表移除選中用戶？",
       Dialog: {
         Add: "添加角色資訊",
         Edit: "修改角色資訊",
-        DataScope: "分配數據許可權"
       },
       Placeholder: {
         RoleName: "請輸入角色名稱",
@@ -423,7 +326,6 @@ const zhTW = {
       MenuPriv: "菜單許可權",
       SitePriv: "站點許可權",
       CatalogPriv: "欄目許可權",
-      ContentPriv: "內容許可權",
       PageWidgetPriv: "頁面部件許可權"
     },
     Menu: {
@@ -450,8 +352,6 @@ const zhTW = {
       RouterParamsTips: '訪問路由的預設傳遞參數，如：`{\'{\'}"id": 1, "name": "chestnut"{\'}\'}`',
       IsCache: "是否緩存",
       IsCacheTips: "選擇是則會被`keep-alive`緩存，需要匹配組件的`name`和地址保持一致",
-      EnableCache: "緩存",
-      DisableCache: "不緩存",
       Visible: "顯示狀態",
       VisibleTips: "擇隱藏則路由將不會出現在側邊欄，但仍然可以訪問",
       ConfirmDelete: '是否確認刪除名稱為"{0}"的數據項？',
@@ -461,7 +361,6 @@ const zhTW = {
       },
       Placeholder: {
         MenuName: "請輸入菜單名稱",
-        Status: "菜單狀態",
         ParentMenu: "選擇上級菜單",
         Icon: "點擊選擇表徵圖",
         RouterLink: "請輸入路由地址",
@@ -469,7 +368,6 @@ const zhTW = {
         Perms: "請輸入許可權字元",
         RouterParams: "請輸入路由參數",
       },
-      Shortcut: "快捷方式"
     },
     Dept: {
       DeptName: "部門名稱",
@@ -510,10 +408,8 @@ const zhTW = {
       }
     },
     Dict: {
-      DictId: "字典ID",
       DictName: "字典名稱",
       DictType: "字典類型",
-      DictCode: "字典項編碼",
       DictLabel: "字典項標籤",
       DictValue: "字典項值",
       DictSort: "字典排序",
@@ -528,7 +424,6 @@ const zhTW = {
         Warning: "警告",
         Danger: "危險"
       },
-      Status: "狀態",
       DataList: "字典數據",
       ConfirmDelete: '是否確認刪除字典ID為"{0}"的數據項？',
       ConfirmDeleteDatas: '是否確認刪除字典編碼為"{0}"的數據項？',
@@ -541,21 +436,17 @@ const zhTW = {
       Placeholder: {
         DictName: "請輸入字典名稱",
         DictType: "請輸入字典類型",
-        DictCode: "請輸入字典項編碼",
         DictLabel: "請輸入字典項標籤",
         DictValue: "請輸入字典項值",
         CssClass: "請輸入樣式屬性",
         ListClass: "請選擇回顯樣式",
-        Status: "字典狀態"
       }
     },
     Config: {
-      ConfigId: "參數ID",
       ConfigName: "參數名稱",
       ConfigKey: "參數鍵名",
       ConfigValue: "參數鍵值",
       ConfigType: "固定配置",
-      ConfirmDelete: '是否確認刪除參數ID為"{0}"的數據項？',
       Dialog: {
         Add: "添加參數配置",
         Edit: "修改參數配置"
@@ -564,7 +455,6 @@ const zhTW = {
         ConfigName: "請輸入參數名稱",
         ConfigKey: "請輸入參數鍵名",
         ConfigValue: "請輸入參數鍵值",
-        ConfigType: "固定配置",
       }
     },
     Notice: {
@@ -572,23 +462,13 @@ const zhTW = {
       NoticeType: "類型",
       NoticeContent: "內容",
       Status: "狀態",
-      ConfirmDelete: '是否確認刪除公告編號為"{0}"的數據項？',
       Dialog: {
         Add: "添加公告",
         Edit: "修改公告"
       }
     },
     I18n: {
-      LangTag: "語言標籤",
-      LangKey: "國際化鍵名",
-      LangValue: "國際化鍵值",
       EditorTitle: "國際化【{0}】",
-      Refreshing: "正在刷新緩存...",
-      RefreshSuccess: "刷新緩存成功",
-      Dialog: {
-        Add: "添加國際化配置",
-        Edit: "修改國際化配置"
-      }
     },
     OpLog: {
       Title: "標題",
@@ -597,7 +477,6 @@ const zhTW = {
       ResponseCode: "響應狀態",
       OpTime: "操作時間",
       Cost: "操作耗時",
-      LogId: "日誌ID",
       RequestMethod: "請求方式",
       IP: "操作IP",
       Location: "操作地址",
@@ -612,25 +491,20 @@ const zhTW = {
       ConfirmClean: '是否確認清空所有操作日誌數據項？'
     },
     LoginInfo: {
-      LogId: "日誌ID",
       IP: "IP地址",
       UserType: '用戶類型',
       UserId: "用戶ID",
       UserName: "用戶名",
       Status: "登錄狀態",
       LoginTime: "登錄時間",
-      Unlock: "解鎖",
       Location: "登錄地點",
       Browser: "瀏覽器",
       OS: "作業系統",
       OpMsg: "操作資訊",
-      ConfirmUnlock: '是否確認解鎖用戶：{0}？',
-      UnlockSuccess: '用戶"{0}"解鎖成功'
     },
     Security: {
       Basic: "基本資訊",
       Name: "分類名稱",
-      PasswordLength: "密碼長度",
       PasswordRule: "密碼組成規則",
       PasswordExpireSeconds: "密碼過期時長（單位：秒）",
       PasswordRetryLimit: "每日密碼錯誤次數閾值",
@@ -663,14 +537,6 @@ const zhTW = {
       CaptchaType: "密碼登錄驗證碼類型",
       CaptchaExpireSeconds: "驗證碼過期時長（單位：秒）",
       CaptchaRetryDuration: "驗證碼重試時長（單位：秒）",
-      BizConfigCard: "業務安全配置",
-      SecondaryVerifications: "需要二次驗證的介面",
-      SecondaryVerificationsSearch: "按路徑模糊搜尋",
-      SecondaryVerificationsPlaceholder: "輸入介面路徑，如 /system/user/delete/**",
-      SecondaryVerificationPath: "介面路徑",
-      SecondaryVerificationsTip: "支援 Ant 風格路徑匹配，如 /system/** 或 /api/user/delete/{id}，每條為獨立規則",
-      BizVerifyExpireSeconds: "二次驗證有效期（單位：秒）",
-      CSP: "內容安全策略（CSP）",
       Tab: {
         SecurityConfig: "安全配置",
         LoginConfig: "第三方登錄配置",
@@ -680,26 +546,9 @@ const zhTW = {
         Name: "名稱",
         Type: "類型",
         Desc: "描述",
-        Image: "圖片",
         Status: "狀態",
         AddTitle: "添加第三方登錄配置",
         EditTitle: "編輯第三方登錄配置",
-        Wechat: {
-          AppId: "應用ID",
-          AppSecret: "應用密鑰",
-          RedirectUri: "重定向URI",
-          Style: "字體顏色",
-          Href: "自定義樣式鏈接",
-          Stylelite: "二維碼樣式",
-          FastLogin: "快速登錄",
-          ColorScheme: "顏色主題",
-        },
-        Feishu: {
-          AppId: "應用ID",
-          AppSecret: "應用密鑰",
-          Scope: "權限範圍",
-          RedirectUri: "重定向URI",
-        }
       },
     },
     CloudConfig: {
@@ -725,54 +574,10 @@ const zhTW = {
     }
   },
   Monitor: {
-    Job: {
-      JobId: "任務ID",
-      JobName: "任務名稱",
-      JobGroup: "任務分組",
-      Status: "狀態",
-      InvokeTarget: "調用目標字元串",
-      CronExpression: "cron執行表達式",
-      CronGenerator: "Cron表達式生成器",
-      GenCron: "生成表達式",
-      Concurrent: "是否並發",
-      Allow: "允許",
-      Forbid: "禁止",
-      Enable: "啟用",
-      Disable: "禁用",
-      MisfirePolicy: "執行策略",
-      DefaultPolicy: "預設策略",
-      RunNow: "立即執行",
-      RunOnce: "執行一次",
-      Manual: "手動執行",
-      Details: "任務詳情",
-      BeanExample: "Bean調用示例：ryTask.ryParams('ry')",
-      ClassExample: "Class類調用示例：com.test.quartz.task.RyTask.ryParams('ry')",
-      ParamsTips: "參數說明：支援字元串，布爾類型，長整型，浮點型，整型",
-      NextRunTime: "下次執行時間",
-      ConfirmDelete: '確認要刪除ID為"{0}"的任務嗎？',
-      ConfirmChangeStatus: '確認要"{0}""{1}"任務嗎？',
-      ConfirmRunOnce: '確認要立即執行一次"{0}"任務嗎？',
-      Logs: "調度日誌",
-      ExecTime: "執行時間",
-      JobLogId: "日誌ID",
-      JobLogMessage: "日誌資訊",
-      LogDetails: "詳情",
-      ExceptionInfo: "異常資訊",
-      ConfirmClean: '是否確認清空所有調度日誌數據項？',
-      Dialog: {
-        Add: "添加任務資訊",
-        Edit: "修改任務資訊",
-        Log: "調度日誌詳細",
-      },
-      Placeholder: {
-        InvokeTarget: "請輸入調用目標字元串"
-      }
-    },
     ScheduledTask: {
       Type: "類型",
       Name: "名稱",
       Status: "狀態",
-      ReadyTime: "準備就緒時間",
       ExecOnce: "執行一次",
       Logs: "日誌",
       TriggerType: "觸發方式",
@@ -928,65 +733,6 @@ const zhTW = {
       ReadyTime: "任務就緒時間"
     }
   },
-  AI: {
-    Chat: {
-      Title: "AI 聊天",
-      Open: "開啟 AI 聊天",
-      ExpandToolbar: "展開 AI 工具列",
-      CollapseToolbar: "收起 AI 工具列",
-      StatelessTip: "聊天記錄僅保留於目前視窗，重新整理後將被清除",
-      SelectModel: "請選擇 AI 模型",
-      NewConversation: "新對話",
-      EmptyTitle: "開始與 AI 對話",
-      EmptyDescription: "選擇一個已啟用的模型，然後輸入你的問題。目前版本不會在伺服器保存聊天記錄。",
-      NoModels: "暫無可用模型",
-      NoModelsTip: "請先在模型設定中新增並啟用至少一個 AI 模型。",
-      InputPlaceholder: "請輸入訊息，Enter 傳送，Shift + Enter 換行",
-      SendTip: "每次請求最多攜帶最近 20 條視窗會話訊息",
-      Send: "傳送",
-      Stop: "停止生成",
-      User: "你",
-      Assistant: "AI 助手",
-      Copy: "複製",
-      Copied: "回覆已複製",
-      CopyFailed: "複製失敗，請手動選取內容",
-      RequestFailed: "AI 聊天請求失敗，請稍後再試",
-      InvalidStream: "AI 回傳的資料流格式無效"
-    },
-    Model: {
-      Name: "設定名稱",
-      ProviderType: "供應商類型",
-      BaseUrl: "服務位址",
-      ApiKey: "API Key",
-      ApiKeyStatus: "金鑰狀態",
-      ModelName: "模型名稱",
-      Status: "狀態",
-      IsDefault: "預設模型",
-      SupportsTools: "工具調用",
-      TimeoutSeconds: "逾時時間",
-      SortFlag: "排序",
-      Test: "測試",
-      TestSuccess: "模型 API 連線測試成功",
-      TestFailed: "模型 API 連線測試失敗，請檢查服務位址、模型名稱和 API Key",
-      Configured: "已設定",
-      NotConfigured: "未設定",
-      ApiKeyEditTip: "基於安全考量不會回顯已儲存的 API Key，留空將保留原金鑰。",
-      ConfirmDelete: "是否確認刪除選中的 {0} 筆模型設定？",
-      Dialog: {
-        Add: "新增 AI 模型設定",
-        Edit: "編輯 AI 模型設定"
-      },
-      Placeholder: {
-        Name: "請輸入設定名稱",
-        ProviderType: "請選擇供應商類型",
-        BaseUrl: "請輸入模型服務基礎位址",
-        ApiKey: "請輸入 API Key（選填）",
-        ApiKeyEdit: "留空則保留原 API Key",
-        ModelName: "請輸入遠端模型名稱",
-        Status: "請選擇狀態"
-      }
-    }
-  },
   CMS: {
     Dashboard: {
       PublishStrategy: "發布策略",
@@ -994,16 +740,12 @@ const zhTW = {
     },
     ContentCore: {
       ContentType: "內容類型",
-      CatalogType: "欄目類型",
-      InternalDataType: "內部數據類型",
-      ResourceType: "資源類型",
       InternalUrl: "內部連結",
       SelectCatalog: "選擇欄目",
       SelectContent: "選擇內容",
       ToPublish: "待發布",
       Publish: "發布",
       Preview: "預覽",
-      Browse: "瀏覽",
       ToPublishSuccess: "待發布成功",
       PublishSuccess: "發布成功",
       PublishProgressTitle: "發布任務",
@@ -1055,7 +797,6 @@ const zhTW = {
       VideoModifier: {
         DialogTitle: "視頻資訊",
         Cover: "封面",
-        UploadCover: "上傳",
         FrameCover: "幀截圖",
         FrameCoverSeconds: "視頻截圖時間點（單位：秒）",
         Screenshot: "截圖",
@@ -1074,8 +815,6 @@ const zhTW = {
       BaiduMap: {
         DialogTitle: "百度地圖",
         City: "城市",
-        Address: "地址",
-        DynamicMap: "插入動態地圖",
         MarkerPosition: "標記位置",
         NoAccessKey: "缺少系統配置參數`BaiduMapAccessKey`。",
         GoSysConfig: "去配置"
@@ -1091,9 +830,17 @@ const zhTW = {
       SensitiveWordCheck: "敏感詞校驗",
       FallibleWordCheck: "易錯詞校驗",
       NoSensitiveWord: "未發現敏感詞",
-      NoFallibleWord: "未發現易錯詞"
+      NoFallibleWord: "未發現易錯詞",
+      WordCheck: '文字檢查',
+      Xiumi: '秀米',
+      XiumiDialog: '秀米圖文訊息助手'
     },
     Site: {
+      ParentSite: "上級站點",
+      Move: "轉移",
+      SortFlag: "排序值",
+      TopLevel: "頂級站點",
+      MoveParentPlaceholder: "留空表示設為頂級站點",
       SiteId: "站點ID",
       Name: "站點名稱",
       Path: "站點目錄",
@@ -1117,6 +864,8 @@ const zhTW = {
       GoAddPublishPipe: "去添加",
       ExModelCardTitle: "擴展模型屬性",
       CurrentSelectorTitle: "切換當前站點",
+      NoAccessibleSite: "暫無可存取的站點",
+      InitializationFailed: "當前站點初始化失敗，請重試",
       AlreayCurrentSite: "請選擇非當前站點",
       ImportTheme: "導入主題",
       ExportTheme: "導出主題",
@@ -1148,7 +897,6 @@ const zhTW = {
         BasicCardTitle: "基礎配置",
         EnableIndex: "是否開啟索引",
         EnableSearchLog: "是否開啟搜索日志",
-        WordAnalyzeType: "索引分詞方式",
         TitleRepeatCheck: "標題查重",
         TitlteRepeatCheckNone: "不校驗",
         TitlteRepeatCheckSite: "全站校驗",
@@ -1163,7 +911,6 @@ const zhTW = {
         CatalogPageSizeTip: "小於等於0時取系統預設值：10",
         ContentConfCardTitle: "內容配置",
         AutoArticleLogo: "正文首圖作為封面",
-        AutoArticleVersion: "自動保存文章版本",
         RecycleKeepDays: "資源回收筒內容保留天數",
         RecycleKeepDaysTip: "永久保留填0",
         ResourceConfCardTitle: "素材庫",
@@ -1198,8 +945,6 @@ const zhTW = {
         BaiduDomain: "百度統計功能變數名稱",
         BaiduDomainTip: "多個功能變數名稱使用英文逗號分隔",
         SiteApiUrl: "站點API地址首碼",
-        CustomFormCardTitle: "自定義表單配置",
-        EnableCustomFormCaptcha: "是否開啟驗證碼",
         CommentCardTitle: " 評論配置",
         EnableComment: "是否開啟評論",
         EnableCommentTip: "關閉站點評論後全站無法評論，開啟後欄目、內容亦可獨立配置是否開啟評論。",
@@ -1214,17 +959,8 @@ const zhTW = {
         MemberResourceUrl: "會員資源訪問功能變數名稱",
         ShortTitleLabel: "短標題自定義表單名",
         SubTitleLabel: "副標題自定義表單名",
-        EnableStat: "開啟站點訪問統計",
-        EnableDynamicStatScript: "啟用動態統計指令碼或直譯式程式",
-        EnableHyperLogLog: "啟用HyperLogLog",
         CloudCardTitle: "雲配置",
         CdnCloudConfig: "CDN雲配置",
-        AutoRefreshCDN: "自動刷新CDN",
-        ContentPrivStrategy: "內容權限策略",
-        ContentPrivStrategyExtendCatalog: "繼承欄目",
-        ContentPrivStrategyExtendSite: "繼承站點",
-        ContentPrivStrategyValid: "需要校驗",
-        ContentPrivStrategyIgnore: "不需要校驗",
       },
       Property: {
         QueryPlaceholder: "輸入名稱/編碼查詢",
@@ -1242,15 +978,6 @@ const zhTW = {
         ContentDetail: "詳情頁模板",
         SelectCatalogFirst: "請先選擇欄目",
         CustomForm: "自定義表單模板",
-        SearchResult: "搜索結果頁模板",
-        AccountCentre: "個人中心頁模板",
-        MemberLogin: "會員登錄頁模板",
-        MemberRegister: "會員註冊頁模板",
-        MemberForgetPwd: "忘記密碼頁模板",
-        MemberSetting: "會員資訊設置頁模板",
-        MemberBindEmail: "會員綁定郵箱頁模板",
-        MemberResetPwd: "會員修改密碼頁模板",
-        MemberContribute: "會員文章投稿頁模板",
       },
       Dashboard: {
         MissingSiteUrl: "站點功能變數名稱未配置！",
@@ -1326,7 +1053,6 @@ const zhTW = {
         CatalogPageSize: "分頁列表大小",
         CatalogPageSizeTip: "值為-1時取站點擴展配置值",
         EnableIndex: "是否啟用索引",
-        EnableSearchLog: "是否開啟搜索日志",
         CatalogExModel: "欄目擴展模型",
         ContentExModel: "內容擴展模型",
         ContentConfig: "內容配置",
@@ -1335,7 +1061,6 @@ const zhTW = {
         HotWordMaxReplaceCount: "替換數量限制",
         HotWordMaxReplaceCountTip: "每篇文章替換熱詞數量限制，0表示不限制數量。",
         EnableContribute: "是否允許投稿",
-        ContentWorkflow: "內容工作流"
       }
     },
     Content: {
@@ -1364,11 +1089,7 @@ const zhTW = {
       Hot: "熱點",
       CancelHot: "取消熱點",
       SEOConfig: "SEO配置",
-      ImportWord: "導入WORD",
-      UploadWord: "上傳WORD文檔",
-      SaveUploadWordFile: "保留上傳的WORD文檔",
       CopyType: "複製方式",
-      CopyId: "源ID",
       CopySite: "源站點",
       CopyCatalog: "源欄目",
       CopyContent: "源內容",
@@ -1396,7 +1117,6 @@ const zhTW = {
       StatusBefore: " 刪除前狀態",
       DeleteTime: "刪除時間",
       DeleteUser: "刪除人",
-      BackToList: "返回列表",
       Lock: "鎖定",
       Unlock: "解鎖",
       LinkFlag: "連結內容",
@@ -1417,7 +1137,6 @@ const zhTW = {
       SourceUrl: "來源地址",
       PublishDate: "發布時間",
       OfflineDate: "下線時間",
-      PublishPipe: "發布通道",
       StaticPath: "獨立路徑",
       Template: "獨立模板",
       DeleteProgressTitle: "刪除內容",
@@ -1432,61 +1151,14 @@ const zhTW = {
       ExtendConfig: "擴展配置",
       ExtendTemplate: "擴展模板",
       ExtendComment: "評論配置",
-      ContentPriv: "瀏覽權限",
       ViewCount: "瀏覽量",
       FavoriteCount: "收藏數",
       LikeCount: "點贊數",
       CommentCount: "評論數",
       RelaContent: "相關內容",
       PushToBaidu: "推送到百度",
-      PushToBaiduResult: "【{0}】成功 {1} 條，剩餘 {2} 條。<br/>",
       ImportCSSTip: "應用站點/欄目發布通道設置的文章編輯器CSS",
       OpLog: "操作記錄",
-      Version: "版本記錄",
-      VersionNo: "版本編號",
-      Compare: "對比",
-      CompareToLatest: "與最新版本對比",
-      SaveNewVersion: "保存新版本",
-      LatestVersion: "最新版本",
-      VersionDiff: "版本對比",
-      Workflow: {
-        Title: "流程資訊",
-        NoRecord: "暫無審批流程記錄",
-        NoProgress: "暫無流轉節點",
-        ProcessName: "流程名稱",
-        Starter: "發起人",
-        StartTime: "發起時間",
-        EndTime: "結束時間",
-        Progress: "審批進度",
-        Assignee: "處理人",
-        CompletedAt: "完成時間",
-        Comment: "審批意見",
-        Running: "流轉中",
-        Processing: "待處理",
-        Approved: "審批通過",
-        Rejected: "審批拒絕",
-        Revoked: "已撤銷",
-        Revoke: "撤銷審批",
-        RevokeConfirm: "撤銷後內容將恢復為重新編輯狀態，確認撤銷當前審批流程嗎？",
-        RevokeSuccess: "審批流程已撤銷",
-        Urge: "催辦",
-        Urged: "已催辦",
-        UrgeConfirm: "確認催辦目前審批流程嗎？",
-        UrgeSuccess: "催辦成功",
-        Submit: "提交審核",
-        SubmitDialogTitle: "提交內容審核",
-        SubmitTip: "提交後內容在審批完成或撤銷前不可編輯，請確認審批通過後的動作。",
-        ActionAfterApproval: "審批通過後",
-        NoAction: "僅標記審批通過",
-        ToPublishAfterApproval: "自動設為待發布",
-        PublishAfterApproval: "自動發布",
-        SubmitSuccess: "內容已提交審核"
-      },
-      VersionDiffTip: {
-        Replace: "替換",
-        Add: "新增",
-        Remove: "刪除"
-      }
     },
     ContentOpLog: {
       Type: "操作類型",
@@ -1497,18 +1169,6 @@ const zhTW = {
     },
     Article: {
       Format: "文檔格式",
-      Markdown: {
-        Placeholder: "輸入內容...",
-        InsertLink: "插入連結",
-        InsertCatalog: "插入欄目連結",
-        InsertContent: "插入內容連結",
-        UploadImage: "上傳圖片",
-        UploadVideo: "上傳視頻",
-        UploadAudio: "上傳音頻",
-        UploadFile: "上傳檔案",
-        ImageText: "圖片描述",
-        ImageLink: "圖片連結",
-      }
     },
     Image: {
       Title: "標題",
@@ -1565,42 +1225,6 @@ const zhTW = {
       SetLogo: "設為視頻集封面",
       TimePoint: "時間點（單位：秒）"
     },
-    FileContent: {
-      Preview: "預覽",
-      Intro: "文件介紹"
-    },
-    Book: {
-      Basic: "圖書資訊",
-      PublicationDate: "出版時間",
-      Publisher: "出版社",
-      NumberOfPages: "頁數",
-      NumberOfWords: "字數",
-      Producer: "出品方",
-      OriginalTitle: "原著名",
-      Translators: "譯者",
-      Price: "價格",
-      CurrencyFen: "分",
-      Completed: "是否完結",
-      Intro: "介紹",
-      ChapterList: "章節列表",
-      InputChapterTitle: "輸入章節標題",
-      SortAsc: "順序",
-      SortDesc: "倒序",
-      PublishDate: "發布時間",
-      PublishImmediately: "立即發布",
-      ChapterTitle: "章節標題",
-      Publish: "發布",
-      ToPublish: "定時發布",
-      Offline: "下線",
-      ToPublishDialogTitle: "定時發布",
-      PublishSuccess: "發布成功",
-      OfflineSuccess: "下線成功",
-      ToPublishSuccess: "定時發布成功",
-      CloseChapterEditorTip: "章節數據未保存，確認關閉嗎？",
-      Route: {
-        EditChapter: "編輯章節"
-      }
-    },
     PageWidget: {
       Type: "類型",
       Name: "名稱",
@@ -1648,9 +1272,13 @@ const zhTW = {
     },
     Resource: {
       Name: "資源名稱",
+      NameOrId: "資源名稱或ID",
       Type: "類型",
-      StorageType: "存儲類型",
       FileSize: "大小",
+      MinFileSize: "最小值",
+      MaxFileSize: "最大值",
+      FileSizeUnit: "檔案大小單位",
+      InvalidFileSizeRange: "最小檔案大小不能大於最大檔案大小",
       UploadResource: "上傳資源",
       UploadTip1: "將檔案拖到此處，或點擊上傳",
       UploadTip2: "只能上傳 {0} 檔案，且不超過 {1}",
@@ -1658,8 +1286,6 @@ const zhTW = {
       AcceptSize: "支持文件大小：{0}",
       AddDialogTitle: "添加資源",
       EditDialogTitle: "編輯資源",
-      PreviewTitle: "資源預覽",
-      FileTypeErrMsg: "檔案格式錯誤，請上傳圖片類型,如：.jpg，.png尾碼的檔案。",
       SelectorTitle: "素材庫",
       LocalUpload: "本地上傳",
       RemoteLink: "網路連結",
@@ -1673,12 +1299,6 @@ const zhTW = {
       UploadLimit: "上傳檔案數量不能超過：{0}",
       UploadFileSizeLimit: "上傳檔案大小不能超過：{0}",
       RemoteLinkErr: "資源外鏈不能為空且必須是http://或https://開頭的網路地址",
-      UploadSuccess: "上傳成功",
-      UploadFail: "上傳失敗",
-      Uploading: "上傳中...",
-      Md5ing: "計算MD5中...",
-      Paused: "暫停中...",
-      Waiting: "等待中..."
     },
     PublishPipe: {
       Name: "名稱",
@@ -1753,8 +1373,6 @@ const zhTW = {
       RequestArgs: "請求參數",
       DefaultValue: "預設值",
       CustomDynamicTemplate: "自定義動態模板",
-      DocGen: "生成文檔",
-      DocGenLang: "語言",
       CustomDynamicPage: {
         Name: "名稱",
         Code: "編碼",
@@ -1772,23 +1390,9 @@ const zhTW = {
       AddTitle: "新建模型",
       EditTitle: "編輯模型",
       Fields: "編輯欄位",
-      GoBack: "返回模型列表",
-      FieldName: "名稱",
-      FieldCode: "編碼",
-      FieldType: "欄位類型",
-      FieldControlType: "控制項類型",
-      FieldMappingName: "數據表欄位",
-      FieldMandatory: "是否必填",
-      FieldDefaultValue: "預設值",
-      FieldOptions: "可選配置",
-      FieldOptionsInput: "手動輸入",
-      FieldOptionsDict: "字典數據",
-      AddFieldTitle: "添加模型欄位",
-      EditFieldTitle: "編輯模型欄位",
       RouteExModelField: "擴展模型欄位",
       Placeholder: {
         Query: "輸入模型名稱/編碼查詢",
-        FieldQuery: "欄位名稱/編碼查詢"
       }
     },
     FriendLink: {
@@ -1796,13 +1400,11 @@ const zhTW = {
       GroupCode: "分組編碼",
       AddTitle: "添加友情連結分組",
       EditTitle: "編輯友情連結分組",
-      GoBack: "返回",
       LinkName: "名稱",
       LinkUrl: "連結",
       SortFlag: "排序",
       AddLinkTitle: "添加友情連結",
       EditLinkTitle: "編輯友情連結",
-      RouteLinkList: "友鏈列表",
       Placeholder: {
         GroupQuery: "輸入分組名稱/編碼",
         LinkQuery: "輸入友鏈名稱/連結查詢"
@@ -1832,91 +1434,124 @@ const zhTW = {
       RouteFieldList: "自定義表單欄位",
       Fields: "表單欄位",
       RouteData: "自定義表單數據",
-      AddDataTitle: "添加表單數據",
       EditDataTitle: "編輯表單數據",
       DataList: "表單數據"
     },
-    StatPro: {
-      PV: "瀏覽量（PV）",
-      UV: "訪客量（UV）",
-      IP: "IP數",
-      AvgVisitTime: "平均訪問時長",
-      Rate: "佔比",
-      PVRate: "PV佔比",
-      UVRate: "UV佔比",
-      IPRate: "IP佔比",
-      Hour: "小時",
-      Day: "按天",
-      Week: "按周",
-      Month: "按月",
-      OS: "作業系統",
-      Browser: "瀏覽器",
-      DisplaySize: "屏幕解析度",
-      ColorDepth: "屏幕色深",
-      NetworkOp: "網路運營商",
-      Lang: "語言",
-      SupportedCookie: "是否支援Cookie",
-      SupportedJava: "是否支援Java",
-      VisitorType: "訪客類型",
-      NewVisitor: "新訪客",
-      OldVisitor: "老訪客",
-      Date: "日期",
-      Time: "時間",
-      EventType: "事件類型",
-      UUID: "訪客標識",
-      VisitTrend: "訪問趨勢",
-      NewVisitorNum: "新訪客數",
-      NewVisitorPV: "新訪客PV",
-      NewVisitorVT: "新訪客平均訪問時長",
-      OldVisitorNum: "老訪客數",
-      OldVisitorPV: "老訪客PV",
-      OldVisitorVT: "老訪客平均訪問時長",
-      Placeholder: {
-        IP: "輸入IP查詢",
-        UUID: "輸入用戶標識查詢",
-      },
-      Region: {
-        Name: "地域",
-        Country: "國家",
-        Province: "省份",
-        ByProvince: "按省",
-        ByCountry: "按國家",
-        MapChart: "地域分布圖",
-        District: "地區"
-      },
-      Source: {
-        Type: "來源類型",
-        Flag: "來源標識",
-      }
-    },
-    SiteEvent: {
-      Type: "類型",
-      Name: "名稱",
-      Desc: "描述",
-      StartTime: "開始時間",
-      EndTime: "結束時間",
-      Status: "狀態",
-      Enable: "啟用",
-      Disable: "停用",
-      Publish: "發布",
-      AddTitle: "新建站點事件",
-      EditTitle: "編輯站點事件"
-    },
-    ImageCropper: {
-      Crop: "圖片裁剪",
-      Rotate: "旋轉縮放",
-      RotateLeft: "左轉90°",
-      RotateRight: "右轉90°",
-      FlipX: "水平翻轉",
-      FlipY: "垂直翻轉",
-      ZoomIn: "放大10%",
-      ZoomOut: "縮小10%",
-      Apply: "應用",
-      OriginalRatio: "原比例",
-      Width: "寬",
-      Height: "高",
-      FixedAspectRatio: "固定寬高",
+    ImageOptimizer: {
+      Title: "圖片最佳化",
+      Crop: "裁切",
+      Rotate90: "旋轉90度",
+      FlipHorizontal: "水平翻轉",
+      FlipVertical: "垂直翻轉",
+      OutputSize: "輸出尺寸",
+      OutputFormat: "輸出格式",
+      Compression: "壓縮",
+      AnimatedFormatHint: "動態圖片維持 GIF 格式，以保留所有影格。",
+      JpegTransparencyHint: "JPEG 會將透明區域填成白色。",
+      EnableCrop: "啟用裁切",
+      Width: "寬度",
+      Height: "高度",
+      Ratio: "比例",
+      FreeRatio: "自由比例",
+      OriginalRatio: "原圖比例",
       PresetSize: "預設尺寸",
+      NoPreset: "自訂",
+      Pixels: "像素",
+      Percentage: "百分比",
+      Strategy: "壓縮策略",
+      Quality: "畫質",
+      QualityVeryLow: "極低",
+      QualityLow: "低",
+      QualityMedium: "中",
+      QualityHigh: "高",
+      QualityVeryHigh: "極高",
+      QualityLossless: "無損",
+      EffortFaster: "快速",
+      EffortFast: "較快",
+      EffortBalanced: "均衡",
+      EffortStrong: "更強",
+      EffortExtreme: "極致",
+      QualityHint: "畫質越高，通常越清晰、體積越大。",
+      PaletteQualityHint: "五檔畫質分別使用 32 / 64 / 128 / 192 / 256 色上限；目前最多 {colors} 色，透明色占用一個名額。",
+      LosslessQualityHint: "保持像素無損，檔案不一定會更小。",
+      EffortHint: "更強策略會投入更多編碼時間，嘗試減小檔案體積。",
+      EffortUnavailable: "此格式使用固定編碼策略，可透過畫質和輸出尺寸調整。",
+      LosslessUnavailable: "此格式不支援無損畫質。",
+      Colors: "色彩數量",
+      Dither: "抖動",
+      Recommended: "還原推薦設定",
+      Reset: "重設",
+      Process: "開始處理",
+      Cancel: "取消處理",
+      Download: "下載",
+      DownloadOriginal: "下載原圖",
+      OriginalRetained: "未獲得更小檔案，已保留原圖。",
+      OriginalRetainedHint: "原圖未發生變化，無需另存或覆寫資源。",
+      SaveCopy: "另存為資源",
+      Replace: "覆寫原資源",
+      Original: "原圖",
+      Result: "處理結果",
+      Compare: "滑動比較",
+      Fit: "符合視窗",
+      ActualSize: "原始比例",
+      ZoomIn: "放大",
+      ZoomOut: "縮小",
+      Play: "播放",
+      Pause: "暫停",
+      Loading: "正在讀取原圖…",
+      Pending: "參數已變更，請重新處理",
+      Ready: "處理完成",
+      Empty: "設定參數後，點擊開始處理查看效果",
+      Error: "處理失敗",
+      Retry: "重試",
+      Format: "格式",
+      Size: "檔案大小",
+      Dimensions: "尺寸",
+      Saving: "正在儲存…",
+      SaveSuccess: "資源儲存成功",
+      ReplaceConfirm: "覆寫原資源會影響所有引用此資源的內容，確定繼續嗎？",
+      CopySuffix: "（最佳化）",
+      FileSuffix: "-最佳化",
+      CopyName: "資源名稱",
+      SaveUnavailable: "目前資源庫暫不支援儲存 AVIF / JPEG XL，請下載處理結果。",
+      SaveFormatUnavailable: "目前資源設定不允許儲存此格式，請下載處理結果。",
+      ReplaceFormatUnavailable: "覆寫會變更副檔名並使原有連結失效，請另存為資源。",
+      ServerNotice: "儲存至資源庫後，伺服器仍會依現有設定處理浮水印和縮圖，儲存後的效果可能與本機預覽不同。",
+      ReadFailed: "無法讀取原始檔案，請檢查檔案是否存在、存取權限及外部圖片的跨來源設定。",
+      UnsupportedAnimation: "暫不支援此格式的動畫處理，請使用 GIF，以免遺失動畫。",
+      UnsupportedFormat: "暫不支援此圖片格式。",
+      InvalidImage: "圖片無效或解碼失敗。",
+      InvalidDimensions: "請輸入有效尺寸，且不得超過裁切區域或原圖尺寸。",
+      ProcessFailed: "圖片處理失敗，請調整參數後重試。",
+      StaleResult: "目前結果尚未套用最新參數，請重新處理後儲存。",
+      SizeLimit: "處理結果超出資源上傳大小限制：{size}",
+      NoReduction: "處理後體積未減小，可調整尺寸、畫質或壓縮策略後重試。",
+      SizeIncreased: "體積增加",
+      StageDecode: "解碼與方向校正",
+      StageCrop: "裁切圖片",
+      StageResize: "調整尺寸",
+      StageQuantize: "最佳化調色盤",
+      StageEncode: "編碼壓縮",
+      StagePreview: "產生預覽",
+      StageDownload: "讀取原始檔案",
+      Standard: "標準",
+      Progressive: "漸進式",
+      Lossless: "無損最佳化",
+      Palette: "調色盤壓縮",
+      Lossy: "有損壓縮",
+      NearLossless: "近無損",
+      Faithful: "保真優先",
+      Reduction: "體積變化",
+      Elapsed: "耗時 {seconds} 秒",
+      PercentHint: "百分比以目前裁切區域為基準，最大 100%。",
+      CropHint: "拖曳選框或輸入寬高設定裁切區域。",
+      LocalProcessing: "圖片在瀏覽器中處理，儲存前不會上傳。",
+      AnimationNotice: "GIF 保留完整動畫、影格時間和循環設定。",
+      Frames: "影格數",
+      Percent: "%",
+      Off: "關閉",
+      On: "開啟",
+      Close: "關閉"
     }
   },
   WordMgr: {
@@ -1946,7 +1581,6 @@ const zhTW = {
     },
     HotWord: {
       AddGroup: "新增分組",
-      ParentGroup: "上級分組",
       GroupName: "分組名稱",
       GroupCode: "分組編碼",
       AddGroupTitle: "新增熱詞分組",
@@ -2013,7 +1647,6 @@ const zhTW = {
       NewVisitor: "新訪客",
       OldVisitor: "老訪客",
       VisitSource: "訪問來源",
-      EngineSource: "搜索引擎來源",
       SearchWordSource: "搜索詞來源",
       SearchWord: "搜索詞",
       SelectSite: "選擇百度統計站點",
@@ -2055,7 +1688,6 @@ const zhTW = {
   Vote: {
     Title: "標題",
     Code: "編碼",
-    CodeTip: "只能使用大小寫字母、數字和下劃線組合",
     Status: "狀態",
     TimeRange: "時間",
     Total: "參與數",
@@ -2084,7 +1716,6 @@ const zhTW = {
       DataName: "資料名稱",
       LikeLogs: "按讚日誌",
       SignInLogs: "簽到日誌",
-      LogId: "日誌ID",
       DataId: "資料ID",
       LikeTime: "按讚時間",
       SignInDate: "簽到日期",
@@ -2145,10 +1776,6 @@ const zhTW = {
     RestPwdSuccess: "修改成功，新密碼是：{0}",
     AddTitle: "添加會員",
     EditTitle: "編輯會員",
-    AuthContentPriv: "權限配置",
-    Permission: {
-      ContentPriv: "內容瀏覽權限"
-    },
     LevelType: "積分類型",
     Level: {
       Type: "類型",
@@ -2166,30 +1793,12 @@ const zhTW = {
     AddExpOpTitle: "添加經驗配置",
     EditExpOpTitle: "編輯經驗配置",
     RuleTips: {
-      UserName: "必須以字母開頭，且只能為（大小寫字母，數字，下滑線）",
       Member: "用戶名/手機號/Email不能全為空"
     },
     Selector: {
       Title: "選擇會員",
       MemberList: "會員列表",
       SelectedMemberList: "已選會員"
-    },
-    Role: {
-      RoleId: "角色ID",
-      RoleName: "角色名稱",
-      RoleKey: "角色標識碼",
-      Sort: "排序",
-      AddTitle: "添加會員角色",
-      EditTitle: "編輯會員角色",
-      UserSetting: "會員設置",
-      AuthContentPriv: "授權",
-      ConfirmRemoveMember: "確認取消授權？",
-      AddMember: "添加會員",
-      RemoveMember: "取消授權",
-      Placeholder: {
-        RoleName: "請輸入角色名稱",
-        RoleKey: "請輸入角色標識碼"
-      }
     },
     Config: {
       Title: "會員配置",
@@ -2207,7 +1816,6 @@ const zhTW = {
     FieldType: "欄位類型",
     FieldControlType: "控制項類型",
     FieldMappingName: "數據表欄位",
-    FieldMandatory: "是否必填",
     FieldDefaultValue: "預設值",
     FieldOptions: "可選配置",
     FieldOptionsInput: "手動輸入",
@@ -2242,7 +1850,6 @@ const zhTW = {
       WordPlaceholder: "每行一個",
       Type: "類型",
       AddTitle: "添加字典新詞",
-      EditTitle: "編輯字典詞",
       WordAnalyzeTitle: "分詞測試",
       WordAnalyzePlaceholder: "輸入需要測試的文字",
       WordAnalyzeTest: "測試",
@@ -2257,9 +1864,6 @@ const zhTW = {
       Source: "來源",
       ClientType: "客戶端",
       LogTime: "搜索時間",
-      Placeholder: {
-        Word: "輸入搜索詞查詢"
-      }
     },
     WordStat: {
       TabName: "搜索詞",
@@ -2268,7 +1872,6 @@ const zhTW = {
       Topping: "置頂",
       CancelTop: "取消置頂",
       TopEndTime: "置頂結束時間",
-      Source: "來源",
       Trend: "趨勢",
       AddExtWord: "添加到擴展詞",
       AddStopWord: "添加到停用詞",
@@ -2290,45 +1893,18 @@ const zhTW = {
       RateLimitInvalid: "秒數和次數須為不超過 2147483647 的正整數，視窗不可重複。",
       Name: "名稱",
       Type: "類型",
-      Status: "狀態",
-      ConfigJson: "配置詳情",
       AddTitle: "添加訊息配置",
       EditTitle: "編輯訊息配置",
       SelectorTitle: "選擇訊息配置",
       TestSend: "測試發送",
-      Placehoder: {
-        Query: "輸入名稱"
-      },
       TestTitle: "測試標題",
       TestContent: "測試內容",
       SMS: {
         TestPhone: "測試手機號碼",
-        TestTemplateId: "測試簡訊範本ID",
         TestTemplateParams: "測試簡訊範本參數",
-        Tencent: {
-          SecretId: "SecretId",
-          SecretKey: "SecretKey",
-          SdkAppId: "SdkAppId",
-          SignName: "SignName",
-          Region: "Region"
-        }
       },
       Email: {
-        Host: "主機",
-        Port: "埠",
-        Secure: "安全",
-        User: "用戶",
-        Password: "密碼",
-        From: "寄件人",
         TestTo: "測試收件人",
-      },
-      DingTalk: {
-        Webhook: "Webhook",
-        Secret: "Secret",
-      },
-      Feishu: {
-        Webhook: "Webhook",
-        Secret: "Secret",
       },
     },
     Template: {
@@ -2336,7 +1912,6 @@ const zhTW = {
       Name: "範本名稱",
       Title: "訊息標題",
       Content: "訊息內容",
-      SmsCodeTip: "短信登錄驗證碼變數名為 Code，請與短信平台模板中的變數名保持一致",
       Variables: "可用變數",
       VariableUsage: "使用 {syntax} 引用變數，變數名稱區分大小寫；傳送時會替換為對應值。",
       VariableScope: "可用變數由傳送業務或訊息事件的參數決定，請只使用目前情境提供的變數。",
@@ -2360,7 +1935,6 @@ const zhTW = {
       Status: "狀態",
       NotifyConfig: "通知配置",
       Template: "範本",
-      SMSTemplateId: "簡訊範本ID",
       AddTitle: "添加事件",
       EditTitle: "編輯事件",
       TestEventParams: "測試事件參數",
@@ -2375,427 +1949,134 @@ const zhTW = {
       }
     }
   },
-  Flowable: {
-    Category: {
-      TreeRoot: "流程分類",
-      AddCategory: "添加分類",
-      CategoryNamePlaceholder: "輸入分類名稱",
-      SortUp: "上移",
-      SortDown: "下移",
-      ParentCategory: "父級分類",
-      Name: "名稱",
-      OrderNum: "排序標識",
-      AddTitle: "添加流程分類",
-      EditTitle: "編輯流程分類",
-      DeleteConfirm: "是否確認刪除流程分類“{0}”？",
-      DeleteHasChildren: "該分類下存在子分類，請先刪除子分類",
-      TreeRootName: "模型分類",
-    },
-    Model: {
-      Key: "唯一標識",
-      Name: "名稱",
-      Version: "版本",
-      Status: "狀態",
-      Design: "設計",
-      Suspend: "掛起",
-      Resume: "恢複",
-      Category: "所屬分類",
-      AddModelTitle: "新建模型",
-      DesignTitle: "流程設計",
-      Placeholder: {
-        ModelKey: "輸入模型標識",
-        ModelName: "輸入模型名稱"
-      }
-    },
-    Template: {
-      Name: "流程範本",
-      Fixed: "系統固定範本",
-      Custom: "自訂範本",
-      AddByTemplate: "按範本新增",
-      Convert: "轉存為範本",
-      CreateProcess: "建立流程"
-    },
-    History: {
-      Title: "流轉歷史",
-      Empty: "暫無流轉節點",
-      StartNode: "流程開始",
-      EndNode: "流程已結束",
-      Starter: "發起人",
-      Assignee: "處理人",
-      PendingAssignee: "待處理人",
-      CcUsers: "抄送人",
-      CopiedAt: "抄送時間",
-      CcCompleted: "已抄送",
-      UserNotFound: "錯誤：人員不存在",
-      Role: "角色",
-      Dept: "部門",
-      CompletedAt: "完成時間",
-      Comment: "審批意見"
-    },
-    Comment: {
-      Title: "流程評論",
-      Empty: "暫無評論",
-      Placeholder: "請輸入評論內容",
-      Submit: "提交評論",
-      Required: "評論內容不能為空",
-      Success: "評論發表成功"
-    },
-    Action: {
-      Revoke: "撤銷",
-      RevokeConfirm: "確認撤銷目前流程嗎？",
-      RevokeSuccess: "流程已撤銷",
-      Urge: "催辦",
-      UrgeConfirm: "確認催辦目前流程嗎？",
-      UrgeSuccess: "催辦成功",
-      AdminCancel: "強制撤銷",
-      AdminCancelConfirm: "確認強制撤銷該流程嗎？此操作不受流程撤銷設定限制。",
-      AdminCancelSuccess: "流程已強制撤銷"
-    },
-    Dashboard: {
-      TodoTitle: "待處理任務",
-      ViewAll: "查看全部",
-      Empty: "暫無待處理任務",
-      TaskName: "任務名稱",
-      ProcessName: "流程名稱",
-      Starter: "發起人",
-      ArrivedAt: "到達時間"
-    }
-  },
   GroovyScript: {
     Exec: "執行",
     SaveScript: "保存指令碼或直譯式程式",
     Name: "名稱"
   },
-  Deploy: {
-    Domain: {
-      Management: "域名管理",
-      CertList: "證書列表",
-      ApplyCert: "申請證書",
-      ApplyCertTitle: "申請SSL證書",
-      CertName: "證書名稱",
-      ApplyLog: "申請日誌",
-      NoApplyLog: "暫無日誌",
-      CertHolder: "證書持有者",
-      ScanLog: "掃描日誌",
-      Scan: "掃描",
-      HostRecord: "主機記錄",
-      HostRecordPlaceholder: "如 * 表示泛域名，www 表示 www 子域名",
-      RecordValue: "記錄值",
-      RecordType: "記錄類型",
-      Result: "結果",
-      FailReason: "失敗原因",
-      ExpireTime: "過期時間",
-      AddDomain: "新增域名",
-      EditDomain: "修改域名",
-      Domain: "域名",
-      DomainPlaceholder: "請輸入主域名，如 example.com",
-      CloudConfig: "雲帳號配置",
-      CloudConfigPlaceholder: "請選擇雲帳號配置",
-      CloudConfigHint: "用於自動寫入 ACME DNS-01 TXT 驗證記錄",
-      AssociatedDomain: "關聯域名",
-      AddCert: "新增證書",
-      EditCert: "編輯證書",
-      CertStandard: "證書標準",
-      InternationalStandard: "國際標準",
-      SM2Standard: "國密 SM2",
-      CertContent: "證書內容",
-      PrivateKeyContent: "私鑰內容",
-      EncryptedCertificate: "加密證書",
-      EncryptedPrivateKey: "加密私鑰",
-      CertContentAndPrivateKeyUploaded: "證書內容和私鑰上傳後不再回顯，也不可編輯。",
-      Issuer: "證書頒發機構",
-      Country: "國家",
-      State: "省/州",
-      City: "城市",
-      Organization: "組織",
-      AddHolder: "新增持有者",
-      EditHolder: "編輯持有者",
-      HolderType: "持有者類型",
-      MarkManualSuccess: "已人工處理",
-      LastSyncResult: "上次更新結果",
-      ServerHost: "伺服器主機",
-      ServerPort: "伺服器端口",
-      ServerUser: "伺服器用戶",
-      LoginPrivateKey: "登錄私鑰",
-      LoginPrivateKeyPlaceholder: "僅支持輸入私鑰內容，保存後編輯時回顯 ******",
-      PrivateKeyPassword: "私鑰密碼",
-      PrivateKeyPasswordPlaceholder: "請輸入私鑰密碼",
-      LoginPassword: "登錄密碼",
-      LoginPasswordPlaceholder: "請輸入登錄密碼",
-      CertificateFilePath: "證書文件路徑",
-      CertificateFilePathPlaceholder: "請輸入證書文件路徑",
-      PrivateKeyFilePath: "私鑰文件路徑",
-      PrivateKeyFilePathPlaceholder: "請輸入私鑰文件路徑",
-      DifyDockerDir: "Dify Docker目錄",
-      DifyDockerDirPlaceholder: "請輸入Dify Docker目錄",
-      SecretId: "SecretId",
-      SecretKey: "SecretKey",
-      OldCertificateId: "舊證書ID",
-      ResourceType: "資源類型",
-      ResourceTypeRegion: "資源類型區域",
-      AccessKeyId: "AccessKeyId",
-      AccessKeySecret: "AccessKeySecret",
-      TencentCloudSsl: {
-        AddResourceType: "新增資源類型",
-        ConfigJsonTip: "用於生成騰訊雲 SSL 資源類型與地域配置 JSON",
-        EmptyResourceConfig: "暫無資源類型配置",
-        Regions: "地域",
-        AddRegion: "新增地域",
-        ResourceTypePlaceholder: "如 clb、cos",
-        RegionPlaceholder: "如 ap-guangzhou",
-        ResourceTypes: {
-          Clb: "負載均衡 CLB",
-          Cos: "對象存儲 COS",
-          Waf: "Web 應用防火牆 WAF",
-          Apigateway: "API 網關 APIGW",
-        },
-      },
-    },
-    ServerMachine: {
-      Name: "伺服器名稱",
-      RemoteAddress: "伺服器地址",
-      Host: "功能變數名稱/IP地址",
-      Port: "通信埠",
-      UserName: "登錄用戶名",
-      KeyFile: "登錄秘鑰",
-      Passphrase: "秘鑰密碼",
-      AddTitle: "添加伺服器資訊",
-      EditTitle: "編輯伺服器資訊",
-      TestConnection: "測試連接",
-      ConnectionSuccess: "連接成功",
-      TestConnectionLoading: "正在嘗試連結..."
-    },
-    NginxConfig: {
-      Name: "名稱",
-      Code: "編碼",
-      Type: "類型",
-      ConfigText: "自定義配置",
-      Status: "狀態",
-      Sync: "同步配置",
-      ConfirmSync: "確認將配置`{0}`同步到關聯伺服器節點嗎？",
-      NginxNode: "部署節點",
-      AddTitle: "添加配置",
-      EditTitle: "編輯配置資訊",
-    }
+  MemberSubscribeService: {
+    Title: '訂閱服務項',
+    Add: '新增訂閱服務項',
+    Edit: '編輯訂閱服務項',
+    Type: '服務項類型',
+    BuiltIn: '系統內建',
+    Custom: '自訂',
+    BuiltInItem: '系統內建服務項',
+    SelectBuiltIn: '請選擇系統內建服務項',
+    Id: '服務項ID',
+    Name: '服務項名稱',
+    Keyword: '請輸入服務項ID或名稱',
+    IdRule: '服務項ID必填，限1～100位大小寫字母、數字或底線。',
+    SelectServices: '請選擇服務項，可輸入ID或名稱查詢',
+    SelectionLimit: '最多選擇100個服務項。',
+    ConfirmDelete: '確定刪除訂閱服務項「{0}」嗎？已被訂閱定義引用的服務項不能刪除。'
   },
-  Workflow: {
-    Definition: {
-      Code: '流程編碼',
-      Name: '流程名稱',
-      Description: '流程描述',
-      Status: '狀態',
-      Version: '版本',
-      Versions: '版本列表',
-      VersionId: '版本ID',
-      VersionList: '版本列表',
-      Publish: '發佈',
-      Disable: '停用',
-      Enable: '啟用',
-      PublishTime: '發佈時間',
-      Remark: '備註',
-      Designer: '流程設計器',
-      Placeholder: {
-        Code: '請輸入流程編碼',
-        Name: '請輸入流程名稱',
-        Description: '請輸入流程描述'
-      }
-    },
-    Instance: {
-      InstanceId: '實例ID',
-      Title: '流程標題',
-      BusinessKey: '業務關聯鍵',
-      Status: '狀態',
-      StartUser: '發起人',
-      StartTime: '發起時間',
-      EndTime: '結束時間',
-      Remark: '備註',
-      Detail: '流程詳情',
-      Variables: '流程變數',
-      VariableName: '變數名',
-      VariableValue: '變數值',
-      TaskHistory: '任務歷史',
-      Suspend: '掛起',
-      Resume: '恢復',
-      Terminate: '終止',
-      TerminateReason: '終止原因',
-      Reason: '原因',
-      Placeholder: {
-        Reason: '請輸入原因'
-      }
-    },
-    Task: {
-      TaskId: '任務ID',
-      TaskName: '任務名稱',
-      Description: '任務描述',
-      Assignee: '處理人',
-      Status: '狀態',
-      Priority: '優先級',
-      DueDate: '到期時間',
-      ClaimTime: '認領時間',
-      CompleteTime: '完成時間',
-      Comment: '審批意見',
-      Candidates: '候選資訊',
-      CandidateUsers: '候選用戶',
-      CandidateGroups: '候選用戶組',
-      Detail: '任務詳情',
-      Claim: '認領',
-      Complete: '完成',
-      Transfer: '轉辦',
-      Delegate: '委派',
-      Reject: '退回',
-      TargetUser: '目標用戶',
-      TargetNode: '目標節點',
-      RejectReason: '退回原因',
-      Placeholder: {
-        Comment: '請輸入審批意見',
-        TargetUser: '請輸入目標用戶ID',
-        TargetNode: '請輸入目標節點ID',
-        RejectReason: '請輸入退回原因'
-      }
-    },
-    MyProcess: {
-      StartNew: '發起新流程',
-      ProcessDef: '流程定義',
-      Cancel: '取消流程',
-      CancelReason: '取消原因',
-      Start: '發起',
-      Placeholder: {
-        ProcessDef: '請選擇流程定義',
-        BusinessKey: '請輸入業務關聯鍵',
-        Title: '請輸入流程標題'
-      }
-    },
-    Status: {
-      Pending: '待審批',
-      Approved: '已通過',
-      Rejected: '已拒絕',
-      Canceled: '已撤銷',
-      Completed: '已完成',
-      Failed: '失敗'
-    },
-    Config: {
-      ConfigId: '配置ID',
-      ConfigName: '配置名稱',
-      HandlerId: '處理器',
-      WorkflowType: '引擎類型',
-      ProcessDefId: '流程定義',
-      RequestUri: '請求URI',
-      RequestMethod: '請求方法',
-      Status: '狀態',
-      Dialog: {
-        Add: '新增流程配置',
-        Edit: '修改流程配置'
-      },
-      Placeholder: {
-        ConfigName: '請輸入配置名稱',
-        HandlerId: '請選擇處理器',
-        WorkflowType: '請選擇引擎類型',
-        ProcessDefId: '請選擇流程定義',
-        RequestUri: '請輸入請求URI',
-        RequestMethod: '請選擇請求方法',
-        Status: '請選擇狀態'
-      },
-      ConfirmDelete: '是否確認刪除配置名稱為"{0}"的流程配置？'
-    },
-    Record: {
-      RecordId: '記錄ID',
-      ConfigId: '配置ID',
-      HandlerId: '處理器',
-      WorkflowType: '引擎類型',
-      ProcessDefId: '流程定義ID',
-      EngineInstanceId: '引擎實例ID',
-      Title: '流程標題',
-      RequestUri: '請求URI',
-      RequestMethod: '請求方法',
-      RequestData: '請求數據',
-      OperatorId: '操作人ID',
-      OperatorName: '提交人',
-      OperatorDeptId: '操作人部門',
-      OperatorJson: '操作人信息',
-      Status: '狀態',
-      SubmitTime: '提交時間',
-      FinishTime: '完成時間',
-      FailReason: '失敗原因',
-      CompleteResult: '執行結果',
-      Detail: '流程記錄詳情',
-      Cancel: '撤銷',
-      CancelSuccess: '撤銷成功',
-      OnlyMine: '僅我的',
-      ConfirmCancel: '是否確認撤銷流程"{0}"？',
-      Placeholder: {
-        Status: '請選擇狀態',
-        HandlerId: '請選擇處理器'
-      }
-    }
-  },
-  CmsContentPriv: {
-    Saving: '保存中...',
-    Title: '內容瀏覽權限',
+  MemberSubscription: {
+    DefinitionId: '訂閱定義ID',
+    DefinitionTitle: '訂閱定義',
+    Name: '訂閱名稱',
+    Description: '訂閱說明',
+    Items: '服務範圍',
+    AddDefinition: '新增訂閱定義',
+    EditDefinition: '編輯訂閱定義',
+    ScopeNotice: '修改服務範圍後，所有關聯會員立即使用新的範圍。',
+    NoItems: '暫無符合的服務項，請先在訂閱服務項管理中建立。',
+    ConfirmDelete: '確定刪除訂閱定義「{0}」嗎？已關聯會員的定義不能刪除。',
+    MemberId: '會員ID',
     SelectMember: '選擇會員',
-    ChangeMember: '切換會員',
-    CurrentMember: '當前會員',
-    NoMember: '請先選擇會員',
-    Tab: {
-      Site: '站點權限',
-      Catalog: '欄目權限',
-      Content: '內容權限'
+    OneMember: '請只選擇一位會員。',
+    MemberRule: '請輸入有效的會員ID。',
+    ExpireTime: '結束時間',
+    Validity: '有效性',
+    Valid: '有效',
+    Expired: '已過期',
+    AddRecord: '關聯訂閱並調整時長',
+    Adjust: '調整時長',
+    DeltaSeconds: '調整秒數',
+    DurationShortcuts: {
+      OneHour: '1小時',
+      TwelveHours: '12小時',
+      OneDay: '1天',
+      SevenDays: '7天',
+      ThirtyDays: '30天',
+      Days366: '366天'
     },
-    PrivType: '授權類型',
-    PrivTypeSite: '站點級',
-    PrivTypeCatalog: '欄目級',
-    PrivTypeContent: '內容級',
-    Target: '授權目標（格式：站點ID:欄目ID:內容ID）',
-    GrantTime: '授權時間',
-    GrantSite: '授權站點',
-    GrantCatalog: '授權欄目',
-    GrantContent: '授權內容',
-    SelectSite: '選擇站點',
-    SelectPrivType: '請先選擇授權類型',
-    ConfirmGrantCurrentSite: '確定授權當前站點（權限key：{0}）？',
-    SelectCatalog: '選擇欄目',
-    SelectContent: '選擇內容',
-    ConfirmRevoke: '確定撤銷該授權？',
-    RevokeSuccess: '撤銷成功',
-    GrantSuccess: '授權成功'
+    SecondsRule: '請輸入Long範圍內的整數秒數，增加時長最多316224000秒（約10年）。',
+    AdjustNotice: '未過期訂閱在原結束時間上加減秒數，已過期則以目前時間為基準；結束時間不晚於目前時間即為過期。',
+    FirstNotice: '首次關聯以操作時間為基準。例如30天為2592000秒。',
+    RetryNotice: '逾時後請先重新整理記錄或稽核以確認結果；相同請求重試不會重複調整，修改內容會產生新請求。',
+    Reason: '調整原因',
+    Audit: '調整稽核',
+    OperationTime: '操作時間',
+    Before: '原結束時間',
+    After: '新結束時間',
+    Initial: '首次關聯',
+    Operator: '操作人',
+    Source: '來源',
+    Manual: '後台人工調整',
+    LoadFailed: '載入失敗，請重試。',
+    SelectDefinition: '請選擇訂閱定義，可依名稱搜尋',
+    Status: '狀態',
+    Enable: '啟用',
+    Disable: '停用',
+    ConfirmStatus: '確定{1}訂閱定義「{0}」嗎？',
+    NoDefinitions: '沒有符合的訂閱定義',
+    NamesLoadFailed: '訂閱定義名稱載入失敗，暫時顯示定義ID，請重新整理後重試。',
+    OperatorType: '操作人類型',
+    OperatorId: '操作人ID'
   },
-  Migration: {
-    WP: {
-      Add: '新增WordPress遷移',
-      Edit: '編輯WordPress遷移',
-      Execute: '執行',
-      Name: '任務名稱',
-      NamePlaceholder: '請輸入任務名稱',
-      DataSource: '資料來源',
-      SelectDataSource: '請選擇資料來源',
-      TablePrefix: '表前綴',
-      Site: '目標站點',
-      SelectSite: '請選擇目標站點',
-      MigrateMode: '遷移方式',
-      FullMode: '全量遷移',
-      SpecifiedMode: '指定欄目遷移',
-      DefaultPassword: '預設密碼',
-      CatalogMappings: '欄目映射',
-      AddMapping: '新增映射',
-      WpCatalogId: 'WordPress欄目ID',
-      TargetCatalog: '目標欄目',
-      LastStatus: '最近狀態',
-      LastExecuteTime: '最近執行時間',
-      Status0: '未執行',
-      Status1: '成功',
-      Status2: '失敗',
-      Status3: '執行中',
-      NameRequired: '任務名稱不能為空',
-      DataSourceRequired: '請選擇資料來源',
-      SiteRequired: '請選擇目標站點',
-      MigrateModeRequired: '請選擇遷移方式',
-      DefaultPasswordRequired: '預設密碼不能為空',
-      MappingRequired: '指定欄目遷移必須至少新增一組欄目映射',
-      ConfirmDelete: '確認刪除WordPress遷移任務「{0}」？',
-      ConfirmExecute: '確認執行WordPress遷移任務「{0}」？',
-      ProgressTitle: 'WordPress遷移進度',
-      ExecuteStarted: '任務已提交，任務ID：{0}'
-    }
-  }
 }
+
+
+zhTW.CMS.PageWidget.SelectTitle = "選擇頁面部件"
+zhTW.Message.Event.ConfigAlreadyExists = "該訊息設定已新增"
+zhTW.System.Menu.Placeholder.ID = "請輸入選單 ID"
+
+zhTW.Component.HeaderSearch = {}
+zhTW.Component.HeaderSearch.Placeholder = "搜尋選單標題或 URL"
+zhTW.Component.IconSelect = {}
+zhTW.Component.IconSelect.Placeholder = "請輸入表徵圖名稱"
+zhTW.Component.RightToolbar = {}
+zhTW.Component.RightToolbar.ShowTableColumn = "顯隱列"
+zhTW.Component.RightToolbar.ShowOrHide = "顯示/隱藏"
+zhTW.Component.SizeSelect = {}
+zhTW.Component.SizeSelect.Large = "較大"
+zhTW.Component.SizeSelect.Default = "預設"
+zhTW.Component.SizeSelect.Small = "較小"
+zhTW.Component.SizeSelect.Applying = "正在設定版面大小，請稍候..."
+zhTW.Component.TopNav = {}
+zhTW.Component.TopNav.MoreMenu = "更多菜單"
+zhTW.Component.Layout.Navbar.FullScreen = "全屏顯示"
+zhTW.Component.Layout.Settings = {}
+zhTW.Component.Layout.Settings.ThemeStyle = "主題風格設置"
+zhTW.Component.Layout.Settings.Dark = "深色側欄"
+zhTW.Common.Selected = "已選取"
+zhTW.Component.Layout.Settings.Light = "淺色側欄"
+zhTW.Component.Layout.Settings.ThemeColor = "主題顏色"
+zhTW.Component.Layout.Settings.SystemLayoutConfig = "系統布局配置"
+zhTW.Component.Layout.Settings.EnableTopNav = "開啟 TopNav"
+zhTW.Component.Layout.Settings.EnableTagsViews = "開啟 Tags-Views"
+zhTW.Component.Layout.Settings.ShowTagsIcon = "顯示頁籤圖示"
+zhTW.Component.Layout.Settings.EnableFixedHeader = "固定 Header"
+zhTW.Component.Layout.Settings.ShowLogo = "顯示 Logo"
+zhTW.Component.Layout.Settings.EnableDynamicTitle = "動態標題"
+zhTW.Component.Layout.Settings.ShowFooter = "底部版權"
+zhTW.Component.Layout.Settings.Save = "儲存設定"
+zhTW.Component.Layout.Settings.Reset = "重設設定"
+zhTW.Component.Layout.Settings.Saving = "正在儲存至本機，請稍候..."
+zhTW.Component.Layout.Settings.Resetting = "正在清除設定快取並重新整理，請稍候..."
+zhTW.Component.Layout.TagViews = {}
+zhTW.Component.Layout.TagViews.RefreshPage = "刷新頁面"
+zhTW.Component.Layout.TagViews.CloseCurrent = "關閉當前"
+zhTW.Component.Layout.TagViews.CloseOther = "關閉其他"
+zhTW.Component.Layout.TagViews.CloseLeft = "關閉左側"
+zhTW.Component.Layout.TagViews.CloseRight = "關閉右側"
+zhTW.Component.Layout.TagViews.CloseAll = "全部關閉"
+zhTW.Error.NoPermissionTip = "對不起，您沒有訪問許可權，請向系統管理者申請相關資源訪問許可權！"
+zhTW.Error.GoHome = "回首頁"
+zhTW.Error.PageNotFound = "找不到網頁！"
+zhTW.Error.Err404Tip = "對不起，您正在尋找的頁面不存在。嘗試檢查URL的錯誤，然後按瀏覽器上的刷新按鈕或嘗試在我們的應用程序中找到其他內容。"
+zhTW.Component.RightToolbar.HideSearch = "隱藏搜索"
+zhTW.Component.RightToolbar.ShowSearch = "顯示搜索"
 
 export default zhTW

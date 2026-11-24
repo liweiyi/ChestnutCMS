@@ -1,5 +1,5 @@
 # ES 版本，需与下方 IK 分词器版本保持一致
-ARG ES_VERSION=9.4.2
+ARG ES_VERSION=9.4.8
 
 # 基础镜像
 FROM elasticsearch:${ES_VERSION}

@@ -145,9 +145,10 @@ const loadEditorDependencies = () => {
         if (!isFullUrl) {
           link = (props.config?.UEDITOR_HOME_URL || import.meta.env.VITE_APP_PATH) + link;
         }
-        if (link.slice(-3) === '.js') {
+        const pathname = link.split(/[?#]/, 1)[0];
+        if (pathname.endsWith('.js')) {
           res.jsLinks.push(link);
-        } else if (link.slice(-4) === '.css') {
+        } else if (pathname.endsWith('.css')) {
           res.cssLinks.push(link);
         }
         return res;

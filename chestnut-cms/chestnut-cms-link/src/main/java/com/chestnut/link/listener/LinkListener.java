@@ -15,6 +15,8 @@
  */
 package com.chestnut.link.listener;
 
+import com.chestnut.link.CmsLinkTips;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chestnut.common.async.AsyncTaskManager;
@@ -51,7 +53,7 @@ public class LinkListener {
 			long lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除友链数据：" + (i * pageSize) + "/" + total);
+						CmsLinkTips.DELETING_FRIEND_LINK_DATA, i * pageSize, total);
 				Page<CmsLink> links = this.linkService.lambdaQuery()
 						.select(CmsLink::getLinkId)
 						.eq(CmsLink::getSiteId, site.getSiteId())
@@ -70,7 +72,7 @@ public class LinkListener {
 			lastId = 0;
 			for (long i = 0; i * pageSize < total; i++) {
 				AsyncTaskManager.setTaskProgressInfo((int) (i * pageSize * 100 / total),
-						"正在删除友链分组数据：" + (i * pageSize) + "/" + total);
+						CmsLinkTips.DELETING_FRIEND_LINK_GROUP_DATA, i * pageSize, total);
 				Page<CmsLinkGroup> linkGroups = this.linkGroupService.lambdaQuery()
 						.select(CmsLinkGroup::getLinkGroupId)
 						.eq(CmsLinkGroup::getSiteId, site.getSiteId())
@@ -84,7 +86,7 @@ public class LinkListener {
 				}
 			}
 		} catch (Exception e) {
-			AsyncTaskManager.addErrMessage("删除友链数据错误：" + e.getMessage());
+			AsyncTaskManager.addErrMessage(CmsLinkTips.DELETE_FRIEND_LINK_FAILED);
 			log.error("Delete friend links failed on site[{}] delete.", site.getSiteId());
 		}
 	}

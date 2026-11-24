@@ -16,7 +16,6 @@
 package com.chestnut.common.redis.ops;
 
 import com.chestnut.common.redis.config.RedisCacheProperties;
-import com.chestnut.common.utils.ConvertUtils;
 import com.chestnut.common.utils.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -55,9 +54,12 @@ public class RedisZSetOps extends AbstractRedisOps {
         return result;
     }
 
+    /**
+     * 增加成员分数并返回截去小数部分的结果；Redis 未返回分数时返回 -1。
+     */
     public long zsetIncr(String key, String value, double delta) {
         Double score = redisTemplate.opsForZSet().incrementScore(key, value, delta);
-        return ConvertUtils.toLong(score, -1L);
+        return score == null ? -1L : score.longValue();
     }
 
     public Double getZsetScore(String key, String value) {

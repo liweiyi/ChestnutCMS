@@ -15,6 +15,8 @@
  */
 package com.chestnut.article;
 
+import com.chestnut.article.CmsArticleTips;
+
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.utils.SpringUtils;
 import com.chestnut.common.utils.StringUtils;
@@ -95,7 +97,7 @@ public class ArticleUtils {
                     placeholderImgTag = StringUtils.EMPTY;
                 }
             } catch (Exception e1) {
-                AsyncTaskManager.addErrMessage("Replace content-ex placeholder failed: " + contentId);
+                AsyncTaskManager.addErrMessage(CmsArticleTips.CONTENT_PLACEHOLDER_FAILED, contentId);
             }
             sb.append(placeholderImgTag);
             lastEndIndex = matcher.end();
@@ -153,7 +155,7 @@ public class ArticleUtils {
                     }
                 }
             } catch (Exception e1) {
-                AsyncTaskManager.addErrMessage("Replace page widget placeholder failed: " + pageWidgetCode);
+                AsyncTaskManager.addErrMessage(CmsArticleTips.WIDGET_PLACEHOLDER_FAILED, pageWidgetCode);
             }
             sb.append(placeholderImgTag);
             lastEndIndex = matcher.end();

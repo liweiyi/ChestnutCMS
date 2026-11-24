@@ -15,11 +15,14 @@
  */
 package com.chestnut.contentcore.service.impl;
 
+import com.chestnut.contentcore.enums.ContentCoreTips;
+
 import com.baomidou.mybatisplus.spring.service.impl.ServiceImpl;
 import com.chestnut.common.async.AsyncTaskManager;
 import com.chestnut.common.exception.CommonErrorCode;
 import com.chestnut.common.storage.FileStorageService;
 import com.chestnut.common.storage.IFileStorageType;
+import com.chestnut.common.storage.exception.FileStorageException;
 import com.chestnut.common.utils.*;
 import com.chestnut.common.utils.file.FileExUtils;
 import com.chestnut.common.utils.image.ImageHelper;
@@ -53,6 +56,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.NoSuchFileException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -170,7 +174,8 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 			String fileStorageType = FileStorageTypeProperty.getValue(dto.getSite().getConfigProps());
 			IFileStorageType fst = fileStorageService.getFileStorageType(fileStorageType);
 			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, dto.getSite());
-			deleteResource(oldPath, oldResourceType, fileStorageHelper);
+			fileStorageHelper.remove(oldPath);
+			deleteResourceThumbnails(oldPath, oldResourceType, fileStorageHelper);
 		}
 		// 处理资源
 		this.processResource(resource, resourceType, dto.getSite(), dto.getFile().getBytes());
@@ -178,9 +183,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 		return resource;
 	}
 
-	private void deleteResource(String path, String resourceType, FileStorageHelper fileStorageHelper) {
-		fileStorageHelper.remove(path);
-		// 删除图片缩略图
+	private void deleteResourceThumbnails(String path, String resourceType, FileStorageHelper fileStorageHelper) {
 		if (ResourceType_Image.ID.equals(resourceType)) {
 			String fileName = StringUtils.substringAfterLast(path, "/");
 			final String fileNamePrefix = StringUtils.substringBeforeLast(fileName, ".") + "_";
@@ -304,9 +307,17 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 			IFileStorageType fst = fileStorageService.getFileStorageType(fileStorageType);
 			FileStorageHelper fileStorageHelper = FileStorageHelper.of(fst, site);
 			resources.forEach(r -> {
-				// 删除文件
-				deleteResource(r.getPath(), r.getResourceType(), fileStorageHelper);
-                // 删除数据库记录
+				String path = r.getPath();
+				try {
+					fileStorageHelper.remove(path);
+				} catch (FileStorageException e) {
+					// 原文件已不存在时，仍需清理缩略图和资源记录
+					if (!(e.getCause() instanceof NoSuchFileException)) {
+						throw e;
+					}
+				}
+				deleteResourceThumbnails(path, r.getResourceType(), fileStorageHelper);
+				// 删除数据库记录
 				this.removeById(r.getResourceId());
 			});
 		}
@@ -371,7 +382,7 @@ public class ResourceServiceImpl extends ServiceImpl<CmsResourceMapper, CmsResou
 			} catch (Exception e1) {
 				String imgSrc = ImageUtils.isBase64Image(src) ? "base64Img" : src;
 				log.warn("Save image failed: " + imgSrc);
-				AsyncTaskManager.addErrMessage("Download remote image failed: " + imgSrc);
+				AsyncTaskManager.addErrMessage(ContentCoreTips.REMOTE_IMAGE_FAILED, imgSrc);
 			}
 			sb.append(imgTag);
 			lastEndIndex = matcher.end();
